@@ -83,6 +83,12 @@
             <if test="franchiseeId != null">
                 and tei.franchisee_id = #{franchiseeId}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+                and tei.franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" separator="," close=")">
+                    #{franchiseeId}
+                </foreach>
+            </if>
             <if test="phone != null and phone != ''">
                 and tei.phone = #{phone}
             </if>
@@ -116,6 +122,12 @@
         </if>
         <if test="franchiseeId != null">
             and tei.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and tei.franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" separator="," close=")">
+                #{franchiseeId}
+            </foreach>
         </if>
         <if test="phone != null and phone != ''">
             and tei.phone = #{phone}

@@ -104,6 +104,77 @@
         select type,sum(bean_amount) as 'beanAmount' from t_cloud_bean_use_record where enterprise_id = #{enterpriseId} GROUP BY type
     </select>
     
+    <sql id="pageFilter">
+        <where>
+            e.del_flag = 0
+            <if test="type != null">
+                and r.type = #{type}
+            </if>
+            
+            <if test="enterpriseId != null">
+                and r.enterprise_id = #{enterpriseId}
+            </if>
+        
+            <if test="franchiseeId != null">
+                and r.franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="tenantId != null">
+                AND r.tenant_id = #{tenantId}
+            </if>
+            
+            <if test="startTime != null">
+                and r.create_time &gt;= #{startTime}
+            </if>
+            
+            <if test="endTime != null">
+                and r.create_time &lt;= #{endTime}
+            </if>
+        
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and r.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        
+            <if test="operateUid != null">
+                AND (
+                     (r.type IN ( 2, 3, 4, 5 )
+                AND EXISTS ( SELECT 1 FROM t_enterprise_cloud_bean_order o WHERE o.operate_uid = #{operateUid} AND o.order_id = r.ref ))
+                OR ( r.type IN ( 0, 1 )  and e.uid = #{operateUid} ))
+            </if>
+        </where>
+    </sql>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord">
+        SELECT
+            r.enterprise_id,
+            r.franchisee_id,
+            r.type,
+            r.bean_amount,
+            r.create_time,
+            r.ref,
+            r.id
+        FROM
+        t_cloud_bean_use_record r
+        left join t_enterprise_info e on e.id = r.enterprise_id
+        <include refid="pageFilter"/>
+        ORDER BY r.create_time DESC
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+        t_cloud_bean_use_record r
+        left join t_enterprise_info e on e.id = r.enterprise_id
+        <include refid="pageFilter"/>
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_cloud_bean_use_record

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,6 +40,12 @@ public class EnterpriseInfoQuery {
      * 加盟商id
      */
     private Long franchiseeId;
+    
+    /**
+     * 加盟商ids
+     */
+    private List<Long> franchiseeIds;
+    
     /**
      * 企业状态 0:开启,1:关闭
      */

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.warn.EleHardwareFaultMsgMapper">
+    
+    
+    <select id="selectList" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
+        SELECT
+            tenant_id tenantId,
+            cabinet_id cabinetId,
+            count( 1 ) failureWarnNum,
+            '1' type
+        FROM
+            t_ele_hardware_fault_msg
+        WHERE
+            alarm_time >= #{startTime}
+            and alarm_time &lt;= #{endTime}
+         GROUP BY
+            tenant_id,
+            cabinet_id
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.warn.EleHardwareFaultMsg">
+        SELECT
+            sn,
+            alarm_id,
+            cell_no,
+            device_type,
+            signal_id,
+            alarm_time,
+            cabinet_id,
+            tenant_id,
+            tenant_name,
+            cabinet_name,
+            grade,
+            dev_id,
+            alarm_desc,
+            report_time,
+            create_time,
+            cabinet_sn
+        FROM
+        t_ele_hardware_fault_msg
+        <include refid="filter"/>
+        order by alarm_time desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+        t_ele_hardware_fault_msg t
+        <include refid="filter"/>
+    </select>
+    
+    <select id="selectListExport" resultType="com.xiliulou.electricity.vo.warn.FaultMsgExcelVo">
+        SELECT
+            sn,
+            alarm_id,
+            cell_no,
+            device_type,
+            signal_id,
+            alarm_time,
+            cabinet_id,
+            tenant_id,
+            tenant_name,
+            cabinet_name,
+            grade,
+            dev_id,
+            alarm_desc,
+            report_time,
+            create_time
+        FROM
+        t_ele_hardware_fault_msg
+        <include refid="filter"/>
+        order by alarm_time desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectListProportion" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo">
+        SELECT
+            signal_id,
+            count(1) count
+        FROM
+            t_ele_hardware_fault_msg t
+        WHERE
+             alarm_time >= #{startTime}
+            and alarm_time &lt;= #{endTime}
+           AND signal_id in
+          <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
+              #{signalId}
+          </foreach>
+        GROUP BY signal_id
+    </select>
+    
+    <select id="countFaultNum" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_ele_hardware_fault_msg
+        <where>
+            alarm_time >= #{startTime}
+            and alarm_time &lt;= #{endTime}
+            and signal_id in
+            <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
+                #{signalId}
+            </foreach>
+        </where>
+    </select>
+    
+    <sql id="filter">
+        <where>
+            <if test="cabinetId != null">
+                 cabinet_id = #{cabinetId}
+            </if>
+            
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            
+            <if test="signalId != null">
+                and signal_id = #{signalId}
+            </if>
+            
+            <if test="startTime != null">
+                and alarm_time >= #{startTime}
+            </if>
+            
+            <if test="endTime != null">
+                and alarm_time &lt;= #{endTime}
+            </if>
+            
+            <if test="signalIdList != null and signalIdList.size() > 0">
+                and signal_id in
+                <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
+                    #{signalId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+</mapper>

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.BatteryMemberCardConstants;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
@@ -12,14 +13,12 @@ import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuer
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -35,11 +34,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author zzlong
@@ -68,7 +65,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @GetMapping("/admin/battery/memberCard/search")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "catchEnterprise", required = false) Integer catchEnterprise) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -87,7 +84,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
                 //.franchiseeIds(franchiseeIds)
-                .delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name).build();
+                .delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name).catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0)
+                .build();
         
         return R.ok(batteryMemberCardService.search(query));
     }
@@ -201,11 +199,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok();
         }
         
-        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardQuery.MAX_COUPON_NO) {
+        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardConstants.MAX_COUPON_NUM) {
             return R.ok();
         }
         
-        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardQuery.MAX_USER_INFO_GROUP_NO) {
+        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardConstants.MAX_USER_INFO_GROUP_NUM) {
             return R.ok();
         }
         
@@ -227,11 +225,11 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.ok();
         }
         
-        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardQuery.MAX_COUPON_NO) {
+        if (CollectionUtils.isNotEmpty(query.getCouponIdsTransfer()) && query.getCouponIdsTransfer().size() > BatteryMemberCardConstants.MAX_COUPON_NUM) {
             return R.ok();
         }
         
-        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardQuery.MAX_USER_INFO_GROUP_NO) {
+        if (CollectionUtils.isNotEmpty(query.getUserInfoGroupIdsTransfer()) && query.getUserInfoGroupIdsTransfer().size() > BatteryMemberCardConstants.MAX_USER_INFO_GROUP_NUM) {
             return R.ok();
         }
         

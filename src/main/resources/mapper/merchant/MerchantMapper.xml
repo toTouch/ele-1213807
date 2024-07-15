@@ -127,7 +127,9 @@
                     #{id}
                 </foreach>
             </if>
-            
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
         </where>
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
@@ -240,5 +242,14 @@
         WHERE
             del_flag = 0
             and enterprise_id = #{enterpriseId}
+    </select>
+    
+    <select id="listByEnterpriseList" resultType="com.xiliulou.electricity.entity.merchant.Merchant">
+        select name, enterprise_id
+        from t_merchant
+        where enterprise_id in
+        <foreach collection="enterpriseIdList" item="enterpriseId" close=")" open="(" separator=",">
+            #{enterpriseId}
+        </foreach>
     </select>
 </mapper>
