@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.EnableMemberCardRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.User;
@@ -28,6 +29,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -43,6 +45,7 @@ import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -103,6 +107,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
     
+    @Resource
+    private EnableMemberCardRecordService enableMemberCardRecordService;
+    
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
         return eleDisableMemberCardRecordMapper.insert(eleDisableMemberCardRecord);
@@ -116,6 +123,17 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             return R.ok(Collections.emptyList());
         }
         
+        List<String> disableMemberCardNoList = eleDisableMemberCardRecordVOS.parallelStream().map(EleDisableMemberCardRecordVO::getDisableMemberCardNo).distinct().collect(Collectors.toList());
+        List<EnableMemberCardRecord> enableMemberCardRecords = enableMemberCardRecordService.listLastEnableTimeByDisableMemberCardNos(disableMemberCardNoList);
+        Map<String, Long> disableMemberCardNoToEnableTimeMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(enableMemberCardRecords)) {
+            disableMemberCardNoToEnableTimeMap = enableMemberCardRecords.stream()
+                    .collect(Collectors.toMap(EnableMemberCardRecord::getDisableMemberCardNo, EnableMemberCardRecord::getEnableTime, (k1, k2) -> k1));
+        }
+        
+        log.info("disableMemberCardNoToEnableTimeMap:{}, eleDisableMemberCardRecordVOS:{},enableMemberCardRecords:{}", disableMemberCardNoToEnableTimeMap, eleDisableMemberCardRecordVOS, enableMemberCardRecords);
+        
+        Map<String, Long> finalDisableMemberCardNoToEnableTimeMap = disableMemberCardNoToEnableTimeMap;
         eleDisableMemberCardRecordVOS.forEach(item -> {
             //            if(Objects.isNull(item.getDisableTime())){
             //                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
@@ -142,6 +160,10 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            
+            if (Objects.nonNull(finalDisableMemberCardNoToEnableTimeMap.get(item.getDisableMemberCardNo()))) {
+                item.setEnableTime(finalDisableMemberCardNoToEnableTimeMap.get(item.getDisableMemberCardNo()));
+            }
         });
         
         return R.ok(eleDisableMemberCardRecordVOS);
