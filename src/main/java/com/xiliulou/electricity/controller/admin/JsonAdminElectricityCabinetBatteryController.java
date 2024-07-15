@@ -254,6 +254,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "model", required = false) String model,
+            @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
@@ -281,12 +283,14 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setModel(model);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
+        electricityBatteryQuery.setBindStatus(bindStatus);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
     
