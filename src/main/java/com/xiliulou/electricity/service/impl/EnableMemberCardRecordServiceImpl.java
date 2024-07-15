@@ -118,4 +118,10 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     public List<EnableMemberCardRecord> queryListByOrderIds(List<String> orderIdList) {
         return enableMemberCardRecordMapper.selectListByOrderIds(orderIdList);
     }
+    
+    @Override
+    @Slave
+    public List<EnableMemberCardRecord> listLastEnableTimeByDisableMemberCardNos(List<String> disableMemberCardNoList) {
+        return enableMemberCardRecordMapper.selectListLastEnableTimeByDisableMemberCardNos(disableMemberCardNoList);
+    }
 }

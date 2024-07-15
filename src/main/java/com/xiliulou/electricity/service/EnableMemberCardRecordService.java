@@ -55,4 +55,6 @@ public interface EnableMemberCardRecordService {
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
     List<EnableMemberCardRecord> queryListByOrderIds(List<String> orderIdList);
+    
+    List<EnableMemberCardRecord> listLastEnableTimeByDisableMemberCardNos(List<String> disableMemberCardNoList);
 }
