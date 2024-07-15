@@ -26,11 +26,9 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
-import com.xiliulou.electricity.service.asset.AssetExitWarehouseDetailService;
 import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.service.asset.AssetManageService;
-import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -76,9 +74,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     private ElectricityCabinetV2Service electricityCabinetV2Service;
     
     @Autowired
-    private AssetExitWarehouseDetailService assetExitWarehouseDetailService;
-    
-    @Autowired
     private ElectricityCarService electricityCarService;
     
     @Autowired
@@ -92,9 +87,6 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     
     @Autowired
     private ElectricityBatteryService electricityBatteryService;
-    
-    @Resource
-    private AssetWarehouseRecordService assetWarehouseRecordService;
     
     @Resource
     private AssertPermissionService assertPermissionService;
