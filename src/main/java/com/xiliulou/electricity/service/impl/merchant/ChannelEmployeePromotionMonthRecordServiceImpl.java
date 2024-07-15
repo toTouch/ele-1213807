@@ -235,6 +235,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         return resList;
     }
     
+    @Slave
     @Override
     public void export(String monthDate, HttpServletResponse response) {
         String fileName = "渠道员提成出账记录.xlsx";
