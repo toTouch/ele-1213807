@@ -4,7 +4,6 @@ import com.xiliulou.electricity.bo.asset.AssetBatchExitWarehouseBO;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
-import com.xiliulou.electricity.mapper.asset.AssetExitWarehouseRecordMapper;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
@@ -29,9 +28,6 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class AssetManageServiceImpl implements AssetManageService {
-    
-    @Resource
-    private AssetExitWarehouseRecordMapper assetExitWarehouseRecordMapper;
     
     @Resource
     private ElectricityCabinetV2Service electricityCabinetV2Service;
