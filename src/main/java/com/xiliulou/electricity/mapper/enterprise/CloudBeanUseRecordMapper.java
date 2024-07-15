@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.enterprise;
 
+import com.xiliulou.electricity.bo.enterprisePackage.CloudBeanUseRecordEnterpriseBo;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 
 import java.util.List;
@@ -61,4 +62,6 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
     List<CloudBeanUseRecord> selectListByPage(EnterpriseCloudBeanUseRecordQueryModel queryModel);
     
     Integer countTotal(EnterpriseCloudBeanUseRecordQueryModel queryModel);
+    
+    List<CloudBeanUseRecordEnterpriseBo> listForEnterpriseId(EnterpriseCloudBeanUseRecordQueryModel queryModel);
 }

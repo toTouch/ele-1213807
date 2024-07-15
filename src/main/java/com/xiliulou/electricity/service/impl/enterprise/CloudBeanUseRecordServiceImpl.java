@@ -9,6 +9,7 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.enterprisePackage.CloudBeanUseRecordEnterpriseBo;
 import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.enterprise.CloudBeanUseRecordConstant;
@@ -790,10 +791,102 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     public void export(EnterpriseCloudBeanUseRecordPageRequest request, HttpServletResponse response) {
         EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
         BeanUtils.copyProperties(request, queryModel);
-        List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(queryModel);
+        
+        //查询出符合条件的租户下的企业名称和id
+        List<CloudBeanUseRecordEnterpriseBo> enterpriseBoList = cloudBeanUseRecordMapper.listForEnterpriseId(queryModel);
+        Map<Long, String> enterpriseNameMap = new HashMap<>();
+        // 过滤企业名称为空的企业，封装为map
+        if (ObjectUtils.isNotEmpty(enterpriseBoList)) {
+            enterpriseNameMap = enterpriseBoList.stream().filter(item -> StringUtils.isNotEmpty(item.getEnterpriseName()))
+                    .collect(Collectors.toMap(CloudBeanUseRecordEnterpriseBo::getEnterpriseId, CloudBeanUseRecordEnterpriseBo::getEnterpriseName, (item1, item2) -> item1));
+        }
+        
+        // 企业如果为空则封装一个空的企业对应的sheet名称
+        if (ObjectUtils.isEmpty(enterpriseNameMap)) {
+            enterpriseNameMap.put(NumberConstant.MINUS_ONE_L, CloudBeanUseRecordConstant.default_sheet_name);
+        }
+        
+        List<Long> enterpriseIdList = new ArrayList<>(enterpriseNameMap.keySet());
     
-        Set<String> enterpriseNameList = new HashSet<>();
-        Map<String, List<CloudBeanUseRecordExcelVO>> enterpriseNameMap = new HashMap<>();
+        ExcelWriter excelWriter = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        InputStream stream = null;
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application /vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(CloudBeanUseRecordConstant.export_file_name, StandardCharsets.UTF_8));
+    
+            ClassPathResource classPathResource = new ClassPathResource("excelTemplate" + File.separator + CloudBeanUseRecordConstant.export_template_name);
+            stream = classPathResource.getInputStream();
+            // 把excel流给这个对象，后续可以操作
+            XSSFWorkbook workbook = new XSSFWorkbook(stream);
+            // 设置模板的第一个sheet的名称，名称我们使用合同号
+            workbook.setSheetName(0, enterpriseNameMap.get(enterpriseIdList.get(0)));
+            for (int i = 1; i < enterpriseIdList.size(); i++) {
+                // 剩余的全部复制模板sheet0即可
+                workbook.cloneSheet(0, enterpriseNameMap.get(enterpriseIdList.get(i)));
+            }
+            
+            // 把workbook写到流里
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+            stream = new ByteArrayInputStream(bytes);
+            excelWriter = EasyExcel.write(outputStream).withTemplate(stream).build();
+    
+            Map<Long, String> finalEnterpriseNameMap = enterpriseNameMap;
+            ExcelWriter finalExcelWriter = excelWriter;
+            for (Long enterpriseId : enterpriseIdList) {
+                WriteSheet writeSheet = EasyExcel.writerSheet(finalEnterpriseNameMap.get(enterpriseId)).build();
+                fillData(finalExcelWriter, writeSheet, enterpriseId, queryModel);
+            }
+        } catch (Exception e) {
+            log.error("cloud bean use record export error！", e);
+        } finally {
+            try {
+                if (Objects.nonNull(baos)) {
+                    baos.close();
+                }
+                if (Objects.nonNull(excelWriter)) {
+                    excelWriter.finish();
+                }
+                
+                if (Objects.nonNull(stream)) {
+                    stream.close();
+                }
+            } catch (Exception e) {
+                log.error("cloud bean use record export error！ close stream error", e);
+            }
+           
+        }
+    }
+    
+    private void fillData(ExcelWriter excelWriter, WriteSheet writeSheet, Long enterpriseId, EnterpriseCloudBeanUseRecordQueryModel queryModel) {
+        if (Objects.equals(enterpriseId, NumberConstant.MINUS_ONE_L)) {
+            excelWriter.fill(Collections.emptyList(), writeSheet);
+        }
+    
+        EnterpriseCloudBeanUseRecordQueryModel cloudBeanUseRecordQueryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(queryModel, cloudBeanUseRecordQueryModel);
+        cloudBeanUseRecordQueryModel.setEnterpriseId(enterpriseId);
+        Long offset = 0L;
+        Long size = 10L;
+        cloudBeanUseRecordQueryModel.setSize(size);
+        while (true) {
+            cloudBeanUseRecordQueryModel.setOffset(offset);
+            List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(cloudBeanUseRecordQueryModel);
+            if (CollectionUtils.isEmpty(cloudBeanUseRecordList)) {
+                break;
+            }
+            
+            excelWriter.fill(transferExportData(cloudBeanUseRecordList), writeSheet);
+            offset += size;
+        }
+    }
+    
+    private List<CloudBeanUseRecordExcelVO> transferExportData(List<CloudBeanUseRecord> cloudBeanUseRecordList) {
+        List<CloudBeanUseRecordExcelVO> cloudBeanUseRecordExcelVOList = new ArrayList<>();
         
         cloudBeanUseRecordList.stream().forEach(item -> {
             CloudBeanUseRecordExcelVO enterpriseCloudBeanOrderVO = new CloudBeanUseRecordExcelVO();
@@ -805,7 +898,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             }
             
             enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
-    
+        
             if (Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_RECHARGE) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_RECYCLE) || Objects.equals(
                     item.getType(), CloudBeanUseRecord.TYPE_PRESENT) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_USER_RECHARGE)) {
                 enterpriseCloudBeanOrderVO.setIncomeAndExpend("收入");
@@ -822,65 +915,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 enterpriseCloudBeanOrderVO.setCreateTime(DateUtil.format(new Date(item.getCreateTime()), DateFormatConstant.MONTH_DAY_DATE_TIME_FORMAT));
             }
     
-            enterpriseNameList.add(enterpriseCloudBeanOrderVO.getEnterpriseName());
-            
-            if (ObjectUtils.isNotEmpty(enterpriseNameMap.get(enterpriseCloudBeanOrderVO.getEnterpriseName()))) {
-                enterpriseNameMap.get(enterpriseCloudBeanOrderVO.getEnterpriseName()).add(enterpriseCloudBeanOrderVO);
-            } else {
-                List<CloudBeanUseRecordExcelVO> cloudBeanUseRecordExcelVOList = new ArrayList<>();
-                cloudBeanUseRecordExcelVOList.add(enterpriseCloudBeanOrderVO);
-                enterpriseNameMap.put(enterpriseCloudBeanOrderVO.getEnterpriseName(), cloudBeanUseRecordExcelVOList);
-            }
+            cloudBeanUseRecordExcelVOList.add(enterpriseCloudBeanOrderVO);
         });
     
-        
-        List<String> sheetNameList = new ArrayList<>(enterpriseNameList);
-        if (ObjectUtils.isEmpty(sheetNameList)) {
-            sheetNameList.add(CloudBeanUseRecordConstant.default_sheet_name);
-        }
-        
-        if (ObjectUtils.isEmpty(enterpriseNameMap)) {
-            enterpriseNameMap.put(sheetNameList.get(0), new ArrayList<>());
-        }
-    
-        try {
-            ServletOutputStream outputStream = response.getOutputStream();
-            // 告诉浏览器用什么软件可以打开此文件
-            response.setHeader("content-Type", "application /vnd.ms-excel");
-            // 下载文件的默认名称
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(CloudBeanUseRecordConstant.export_file_name, StandardCharsets.UTF_8));
-    
-            ClassPathResource classPathResource = new ClassPathResource("excelTemplate" + File.separator + CloudBeanUseRecordConstant.export_template_name);
-            InputStream stream = classPathResource.getInputStream();
-            // 把excel流给这个对象，后续可以操作
-            XSSFWorkbook workbook = new XSSFWorkbook(stream);
-            // 设置模板的第一个sheet的名称，名称我们使用合同号
-            workbook.setSheetName(0, sheetNameList.get(0));
-            for (int i = 1; i < sheetNameList.size(); i++) {
-                // 剩余的全部复制模板sheet0即可
-                workbook.cloneSheet(0, sheetNameList.get(i));
-            }
-            
-            // 把workbook写到流里
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            workbook.write(baos);
-            byte[] bytes = baos.toByteArray();
-            stream = new ByteArrayInputStream(bytes);
-            ExcelWriter excelWriter = EasyExcel.write(outputStream).withTemplate(stream).build();
-    
-            for (int i = 0; i < sheetNameList.size(); i++) {
-                WriteSheet writeSheet = EasyExcel.writerSheet(sheetNameList.get(i)).build();
-                excelWriter.fill(enterpriseNameMap.get(sheetNameList.get(i)), writeSheet);
-            }
-    
-            excelWriter.finish();
-            baos.close();
-            stream.close();
-        } catch (Exception e) {
-            log.error("cloud bean use record export error！", e);
-        }
+        return cloudBeanUseRecordExcelVOList;
     }
-    
     
     private BigDecimal getRealConsumeSum(Map<Integer, BigDecimal> beanAmountMap) {
         BigDecimal sum = BigDecimal.ZERO;
