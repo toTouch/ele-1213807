@@ -246,6 +246,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         return map;
     }
     
+    @Slave
     @Override
     public void exportExcel(MerchantPowerRequest request, HttpServletResponse response) {
         String fileName = "场地电费出账记录.xlsx";

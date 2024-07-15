@@ -1049,6 +1049,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 .selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getDelFlag, EnterpriseInfo.DEL_NORMAL).eq(EnterpriseInfo::getName, name).last("limit 0,1"));
     }
     
+    @Slave
     @Override
     public EnterpriseInfoVO selectDetailByUid(Long uid) {
         EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(uid);
@@ -1738,6 +1739,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         eleRefundOrderService.updateById(eleRefundOrderUpdate);
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> cloudBeanGeneralView() {
         EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());

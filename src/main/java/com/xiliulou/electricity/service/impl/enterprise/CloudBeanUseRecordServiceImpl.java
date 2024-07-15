@@ -187,6 +187,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return this.cloudBeanUseRecordMapper.deleteById(id) > 0;
     }
     
+    @Slave
     @Override
     public Double selectCloudBeanByEnterpriseIdAndType(Long uid, Integer type) {
         return this.cloudBeanUseRecordMapper.selectCloudBeanByEnterpriseIdAndType(uid, type);
@@ -216,6 +217,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return cloudBeanUseRecords.stream().map(CloudBeanUseRecord::getBeanAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
+    @Slave
     @Override
     public BigDecimal acquireUserCanRecycleCloudBean(Long uid) {
         BigDecimal result = BigDecimal.ZERO;
@@ -939,6 +941,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return result;
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> cloudBeanOrderDownload(Long beginTime, Long endTime) {
         if (endTime < beginTime || endTime - beginTime > 366 * 24 * 60 * 60 * 1000L) {
