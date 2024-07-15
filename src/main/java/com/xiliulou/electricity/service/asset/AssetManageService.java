@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.asset;
 
-import com.xiliulou.electricity.query.asset.AssetExitWarehouseSaveQueryModel;
+import com.xiliulou.electricity.bo.asset.AssetBatchExitWarehouseBO;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -9,5 +11,6 @@ import com.xiliulou.electricity.query.asset.AssetExitWarehouseSaveQueryModel;
  */
 public interface AssetManageService {
     
-    Integer insertExitWarehouse(AssetExitWarehouseSaveQueryModel recordSaveQueryModel);
+    void batchExistWarehouseTx(List<AssetBatchExitWarehouseBO> dataList);
+    
 }
