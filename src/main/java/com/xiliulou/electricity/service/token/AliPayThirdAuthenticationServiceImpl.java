@@ -141,14 +141,14 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         //获取支付宝小程序appId TODO
         String appId = alipayAppConfig.getAppId();
         
-        //解析手机号 TODO
-        String phone = decryptAliPayResponseData(data, iv, alipayAppConfig);
-        
-        //解析openId
-        String openId = decryptAliPayAuthCodeData(code, appId, alipayAppConfig);
-        log.info("ALIPAY LOGIN INFO!user login info,phone={},openId={}", phone, openId);
-        
         try {
+            //解析手机号 TODO
+            String phone = decryptAliPayResponseData(data, iv, alipayAppConfig);
+    
+            //解析openId
+            String openId = decryptAliPayAuthCodeData(code, appId, alipayAppConfig);
+            log.info("ALIPAY LOGIN INFO!user login info,phone={},openId={}", phone, openId);
+            
             //检查openId是否存在
             Pair<Boolean, UserOauthBind> existsOpenId = checkAliPayOpenIdExists(openId, UserOauthBind.SOURCE_ALI_PAY, tenantId);
             
