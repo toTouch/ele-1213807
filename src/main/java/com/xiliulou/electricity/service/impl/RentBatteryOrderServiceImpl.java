@@ -1992,4 +1992,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         return Triple.of(true, null, null);
     }
+    
+    
+    @Override
+    public Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo) {
+        return rentBatteryOrderMapper.existSameCabinetCellSameTimeOpenReturnOrder(createTime, electricityCabinetId, oldCellNo);
+    }
 }

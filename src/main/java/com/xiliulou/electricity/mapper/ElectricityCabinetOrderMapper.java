@@ -18,37 +18,43 @@ import java.util.List;
  * @since 2020-11-26 10:56:56
  */
 public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCabinetOrder> {
-
+    
     /**
      * 查询指定行数据
      *
      * @return 对象列表
      */
-    List<ElectricityCabinetOrderVO> queryList( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
-
-    Integer queryCount( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
-
-    Integer homepageExchangeOrderSumCount( @Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
-
+    List<ElectricityCabinetOrderVO> queryList(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    
+    Integer queryCount(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    
+    Integer homepageExchangeOrderSumCount(@Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
+    
     List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency(@Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
-
-    List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequencyCount(@Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
-
-    Integer homeOneCount(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList,@Param("tenantId")Integer tenantId);
-
-    Integer homeOneSuccess(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList,@Param("tenantId")Integer tenantId);
-
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
-
+    
+    List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequencyCount(
+            @Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
+    
+    Integer homeOneCount(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
+    
+    Integer homeOneSuccess(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
+    
+    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,
+            @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
+    
     ElectricityCabinetOrder selectLatestByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
-
-    List<ElectricityCabinetOrder> selectTodayExchangeOrder(@Param("eid") Integer eid, @Param("todayStartTimeStamp") long todayStartTimeStamp, @Param("todayEndTimeStamp") long todayEndTimeStamp, @Param("tenantId") Integer tenantId);
-
-    List<ElectricityCabinetOrder> selectMonthExchangeOrders(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
-
+    
+    List<ElectricityCabinetOrder> selectTodayExchangeOrder(@Param("eid") Integer eid, @Param("todayStartTimeStamp") long todayStartTimeStamp,
+            @Param("todayEndTimeStamp") long todayEndTimeStamp, @Param("tenantId") Integer tenantId);
+    
+    List<ElectricityCabinetOrder> selectMonthExchangeOrders(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp,
+            @Param("tenantId") Integer tenantId);
+    
     ElectricityCabinetOrder selectLatestByUidV2(Long uid);
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    Integer existSameCabinetCellSameTimeOpenExchangeOrder(@Param("id") Long id, @Param("electricityCabinetId") Integer electricityCabinetId, @Param("oldCellNo") Integer oldCellNo);
 }

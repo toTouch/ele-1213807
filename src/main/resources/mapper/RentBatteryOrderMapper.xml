@@ -232,4 +232,12 @@
     <update id="updatePhoneByUid">
         update t_rent_battery_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
+    
+    <select id="existSameCabinetCellSameTimeOpenReturnOrder" resultType="integer">
+        select 1
+        from t_rent_battery_order
+        where electricity_cabinet_id = #{electricityCabinetId}
+          and cell_no = #{oldCellNo}
+          and create_time &gt; #{createTime} limit 1
+    </select>
 </mapper>
