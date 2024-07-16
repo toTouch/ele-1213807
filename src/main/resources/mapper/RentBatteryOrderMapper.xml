@@ -236,7 +236,8 @@
     <select id="existSameCabinetCellSameTimeOpenReturnOrder" resultType="integer">
         select 1
         from t_rent_battery_order
-        where electricity_cabinet_id = #{electricityCabinetId}
+        where type = 2
+          and electricity_cabinet_id = #{electricityCabinetId}
           and cell_no = #{oldCellNo}
           and create_time &gt; #{createTime} limit 1
     </select>
