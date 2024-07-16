@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2024-07-08-17:20
  */
 @Configuration
-@ConfigurationProperties("alipay")
+@ConfigurationProperties(prefix = "alipay")
 @Data
 @RefreshScope
 public class AliPayConfig {
