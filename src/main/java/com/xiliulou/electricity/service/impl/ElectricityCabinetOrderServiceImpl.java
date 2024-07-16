@@ -426,6 +426,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private void isConformSpecialScene(ElectricityCabinetOrderVO electricityCabinetOrder, Integer tenantId) {
+        if (Objects.isNull(electricityCabinetOrder.getElectricityCabinetId()) || Objects.isNull(electricityCabinetOrder.getOldCellNo())) {
+            log.warn("isConformSpecialScene.electricityCabinetOrder info is null, eid is{}", electricityCabinetOrder.getElectricityCabinetId());
+            return;
+        }
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         
         if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen())) {
@@ -888,6 +892,22 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("self open cell order  WARN! not find cellNO! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
+        
+        // 校验
+        if (Objects.nonNull(electricityCabinetOrder.getElectricityCabinetId()) && Objects.nonNull(electricityExceptionOrderStatusRecord.getCellNo())) {
+            Integer isExistNewExchangeOrder = electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            Integer isExistNewReturnOrder = rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            Integer isExistNewOperRecord = electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            log.debug("selfOpenCell.isExistNewExchangeOrder is {} ,isExistNewReturnOrder is {},isExistNewOperRecord is {}", isExistNewExchangeOrder, isExistNewReturnOrder,
+                    isExistNewOperRecord);
+            if (Objects.nonNull(isExistNewExchangeOrder) || Objects.nonNull(isExistNewReturnOrder) || Objects.nonNull(isExistNewOperRecord)) {
+                return R.fail("ELECTRICITY.100274", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作。");
+            }
+        }
+       
         
         try {
             ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecordUpdate = new ElectricityExceptionOrderStatusRecord();
