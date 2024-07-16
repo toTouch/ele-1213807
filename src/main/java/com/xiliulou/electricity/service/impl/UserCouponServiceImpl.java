@@ -332,24 +332,12 @@ public class UserCouponServiceImpl implements UserCouponService {
     
     @Override
     public void handelUserCouponExpired() {
-        //分页只修改200条
-       /* List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(System.currentTimeMillis(), 0, 200);
-        if (!DataUtil.collectionIsUsable(userCouponList)) {
-            return;
-        }
-        for (UserCoupon userCoupon : userCouponList) {
-            userCoupon.setStatus(UserCoupon.STATUS_EXPIRED);
-            userCoupon.setUpdateTime(System.currentTimeMillis());
-            userCouponMapper.updateById(userCoupon);
-        }*/
-    
         int offset = 0;
         int size = 500;
         long currentTimeMillis = System.currentTimeMillis();
         
         while (true) {
             List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(currentTimeMillis, offset, size);
-            log.info("userCouponList:{}", userCouponList);
             if (org.springframework.util.CollectionUtils.isEmpty(userCouponList)) {
                 break;
             }
