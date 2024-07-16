@@ -71,4 +71,6 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     Integer batchInsert(List<UserCoupon> userCouponList);
     
     List<UserCoupon> selectListBySourceOrderId(@Param("orderId") String orderId);
+    
+    Integer batchUpdateByIds(@Param("idList") List<Long> idList,@Param("status") Integer status,@Param("updateTime") long updateTime);
 }

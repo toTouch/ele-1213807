@@ -284,116 +284,126 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public R saveBatchFromExcel(BatteryExcelV3Query batteryExcelV3Query, Long uid) {
-        Long franchiseeId = batteryExcelV3Query.getFranchiseeId();
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
-        if (Objects.isNull(franchisee)) {
-            log.error("Franchisee id is invalid! uid = {}", uid);
-            return R.fail("ELECTRICITY.0038", "请选择加盟商");
+        boolean result = redisService.setNx(CacheConstant.CACHE_BATTERY_BATCH_IMPORT_LOCK + uid, "1", 5 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-        
-        // 校验库房
-        Long warehouseId = batteryExcelV3Query.getWarehouseId();
-        if (Objects.nonNull(warehouseId)) {
-            AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(warehouseId);
-            if (Objects.isNull(assetWarehouseNameVO)) {
-                return R.fail("100564", "您选择的库房不存在，请检测后操作");
+    
+        try {
+            Long franchiseeId = batteryExcelV3Query.getFranchiseeId();
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            if (Objects.isNull(franchisee)) {
+                log.error("Franchisee id is invalid! uid = {}", uid);
+                return R.fail("ELECTRICITY.0038", "请选择加盟商");
             }
-        }
         
-        // 校验加盟商是否正在进行资产盘点
-        Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
-        if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
-            return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
-        }
-        
-        List<BatteryExcelV3DTO> batteryV3List = batteryExcelV3Query.getBatteryList();
-        if (CollectionUtils.isEmpty(batteryV3List)) {
-            return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
-        }
-        
-        if (EXCEL_MAX_COUNT_TWO_THOUSAND < batteryV3List.size()) {
-            return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
-        }
-        
-        List<ElectricityBattery> saveList = new ArrayList<>();
-        Set<String> snSet = new HashSet<>();
-        
-        for (BatteryExcelV3DTO batteryExcelV3DTO : batteryV3List) {
-            if (ObjectUtils.isEmpty(batteryExcelV3DTO)) {
-                continue;
+            // 校验库房
+            Long warehouseId = batteryExcelV3Query.getWarehouseId();
+            if (Objects.nonNull(warehouseId)) {
+                AssetWarehouseNameVO assetWarehouseNameVO = assetWarehouseService.queryById(warehouseId);
+                if (Objects.isNull(assetWarehouseNameVO)) {
+                    return R.fail("100564", "您选择的库房不存在，请检测后操作");
+                }
             }
-            
-            String sn = batteryExcelV3DTO.getSn();
-            if (StringUtils.isEmpty(sn)) {
-                continue;
+        
+            // 校验加盟商是否正在进行资产盘点
+            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode());
+            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
             }
-            
-            // 判断数据库中是否已经存在该电池
-            Integer exist = electricitybatterymapper.existBySn(sn);
-            if (Objects.nonNull(exist)) {
-                continue;
+        
+            List<BatteryExcelV3DTO> batteryV3List = batteryExcelV3Query.getBatteryList();
+            if (CollectionUtils.isEmpty(batteryV3List)) {
+                return R.fail("100601", "Excel模版中电池数据为空，请检查修改后再操作");
             }
-            snSet.add(sn);
-            
-            // 构建ElectricityBattery持久化对象
-            ElectricityBattery electricityBattery = new ElectricityBattery();
-            
-            electricityBattery.setSn(sn);
-            electricityBattery.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
-            electricityBattery.setVoltage(ObjectUtils.isEmpty(batteryExcelV3DTO.getV()) ? 0 : batteryExcelV3DTO.getV());
-            electricityBattery.setCapacity(ObjectUtils.isEmpty(batteryExcelV3DTO.getC()) ? 0 : batteryExcelV3DTO.getC());
-            electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
-            electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
-            electricityBattery.setCreateTime(System.currentTimeMillis());
-            electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBattery.setPower(0.0);
-            electricityBattery.setExchangeCount(0);
-            electricityBattery.setChargeStatus(0);
-            electricityBattery.setHealthStatus(0);
-            electricityBattery.setDelFlag(ElectricityBattery.DEL_NORMAL);
-            electricityBattery.setStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE);
-            electricityBattery.setTenantId(TenantContextHolder.getTenantId());
-            electricityBattery.setFranchiseeId(franchiseeId);
-            
-            electricityBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
-            electricityBattery.setWarehouseId(warehouseId);
-            saveList.add(electricityBattery);
-        }
         
-        if (CollectionUtils.isEmpty(snSet)) {
-            return R.fail("100603", "Excel模版中所有电池数据均已存在，请勿重复导入");
-        }
-        
-        Map<String, String> headers = new HashMap<>();
-        String time = String.valueOf(System.currentTimeMillis());
-        headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
-        headers.put(CommonConstant.INNER_HEADER_TIME, time);
-        headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
-        headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
-        
-        BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
-        query.setJsonBatterySnList(JsonUtil.toJson(snSet));
-        
-        // 线程池异步执行:保存到BMS系统中
-        bmsBatteryInsertThread.execute(() -> {
-            R r = batteryPlatRetrofitService.batchSave(headers, query);
-            if (!r.isSuccess()) {
-                log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), uid);
+            if (EXCEL_MAX_COUNT_TWO_THOUSAND < batteryV3List.size()) {
+                return R.fail("100600", "Excel模版中数据不能超过2000条，请检查修改后再操作");
             }
-        });
         
-        // 保存到本地数据库
-        insertBatch(saveList);
+            List<ElectricityBattery> saveList = new ArrayList<>();
+            Set<String> snSet = new HashSet<>();
         
-        // 异步记录
-        if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
-            List<String> snList = saveList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-            
-            assetWarehouseRecordService.asyncRecordByWarehouseId(TenantContextHolder.getTenantId(), uid, warehouseId, snList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
-                    WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_IN.getCode());
+            for (BatteryExcelV3DTO batteryExcelV3DTO : batteryV3List) {
+                if (ObjectUtils.isEmpty(batteryExcelV3DTO)) {
+                    continue;
+                }
+                
+                String sn = batteryExcelV3DTO.getSn();
+                if (StringUtils.isEmpty(sn)) {
+                    continue;
+                }
+                
+                // 判断数据库中是否已经存在该电池
+                Integer exist = electricitybatterymapper.existBySn(sn);
+                if (Objects.nonNull(exist)) {
+                    continue;
+                }
+                snSet.add(sn);
+                
+                // 构建ElectricityBattery持久化对象
+                ElectricityBattery electricityBattery = new ElectricityBattery();
+                
+                electricityBattery.setSn(sn);
+                electricityBattery.setModel(batteryModelService.analysisBatteryTypeByBatteryName(sn));
+                electricityBattery.setVoltage(ObjectUtils.isEmpty(batteryExcelV3DTO.getV()) ? 0 : batteryExcelV3DTO.getV());
+                electricityBattery.setCapacity(ObjectUtils.isEmpty(batteryExcelV3DTO.getC()) ? 0 : batteryExcelV3DTO.getC());
+                electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
+                electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
+                electricityBattery.setCreateTime(System.currentTimeMillis());
+                electricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBattery.setPower(0.0);
+                electricityBattery.setExchangeCount(0);
+                electricityBattery.setChargeStatus(0);
+                electricityBattery.setHealthStatus(0);
+                electricityBattery.setDelFlag(ElectricityBattery.DEL_NORMAL);
+                electricityBattery.setStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE);
+                electricityBattery.setTenantId(TenantContextHolder.getTenantId());
+                electricityBattery.setFranchiseeId(franchiseeId);
+                
+                electricityBattery.setStockStatus(StockStatusEnum.UN_STOCK.getCode());
+                electricityBattery.setWarehouseId(warehouseId);
+                saveList.add(electricityBattery);
+            }
+        
+            if (CollectionUtils.isEmpty(snSet)) {
+                return R.fail("100603", "Excel模版中所有电池数据均已存在，请勿重复导入");
+            }
+        
+            Map<String, String> headers = new HashMap<>();
+            String time = String.valueOf(System.currentTimeMillis());
+            headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+            headers.put(CommonConstant.INNER_HEADER_TIME, time);
+            headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+            headers.put(CommonConstant.INNER_TENANT_ID, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode());
+        
+            BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
+            query.setJsonBatterySnList(JsonUtil.toJson(snSet));
+        
+            // 线程池异步执行:保存到BMS系统中
+            bmsBatteryInsertThread.execute(() -> {
+                R r = batteryPlatRetrofitService.batchSave(headers, query);
+                if (!r.isSuccess()) {
+                    log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), uid);
+                }
+            });
+        
+            // 保存到本地数据库
+            insertBatch(saveList);
+        
+            // 异步记录
+            if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+                List<String> snList = saveList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
+                
+                assetWarehouseRecordService.asyncRecordByWarehouseId(TenantContextHolder.getTenantId(), uid, warehouseId, snList, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode(),
+                        WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_BATCH_IN.getCode());
+            }
+        
+            return R.ok();
+        } finally {
+            redisService.delete(CacheConstant.CACHE_BATTERY_BATCH_IMPORT_LOCK + uid);
+    
         }
-        
-        return R.ok();
     }
     
     @Slave
