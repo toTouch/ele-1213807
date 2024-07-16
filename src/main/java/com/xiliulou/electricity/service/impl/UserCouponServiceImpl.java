@@ -338,7 +338,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         while (true) {
             List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(currentTimeMillis, offset, size);
-            if (org.springframework.util.CollectionUtils.isEmpty(userCouponList)) {
+            if (CollectionUtils.isEmpty(userCouponList)) {
                 return;
             }
     
