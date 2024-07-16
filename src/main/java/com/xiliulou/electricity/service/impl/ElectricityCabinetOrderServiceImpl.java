@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -72,6 +73,8 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -102,6 +105,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -194,6 +198,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private ElectricityCabinetPhysicsOperRecordService electricityCabinetPhysicsOperRecordService;
+    
+    
+    TtlXllThreadPoolExecutorServiceWrapper executorServiceWrapper = TtlXllThreadPoolExecutorsSupport
+            .get(XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_ORDER_LIST", 3, "ele_user_order_list_thread"));
+    
     
     /**
      * 修改数据
@@ -432,18 +441,44 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
                 && (System.currentTimeMillis() - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 <= 3) {
-            log.debug("isConformSpecialScene start selfOpen check, orderId is {}", electricityCabinetOrder.getOrderId());
-            Integer isExistNewExchangeOrder = electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
-                    electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            CompletableFuture<Integer> isExistNewExchangeOrderFuture = CompletableFuture.supplyAsync(() -> {
+                return electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
+                        electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            }, executorServiceWrapper).exceptionally(e -> {
+                log.error("isConformSpecialScene.isExistNewExchangeOrderFuture is error !", e);
+                return null;
+            });
             
-            Integer isExistNewReturnOrder = rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
-                    electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            CompletableFuture<Integer> isExistNewReturnOrderFuture = CompletableFuture.supplyAsync(() -> {
+                return rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
+                        electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            }, executorServiceWrapper).exceptionally(e -> {
+                log.error("isConformSpecialScene.isExistNewReturnOrderFuture is error !", e);
+                return null;
+            });
             
-            Integer isExistNewOperRecord = electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
-                    electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
-            if (Objects.isNull(isExistNewExchangeOrder) && Objects.isNull(isExistNewReturnOrder) && Objects.isNull(isExistNewOperRecord)) {
-                electricityCabinetOrder.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+            CompletableFuture<Integer> isExistNewOperRecordFuture = CompletableFuture.supplyAsync(() -> {
+                return electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
+                        electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            }, executorServiceWrapper).exceptionally(e -> {
+                log.error("isConformSpecialScene.isExistNewOperRecordFuture is error !", e);
+                return null;
+            });
+            
+            try {
+                CompletableFuture.allOf(isExistNewExchangeOrderFuture,isExistNewReturnOrderFuture,isExistNewOperRecordFuture).get();
+                Integer isExistNewExchangeOrder = isExistNewExchangeOrderFuture.get();
+                Integer isExistNewReturnOrder = isExistNewReturnOrderFuture.get();
+                Integer isExistNewOperRecord = isExistNewOperRecordFuture.get();
+                log.debug("isConformSpecialScene start selfOpen check, orderId is {}，isExistNewExchangeOrder is {},isExistNewReturnOrder is {},isExistNewOperRecord is {} ",
+                        electricityCabinetOrder.getOrderId(), isExistNewExchangeOrder, isExistNewReturnOrder, isExistNewOperRecord);
+                if (Objects.isNull(isExistNewExchangeOrder) && Objects.isNull(isExistNewReturnOrder) && Objects.isNull(isExistNewOperRecord)) {
+                    electricityCabinetOrder.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+                }
+            } catch (Exception e) {
+                log.error("isConformSpecialScene.complateFuture is error", e);
             }
+            
         }
         
     }
