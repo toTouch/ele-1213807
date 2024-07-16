@@ -79,4 +79,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     Integer countSuccessOrderByUid(Long uid);
     
     List<ElectricityMemberCardOrder> selectListByOrderIds(@Param("orderIdList") List<String> orderIdList);
+    
+    List<ElectricityMemberCardOrderVO> selectListSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
 }
