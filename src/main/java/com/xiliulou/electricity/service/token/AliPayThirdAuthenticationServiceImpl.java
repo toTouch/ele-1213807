@@ -326,7 +326,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     private String decryptAliPayAuthCodeData(String code, String appId, AlipayAppConfig alipayAppConfig) {
         
         // 初始化SDK TODO 优化单例
-        AlipaySystemOauthTokenResponse response = null;
+         String openId = null;
         try {
             AlipayClient alipayClient = new DefaultAlipayClient(getAlipayConfig(appId, alipayAppConfig));
             // 构造请求参数以调用接口
@@ -338,18 +338,20 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             request.setCode(code);
             // 设置授权方式
             request.setGrantType(GRANT_TYPE);
-            
-            response = alipayClient.execute(request);
+    
+            AlipaySystemOauthTokenResponse response = alipayClient.execute(request);
             if (!response.isSuccess()) {
-                log.error("ALIPAY TOKEN ERROR!acquire openId failed,msg={}", response.getBody());
+                log.error("ALIPAY TOKEN ERROR!acquire openId failed,msg={}", response);
                 throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
             }
+            
+            openId=response.getOpenId();
         } catch (AlipayApiException e) {
             log.error("ALIPAY TOKEN ERROR!acquire openId failed", e);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
         }
         
-        return response.getOpenId();
+        return openId;
     }
     
     /**
