@@ -58,7 +58,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -573,6 +572,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
         newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+    
+        //若柜机正在使用中
+        if (ElectricityCabinetOrder.INIT_DEVICE_USING.equals(exchangeOrderRsp.getOrderStatus())) {
+            newElectricityCabinetOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
+        }
+        
         electricityCabinetOrderService.update(newElectricityCabinetOrder);
         
         //判断是否满足可以自助开仓
