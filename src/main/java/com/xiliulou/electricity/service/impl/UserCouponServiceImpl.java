@@ -339,7 +339,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         while (true) {
             List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(currentTimeMillis, offset, size);
             if (org.springframework.util.CollectionUtils.isEmpty(userCouponList)) {
-                break;
+                return;
             }
     
             List<Long> idList = userCouponList.parallelStream().map(UserCoupon::getId).collect(Collectors.toList());
