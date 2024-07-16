@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -131,6 +133,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private UserInfoGroupService userInfoGroupService;
+    
+    @Resource
+    private TenantService tenantService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -895,6 +900,84 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryMemberCardVO> listMemberCardForSort() {
         
         return batteryMemberCardMapper.listMemberCardForSort(TenantContextHolder.getTenantId());
+    }
+    
+    @Override
+    @Slave
+    public List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query) {
+        // 当前端传递型号为字符串0时，为标准型号即套餐不分型号，t_member_card_battery_type中未存关联数据
+        if (StringUtils.isNotEmpty(query.getBatteryModel()) && !(BatteryMemberCardConstants.REGARDLESS_OF_MODEL.equals(query.getBatteryModel()))) {
+            query.setOriginalBatteryModel(query.getBatteryModel());
+            query.setBatteryModel(null);
+        }
+    
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectListSuperAdminPage(query);
+    
+        return list.parallelStream().map(item -> {
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            
+            if (Objects.nonNull(item.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
+                batteryMemberCardVO.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                batteryMemberCardVO.setFranchiseeName(franchisee.getName());
+            }
+        
+            // 设置电池型号
+            if (!item.getBatteryType().isEmpty()) {
+            
+                List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
+                batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
+            }
+        
+            // 设置优惠券
+            if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
+                List<CouponSearchVo> coupons = new ArrayList<>();
+                HashSet<Integer> couponIdsSet = new HashSet<>();
+                if (Objects.nonNull(item.getCouponId())) {
+                    couponIdsSet.add(item.getCouponId());
+                }
+                if (StringUtils.isNotBlank(item.getCouponIds())) {
+                    couponIdsSet.addAll(JsonUtil.fromJsonArray(item.getCouponIds(), Integer.class));
+                }
+            
+                if (!CollectionUtils.isEmpty(couponIdsSet)) {
+                    couponIdsSet.forEach(couponId -> {
+                        CouponSearchVo couponSearchVo = new CouponSearchVo();
+                        Coupon coupon = couponService.queryByIdFromCache(couponId);
+                        if (Objects.nonNull(coupon)) {
+                            BeanUtils.copyProperties(coupon, couponSearchVo);
+                            couponSearchVo.setId(coupon.getId().longValue());
+                            coupons.add(couponSearchVo);
+                        }
+                    });
+                }
+                batteryMemberCardVO.setCoupons(coupons);
+            }
+        
+            // 设置用户分组
+            if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
+                List<SearchVo> userInfoGroups = new ArrayList<>();
+                List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
+            
+                if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
+                    for (Long userInfoGroupId : userInfoGroupIds) {
+                        SearchVo searchVo = new SearchVo();
+                        UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(userInfoGroupId);
+                        if (Objects.nonNull(userInfoGroup)) {
+                            BeanUtils.copyProperties(userInfoGroup, searchVo);
+                            userInfoGroups.add(searchVo);
+                        }
+                    }
+                }
+                batteryMemberCardVO.setUserInfoGroups(userInfoGroups);
+            }
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

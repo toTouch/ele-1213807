@@ -97,4 +97,6 @@ public interface BatteryMemberCardService {
     Integer batchUpdateSortParam(List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
     List<BatteryMemberCardVO> listMemberCardForSort();
+    
+    List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
 }

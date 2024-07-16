@@ -753,5 +753,97 @@
         </if>
         order by id desc
     </select>
+    <sql id="column">
+        tbmc.id,
+        tbmc.NAME,
+        tbmc.deposit,
+        tbmc.rent_price,
+        tbmc.rent_price_unit,
+        tbmc.valid_days,
+        tbmc.rent_unit,
+        tbmc.franchisee_id,
+        tbmc.rent_type,
+        tbmc.send_coupon,
+        tbmc.STATUS,
+        tbmc.limit_count,
+        tbmc.use_count,
+        tbmc.coupon_id,
+        tbmc.is_refund,
+        tbmc.refund_limit,
+        tbmc.free_deposite,
+        tbmc.service_charge,
+        tbmc.remark,
+        tbmc.business_type,
+        tbmc.del_flag,
+        tbmc.tenant_id,
+        tbmc.create_time,
+        tbmc.update_time,
+        tbmc.sort_param,
+        tbmc.coupon_ids,
+        tbmc.user_info_group_ids,
+        tbmc.group_type,
+        tbmc.tenant_id
+    </sql>
+    <sql id="pageFilter">
+        <where>
+            <if test="businessType != null">
+                and tbmc.business_type = #{businessType}
+            </if>
+        
+            <if test="franchiseeId != null">
+                and tbmc.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and tbmc.status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and tbmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and tbmc.rent_type = #{rentType}
+            </if>
+            <if test="rentType != null">
+                and tbmc.group_type = 0
+            </if>
+            <if test="rentUnit != null">
+                and tbmc.rent_unit = #{rentUnit}
+            </if>
+            <if test="tenantId != null">
+                and tbmc.tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and tbmc.del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and tbmc.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="originalBatteryModel != null and originalBatteryModel != ''">
+                and tmcbt.battery_type = #{originalBatteryModel}
+            </if>
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and JSON_CONTAINS(tbmc.user_info_group_ids, #{userInfoGroupId})
+            </if>
+            <if test="userInfoGroupId != null and userInfoGroupId != ''">
+                and tbmc.group_type = 1
+            </if>
+            <if test="batteryModel != null and batteryModel != ''">
+                and tmcbt.mid is null
+            </if>
+        </where>
+    </sql>
+    <select id="selectListSuperAdminPage" resultType="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_battery_member_card tbmc
+        LEFT JOIN t_member_card_battery_type tmcbt ON tbmc.id = tmcbt.mid
+        <include refid="pageFilter"/>
+        group by tbmc.id
+        order by tbmc.status, tbmc.sort_param desc
+        limit #{offset}, #{size}
+    </select>
 
 </mapper>

@@ -71,4 +71,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     Integer batchUpdateSortParam(@Param("sortParamQueries") List<MemberCardAndCarRentalPackageSortParamQuery> sortParamQueries);
     
     List<BatteryMemberCardVO> listMemberCardForSort(@Param("tenantId") Integer tenantId);
+    
+    List<BatteryMemberCardAndTypeVO> selectListSuperAdminPage(BatteryMemberCardQuery query);
 }

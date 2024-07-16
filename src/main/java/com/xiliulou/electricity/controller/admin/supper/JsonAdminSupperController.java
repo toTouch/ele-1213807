@@ -3,10 +3,15 @@ package com.xiliulou.electricity.controller.admin.supper;
 import cn.hutool.core.lang.Pair;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
@@ -15,7 +20,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,11 +46,17 @@ public class JsonAdminSupperController {
     @Resource
     private AdminSupperService adminSupperService;
     
-    @Autowired
+    @Resource
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
-    @Autowired
+    @Resource
     ElectricityCabinetService electricityCabinetService;
+    
+    @Resource
+    private BatteryMemberCardService batteryMemberCardService;
+    
+    @Resource
+    ElectricityCabinetOrderService electricityCabinetOrderService;
     
     
     /**
@@ -176,7 +186,9 @@ public class JsonAdminSupperController {
         return electricityCabinetService.listSuperAdminPage(electricityCabinetQuery);
     }
     
-    //电柜列表数量查询
+    /**
+     * 电柜列表数量查询
+     */
     @GetMapping(value = "/super/admin/electricityCabinet/queryCount")
     public R queryCountSuper(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "usableStatus", required = false) Integer usableStatus, @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
@@ -198,6 +210,138 @@ public class JsonAdminSupperController {
                 .onlineStatus(onlineStatus).stockStatus(stockStatus).warehouseId(warehouseId).beginTime(beginTime).endTime(endTime).eleIdList(null).build();
         
         return electricityCabinetService.queryCount(electricityCabinetQuery);
+    }
+    
+    /**
+     * 套餐配置列表
+     */
+    @GetMapping("/super/admin/battery/memberCard/page")
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "mid", required = false) Long mid, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "batteryModel", required = false) String batteryModel, @RequestParam(value = "userGroupId", required = false) Long userGroupId
+            , @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(tenantId).id(mid).franchiseeId(franchiseeId)
+                .status(status).businessType(businessType == null ? 0 : businessType).rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL)
+                .franchiseeIds(null).batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
+        
+        return R.ok(batteryMemberCardService.listSuperAdminPage(query));
+    }
+    
+    /**
+     * 套餐配置列表总数
+     */
+    @GetMapping("/super/admin/battery/memberCard/queryCount")
+    public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "batteryModel", required = false) String batteryModel, @RequestParam(value = "userGroupId", required = false) Long userGroupId
+            , @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        if (Objects.nonNull(rentType) && Objects.nonNull(userGroupId)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(franchiseeId).status(status).businessType(businessType == null ? 0 : businessType)
+                .rentType(rentType).rentUnit(rentUnit).name(name).tenantId(tenantId).delFlag(BatteryMemberCard.DEL_NORMAL).franchiseeIds(null)
+                .batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
+        
+        return R.ok(batteryMemberCardService.selectByPageCount(query));
+    }
+    
+    /**
+     * 换电订单列表
+     */
+    @GetMapping("/super/admin/electricityCabinetOrder/list")
+    public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "eid", required = false) Long eid, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "source", required = false) Integer source,
+            @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+            @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).orderId(orderId).phone(phone).status(status)
+                .eid(eid).beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).eleIdList(null).source(source).electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo).uid(uid).tenantId(tenantId).build();
+        return electricityCabinetOrderService.listSuperAdminPage(electricityCabinetOrderQuery);
+    }
+    
+    /**
+     * 换电订单列表总数
+     */
+    @GetMapping("/super/admin/electricityCabinetOrder/queryCount")
+    public R querySuperCount(@RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) String status, @RequestParam(value = "eid", required = false) Long eid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "source", required = false) Integer source, @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+            @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().orderId(orderId).phone(phone).status(status).eid(eid)
+                .beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).eleIdList(null).source(source).electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo).uid(uid).tenantId(tenantId).build();
+        return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
     
     
