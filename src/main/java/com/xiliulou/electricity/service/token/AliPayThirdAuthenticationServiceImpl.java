@@ -10,16 +10,21 @@ import com.alipay.api.request.AlipaySystemOauthTokenRequest;
 import com.alipay.api.response.AlipaySystemOauthTokenResponse;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.constant.AliPayConstant;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.AliPayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.AlipayUserPhoneDTO;
+import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
@@ -34,7 +39,7 @@ import com.xiliulou.security.bean.SecurityUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -47,9 +52,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author zzlong
@@ -70,7 +73,12 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
      */
     private static final String ENCRYPT_TYPE = "AES";
     
-    private static final String DECRYPT_ALIPAY_FLAG="Success";
+    private static final String DECRYPT_ALIPAY_FLAG = "Success";
+    
+    /**
+     * 授权类型
+     */
+    private static final String GRANT_TYPE = "authorization_code";
     
     @Autowired
     RedisService redisService;
@@ -96,6 +104,12 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     @Autowired
     NewUserActivityService newUserActivityService;
     
+    @Autowired
+    AlipayAppConfigService alipayAppConfigService;
+    
+    @Autowired
+    AliPayConfig aliPayConfig;
+    
     @Override
     public AbstractAuthenticationToken generateThirdAuthenticationToken(HttpServletRequest request) {
         String code = obtainCode(request);
@@ -117,41 +131,48 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             throw new AuthenticationServiceException("操作频繁！请稍后再试！");
         }
         
+        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByTenantId(tenantId);
+        if (Objects.isNull(alipayAppConfig) || StringUtils.isBlank(alipayAppConfig.getAppId()) || StringUtils.isBlank(alipayAppConfig.getPublicKey()) || StringUtils
+                .isBlank(alipayAppConfig.getAppPrivateKey())) {
+            log.warn("ALIPAY LOGIN ERROR! not found appId,publicKey,authMap={}, tenantId={}", authMap, tenantId);
+            throw new BizException("100002", "网络不佳，请重试");
+        }
+        
         //获取支付宝小程序appId TODO
-        String appId = "2021004144647049";
+        String appId = alipayAppConfig.getAppId();
         
         //解析手机号 TODO
-        String phone = decryptAliPayResponseData(data, iv);
+        String phone = decryptAliPayResponseData(data, iv, alipayAppConfig);
         
         //解析openId
-        String openId = decryptAliPayAuthCodeData(code, appId);
+        String openId = decryptAliPayAuthCodeData(code, appId, alipayAppConfig);
         log.info("ALIPAY LOGIN INFO!user login info,phone={},openId={}", phone, openId);
         
         try {
             //检查openId是否存在
-            Pair<Boolean, List<UserOauthBind>> existsOpenId = checkOpenIdExists(openId, UserOauthBind.SOURCE_ALI_PAY, tenantId);
+            Pair<Boolean, UserOauthBind> existsOpenId = checkAliPayOpenIdExists(openId, UserOauthBind.SOURCE_ALI_PAY, tenantId);
             
             //检查手机号是否存在
             Pair<Boolean, User> existPhone = checkPhoneExists(phone, User.TYPE_USER_NORMAL_ALI_PAY, tenantId);
             
             //1.两个都不存在，创建用户
-            if (!existPhone.getLeft() && !existsOpenId.getLeft()) {
+            if (Boolean.TRUE.equals(!existPhone.getLeft()) && !existsOpenId.getLeft()) {
                 return createUserAndOauthBind(phone, openId, tenantId);
             }
             
             //2.两个都存在
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
-                List<Long> uidList = existsOpenId.getRight().stream().map(UserOauthBind::getUid).collect(Collectors.toList());
                 //uid不同，异常处理
-                if (CollectionUtils.isNotEmpty(uidList) && uidList.contains(existPhone.getRight().getUid())) {
-                    log.error("ALIPAY LOGIN ERROR! two exists! third account uid not equals user account uid,phone={},openId={}", phone, openId);
+                if (!existPhone.getRight().getUid().equals(existsOpenId.getRight().getUid())) {
+                    log.error("ALIPAY LOGIN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}", existsOpenId.getRight().getUid(),
+                            existPhone.getRight().getUid());
                     throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
                 }
                 
-                //添加到user_info表中
                 Long uid = existPhone.getRight().getUid();
                 Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
-                if (!existUserInfo.getLeft()) {
+                //添加到user_info表中
+                if (Boolean.FALSE.equals(existUserInfo.getLeft())) {
                     UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
                             .phone(existPhone.getRight().getPhone()).name(existPhone.getRight().getName()).authStatus(UserInfo.AUTH_STATUS_STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
@@ -164,101 +185,86 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
                 }
                 
                 //相同登录
-                //TODO　openId
-                return createSecurityUser(existPhone.getRight(), existsOpenId.getRight().get(0));
+                return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
             }
             
             //3.如果openId存在手机号不存在，则替换以前的手机号
             if (existsOpenId.getLeft() && !existPhone.getLeft()) {
-                //这里不能为空
-                //                User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
-                //                if (Objects.isNull(user)) {
-                //                    log.error("TOKEN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
-                //                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                //                }
-                //
-                //                //这里的uid必须相同
-                //                if (!Objects.equals(user.getUid(), existsOpenId.getRight().getUid())) {
-                //                    log.error(
-                //                            "TOKEN ERROR! openId exists,phone not exists! third account uid not equals user account uid! thirdUid={},userId={}",
-                //                            existsOpenId.getRight().getUid(), user.getUid());
-                //                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                //                }
-                //
-                //                User updateUser = User.builder().uid(user.getUid()).phone(purePhoneNumber)
-                //                        .updateTime(System.currentTimeMillis()).build();
-                //                userService.updateUser(updateUser, user);
-                //                user.setPhone(purePhoneNumber);
-                //                //如果第三方账号的手机号和现在的手机号不同，就让他同步
-                //                if (!existsOpenId.getRight().getPhone().equals(purePhoneNumber)) {
-                //                    UserOauthBind existOpenUser = existsOpenId.getRight();
-                //                    existOpenUser.setPhone(purePhoneNumber);
-                //                    userOauthBindService.update(existOpenUser);
-                //                }
-                //                //添加到user_info表中
-                //                Long uid = existsOpenId.getRight().getUid();
-                //                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
-                //                if (!existUserInfo.getLeft()) {
-                //                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
-                //                            .createTime(System.currentTimeMillis()).phone(purePhoneNumber).name(user.getName())
-                //                            .delFlag(User.DEL_NORMAL)
-                //                            .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
-                //                    UserInfo userInfo = userInfoService.insert(insertUserInfo);
-                //
-                //                } else {
-                //                    UserInfo updateUserInfo = existUserInfo.getRight();
-                //                    if (!Objects.equals(purePhoneNumber, updateUserInfo.getPhone())) {
-                //                        updateUserInfo.setPhone(purePhoneNumber);
-                //                        updateUserInfo.setUid(uid);
-                //                        updateUserInfo.setTenantId(tenantId);
-                //                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                //                        userInfoService.update(updateUserInfo);
-                //                    }
-                //                }
-                //                return createSecurityUser(user, existsOpenId.getRight());
+                User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
+                if (Objects.isNull(user)) {
+                    log.error("ALIPAY LOGIN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
+                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+                }
                 
+                //这里的uid必须相同
+                if (!Objects.equals(user.getUid(), existsOpenId.getRight().getUid())) {
+                    log.error("ALIPAY LOGIN ERROR! openId exists,phone not exists! third account uid not equals user account uid! thirdUid={},userId={}",
+                            existsOpenId.getRight().getUid(), user.getUid());
+                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+                }
+                
+                User updateUser = User.builder().uid(user.getUid()).phone(phone).updateTime(System.currentTimeMillis()).build();
+                userService.updateUser(updateUser, user);
+                //                user.setPhone(phone);
+                //如果第三方账号的手机号和现在的手机号不同，就让他同步
+                if (!existsOpenId.getRight().getPhone().equals(phone)) {
+                    UserOauthBind existOpenUser = existsOpenId.getRight();
+                    existOpenUser.setPhone(phone);
+                    userOauthBindService.update(existOpenUser);
+                }
+                
+                Long uid = existsOpenId.getRight().getUid();
+                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
+                if (!existUserInfo.getLeft()) {
+                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone)
+                            .name(user.getName()).delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
+                    userInfoService.insert(insertUserInfo);
+                    
+                } else {
+                    UserInfo updateUserInfo = existUserInfo.getRight();
+                    if (!Objects.equals(phone, updateUserInfo.getPhone())) {
+                        updateUserInfo.setPhone(phone);
+                        updateUserInfo.setUid(uid);
+                        updateUserInfo.setTenantId(tenantId);
+                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                        userInfoService.update(updateUserInfo);
+                    }
+                }
+                
+                return createSecurityUser(user, existsOpenId.getRight());
             }
             
             //4.如果openId不存在手机号存在，则
             if (!existsOpenId.getLeft() && existPhone.getLeft()) {
+                UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_ALI_PAY, tenantId);
+                if (Objects.nonNull(userOauthBind)) {
+                    if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
+                        log.error("ALIPAY LOGIN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
+                                userOauthBind.getUid(), existPhone.getRight().getUid());
+                        throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+                    }
+                    
+                    //这里更改openId
+                    userOauthBind.setThirdId(openId);
+                    userOauthBind.setUpdateTime(System.currentTimeMillis());
+                    userOauthBindService.update(userOauthBind);
+                } else {
+                    userOauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).phone(existPhone.getRight().getPhone())
+                            .uid(existPhone.getRight().getUid()).thirdId(openId).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).tenantId(tenantId)
+                            .accessToken("").refreshToken("").thirdNick("").build();
+                    userOauthBindService.insert(userOauthBind);
+                }
                 
-                //                UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(),
-                //                        UserOauthBind.SOURCE_WX_PRO, tenantId);
-                //                if (Objects.nonNull(userOauthBind)) {
-                //                    //这里uid必须相同
-                //                    if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
-                //                        log.error(
-                //                                "TOKEN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
-                //                                userOauthBind.getUid(), existPhone.getRight().getUid());
-                //                        throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                //                    }
-                //
-                //                    //这里更改openId
-                //                    userOauthBind.setThirdId(result.getOpenid());
-                //                    userOauthBind.setUpdateTime(System.currentTimeMillis());
-                //                    userOauthBindService.update(userOauthBind);
-                //                } else {
-                //                    userOauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis())
-                //                            .updateTime(System.currentTimeMillis()).phone(existPhone.getRight().getPhone())
-                //                            .uid(existPhone.getRight().getUid()).thirdId(result.getOpenid())
-                //                            .source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).tenantId(tenantId)
-                //                            .accessToken("").refreshToken("").thirdNick("").build();
-                //                    userOauthBindService.insert(userOauthBind);
-                //                }
-                //                //添加到user_info表中
-                //                Long uid = existPhone.getRight().getUid();
-                //                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
-                //                if (!existUserInfo.getLeft()) {
-                //                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
-                //                            .createTime(System.currentTimeMillis()).phone(existPhone.getRight().getPhone())
-                //                            .name(existPhone.getRight().getName())
-                //                            .delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId)
-                //                            .build();
-                //                    UserInfo userInfo = userInfoService.insert(insertUserInfo);
-                //
-                //                }
-                //                return createSecurityUser(existPhone.getRight(), userOauthBind);
+                Long uid = existPhone.getRight().getUid();
+                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
+                if (!existUserInfo.getLeft()) {
+                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
+                            .phone(existPhone.getRight().getPhone()).name(existPhone.getRight().getName()).delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .tenantId(tenantId).build();
+                    userInfoService.insert(insertUserInfo);
+                }
                 
+                return createSecurityUser(existPhone.getRight(), userOauthBind);
             }
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
@@ -273,9 +279,9 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
     }
     
-    public Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer source, Integer tenantId) {
-        List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid, source, tenantId);
-        return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);
+    public Pair<Boolean, UserOauthBind> checkAliPayOpenIdExists(String openid, Integer source, Integer tenantId) {
+        UserOauthBind userOauthBind = userOauthBindService.queryOneByOpenIdAndSource(openid, source, tenantId);
+        return Objects.nonNull(userOauthBind) ? Pair.of(true, userOauthBind) : Pair.of(false, null);
     }
     
     private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber, Integer source, Integer tenantId) {
@@ -317,13 +323,12 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         return new SecurityUser(oauthBind.getThirdId(), user.getPhone(), user.getUid(), user.getUserType(), user.getLoginPwd(), user.isLock(), authorities, user.getTenantId());
     }
     
-    private String decryptAliPayAuthCodeData(String code, String appId) {
+    private String decryptAliPayAuthCodeData(String code, String appId, AlipayAppConfig alipayAppConfig) {
         
         // 初始化SDK TODO 优化单例
         AlipaySystemOauthTokenResponse response = null;
         try {
-            AlipayClient alipayClient = new DefaultAlipayClient(getAlipayConfig(appId));
-            
+            AlipayClient alipayClient = new DefaultAlipayClient(getAlipayConfig(appId, alipayAppConfig));
             // 构造请求参数以调用接口
             AlipaySystemOauthTokenRequest request = new AlipaySystemOauthTokenRequest();
             
@@ -332,7 +337,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             // 设置授权码
             request.setCode(code);
             // 设置授权方式
-            request.setGrantType("authorization_code");
+            request.setGrantType(GRANT_TYPE);
             
             response = alipayClient.execute(request);
             if (!response.isSuccess()) {
@@ -354,59 +359,57 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
      * @param sign
      * @return
      */
-    private String decryptAliPayResponseData(String content, String sign) {
+    private String decryptAliPayResponseData(String content, String sign, AlipayAppConfig alipayAppConfig) {
         String phone = "";
         //1.判断是否为加密内容
         boolean isDataEncrypted = !content.startsWith("{");
-    
         //2. 验签
         String signContent = content;
         //支付宝公钥
-        String signVeriKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjAvf3qdHU+2h/2RvPsONumsEfThA/x4gL65UHrDISNyOf4kWITKiH9bahLXF5Y0v/NZS9tTUND7bq7EK2Qi7GJz6thcFyVe2hUgKMbOdfnZTXMmgVR8FOIbyoclhRZd3TSJRN2DvfZ6EW0uz7dDk9QUsKEshN759czM1wlGWBugrUXY7HEF4HJoHJ/5QuRBaTN36VFiPGPzjtvpvW3Mo9632a6uj4co6jEzXg2W8RGLyiRCWRUFBs9PRJGf2BccvZjanV3AjPGybpyOxEeJVQTziqcyAYLYCYwZE4CQkYKbpksOmLOfWZkR2qawp97K6dyYX0IjV/A5uxUrRBjBJwQIDAQAB";
+        String signVeriKey = alipayAppConfig.getPublicKey();
         //支付宝小程序对应的加解密密钥
-        String decryptKey = "qnyJJ6MM7oN7dLp22MbAww==";
+        String decryptKey = alipayAppConfig.getLoginDecryptionKey();
         if (isDataEncrypted) {
             signContent = "\"" + signContent + "\"";
         }
-    
-        try {
         
+        try {
             if (!AlipaySignature.rsaCheck(signContent, sign, signVeriKey, CharEncoding.UTF_8, SIGN_TYPE)) {
                 //验签不通过（异常或者报文被篡改），终止流程（不需要做解密）
                 log.error("ALIPAY TOKEN ERROR!signature verification failed");
                 throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
             }
-        
+            
             //3. 解密
             String plainData = "";
             if (isDataEncrypted) {
                 plainData = AlipayEncrypt.decryptContent(content, ENCRYPT_TYPE, decryptKey, CharEncoding.UTF_8);
             }
-        
+            
             //4.获取手机号
             AlipayUserPhoneDTO alipayUserPhoneDTO = JsonUtil.fromJson(plainData, AlipayUserPhoneDTO.class);
             if (!DECRYPT_ALIPAY_FLAG.equals(alipayUserPhoneDTO.getMsg())) {
                 log.error("ALIPAY TOKEN ERROR!convert user phone failed,msg={}", plainData);
             }
-        
+            
             phone = alipayUserPhoneDTO.getMobile();
         } catch (AlipayApiException e) {
             log.error("ALIPAY TOKEN ERROR!acquire user phone failed", e);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
         }
-    
+        
         return phone;
     }
     
-    private static AlipayConfig getAlipayConfig(String appId) {
+    private AlipayConfig getAlipayConfig(String appId, AlipayAppConfig alipayAppConfig) {
         //TODO 读取配置文件
-        String privateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCrRFmF7E6HnOCiBCr084z9RFBSTXgpMKogP3weZAADEssUQH7uFBPKHez1K04UUUfnhRRqmsuz9l4D/3/jXFmdsZJROtqEHR4+uh8efEFsilKoI4jyCGfP6/gJzy7yDsS/LU6TqoODkhY5NWtmQiOyVDNgifb994YvcZq2Hs4CMJ4NxZrj89MnieUWVTwtig1vuE3wBhKX4/fTZJsX+ATWpfd7pR5evO1rjCmObZmeJ0wh/jRC0/eX7YS4ml2FPfPSRl3LQYWO+dRPgQGxRZCeXnn2EKTjtz/efKjP12miXdF7htsX2bT+J6HRlomzq2pYDLkrHJDa/xrYXawcU09VAgMBAAECggEAVBh3rN7foI9TbbqGLUj5zdKhbghEHFWc88C4fWO07c1okkUpDlYlcXVISQo+iJNwryoVYFMp+u/aMjRe45ERH/F1WxV+/qgdlcdmSF3S8izpcU4hjFa8QsgnPwnQj2LZENZ6Yt+zPAObjfPBDLElPgdCQwD7mrDT3q/1u79cgI327R53scI+fDyaTpq1/aKLGtj4k0reIYAD/FMQUaNB49z14Zwt6WaHuFSWT3D6sx3KuZVRGjUKUTSjGlS7AsU4WyHAxHZnitP48zga1pimtVhPDpZ+OzrjxHFyqNoPFLWDelmHBUewV/8ons4q32SQ5/9yULfW5CYvllWTcGpr8QKBgQDys5IvmPeS2AlLfzNnTr0UcZDyDHAxCp2mSVMZHdqcv02FAtPejEvW/hdOeqgJwDKqp9Sazqy03BNiTrVvsDxcAZNIwP1X//WFL6h+31AijfxE7hVJNHfJSUfRnmPjLT9BzDeJ9GUoTPvoaqTk4kZ+Z2QrH9NeVxTQR/vtNIjerwKBgQC0psBIw+vs0wacHEuDJrY/HX8wg88FMD6rblP6CDcGudUr76cG0WuCkH0r/3GZ486GwKVMUsmz5zuBFt/kANqOO/uy0qZYgdjHmuvHNr1qIlanJmwX7Ia36qr/x0ppu6FHzV9oUE0kaslkdMuzKCSLnQeuZ50EV9WkO0BZ9A8TOwKBgALdyA4z2kirsIBpwiuoLGd/Z9zT9Mc/ftkl6ItVZO2Q/NNjUyk/su2ZFqFgpXdoA7EsRkCFzFheeQQiNdZZ2HylsB2d2eAeL8Ig6/aDoKin0KDnxuyUaA3Chcyd+EQIlsSqKsXAUymErzzxdX0WhwqbIf24ZICqup4zG3CTvEIVAoGBALFE6G7/AqX0Ngo+ocLi2/d3RHYhAaa/vt+Odg1mvkh1Vr+0fZxtKCiJDKt+EMXIC8OjixEoNBG7mGKGRdGBHPZx2f2SQ/WaBVVpqnBkQN7DL3D6fRvE2DXlq0MvFtBGdG73EuZT1j8kItfW3ITDoYj24LC9sBCw+E4ebnlWyuw9AoGAX1vbzP2lHcHIOVombcDmiLN/uddNBS9wis5isncPZVwpF2vPGU6voHOJYrTvRwnX8YsMjfAR83FW+KmErVrpeN6/xebh1xMCxRJHQWeTzhRlxwIdrzQlSz2e1Xo9UmEyuL0yn9VvIyn1ephmhWxgIWeMHJajC3cM+PyQj5vXaYY=";
-        String alipayPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjAvf3qdHU+2h/2RvPsONumsEfThA/x4gL65UHrDISNyOf4kWITKiH9bahLXF5Y0v/NZS9tTUND7bq7EK2Qi7GJz6thcFyVe2hUgKMbOdfnZTXMmgVR8FOIbyoclhRZd3TSJRN2DvfZ6EW0uz7dDk9QUsKEshN759czM1wlGWBugrUXY7HEF4HJoHJ/5QuRBaTN36VFiPGPzjtvpvW3Mo9632a6uj4co6jEzXg2W8RGLyiRCWRUFBs9PRJGf2BccvZjanV3AjPGybpyOxEeJVQTziqcyAYLYCYwZE4CQkYKbpksOmLOfWZkR2qawp97K6dyYX0IjV/A5uxUrRBjBJwQIDAQAB";
+        String privateKey = alipayAppConfig.getAppPrivateKey();
+        String alipayPublicKey = alipayAppConfig.getPublicKey();
         AlipayConfig alipayConfig = new AlipayConfig();
-        alipayConfig.setServerUrl("https://openapi.alipay.com/gateway.do");
+        alipayConfig.setServerUrl(aliPayConfig.getServerUrl());
         alipayConfig.setAppId(appId);
         alipayConfig.setPrivateKey(privateKey);
-        alipayConfig.setFormat("json");
+        alipayConfig.setFormat(AliPayConstant.CONFIG_FORMAT);
         alipayConfig.setAlipayPublicKey(alipayPublicKey);
         alipayConfig.setCharset(CharEncoding.UTF_8);
         alipayConfig.setSignType(SIGN_TYPE);

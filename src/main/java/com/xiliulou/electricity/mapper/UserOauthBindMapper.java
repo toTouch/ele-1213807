@@ -42,7 +42,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
      *
      * @see UserOauthBindMapper#selectListUserByPhone(String, Integer, Integer)
      */
-    @Deprecated
     UserOauthBind selectUserByPhone(@Param("phone") String phone, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
     
     Integer updateOpenIdByUid(@Param("openId") String openId, @Param("status") Integer status, @Param("uid") Long uid, @Param("tenantId") Integer tenantId,
@@ -57,4 +56,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     UserOauthBind queryOauthByOpenIdAndUid(@Param("id") Long id, @Param("openId") String openId, @Param("tenantId") Integer tenantId);
     
     List<UserOauthBind> selectOpenIdListByUidsAndTenantId(@Param("uids") List<Long> longs,@Param("tenantId") Integer tenantId);
+    
+    UserOauthBind selectOneByOpenIdAndSource(@Param("openId") String openId, @Param("source") Integer source,@Param("tenantId") Integer tenantId);
 }
