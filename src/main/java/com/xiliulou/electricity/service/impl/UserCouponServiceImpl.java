@@ -50,6 +50,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 优惠券表(TCoupon)表服务实现类
@@ -332,7 +333,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     public void handelUserCouponExpired() {
         //分页只修改200条
-        List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(System.currentTimeMillis(), 0, 200);
+       /* List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(System.currentTimeMillis(), 0, 200);
         if (!DataUtil.collectionIsUsable(userCouponList)) {
             return;
         }
@@ -340,6 +341,21 @@ public class UserCouponServiceImpl implements UserCouponService {
             userCoupon.setStatus(UserCoupon.STATUS_EXPIRED);
             userCoupon.setUpdateTime(System.currentTimeMillis());
             userCouponMapper.updateById(userCoupon);
+        }*/
+    
+        int offset = 0;
+        int size = 500;
+        long currentTimeMillis = System.currentTimeMillis();
+        
+        while (true) {
+            List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(currentTimeMillis, offset, size);
+            log.info("userCouponList:{}", userCouponList);
+            if (org.springframework.util.CollectionUtils.isEmpty(userCouponList)) {
+                break;
+            }
+    
+            List<Long> idList = userCouponList.parallelStream().map(UserCoupon::getId).collect(Collectors.toList());
+            userCouponMapper.batchUpdateByIds(idList, UserCoupon.STATUS_EXPIRED, System.currentTimeMillis());
         }
     }
     
