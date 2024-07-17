@@ -253,12 +253,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             break;
         }
         // 校验身份证是否符合年龄
-        String errMsg = idCardCheckService.checkIdNumber(tenantId, idCard);
-        if (StringUtils.isNotBlank(errMsg)){
-            return Triple.of(false, "身份证信息已存在，请核实后重新提交",null);
-        }
-    
-        return Triple.of(true, null, null);
+        return idCardCheckService.checkIdNumber(tenantId, idCard);
     }
     
     private void sendAuthenticationAuditMessage(UserInfo userInfo) {

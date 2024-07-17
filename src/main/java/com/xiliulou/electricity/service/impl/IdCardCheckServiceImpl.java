@@ -11,6 +11,7 @@ import com.xiliulou.electricity.utils.IdCardValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,14 +32,14 @@ public class IdCardCheckServiceImpl implements IdCardCheckService {
     private TenantConfig tenantConfig;
     
     @Override
-    public String checkIdNumber(Integer tenantId, String idNumber) {
+    public Triple<Boolean, String, Object> checkIdNumber(Integer tenantId, String idNumber) {
         Map<Integer, Integer> idCardAgeCheck = tenantConfig.getIdCardAgeCheck();
         if (MapUtils.isEmpty(idCardAgeCheck) || !idCardAgeCheck.containsKey(tenantId)) {
-            return null;
+            return Triple.of(true,null,null);
         }
         
         if (StringUtils.isBlank(idNumber)) {
-            return "未填写身份号，暂无法认证";
+            return Triple.of(false,"未填写身份号，暂无法认证",300860);
         }
         
         Integer age = idCardAgeCheck.get(tenantId);
@@ -47,9 +48,10 @@ public class IdCardCheckServiceImpl implements IdCardCheckService {
         }
         
         if (!IdCardValidator.isOver(idNumber, age)) {
-            return "未满" + age + "岁，暂无法认证";
+            return Triple.of(false,"未满" + age + "岁，暂无法认证",300861);
         }
-        
-        return null;
+    
+    
+        return Triple.of(true,null,null);
     }
 }
