@@ -904,7 +904,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.debug("selfOpenCell.isExistNewExchangeOrder is {} ,isExistNewReturnOrder is {},isExistNewOperRecord is {}", isExistNewExchangeOrder, isExistNewReturnOrder,
                     isExistNewOperRecord);
             if (Objects.nonNull(isExistNewExchangeOrder) || Objects.nonNull(isExistNewReturnOrder) || Objects.nonNull(isExistNewOperRecord)) {
-                return R.fail("ELECTRICITY.100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作。");
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作。");
             }
         }
        
