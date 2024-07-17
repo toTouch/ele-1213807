@@ -23,9 +23,9 @@ public class AlipayUserCertifyInfoQuery {
     @NotBlank(message = "参数不合法", groups = {UpdateGroup.class})
     private String certifyId;
     
-    @NotBlank(message = "身份证正面照片", groups = {UpdateGroup.class})
+    @NotBlank(message = "身份证正面照片不能为空", groups = {UpdateGroup.class})
     private String frontPicture;
     
-    @NotBlank(message = "身份证反面照片", groups = {UpdateGroup.class})
+    @NotBlank(message = "身份证反面照片不能为空", groups = {UpdateGroup.class})
     private String backPicture;
 }
