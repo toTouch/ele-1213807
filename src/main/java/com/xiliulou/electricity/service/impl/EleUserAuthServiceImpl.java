@@ -242,7 +242,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             idCard = eleUserAuth.getValue();
             List<UserInfo> userInfos = userInfoService.queryByIdNumber(eleUserAuth.getValue());
             if (CollectionUtils.isEmpty(userInfos)) {
-                return Triple.of(true, null, null);
+                break;
             }
             
             for (UserInfo userInfo : userInfos) {
