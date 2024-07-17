@@ -71,7 +71,7 @@ public class JsonUserFaceidController extends BaseController {
      * 获取支付宝人脸核身URL和CertifyId
      */
     @PostMapping(value = "/user/alipay/queryCertifyId")
-    public R queryAliPayCertifyId(@Validated(CreateGroup.class) AlipayUserCertifyInfoQuery query) {
+    public R queryAliPayCertifyId(@RequestBody @Validated(CreateGroup.class) AlipayUserCertifyInfoQuery query) {
         return returnTripleResult(faceidService.queryAliPayCertifyInfo(query));
     }
     
@@ -79,7 +79,7 @@ public class JsonUserFaceidController extends BaseController {
      * 查询人脸核身结果
      */
     @PostMapping(value = "/user/alipay/queryUserCertifyResult")
-    public R queryAliPayUserCertifyUrl(@Validated(UpdateGroup.class) AlipayUserCertifyInfoQuery query) {
+    public R queryAliPayUserCertifyUrl(@RequestBody @Validated(UpdateGroup.class) AlipayUserCertifyInfoQuery query) {
         return returnTripleResult(faceidService.queryAliPayUserCertifyResult(query));
     }
     
