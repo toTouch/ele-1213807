@@ -21,6 +21,7 @@ import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.IdCardCheckService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -84,6 +85,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
     @Autowired
     UserAuthMessageService userAuthMessageService;
+    
+    @Resource
+    private IdCardCheckService idCardCheckService;
+    
 
     /**
      * 新增数据
@@ -179,6 +184,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                 userInfo.setName(eleUserAuth.getValue());
             }
             if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
+                //身份证校验
+                String errorMsg = idCardCheckService.checkIdNumber(tenantId, eleUserAuth.getValue());
+                if (StringUtils.isNotBlank(errorMsg)){
+                    return R.fail(errorMsg);
+                }
+    
                 userInfo.setIdNumber(eleUserAuth.getValue());
             }
 

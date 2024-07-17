@@ -22,15 +22,14 @@ public class IdCardValidator {
     private static final String IDCARD_PATTERN = "^(1[1-5]|2[1-3]|3[1-7]|4[1-6]|5[0-4]|6[1-5]|7[1-8]|8[1-3])\\d{4}((19|20)\\d{2})(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])\\d{3}(\\d|X|x)$";
     
     
-    
-    
     /**
      * 校验身份证年龄是否满18周岁
      *
      * @param idCard 身份证号码
+     * @param minAge 最小年龄
      * @return 如果年龄满18周岁且格式正确返回true，否则返回false
      */
-    public static boolean isOver18(String idCard) {
+    public static boolean isOver18(String idCard,Integer minAge) {
         // 使用正则表达式校验身份证号码格式
         Pattern pattern = Pattern.compile(IDCARD_PATTERN);
         Matcher matcher = pattern.matcher(idCard);
@@ -45,7 +44,7 @@ public class IdCardValidator {
             Date birthDate = sdf.parse(birthStr);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(birthDate);
-            calendar.add(Calendar.YEAR, 18); // 加上18年
+            calendar.add(Calendar.YEAR, minAge);
             
             // 获取当前日期
             Date currentDate = new Date();

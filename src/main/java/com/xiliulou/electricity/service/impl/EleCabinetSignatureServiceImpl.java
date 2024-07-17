@@ -506,13 +506,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(true, "", "电子签名功能未启用！");
         }
         
-        //检测用户是否满足18周岁
-        boolean isOver18 = this.isOver18(userInfo);
-        if (!isOver18) {
-            log.warn("EleCabinetSignatureServiceImpl.checkUserEsignFinished WARN!  uid:{} Under 18,idNumber:{}", userInfo.getUid(), userInfo.getIdNumber());
-            return Triple.of(false, "000103", "");
-        }
-        
         //获取用户所属租户的签名配置信息
         EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(eleEsignConfig) || StringUtils.isBlank(eleEsignConfig.getAppId()) || StringUtils.isBlank(eleEsignConfig.getAppSecret()) || StringUtils
@@ -680,25 +673,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             userEsignRecord.setUpdateTime(System.currentTimeMillis());
             eleUserEsignRecordMapper.updateUserEsignRecord(userEsignRecord);
         }
-    }
-    
-    
-    /**
-     * 用户是否满足18周岁
-     *
-     * @param userInfo
-     * @author caobotao.cbt
-     * @date 2024/7/17 14:23
-     */
-    private boolean isOver18(UserInfo userInfo) {
-        // TODO: 2024/7/17 先进行前置条件判断 符合条件在进行校验
-        
-        if (StringUtils.isBlank(userInfo.getIdNumber())) {
-            log.warn("EleCabinetSignatureServiceImpl.isOver18 WARN! idNumber is blank uid:{}", userInfo.getUid());
-            return false;
-        }
-        
-        return IdCardValidator.isOver18(userInfo.getIdNumber());
     }
     
 }
