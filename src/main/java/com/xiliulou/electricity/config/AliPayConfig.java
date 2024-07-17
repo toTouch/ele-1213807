@@ -15,6 +15,10 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @RefreshScope
 public class AliPayConfig {
+    
+    /**
+     * 支付宝网关
+     */
     private String serverUrl;
     
     /**

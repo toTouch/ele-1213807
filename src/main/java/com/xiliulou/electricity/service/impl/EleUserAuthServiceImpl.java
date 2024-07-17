@@ -97,7 +97,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         this.eleUserAuthMapper.insert(eleUserAuth);
         return eleUserAuth;
     }
-
+    
+    @Override
+    public Integer batchInsert(List<EleUserAuth> list) {
+        return this.eleUserAuthMapper.batchInsert(list);
+    }
+    
     /**
      * 修改数据
      *

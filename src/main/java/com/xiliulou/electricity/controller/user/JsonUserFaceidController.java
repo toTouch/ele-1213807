@@ -6,11 +6,14 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.query.AlipayUserCertifyInfoQuery;
 import com.xiliulou.electricity.query.FaceidResultQuery;
 import com.xiliulou.electricity.query.UserCertifyInfoQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.FaceidService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,27 +68,19 @@ public class JsonUserFaceidController extends BaseController {
     }
     
     /**
-     * 保存人脸核身数据
-     */
-    @PostMapping(value = "/user/faceid/saveUserCertifyInfo")
-    public R saveUserCertifyInfo(@RequestBody @Validated UserCertifyInfoQuery userCertifyInfoQuery) {
-        return returnTripleResult(faceidService.saveUserCertifyInfo(userCertifyInfoQuery));
-    }
-    
-    /**
      * 获取支付宝人脸核身URL和CertifyId
      */
-    @GetMapping(value = "/user/alipay/queryCertifyId")
-    public R queryAliPayCertifyId() {
-        return returnTripleResult(faceidService.queryAliPayCertifyInfo());
+    @PostMapping(value = "/user/alipay/queryCertifyId")
+    public R queryAliPayCertifyId(@Validated(CreateGroup.class) AlipayUserCertifyInfoQuery query) {
+        return returnTripleResult(faceidService.queryAliPayCertifyInfo(query));
     }
     
     /**
      * 查询人脸核身结果
      */
-    @GetMapping(value = "/user/alipay/queryUserCertifyResult")
-    public R queryAliPayUserCertifyUrl(@RequestParam("certifyId") String certifyId) {
-        return returnTripleResult(faceidService.queryAliPayUserCertifyResult(certifyId));
+    @PostMapping(value = "/user/alipay/queryUserCertifyResult")
+    public R queryAliPayUserCertifyUrl(@Validated(UpdateGroup.class) AlipayUserCertifyInfoQuery query) {
+        return returnTripleResult(faceidService.queryAliPayUserCertifyResult(query));
     }
     
 }
