@@ -8,17 +8,12 @@ import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.EleOrderOperHistoryDetailVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 
@@ -89,7 +84,9 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
     public R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
         return R.ok(electricityCabinetOrderOperHistoryMapper.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery));
     }
-
-
-
+    
+    @Override
+    public Integer updateTenantIdByOrderId(String orderId, Integer superAdminTenantId) {
+        return electricityCabinetOrderOperHistoryMapper.updateTenantIdByOrderId(orderId, superAdminTenantId, System.currentTimeMillis());
+    }
 }

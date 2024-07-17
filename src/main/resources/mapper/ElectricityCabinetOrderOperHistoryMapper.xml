@@ -35,4 +35,10 @@
             )
         </foreach>
     </insert>
+    
+    <update id="updateTenantIdByOrderId">
+        update t_electricity_cabinet_order_oper_history set tenant_id = #{superAdminTenantId},update_time = #{updateTime}
+        where order_id = #{orderId}
+    </update>
+    
 </mapper>
