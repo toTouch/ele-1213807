@@ -178,7 +178,7 @@ public class JsonAdminSupperController {
         }
         
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder().payType(payType).phone(phone).orderId(orderId).cardType(cardType).queryStartTime(queryStartTime)
-                .queryEndTime(queryEndTime).tenantId(TenantContextHolder.getTenantId()).status(status).uid(uid).useStatus(useStatus).source(source).payType(payType).refId(refId)
+                .queryEndTime(queryEndTime).status(status).uid(uid).useStatus(useStatus).source(source).payType(payType).refId(refId)
                 .cardModel(memberCardModel).franchiseeId(franchiseeId).franchiseeIds(null).storeIds(null).cardPayCount(payCount).userName(userName).payType(payType).tenantId(tenantId)
                 .cardId(cardId).build();
         
@@ -216,7 +216,7 @@ public class JsonAdminSupperController {
         
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().offset(offset).size(size).areaId(areaId).name(name).address(address).tenantId(tenantId)
                 .usableStatus(usableStatus).stockStatus(stockStatus).warehouseId(warehouseId).onlineStatus(onlineStatus).beginTime(beginTime).endTime(endTime).eleIdList(null)
-                .id(id).tenantId(null).build();
+                .id(id).build();
         
         return electricityCabinetService.listSuperAdminPage(electricityCabinetQuery);
     }
