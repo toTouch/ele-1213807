@@ -84,5 +84,9 @@ public class BatteryMembercardRefundOrderVO {
     private Integer rentUnit;
 
     private BigDecimal rentPriceUnit;
+    
+    private Integer tenantId;
+    
+    private String tenantName;
 
 }

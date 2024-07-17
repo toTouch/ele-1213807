@@ -83,6 +83,32 @@ public class EleRefundOrderVO {
      */
     private Integer orderType;
     
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
+    public Integer getTenantId() {
+        return tenantId;
+    }
+    
+    public void setTenantId(Integer tenantId) {
+        this.tenantId = tenantId;
+    }
+    
+    public String getTenantName() {
+        return tenantName;
+    }
+    
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+    }
+    
     //private Integer refundOrderType;
     private Boolean isFreeDepositAliPay;
     

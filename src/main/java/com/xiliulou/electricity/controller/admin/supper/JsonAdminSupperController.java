@@ -5,15 +5,21 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
+import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
+import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -57,6 +63,15 @@ public class JsonAdminSupperController {
     
     @Resource
     ElectricityCabinetOrderService electricityCabinetOrderService;
+    
+    @Resource
+    private RentBatteryOrderService rentBatteryOrderService;
+    
+    @Resource
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Resource
+    private EleRefundOrderService eleRefundOrderService;
     
     
     /**
@@ -344,5 +359,186 @@ public class JsonAdminSupperController {
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
     
+    /**
+     * 租退电订单列表
+     */
+    @GetMapping(value = "/super/admin/rentBatteryOrder/list")
+    public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
     
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).beginTime(beginTime).endTime(endTime)
+                .status(status).orderId(orderId).type(type).eleIdList(null).tenantId(tenantId).build();
+        
+        return rentBatteryOrderService.listSuperAdminPage(rentBatteryOrderQuery);
+    }
+    
+    /**
+     * 租退电订单列表
+     */
+    @GetMapping(value = "/super/admin/rentBatteryOrder/queryCount")
+    public R querySuperCount(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().name(name).phone(phone).beginTime(beginTime).endTime(endTime).status(status).orderId(orderId)
+                .type(type).eleIdList(null).tenantId(tenantId).build();
+        
+        return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
+    }
+    
+    /**
+     * 租金退款审核列表
+     */
+    @GetMapping("/super/admin/battery/membercard/refund/page")
+    public R getElectricityMemberCardPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
+            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "mid", required = false) Long mid,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "payType", required = false) Integer payType,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder().uid(uid).phone(phone).refundOrderNo(refundOrderNo).startTime(beginTime)
+                .endTime(endTime).offset(offset).size(size).rentType(rentType).tenantId(tenantId).status(status).franchiseeIds(null)
+                .storeIds(null).mid(mid).payType(payType).build();
+        
+        return R.ok(batteryMembercardRefundOrderService.listSuperAdminPage(query));
+    }
+    
+    /**
+     * 租金退款审核列表总数
+     */
+    @GetMapping("/super/admin/battery/membercard/refund/queryCount")
+    public R queryCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo, @RequestParam(value = "rentType", required = false) Integer rentType,
+            @RequestParam(value = "mid", required = false) Long mid, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder().uid(uid).phone(phone).refundOrderNo(refundOrderNo).startTime(beginTime)
+                .endTime(endTime).tenantId(tenantId).status(status).rentType(rentType).payType(payType).franchiseeIds(null).storeIds(null)
+                .mid(mid).build();
+        
+        return R.ok(batteryMembercardRefundOrderService.selectPageCount(query));
+    }
+    
+    /**
+     * 退押审核列表
+     */
+    @GetMapping("/super/admin/eleRefundOrder/queryList")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "payType", required = false) Integer payType,
+            @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
+            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder().offset(offset).size(size).orderId(orderId).status(status).beginTime(beginTime).endTime(endTime)
+                .tenantId(tenantId).storeIds(null).franchiseeIds(null).phone(phone).uid(uid).orderType(orderType).payType(payType)
+                .refundOrderType(refundOrderType).name(name).refundOrderNo(refundOrderNo).build();
+        
+        return eleRefundOrderService.listSuperAdminPage(eleRefundQuery);
+    }
+    
+    /**
+     * 退押审核列表总数
+     */
+    @GetMapping("/super/admin/eleRefundOrder/queryCount")
+    public R queryCount(@RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder().orderId(orderId).status(status).storeIds(null).franchiseeIds(null).payType(payType)
+                .refundOrderType(refundOrderType).beginTime(beginTime).endTime(endTime).tenantId(tenantId).phone(phone).uid(uid).orderType(orderType)
+                .refundOrderNo(refundOrderNo).build();
+        
+        return eleRefundOrderService.queryCount(eleRefundQuery);
+    }
 }
