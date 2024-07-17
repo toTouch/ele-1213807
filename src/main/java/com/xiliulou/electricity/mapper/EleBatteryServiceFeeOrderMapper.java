@@ -55,5 +55,5 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
      */
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
-    List<EleBatteryServiceFeeOrderVo> selectListSuperAdminPage(BatteryServiceFeeQuery batteryServiceFeeQuery);
+    List<EleBatteryServiceFeeOrderVo> selectListSuperAdminPage(@Param("query") BatteryServiceFeeQuery batteryServiceFeeQuery);
 }

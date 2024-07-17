@@ -80,5 +80,5 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     
     List<ElectricityMemberCardOrder> selectListByOrderIds(@Param("orderIdList") List<String> orderIdList);
     
-    List<ElectricityMemberCardOrderVO> selectListSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
+    List<ElectricityMemberCardOrderVO> selectListSuperAdminPage(@Param("query") MemberCardOrderQuery memberCardOrderQuery);
 }

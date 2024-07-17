@@ -36,5 +36,5 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
-    List<RentBatteryOrderVO> selectListSuperAdminPage(RentBatteryOrderQuery rentBatteryOrderQuery);
+    List<RentBatteryOrderVO> selectListSuperAdminPage(@Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
 }
