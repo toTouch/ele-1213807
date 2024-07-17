@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -20,7 +21,7 @@ public interface UnionTradeOrderService {
 
 
     //集成支付回调
-    Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyIntegratedPayment(BaseOrderCallBackResource callBackResource);
 
     Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus);
 
@@ -36,8 +37,8 @@ public interface UnionTradeOrderService {
 
     UnionTradeOrder selectTradeOrderById(Long id);
 
-    Pair<Boolean, Object>  notifyMembercardInsurance(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object>  notifyMembercardInsurance(BaseOrderCallBackResource callBackResource);
 
-    Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyServiceFee(BaseOrderCallBackResource callBackResource);
     
 }

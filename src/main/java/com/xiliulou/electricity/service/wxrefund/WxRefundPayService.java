@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.wxrefund;
 
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 
 /**
@@ -13,7 +14,7 @@ public interface WxRefundPayService {
      * 执行方法
      * @param callBackResource
      */
-    void process(WechatJsapiRefundOrderCallBackResource callBackResource);
+    void process(BaseOrderRefundCallBackResource callBackResource);
 
     /**
      * 获取操作类型

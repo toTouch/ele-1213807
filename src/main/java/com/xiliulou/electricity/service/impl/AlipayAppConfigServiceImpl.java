@@ -1,13 +1,31 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Sets;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.mapper.AlipayAppConfigMapper;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 支付宝小程序配置(AlipayAppConfig)表服务实现类
@@ -22,6 +40,9 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     @Resource
     private AlipayAppConfigMapper alipayAppConfigMapper;
     
+    @Resource
+    private RedisService redisService;
+    
     @Slave
     @Override
     public AlipayAppConfig queryByAppId(String appId) {
@@ -32,6 +53,38 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     @Override
     public AlipayAppConfig queryByTenantId(Integer tenantId) {
         return this.alipayAppConfigMapper.selectByTenantId(tenantId);
+    }
+    
+    @Override
+    public AlipayAppConfig queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
+        
+        // 批量查询缓存
+        List<AlipayAppConfig> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
+        if (CollectionUtils.isEmpty(electricityPayParamsList)) {
+            log.warn("WARN! WeChat Pay parameter is not configured,tenantId={},franchiseeId={}", tenantId, franchiseeId);
+            return null;
+        }
+        
+        Map<Long, AlipayAppConfig> payParamsMap = electricityPayParamsList.stream().collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, v -> v, (k1, k2) -> k1));
+        
+        // 先取加盟商配置
+        AlipayAppConfig payParams = payParamsMap.get(franchiseeId);
+        
+        if (Objects.isNull(payParams)) {
+            // 加盟商未配置 取默认配置
+            payParams = payParamsMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+        }
+        
+        return payParams;
+    }
+    
+    @Override
+    public AlipayAppConfig queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
+        List<AlipayAppConfig> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId));
+        if (CollectionUtils.isEmpty(electricityPayParamsList)) {
+            return null;
+        }
+        return electricityPayParamsList.get(0);
     }
     
     /**
@@ -53,8 +106,9 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
      */
     @Override
     public Integer update(AlipayAppConfig alipayAppConfig) {
-        return this.alipayAppConfigMapper.update(alipayAppConfig);
-        
+        int update = this.alipayAppConfigMapper.update(alipayAppConfig);
+        redisService.delete(buildCacheKey(alipayAppConfig.getTenantId(), alipayAppConfig.getFranchiseeId()));
+        return update;
     }
     
     /**
@@ -66,5 +120,78 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     @Override
     public Integer deleteById(Long id) {
         return this.alipayAppConfigMapper.deleteById(id);
+    }
+    
+    
+    /**
+     * 批量查询缓存
+     *
+     * @param tenantId
+     * @param franchiseeIdSet
+     * @author caobotao.cbt
+     * @date 2024/6/12 13:38
+     */
+    private List<AlipayAppConfig> queryFromCacheList(Integer tenantId, Set<Long> franchiseeIdSet) {
+        
+        // 从缓存中获取数据
+        List<String> cacheKeys = franchiseeIdSet.stream().map(franchiseeId -> buildCacheKey(tenantId, franchiseeId)).collect(Collectors.toList());
+        List<AlipayAppConfig> cacheList = redisService.multiJsonGet(cacheKeys, AlipayAppConfig.class);
+        
+        // key：franchiseeId
+        Map<Long, AlipayAppConfig> cacheFranchiseeIdMap = Optional.ofNullable(cacheList).orElse(Collections.emptyList()).stream().filter(Objects::nonNull)
+                .collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, Function.identity(), (k1, k2) -> k1));
+        
+        // 查询数据库的集合
+        List<Long> qryDbList = new ArrayList<>(franchiseeIdSet.size());
+        
+        List<AlipayAppConfig> payParams = new ArrayList<>(franchiseeIdSet.size());
+        
+        franchiseeIdSet.forEach(fid -> {
+            AlipayAppConfig cache = cacheFranchiseeIdMap.get(fid);
+            if (Objects.isNull(cache)) {
+                // 缓存不存在，查询数据库
+                qryDbList.add(fid);
+            } else if (Objects.nonNull(cache.getId())) {
+                // 缓存存在 并且有id 则说明当前加盟商已配置
+                payParams.add(cache);
+            }
+        });
+        
+        if (CollectionUtils.isEmpty(qryDbList)) {
+            return payParams;
+        }
+        
+        // 从数据库查询数据
+        List<AlipayAppConfig> dbList = alipayAppConfigMapper.selectListByTenantIdAndFranchiseeIds(tenantId, qryDbList);
+        
+        if (CollectionUtils.isNotEmpty(dbList)) {
+            // 添加到结果集
+            payParams.addAll(dbList);
+        }
+        
+        // 更新缓存
+        Map<String, String> cacheSaveMap = Optional.ofNullable(dbList).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(e -> buildCacheKey(e.getTenantId(), e.getFranchiseeId()), v -> JsonUtil.toJson(v), (k1, k2) -> k1));
+        
+        // 处理不存在的数据
+        qryDbList.stream().filter(franchiseeId -> !cacheSaveMap.containsKey(buildCacheKey(tenantId, franchiseeId))).forEach(franchiseeId -> {
+            AlipayAppConfig nullParam = new AlipayAppConfig();
+            nullParam.setTenantId(tenantId);
+            nullParam.setFranchiseeId(franchiseeId);
+            cacheSaveMap.put(buildCacheKey(tenantId, franchiseeId), JsonUtil.toJson(nullParam));
+        });
+        
+        // 批量设置缓存
+        redisService.multiSet(cacheSaveMap);
+        
+        return payParams;
+    }
+    
+    
+    /**
+     * 构建缓存key
+     */
+    private String buildCacheKey(Integer tenantId, Long franchiseeId) {
+        return String.format(CacheConstant.ELE_ALI_PAY_PARAMS_KEY, tenantId, franchiseeId);
     }
 }

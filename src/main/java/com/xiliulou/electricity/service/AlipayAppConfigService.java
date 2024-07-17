@@ -19,4 +19,28 @@ public interface AlipayAppConfigService {
     Integer deleteById(Long id);
     
     AlipayAppConfig queryByTenantId(Integer tenantId);
+    
+    /**
+     * 根据运营商和加盟商查询
+     * <p>
+     * 1.franchiseeId 不存在配置,则返回运营商默认配置<br/> 2.franchiseeId 存在配置,则返回加盟商配置<br/> 3.如果要查询运营商默认配置，franchiseeId传{@link com.xiliulou.electricity.constant.MultiFranchiseeConstant#DEFAULT_FRANCHISEE}
+     * </p>
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/7/16 16:36
+     */
+    AlipayAppConfig queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    
+    /**
+     * 根据运营商和加盟商查询精确查询
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/7/16 16:36
+     */
+    AlipayAppConfig queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    
 }

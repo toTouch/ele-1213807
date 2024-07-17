@@ -26,6 +26,11 @@ public interface CacheConstant {
     String ELE_PAY_PARAMS_KEY="saas_ele:pay_params:%d:%d";
     
     /**
+     * 微信支付参数缓存key
+     */
+    String ELE_ALI_PAY_PARAMS_KEY="saas_ele:ali_pay_params:%d:%d";
+    
+    /**
      * 微信支付证书
      */
     String PAYMENT_CERTIFICATE_KEY="saas_ele:pay_payment_certificate:%d:%d";

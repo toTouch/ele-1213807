@@ -5,6 +5,7 @@
     <resultMap type="com.xiliulou.electricity.entity.AlipayAppConfig" id="AlipayAppConfigMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="appId" column="app_id" jdbcType="VARCHAR"/>
+        <result property="sellerId" column="seller_id" jdbcType="VARCHAR"/>
         <result property="appSecret" column="app_secret" jdbcType="VARCHAR"/>
         <result property="publicKey" column="public_key" jdbcType="VARCHAR"/>
         <result property="privateKey" column="private_key" jdbcType="VARCHAR"/>
@@ -12,36 +13,61 @@
         <result property="appPrivateKey" column="app_private_key" jdbcType="VARCHAR"/>
         <result property="loginDecryptionKey" column="login_decryption_key" jdbcType="VARCHAR"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="configType" column="config_type" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
     
+    <sql id="base_column">
+        id
+        , app_id,seller_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time
+    </sql>
+    
     <!--查询单个-->
     <select id="selectById" resultMap="AlipayAppConfigMap">
         select
-          id, app_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, create_time, update_time
+        <include refid="base_column"/>
         from t_alipay_app_config
-        where id = #{id}
+        where id = #{id} and del_flag = 0
     </select>
     
     <select id="selectByAppId" resultMap="AlipayAppConfigMap">
         select
-          id, app_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, create_time, update_time
+        <include refid="base_column"/>
         from t_alipay_app_config
-        where app_id = #{appId}
+        where app_id = #{appId} and del_flag = 0
     </select>
     
     <select id="selectByTenantId" resultMap="AlipayAppConfigMap">
         select
-          id, app_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, create_time, update_time
+        <include refid="base_column"/>
         from t_alipay_app_config
-        where tenant_id = #{tenantId}
+        where tenant_id = #{tenantId} and del_flag = 0
+    </select>
+    
+    <select id="selectListByTenantIdAndFranchiseeIds" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from
+        t_alipay_app_config
+        where del_flag = 0
+        and tenant_id =#{tenantId}
+        and franchisee_id in
+        <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
+            #{franchiseeId}
+        </foreach>
     </select>
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_alipay_app_config(app_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, create_time, update_time)
-        values (#{appId}, #{appSecret}, #{publicKey}, #{privateKey}, #{appPublicKey}, #{appPrivateKey}, #{loginDecryptionKey}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_alipay_app_config(app_id, seller_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, config_type,
+                                        franchisee_id,
+                                        del_flag, create_time, update_time)
+        values (#{appId}, #{sellerId}, #{appSecret}, #{publicKey}, #{privateKey}, #{appPublicKey}, #{appPrivateKey}, #{loginDecryptionKey}, #{tenantId}, #{configType},
+                #{franchiseeid},
+                #{delFlag} #{createTime}, #{updateTime})
     </insert>
     
     <!--通过主键修改数据-->
@@ -84,7 +110,9 @@
     
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_alipay_app_config where id = #{id}
+        delete
+        from t_alipay_app_config
+        where id = #{id}
     </delete>
 
 </mapper>

@@ -4,6 +4,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -19,7 +20,7 @@ public interface ElectricityTradeOrderService {
      *
      * @param callBackResource
      */
-    Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyCarRenalPackageOrder(BaseOrderCallBackResource callBackResource);
     
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
@@ -27,23 +28,23 @@ public interface ElectricityTradeOrderService {
     
     
     //月卡回调
-    Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyMemberOrder(BaseOrderCallBackResource callBackResource);
     
     
     //押金支付回调
-    Pair<Boolean, Object> notifyDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyDepositOrder(BaseOrderCallBackResource callBackResource);
     
     //电池服务费支付回调
-    Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyBatteryServiceFeeOrder(BaseOrderCallBackResource callBackResource);
     
     //租车押金支付回调
-    Pair<Boolean, Object> notifyRentCarDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyRentCarDepositOrder(BaseOrderCallBackResource callBackResource);
     
     //租车月卡回调
-    Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyRentCarMemberOrder(BaseOrderCallBackResource callBackResource);
     
     //保险回调
-    Pair<Boolean, Object> notifyInsuranceOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyInsuranceOrder(BaseOrderCallBackResource callBackResource);
     
     /**
      * 云豆充值回调
@@ -51,7 +52,7 @@ public interface ElectricityTradeOrderService {
      * @param callBackResource
      * @return
      */
-    Pair<Boolean, Object> notifyCloudBeanRechargeOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyCloudBeanRechargeOrder(BaseOrderCallBackResource callBackResource);
     
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
     

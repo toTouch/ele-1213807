@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -47,7 +48,7 @@ public interface EleRefundOrderService {
             throws WechatPayException;
     
     
-    Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyDepositRefundOrder(BaseOrderRefundCallBackResource callBackResource);
     
     Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
             HttpServletRequest request);

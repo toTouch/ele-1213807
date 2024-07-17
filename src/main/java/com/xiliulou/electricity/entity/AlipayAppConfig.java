@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.entity;
 
+import com.xiliulou.electricity.enums.AliPayConfigTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,9 +31,15 @@ public class AlipayAppConfig {
     private String appId;
     
     /**
+     * 卖家支付宝用户ID
+     */
+    private String sellerId;
+    
+    /**
      * 支付宝小程序appSecret
      */
     private String appSecret;
+    
     
     /**
      * 支付宝公钥
@@ -60,6 +67,22 @@ public class AlipayAppConfig {
     private String loginDecryptionKey;
     
     private Integer tenantId;
+    
+    /**
+     * 配置类型
+     *
+     * @see AliPayConfigTypeEnum
+     */
+    private Integer configType;
+    
+    
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+    
+    
+    private Integer delFlag;
     
     private Long createTime;
     

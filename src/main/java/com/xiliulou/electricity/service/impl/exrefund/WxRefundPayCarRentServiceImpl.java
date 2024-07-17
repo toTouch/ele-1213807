@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -63,7 +64,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+    public void process(BaseOrderRefundCallBackResource callBackResource) {
         log.info("WxRefundPayCarRentServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outRefundNo = callBackResource.getOutRefundNo();
         String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;

@@ -73,6 +73,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -279,7 +280,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyDepositRefundOrder(BaseOrderRefundCallBackResource callBackResource) {
         // 回调参数
         String tradeRefundNo = callBackResource.getOutRefundNo();
         String outTradeNo = callBackResource.getOutTradeNo();

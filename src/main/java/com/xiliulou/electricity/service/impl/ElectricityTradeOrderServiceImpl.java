@@ -96,6 +96,8 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.mq.service.RocketMqService;
+import com.xiliulou.pay.base.enums.PayTypeEnum;
+import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -309,7 +311,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyCarRenalPackageOrder(BaseOrderCallBackResource callBackResource) {
         log.info("notifyCarRenalPackageOrder params callBackResource is {}", JSON.toJSONString(callBackResource));
         if (ObjectUtils.isEmpty(callBackResource)) {
             log.warn("NotifyCarRenalPackageOrder failed, callBackResource is empty");
@@ -352,7 +354,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Long uid = electricityTradeOrder.getUid();
         
         if (WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState)) {
-            return handSuccess(orderNo, tenantId, uid, transactionId);
+            return handSuccess(orderNo, tenantId, uid, transactionId, callBackResource.getPayType());
         } else {
             return handFailed(orderNo, tenantId, uid);
         }
@@ -376,9 +378,10 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
      * @param orderNo  租车套餐购买订单编号
      * @param tenantId 租户ID
      * @param uid      用户ID
+     * @param payType
      * @return
      */
-    private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId) {
+    private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId, Integer payType) {
         Pair<Boolean, Object> pair = carRentalPackageOrderBizService.handBuyRentalPackageOrderSuccess(orderNo, tenantId, uid, null);
         if (!pair.getLeft()) {
             return pair;
@@ -386,7 +389,9 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         
         // 最后一步，小程序虚拟发货
         String phone = pair.getRight().toString();
-        shippingManagerService.uploadShippingInfo(uid, phone, transactionId, tenantId);
+        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(payType)) {
+            shippingManagerService.uploadShippingInfo(uid, phone, transactionId, tenantId);
+        }
         
         return Pair.of(true, null);
     }
@@ -437,7 +442,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyMemberOrder(BaseOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
@@ -517,8 +522,8 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
             
             if (CollectionUtils.isNotEmpty(userCouponIds)) {
                 Set<Integer> couponIds = userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
-                userCouponService.batchUpdateUserCoupon(
-                        electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
+                userCouponService
+                        .batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
             
             // 8. 处理分账
@@ -550,8 +555,8 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
             
             if (CollectionUtils.isNotEmpty(userCouponIds)) {
                 Set<Integer> couponIds = userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
-                userCouponService.batchUpdateUserCoupon(
-                        electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, electricityMemberCardOrder.getOrderId()));
+                userCouponService
+                        .batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, electricityMemberCardOrder.getOrderId()));
             }
             
             electricityMemberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
@@ -577,7 +582,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     
     //押金支付回调
     @Override
-    public Pair<Boolean, Object> notifyDepositOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyDepositOrder(BaseOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
@@ -663,13 +668,15 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         eleDepositOrderService.update(eleDepositOrderUpdate);
         
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+            shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+        }
         
         return Pair.of(result, null);
     }
     
     @Override
-    public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(BaseOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
@@ -740,12 +747,12 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
             
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo(),
-                    userInfo.getTenantId());
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService
+                    .queryByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo(), userInfo.getTenantId());
             
             //如果是限时间停卡，服务费的开始产生时间应拿当时停卡记录的停卡时间
-            if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(serviceFeeUserInfo) && Objects.equals(eleDisableMemberCardRecord.getDisableMemberCardNo(),
-                    serviceFeeUserInfo.getDisableMemberCardNo())) {
+            if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(serviceFeeUserInfo) && Objects
+                    .equals(eleDisableMemberCardRecord.getDisableMemberCardNo(), serviceFeeUserInfo.getDisableMemberCardNo())) {
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(eleDisableMemberCardRecord.getCreateTime());
             }
             
@@ -782,8 +789,8 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
                     eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(userBatteryMemberCard.getDisableMemberCardTime() + (disableDays * (24 * 60 * 60 * 1000L)));
                 }
                 
-                EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(),
-                        userInfo.getTenantId());
+                EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService
+                        .queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
                 Long cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
                 if (Objects.isNull(enableMemberCardRecord)) {
                     EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
@@ -845,8 +852,8 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
             
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             
-            if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime()) && Objects.equals(
-                    userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime()) && Objects
+                    .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 Long now = System.currentTimeMillis();
                 //判断用户是否产生电池服务费
                 Long cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
@@ -874,25 +881,26 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
         
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
-        
+        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+            shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+        }
         return Pair.of(result, null);
     }
     
     @Override
-    public Pair<Boolean, Object> notifyRentCarDepositOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyRentCarDepositOrder(BaseOrderCallBackResource callBackResource) {
         
         return Pair.of(false, null);
     }
     
     @Override
-    public Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyRentCarMemberOrder(BaseOrderCallBackResource callBackResource) {
         
         return Pair.of(false, null);
     }
     
     @Override
-    public Pair<Boolean, Object> notifyInsuranceOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyInsuranceOrder(BaseOrderCallBackResource callBackResource) {
         
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
@@ -983,8 +991,9 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
         
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
-        
+        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+            shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+        }
         return Pair.of(result, null);
     }
     
@@ -992,7 +1001,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
      * 云豆充值回调
      */
     @Override
-    public Pair<Boolean, Object> notifyCloudBeanRechargeOrder(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyCloudBeanRechargeOrder(BaseOrderCallBackResource callBackResource) {
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
