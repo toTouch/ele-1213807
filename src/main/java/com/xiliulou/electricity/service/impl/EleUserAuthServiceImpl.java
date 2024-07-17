@@ -149,7 +149,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("审核通过，无法修改!");
         }
     
-        Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
+        Triple<Boolean, String, Object> checkResult = checkIdCard(tenantId,eleUserAuthList);
         if (!checkResult.getLeft()) {
             return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
@@ -184,12 +184,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                 userInfo.setName(eleUserAuth.getValue());
             }
             if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
-                //身份证校验
-                String errorMsg = idCardCheckService.checkIdNumber(tenantId, eleUserAuth.getValue());
-                if (StringUtils.isNotBlank(errorMsg)){
-                    return R.fail(errorMsg);
-                }
-    
                 userInfo.setIdNumber(eleUserAuth.getValue());
             }
 
@@ -235,16 +229,17 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         return result;
     }
     
-    private Triple<Boolean, String, Object> checkIdCardExists(List<EleUserAuth> eleUserAuthList) {
+    
+    private Triple<Boolean, String, Object> checkIdCard(Integer tenantId, List<EleUserAuth> eleUserAuthList) {
         if (CollectionUtils.isEmpty(eleUserAuthList)) {
             return Triple.of(false, "资料项为空", null);
         }
-        
+        String idCard= null;
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
             if (!ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 continue;
             }
-            
+            idCard = eleUserAuth.getValue();
             List<UserInfo> userInfos = userInfoService.queryByIdNumber(eleUserAuth.getValue());
             if (CollectionUtils.isEmpty(userInfos)) {
                 return Triple.of(true, null, null);
@@ -255,9 +250,14 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                     return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
-            return Triple.of(true, null, null);
+            break;
         }
-        
+        // 校验身份证是否符合年龄
+        String errMsg = idCardCheckService.checkIdNumber(tenantId, idCard);
+        if (StringUtils.isNotBlank(errMsg)){
+            return Triple.of(false, "身份证信息已存在，请核实后重新提交",null);
+        }
+    
         return Triple.of(true, null, null);
     }
     

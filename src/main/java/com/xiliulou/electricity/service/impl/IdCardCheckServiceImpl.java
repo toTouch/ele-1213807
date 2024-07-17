@@ -46,7 +46,7 @@ public class IdCardCheckServiceImpl implements IdCardCheckService {
             age = 18;
         }
         
-        if (!IdCardValidator.isOver18(idNumber, age)) {
+        if (!IdCardValidator.isOver(idNumber, age)) {
             return "未满" + age + "岁，暂无法认证";
         }
         

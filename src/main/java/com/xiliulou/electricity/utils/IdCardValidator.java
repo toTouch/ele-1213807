@@ -23,13 +23,13 @@ public class IdCardValidator {
     
     
     /**
-     * 校验身份证年龄是否满18周岁
+     * 校验身份证年龄是否满minAge周岁
      *
      * @param idCard 身份证号码
      * @param minAge 最小年龄
      * @return 如果年龄满18周岁且格式正确返回true，否则返回false
      */
-    public static boolean isOver18(String idCard,Integer minAge) {
+    public static boolean isOver(String idCard,Integer minAge) {
         // 使用正则表达式校验身份证号码格式
         Pattern pattern = Pattern.compile(IDCARD_PATTERN);
         Matcher matcher = pattern.matcher(idCard);
