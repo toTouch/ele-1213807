@@ -298,7 +298,7 @@
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
         tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
         memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
-        tero.refund_order_type as refundOrderType, tedo.pay_type as payType, tedo.order_type as orderType,tero.tenant_id
+        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType,tero.tenant_id
     </sql>
     
     <sql id="pageFilter">

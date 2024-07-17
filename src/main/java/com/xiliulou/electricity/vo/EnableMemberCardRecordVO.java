@@ -110,4 +110,9 @@ public class EnableMemberCardRecordVO {
      */
     private BigDecimal serviceFee;
     
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
 }

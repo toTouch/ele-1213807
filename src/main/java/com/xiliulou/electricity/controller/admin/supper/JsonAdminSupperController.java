@@ -9,16 +9,20 @@ import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -72,6 +76,12 @@ public class JsonAdminSupperController {
     
     @Resource
     private EleRefundOrderService eleRefundOrderService;
+    
+    @Resource
+    private EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
+    
+    @Resource
+    private EnableMemberCardRecordService enableMemberCardRecordService;
     
     
     /**
@@ -540,5 +550,116 @@ public class JsonAdminSupperController {
                 .refundOrderNo(refundOrderNo).build();
         
         return eleRefundOrderService.queryCount(eleRefundQuery);
+    }
+    
+    @GetMapping(value = "/super/admin/electricityMemberCard/disableMemberCard")
+    public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
+            @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder().offset(offset).size(size).franchiseeIds(null)
+                .storeIds(null).disableMemberCardNo(disableMemberCardNo).phone(phone).status(status).uid(uid).beginTime(beginTime).endTime(endTime)
+                .tenantId(tenantId).build();
+        
+        return eleDisableMemberCardRecordService.listSuperAdminPage(electricityMemberCardRecordQuery);
+    }
+    
+    @GetMapping(value = "/super/admin/electricityMemberCard/disableMemberCardCount")
+    public R getElectricityDisableMemberCardCount(@RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder().disableMemberCardNo(disableMemberCardNo).phone(phone)
+                .status(status).uid(uid).franchiseeIds(null).storeIds(null).beginTime(beginTime).endTime(endTime).tenantId(tenantId).build();
+        
+        return eleDisableMemberCardRecordService.queryCount(electricityMemberCardRecordQuery);
+    }
+    
+    @GetMapping(value = "/super/admin/enableMemberCardRecord/list")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "enableType", required = false) Integer enableType, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "id", required = false) Integer id,
+            @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
+            @RequestParam(value = "beginDisableTime", required = false) Long beginDisableTime, @RequestParam(value = "endDisableTime", required = false) Long endDisableTime,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        // 用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        EnableMemberCardRecordQuery enableMemberCardRecordQuery = EnableMemberCardRecordQuery.builder().enableType(enableType).beginTime(beginTime).endTime(endTime).offset(offset)
+                .size(size).phone(phone).franchiseeIds(null).storeIds(null).userName(userName).uid(uid).tenantId(tenantId).disableMemberCardNo(disableMemberCardNo)
+                .beginDisableTime(beginDisableTime).endDisableTime(endDisableTime).build();
+        
+        return enableMemberCardRecordService.listSuperAdminPage(enableMemberCardRecordQuery);
+    }
+    
+    @GetMapping(value = "/super/admin/enableMemberCardRecord/queryCount")
+    public R queryCount(@RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "enableType", required = false) Integer enableType,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "id", required = false) Integer id, @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
+            @RequestParam(value = "beginDisableTime", required = false) Long beginDisableTime, @RequestParam(value = "endDisableTime", required = false) Long endDisableTime,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        // 用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        EnableMemberCardRecordQuery enableMemberCardRecordQuery = EnableMemberCardRecordQuery.builder().enableType(enableType).beginTime(beginTime).endTime(endTime).phone(phone)
+                .franchiseeIds(null).storeIds(null).userName(userName).uid(uid).tenantId(tenantId).disableMemberCardNo(disableMemberCardNo)
+                .beginDisableTime(beginDisableTime).endDisableTime(endDisableTime).build();
+        
+        return enableMemberCardRecordService.queryCount(enableMemberCardRecordQuery);
     }
 }

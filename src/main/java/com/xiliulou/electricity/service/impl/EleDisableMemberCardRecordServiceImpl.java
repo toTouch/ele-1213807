@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -102,6 +104,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     
     @Resource
     EnterpriseUserCostRecordService enterpriseUserCostRecordService;
+    
+    @Resource
+    private TenantService tenantService;
     
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
@@ -340,6 +345,42 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return eleDisableMemberCardRecordMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
+        List<EleDisableMemberCardRecordVO> eleDisableMemberCardRecordVOS = eleDisableMemberCardRecordMapper.queryList(electricityMemberCardRecordQuery);
+        if (CollectionUtils.isEmpty(eleDisableMemberCardRecordVOS)) {
+            return R.ok(Collections.emptyList());
+        }
+    
+        eleDisableMemberCardRecordVOS.forEach(item -> {
+            if (Objects.nonNull(item.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
+                item.setTenantName(Objects.isNull(tenant) ? null : tenant.getName());
+            }
+            
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getBatteryMemberCardId());
+            item.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
+            item.setBusinessType(Objects.isNull(batteryMemberCard) ? BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode() : batteryMemberCard.getBusinessType());
+        
+            // 设置审核员名称
+            if (!Objects.isNull(item.getAuditorId())) {
+                User user = userService.queryByUidFromCache(item.getAuditorId());
+                if (!Objects.isNull(user)) {
+                    item.setAuditorName(user.getName());
+                }
+            }
+        
+            // 设置套餐剩余次数
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                item.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
+            }
+        });
+    
+        return R.ok(eleDisableMemberCardRecordVOS);
     }
     
     

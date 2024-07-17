@@ -7,11 +7,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.mapper.EnableMemberCardRecordMapper;
 import com.xiliulou.electricity.query.EnableMemberCardRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.vo.EnableMemberCardRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +41,9 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     
     @Resource
     private BatteryMemberCardService batteryMemberCardService;
+    
+    @Resource
+    private TenantService tenantService;
 
 
     @Override
@@ -110,5 +115,38 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     @Override
     public List<EnableMemberCardRecord> queryListByOrderIds(List<String> orderIdList) {
         return enableMemberCardRecordMapper.selectListByOrderIds(orderIdList);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(EnableMemberCardRecordQuery enableMemberCardRecordQuery) {
+        List<EnableMemberCardRecordVO> enableMemberCardRecordVOList = Lists.newArrayList();
+        List<EnableMemberCardRecord> enableMemberCardRecords = enableMemberCardRecordMapper.queryList(enableMemberCardRecordQuery);
+        for(EnableMemberCardRecord enableMemberCardRecord : enableMemberCardRecords){
+            EnableMemberCardRecordVO enableMemberCardRecordVO = new EnableMemberCardRecordVO();
+            
+            if(Objects.isNull(enableMemberCardRecord)){
+                continue;
+            }
+            BeanUtils.copyProperties(enableMemberCardRecord, enableMemberCardRecordVO);
+            
+            if (Objects.nonNull(enableMemberCardRecord.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(enableMemberCardRecord.getTenantId());
+                enableMemberCardRecordVO.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+            
+            Long packageId = enableMemberCardRecord.getMemberCardId();
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+        
+            if (Objects.nonNull(batteryMemberCard)) {
+                enableMemberCardRecordVO.setBusinessType(batteryMemberCard.getBusinessType());
+            } else {
+                enableMemberCardRecordVO.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
+            }
+        
+            enableMemberCardRecordVOList.add(enableMemberCardRecordVO);
+        }
+    
+        return R.ok(enableMemberCardRecordVOList);
     }
 }
