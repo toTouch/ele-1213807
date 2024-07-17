@@ -270,6 +270,8 @@ public class FaceidServiceImpl implements FaceidService {
         //更新用户实名认证状态及审核类型
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setUid(userInfo.getUid());
+        userInfoUpdate.setName(query.getUserName());
+        userInfoUpdate.setIdNumber(query.getIdNumber());
         userInfoUpdate.setTenantId(userInfo.getTenantId());
         userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
         userInfoUpdate.setAuthStatus(result);
