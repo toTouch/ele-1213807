@@ -26,7 +26,7 @@ public class UserCouponExpiredTask extends IJobHandler {
         try {
             userCouponService.handelUserCouponExpired();
         } catch (Exception e) {
-            log.error("处理失败"+e);
+            log.error("user coupon expired task error", e);
         }
         return IJobHandler.SUCCESS;
     }
