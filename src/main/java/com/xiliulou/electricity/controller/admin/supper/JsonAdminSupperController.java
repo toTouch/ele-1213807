@@ -117,7 +117,7 @@ public class JsonAdminSupperController {
     /**
      * 套餐购买记录查询列表
      */
-    @GetMapping("/super/admin/electricityMemberCardOrder/page")
+    @GetMapping("/electricityMemberCardOrder/page")
     public R getElectricityMemberCardPage(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "memberCardType", required = false) Integer cardType,
@@ -157,7 +157,7 @@ public class JsonAdminSupperController {
     /**
      * 套餐购买记录查询列表数
      */
-    @GetMapping("/super/admin/electricityMemberCardOrder/queryCount")
+    @GetMapping("/electricityMemberCardOrder/queryCount")
     public R queryCount(@RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "memberCardType", required = false) Integer cardType, @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "useStatus", required = false) Integer useStatus,
@@ -188,7 +188,7 @@ public class JsonAdminSupperController {
     /**
      * 电柜列表查询
      */
-    @GetMapping(value = "/super/admin/electricityCabinet/list")
+    @GetMapping(value = "/electricityCabinet/list")
     public R queryListSuper(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "address", required = false) String address, @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
             @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus, @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
@@ -224,7 +224,7 @@ public class JsonAdminSupperController {
     /**
      * 电柜列表数量查询
      */
-    @GetMapping(value = "/super/admin/electricityCabinet/queryCount")
+    @GetMapping(value = "/electricityCabinet/queryCount")
     public R queryCountSuper(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "usableStatus", required = false) Integer usableStatus, @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus, @RequestParam(value = "warehouseId", required = false) Long warehouseId,
@@ -250,7 +250,7 @@ public class JsonAdminSupperController {
     /**
      * 套餐配置列表
      */
-    @GetMapping("/super/admin/battery/memberCard/page")
+    @GetMapping("/battery/memberCard/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "mid", required = false) Long mid, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
@@ -289,7 +289,7 @@ public class JsonAdminSupperController {
     /**
      * 套餐配置列表总数
      */
-    @GetMapping("/super/admin/battery/memberCard/queryCount")
+    @GetMapping("/battery/memberCard/queryCount")
     public R pageCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "rentUnit", required = false) Integer rentUnit,
             @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "name", required = false) String name,
@@ -319,7 +319,7 @@ public class JsonAdminSupperController {
     /**
      * 换电订单列表
      */
-    @GetMapping("/super/admin/electricityCabinetOrder/list")
+    @GetMapping("/electricityCabinetOrder/list")
     public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "eid", required = false) Long eid, @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -355,7 +355,7 @@ public class JsonAdminSupperController {
     /**
      * 换电订单列表总数
      */
-    @GetMapping("/super/admin/electricityCabinetOrder/queryCount")
+    @GetMapping("/electricityCabinetOrder/queryCount")
     public R querySuperCount(@RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "status", required = false) String status, @RequestParam(value = "eid", required = false) Long eid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
@@ -382,7 +382,7 @@ public class JsonAdminSupperController {
     /**
      * 租退电订单列表
      */
-    @GetMapping(value = "/super/admin/rentBatteryOrder/list")
+    @GetMapping(value = "/rentBatteryOrder/list")
     public R querySuperList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -414,7 +414,7 @@ public class JsonAdminSupperController {
     /**
      * 租退电订单列表
      */
-    @GetMapping(value = "/super/admin/rentBatteryOrder/queryCount")
+    @GetMapping(value = "/rentBatteryOrder/queryCount")
     public R querySuperCount(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
@@ -438,7 +438,7 @@ public class JsonAdminSupperController {
     /**
      * 租金退款审核列表
      */
-    @GetMapping("/super/admin/battery/membercard/refund/page")
+    @GetMapping("/battery/membercard/refund/page")
     public R getElectricityMemberCardPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "mid", required = false) Long mid,
@@ -473,7 +473,7 @@ public class JsonAdminSupperController {
     /**
      * 租金退款审核列表总数
      */
-    @GetMapping("/super/admin/battery/membercard/refund/queryCount")
+    @GetMapping("/battery/membercard/refund/queryCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo, @RequestParam(value = "rentType", required = false) Integer rentType,
             @RequestParam(value = "mid", required = false) Long mid, @RequestParam(value = "status", required = false) Integer status,
@@ -499,7 +499,7 @@ public class JsonAdminSupperController {
     /**
      * 退押审核列表
      */
-    @GetMapping("/super/admin/eleRefundOrder/queryList")
+    @GetMapping("/eleRefundOrder/queryList")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "payType", required = false) Integer payType,
             @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
@@ -536,7 +536,7 @@ public class JsonAdminSupperController {
     /**
      * 退押审核列表总数
      */
-    @GetMapping("/super/admin/eleRefundOrder/queryCount")
+    @GetMapping("/eleRefundOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType, @RequestParam(value = "phone", required = false) String phone,
@@ -565,7 +565,7 @@ public class JsonAdminSupperController {
     /**
      * 冻结套餐审核列表
      */
-    @GetMapping(value = "/super/admin/electricityMemberCard/disableMemberCard")
+    @GetMapping(value = "/electricityMemberCard/disableMemberCard")
     public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -598,7 +598,7 @@ public class JsonAdminSupperController {
     /**
      * 冻结套餐审核列表总数
      */
-    @GetMapping(value = "/super/admin/electricityMemberCard/disableMemberCardCount")
+    @GetMapping(value = "/electricityMemberCard/disableMemberCardCount")
     public R getElectricityDisableMemberCardCount(@RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
@@ -622,7 +622,7 @@ public class JsonAdminSupperController {
     /**
      * 冻结套餐审核记录列表
      */
-    @GetMapping(value = "/super/admin/enableMemberCardRecord/list")
+    @GetMapping(value = "/enableMemberCardRecord/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "enableType", required = false) Integer enableType, @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -659,7 +659,7 @@ public class JsonAdminSupperController {
     /**
      * 冻结套餐审核记录列表总数
      */
-    @GetMapping(value = "/super/admin/enableMemberCardRecord/queryCount")
+    @GetMapping(value = "/enableMemberCardRecord/queryCount")
     public R queryCount(@RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "enableType", required = false) Integer enableType,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
@@ -688,7 +688,7 @@ public class JsonAdminSupperController {
     /**
      * 押金缴纳列表
      */
-    @GetMapping(value = "/super/admin/eleDepositOrder/list")
+    @GetMapping(value = "/eleDepositOrder/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
@@ -724,7 +724,7 @@ public class JsonAdminSupperController {
     /**
      * 冻结套餐审核记录列表总数
      */
-    @GetMapping(value = "/super/admin/eleDepositOrder/queryCount")
+    @GetMapping(value = "/eleDepositOrder/queryCount")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -752,7 +752,7 @@ public class JsonAdminSupperController {
     /**
      * 滞纳金记录列表
      */
-    @GetMapping("/super/admin/batteryServiceFee/queryList")
+    @GetMapping("/batteryServiceFee/queryList")
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
@@ -809,7 +809,7 @@ public class JsonAdminSupperController {
     /**
      * 冻结套餐审核记录列表总数
      */
-    @GetMapping("/super/admin/batteryServiceFee/queryCount")
+    @GetMapping("/batteryServiceFee/queryCount")
     public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "uid", required = false) Long uid,
