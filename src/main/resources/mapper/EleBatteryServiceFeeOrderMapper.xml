@@ -282,6 +282,81 @@
         </if>
     </select>
     
+    <sql id="column">
+            te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
+            te.status,te.source,te.phone,te.name ,te.uid, te.status, te.`pay_time`,
+            te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
+            tf.name as franchisee_name,te.tenant_id
+    </sql>
+    <select id="selectListSuperAdminPage" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
+        SELECT
+            <include refid="column"/>
+        FROM
+        t_ele_battery_service_fee_order te
+        left join t_franchisee tf on te.franchisee_id = tf.id
+        <where>
+            <if test="query.status != null">
+                and te.status =#{query.status}
+            </if>
+            <if test="query.beginTime != null">
+                and te.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and te.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.uid != null">
+                and te.uid =#{query.uid}
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and te.name =#{query.name}
+            </if>
+            <if test="query.orderId != null and query.orderId != ''">
+                and te.order_id =#{query.orderId}
+            </if>
+            <if test="query.tenantId != null">
+                and te.tenant_id =#{query.tenantId}
+            </if>
+            <if test="query.phone != null">
+                and te.phone =#{query.phone}
+            </if>
+            <if test="query.source != null">
+                and te.source =#{query.source}
+            </if>
+            <if test="query.franchiseeIds != null">
+                and te.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and te.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.payTimeBegin != null and query.payTimeEnd != null "> AND te.`pay_time` BETWEEN #{query.payTimeBegin} AND #{query.payTimeEnd} </if>
+            <choose>
+                <when test="query.orderByPayTime != null">
+                    <choose>
+                        <when test="query.orderByPayTime == 1">
+                            order by te.pay_time desc
+                        </when>
+                        <when test="query.orderByPayTime == 2">
+                            order by te.pay_time
+                        </when>
+                    </choose>
+                </when>
+                <when test="query.orderByServiceFeeGenerateTime != null and query.orderByServiceFeeGenerateTime == 2">
+                    order by te.battery_service_fee_generate_time
+                </when>
+                <otherwise>
+                    order by te.battery_service_fee_generate_time desc
+                </otherwise>
+            </choose>
+            limit #{query.offset},#{query.size}
+        </where>
+    </select>
+    
     <update id="updatePhoneByUid">
         update t_ele_battery_service_fee_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>

@@ -6,6 +6,8 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
+import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -17,6 +19,8 @@ import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.query.supper.UserGrantSourceReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -82,6 +86,12 @@ public class JsonAdminSupperController {
     
     @Resource
     private EnableMemberCardRecordService enableMemberCardRecordService;
+    
+    @Resource
+    private EleDepositOrderService eleDepositOrderService;
+    
+    @Resource
+    private EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
     
     /**
@@ -552,6 +562,9 @@ public class JsonAdminSupperController {
         return eleRefundOrderService.queryCount(eleRefundQuery);
     }
     
+    /**
+     * 冻结套餐审核列表
+     */
     @GetMapping(value = "/super/admin/electricityMemberCard/disableMemberCard")
     public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo, @RequestParam(value = "phone", required = false) String phone,
@@ -582,6 +595,9 @@ public class JsonAdminSupperController {
         return eleDisableMemberCardRecordService.listSuperAdminPage(electricityMemberCardRecordQuery);
     }
     
+    /**
+     * 冻结套餐审核列表总数
+     */
     @GetMapping(value = "/super/admin/electricityMemberCard/disableMemberCardCount")
     public R getElectricityDisableMemberCardCount(@RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "status", required = false) Integer status,
@@ -603,6 +619,9 @@ public class JsonAdminSupperController {
         return eleDisableMemberCardRecordService.queryCount(electricityMemberCardRecordQuery);
     }
     
+    /**
+     * 冻结套餐审核记录列表
+     */
     @GetMapping(value = "/super/admin/enableMemberCardRecord/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
@@ -637,6 +656,9 @@ public class JsonAdminSupperController {
         return enableMemberCardRecordService.listSuperAdminPage(enableMemberCardRecordQuery);
     }
     
+    /**
+     * 冻结套餐审核记录列表总数
+     */
     @GetMapping(value = "/super/admin/enableMemberCardRecord/queryCount")
     public R queryCount(@RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "enableType", required = false) Integer enableType,
@@ -661,5 +683,170 @@ public class JsonAdminSupperController {
                 .beginDisableTime(beginDisableTime).endDisableTime(endDisableTime).build();
         
         return enableMemberCardRecordService.queryCount(enableMemberCardRecordQuery);
+    }
+    
+    /**
+     * 押金缴纳列表
+     */
+    @GetMapping(value = "/super/admin/eleDepositOrder/list")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "depositType", required = false) Integer depositType,
+            @RequestParam(value = "carModel", required = false) String carModel, @RequestParam(value = "payType", required = false) Integer payType,
+            @RequestParam(value = "storeName", required = false) String storeName, @RequestParam(value = "orderType", required = false) Integer orderType,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder().offset(offset).size(size).name(name).phone(phone).uid(uid).beginTime(beginTime).endTime(endTime)
+                .status(status).orderId(orderId).storeIds(null).tenantId(tenantId).carModel(carModel).franchiseeName(franchiseeName)
+                .depositType(depositType).payType(payType).storeName(storeName).franchiseeIds(null).orderType(orderType).build();
+        
+        return eleDepositOrderService.listSuperAdminPage(eleDepositOrderQuery);
+    }
+    
+    /**
+     * 冻结套餐审核记录列表总数
+     */
+    @GetMapping(value = "/super/admin/eleDepositOrder/queryCount")
+    public R queryCount(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "depositType", required = false) Integer depositType,
+            @RequestParam(value = "carModel", required = false) String carModel, @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "storeName", required = false) String storeName,
+            @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder().name(name).phone(phone).uid(uid).beginTime(beginTime).endTime(endTime).status(status)
+                .orderId(orderId).storeIds(null).carModel(carModel).depositType(depositType).payType(payType).storeName(storeName).tenantId(tenantId)
+                .franchiseeName(franchiseeName).franchiseeIds(null).orderType(orderType).build();
+        
+        return eleDepositOrderService.queryCount(eleDepositOrderQuery);
+    }
+    
+    /**
+     * 滞纳金记录列表
+     */
+    @GetMapping("/super/admin/batteryServiceFee/queryList")
+    public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "source", required = false) Integer source,
+            @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
+            @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd,
+            @RequestParam(value = "orderByServiceFeeGenerateTime", required = false) Integer orderByServiceFeeGenerateTime,
+            @RequestParam(value = "orderByPayTime", required = false) Integer orderByPayTime, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
+                .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .orderId(orderId)
+                .status(status)
+                .tenantId(tenantId)
+                .franchiseeIds(null)
+                .storeIds(null)
+                .source(source)
+                .phone(phone)
+                .payTimeBegin(payTimeBegin)
+                .payTimeEnd(payTimeEnd)
+                .orderByServiceFeeGenerateTime(orderByServiceFeeGenerateTime)
+                .orderByPayTime(orderByPayTime)
+                .build();
+        
+        return eleBatteryServiceFeeOrderService.listSuperAdminPage(batteryServiceFeeQuery);
+    }
+    
+    /**
+     * 冻结套餐审核记录列表总数
+     */
+    @GetMapping("/super/admin/batteryServiceFee/queryCount")
+    public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "source", required = false) Integer source,
+            @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
+            @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if (!SecurityUtils.isAdmin()) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
+                .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(status)
+                .name(name)
+                .orderId(orderId)
+                .tenantId(tenantId)
+                .franchiseeIds(null)
+                .storeIds(null)
+                .source(source)
+                .phone(phone)
+                .payTimeBegin(payTimeBegin)
+                .payTimeEnd(payTimeEnd)
+                .build();
+        
+        return eleBatteryServiceFeeOrderService.queryCount(batteryServiceFeeQuery);
     }
 }

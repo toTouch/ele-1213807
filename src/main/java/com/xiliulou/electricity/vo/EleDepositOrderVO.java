@@ -118,4 +118,9 @@ public class EleDepositOrderVO {
      */
     private Integer orderType;
     
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
 }

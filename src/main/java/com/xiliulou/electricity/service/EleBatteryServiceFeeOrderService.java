@@ -92,4 +92,6 @@ public interface EleBatteryServiceFeeOrderService {
     Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
 
     void membercardExpireGenerateServiceFeeOrder(String s);
+    
+    R listSuperAdminPage(BatteryServiceFeeQuery batteryServiceFeeQuery);
 }
