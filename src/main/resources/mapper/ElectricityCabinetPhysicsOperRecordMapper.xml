@@ -179,6 +179,6 @@
         from t_electricity_cabinet_physics_oper_record
         where electricity_cabinet_id = #{electricityCabinetId}
           and cell_no = #{oldCellNo}
-          and create_time &gt; #{createTime} order by createTime  limit 1
+          and create_time &gt; #{createTime} order by create_time  limit 1
     </select>
 </mapper>
