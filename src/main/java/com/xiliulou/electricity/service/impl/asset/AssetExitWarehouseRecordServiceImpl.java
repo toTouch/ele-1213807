@@ -166,19 +166,17 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         List<String> snListForNotSameFranchisee = new ArrayList<>();
         List<String> snListForStockStatus = new ArrayList<>();
         
-        if (CollectionUtils.isNotEmpty(dataList)) {
-            dataList.forEach(data -> {
-                List<String> notSameFranchiseeSnList = data.getNotSameFranchiseeSnList();
-                if (CollectionUtils.isNotEmpty(notSameFranchiseeSnList)) {
-                    snListForNotSameFranchisee.addAll(notSameFranchiseeSnList);
-                }
-                
-                List<String> stockStatusList = data.getStockStatusList();
-                if (CollectionUtils.isNotEmpty(stockStatusList)) {
-                    snListForStockStatus.addAll(stockStatusList);
-                }
-            });
-        }
+        dataList.forEach(data -> {
+            List<String> notSameFranchiseeSnList = data.getNotSameFranchiseeSnList();
+            if (CollectionUtils.isNotEmpty(notSameFranchiseeSnList)) {
+                snListForNotSameFranchisee.addAll(notSameFranchiseeSnList);
+            }
+            
+            List<String> stockStatusList = data.getStockStatusList();
+            if (CollectionUtils.isNotEmpty(stockStatusList)) {
+                snListForStockStatus.addAll(stockStatusList);
+            }
+        });
         
         return AssetBatchExitWarehouseVO.builder().snListForNotSameFranchisee(snListForNotSameFranchisee).snListForStockStatus(snListForStockStatus).build();
     }
