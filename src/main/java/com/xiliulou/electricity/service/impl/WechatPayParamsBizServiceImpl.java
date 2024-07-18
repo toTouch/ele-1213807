@@ -65,16 +65,27 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
                 return null;
             }
             
-            WechatPayParamsDetails wechatPayParamsDetails = ElectricityPayParamsConverter.qryDoToDetails(payParams);
-            
-            wechatPayParamsDetails.setPrivateKey(this.getPrivateKey(payParams));
-            
-            this.buildWechatPlatformCertificateMap(wechatPayParamsDetails);
-            
-            return wechatPayParamsDetails;
-            
+            return this.buildWechatPayParamsDetails(payParams);
         } catch (Exception e) {
             log.warn("WechatPayParamsBizServiceImpl.getDetailsByIdTenantIdAndFranchiseeId :", e);
+            throw new WechatPayException("支付配置获取失败!");
+        }
+    }
+    
+    
+    @Override
+    public WechatPayParamsDetails getPreciseDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws WechatPayException {
+        
+        try {
+            ElectricityPayParams payParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.isNull(payParams)) {
+                return null;
+            }
+            
+            return this.buildWechatPayParamsDetails(payParams);
+            
+        } catch (Exception e) {
+            log.warn("WechatPayParamsBizServiceImpl.getPreciseDetailsByIdTenantIdAndFranchiseeId :", e);
             throw new WechatPayException("支付配置获取失败!");
         }
     }
@@ -144,5 +155,15 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
             return null;
         }
         return WechatCertificateUtils.transferCertificateContent(wechatPaymentCertificate.getCertificateContent());
+    }
+    
+    private WechatPayParamsDetails buildWechatPayParamsDetails(ElectricityPayParams payParams) {
+        WechatPayParamsDetails wechatPayParamsDetails = ElectricityPayParamsConverter.qryDoToDetails(payParams);
+        
+        wechatPayParamsDetails.setPrivateKey(this.getPrivateKey(payParams));
+        
+        this.buildWechatPlatformCertificateMap(wechatPayParamsDetails);
+        
+        return wechatPayParamsDetails;
     }
 }

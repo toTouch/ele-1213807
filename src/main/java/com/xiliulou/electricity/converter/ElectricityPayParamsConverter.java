@@ -4,30 +4,14 @@
 
 package com.xiliulou.electricity.converter;
 
-import com.xiliulou.pay.alipay.request.AliPayCreateOrderRequest.ExtendParams;
-
-import com.xiliulou.electricity.bo.pay.PayParamsBizDetails;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
-import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
-import com.xiliulou.pay.alipay.request.AliPayCreateOrderRequest;
-import com.xiliulou.pay.base.enums.PayTypeEnum;
-import com.xiliulou.pay.base.request.BasePayCreateOrderRequest;
-import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
-import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
 import org.springframework.beans.BeanUtils;
-
-import javax.xml.crypto.Data;
-import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 

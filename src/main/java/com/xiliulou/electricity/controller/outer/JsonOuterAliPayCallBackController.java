@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
@@ -47,8 +48,8 @@ public class JsonOuterAliPayCallBackController {
     @SneakyThrows
     @PostMapping("/outer/alipay/pay/notified/{tenantId}/{franchiseeId}")
     public void payNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId, HttpServletRequest request) {
-        
-        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+    
+        AlipayAppConfigBizDetails alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
@@ -66,8 +67,8 @@ public class JsonOuterAliPayCallBackController {
     @SneakyThrows
     @PostMapping("/outer/alipay/refund/notified/{tenantId}/{franchiseeId}")
     public void refundNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId, HttpServletRequest request) {
-        
-        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+    
+        AlipayAppConfigBizDetails alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
@@ -85,8 +86,8 @@ public class JsonOuterAliPayCallBackController {
     @PostMapping("/outer/alipay/battery/membercard/refund/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult batteryMembercardRefundNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             HttpServletRequest request) {
-        
-        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+    
+        AlipayAppConfigBizDetails alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
@@ -108,8 +109,8 @@ public class JsonOuterAliPayCallBackController {
     @PostMapping("/outer/alipay/refund/car/deposit/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult carDepositRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             HttpServletRequest request) {
-        
-        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+    
+        AlipayAppConfigBizDetails alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
@@ -131,7 +132,7 @@ public class JsonOuterAliPayCallBackController {
     @PostMapping("/outer/alipay/refund/car/rent/notified/{tenantId}/{franchiseeId}")
     public WechatV3CallBackResult carRentRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId,
             HttpServletRequest request) {
-        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+        AlipayAppConfigBizDetails alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }

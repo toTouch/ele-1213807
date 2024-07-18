@@ -4,6 +4,8 @@
 
 package com.xiliulou.electricity.bo.wechat;
 
+import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.enums.PaymentMethodEnum;
 import lombok.Data;
 
 import java.math.BigInteger;
@@ -18,7 +20,7 @@ import java.util.HashMap;
  * @date 2024/6/14 13:04
  */
 @Data
-public class WechatPayParamsDetails {
+public class WechatPayParamsDetails extends BasePayConfig {
     
     private Integer id;
     
@@ -112,5 +114,16 @@ public class WechatPayParamsDetails {
      * 微信证书
      */
     private HashMap<BigInteger, X509Certificate> wechatPlatformCertificateMap;
+    
+    @Override
+    public String getThirdPartyMerchantId() {
+        return this.wechatMerchantId;
+    }
+    
+    
+    @Override
+    public String getPaymentMethod() {
+        return PaymentMethodEnum.WECHAT.getCode();
+    }
     
 }

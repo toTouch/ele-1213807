@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.alipay.api.AlipayApiException;
+import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
+import com.xiliulou.pay.alipay.exception.AliPayException;
 
 /**
  * 支付宝小程序配置(AlipayAppConfig)表服务接口
@@ -30,8 +33,9 @@ public interface AlipayAppConfigService {
      * @param franchiseeId
      * @author caobotao.cbt
      * @date 2024/7/16 16:36
+     * @return
      */
-    AlipayAppConfig queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    AlipayAppConfigBizDetails queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws AliPayException;
     
     /**
      * 根据运营商和加盟商查询精确查询
@@ -40,7 +44,8 @@ public interface AlipayAppConfigService {
      * @param franchiseeId
      * @author caobotao.cbt
      * @date 2024/7/16 16:36
+     * @return
      */
-    AlipayAppConfig queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
+    AlipayAppConfigBizDetails queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws AliPayException;
     
 }

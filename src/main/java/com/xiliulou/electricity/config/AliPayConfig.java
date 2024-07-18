@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "alipay")
 @Data
 @RefreshScope
-public class AliPayConfig {
+public class AliPayConfig implements BasePayCallBackConfig{
     
     /**
      * 支付宝网关

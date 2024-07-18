@@ -4,12 +4,8 @@
 
 package com.xiliulou.electricity.bo.pay;
 
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
-import com.xiliulou.electricity.entity.AlipayAppConfig;
-import lombok.AllArgsConstructor;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import lombok.Data;
-
-import java.util.Objects;
 
 /**
  * description:
@@ -19,18 +15,17 @@ import java.util.Objects;
  */
 
 @Data
-public class PayParamsBizDetails {
-    
-    private Integer payType;
+public class PayParamsBizDetails<T extends BasePayConfig> {
+    /**
+     * 支付方式
+     *
+     * @see com.xiliulou.electricity.enums.PaymentMethodEnum
+     */
+    private String paymentMethod;
     
     /**
-     * 微信支付参数
+     * 支付参数
      */
-    private WechatPayParamsDetails wechatPayParamsDetails;
-    
-    /**
-     * 支付宝参数
-     */
-    private AlipayAppConfig alipayAppConfig;
+    private T payParamConfig;
     
 }

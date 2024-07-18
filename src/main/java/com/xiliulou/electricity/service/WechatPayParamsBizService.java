@@ -30,6 +30,16 @@ public interface WechatPayParamsBizService {
     
     
     /**
+     * 根据租户id + 加盟商id查询缓存，精确查询<br/>
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/6/12 11:16
+     */
+    WechatPayParamsDetails getPreciseDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws WechatPayException;
+    
+    /**
      * 更新缓存
      *
      * @param request

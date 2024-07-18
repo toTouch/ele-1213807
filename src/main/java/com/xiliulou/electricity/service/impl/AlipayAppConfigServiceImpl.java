@@ -1,19 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.alipay.api.AlipayApiException;
 import com.google.common.collect.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
+import com.xiliulou.electricity.converter.AlipayAppConfigConverter;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.mapper.AlipayAppConfigMapper;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
+import com.xiliulou.pay.alipay.exception.AliPayException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,35 +57,47 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     }
     
     @Override
-    public AlipayAppConfig queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
-        
-        // 批量查询缓存
-        List<AlipayAppConfig> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
-        if (CollectionUtils.isEmpty(electricityPayParamsList)) {
-            log.warn("WARN! WeChat Pay parameter is not configured,tenantId={},franchiseeId={}", tenantId, franchiseeId);
-            return null;
+    public AlipayAppConfigBizDetails queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws AliPayException {
+        try {
+            // 批量查询缓存
+            List<AlipayAppConfig> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
+            if (CollectionUtils.isEmpty(electricityPayParamsList)) {
+                log.warn("WARN! WeChat Pay parameter is not configured,tenantId={},franchiseeId={}", tenantId, franchiseeId);
+                return null;
+            }
+            
+            Map<Long, AlipayAppConfig> payParamsMap = electricityPayParamsList.stream().collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, v -> v, (k1, k2) -> k1));
+            
+            // 先取加盟商配置
+            AlipayAppConfig payParams = payParamsMap.get(franchiseeId);
+            
+            if (Objects.isNull(payParams)) {
+                // 加盟商未配置 取默认配置
+                payParams = payParamsMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            }
+            AlipayAppConfigBizDetails alipayAppConfigBizDetails = AlipayAppConfigConverter.qryDoToDetails(payParams);
+            
+            return alipayAppConfigBizDetails;
+        } catch (Exception e) {
+            log.warn("AlipayAppConfigServiceImpl.queryByTenantIdAndFranchiseeId WARN! :", e);
+            throw new AliPayException("支付配置获取失败");
         }
         
-        Map<Long, AlipayAppConfig> payParamsMap = electricityPayParamsList.stream().collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, v -> v, (k1, k2) -> k1));
-        
-        // 先取加盟商配置
-        AlipayAppConfig payParams = payParamsMap.get(franchiseeId);
-        
-        if (Objects.isNull(payParams)) {
-            // 加盟商未配置 取默认配置
-            payParams = payParamsMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
-        }
-        
-        return payParams;
     }
     
     @Override
-    public AlipayAppConfig queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
-        List<AlipayAppConfig> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId));
-        if (CollectionUtils.isEmpty(electricityPayParamsList)) {
-            return null;
+    public AlipayAppConfigBizDetails queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws AliPayException {
+        try {
+            List<AlipayAppConfig> electricityPayParamsList = this.queryFromCacheList(tenantId, Sets.newHashSet(franchiseeId));
+            if (CollectionUtils.isEmpty(electricityPayParamsList)) {
+                return null;
+            }
+            AlipayAppConfigBizDetails alipayAppConfigBizDetails = AlipayAppConfigConverter.qryDoToDetails(electricityPayParamsList.get(0));
+            return alipayAppConfigBizDetails;
+        } catch (Exception e) {
+            log.warn("AlipayAppConfigServiceImpl.queryByTenantIdAndFranchiseeId WARN! :", e);
+            throw new AliPayException("支付配置获取失败");
         }
-        return electricityPayParamsList.get(0);
     }
     
     /**
