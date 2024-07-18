@@ -53,7 +53,7 @@ import java.util.Objects;
  **/
 @Slf4j
 @RestController
-@RequestMapping("/admin/inner/supper")
+@RequestMapping("/admin/inner/super")
 public class JsonAdminSupperController {
     
     @Resource
