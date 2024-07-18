@@ -306,4 +306,10 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         }
         return R.ok(eleBatteryServiceFeeOrders);
     }
+    
+    @Override
+    @Slave
+    public R countTotalForSuperAdmin(BatteryServiceFeeQuery batteryServiceFeeQuery) {
+        return R.ok(eleBatteryServiceFeeOrderMapper.countTotalForSuperAdmin(batteryServiceFeeQuery));
+    }
 }

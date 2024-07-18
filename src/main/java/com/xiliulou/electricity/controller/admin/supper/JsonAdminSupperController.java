@@ -848,6 +848,6 @@ public class JsonAdminSupperController {
                 .payTimeEnd(payTimeEnd)
                 .build();
         
-        return eleBatteryServiceFeeOrderService.queryCount(batteryServiceFeeQuery);
+        return eleBatteryServiceFeeOrderService.countTotalForSuperAdmin(batteryServiceFeeQuery);
     }
 }

@@ -2,18 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
-import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import org.apache.commons.lang3.tuple.Pair;
 
-import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -94,4 +86,6 @@ public interface EleBatteryServiceFeeOrderService {
     void membercardExpireGenerateServiceFeeOrder(String s);
     
     R listSuperAdminPage(BatteryServiceFeeQuery batteryServiceFeeQuery);
+    
+    R countTotalForSuperAdmin(BatteryServiceFeeQuery batteryServiceFeeQuery);
 }
