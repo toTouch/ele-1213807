@@ -410,6 +410,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
                         .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+                    // 自主开仓判断
                     isConformSpecialScene(e, electricityCabinetOrderQuery.getTenantId());
                 }
                 
@@ -430,16 +431,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("isConformSpecialScene.electricityCabinetOrder info is null, eid is{}", electricityCabinetOrder.getElectricityCabinetId());
             return;
         }
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen())) {
+            log.warn("isConformSpecialScene.electricityConfig is null,tenantId is {}",tenantId);
             return;
         }
+        
         ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(
                 electricityCabinetOrder.getOrderId());
-        
         if (Objects.isNull(electricityExceptionOrderStatusRecord) || Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(),
                 ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
+            log.warn("isConformSpecialScene.electricityExceptionOrderStatusRecord is null or selfOpenCell");
             return;
         }
         
