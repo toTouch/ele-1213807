@@ -620,7 +620,7 @@ public class JsonAdminSupperController {
     }
     
     /**
-     * 冻结套餐审核记录列表
+     * 套餐冻结记录列表
      */
     @GetMapping(value = "/enableMemberCardRecord/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "userName", required = false) String userName,
@@ -657,7 +657,7 @@ public class JsonAdminSupperController {
     }
     
     /**
-     * 冻结套餐审核记录列表总数
+     * 套餐冻结记录列表总数
      */
     @GetMapping(value = "/enableMemberCardRecord/queryCount")
     public R queryCount(@RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "phone", required = false) String phone,
@@ -722,7 +722,7 @@ public class JsonAdminSupperController {
     }
     
     /**
-     * 冻结套餐审核记录列表总数
+     * 押金缴纳列表总数
      */
     @GetMapping(value = "/eleDepositOrder/queryCount")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
@@ -807,7 +807,7 @@ public class JsonAdminSupperController {
     }
     
     /**
-     * 冻结套餐审核记录列表总数
+     * 滞纳金记录列表总数
      */
     @GetMapping("/batteryServiceFee/queryCount")
     public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
