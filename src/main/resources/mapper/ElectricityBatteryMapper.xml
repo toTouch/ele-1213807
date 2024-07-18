@@ -26,7 +26,8 @@
                exchange_count,
                franchisee_id,
                business_status,
-               physics_status
+               physics_status,
+               stock_status
         from t_electricity_battery
     </sql>
     
