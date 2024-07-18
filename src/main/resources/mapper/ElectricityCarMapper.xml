@@ -269,8 +269,7 @@
         FROM t_electricity_car
         WHERE del_flag = 0
           and uid = #{uid}
-          AND tenant_id = #{tenantId}
-        LIMIT 1
+          AND tenant_id = #{tenantId} LIMIT 1
     </select>
     
     
@@ -324,8 +323,8 @@
                ec.status      AS carStatus,
                ec.update_time AS updateTime,
                ec.create_time AS creatTime,
-               crpmt.due_time  AS dueTime,
-               ec.latitude AS latitude,
+               crpmt.due_time AS dueTime,
+               ec.latitude    AS latitude,
                ec.longitude   AS longitude
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
@@ -753,8 +752,7 @@
         from t_electricity_car
         where warehouse_id = #{wareHouseId}
           and del_flag = 0
-          and stock_status = 0
-        limit 1;
+          and stock_status = 0 limit 1;
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
@@ -771,9 +769,12 @@
         tenant_id,lock_type, warehouse_id
         from t_electricity_car
         <where>
-            del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
+            del_flag=0 and tenant_id = #{tenantId}
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="stockStatus != null">
+                and stock_status = #{stockStatus}
             </if>
             <if test="idSet != null and idSet.size()>0">
                 and id in
@@ -883,7 +884,7 @@
             )
         </if>
     </select>
-
+    
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>

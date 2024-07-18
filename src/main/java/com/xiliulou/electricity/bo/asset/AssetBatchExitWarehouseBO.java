@@ -40,4 +40,6 @@ public class AssetBatchExitWarehouseBO {
     private List<ElectricityCarVO> exitWarehouseCarList;
     
     private List<String> notSameFranchiseeSnList;
+    
+    private List<String> stockStatusList;
 }
