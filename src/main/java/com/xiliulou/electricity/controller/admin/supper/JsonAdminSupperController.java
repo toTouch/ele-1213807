@@ -501,10 +501,10 @@ public class JsonAdminSupperController {
     @GetMapping("/eleRefundOrder/queryList")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "payType", required = false) Integer payType,
-            @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
-            @RequestParam(value = "name", required = false) String name, @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderType", required = false) Integer orderType,
             @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
         
         if (size < 0 || size > 50) {
@@ -524,10 +524,11 @@ public class JsonAdminSupperController {
         if (!SecurityUtils.isAdmin()) {
             return R.ok(Collections.emptyList());
         }
-        
+    
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder().offset(offset).size(size).orderId(orderId).status(status).beginTime(beginTime).endTime(endTime)
-                .tenantId(tenantId).storeIds(null).franchiseeIds(null).phone(phone).uid(uid).orderType(orderType).payType(payType)
-                .refundOrderType(refundOrderType).name(name).refundOrderNo(refundOrderNo).build();
+                .tenantId(tenantId).storeIds(null).franchiseeIds(null).phone(phone).uid(uid).payType(payType).refundOrderType(refundOrderType)
+                .name(name).orderType(orderType).refundOrderNo(refundOrderNo).build();
+        
         
         return eleRefundOrderService.listSuperAdminPage(eleRefundQuery);
     }

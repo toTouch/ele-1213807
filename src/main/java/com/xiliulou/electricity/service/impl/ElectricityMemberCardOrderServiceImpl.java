@@ -4142,6 +4142,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 Tenant tenant = tenantService.queryByIdFromCache(electricityMemberCardOrderVO.getTenantId());
                 electricityMemberCardOrderVO.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
             }
+            
             if (Objects.equals(electricityMemberCardOrderVO.getIsBindActivity(), ElectricityMemberCardOrder.BIND_ACTIVITY) && Objects.nonNull(
                     electricityMemberCardOrderVO.getActivityId())) {
                 OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCardOrderVO.getActivityId());
@@ -4210,7 +4211,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
     
-        return R.ok(ElectricityMemberCardOrderVOs);    }
+        return R.ok(ElectricityMemberCardOrderVOs);
+    }
     
     
 }

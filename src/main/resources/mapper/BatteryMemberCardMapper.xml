@@ -754,42 +754,17 @@
         order by id desc
     </select>
     <sql id="column">
-        tbmc.id,
-        tbmc.NAME,
-        tbmc.deposit,
-        tbmc.rent_price,
-        tbmc.rent_price_unit,
-        tbmc.valid_days,
-        tbmc.rent_unit,
-        tbmc.franchisee_id,
-        tbmc.rent_type,
-        tbmc.send_coupon,
-        tbmc.STATUS,
-        tbmc.limit_count,
-        tbmc.use_count,
-        tbmc.coupon_id,
-        tbmc.is_refund,
-        tbmc.refund_limit,
-        tbmc.free_deposite,
-        tbmc.service_charge,
-        tbmc.remark,
-        tbmc.business_type,
-        tbmc.del_flag,
-        tbmc.tenant_id,
-        tbmc.create_time,
-        tbmc.update_time,
-        tbmc.sort_param,
-        tbmc.coupon_ids,
-        tbmc.user_info_group_ids,
-        tbmc.group_type,
-        tbmc.tenant_id
+        tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
+        tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
+        tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
+        tbmc.user_info_group_ids, tbmc.group_type, tbmc.tenant_id
     </sql>
     <sql id="pageFilter">
         <where>
             <if test="businessType != null">
                 and tbmc.business_type = #{businessType}
             </if>
-        
+    
             <if test="franchiseeId != null">
                 and tbmc.franchisee_id = #{franchiseeId}
             </if>
