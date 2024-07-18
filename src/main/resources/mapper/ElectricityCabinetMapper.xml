@@ -1469,8 +1469,9 @@
     
     <sql id="pageFilter">
         <where>
+            del_flag=0
             <if test="query.name != null and query.name != ''">
-                name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+                and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
             </if>
             <if test="query.address != null and query.address != ''">
                 and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')

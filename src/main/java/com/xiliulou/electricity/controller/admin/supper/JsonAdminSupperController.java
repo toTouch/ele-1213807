@@ -29,7 +29,6 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.supper.AdminSupperService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import com.xiliulou.security.bean.TokenUser;
@@ -819,7 +818,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "source", required = false) Integer source,
             @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
-            @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd, @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
