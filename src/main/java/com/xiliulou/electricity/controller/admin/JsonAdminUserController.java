@@ -20,7 +20,9 @@ import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -83,7 +86,7 @@ public class JsonAdminUserController extends BaseController {
                       @RequestParam(value = "uid", required = false) Long uid,
                       @RequestParam(value = "name", required = false) String name,
                       @RequestParam(value = "phone", required = false) String phone,
-                      @RequestParam(value = "type", required = false) Integer type,
+                      @RequestParam(value = "type", required = false) String typeList,
                       @RequestParam(value = "beginTime", required = false) Long startTime,
                       @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -102,43 +105,50 @@ public class JsonAdminUserController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
-        //租户
+    
+        List<Integer> types = splitStringToIntegers(typeList);
+        if(StringUtils.isBlank(typeList) || CollectionUtils.isEmpty(types)){
+            return R.fail("ELECTRICITY.0007", "参数不合法");
+        }
+        
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (SecurityUtils.isAdmin() && Objects.nonNull(type) && type == -1) {
+        if (SecurityUtils.isAdmin()) {
             tenantId = null;
         }
-
-        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
+    
+        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, types, startTime, endTime, tenantId));
     }
-
 
     @GetMapping("/user/queryCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "type", required = false) String typeList,
             @RequestParam(value = "beginTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
-
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok(NumberConstant.ZERO);
         }
-
+    
+        List<Integer> types = splitStringToIntegers(typeList);
+        if(StringUtils.isBlank(typeList) || CollectionUtils.isEmpty(types)){
+            return R.fail("ELECTRICITY.0007", "参数不合法");
+        }
+    
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
-            tenantId=null;
+        if (SecurityUtils.isAdmin()) {
+            tenantId = null;
         }
-
-        return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
+    
+        return returnPairResult(userService.queryCount(uid, name, phone, types, startTime, endTime, tenantId));
     }
 
     @GetMapping("/user/scope/{uid}")
@@ -267,6 +277,19 @@ public class JsonAdminUserController extends BaseController {
         userService.updateUserByUid(query);
         return R.ok();
     }
-
+    
+    private static List<Integer> splitStringToIntegers(String str) {
+        try {
+            String[] strArray = str.split(",");
+            List<Integer> integerList = new ArrayList<>();
+            for (String s : strArray) {
+                integerList.add(Integer.parseInt(s));
+            }
+            return integerList;
+        } catch (NumberFormatException e) {
+            log.error("splitStringToIntegers error");
+        }
+        return Collections.emptyList();
+    }
 
 }

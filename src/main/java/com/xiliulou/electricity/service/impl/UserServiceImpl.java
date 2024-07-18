@@ -469,7 +469,7 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Slave
-    public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
+    public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, List<Integer> type, Long startTime, Long endTime, Integer tenantId) {
         List<User> userList = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime, tenantId);
         if (CollectionUtils.isEmpty(userList)) {
             return Pair.of(true, Collections.EMPTY_LIST);
@@ -914,14 +914,15 @@ public class UserServiceImpl implements UserService {
     
     @Slave
     @Override
-    public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
+    public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, List<Integer> type, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.userMapper.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
     }
     
     @Slave
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
-        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
+        return this.userMapper.queryCount(null, null, null, null, startTime, endTime, tenantId);
+//        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
     
     @Override
@@ -941,7 +942,7 @@ public class UserServiceImpl implements UserService {
         }
         
         User user = queryByUidFromCache(uid);
-        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+        if (Objects.isNull(user) || !(User.TYPE_USER_NORMAL_WX_PRO.equals(user.getUserType()) || User.TYPE_USER_NORMAL_ALI_PAY.equals(user.getUserType()))) {
             return Triple.of(false, "USER.0001", "没有此用户！无法删除");
         }
         
