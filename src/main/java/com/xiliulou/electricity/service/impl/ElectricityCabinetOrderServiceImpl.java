@@ -2005,6 +2005,32 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.selectMonthExchangeOrders(eid, todayStartTimeStamp, todayEndTimeStamp, tenantId);
     }
     
+    @Override
+    public Triple<Boolean, String, Object> queryOrderStatusForShowV2(String orderId) {
+        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(orderId);
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.error("ORDER ERROR! query order not found,uid={},orderId={}", SecurityUtils.getUid(), orderId);
+            return Triple.of(false, "100221", "未能查找到订单");
+        }
+        
+        String status = electricityCabinetOrder.getStatus();
+        ExchangeOrderMsgShowVO showVo = new ExchangeOrderMsgShowVO();
+        showVo.setType(ExchangeOrderMsgShowVO.TYPE_SUCCESS);
+        
+        
+      
+        
+        if (isExceptionOrder(status)) {
+            showVo.setPicture(ExchangeOrderMsgShowVO.EXCEPTION_IMG);
+            //检查这里是否需要自助开仓
+            checkIsNeedSelfOpenCell(electricityCabinetOrder, showVo);
+            showVo.setType(ExchangeOrderMsgShowVO.TYPE_FAIL);
+            showVo.setStatus(redisService.get(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId));
+        }
+        
+        return Triple.of(true, null, showVo);
+    }
+    
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen())) {

@@ -102,4 +102,6 @@ public interface ElectricityCabinetOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    Triple<Boolean, String, Object> queryOrderStatusForShowV2(String orderId);
 }
