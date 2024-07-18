@@ -72,7 +72,7 @@ public interface UserService {
     
     User queryByUserPhone(String phone, Integer type, Integer tenantId);
     
-    Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
+    Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, List<Integer> type, Long startTime, Long endTime, Integer tenantId);
     
     Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery);
     
@@ -90,7 +90,7 @@ public interface UserService {
     
     void deleteInnerUser(Long uid);
     
-    Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
+    Pair<Boolean, Object> queryCount(Long uid, String name, String phone, List<Integer> type, Long startTime, Long endTime, Integer tenantId);
     
     Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId);
     

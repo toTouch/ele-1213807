@@ -3302,8 +3302,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //用户总数
         CompletableFuture<Void> userCount = CompletableFuture.runAsync(() -> {
-            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
-            homePageUserAnalysisVo.setUserCount(count);
+//            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
+            homePageUserAnalysisVo.setUserCount(0);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
