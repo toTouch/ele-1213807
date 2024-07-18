@@ -39,7 +39,7 @@ public class IdCardCheckServiceImpl implements IdCardCheckService {
         }
         
         if (StringUtils.isBlank(idNumber)) {
-            return Triple.of(false,"未填写身份证号，请联系客服开启身份证号认证",300860);
+            return Triple.of(false,"请联系客服开启身份证号认证",300860);
         }
         
         Integer age = idCardAgeCheck.get(tenantId);
