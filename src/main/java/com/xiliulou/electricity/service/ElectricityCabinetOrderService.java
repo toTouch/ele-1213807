@@ -75,6 +75,8 @@ public interface ElectricityCabinetOrderService {
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
     
+    Triple<Boolean, String, Object> orderV3(OrderQueryV2 orderQuery);
+    
     Triple<Boolean, String, Object> orderSelectionExchange(OrderSelectionExchangeQuery orderQuery);
     
     Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);

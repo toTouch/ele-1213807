@@ -367,4 +367,31 @@
         where uid = #{uid}
           and tenant_id = #{tenantId}
     </update>
+    
+    <select id="selectLatelyExchangeOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
+        select teco.id,
+               teco.order_id,
+               teco.phone,
+               teco.uid,
+               teco.pay_amount,
+               teco.electricity_cabinet_id,
+               teco.old_electricity_battery_sn,
+               teco.new_electricity_battery_sn,
+               teco.old_cell_no,
+               teco.new_cell_no,
+               teco.status,
+               teco.payment_method,
+               teco.source,
+               teco.remark,
+               teco.switch_begin_time,
+               teco.switch_end_time,
+               teco.create_time,
+               teco.update_time,
+               teco.franchisee_id
+        from t_electricity_cabinet_order teco
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
+          and create_time &lt; #{currentTime}
+        order by create_time desc limit 1
+    </select>
 </mapper>

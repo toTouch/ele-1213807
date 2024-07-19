@@ -48,6 +48,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     }
     
     /**
+     * 短时间内多次换电优化
+     *
+     * @param orderQuery
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/order/v3")
+    public R orderV3(@RequestBody @Validated OrderQueryV2 orderQuery) {
+        return returnTripleResult(electricityCabinetOrderService.orderV3(orderQuery));
+    }
+    
+    /**
      * 选仓换电
      *
      * @param exchangeQuery

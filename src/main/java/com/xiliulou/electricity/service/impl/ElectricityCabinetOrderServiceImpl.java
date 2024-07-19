@@ -13,6 +13,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -77,6 +78,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ExchangeOrderMsgShowVO;
 import com.xiliulou.electricity.vo.ExchangeUnFinishOrderVo;
+import com.xiliulou.electricity.vo.ExchangeUserSelectVo;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -190,6 +192,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Resource
+    private ExchangeConfig exchangeConfig;
     
     /**
      * 修改数据
@@ -1050,6 +1055,145 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
+    
+    @Override
+    public Triple<Boolean, String, Object> orderV3(OrderQueryV2 orderQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ORDER ERROR!  not found user,eid={}", orderQuery.getEid());
+            return Triple.of(false, "100001", "未能找到用户");
+        }
+        
+        Triple<Boolean, String, Object> checkExistsOrderResult = checkUserExistsUnFinishOrder(user.getUid());
+        if (checkExistsOrderResult.getLeft()) {
+            log.warn("ORDER WARN! user exists unFinishOrder! uid={}", user.getUid());
+            return Triple.of(false, checkExistsOrderResult.getMiddle(), checkExistsOrderResult.getRight());
+        }
+        
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getEid());
+        if (Objects.isNull(electricityCabinet)) {
+            return Triple.of(false, "100003", "柜机不存在");
+        }
+        
+        //换电柜是否打烊
+        boolean isBusiness = this.isBusiness(electricityCabinet);
+        if (isBusiness) {
+            return Triple.of(false, "100203", "换电柜已打烊");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            return Triple.of(false, "100004", "柜机不在线");
+        }
+        
+        //这里加柜机的缓存，为了限制不同时分配格挡
+        if (!redisService.setNx(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "100214", "已有其他用户正在使用中，请稍后再试");
+        }
+        
+        if (!redisService.setNx(CacheConstant.ORDER_TIME_UID + user.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "100002", "下单过于频繁");
+        }
+        
+        try {
+            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            if (Objects.isNull(store)) {
+                log.warn("ORDER WARN!  not found store ！uid={},eid={},storeId={}", user.getUid(), electricityCabinet.getId(), electricityCabinet.getStoreId());
+                return Triple.of(false, "100204", "未找到门店");
+            }
+            
+            //校验用户
+            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("ORDER WARN! not found user info,uid={} ", user.getUid());
+                return Triple.of(false, "100205", "未找到用户审核信息");
+            }
+            
+            //用户是否可用
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.warn("ORDER WARN! user is unUsable,uid={} ", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
+            
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("ORDER WARN! userinfo is UN AUTH! uid={}", user.getUid());
+                return Triple.of(false, "100206", "用户未审核");
+            }
+          
+            
+            //查询用户绑定的电池列表
+            List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
+            
+            Triple<Boolean, String, Object> rentBatteryResult = null;
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                //处理单电
+                rentBatteryResult = handlerSingleExchangeBattery(userInfo, store, electricityCabinet, orderQuery, batteryTypeList);
+                if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
+                    return rentBatteryResult;
+                }
+            } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                //处理车电一体
+                rentBatteryResult = handlerExchangeBatteryCar(userInfo, store, electricityCabinet, orderQuery, batteryTypeList);
+                if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
+                    return rentBatteryResult;
+                }
+            } else {
+                log.warn("RENTBATTERY WARN! not pay deposit,uid={}", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            }
+            
+            return rentBatteryResult;
+        } catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
+        } finally {
+            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());
+        }
+    }
+    
+    /**
+     * @return Boolean=false继续走正常换电；Integer 返回的仓门； boolean=true需要返回给前端提示，不继续换电
+     */
+    private Triple<Boolean, Integer,Boolean> lowTimeExchangeTwoCountAssert(Long uid, Integer tenantId, Integer eid, String userBindingBatterySn) {
+        if (Objects.isNull(tenantId)) {
+            return Triple.of(false, null,false);
+        }
+        // 上个换电订单
+        ElectricityCabinetOrder cabinetOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, Long.valueOf(tenantId), System.currentTimeMillis());
+        if (Objects.isNull(cabinetOrder)) {
+            log.warn("lowTimeExchangeTwoCountAssert.lastCabinetOrder is null, currentUid is {}", uid);
+            return Triple.of(false, null,false);
+        }
+        
+        // 默认3分钟
+        Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
+        if (System.currentTimeMillis() - cabinetOrder.getCreateTime() > scanTime) {
+            return Triple.of(false, null, false);
+        }
+        if (StrUtil.isEmpty(userBindingBatterySn)) {
+            log.warn("lowTimeExchangeTwoCountAssert.userBindingBatterySn is null");
+            return Triple.of(false, null,false);
+        }
+        
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, eid);
+        if (Objects.equals(cabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+            if (Objects.nonNull(cabinetBox)) {
+                // 吞电池，自主开仓，分配上一个订单的新仓门
+                return Triple.of(true, cabinetOrder.getNewCellNo(),false);
+            }else {
+                // 没有在仓，需要返回前端提示
+                return Triple.of(true, null,true);
+            }
+        } else {
+        
+            
+        }
+        
+        return Triple.of(false, null,false);
+    }
+    
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> orderSelectionExchange(OrderSelectionExchangeQuery exchangeQuery) {
@@ -1693,10 +1837,25 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        
+        // 分配满电仓门
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
+        }
+        
+        // todo 短时间换电两次校验
+        Triple<Boolean, Integer, Boolean> triple = this.lowTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet.getId(),
+                electricityBattery.getSn());
+       
+        if (triple.getLeft()){
+            if (triple.getLeft() && triple.getRight()) {
+                // 返回让前端选择
+                return Triple.of(true, null, ExchangeUserSelectVo.builder().lastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS).build());
+            }
+            // 选择的仓门
+            Integer cell = triple.getMiddle();
         }
         
         //修改按此套餐的次数
