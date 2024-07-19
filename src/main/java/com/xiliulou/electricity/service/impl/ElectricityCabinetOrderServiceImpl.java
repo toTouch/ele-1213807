@@ -17,7 +17,6 @@ import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.ExchangeFailReaonConstants;
-import com.xiliulou.electricity.dto.ExchangeReasonCellDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -36,12 +35,10 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.ExchangeReasonTypeEnum;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.handler.exchange.HandlerController;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
@@ -76,6 +73,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.ExchangeFailCellUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -199,9 +197,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private ExchangeConfig exchangeConfig;
-    
-    @Resource
-    private HandlerController handlerController;
     
     /**
      * 修改数据
@@ -1187,7 +1182,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.equals(cabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             return lastExchangeSuccessHandler(cabinetOrder, cabinetBox);
         } else {
-            return lastExchangeFailHandler(cabinetOrder);
+            return lastExchangeFailHandler(cabinetOrder,cabinetBox);
         }
     }
     
@@ -1201,24 +1196,26 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Triple<Boolean, Object, Boolean> lastExchangeFailHandler(ElectricityCabinetOrder cabinetOrder) {
+    private Triple<Boolean, Object, Boolean> lastExchangeFailHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinetBox cabinetBox) {
         // 获取异常的仓门
-        ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(
-                cabinetOrder.getOrderId());
-        if (Objects.isNull(history)){
+        ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(cabinetOrder.getOrderId());
+        if (Objects.isNull(history)) {
             // todo 订单中途未结束【包括初始化订单】,新仓门？
             
         } else {
-            Integer newOldCell = handlerController.getRouteHandler(ExchangeReasonTypeEnum.getReasonCodeByReason(history.getMsg()))
-                    .doHandler(ExchangeReasonCellDTO.builder().newCell(cabinetOrder.getNewCellNo()).oldCell(cabinetOrder.getOldCellNo()).msg(history.getMsg()).build());
-            if (Objects.isNull(newOldCell)) {
+            Integer judgeNewOldCell = ExchangeFailCellUtil.judgeNewOrOldCell(cabinetOrder.getNewCellNo(), cabinetOrder.getOldCellNo(), history.getMsg());
+            if (Objects.isNull(judgeNewOldCell)) {
                 // return false 不影响正常换电
                 log.error("lowTimeExchangeTwoCountAssert.getCell is error, orderId is {}", cabinetOrder.getOrderId());
                 return Triple.of(false, null, false);
             }
             
-            if (Objects.equals(newOldCell, ExchangeFailReaonConstants.NEW_CELL)){
+            if (Objects.equals(judgeNewOldCell, ExchangeFailReaonConstants.NEW_CELL)){
                 // 新仓门
+                if (Objects.nonNull(cabinetBox)) {
+                    // 吞电池，自主开仓，分配上一个订单的新仓门
+                    return Triple.of(true, cabinetOrder.getNewCellNo(), false);
+                }
                 
             }else {
                 // 旧仓门
@@ -1228,9 +1225,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return null;
     }
     
-    private Boolean judgeNewOrOldCell(Integer newCell, Integer oldCell,String msg) {
     
-    }
     
     @Override
     @Transactional(rollbackFor = Exception.class)
