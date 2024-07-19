@@ -1165,14 +1165,23 @@
         select id, name, sn, product_key, device_name, online_status, model_id, stock_status, warehouse_id
         from t_electricity_cabinet
         <where>
-            del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
+            del_flag=0 and tenant_id = #{tenantId}
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="stockStatus != null">
+                and stock_status = #{stockStatus}
             </if>
             <if test="idSet != null and idSet.size()>0">
                 and id in
                 <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
+                </foreach>
+            </if>
+            <if test="snList != null and snList.size()>0">
+                and sn in
+                <foreach collection="snList" item="sn" index="index" open="(" close=")" separator=",">
+                    #{sn}
                 </foreach>
             </if>
         </where>
@@ -1278,18 +1287,10 @@
             </if>
             warehouse_id = #{warehouseId}
         </set>
-        <where>
-            tenant_id = #{tenantId}
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="idList != null and idList.size() > 0">
-                and id in
-                <foreach collection="idList" item="id" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
+        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </update>
     
     <update id="updateFranchiseeIdAndStoreId">
