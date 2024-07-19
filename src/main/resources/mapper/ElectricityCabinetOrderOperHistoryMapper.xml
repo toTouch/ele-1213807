@@ -41,4 +41,20 @@
         where order_id = #{orderId}
     </update>
     
+    <select id="selectOrderHistoryFinallyFail" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory">
+        select id,
+               order_id,
+               type,
+               msg,
+               create_time,
+               seq,
+               result,
+               tenant_id
+        from t_electricity_cabinet_order_oper_history
+        where order_id = #{orderId}
+          AND type = 2
+          and result = 1
+        order by seq asc limit 1
+    </select>
+    
 </mapper>

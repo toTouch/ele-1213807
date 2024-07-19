@@ -16,6 +16,8 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.ExchangeFailReaonConstants;
+import com.xiliulou.electricity.dto.ExchangeReasonCellDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -34,10 +36,12 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.ExchangeReasonTypeEnum;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.handler.exchange.HandlerController;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
@@ -195,6 +199,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private ExchangeConfig exchangeConfig;
+    
+    @Resource
+    private HandlerController handlerController;
     
     /**
      * 修改数据
@@ -1155,11 +1162,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     /**
      * @return Boolean=false继续走正常换电；Integer 返回的仓门； boolean=true需要返回给前端提示，不继续换电
      */
-    private Triple<Boolean, Integer,Boolean> lowTimeExchangeTwoCountAssert(Long uid, Integer tenantId, Integer eid, String userBindingBatterySn) {
+    private Triple<Boolean, Object,Boolean> lowTimeExchangeTwoCountAssert(Long uid, Integer tenantId, Integer eid, String userBindingBatterySn) {
         if (Objects.isNull(tenantId)) {
             return Triple.of(false, null,false);
         }
-        // 上个换电订单
+       
         ElectricityCabinetOrder cabinetOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, Long.valueOf(tenantId), System.currentTimeMillis());
         if (Objects.isNull(cabinetOrder)) {
             log.warn("lowTimeExchangeTwoCountAssert.lastCabinetOrder is null, currentUid is {}", uid);
@@ -1178,21 +1185,52 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, eid);
         if (Objects.equals(cabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-            if (Objects.nonNull(cabinetBox)) {
-                // 吞电池，自主开仓，分配上一个订单的新仓门
-                return Triple.of(true, cabinetOrder.getNewCellNo(),false);
-            }else {
-                // 没有在仓，需要返回前端提示
-                return Triple.of(true, null,true);
-            }
+            return lastExchangeSuccessHandler(cabinetOrder, cabinetBox);
         } else {
-        
-            
+            return lastExchangeFailHandler(cabinetOrder);
         }
-        
-        return Triple.of(false, null,false);
     }
     
+    private static Triple<Boolean, Object, Boolean> lastExchangeSuccessHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinetBox cabinetBox) {
+        if (Objects.nonNull(cabinetBox)) {
+            // 吞电池，自主开仓，分配上一个订单的新仓门
+            return Triple.of(true, cabinetOrder.getNewCellNo(), false);
+        } else {
+            // 没有在仓，需要返回前端提示
+            return Triple.of(true, ExchangeUserSelectVo.builder().lastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS).build(), true);
+        }
+    }
+    
+    private Triple<Boolean, Object, Boolean> lastExchangeFailHandler(ElectricityCabinetOrder cabinetOrder) {
+        // 获取异常的仓门
+        ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(
+                cabinetOrder.getOrderId());
+        if (Objects.isNull(history)){
+            // todo 订单中途未结束【包括初始化订单】,新仓门？
+            
+        } else {
+            Integer newOldCell = handlerController.getRouteHandler(ExchangeReasonTypeEnum.getReasonCodeByReason(history.getMsg()))
+                    .doHandler(ExchangeReasonCellDTO.builder().newCell(cabinetOrder.getNewCellNo()).oldCell(cabinetOrder.getOldCellNo()).msg(history.getMsg()).build());
+            if (Objects.isNull(newOldCell)) {
+                // return false 不影响正常换电
+                log.error("lowTimeExchangeTwoCountAssert.getCell is error, orderId is {}", cabinetOrder.getOrderId());
+                return Triple.of(false, null, false);
+            }
+            
+            if (Objects.equals(newOldCell, ExchangeFailReaonConstants.NEW_CELL)){
+                // 新仓门
+                
+            }else {
+                // 旧仓门
+            }
+        
+        }
+        return null;
+    }
+    
+    private Boolean judgeNewOrOldCell(Integer newCell, Integer oldCell,String msg) {
+    
+    }
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1846,16 +1884,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         // todo 短时间换电两次校验
-        Triple<Boolean, Integer, Boolean> triple = this.lowTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet.getId(),
+        Triple<Boolean, Object, Boolean> triple = this.lowTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet.getId(),
                 electricityBattery.getSn());
-       
-        if (triple.getLeft()){
-            if (triple.getLeft() && triple.getRight()) {
-                // 返回让前端选择
-                return Triple.of(true, null, ExchangeUserSelectVo.builder().lastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS).build());
-            }
+        if (triple.getLeft() && triple.getRight()) {
+            // 返回让前端选择
+            return Triple.of(true, null, triple.getMiddle());
+        }
+        if (triple.getLeft()) {
             // 选择的仓门
-            Integer cell = triple.getMiddle();
+            Integer cell = (Integer) triple.getMiddle();
         }
         
         //修改按此套餐的次数
