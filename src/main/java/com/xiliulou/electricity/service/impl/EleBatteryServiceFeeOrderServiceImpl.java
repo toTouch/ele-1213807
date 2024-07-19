@@ -284,8 +284,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.selectListSuperAdminPage(batteryServiceFeeQuery);
     
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
-            if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                Integer model = batteryModelService.acquireBatteryModel(eleBatteryServiceFeeOrderVo.getBatteryType(), batteryServiceFeeQuery.getTenantId());
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.nonNull(eleBatteryServiceFeeOrderVo.getTenantId())) {
+                Integer model = batteryModelService.acquireBatteryModel(eleBatteryServiceFeeOrderVo.getBatteryType(), eleBatteryServiceFeeOrderVo.getTenantId());
                 eleBatteryServiceFeeOrderVo.setModel(model);
             }
         
