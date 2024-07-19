@@ -89,4 +89,9 @@ public class BatteryMembercardRefundOrderVO {
      * 加盟商名称
      */
     private String franchiseeName;
+    
+    private Integer tenantId;
+    
+    private String tenantName;
+
 }

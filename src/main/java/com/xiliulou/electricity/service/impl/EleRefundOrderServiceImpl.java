@@ -27,6 +27,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -54,6 +55,7 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -204,6 +206,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private TenantService tenantService;
     
     /**
      * 新增数据
@@ -1531,6 +1536,41 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Integer updateById(EleRefundOrder eleRefundOrderUpdate) {
         return eleRefundOrderMapper.update(eleRefundOrderUpdate);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(EleRefundQuery eleRefundQuery) {
+        List<EleRefundOrderVO> eleRefundOrderVOS = eleRefundOrderMapper.selectListSuperAdminPage(eleRefundQuery);
+        
+        if (CollectionUtils.isEmpty(eleRefundOrderVOS)) {
+            return R.ok(new ArrayList<>());
+        }
+    
+        eleRefundOrderVOS.forEach(item -> {
+            if (Objects.nonNull(item.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
+                item.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+            
+            if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
+                item.setRefundAmount(null);
+            }
+        
+            if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+        
+            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
+            if (Objects.isNull(freeDepositAlipayHistory)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+        
+            item.setIsFreeDepositAliPay(true);
+        });
+        return R.ok(eleRefundOrderVOS);
     }
     
     @Slave

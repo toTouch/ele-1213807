@@ -102,4 +102,6 @@ public interface BatteryMemberCardService {
      * @return 返回id、name、sortParam、createTime
      */
     List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser);
+    
+    List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
 }

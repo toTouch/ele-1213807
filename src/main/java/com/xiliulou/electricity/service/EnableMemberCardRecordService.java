@@ -56,5 +56,7 @@ public interface EnableMemberCardRecordService {
     
     List<EnableMemberCardRecord> queryListByOrderIds(List<String> orderIdList);
     
+    R listSuperAdminPage(EnableMemberCardRecordQuery enableMemberCardRecordQuery);
+    
     List<EnableMemberCardRecord> listLastEnableTimeByDisableMemberCardNos(List<String> disableMemberCardNoList);
 }

@@ -30,6 +30,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -69,6 +70,7 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreGoodsService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -245,6 +247,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private TenantService tenantService;
     
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -776,6 +781,35 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(EleDepositOrderQuery eleDepositOrderQuery) {
+        List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.selectListSuperAdminPage(eleDepositOrderQuery);
+        
+        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
+            eleDepositOrderVO.setRefundFlag(true);
+        
+            List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
+            // 订单已退押或正在退押中
+            if (!CollectionUtils.isEmpty(eleRefundOrders)) {
+                for (EleRefundOrder e : eleRefundOrders) {
+                    if (EleRefundOrder.STATUS_SUCCESS.equals(e.getStatus()) || EleRefundOrder.STATUS_REFUND.equals(e.getStatus())) {
+                        eleDepositOrderVO.setRefundFlag(false);
+                    }
+                }
+            }
+            
+            if (Objects.nonNull(eleDepositOrderVO.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(eleDepositOrderVO.getTenantId());
+                eleDepositOrderVO.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+            
+            return eleDepositOrderVO;
+        }).collect(Collectors.toList());
+    
+        return R.ok(eleDepositOrderVOS);
     }
     
     @Override

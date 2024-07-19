@@ -101,4 +101,14 @@ public class EleRefundOrderVO {
      */
     private String franchiseeName;
     
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
 }

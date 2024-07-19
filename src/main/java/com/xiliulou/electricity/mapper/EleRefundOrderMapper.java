@@ -53,4 +53,6 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     Integer update(EleRefundOrder eleRefundOrderUpdate);
     
     Integer existsRefundOrderByUid(Long uid);
+    
+    List<EleRefundOrderVO> selectListSuperAdminPage(@Param("query") EleRefundQuery eleRefundQuery);
 }

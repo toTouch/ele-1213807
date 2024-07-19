@@ -156,4 +156,6 @@ public interface ElectricityMemberCardOrderService {
     Integer countSuccessOrderByUid(Long uid);
     
     List<ElectricityMemberCardOrder> queryListByOrderIds(List<String> orderIdList);
+    
+    R listSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
 }

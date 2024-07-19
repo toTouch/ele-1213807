@@ -86,4 +86,8 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     
     private List<CouponSearchVo> coupons;
     
+    private String tenantName;
+    
+    private Integer tenantId;
+    
 }

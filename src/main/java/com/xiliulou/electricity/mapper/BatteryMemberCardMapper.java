@@ -76,4 +76,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      * @return 用于排序的套餐简单信息
      */
     List<BatteryMemberCardVO> selectListMemberCardForSort(@Param("query") BatteryMemberCardQuery query);
+    
+    List<BatteryMemberCardAndTypeVO> selectListSuperAdminPage(BatteryMemberCardQuery query);
 }

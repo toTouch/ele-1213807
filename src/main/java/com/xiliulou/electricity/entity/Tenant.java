@@ -57,5 +57,8 @@ public class Tenant {
     public static final Integer STA_OUT = 1;
 
     public static final Integer ZHONGYING_TENANT_ID = 15;
+    
+    //超级管理员租户id
+    public static final Integer SUPER_ADMIN_TENANT_ID = 1;
 
 }
