@@ -1859,25 +1859,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
         
-        //默认是小程序下单
-        if (Objects.isNull(orderQuery.getSource())) {
-            orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
-        }
-        
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
-        if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
-            return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
-        }
-        
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        
-        // 分配满电仓门
-        Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
-        if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
-            return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
-        }
-        
         // todo 短时间换电两次校验
         Triple<Boolean, Object, Boolean> triple = this.lowTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet.getId(),
                 electricityBattery.getSn());
@@ -1889,6 +1871,25 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 选择的仓门
             Integer cell = (Integer) triple.getMiddle();
         }
+        
+        //默认是小程序下单
+        if (Objects.isNull(orderQuery.getSource())) {
+            orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
+        }
+        
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+        if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
+            return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
+        }
+        
+        // 分配满电仓门
+        Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
+                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
+        if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
+            return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
+        }
+        
+       
         
         //修改按此套餐的次数
         Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
