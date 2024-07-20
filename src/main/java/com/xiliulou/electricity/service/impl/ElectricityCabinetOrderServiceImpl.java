@@ -1237,18 +1237,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox) {
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
-        // 获取异常的仓门
+        
         ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
         if (Objects.isNull(history)) {
             // todo 订单中途未结束【包括初始化订单】,新仓门？
-            
+            return Pair.of(false, null);
         } else {
             String msg = history.getMsg();
             log.info("lastExchangeFailHandler.lastOrder is{},history.msg is {}", JsonUtil.toJson(lastOrder), msg);
-           
             if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME)) {
                 // 旧仓门电池检测失败或超时
-                
                 if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo())) {
                     // 旧仓门不满足开仓条件
                     vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
@@ -1258,6 +1256,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
                     // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
                     // todo 用户扫码进入取电流程,      - 修改上一个换电订单，补充新仓门以及电池数据
+                    // todo
                     vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
                     vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
                     vo.setCell(lastOrder.getNewCellNo());
@@ -1283,7 +1282,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                return this.batteryExistCellHandler(lastOrder,cabinetBox,vo);
             }
         }
-        return null;
+        return Pair.of(false, null);
     }
     
     
