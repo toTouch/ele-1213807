@@ -83,4 +83,6 @@ public interface ElectricityCabinetPhysicsOperRecordMapper  extends BaseMapper<E
                                            @Param("cellNo") Integer cellNo,
                                            @Param("userName") String userName,
                                            @Param("phone")String phone);
+    
+    Integer existOpenRecordInSameCabinetAndCell(@Param("startTime") Long startTime,@Param("endTime") Long endTime,@Param("eid") Integer eid,@Param("cell") Integer cell);
 }

@@ -394,4 +394,15 @@
           and create_time &lt; #{currentTime}
         order by create_time desc limit 1
     </select>
+    
+    
+    <select id="existExchangeOrderInSameCabinetAndCell" resultType="integer">
+        select 1
+        from t_electricity_cabinet_order
+        where id > #{id}
+          and update_time &lt; #{endTime}
+          and electricity_cabinet_id = #{eid}
+          and cell = #{cell}
+        order by id desc limit 1
+    </select>
 </mapper>

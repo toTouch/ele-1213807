@@ -109,4 +109,9 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
         vo.setCount(count);
         return R.ok(vo);
     }
+    
+    @Override
+    public Integer existOpenRecordInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell) {
+        return electricityCabinetPhysicsOperRecordMapper.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
+    }
 }
