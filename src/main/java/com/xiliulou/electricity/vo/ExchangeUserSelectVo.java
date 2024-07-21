@@ -37,6 +37,8 @@ public class ExchangeUserSelectVo {
      */
     private Integer cell;
     
+    private String sessionId;
+    
     
     public static final Integer LAST_EXCHANGE_SUCCESS = 1;
     
