@@ -105,5 +105,4 @@ public interface ElectricityCabinetOrderService {
     
     R queryListv2(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     
-    R selfOpenCellv2(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 }

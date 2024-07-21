@@ -65,7 +65,15 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return electricityCabinetOrderService.openDoor(openDoorQuery);
     }
     
-    //换电柜订单查询
+    /**
+     * 换电柜订单查询，本次修改了小程序的自主开仓逻辑
+     * 经前端查询，其他接口没有用到自主开仓，为了优化速度，所以更换了底层方法
+     * @param size
+     * @param offset
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     @GetMapping("/user/electricityCabinetOrder/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -89,39 +97,11 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).beginTime(beginTime).endTime(endTime)
                 .uid(user.getUid()).tenantId(tenantId).build();
-        return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
-    }
-    
-    
-    /**
-     * 小程序换电记录新接口
-     * @return
-     */
-    @GetMapping("/user/electricityCabinetOrder/list/v2")
-    public R queryListv2(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
-        
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
-        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).beginTime(beginTime).endTime(endTime)
-                .uid(user.getUid()).tenantId(tenantId).build();
         return electricityCabinetOrderService.queryListv2(electricityCabinetOrderQuery);
     }
+    
+    
+   
     
     //换电柜订单量
     @GetMapping("/user/electricityCabinetOrder/count")
@@ -159,21 +139,16 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShow(orderId));
     }
     
-    //换电柜自助开仓
+    /**
+     * 换电柜自助开仓
+     * @param orderSelfOpenCellQuery
+     * @return
+     */
     @PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
     public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
         return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
     }
     
-    /**
-     * 换电柜新自助开仓
-     * @param orderSelfOpenCellQuery
-     * @return
-     */
-    @PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell/v2")
-    public R orderSelfOpenCellQueryv2(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
-        return electricityCabinetOrderService.selfOpenCellv2(orderSelfOpenCellQuery);
-    }
     
     //查看开门结果
     @GetMapping("/user/electricityCabinet/open/check")
