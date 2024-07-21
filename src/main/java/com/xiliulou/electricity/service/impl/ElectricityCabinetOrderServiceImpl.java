@@ -1297,6 +1297,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
+            // todo 结束上一个异常订单
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getNewCellNo());
@@ -1313,7 +1314,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
             // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
-            // todo 自主开仓？
+            // todo 后台自主开仓？
             
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
