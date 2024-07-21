@@ -2258,13 +2258,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(electricityCabinetOrder.getElectricityCabinetId()) && Objects.nonNull(electricityExceptionOrderStatusRecord.getCellNo())) {
             Integer isExistNewExchangeOrder = electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
                     electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewExchangeOrder)) {
+                log.warn("selfOpenCell.existExchangeOrder, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作。");
+            }
             Integer isExistNewReturnOrder = rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
                     electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewReturnOrder)) {
+                log.warn("selfOpenCell.existNewReturnOrder, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作。");
+            }
             Integer isExistNewOperRecord = electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
                     electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
-            log.debug("selfOpenCell.orderId is {};isExistNewExchangeOrder is {} ,isExistNewReturnOrder is {},isExistNewOperRecord is {}", electricityCabinetOrder.getOrderId(),
-                    isExistNewExchangeOrder, isExistNewReturnOrder, isExistNewOperRecord);
-            if (Objects.nonNull(isExistNewExchangeOrder) || Objects.nonNull(isExistNewReturnOrder) || Objects.nonNull(isExistNewOperRecord)) {
+            if (Objects.nonNull(isExistNewOperRecord)) {
+                log.warn("selfOpenCell.existNewOperRecord, orderId is {}", electricityCabinetOrder.getOrderId());
                 return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作。");
             }
         }
