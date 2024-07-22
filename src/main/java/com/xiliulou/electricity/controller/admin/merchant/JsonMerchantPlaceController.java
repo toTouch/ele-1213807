@@ -60,14 +60,15 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place save warn! franchisee is empty");
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
     
-            merchantPlaceSaveRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            merchantPlaceSaveRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         Triple<Boolean, String, Object> r = merchantPlaceService.save(merchantPlaceSaveRequest);
@@ -97,14 +98,15 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place update warn! franchisee is empty");
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
-            merchantPlaceSaveRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            merchantPlaceSaveRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         Triple<Boolean, String, Object> r = merchantPlaceService.update(merchantPlaceSaveRequest);
@@ -135,19 +137,17 @@ public class JsonMerchantPlaceController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
-        Long franchiseeId = null;
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place delete warn! franchisee is empty uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        Triple<Boolean, String, Object> r = merchantPlaceService.remove(id, franchiseeId);
+        Triple<Boolean, String, Object> r = merchantPlaceService.remove(id, franchiseeIds);
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
@@ -178,19 +178,18 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place page count warn! franchisee is empty uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
         MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId).name(name).franchiseeId(franchiseeId).tenantId(tenantId).idList(idList)
-                .merchantAreaId(merchantAreaId).build();
+                .merchantAreaId(merchantAreaId).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(merchantPlaceService.countTotal(merchantPlacePageRequest));
     }
@@ -222,18 +221,18 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place page warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId).franchiseeId(franchiseeId).name(name).idList(idList).size(size).offset(offset)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().merchantId(merchantId).franchiseeId(franchiseeId).name(name)
+                .franchiseeIdList(franchiseeIds).idList(idList).size(size).offset(offset)
                 .tenantId(tenantId).merchantAreaId(merchantAreaId).name(name).build();
         
         return R.ok(merchantPlaceService.listByPage(merchantPlacePageRequest));
@@ -265,18 +264,16 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place page warn! franchisee is empty uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).placeId(placeId).bindFranchiseeId(franchiseeId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).placeId(placeId).bindFranchiseeIdList(franchiseeIds)
                 .cabinetName(cabinetName).build();
         
         return returnTripleResult(merchantPlaceService.queryListCabinet(merchantPlacePageRequest));
@@ -308,17 +305,16 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place query place list warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).franchiseeId(franchiseeId)
+        MerchantPlacePageRequest merchantPlacePageRequest = MerchantPlacePageRequest.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).name(name).franchiseeId(franchiseeId).franchiseeIdList(franchiseeIds)
                 .merchantId(merchantId).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantPlaceService.queryListPlace(merchantPlacePageRequest));
@@ -341,18 +337,16 @@ public class JsonMerchantPlaceController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place get by id warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        Triple<Boolean, String, Object> triple = merchantPlaceService.queryById(id, franchiseeId);
+        Triple<Boolean, String, Object> triple = merchantPlaceService.queryById(id, franchiseeIds);
         
         return returnTripleResult(triple);
     }
