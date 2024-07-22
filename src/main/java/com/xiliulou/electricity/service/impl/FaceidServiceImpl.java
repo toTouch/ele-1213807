@@ -189,7 +189,7 @@ public class FaceidServiceImpl implements FaceidService {
         if (Boolean.FALSE.equals(verifyUserInfo.getLeft())) {
             return verifyUserInfo;
         }
-    
+        
         //身份证号唯一性校验
         if (!Objects.isNull(userInfoService.existsByIdNumber(query.getIdNumber(), userInfo.getTenantId()))) {
             log.warn("ALIPAY WARN! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), query.getIdNumber());
@@ -239,34 +239,36 @@ public class FaceidServiceImpl implements FaceidService {
         if (!redisService.setNx(CacheConstant.ELE_CACHE_ALIPAY_CERTIFY_RESULT_LOCK_KEY + uid, "1", 5 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         Triple<Boolean, String, Object> verifyUserInfo = verifyUserInfo(userInfo, uid);
         if (Boolean.FALSE.equals(verifyUserInfo.getLeft())) {
             return verifyUserInfo;
         }
-    
+        
         //获取支付宝小程序配置
         AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByTenantId(userInfo.getTenantId());
         if (Objects.isNull(alipayAppConfig)) {
             log.warn("ALIPAY WARN! alipayAppConfig is null,uid={}", uid);
             return Triple.of(false, "100389", "小程序配置不存在！");
         }
-    
+        
         AlipayUserCertifyInfoDTO alipayUserCertifyInfo = buildAlipayUserCertifyInfoDTO(query, alipayAppConfig, aliPayConfig);
         alipayUserCertifyInfo.setCertifyId(query.getCertifyId());
-    
-        boolean userCertifyResult = alipayUserCertifyService.acquireUserCertifyResult(alipayUserCertifyInfo);
-        Integer result = userCertifyResult ? FaceRecognizeUserRecord.STATUS_SUCCESS : FaceRecognizeUserRecord.STATUS_FAIL;
-    
+        
+        if (Boolean.FALSE.equals(alipayUserCertifyService.acquireUserCertifyResult(alipayUserCertifyInfo))) {
+            log.warn("ALIPAY WARN! auth fail,uid={},certifyId={}", uid, query.getCertifyId());
+            return Triple.of(false, "100331", "人脸核身失败！");
+        }
+        
         //更新人脸核身记录
         FaceRecognizeUserRecord faceRecognizeUserRecordUpdate = new FaceRecognizeUserRecord();
         faceRecognizeUserRecordUpdate.setUid(uid);
         faceRecognizeUserRecordUpdate.setCertifyId(query.getCertifyId());
-        faceRecognizeUserRecordUpdate.setStatus(result);
+        faceRecognizeUserRecordUpdate.setStatus(FaceRecognizeUserRecord.STATUS_SUCCESS);
         faceRecognizeUserRecordUpdate.setUpdateTime(System.currentTimeMillis());
         faceRecognizeUserRecordService.updateByUidAndCertifyId(faceRecognizeUserRecordUpdate);
-    
+        
         //更新用户实名认证状态及审核类型
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setUid(userInfo.getUid());
@@ -274,15 +276,10 @@ public class FaceidServiceImpl implements FaceidService {
         userInfoUpdate.setIdNumber(query.getIdNumber());
         userInfoUpdate.setTenantId(userInfo.getTenantId());
         userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
-        userInfoUpdate.setAuthStatus(result);
+        userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-    
-        if (userCertifyResult) {
-            userInfoUpdate.setName(query.getUserName());
-            userInfoUpdate.setIdNumber(query.getIdNumber());
-        }
         userInfoService.update(userInfoUpdate);
-    
+        
         //身份证正面照片
         EleUserAuth userAuthFront = new EleUserAuth();
         userAuthFront.setUid(userInfo.getUid());
@@ -293,7 +290,7 @@ public class FaceidServiceImpl implements FaceidService {
         userAuthFront.setCreateTime(System.currentTimeMillis());
         userAuthFront.setUpdateTime(System.currentTimeMillis());
         userAuthFront.setTenantId(userInfo.getTenantId());
-    
+        
         //身份证反面照片
         EleUserAuth userAuthBack = new EleUserAuth();
         userAuthBack.setUid(userInfo.getUid());
@@ -305,11 +302,7 @@ public class FaceidServiceImpl implements FaceidService {
         userAuthBack.setUpdateTime(System.currentTimeMillis());
         userAuthBack.setTenantId(userInfo.getTenantId());
         eleUserAuthService.batchInsert(Lists.newArrayList(userAuthFront, userAuthBack));
-    
-        if (userCertifyResult) {
-            return Triple.of(false, "100331", "人脸核身失败！");
-        }
-    
+        
         return Triple.of(true, "", "");
     }
     
