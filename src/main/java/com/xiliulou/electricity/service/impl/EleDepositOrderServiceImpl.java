@@ -38,6 +38,9 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
@@ -247,6 +250,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
     
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
+    
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, orderNo));
@@ -395,10 +401,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer tenantId = user.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         // 生成退款订单
+        String generateBusinessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid());
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid())).payAmount(payAmount).refundAmount(eleRefundAmount)
+                .refundOrderNo(generateBusinessOrderId).payAmount(payAmount).refundAmount(eleRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId())
                 .memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
+        
+        // 发送站内信
+        siteMessagePublish.publish(SiteMessageEvent.builder(this)
+                        .tenantId(TenantContextHolder.getTenantId().longValue())
+                        .code(SiteMessageType.EXCHANGE_BATTERY_AND_RETURN_THE_DEPOSIT)
+                        .notifyTime(System.currentTimeMillis())
+                        .addContext("name", userInfo.getName())
+                        .addContext("phone", userInfo.getPhone())
+                        .addContext("refundOrderNo", generateBusinessOrderId)
+                        .addContext("amount",eleRefundAmount.toString())
+                .build());
         
         // 退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {

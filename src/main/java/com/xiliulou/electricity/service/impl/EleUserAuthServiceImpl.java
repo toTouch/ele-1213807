@@ -16,8 +16,12 @@ import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.SiteMessageProducer;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -88,6 +92,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
     @Resource
     private IdCardCheckService idCardCheckService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
     
 
     /**
@@ -210,6 +217,15 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             sendAuthenticationAuditMessage(userInfo);
         }
 
+        //发送消息到站内信
+        siteMessagePublish.publish(SiteMessageEvent.builder(this)
+                .code(SiteMessageType.REAL_NAME_VERIFICATION)
+                .notifyTime(System.currentTimeMillis())
+                .tenantId(Long.valueOf(tenantId))
+                .addContext("name", userInfo.getName())
+                .addContext("uid", userInfo.getId())
+                .addContext("phone", userInfo.getPhone())
+                .build());
         return R.ok();
     }
     
