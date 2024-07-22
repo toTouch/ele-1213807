@@ -21,7 +21,6 @@ import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
@@ -971,6 +970,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         sendDisableMemberCardMessage(userInfo);
         try {
+            
+            // 发送站内信
+            siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.BATTERY_SWAPPING_FREEZE)
+                    .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                    .addContext("disableMemberCardNo", generateOrderId).build());
             Map<String, Object> map = new HashMap<>();
             map.put("username", eleDisableMemberCardRecord.getUserName());
             map.put("phone", eleDisableMemberCardRecord.getPhone());
@@ -1560,8 +1564,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
         
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) ||
-                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(
+                userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
             log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! member card not disable userId={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100001", "用户未停卡");
         }
@@ -4140,7 +4144,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-    
+        
         List<ElectricityMemberCardOrderVO> ElectricityMemberCardOrderVOs = new ArrayList<>();
         for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
             // 设置租户名称
@@ -4153,54 +4157,54 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     electricityMemberCardOrderVO.getActivityId())) {
                 OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCardOrderVO.getActivityId());
                 if (Objects.nonNull(oldUserActivity)) {
-                
+                    
                     OldUserActivityVO oldUserActivityVO = new OldUserActivityVO();
                     BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
-                
-                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
                     
+                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
+                        
                         Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
                         if (Objects.nonNull(coupon)) {
                             oldUserActivityVO.setCoupon(coupon);
                         }
-                    
+                        
                     }
                     electricityMemberCardOrderVO.setOldUserActivityVO(oldUserActivityVO);
                 }
             }
-        
+            
             if (Objects.nonNull(electricityMemberCardOrderVO.getRefId())) {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrderVO.getRefId().intValue());
                 electricityMemberCardOrderVO.setElectricityCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
             }
-        
+            
             if (Objects.nonNull(electricityMemberCardOrderVO.getFranchiseeId())) {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityMemberCardOrderVO.getFranchiseeId());
                 electricityMemberCardOrderVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             }
-        
+            
             if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
                 Coupon coupon = couponService.queryByIdFromCache(electricityMemberCardOrderVO.getSendCouponId().intValue());
                 electricityMemberCardOrderVO.setSendCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
-        
+            
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrderVO.getMemberCardId());
             electricityMemberCardOrderVO.setRentType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentType());
             electricityMemberCardOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
             electricityMemberCardOrderVO.setIsRefund(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getIsRefund());
             electricityMemberCardOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
-        
+            
             // 设置优惠券
             List<CouponSearchVo> coupons = new ArrayList<>();
             HashSet<Integer> couponIdsSet = new HashSet<>();
-        
+            
             if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
                 couponIdsSet.add(Integer.parseInt(electricityMemberCardOrderVO.getSendCouponId().toString()));
             }
             if (StringUtils.isNotBlank(electricityMemberCardOrderVO.getCouponIds())) {
                 couponIdsSet.addAll(JsonUtil.fromJsonArray(electricityMemberCardOrderVO.getCouponIds(), Integer.class));
             }
-        
+            
             if (!CollectionUtils.isEmpty(couponIdsSet)) {
                 couponIdsSet.forEach(couponId -> {
                     CouponSearchVo couponSearchVo = new CouponSearchVo();
@@ -4213,10 +4217,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 });
             }
             electricityMemberCardOrderVO.setCoupons(coupons);
-        
+            
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
-    
+        
         return R.ok(ElectricityMemberCardOrderVOs);
     }
     

@@ -77,7 +77,7 @@ public class SiteMessageEvent extends ApplicationEvent {
         }
         
         public Builder addContext(String key, Object value) {
-            this.event.context.put(key, ObjectUtils.defaultIfNull(value,""));
+            this.event.context.put(key, ObjectUtils.defaultIfNull(value, ""));
             return this;
         }
         

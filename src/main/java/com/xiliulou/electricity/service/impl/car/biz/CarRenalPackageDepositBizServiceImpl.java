@@ -37,6 +37,9 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
@@ -65,6 +68,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -86,6 +90,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -186,6 +191,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     
     @Resource
     private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
     
     /**
      * 退押审批确认是否强制线下退款
@@ -1666,6 +1674,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 待审核
         if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
+            // 发送站内信
+            siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_REFUND)
+                    .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                    .addContext("orderNo", refundDepositInsertEntity.getOrderNo()).build());
         } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
         }

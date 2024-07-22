@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.event.subscriber;
 
 
-import com.xiliulou.electricity.event.OverdueUserRemarkEvent;
 import com.xiliulou.electricity.event.SiteMessageEvent;
-import com.xiliulou.electricity.mapper.userinfo.overdue.UserInfoOverdueRemarkMapper;
 import com.xiliulou.electricity.mq.producer.SiteMessageProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -35,13 +33,13 @@ public class SiteMessageSubscriber {
     
     @EventListener
     public void handleSiteMessageEvent(SiteMessageEvent event) {
-        if (Objects.isNull(event)){
+        if (Objects.isNull(event)) {
             log.warn("Received subscription event OverdueUserRemarkEvent is null");
             return;
         }
         siteMessageProducer.sendMessage(event.toDTO());
-        if (log.isDebugEnabled()){
-            log.debug("An internal message has been sent to the queue : {}",event);
+        if (log.isDebugEnabled()) {
+            log.debug("An internal message has been sent to the queue : {}", event);
         }
     }
 }

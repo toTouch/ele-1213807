@@ -88,4 +88,10 @@ public class EleHardwareFailureWarnMsgPageRequest {
      * 柜机Id
      */
     private Integer cabinetId;
+    
+    /**
+     * id
+     * 站内信跳转需要根据id查询
+     */
+    private Long id;
 }

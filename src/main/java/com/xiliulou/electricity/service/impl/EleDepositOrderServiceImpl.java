@@ -208,7 +208,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
-
+    
     @Autowired
     BatteryModelService batteryModelService;
     
@@ -406,21 +406,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         // 生成退款订单
         String generateBusinessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid());
-        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(generateBusinessOrderId).payAmount(payAmount).refundAmount(eleRefundAmount)
-                .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId())
-                .memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId()).refundOrderNo(generateBusinessOrderId).payAmount(payAmount)
+                .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
         
         // 发送站内信
-        siteMessagePublish.publish(SiteMessageEvent.builder(this)
-                        .tenantId(TenantContextHolder.getTenantId().longValue())
-                        .code(SiteMessageType.EXCHANGE_BATTERY_AND_RETURN_THE_DEPOSIT)
-                        .notifyTime(System.currentTimeMillis())
-                        .addContext("name", userInfo.getName())
-                        .addContext("phone", userInfo.getPhone())
-                        .addContext("refundOrderNo", generateBusinessOrderId)
-                        .addContext("amount",eleRefundAmount.toString())
-                .build());
+        siteMessagePublish.publish(
+                SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.EXCHANGE_BATTERY_AND_RETURN_THE_DEPOSIT)
+                        .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                        .addContext("refundOrderNo", generateBusinessOrderId).addContext("amount", eleRefundAmount.toString()).build());
         
         // 退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -808,7 +802,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
-        
+            
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
             if (!CollectionUtils.isEmpty(eleRefundOrders)) {
@@ -826,7 +820,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             
             return eleDepositOrderVO;
         }).collect(Collectors.toList());
-    
+        
         return R.ok(eleDepositOrderVOS);
     }
     

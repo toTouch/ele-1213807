@@ -44,6 +44,7 @@ public enum SiteMessageType {
     UNKNOWN("UNKNOWN", "未知");
     
     private final String code;
+    
     private final String describe;
     
     SiteMessageType(String code, String describe) {

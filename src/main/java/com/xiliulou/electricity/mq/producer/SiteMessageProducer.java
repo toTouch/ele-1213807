@@ -46,7 +46,7 @@ public class SiteMessageProducer {
                 log.error("Failed send message to the queue because: {}", Optional.ofNullable(pair.getRight()).orElse(""));
                 return;
             }
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("Successfully sent user operation records to the queue {}", json);
             }
         } catch (RuntimeException e) {
