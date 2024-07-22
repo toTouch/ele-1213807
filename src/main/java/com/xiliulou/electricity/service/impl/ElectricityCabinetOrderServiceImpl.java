@@ -1202,27 +1202,32 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Long startTime = order.getUpdateTime();
         Long endTime = startTime + 1000 * 60 * 3;
         Integer eid = order.getElectricityCabinetId();
-        
+        log.debug("isSatisfySelfOpenCondition.params, startTime is{},endTime is {},eid is{},cell is{}", startTime, endTime, eid, cell);
         Integer existExchangeOrder = electricityCabinetOrderMapper.existExchangeOrderInSameCabinetAndCell(order.getId(), endTime, eid, cell);
-        
-        Integer existReturnOrder = rentBatteryOrderService.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
-        
-        Integer existOpenRecord = operRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
-        
-        log.debug("isSatisfySelfOpenCondition.lastOrderId is:{},existExchangeOrder is {},existReturnOrder is{},existOpenRecord is {} ", order.getOrderId(), existExchangeOrder,
-                existReturnOrder, existOpenRecord);
-        
-        if (Objects.isNull(existExchangeOrder) && Objects.isNull(existReturnOrder) && Objects.isNull(existOpenRecord)) {
-            return true;
+        if (Objects.nonNull(existExchangeOrder)) {
+            log.warn("isSatisfySelfOpenCondition.existExchangeOrder, orderId:{}", order.getOrderId());
+            return false;
         }
-        return false;
+        Integer existReturnOrder = rentBatteryOrderService.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
+        if (Objects.nonNull(existReturnOrder)){
+            log.warn("isSatisfySelfOpenCondition.existReturnOrder, orderId:{}", order.getOrderId());
+            return false;
+        }
+        Integer existOpenRecord = operRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
+        if (Objects.nonNull(existOpenRecord)) {
+            log.warn("isSatisfySelfOpenCondition.existOpenRecord, orderId:{}", order.getOrderId());
+            return false;
+        }
+        
+        return true;
     }
     
     private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, String userBindingBatterySn) {
-        // 自主开仓条件校验
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS);
+        
+        // 自主开仓条件校验
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo())) {
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
             return Pair.of(true, vo);
@@ -1986,13 +1991,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        // todo 短时间换电两次校验
+        
+        // todo 柜机版本校验
         Pair<Boolean, Object> pair = this.lowTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(),electricityCabinet, electricityBattery.getSn());
         if (pair.getLeft()) {
             // 返回让前端选择
             return Triple.of(true, null, pair.getRight());
         }
-       
         
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {
