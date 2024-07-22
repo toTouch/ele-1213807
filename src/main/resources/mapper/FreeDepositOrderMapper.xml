@@ -48,7 +48,7 @@
         tfdo.type,
         tfdo.deposit_type,
         tfdo.create_time,
-        tfdo.update_time
+        tfdo.update_time,
         tfdo.franchisee_id
         from t_free_deposit_order tfdo
         where tfdo.tenant_id=#{tenantId}
