@@ -120,7 +120,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         //发送站内信
         FreeDepositData freeDepositData = this.freeDepositDataMapper.selectByTenantId(tenantId);
         siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
+                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.SESAME_CREDIT)
                 .addContext("count", freeDepositData.getFreeDepositCapacity()).build());
         return freeDepositData;
     }
