@@ -12,13 +12,9 @@ import com.xiliulou.electricity.config.BasePayCallBackConfig;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.converter.model.OrderCreateParamConverterModel;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
-import com.xiliulou.electricity.entity.AlipayAppConfig;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.pay.alipay.request.AliPayCreateOrderRequest;
 import com.xiliulou.pay.alipay.request.AliPayOrderRefundRequest;
-import com.xiliulou.pay.base.enums.PayTypeEnum;
-import com.xiliulou.pay.base.request.BasePayCreateOrderRequest;
-import com.xiliulou.pay.base.request.BasePayOrderRefundRequest;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
@@ -61,17 +57,17 @@ public class PayConfigConverter {
     
     private void initAlipay() {
         // 支付宝下单转换
-        orderCreateMap.put(PaymentChannelEnum.ALI_PAY.getCode(), (model, call) -> alipayOrderCreateParamConverter(model, call));
+        orderCreateMap.put(ChannelEnum.ALIPAY.getCode(), (model, call) -> alipayOrderCreateParamConverter(model, call));
         //微信退款转换
-        orderRefundMap.put(PaymentChannelEnum.ALI_PAY.getCode(), (model, call) -> alipayOrderRefundParamConverter(model, call));
+        orderRefundMap.put(ChannelEnum.ALIPAY.getCode(), (model, call) -> alipayOrderRefundParamConverter(model, call));
     }
     
     
     private void initWx() {
         //微信下单转换
-        orderCreateMap.put(PaymentChannelEnum.WECHAT.getCode(), (model, call) -> wechatOrderCreateParamConverter(model, call));
+        orderCreateMap.put(ChannelEnum.WECHAT.getCode(), (model, call) -> wechatOrderCreateParamConverter(model, call));
         //微信退款转换
-        orderRefundMap.put(PaymentChannelEnum.WECHAT.getCode(), (model, call) -> wechatOrderRefundParamConverter(model, call));
+        orderRefundMap.put(ChannelEnum.WECHAT.getCode(), (model, call) -> wechatOrderRefundParamConverter(model, call));
     }
     
     /**
@@ -136,7 +132,7 @@ public class PayConfigConverter {
         wechatV3OrderRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         
         BasePayRequest<WechatV3OrderRequest> basePayRequest = new BasePayRequest();
-        basePayRequest.setPayType(PayTypeEnum.WX_V3_JSP_ORDER.getPayType());
+        basePayRequest.setChannel(ChannelEnum.WECHAT.getCode());
         basePayRequest.setBizParam(wechatV3OrderRequest);
         return basePayRequest;
     }
@@ -169,7 +165,7 @@ public class PayConfigConverter {
         wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         
         BasePayRequest<WechatV3RefundRequest> basePayRequest = new BasePayRequest();
-        basePayRequest.setPayType(PayTypeEnum.WX_V3_JSP_ORDER_REFUND.getPayType());
+        basePayRequest.setChannel(ChannelEnum.WECHAT.getCode());
         basePayRequest.setBizParam(wechatV3RefundRequest);
         return basePayRequest;
     }
@@ -202,7 +198,7 @@ public class PayConfigConverter {
         aliPayOrderRefundRequest.setNotifyUrl(callBackUrlGet.getCallBackUrl(this.aliPayConfig));
         
         BasePayRequest<AliPayOrderRefundRequest> basePayRequest = new BasePayRequest();
-        basePayRequest.setPayType(PayTypeEnum.ALI_MINI_REFUND.getPayType());
+        basePayRequest.setChannel(ChannelEnum.ALIPAY.getCode());
         basePayRequest.setBizParam(aliPayOrderRefundRequest);
         return basePayRequest;
     }
@@ -240,7 +236,7 @@ public class PayConfigConverter {
         aliPayCreateOrderRequest.setPassbackParams(wrap.getAttach());
         //        aliPayCreateOrderRequest.setExtendParams(new AliPayCreateOrderRequest.ExtendParams());
         BasePayRequest<AliPayCreateOrderRequest> basePayRequest = new BasePayRequest();
-        basePayRequest.setPayType(PayTypeEnum.ALI_MINI_ORDER.getPayType());
+        basePayRequest.setChannel(ChannelEnum.ALIPAY.getCode());
         basePayRequest.setBizParam(aliPayCreateOrderRequest);
         return basePayRequest;
     }

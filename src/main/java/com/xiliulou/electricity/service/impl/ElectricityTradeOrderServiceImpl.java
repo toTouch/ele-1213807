@@ -102,7 +102,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
-import com.xiliulou.pay.base.enums.PayTypeEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.base.request.BasePayRequest;
@@ -368,7 +368,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Long uid = electricityTradeOrder.getUid();
         
         if (WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState)) {
-            return handSuccess(orderNo, tenantId, uid, transactionId, callBackResource.getPayType());
+            return handSuccess(orderNo, tenantId, uid, transactionId, callBackResource.getChannel());
         } else {
             return handFailed(orderNo, tenantId, uid);
         }
@@ -392,10 +392,10 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
      * @param orderNo  租车套餐购买订单编号
      * @param tenantId 租户ID
      * @param uid      用户ID
-     * @param payType
+     * @param channel
      * @return
      */
-    private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId, Integer payType) {
+    private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId, String channel) {
         Pair<Boolean, Object> pair = carRentalPackageOrderBizService.handBuyRentalPackageOrderSuccess(orderNo, tenantId, uid, null);
         if (!pair.getLeft()) {
             return pair;
@@ -403,7 +403,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         
         // 最后一步，小程序虚拟发货
         String phone = pair.getRight().toString();
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(payType)) {
+        if (ChannelEnum.WECHAT.getCode().equals(channel)) {
             shippingManagerService.uploadShippingInfo(uid, phone, transactionId, tenantId);
         }
         
@@ -708,7 +708,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         eleDepositOrderService.update(eleDepositOrderUpdate);
         
         //小程序虚拟发货
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+        if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         }
         
@@ -921,7 +921,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
         
         //小程序虚拟发货
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+        if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         }
         return Pair.of(result, null);
@@ -1031,7 +1031,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
         
         //小程序虚拟发货
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+        if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         }
         return Pair.of(result, null);

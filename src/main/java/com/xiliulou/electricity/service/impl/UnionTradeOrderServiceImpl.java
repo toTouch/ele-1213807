@@ -17,7 +17,6 @@ import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -36,9 +35,6 @@ import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
@@ -118,9 +114,8 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.mq.service.RocketMqService;
-import com.xiliulou.pay.base.enums.PayTypeEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
@@ -483,7 +478,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         // 小程序虚拟发货
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+        if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         }
         
@@ -572,7 +567,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         });
         
         // 小程序虚拟发货
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+        if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         }
         return Pair.of(true, null);
@@ -1422,7 +1417,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         });
         
         // 小程序虚拟发货
-        if (PayTypeEnum.WX_V3_JSP_ORDER.getPayType().equals(callBackResource.getPayType())) {
+        if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         }
         
