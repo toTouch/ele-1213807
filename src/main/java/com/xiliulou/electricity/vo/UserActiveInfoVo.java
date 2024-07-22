@@ -27,4 +27,8 @@ public class UserActiveInfoVo {
     private Long payCount;
     
     private BigDecimal batteryServiceFee;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 }

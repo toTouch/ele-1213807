@@ -121,7 +121,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserActiveInfoVo">
         select
         uai.id, uai.uid, uai.active_time, uai.phone, uai.user_name,
-        eb.sn as battery_sn, ubmc.card_pay_count as pay_count
+        eb.sn as battery_sn, ubmc.card_pay_count as pay_count, ui.franchisee_id
         from t_user_info ui
         left join t_user_active_info uai on ui.uid = uai.uid
         left join t_electricity_battery eb on ui.uid = eb.uid

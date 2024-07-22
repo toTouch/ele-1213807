@@ -19,6 +19,7 @@
         <result property="depositType" column="deposit_type" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
     </resultMap>
 
     <!--查询单个-->
@@ -48,6 +49,7 @@
         tfdo.deposit_type,
         tfdo.create_time,
         tfdo.update_time
+        tfdo.franchisee_id
         from t_free_deposit_order tfdo
         where tfdo.tenant_id=#{tenantId}
         <if test="authStatus != null">
