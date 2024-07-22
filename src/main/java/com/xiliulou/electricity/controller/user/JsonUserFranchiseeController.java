@@ -21,35 +21,36 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 public class JsonUserFranchiseeController extends BaseController {
+    
     /**
      * 服务对象
      */
     @Autowired
     FranchiseeService franchiseeService;
-
+    
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-
-
+    
+    
     //列表查询
     @GetMapping(value = "/user/franchisee/queryByTenantId")
     public R queryByTenantId() {
         Integer tenantId = TenantContextHolder.getTenantId();
         return franchiseeService.queryByTenantId(tenantId);
-
+        
     }
-
+    
     @GetMapping(value = "/user/franchisee/selectById/{id}")
     public R selectById(@PathVariable("id") Long id) {
         return returnTripleResult(franchiseeService.selectById(id));
     }
-
+    
     //根据三元组查询加盟商
     @GetMapping(value = "/user/franchisee/getFranchisee")
     public R getFranchisee(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return electricityCabinetService.getFranchisee(productKey, deviceName);
     }
-
+    
     /**
      * 获取当前租户所有加盟商城市列表
      */
@@ -57,6 +58,7 @@ public class JsonUserFranchiseeController extends BaseController {
     public R franchiseeCityList() {
         return R.ok(franchiseeService.selectFranchiseeCityList());
     }
+    
     /**
      * 获取当前城市所有加盟商区域列表
      */
@@ -64,28 +66,29 @@ public class JsonUserFranchiseeController extends BaseController {
     public R franchiseeRegionList(@PathVariable("cid") Integer cid) {
         return R.ok(franchiseeService.selectFranchiseeRegionList(cid));
     }
-
-
+    
+    
     /**
      * 根据区县编码查加盟商
      */
     @GetMapping(value = "/user/franchisee/region")
     public R selectFranchiseeByArea(@RequestParam(value = "regionCode") String regionCode) {
-
+        
         return returnTripleResult(franchiseeService.selectFranchiseeByArea(regionCode));
     }
-
+    
     /**
      * 根据城市获取加盟商列表
+     *
      * @param cityCode
      * @return
      */
     @GetMapping(value = "/user/franchisee/city")
     public R selectFranchiseeByCity(@RequestParam(value = "cityCode") String cityCode) {
-
+        
         return returnTripleResult(franchiseeService.selectFranchiseeByCity(cityCode));
     }
-
+    
     /**
      * 更换用户所属加盟商
      */
@@ -93,5 +96,5 @@ public class JsonUserFranchiseeController extends BaseController {
     public R moveFranchisee() {
         return returnTripleResult(franchiseeService.moveFranchisee());
     }
-
+    
 }

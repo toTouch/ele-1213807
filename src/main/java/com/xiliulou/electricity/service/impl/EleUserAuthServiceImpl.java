@@ -12,7 +12,6 @@ import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
@@ -22,6 +21,7 @@ import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.IdCardCheckService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -85,6 +85,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
     @Autowired
     UserAuthMessageService userAuthMessageService;
+    
+    @Resource
+    private IdCardCheckService idCardCheckService;
+    
 
     /**
      * 新增数据
@@ -145,7 +149,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("审核通过，无法修改!");
         }
     
-        Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
+        Triple<Boolean, String, Object> checkResult = checkIdCard(tenantId,eleUserAuthList);
         if (!checkResult.getLeft()) {
             return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
@@ -225,19 +229,20 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         return result;
     }
     
-    private Triple<Boolean, String, Object> checkIdCardExists(List<EleUserAuth> eleUserAuthList) {
+    
+    private Triple<Boolean, String, Object> checkIdCard(Integer tenantId, List<EleUserAuth> eleUserAuthList) {
         if (CollectionUtils.isEmpty(eleUserAuthList)) {
             return Triple.of(false, "资料项为空", null);
         }
-        
+        String idCard= null;
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
             if (!ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 continue;
             }
-            
+            idCard = eleUserAuth.getValue();
             List<UserInfo> userInfos = userInfoService.queryByIdNumber(eleUserAuth.getValue());
             if (CollectionUtils.isEmpty(userInfos)) {
-                return Triple.of(true, null, null);
+                break;
             }
             
             for (UserInfo userInfo : userInfos) {
@@ -245,10 +250,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                     return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
-            return Triple.of(true, null, null);
+            break;
         }
-        
-        return Triple.of(true, null, null);
+        // 校验身份证是否符合年龄
+        return idCardCheckService.checkIdNumber(tenantId, idCard);
     }
     
     private void sendAuthenticationAuditMessage(UserInfo userInfo) {
@@ -347,86 +352,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }).collect(Collectors.toList());
         log.info("collect is -->{}", collect);
         return R.ok(collect);
-    }
-
-    @Override
-    @Deprecated
-    public R getEleUserServiceStatus() {
-
-/*        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        Integer serviceStatus = userInfo.getServiceStatus();
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        Long now = System.currentTimeMillis();
-        if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-            serviceStatus = franchiseeUserInfo.getServiceStatus();
-        }
-
-//        //用户是否开通月卡
-//        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-//                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
-//            log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
-//            serviceStatus = -1;
-//        } else {
-//            if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-//                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
-//                serviceStatus = -1;
-//            }
-//        }
-
-        return R.ok(serviceStatus);*/
-
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.warn("ELECTRICITY  WARN! not found userInfo! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-
-        Integer serviceStatus = null;
-        //兼容UserInfo serviceStatus
-        if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            serviceStatus = UserInfo.STATUS_IS_AUTH;
-        } else {
-            serviceStatus = UserInfo.STATUS_INIT;
-        }
-
-        //FranchiseeUserInfo serviceStatus
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            serviceStatus = FranchiseeUserInfo.STATUS_IS_DEPOSIT;
-        }
-
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            serviceStatus = FranchiseeUserInfo.STATUS_IS_BATTERY;
-        }
-
-        return R.ok(serviceStatus);
     }
 
     @Override

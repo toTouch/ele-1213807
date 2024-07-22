@@ -19,6 +19,23 @@ public interface CacheConstant {
     
     String ADMIN_OPERATE_LOCK_KEY = "admin_operate_lock_key:";
     String CACHE_PAY_PARAMS = "cache_pay_params";
+    
+    /**
+     * 微信支付参数缓存key
+     */
+    String ELE_PAY_PARAMS_KEY="saas_ele:pay_params:%d:%d";
+    
+    /**
+     * 微信支付证书
+     */
+    String PAYMENT_CERTIFICATE_KEY="saas_ele:pay_payment_certificate:%d:%d";
+    
+    
+    /**
+     * 微信支付证书缓存（调用微信接口获取）
+     */
+    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:%d:%d";
+    
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
     String CACHE_USER_PHONE = "user_phone:";
@@ -637,4 +654,12 @@ public interface CacheConstant {
     String CACHE_CHANNEL_USER_ADMIN_EXIT_LOCK = "cache_channel_user_admin_exit_lock:";
     
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
+    
+    String CACHE_BATTERY_BATCH_IMPORT_LOCK = "cache_battery_batch_import_lock:";
+    
+    //角色权限绑定操作
+    String ROLE_PERMISSION_OPERATE_KEY = "saas_electricity:role_permission_opt:%s";
+    
+    //逾期用户备注重复提交锁
+    String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
 }

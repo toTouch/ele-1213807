@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryModel;
 
 import java.util.List;
@@ -71,4 +72,6 @@ public interface BatteryModelMapper extends BaseMapper<BatteryModel> {
     List<BatteryModel> selectListBrandAndModel(BatteryModelQueryModel batteryModelQueryModel);
     
     List<BatteryModel> selectListBatteryModelByBatteryTypeList(@Param("batteryTypeList") List<String> batteryTypeList, @Param("tenantId") Integer tenantId);
+    
+    List<BatteryModelDTO> selectListShortBatteryTypeByMemberIds(@Param("memberCardIds") List<Long> memberCardIds, @Param("tenantId") Integer tenantId);
 }

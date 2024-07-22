@@ -95,6 +95,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         return delete;
     }
     
+    @Slave
     @Override
     public MerchantAttr queryUpgradeCondition(Long franchiseeId) {
         MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);

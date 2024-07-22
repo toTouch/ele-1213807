@@ -172,4 +172,14 @@ public class BatteryMemberCardVO {
      * 分组类型，0-系统分组，1-用户分组。
      */
     private Integer groupType;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
 }

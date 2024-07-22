@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.asset;
 
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityCabinetBatchOutWarehouseRequest;
@@ -32,7 +33,7 @@ public interface ElectricityCabinetV2Service {
     
     List<ElectricityCabinetVO> listEnableAllocateCabinet(ElectricityCabinetEnableAllocateRequest enableAllocateRequest);
     
-    List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
+    List<ElectricityCabinetVO> listEnableExitWarehouseCabinet(AssetEnableExitWarehouseQueryModel queryModel);
     
     List<ElectricityCabinetVO> listBySnList(List<String> snList, Integer tenantId, Long franchiseeId);
     

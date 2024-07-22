@@ -51,4 +51,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    List<ElectricityCabinetOrderVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 }

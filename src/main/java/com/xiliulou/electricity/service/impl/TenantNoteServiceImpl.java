@@ -138,4 +138,14 @@ public class TenantNoteServiceImpl implements TenantNoteService {
     public void deleteCache(Integer tenantId) {
         redisService.delete(CacheConstant.CACHE_TENANT_NOTE + tenantId);
     }
+    
+    @Override
+    public int reduceNoteNumById(TenantNote tenantNote) {
+        int i = noteMapper.reduceNoteNumById(tenantNote);
+        DbUtils.dbOperateSuccessThenHandleCache(i, item -> {
+            redisService.delete(CacheConstant.CACHE_TENANT_NOTE + tenantNote.getTenantId());
+        });
+        
+        return i;
+    }
 }

@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class JsonUserInvitationActivityRecordController extends BaseController {
-
+    
     @Autowired
     private InvitationActivityRecordService invitationActivityRecordService;
-
+    
     /**
      * 获取用户邀请信息
      */
@@ -57,7 +57,7 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     public R generateCodeV2() {
         return returnTripleResult(invitationActivityRecordService.generateCodeV2());
     }
-
+    
     /**
      * 参与活动
      */
@@ -94,8 +94,9 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     
     /**
      * 邀请分析-邀请明细
-     *@param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-累计
-     *@param status 0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
+     *
+     * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-累计
+     * @param status   0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
      */
     @GetMapping("/user/invitation/activity/record/analysis/detail")
     public R invitationDetails(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("timeType") Integer timeType,
@@ -125,8 +126,9 @@ public class JsonUserInvitationActivityRecordController extends BaseController {
     
     /**
      * 收入明细
+     *
      * @param timeType 1-昨日（昨天0:00-23:59） 2-本月（当月一号0:00-当前时间，默认值） 3-自定义
-     * @param status 0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
+     * @param status   0-全部(默认)，1--已参与，2--邀请成功，3--已过期， 4--被替换， 5--活动已下架
      */
     @GetMapping("/user/invitation/activity/record/income/detail")
     public R invitationIncomeDetail(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("timeType") Integer timeType,

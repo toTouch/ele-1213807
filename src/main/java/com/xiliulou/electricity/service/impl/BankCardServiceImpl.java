@@ -132,6 +132,7 @@ public class BankCardServiceImpl extends ServiceImpl<BankCardMapper, BankCard> i
 		return bankCardList.get(0);
 	}
 
+	@Slave
 	@Override
 	public BankCard queryByUid(Long uid) {
 		List<BankCard> bankCardList=baseMapper.selectList(new LambdaQueryWrapper<BankCard>().eq(BankCard::getUid,uid).eq(BankCard::getDelFlag, BankCard.DEL_NORMAL));

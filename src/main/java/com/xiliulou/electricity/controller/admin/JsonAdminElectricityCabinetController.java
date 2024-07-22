@@ -104,14 +104,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     
     @Autowired
     UserDataScopeService userDataScopeService;
-    
-    
-    //新增换电柜
-    @Deprecated
-    @PostMapping(value = "/admin/electricityCabinet")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
-        return electricityCabinetService.save(electricityCabinetAddAndUpdate);
-    }
+
     
     //修改换电柜
     @PutMapping(value = "/admin/electricityCabinet")
@@ -164,7 +157,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "sn", required = false) String sn) {
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -222,6 +216,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .deviceName(deviceName)
                 .idList(idList)
                 .sn(sn)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -245,7 +240,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "version", required = false) String version) {
+            @RequestParam(value = "version", required = false) String version,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -294,6 +290,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .productKey(productKey)
                 .deviceName(deviceName)
                 .version(version)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
@@ -380,19 +377,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.updateStatus(id, usableStatus);
     }
     
-    //首页一
-    @GetMapping(value = "/admin/electricityCabinet/homeOne")
-    public R homeOne(@RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
-        //不传查全部
-        if (Objects.isNull(beginTime)) {
-            beginTime = 0L;
-        }
-        if (Objects.isNull(endTime)) {
-            endTime = System.currentTimeMillis();
-        }
-        return electricityCabinetService.homeOne(beginTime, endTime);
-    }
-    
     /**
      * @description 首页一：运营小程序 只响应 柜机总数、在线柜机数
      * @date 2023/12/7 15:13:34
@@ -401,41 +385,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     @GetMapping(value = "/admin/electricityCabinet/homeOne/v2")
     public R homeOneV2() {
         return electricityCabinetService.homeOneV2();
-    }
-    
-    //首页三
-    @GetMapping(value = "/admin/electricityCabinet/homeTwo")
-    public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
-        //不传查近七天
-        if (Objects.isNull(beginTime)) {
-            beginTime = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7L;
-        }
-        if (Objects.isNull(endTime)) {
-            endTime = System.currentTimeMillis();
-        }
-        return electricityCabinetService.homeTwo(beginTime, endTime);
-    }
-    
-    //type 1--用户
-    //     2--柜机
-    //     3--换电次数
-    //     4--门店
-    //首页三
-    @GetMapping(value = "/admin/electricityCabinet/homeThree")
-    public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "type", required = false) Integer type) {
-        //不传查近七天
-        if (Objects.isNull(beginTime)) {
-            beginTime = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7L;
-        }
-        if (Objects.isNull(endTime)) {
-            endTime = System.currentTimeMillis();
-        }
-        //不传默认查用户
-        if (Objects.isNull(type)) {
-            type = 1;
-        }
-        return electricityCabinetService.homeThree(beginTime, endTime, type);
     }
     
     // TODO: 2022/10/15 危险接口
@@ -469,20 +418,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return electricityCabinetService.checkOpenSessionId(sessionId);
-    }
-    
-    
-    //短信测试
-    @GetMapping("/outer/sendMessage")
-    public void sendMessage() {
-        HashMap<String, Object> params = Maps.newHashMap();
-     /*   params.put("code", "1314");
-        smsService.sendSmsCode("15371639767", "SMS_185846411", JsonUtil.toJson(params), "西六楼");*/
-        
-        params.put("code", "1314");
-        params.put("address", "i love you");
-        smsService.sendSmsCode("15371639767", "SMS_183160573", JsonUtil.toJson(params), "西六楼");
-        
     }
     
     //解锁电柜
@@ -574,12 +509,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         if (!Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-        
-        //        String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
-        //        if (StringUtils.isEmpty(result)) {
-        //            return R.ok();
-        //        }
-        //        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
+
         ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(),
                 ElectricityCabinetOtherSetting.class);
         
@@ -644,28 +574,10 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return R.ok(eleCabinetCoreData);
     }
     
-    //首页营业额统计
-    @GetMapping(value = "/admin/electricityCabinet/homepageTurnover")
-    public R homepageTurnover() {
-        return electricityCabinetService.homepageTurnover();
-    }
-    
-    //首页押金统计
-    @GetMapping(value = "/admin/electricityCabinet/homepageDeposit")
-    public R homepageDeposit() {
-        return electricityCabinetService.homepageDeposit();
-    }
-    
     //首页概述详情统计
     @GetMapping(value = "/admin/electricityCabinet/homepageOverviewDetail")
     public R homepageOverviewDetail() {
         return electricityCabinetService.homepageOverviewDetail();
-    }
-    
-    //首页收益分析
-    @GetMapping(value = "/admin/electricityCabinet/homepageBenefitAnalysis")
-    public R homepageBenefitAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime) {
-        return electricityCabinetService.homepageBenefitAnalysis(beginTime, endTime);
     }
     
     //首页用户分析
@@ -1020,7 +932,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         

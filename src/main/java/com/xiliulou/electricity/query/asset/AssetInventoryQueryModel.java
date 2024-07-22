@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 资产盘点model
@@ -40,4 +42,5 @@ public class AssetInventoryQueryModel {
     
     private Long offset;
     
+    private List<Long> franchiseeIds;
 }

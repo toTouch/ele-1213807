@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.car;
 
+import com.xiliulou.electricity.enums.YesNoEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -35,5 +36,15 @@ public class CarRentRefundVo implements Serializable {
      */
     private Long uid;
     
+    /**
+     * 强制线下退款
+     * <pre>
+     *     0: 是
+     *     1: 否
+     * </pre>
+     *
+     * @see YesNoEnum#getCode()
+     */
+    private Integer compelOffLine;
     
 }

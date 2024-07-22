@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.vo;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 /**
@@ -8,6 +10,7 @@ import java.math.BigDecimal;
  * @author makejava
  * @since 2021-02-22 10:17:06
  */
+@Data
 public class EleRefundOrderVO {
     
     /**
@@ -79,147 +82,33 @@ public class EleRefundOrderVO {
     
     /**
      * 订单类型： 0-普通换电订单，1-企业渠道换电订单
+     *
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
     
-    //private Integer refundOrderType;
+    // private Integer refundOrderType;
+    
     private Boolean isFreeDepositAliPay;
     
-    public Boolean getIsFreeDepositAliPay() {
-        return this.isFreeDepositAliPay;
-    }
+    /**
+     * 加盟商Id
+     */
+    private Long franchiseeId;
     
-    public void setIsFreeDepositAliPay(Boolean isFreeDepositAliPay) {
-        this.isFreeDepositAliPay = isFreeDepositAliPay;
-    }
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
     
-    public Long getId() {
-        return id;
-    }
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
     
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getRefundOrderNo() {
-        return refundOrderNo;
-    }
-    
-    public void setRefundOrderNo(String refundOrderNo) {
-        this.refundOrderNo = refundOrderNo;
-    }
-    
-    public String getOrderId() {
-        return orderId;
-    }
-    
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-    
-    public BigDecimal getPayAmount() {
-        return payAmount;
-    }
-    
-    public void setPayAmount(BigDecimal payAmount) {
-        this.payAmount = payAmount;
-    }
-    
-    public BigDecimal getRefundAmount() {
-        return refundAmount;
-    }
-    
-    public void setRefundAmount(BigDecimal refundAmount) {
-        this.refundAmount = refundAmount;
-    }
-    
-    public Integer getStatus() {
-        return status;
-    }
-    
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-    
-    public String getErrMsg() {
-        return errMsg;
-    }
-    
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
-    
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-    
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-    
-    public Long getCreateTime() {
-        return createTime;
-    }
-    
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
-    
-    public Long getUpdateTime() {
-        return updateTime;
-    }
-    
-    public void setUpdateTime(Long updateTime) {
-        this.updateTime = updateTime;
-    }
-    
-    public Long getUid() {
-        return uid;
-    }
-    
-    public void setUid(Long uid) {
-        this.uid = uid;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public String getPhone() {
-        return phone;
-    }
-    
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-    
-    public Integer getPayType() {
-        return payType;
-    }
-    
-    public void setPayType(Integer payType) {
-        this.payType = payType;
-    }
-    
-    public Integer getOrderType() {
-        return orderType;
-    }
-    
-    public void setOrderType(Integer orderType) {
-        this.orderType = orderType;
-    }
-    
-    //    public Integer getRefundOrderType() {
-    //        return refundOrderType;
-    //    }
-    //
-    //    public void setRefundOrderType(Integer refundOrderType) {
-    //        this.refundOrderType = refundOrderType;
-    //    }
+    /**
+     * 租户名称
+     */
+    private String tenantName;
     
 }

@@ -25,8 +25,6 @@ public interface ElectricityMemberCardOrderService {
      * @return
      */
     Integer selectCountByUid(Integer tenantId, Long uid, Integer status);
-    
-    Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
     List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
     
@@ -158,4 +156,6 @@ public interface ElectricityMemberCardOrderService {
     Integer countSuccessOrderByUid(Long uid);
     
     List<ElectricityMemberCardOrder> queryListByOrderIds(List<String> orderIdList);
+    
+    R listSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
 }

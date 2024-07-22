@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ThirdCallBackUrl;
 import com.xiliulou.electricity.mapper.ThirdCallBackUrlMapper;
@@ -142,6 +143,7 @@ public class ThirdCallBackUrlServiceImpl implements ThirdCallBackUrlService {
         return this.thirdCallBackUrlMapper.deleteById(id) > 0;
     }
 
+    @Slave
     @Override
     public Pair<Boolean, Object> queryThirdCallBackByTenantId() {
         ThirdCallBackUrl thirdCallBackUrl = queryByTenantIdFromCache(TenantContextHolder.getTenantId());

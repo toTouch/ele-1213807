@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.merchant.MerchantWithdrawApplicationRecordBO;
 import com.xiliulou.electricity.entity.merchant.MerchantWithdrawApplicationRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationRecordMapper;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRecordRequest;
@@ -66,6 +67,7 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
         return merchantWithdrawApplicationRecordMapper.selectById(id);
     }
     
+    @Slave
     @Override
     public MerchantWithdrawApplicationRecord selectByOrderNo(String orderNo, Integer tenantId) {
         return merchantWithdrawApplicationRecordMapper.selectByOrderNo(orderNo, tenantId);
@@ -79,7 +81,7 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
     
     @Slave
     @Override
-    public List<MerchantWithdrawApplicationRecord> selectListByBatchNo(String batchNo, Integer tenantId) {
+    public List<MerchantWithdrawApplicationRecordBO> selectListByBatchNo(String batchNo, Integer tenantId) {
         if(Objects.isNull(batchNo) || Objects.isNull(tenantId)){
             return Collections.EMPTY_LIST;
         }

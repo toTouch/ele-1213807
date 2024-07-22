@@ -58,8 +58,6 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
-    NotExistSnService notExistSnService;
-    @Autowired
     ClickHouseService clickHouseService;
     @Autowired
     EleCommonConfig eleCommonConfig;

@@ -1,21 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserPhoneModifyRecord;
-import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.mapper.EleUserOperateHistoryMapper;
 import com.xiliulou.electricity.query.EleUserOperateHistoryQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
-import com.xiliulou.electricity.service.CarRefundOrderService;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleBindCarRecordService;
@@ -33,7 +26,6 @@ import com.xiliulou.electricity.service.LoginInfoService;
 import com.xiliulou.electricity.service.MaintenanceRecordService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.RentCarOrderService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -44,13 +36,11 @@ import com.xiliulou.electricity.service.VerificationCodeService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
-import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * Description: EleUserOperateHistoryServiceImpl
@@ -74,13 +64,7 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
     
     @Autowired
-    CarDepositOrderService carDepositOrderService;
-    
-    @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
-    
-    @Autowired
-    CarRefundOrderService carRefundOrderService;
     
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
@@ -132,9 +116,6 @@ public class EleUserOperateHistoryServiceImpl implements EleUserOperateHistorySe
     
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
-    
-    @Autowired
-    RentCarOrderService rentCarOrderService;
     
     @Autowired
     UserInfoService userInfoService;

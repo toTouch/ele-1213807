@@ -673,6 +673,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      * 1对1
      * 1对多，选加盟商
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode) {
         FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
@@ -730,6 +731,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      * @param cityCode
      * @return
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode) {
         FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
@@ -761,38 +763,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return result;
     }
 
-    @Deprecated
-    @Override
-    public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
-        Franchisee franchisee = this.queryByIdFromCache(id);
-        if (Objects.isNull(franchisee)) {
-            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
-        }
-
-        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            return Triple.of(true, null, null);
-        }
-
-        List<UserBattery> userBatteryList = userBatteryService.selectBatteryTypeByFranchiseeId(franchisee.getId());
-        if (CollectionUtils.isEmpty(userBatteryList)) {
-            return Triple.of(true, null, null);
-        }
-
-//        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
-//        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
-//        if (batteryList.contains(batteryType)) {
-//            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
-//        }
-
-        return Triple.of(true, null, null);
-    }
-
     @Slave
     @Override
     public Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId) {
         return this.franchiseeMapper.checkBatteryModelIsUse(batteryModel, tenantId);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectById(Long id) {
         Franchisee franchisee = this.queryByIdFromCache(id);

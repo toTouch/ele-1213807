@@ -370,6 +370,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
+    @Slave
     @Override
     public List<CarRentalPackageSearchVO> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq) {
         return this.carRentalPackageMapper.queryToSearchByName(rentalPackageNameReq);
@@ -394,6 +395,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         return carRentalPackageMapper.batchUpdateSortParam(sortParamQueries);
     }
     
+    @Slave
     @Override
     public List<CarRentalPackagePo> listCarRentalPackageForSort() {
         return carRentalPackageMapper.listCarRentalPackageForSort(TenantContextHolder.getTenantId());

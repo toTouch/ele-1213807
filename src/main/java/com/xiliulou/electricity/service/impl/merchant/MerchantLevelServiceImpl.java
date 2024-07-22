@@ -48,6 +48,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     @Autowired
     private MerchantAttrService merchantAttrService;
     
+    @Slave
     @Override
     public MerchantLevel queryById(Long id) {
         return this.merchantLevelMapper.selectById(id);

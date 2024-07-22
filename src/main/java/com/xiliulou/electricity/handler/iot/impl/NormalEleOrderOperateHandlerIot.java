@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -13,6 +14,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,9 @@ import java.util.Objects;
 @Service(value = ElectricityIotConstant.NORMAL_ELE_ORDER_OPERATE_HANDLER)
 @Slf4j
 public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandler {
+    
+    private static final String INIT_DEVICE_USING_MSG = "换电柜正在使用中操作取消";
+    
     @Autowired
     RedisService redisService;
     @Autowired
@@ -69,6 +74,12 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                     .seq(seq)
                     .result(eleOrderOperateVO.getResult()).build();
             electricityCabinetOrderOperHistoryService.insert(history);
+    
+            //若柜机正在使用中
+            if (StringUtils.isNotBlank(eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg()
+                    .contains(INIT_DEVICE_USING_MSG)) {
+                electricityCabinetOrderOperHistoryService.updateTenantIdByOrderId(eleOrderOperateVO.getOrderId(), Tenant.SUPER_ADMIN_TENANT_ID);
+            }
         }
     }
 

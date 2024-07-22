@@ -56,6 +56,7 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Autowired
     private RedisService redisService;
     
+    @Slave
     @Override
     public RebateConfig queryById(Long id) {
         return this.rebateConfigMapper.selectById(id);

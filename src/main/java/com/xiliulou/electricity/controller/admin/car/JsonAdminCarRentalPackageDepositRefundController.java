@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
@@ -28,21 +29,35 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐押金退押 Controller
+ *
  * @author xiaohui.song
  **/
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackageDepositRefund")
 public class JsonAdminCarRentalPackageDepositRefundController extends BasicController {
-
+    
     @Resource
     private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
-
+    
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
-
+    
+    /**
+     * 退押审批确认是否强制线下退款
+     *
+     * @param depositOrderNo 押金单号
+     * @param type 标记单号的归属，0-押金缴纳订单、1-退押申请单
+     * @return
+     */
+    @GetMapping("/confirmCompelOffLine")
+    public R<Boolean> confirmCompelOffLine(@RequestParam("depositOrderNo") String depositOrderNo, @RequestParam("type") Integer type) {
+        return R.ok(carRenalPackageDepositBizService.confirmCompelOffLine(depositOrderNo, type));
+    }
+    
     /**
      * 运营商端创建退押，特殊退押(2.0过度数据)
+     *
      * @param optModel 操作实体类
      * @return true(成功)、false(失败)
      */
@@ -51,21 +66,22 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         if (!ObjectUtils.allNotNull(optModel, optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         optModel.setTenantId(tenantId);
-
+        
         return R.ok(carRenalPackageDepositBizService.refundDepositCreateSpecial(optModel, user.getUid()));
     }
-
+    
     /**
      * 创建退押
+     *
      * @param optModel 操作实体类
      * @return true(成功)、false(失败)
      */
@@ -74,21 +90,22 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         if (!ObjectUtils.allNotNull(optModel, optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         optModel.setTenantId(tenantId);
-
+        
         return R.ok(carRenalPackageDepositBizService.refundDepositCreate(optModel, user.getUid()));
     }
-
+    
     /**
      * 审核拒绝
+     *
      * @param optReq 审核操作数据
      * @return true(成功)、false(失败)
      */
@@ -97,18 +114,19 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo(), optReq.getReason())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        return R.ok(carRenalPackageDepositBizService.approveRefundDepositOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(), null));
+        
+        return R.ok(carRenalPackageDepositBizService.approveRefundDepositOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(), null, optReq.getCompelOffLine()));
     }
-
+    
     /**
      * 审核通过
+     *
      * @param optReq 审核操作数据
      * @return true(成功)、false(失败)
      */
@@ -117,18 +135,20 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        return R.ok(carRenalPackageDepositBizService.approveRefundDepositOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid(), optReq.getAmount()));
+        
+        return R.ok(carRenalPackageDepositBizService.approveRefundDepositOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid(), optReq.getAmount(),
+                optReq.getCompelOffLine()));
     }
-
+    
     /**
      * 条件分页查询
+     *
      * @param queryReq 请求参数类
      * @return 退押订单集
      */
@@ -137,54 +157,63 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
-
+        
         // 数据权校验
         Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
         if (!permissionTriple.getRight()) {
             return R.ok(Collections.emptyList());
         }
-
+        
         // 转换请求体
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
         qryModel.setFranchiseeIdList(permissionTriple.getLeft());
         qryModel.setStoreIdList(permissionTriple.getMiddle());
-
+        
         // 调用服务
         List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(depositRefundEntityList)) {
             return R.ok(Collections.emptyList());
         }
-
+        
         // 获取辅助业务信息（用户信息）
         Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getUid).collect(Collectors.toSet());
-
+        
+        //获取辅助业务信息（加盟商）
+        Set<Long> franchiseeIdList = depositRefundEntityList.stream().filter(depositRefundPo -> Objects.nonNull(depositRefundPo.getFranchiseeId())).mapToLong(CarRentalPackageDepositRefundPo::getFranchiseeId).boxed().collect(Collectors.toSet());
+        
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIdList);
+        
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
-
+        
         // 模型转换，封装返回
         List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
-
+            
             CarRentalPackageDepositRefundVo depositRefundVO = new CarRentalPackageDepositRefundVo();
             BeanUtils.copyProperties(depositRefundEntity, depositRefundVO);
-
+            
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(depositRefundEntity.getUid(), new UserInfo());
                 depositRefundVO.setUserRelName(userInfo.getName());
                 depositRefundVO.setUserPhone(userInfo.getPhone());
             }
-
+            if (!franchiseeMap.isEmpty()){
+                depositRefundVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositRefundEntity.getFranchiseeId()), new Franchisee()).getName());
+            }
             return depositRefundVO;
         }).collect(Collectors.toList());
-
+        
         return R.ok(depositRefundVoList);
     }
-
+    
     /**
      * 条件查询总数
+     *
      * @param qryReq 请求参数类
      * @return 总数
      */
@@ -193,24 +222,24 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         if (null == qryReq) {
             qryReq = new CarRentalPackageDepositRefundQryReq();
         }
-
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
-
+        
         // 数据权校验
         Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
         if (!permissionTriple.getRight()) {
             return R.ok(NumberConstant.ZERO);
         }
-
+        
         // 转换请求体
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
         qryModel.setFranchiseeIdList(permissionTriple.getLeft());
         qryModel.setStoreIdList(permissionTriple.getMiddle());
-
+        
         // 调用服务
         return R.ok(carRentalPackageDepositRefundService.count(qryModel));
     }
-
+    
 }

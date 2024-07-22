@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.feishu.FeishuService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,7 +27,7 @@ public class SaaSGlobalExceptionAdvice extends GlobalExceptionHandlerResolver {
     @ExceptionHandler(BizException.class)
     public R handlerBizException(HttpServletRequest request, BizException e) {
         log.warn("BizException warn: ", e);
-        return R.fail(e.getErrCode(), e.getMessage());
+        return R.fail(StringUtils.isBlank(e.getErrCode()) ? "000001" : e.getErrCode(), e.getMessage());
     }
 
     //与父类中的ExceptionHandler(Exception.class) 冲突，需要移除
