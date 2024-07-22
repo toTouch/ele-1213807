@@ -3,10 +3,15 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositRechargeRecord;
+import com.xiliulou.electricity.enums.message.RechargeAlarm;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.FreeDepositDataMapper;
 import com.xiliulou.electricity.query.FreeDepositDataQuery;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositRechargeRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -26,12 +31,16 @@ import java.util.Objects;
 @Service("freeDepositDataService")
 @Slf4j
 public class FreeDepositDataServiceImpl implements FreeDepositDataService {
+    
     @Autowired
     private FreeDepositDataMapper freeDepositDataMapper;
-
+    
     @Autowired
     FreeDepositRechargeRecordService freeDepositRechargeRecordService;
-
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -42,7 +51,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     public FreeDepositData selectByIdFromDB(Long id) {
         return this.freeDepositDataMapper.selectById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -53,8 +62,8 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     public FreeDepositData selectByIdFromCache(Long id) {
         return null;
     }
-
-
+    
+    
     /**
      * 查询多条数据
      *
@@ -66,7 +75,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     public List<FreeDepositData> selectByPage(int offset, int limit) {
         return this.freeDepositDataMapper.selectByPage(offset, limit);
     }
-
+    
     /**
      * 新增数据
      *
@@ -79,7 +88,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         this.freeDepositDataMapper.insertOne(freeDepositData);
         return freeDepositData;
     }
-
+    
     /**
      * 修改数据
      *
@@ -90,9 +99,9 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(FreeDepositData freeDepositData) {
         return this.freeDepositDataMapper.update(freeDepositData);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -104,18 +113,23 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     public Boolean deleteById(Long id) {
         return this.freeDepositDataMapper.deleteById(id) > 0;
     }
-
+    
     @Slave
     @Override
     public FreeDepositData selectByTenantId(Integer tenantId) {
-        return this.freeDepositDataMapper.selectByTenantId(tenantId);
+        //发送站内信
+        FreeDepositData freeDepositData = this.freeDepositDataMapper.selectByTenantId(tenantId);
+        siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
+                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
+                .addContext("count", freeDepositData.getFreeDepositCapacity()).build());
+        return freeDepositData;
     }
-
+    
     @Override
     public Integer deductionFreeDepositCapacity(Integer tenantId, Integer count) {
         return this.freeDepositDataMapper.deductionFreeDepositCapacity(tenantId, count);
     }
-
+    
     @Override
     public Triple<Boolean, String, Object> recharge(FreeDepositDataQuery freeDepositDataQuery) {
         FreeDepositData freeDepositData = this.selectByTenantId(freeDepositDataQuery.getTenantId());
@@ -128,12 +142,12 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
             freeDepositDataInsert.setCreateTime(System.currentTimeMillis());
             freeDepositDataInsert.setUpdateTime(System.currentTimeMillis());
             this.freeDepositDataMapper.insertOne(freeDepositDataInsert);
-
+            
             //保存充值记录
             freeDepositRechargeRecordService.insert(buildFreeDepositRechargeRecord(freeDepositDataInsert));
             return Triple.of(true, "", null);
         }
-
+        
         FreeDepositData freeDepositDataUpdate = new FreeDepositData();
         freeDepositDataUpdate.setId(freeDepositData.getId());
         freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() + freeDepositDataQuery.getFreeDepositCapacity());
@@ -141,13 +155,13 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         freeDepositDataUpdate.setTenantId(freeDepositDataQuery.getTenantId());
         freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
         this.freeDepositDataMapper.update(freeDepositDataUpdate);
-
+        
         //保存充值记录
         freeDepositRechargeRecordService.insert(buildFreeDepositRechargeRecord(freeDepositDataUpdate));
-
+        
         return Triple.of(true, "", null);
     }
-
+    
     private FreeDepositRechargeRecord buildFreeDepositRechargeRecord(FreeDepositData freeDepositData) {
         FreeDepositRechargeRecord freeDepositRechargeRecord = new FreeDepositRechargeRecord();
         freeDepositRechargeRecord.setFreeRecognizeCapacity(freeDepositData.getFreeDepositCapacity());
@@ -156,7 +170,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         freeDepositRechargeRecord.setDelFlag(FreeDepositRechargeRecord.DEL_NORMAL);
         freeDepositRechargeRecord.setCreateTime(System.currentTimeMillis());
         freeDepositRechargeRecord.setUpdateTime(System.currentTimeMillis());
-
+        
         return freeDepositRechargeRecord;
     }
 }

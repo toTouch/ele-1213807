@@ -1677,7 +1677,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             // 发送站内信
             siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_REFUND)
                     .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
-                    .addContext("orderNo", refundDepositInsertEntity.getOrderNo()).build());
+                    .addContext("orderNo", refundDepositInsertEntity.getOrderNo()).addContext("amount", refundDepositInsertEntity.getApplyAmount().toString()).build());
         } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
         }

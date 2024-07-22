@@ -5,6 +5,10 @@ import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.entity.EsignCapacityData;
 import com.xiliulou.electricity.entity.EsignCapacityRechargeRecord;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.enums.message.RechargeAlarm;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EsignCapacityDataMapper;
 import com.xiliulou.electricity.mapper.EsignCapacityRechargeRecordMapper;
 import com.xiliulou.electricity.query.EsignCapacityDataQuery;
@@ -34,29 +38,36 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
-
+    
     @Autowired
     private EsignCapacityDataMapper esignCapacityDataMapper;
-
+    
     @Autowired
     private EsignCapacityRechargeRecordMapper esignCapacityRechargeRecordMapper;
-
+    
     @Autowired
     private UserService userService;
-
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
+    
     @Slave
     @Override
     public EsignCapacityData queryCapacityDataByTenantId(Long tenantId) {
-        return esignCapacityDataMapper.selectByTenantId(tenantId);
+        EsignCapacityData esignCapacityData = esignCapacityDataMapper.selectByTenantId(tenantId);
+        siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
+                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
+                .addContext("count", esignCapacityData.getEsignCapacity()).build());
+        return esignCapacityData;
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer addEsignCapacityData(EsignCapacityDataQuery esignCapacityDataQuery) {
-
+        
         EsignCapacityData capacityData = queryCapacityDataByTenantId(esignCapacityDataQuery.getTenantId());
-
-        if(Objects.isNull(capacityData)){
+        
+        if (Objects.isNull(capacityData)) {
             log.info("add esign capacity data: {}", esignCapacityDataQuery);
             EsignCapacityData esignCapacityData = new EsignCapacityData();
             esignCapacityData.setTenantId(esignCapacityDataQuery.getTenantId());
@@ -66,7 +77,7 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
             esignCapacityData.setCreateTime(System.currentTimeMillis());
             esignCapacityData.setUpdateTime(System.currentTimeMillis());
             esignCapacityDataMapper.insertOne(esignCapacityData);
-        }else{
+        } else {
             log.info("update esign capacity data: {}", esignCapacityDataQuery);
             int currentCapacity = capacityData.getEsignCapacity();
             EsignCapacityData capacityDataModel = new EsignCapacityData();
@@ -76,7 +87,7 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
             capacityDataModel.setUpdateTime(System.currentTimeMillis());
             esignCapacityDataMapper.updateOne(capacityDataModel);
         }
-
+        
         EsignCapacityRechargeRecord esignCapacityRechargeRecord = new EsignCapacityRechargeRecord();
         esignCapacityRechargeRecord.setEsignCapacity(esignCapacityDataQuery.getEsignCapacity());
         esignCapacityRechargeRecord.setTenantId(esignCapacityDataQuery.getTenantId());
@@ -84,31 +95,31 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
         esignCapacityRechargeRecord.setDelFlag(EleEsignConstant.DEL_NO);
         esignCapacityRechargeRecord.setCreateTime(System.currentTimeMillis());
         esignCapacityRechargeRecord.setUpdateTime(System.currentTimeMillis());
-
+        
         return esignCapacityRechargeRecordMapper.insertOne(esignCapacityRechargeRecord);
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer deductionCapacityByTenantId(Long tenantId) {
         EsignCapacityData capacityData = new EsignCapacityData();
         capacityData.setTenantId(tenantId);
         capacityData.setUpdateTime(System.currentTimeMillis());
-
+        
         return esignCapacityDataMapper.deductionCapacity(capacityData);
     }
-
+    
     @Slave
     @Override
     public List<EsignCapacityRechargeRecordQuery> queryEsignRechargeRecords(EsignCapacityRechargeRecordQuery esignCapacityRechargeRecordQuery) {
         List<EsignCapacityRechargeRecord> rechargeRecords = esignCapacityRechargeRecordMapper.selectByPage(esignCapacityRechargeRecordQuery);
-
+        
         List<EsignCapacityRechargeRecordQuery> rechargeRecordQueries = new ArrayList<>();
         if (CollectionUtils.isEmpty(rechargeRecords)) {
             return Collections.EMPTY_LIST;
         }
-
-        for(EsignCapacityRechargeRecord esignCapacityRechargeRecord : rechargeRecords){
+        
+        for (EsignCapacityRechargeRecord esignCapacityRechargeRecord : rechargeRecords) {
             EsignCapacityRechargeRecordQuery rechargeRecordQuery = new EsignCapacityRechargeRecordQuery();
             BeanUtils.copyProperties(esignCapacityRechargeRecord, rechargeRecordQuery);
             if (Objects.nonNull(esignCapacityRechargeRecord.getOperator())) {
@@ -117,9 +128,10 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
             }
             rechargeRecordQueries.add(rechargeRecordQuery);
         }
-
+        
         return rechargeRecordQueries;
     }
+    
     @Slave
     @Override
     public Integer queryRecordsCount(EsignCapacityRechargeRecordQuery esignCapacityRechargeRecordQuery) {
