@@ -53,14 +53,15 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant save warn! franchisee is empty");
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
     
-            saveRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            saveRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         return merchantAreaService.save(saveRequest, user.getUid());
@@ -80,19 +81,17 @@ public class JsonMerchantAreaController extends BaseController {
             log.error("merchant area delete warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
-        Long bindFranchiseeId = null;
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant save warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
-            bindFranchiseeId  = franchiseeIds.get(0);
         }
         
-        return merchantAreaService.deleteById(id, bindFranchiseeId);
+        return merchantAreaService.deleteById(id, franchiseeIds);
     }
     
     /**
@@ -110,14 +109,15 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant area update warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
     
-            updateRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            updateRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         return merchantAreaService.updateById(updateRequest);
@@ -142,21 +142,20 @@ public class JsonMerchantAreaController extends BaseController {
         }
     
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            log.error("merchant area page warn! user not auth");
+            log.warn("merchant area page warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant area page warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeId(franchiseeId).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(merchantAreaService.listByPage(request));
     }
@@ -169,21 +168,20 @@ public class JsonMerchantAreaController extends BaseController {
         }
     
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            log.error("merchant area page count warn! user not auth");
+            log.warn("merchant area page count warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant area page count warn! franchisee is empty, uid = {}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().name(name).franchiseeId(franchiseeId).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().name(name).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(merchantAreaService.countTotal(request));
     }
@@ -211,17 +209,16 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant area query all warn! franchisee is empty, uid = {}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeId(franchiseeId).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(merchantAreaService.queryList(request));
     }
@@ -246,17 +243,16 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant area select all warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeId(franchiseeId).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(merchantAreaService.listAll(request));
     }
