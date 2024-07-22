@@ -93,7 +93,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1469,15 +1468,15 @@ public class MerchantServiceImpl implements MerchantService {
                 log.error("repair enterprise error, merchant enterprise is exists,id={}", enterpriseInfo.getId());
                 return;
             }
-            
-//            List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
-//            Long levelId = NumberConstant.ZERO_L;
-//            if (ObjectUtils.isNotEmpty(merchantLevels)) {
-//                MerchantLevel merchantLevel = merchantLevels.stream().sorted(Comparator.comparing(MerchantLevel::getLevel).reversed()).findFirst().orElse(null);
-//                if (Objects.nonNull(merchantLevel)) {
-//                    levelId = merchantLevel.getId();
-//                }
-//            }
+    
+            List<MerchantLevel> merchantLevels = merchantLevelService.listByFranchiseeId(tenantId, enterpriseInfo.getFranchiseeId());
+            Long levelId = NumberConstant.ZERO_L;
+            if (ObjectUtils.isNotEmpty(merchantLevels)) {
+                MerchantLevel merchantLevel = merchantLevels.stream().sorted(Comparator.comparing(MerchantLevel::getLevel).reversed()).findFirst().orElse(null);
+                if (Objects.nonNull(merchantLevel)) {
+                    levelId = merchantLevel.getId();
+                }
+            }
             
             // 查询商户等级配置默认为五级
             MerchantSaveRequest merchantSaveRequest = new MerchantSaveRequest();
