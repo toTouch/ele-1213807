@@ -832,7 +832,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("100020", "非旧仓门异常无法自主开仓");
         }
         
-        if ((now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
+        if (Double.valueOf(now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
             log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100026", "自助开仓已超开仓时间");
         }
