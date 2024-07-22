@@ -36,8 +36,11 @@
             and fee_date <![CDATA[ >=  ]]>  #{startTime}
             and fee_date <![CDATA[ <=  ]]>  #{endTime}
             and tenant_id = #{tenantId}
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
         

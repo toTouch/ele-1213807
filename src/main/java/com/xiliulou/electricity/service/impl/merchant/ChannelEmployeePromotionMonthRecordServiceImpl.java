@@ -123,11 +123,11 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
      * 获取某个月的数据的详情
      *
      * @param monthDate
-     * @param franchiseeId
+     * @param franchiseeIdList
      * @return
      */
     @Slave
-    private List<ChannelEmployeePromotionMonthExportVO> getData(String monthDate, Long franchiseeId) throws ParseException {
+    private List<ChannelEmployeePromotionMonthExportVO> getData(String monthDate, List<Long> franchiseeIdList) throws ParseException {
         List<ChannelEmployeePromotionMonthExportVO> resList = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
         Date date = format.parse(monthDate);
@@ -143,11 +143,11 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
         long endTime = calendar.getTimeInMillis();
         
         // 查询月度账单
-        List<ChannelEmployeePromotionMonthRecord> channelEmployeePromotionMonthRecords = channelEmployeePromotionMonthRecordMapper.selectByFeeDate(TenantContextHolder.getTenantId(), monthDate, franchiseeId);
+        List<ChannelEmployeePromotionMonthRecord> channelEmployeePromotionMonthRecords = channelEmployeePromotionMonthRecordMapper.selectByFeeDate(TenantContextHolder.getTenantId(), monthDate, franchiseeIdList);
         
         // 查询日结账单
         List<ChannelEmployeePromotionDayRecord> channelEmployeePromotionDayRecords = channelEmployeePromotionDayRecordService.queryListByFeeDate(startTime, endTime,
-                TenantContextHolder.getTenantId(), franchiseeId);
+                TenantContextHolder.getTenantId(), franchiseeIdList);
         
         if (ObjectUtils.isEmpty(channelEmployeePromotionMonthRecords)) {
             return resList;
@@ -238,7 +238,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
     
     @Slave
     @Override
-    public void export(String monthDate, HttpServletResponse response, Long franchiseeId) {
+    public void export(String monthDate, HttpServletResponse response, List<Long> franchiseeIdList) {
         String fileName = "渠道员提成出账记录.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -254,7 +254,7 @@ public class ChannelEmployeePromotionMonthRecordServiceImpl implements ChannelEm
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("渠道员提成出账记录").doWrite(getData(monthDate, franchiseeId));
+                    .sheet("渠道员提成出账记录").doWrite(getData(monthDate, franchiseeIdList));
             
         } catch (Exception e) {
             log.error("channel employee promotion export error！", e);
