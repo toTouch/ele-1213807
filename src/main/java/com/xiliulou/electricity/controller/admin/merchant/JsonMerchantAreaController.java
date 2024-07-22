@@ -155,7 +155,7 @@ public class JsonMerchantAreaController extends BaseController {
             }
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIds).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIds).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantAreaService.listByPage(request));
     }
@@ -181,7 +181,7 @@ public class JsonMerchantAreaController extends BaseController {
             }
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().name(name).franchiseeIdList(franchiseeIds).build();
+        MerchantAreaRequest request = MerchantAreaRequest.builder().name(name).franchiseeIdList(franchiseeIds).franchiseeId(franchiseeId).build();
         
         return R.ok(merchantAreaService.countTotal(request));
     }

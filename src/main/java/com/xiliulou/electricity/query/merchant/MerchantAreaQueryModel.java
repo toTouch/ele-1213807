@@ -31,6 +31,8 @@ public class MerchantAreaQueryModel {
     
     private List<Long> franchiseeIdList;
     
+    private Long franchiseeId;
+    
     private List<Long> idList;
     
 }

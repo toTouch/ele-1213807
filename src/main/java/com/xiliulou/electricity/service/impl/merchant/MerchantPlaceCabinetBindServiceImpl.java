@@ -360,12 +360,12 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
         // 检测查询的绑定记录的场地是否存在
         MerchantPlace place = merchantPlaceService.queryByIdFromCache(merchantQueryModel.getPlaceId());
         if (Objects.isNull(place)) {
-            log.info("place bind list warn, place not find, placeId={}", placeCabinetPageRequest.getPlaceId());
+            log.warn("place bind list warn, place not find, placeId={}", placeCabinetPageRequest.getPlaceId());
             return Collections.emptyList();
         }
         
         if (ObjectUtils.isNotEmpty(placeCabinetPageRequest.getBindFranchiseeIdList()) && !placeCabinetPageRequest.getBindFranchiseeIdList().contains(place.getFranchiseeId())) {
-            log.info("place bind list warn, franchisee is different, placeId={}, bindFranchiseeId={}", placeCabinetPageRequest.getPlaceId(), placeCabinetPageRequest.getBindFranchiseeIdList());
+            log.warn("place bind list warn, franchisee is different, placeId={}, bindFranchiseeId={}", placeCabinetPageRequest.getPlaceId(), placeCabinetPageRequest.getBindFranchiseeIdList());
             return Collections.emptyList();
         }
         

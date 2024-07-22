@@ -103,7 +103,7 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         }
         
         if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(channelEmployee.getFranchiseeId())) {
-            log.warn("channel employee query by id error, franchisee is different, id={}, bindFranchiseeId={}", id, bindFranchiseeIdList);
+            log.warn("channel employee query by id warn, franchisee is different, id={}, bindFranchiseeId={}", id, bindFranchiseeIdList);
             return null;
         }
         
