@@ -138,7 +138,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             throw new BizException("100002", "网络不佳，请重试");
         }
         
-        //获取支付宝小程序appId TODO
+        //获取支付宝小程序appId
         String appId = alipayAppConfig.getAppId();
         
         try {
@@ -324,8 +324,6 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     }
     
     private String decryptAliPayAuthCodeData(String code, String appId, AlipayAppConfig alipayAppConfig) {
-        
-        // 初始化SDK TODO 优化单例
          String openId = null;
         try {
             AlipayClient alipayClient = new DefaultAlipayClient(getAlipayConfig(appId, alipayAppConfig));
@@ -404,7 +402,6 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     }
     
     private AlipayConfig getAlipayConfig(String appId, AlipayAppConfig alipayAppConfig) {
-        //TODO 读取配置文件
         String privateKey = alipayAppConfig.getAppPrivateKey();
         String alipayPublicKey = alipayAppConfig.getPublicKey();
         AlipayConfig alipayConfig = new AlipayConfig();
