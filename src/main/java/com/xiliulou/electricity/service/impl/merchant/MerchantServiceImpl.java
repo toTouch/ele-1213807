@@ -93,7 +93,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -212,8 +211,8 @@ public class MerchantServiceImpl implements MerchantService {
         Integer tenantId = TenantContextHolder.getTenantId();
     
         // 检测选中的加盟商和当前登录加盟商是否一致
-        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
-            log.info("merchant save info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getBindFranchiseeIdList()) && !merchantSaveRequest.getBindFranchiseeIdList().contains(merchantSaveRequest.getFranchiseeId())) {
+            log.info("merchant save info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeIdList());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -549,8 +548,8 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         // 检测选中的加盟商和当前登录加盟商是否一致
-        if (Objects.nonNull(merchantSaveRequest.getBindFranchiseeId()) && !Objects.equals(merchantSaveRequest.getBindFranchiseeId(), merchantSaveRequest.getFranchiseeId())) {
-            log.info("merchant update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeId());
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getBindFranchiseeIdList()) && !merchantSaveRequest.getBindFranchiseeIdList().contains(merchantSaveRequest.getFranchiseeId())) {
+            log.info("merchant update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeIdList());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -904,7 +903,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Transactional
     @Override
-    public Triple<Boolean, String, Object> remove(Long id, Long bindFranchiseeId) {
+    public Triple<Boolean, String, Object> remove(Long id, List<Long> bindFranchiseeIdList) {
         // 检测商户是否存在
         Integer tenantId = TenantContextHolder.getTenantId();
         Merchant merchant = this.merchantMapper.selectById(id);
@@ -912,8 +911,8 @@ public class MerchantServiceImpl implements MerchantService {
             return Triple.of(false, "120212", "商户不存在");
         }
         
-        if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchant.getFranchiseeId(), bindFranchiseeId)) {
-            log.info("merchant delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeId);
+        if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(merchant.getFranchiseeId())) {
+            log.info("merchant delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeIdList);
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -1233,7 +1232,7 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public Triple<Boolean, String, Object> queryById(Long id, Long franchiseeId) {
+    public Triple<Boolean, String, Object> queryById(Long id, List<Long> franchiseeIdList) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         Merchant merchant = merchantMapper.selectById(id);
@@ -1241,8 +1240,8 @@ public class MerchantServiceImpl implements MerchantService {
             return Triple.of(false, "120212", "商户不存在");
         }
         
-        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, merchant.getFranchiseeId())) {
-            log.info("MERCHANT QUERY INFO! franchisee is not different, id={}, franchiseeId={}", "商户不存在", id, franchiseeId);
+        if (ObjectUtils.isNotEmpty(franchiseeIdList) && !franchiseeIdList.contains(merchant.getFranchiseeId())) {
+            log.info("MERCHANT QUERY INFO! franchisee is not different, id={}, franchiseeId={}", "商户不存在", id, franchiseeIdList);
             return Triple.of(false, "120212", "商户不存在");
         }
         
@@ -1621,8 +1620,8 @@ public class MerchantServiceImpl implements MerchantService {
             return Pair.of(false,"解绑商户不存在,请联系客服处理");
         }
         
-        if (Objects.nonNull(params.getBindFranchiseeId()) && !Objects.equals(params.getBindFranchiseeId(), merchant.getFranchiseeId())) {
-            log.info("merchant un bind open id info, franchisee is not different uid={}, franchiseeId={}, bindFranchiseeId={}", userOauthBind.getUid(), merchant.getFranchiseeId(), params.getBindFranchiseeId());
+        if (ObjectUtils.isNotEmpty(params.getBindFranchiseeIdList()) && !params.getBindFranchiseeIdList().contains(merchant.getFranchiseeId())) {
+            log.info("merchant un bind open id info, franchisee is not different uid={}, franchiseeId={}, bindFranchiseeId={}", userOauthBind.getUid(), merchant.getFranchiseeId(), params.getBindFranchiseeIdList());
             return Pair.of(false,  "当前加盟商无权限操作");
         }
     
