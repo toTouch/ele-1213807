@@ -55,9 +55,16 @@
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
-        
+    
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
         order by id desc
@@ -77,6 +84,13 @@
     
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
     </select>
@@ -99,8 +113,12 @@
             <if test="name != null and name != ''">
                 and name like concat('%', concat(#{name}, '%'))
             </if>
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
         order by id desc

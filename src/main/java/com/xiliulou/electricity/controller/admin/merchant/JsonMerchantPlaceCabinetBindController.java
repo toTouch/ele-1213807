@@ -64,14 +64,15 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.error("merchant cabinet bind  error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
     
-            placeCabinetBindSaveRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            placeCabinetBindSaveRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.bind(placeCabinetBindSaveRequest);
@@ -108,14 +109,15 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant cabinet un bind warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
         
-            placeCabinetBindSaveRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            placeCabinetBindSaveRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.unBind(placeCabinetBindSaveRequest);
@@ -143,19 +145,17 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        Long franchiseeId = null;
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant cabinet bind delete warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
-    
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.remove(id, franchiseeId);
+        Triple<Boolean, String, Object> r = merchantPlaceCabinetBindService.remove(id, franchiseeIds);
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
@@ -180,18 +180,16 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant cabinet page count warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
     
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).status(status).bindFranchiseeId(franchiseeId).tenantId(TenantContextHolder.getTenantId()).build();
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).status(status).bindFranchiseeIdList(franchiseeIds).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantPlaceCabinetBindService.countTotal(placeCabinetPageRequest));
     }
@@ -222,18 +220,16 @@ public class JsonMerchantPlaceCabinetBindController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant cabinet page warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).size(size).offset(offset).bindFranchiseeId(franchiseeId).tenantId(TenantContextHolder.getTenantId())
+        MerchantPlaceCabinetPageRequest placeCabinetPageRequest = MerchantPlaceCabinetPageRequest.builder().placeId(placeId).sn(cabinetSn).size(size).offset(offset).bindFranchiseeIdList(franchiseeIds).tenantId(TenantContextHolder.getTenantId())
                 .status(status).build();
         
         return R.ok(merchantPlaceCabinetBindService.listByPage(placeCabinetPageRequest));

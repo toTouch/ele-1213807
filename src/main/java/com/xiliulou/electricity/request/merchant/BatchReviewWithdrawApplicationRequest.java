@@ -38,5 +38,5 @@ public class BatchReviewWithdrawApplicationRequest {
     /**
      * 登录用户绑定的加盟商id
      */
-    private Long bindFranchiseeId;
+    private List<Long> bindFranchiseeIdList;
 }

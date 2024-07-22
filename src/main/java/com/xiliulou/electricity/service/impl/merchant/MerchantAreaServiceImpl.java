@@ -21,6 +21,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantAreaVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -67,8 +68,8 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         }
     
         // 检测选中的加盟商和当前登录加盟商是否一致
-        if (Objects.nonNull(saveRequest.getBindFranchiseeId()) && !Objects.equals(saveRequest.getBindFranchiseeId(), saveRequest.getFranchiseeId())) {
-            log.info("merchant area save info, franchisee is not different ,name = {}, franchiseeId={}, bindFranchiseeId={}", saveRequest.getName(), saveRequest.getFranchiseeId(), saveRequest.getBindFranchiseeId());
+        if (ObjectUtils.isNotEmpty(saveRequest.getBindFranchiseeIdList()) && !saveRequest.getBindFranchiseeIdList().contains(saveRequest.getFranchiseeId())) {
+            log.info("merchant area save info, franchisee is not different ,name = {}, franchiseeId={}, bindFranchiseeId={}", saveRequest.getName(), saveRequest.getFranchiseeId(), saveRequest.getBindFranchiseeIdList());
             return R.fail(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -93,14 +94,14 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
      * 逻辑删
      */
     @Override
-    public R deleteById(Long id, Long bindFranchiseeId) {
+    public R deleteById(Long id, List<Long> bindFranchiseeIdList) {
         MerchantArea merchantArea = merchantAreaMapper.selectById(id);
         if (Objects.isNull(merchantArea)) {
             return R.fail("120218", "区域不存在");
         }
         
-        if (Objects.nonNull(bindFranchiseeId) && !Objects.equals(merchantArea.getFranchiseeId(), bindFranchiseeId)) {
-            log.info("merchant area delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantArea.getFranchiseeId(), bindFranchiseeId);
+        if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(merchantArea.getFranchiseeId())) {
+            log.info("merchant area delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantArea.getFranchiseeId(), merchantArea.getFranchiseeId());
             return R.fail("120240", "当前加盟商无权限操作");
         }
         
@@ -142,8 +143,8 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         }
     
         // 检测选中的加盟商和当前登录加盟商是否一致
-        if (Objects.nonNull(updateRequest.getBindFranchiseeId()) && !Objects.equals(updateRequest.getBindFranchiseeId(), updateRequest.getFranchiseeId())) {
-            log.info("merchant area update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", updateRequest.getId(), updateRequest.getFranchiseeId(), updateRequest.getBindFranchiseeId());
+        if (ObjectUtils.isNotEmpty(updateRequest.getBindFranchiseeIdList()) && !updateRequest.getBindFranchiseeIdList().contains(updateRequest.getFranchiseeId())) {
+            log.info("merchant area update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", updateRequest.getId(), updateRequest.getFranchiseeId(), updateRequest.getBindFranchiseeIdList());
             return R.fail("120240", "当前加盟商无权限操作");
         }
         

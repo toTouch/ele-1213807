@@ -107,5 +107,5 @@ public class MerchantSaveRequest {
     /**
      * 加盟商绑定的数据权限的加盟商id
      */
-    private Long bindFranchiseeId;
+    private List<Long> bindFranchiseeIdList;
 }

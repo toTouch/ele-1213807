@@ -20,7 +20,7 @@ public interface ChannelEmployeeService {
      * @param franchiseeId
      * @return
      */
-    ChannelEmployeeVO queryById(Long id, Long franchiseeId);
+    ChannelEmployeeVO queryById(Long id, List<Long> franchiseeId);
     
     /**
      * 根据uid查询渠道员工信息
@@ -64,7 +64,7 @@ public interface ChannelEmployeeService {
      */
     Triple<Boolean, String, Object> updateChannelEmployee(ChannelEmployeeRequest channelEmployeeRequest);
     
-    Integer removeById(Long id, Long franchiseeId);
+    Integer removeById(Long id, List<Long> franchiseeId);
     
     Integer existsByAreaId(Long id);
 }

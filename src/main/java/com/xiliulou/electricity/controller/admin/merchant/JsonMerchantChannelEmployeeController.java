@@ -61,14 +61,13 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee List error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee List error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
-            franchiseeId = franchiseeIds.get(0);
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -78,6 +77,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
                 .uid(uid)
                 .name(name)
                 .franchiseeId(franchiseeId)
+                .franchiseeIdList(franchiseeIds)
                 .areaId(areaId)
                 .tenantId(tenantId)
                 .build();
@@ -99,14 +99,13 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee count error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee count error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -114,6 +113,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
                 .uid(uid)
                 .name(name)
                 .franchiseeId(franchiseeId)
+                .franchiseeIdList(franchiseeIds)
                 .areaId(areaId)
                 .tenantId(tenantId)
                 .build();
@@ -130,14 +130,15 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee add error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee add error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
-            channelEmployeeRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            channelEmployeeRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         return returnTripleResult(channelEmployeeService.saveChannelEmployee(channelEmployeeRequest));
@@ -151,15 +152,16 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee update error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee update error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         
-            channelEmployeeRequest.setBindFranchiseeId(franchiseeIds.get(0));
+            channelEmployeeRequest.setBindFranchiseeIdList(franchiseeIds);
         }
         
         return returnTripleResult(channelEmployeeService.updateChannelEmployee(channelEmployeeRequest));
@@ -173,19 +175,17 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        Long franchiseeId = null;
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee query by id error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee query by id error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        return R.ok(channelEmployeeService.queryById(id, franchiseeId));
+        return R.ok(channelEmployeeService.queryById(id, franchiseeIds));
     }
     
     @DeleteMapping("/admin/merchant/removeChannelEmployee")
@@ -196,18 +196,16 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee query by id error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee query by id error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        return R.ok(channelEmployeeService.removeById(id, franchiseeId));
+        return R.ok(channelEmployeeService.removeById(id, franchiseeIds));
     }
     
     /**
@@ -237,15 +235,14 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.error("channel employee query employees error! franchisee is empty, uid={}", user.getUid());
+                log.warn("channel employee query employees error! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -254,6 +251,7 @@ public class JsonMerchantChannelEmployeeController extends BaseController {
                 .offset(offset)
                 .name(name)
                 .franchiseeId(franchiseeId)
+                .franchiseeIdList(franchiseeIds)
                 .tenantId(tenantId)
                 .build();
         

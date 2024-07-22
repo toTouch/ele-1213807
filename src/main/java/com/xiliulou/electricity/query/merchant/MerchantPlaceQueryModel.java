@@ -60,4 +60,7 @@ public class MerchantPlaceQueryModel {
      * 商户id
      */
     private Long merchantId;
+    
+    private List<Long> franchiseeIdList;
+    
 }

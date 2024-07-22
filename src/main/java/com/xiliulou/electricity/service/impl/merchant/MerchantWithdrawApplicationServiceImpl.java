@@ -218,7 +218,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120212", "商户不存在");
         }
         
-        if (Objects.nonNull(reviewWithdrawApplicationRequest.getBindFranchiseeId()) && !Objects.equals(reviewWithdrawApplicationRequest.getBindFranchiseeId(), merchant.getFranchiseeId())) {
+        if (ObjectUtils.isNotEmpty(reviewWithdrawApplicationRequest.getBindFranchiseeIdList()) && !reviewWithdrawApplicationRequest.getBindFranchiseeIdList().contains(merchant.getFranchiseeId())) {
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -424,7 +424,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Long franchiseeId = franchiseeIdList.get(NumberConstant.ZERO);
         
         // 登录用户的加盟商id和提现订单对应的加盟商id是否相等
-        if (Objects.nonNull(batchReviewWithdrawApplicationRequest.getBindFranchiseeId()) && !Objects.equals(batchReviewWithdrawApplicationRequest.getBindFranchiseeId(), franchiseeId)) {
+        if (ObjectUtils.isNotEmpty(batchReviewWithdrawApplicationRequest.getBindFranchiseeIdList()) && !batchReviewWithdrawApplicationRequest.getBindFranchiseeIdList().contains(franchiseeId)) {
             log.info("batch handle withdraw record info, franchisee id is not equal, user uid={}, franchisee id={}, ids = {}", user.getUid(), franchiseeId, batchReviewWithdrawApplicationRequest.getIds());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }

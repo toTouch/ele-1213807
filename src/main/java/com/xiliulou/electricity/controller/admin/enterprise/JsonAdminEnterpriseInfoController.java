@@ -231,7 +231,7 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
     
-            enterpriseCloudBeanRechargeQuery.setBindFranchiseeId(franchiseeIds.get(0));
+            enterpriseCloudBeanRechargeQuery.setBindFranchiseeIdList(franchiseeIds);
         }
         
         return returnTripleResult(enterpriseInfoService.rechargeForAdmin(enterpriseCloudBeanRechargeQuery));

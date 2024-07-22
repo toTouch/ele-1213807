@@ -57,19 +57,17 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("channel employee promotion page warn! franchisee is empty, uid = {}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-    
-            franchiseeId = franchiseeIds.get(0);
         }
         
         ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(TenantContextHolder.getTenantId()).size(size).offset(offset)
-                .monthDate(monthDate).franchiseeId(franchiseeId).build();
+                .monthDate(monthDate).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(channelEmployeePromotionMonthRecordService.listByPage(channelEmployeeRequest));
         
@@ -89,18 +87,17 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("channel employee promotion page warn! franchisee is empty, uid = {}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(TenantContextHolder.getTenantId()).monthDate(monthDate).franchiseeId(franchiseeId).build();
+        ChannelEmployeePromotionRequest channelEmployeeRequest = ChannelEmployeePromotionRequest.builder().tenantId(TenantContextHolder.getTenantId())
+                .monthDate(monthDate).franchiseeIdList(franchiseeIds).build();
         
         return R.ok(channelEmployeePromotionMonthRecordService.countTotal(channelEmployeeRequest));
         
@@ -123,16 +120,14 @@ public class JsonMerchantChannelEmployeePromotionController extends BaseControll
             throw new CustomBusinessException("用户权限不足");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("channel employee promotion page warn! franchisee is empty, uid = {}", user.getUid());
                 throw new CustomBusinessException("加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
-        channelEmployeePromotionMonthRecordService.export(monthDate, response, franchiseeId);
+        channelEmployeePromotionMonthRecordService.export(monthDate, response, franchiseeIds);
     }
 }

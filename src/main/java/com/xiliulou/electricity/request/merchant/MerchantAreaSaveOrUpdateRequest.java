@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -44,5 +45,5 @@ public class MerchantAreaSaveOrUpdateRequest {
     /**
      * 绑定加盟商id
      */
-    private Long bindFranchiseeId;
+    private List<Long> bindFranchiseeIdList;
 }

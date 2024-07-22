@@ -34,7 +34,7 @@ public class ChannelEmployeePromotionDayRecordServiceImpl implements ChannelEmpl
     
     @Slave
     @Override
-    public List<ChannelEmployeePromotionDayRecord> queryListByFeeDate(long startTime, long endTime, Integer tenantId, Long franchiseeId) {
-        return channelEmployeePromotionDayRecordMapper.selectListByFeeDate(startTime, endTime, tenantId, franchiseeId);
+    public List<ChannelEmployeePromotionDayRecord> queryListByFeeDate(long startTime, long endTime, Integer tenantId, List<Long> franchiseeIdList) {
+        return channelEmployeePromotionDayRecordMapper.selectListByFeeDate(startTime, endTime, tenantId, franchiseeIdList);
     }
 }

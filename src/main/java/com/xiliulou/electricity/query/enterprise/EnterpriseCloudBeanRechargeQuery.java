@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -34,6 +35,6 @@ public class EnterpriseCloudBeanRechargeQuery {
     /**
      * 登录用户绑定的加盟商
      */
-    private Long bindFranchiseeId;
+    private List<Long> bindFranchiseeIdList;
 
 }
