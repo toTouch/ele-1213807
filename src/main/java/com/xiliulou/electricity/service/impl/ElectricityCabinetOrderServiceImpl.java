@@ -43,6 +43,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
@@ -1231,6 +1232,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCabinetName(cabinet.getName());
         vo.setCell(lastOrder.getNewCellNo());
+        vo.setOrderId(lastOrder.getOrderId());
+        
         if (Objects.nonNull(cabinetBox)) {
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
@@ -1242,26 +1245,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 没有在仓，需要返回前端仓门号
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
-            // todo 添加自主开仓记录
-           
-            
             return Pair.of(true, vo);
         }
     }
     
-    private void insertExceptionOrderStatusRecordService(String orderId){
-        ElectricityExceptionOrderStatusRecord.builder()
-//                .setOrderId(orderId);
-//        .setTenantId(electricityCabinetOrder.getTenantId());
-//        .setStatus(exchangeOrderRsp.getOrderStatus());
-//        ..setOrderSeq(exchangeOrderRsp.getOrderSeq());
-//        .setCreateTime(System.currentTimeMillis());
-//        ..setUpdateTime(System.currentTimeMillis());
-//        ..setCellNo(electricityCabinetOrder.getOldCellNo());
-                .build();
-        
-        electricityExceptionOrderStatusRecordService.insert(new ElectricityExceptionOrderStatusRecord());
-    }
     
     private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, String userBindingBatterySn) {
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
@@ -1272,18 +1259,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 订单中途未结束【包括初始化订单
             return Pair.of(false, null);
         }
-        
         String msg = history.getMsg();
         log.info("lastExchangeFailHandler.lastOrder is{},history.msg is {}", JsonUtil.toJson(lastOrder), msg);
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
-        
         //  旧仓门电池检测失败或超时
         if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME)) {
             return oldCellCheckFail(lastOrder, cabinetBox, vo);
             
         }
+        
         //   新仓门&开门失败
         if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
             return newCellOpenFail(lastOrder, cabinetBox, userBindingBatterySn, vo);
@@ -1299,21 +1285,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(true, vo);
         }
         
-        // 用户绑定的电池状态是否为租借状态
         ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(userBindingBatterySn);
+        vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+        vo.setCell(lastOrder.getNewCellNo());
+        vo.setOrderId(lastOrder.getOrderId());
         
-        if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(),ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-            // todo 返回前端的新仓门，添加操作记录
-            vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+        // 用户绑定的电池状态是否为租借状态
+        if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            vo.setCell(lastOrder.getNewCellNo());
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
-            // todo 结束上一个异常订单
-            vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
-            vo.setCell(lastOrder.getNewCellNo());
             return Pair.of(true, vo);
         }
     }
@@ -1324,7 +1307,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
             return Pair.of(true, vo);
         }
-        
+        vo.setOrderId(lastOrder.getOrderId());
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
             // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
             // todo 取电流程
@@ -2378,6 +2361,146 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             showVo.setStatus(redisService.get(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId));
         }
         return Triple.of(true, null, showVo);
+    }
+    
+    @Override
+    public R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("self open cell order  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        //是否存在未完成的租电池订单
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
+        if (Objects.nonNull(rentBatteryOrder)) {
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+                return R.fail((Object) rentBatteryOrder.getOrderId(), "100023", "存在未完成租电订单，不能自助开仓");
+            } else if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                return R.fail((Object) rentBatteryOrder.getOrderId(), "100024", "存在未完成还电订单，不能自助开仓");
+            }
+        }
+        
+        ElectricityCabinetOrder oldElectricityCabinetOrder = queryByUid(user.getUid());
+        if (Objects.nonNull(oldElectricityCabinetOrder)) {
+            return R.fail((Object) oldElectricityCabinetOrder.getOrderId(), "100022", "存在未完成换电订单，不能自助开仓");
+        }
+        
+        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(query.getOrderId());
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.warn("self open cell WARN! not found order,orderId={} ", query.getOrderId());
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        
+        //换电柜
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(query.getEid());
+        if (Objects.isNull(electricityCabinet)) {
+            log.warn("self open cell WARN! not found electricityCabinet ！electricityCabinetId={}", query.getEid());
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.warn("self open cell WARN!  electricityCabinet is offline ！electricityCabinetId={}", electricityCabinet.getId());
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+        
+        //换电柜营业时间
+        boolean isBusiness = this.isBusiness(electricityCabinet);
+        if (isBusiness) {
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
+        
+        //查找换电柜门店
+        if (Objects.isNull(electricityCabinet.getStoreId())) {
+            log.warn("self open cell order  WARN! not found store ！electricityCabinetId={}", electricityCabinet.getId());
+            return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+        }
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if (Objects.isNull(store)) {
+            log.warn("self open cell order  WARN! not found store ！storeId={}", electricityCabinet.getStoreId());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        
+        //查找门店加盟商
+        if (Objects.isNull(store.getFranchiseeId())) {
+            log.warn("self open cell order  WARN! not found Franchisee ！storeId={}", store.getId());
+            return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+        }
+        
+        //校验用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("self open cell order  WARN! not found user,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("self open cell order WARN! user is unUsable! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("self open cell order WARN! user not auth,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        
+        //判断该换电柜加盟商和用户加盟商是否一致
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+            log.warn("self open cell order  WARN!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(),
+                    userInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+        }
+        
+        //未租电池
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("self open cell order  WARN! user not rent battery,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
+        
+        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(query.getEid(), String.valueOf(query.getCellNo()));
+        if (Objects.isNull(electricityCabinetBox)) {
+            log.warn("self open cell order  WARN! not find cellNO! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0006", "未找到此仓门");
+        }
+        
+        try {
+            // todo msg前端传递
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
+                    .tenantId(electricityCabinet.getTenantId()).msg("自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+            electricityCabinetOrderOperHistoryService.insert(history);
+            
+            ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
+            electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
+            electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetOrderUpdate.setRemark("自助开仓");
+            update(electricityCabinetOrderUpdate);
+            
+            //发送自助开仓命令
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("orderId", query.getOrderId());
+            dataMap.put("cellNo", query.getCellNo());
+            dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
+            
+            String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
+            
+            HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok(sessionId);
+        } catch (Exception e) {
+            log.error("order is error" + e);
+            return R.fail("ELECTRICITY.0025", "自助开仓失败");
+        } finally {
+            redisService.delete(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + query.getCellNo());
+        }
+        
     }
     
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {

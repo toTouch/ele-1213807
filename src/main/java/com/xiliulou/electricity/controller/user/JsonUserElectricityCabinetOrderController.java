@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
@@ -154,6 +155,16 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     @PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
     public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
         return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
+    }
+    
+    /**
+     * 短时间多次换电进行自主开仓
+     * @param query
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/lessExchangeSelfOpenCell")
+    public R lessExchangeSelfOpenCell(@RequestBody @Validated LessExchangeSelfOpenCellQuery query) {
+        return electricityCabinetOrderService.lessExchangeSelfOpenCell(query);
     }
     
     //查看开门结果

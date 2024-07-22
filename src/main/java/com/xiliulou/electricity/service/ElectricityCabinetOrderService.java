@@ -106,4 +106,6 @@ public interface ElectricityCabinetOrderService {
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
     Triple<Boolean, String, Object> queryOrderStatusForShowV2(String orderId);
+    
+    R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
 }
