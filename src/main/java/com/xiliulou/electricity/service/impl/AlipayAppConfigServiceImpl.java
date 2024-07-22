@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.alipay.api.AlipayApiException;
 import com.google.common.collect.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;

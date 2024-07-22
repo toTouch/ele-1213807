@@ -5,21 +5,17 @@
 package com.xiliulou.electricity.service.impl.payconfig;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.bo.pay.PayParamsBizDetails;
-import com.xiliulou.electricity.enums.PaymentMethodEnum;
-import com.xiliulou.electricity.service.AlipayAppConfigService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.pay.alipay.exception.AliPayException;
+import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
+import shaded.org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * description: 支付参数业务service
@@ -37,16 +33,38 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
     
     
     @Override
-    public <T extends BasePayConfig> PayParamsBizDetails<T> queryPayParams(String paymentMethod, Integer tenantId, Long franchiseeId) throws WechatPayException, AliPayException {
+    public BasePayConfig queryPayParams(String paymentChannel, Integer tenantId, Long franchiseeId) throws PayException {
         
-        return commonQuery(payConfigFactory.getStrategy(paymentMethod), paymentMethod, tenantId, franchiseeId);
+        if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId) || StringUtils.isBlank(paymentChannel)) {
+            log.error("PayConfigBizServiceImpl.queryPayParams paymentChannel:{},tenantId:{},franchiseeId:{}", paymentChannel, tenantId, franchiseeId);
+            throw new PayException("参数错误");
+        }
+        
+        return commonQuery(payConfigFactory.getStrategy(paymentChannel), paymentChannel, tenantId, franchiseeId);
     }
     
     @Override
-    public <T extends BasePayConfig> PayParamsBizDetails<T> queryPrecisePayParams(String paymentMethod, Integer tenantId, Long franchiseeId)
-            throws WechatPayException, AliPayException {
+    public BasePayConfig queryPrecisePayParams(String paymentChannel, Integer tenantId, Long franchiseeId) throws PayException {
         
-        return commonQuery(payConfigFactory.getPreciseStrategy(paymentMethod), paymentMethod, tenantId, franchiseeId);
+        if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId) || StringUtils.isBlank(paymentChannel)) {
+            log.error("PayConfigBizServiceImpl.queryPrecisePayParams paymentChannel:{},tenantId:{},franchiseeId:{}", paymentChannel, tenantId, franchiseeId);
+            throw new PayException("参数错误");
+        }
+        
+        return commonQuery(payConfigFactory.getPreciseStrategy(paymentChannel), paymentChannel, tenantId, franchiseeId);
+    }
+    
+    @Override
+    public boolean checkConfigConsistency(String paymentChannel, Integer tenantId, Long franchiseeId, String thirdPartyMerchantId) {
+        try {
+            
+            BasePayConfig config = queryPrecisePayParams(paymentChannel, tenantId, franchiseeId);
+            
+            return Objects.nonNull(config) && Objects.equals(config.getThirdPartyMerchantId(), thirdPartyMerchantId);
+        } catch (PayException e) {
+            log.warn("PayConfigBizServiceImpl.checkConfigConsistency WARN!  PayException:", e);
+            return false;
+        }
     }
     
     
@@ -54,23 +72,18 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
      * 统一查询
      *
      * @param payConfigStrategy
-     * @param paymentMethod
+     * @param paymentChannel
      * @param tenantId
      * @param franchiseeId
      * @author caobotao.cbt
      * @date 2024/7/18 14:40
      */
-    private <T extends BasePayConfig> PayParamsBizDetails<T> commonQuery(PayConfigFactory.PayConfigStrategy<T> payConfigStrategy, String paymentMethod, Integer tenantId,
-            Long franchiseeId) throws WechatPayException, AliPayException {
+    private BasePayConfig commonQuery(PayConfigFactory.PayConfigStrategy payConfigStrategy, String paymentChannel, Integer tenantId, Long franchiseeId) throws PayException {
         if (Objects.isNull(payConfigStrategy)) {
-            log.warn("PayParamsBizServiceImpl.commonQuery WARN! paymentMethod:{} is not found", paymentMethod);
+            log.warn("PayParamsBizServiceImpl.commonQuery WARN! paymentChannel:{} is not found", paymentChannel);
             return null;
         }
-        T config = payConfigStrategy.execute(tenantId, franchiseeId);
-        PayParamsBizDetails payParamsBizDetails = new PayParamsBizDetails();
-        payParamsBizDetails.setPaymentMethod(paymentMethod);
-        payParamsBizDetails.setPayParamConfig(config);
-        return payParamsBizDetails;
+        return payConfigStrategy.execute(tenantId, franchiseeId);
     }
     
     

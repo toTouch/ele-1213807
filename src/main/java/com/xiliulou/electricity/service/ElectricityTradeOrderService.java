@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
+import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
@@ -25,6 +27,21 @@ public interface ElectricityTradeOrderService {
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
             HttpServletRequest request) throws WechatPayException;
+    
+    
+    /**
+     * 通用生成订单，调起支付 V2
+     *
+     * @param commonPayOrder
+     * @param payConfig
+     * @param openId
+     * @param request
+     * @return
+     * @author caobotao.cbt
+     * @date 2024/7/18 19:20
+     */
+    BasePayOrderCreateDTO commonCreateTradeOrderAndGetPayParamsV2(CommonPayOrder commonPayOrder, BasePayConfig payConfig, String openId, HttpServletRequest request)
+            throws PayException;
     
     
     //月卡回调

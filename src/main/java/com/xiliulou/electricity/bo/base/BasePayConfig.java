@@ -4,7 +4,6 @@
 
 package com.xiliulou.electricity.bo.base;
 
-import lombok.Data;
 
 import java.io.Serializable;
 
@@ -38,7 +37,7 @@ public abstract class BasePayConfig implements Serializable {
     /**
      * 支付类型
      */
-    public abstract String getPaymentMethod();
+    public abstract String getPaymentChannel();
     
     
 }

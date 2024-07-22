@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service;
 
-import com.alipay.api.AlipayApiException;
 import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.pay.alipay.exception.AliPayException;

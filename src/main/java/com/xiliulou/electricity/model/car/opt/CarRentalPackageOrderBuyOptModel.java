@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.model.car.opt;
 
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,57 +15,66 @@ import java.util.List;
  **/
 @Data
 public class CarRentalPackageOrderBuyOptModel implements Serializable {
-
+    
     private static final long serialVersionUID = 6210569909931652061L;
-
+    
     /**
      * 租户ID
      */
     private Integer tenantId;
-
+    
     /**
      * 加盟商ID
      */
     private Integer franchiseeId;
-
+    
     /**
      * 门店ID
      */
     private Integer storeId;
-
+    
     /**
      * 用户ID
      */
     private Long uid;
-
+    
     /**
      * 套餐ID
      */
     private Long rentalPackageId;
-
+    
     /**
      * 用户使用的优惠券ID集
      */
     private List<Long> userCouponIds;
-
+    
     /**
      * 保险ID
      */
     private Long insuranceId;
-
+    
     /**
      * 交易方式
      * <pre>
      *     1-线上
      *     2-线下
      * </pre>
+     *
      * @see PayTypeEnum
      */
     private Integer payType;
-
+    
     /**
      * 实缴押金金额(元)
      */
     private BigDecimal deposit;
-
+    
+    
+    /**
+     * 支付方式，默认微信
+     *
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel = PaymentChannelEnum.WECHAT.getCode();
+    
 }

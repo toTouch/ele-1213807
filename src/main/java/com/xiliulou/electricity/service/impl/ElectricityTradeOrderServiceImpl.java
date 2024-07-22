@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
@@ -8,11 +9,14 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.converter.PayConfigConverter;
+import com.xiliulou.electricity.converter.model.OrderCreateParamConverterModel;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -96,8 +100,12 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.mq.service.RocketMqService;
+import com.xiliulou.pay.base.PayServiceDispatcher;
+import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.enums.PayTypeEnum;
+import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
+import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -304,6 +312,12 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
     
+    @Resource
+    private PayConfigConverter payConfigConverter;
+    
+    @Resource
+    private PayServiceDispatcher payServiceDispatcher;
+    
     /**
      * 租车套餐购买回调
      *
@@ -433,6 +447,32 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         return wechatV3JsapiInvokeService.order(wechatV3OrderRequest);
         
     }
+    
+    @Override
+    public BasePayOrderCreateDTO commonCreateTradeOrderAndGetPayParamsV2(CommonPayOrder commonPayOrder, BasePayConfig payConfig , String openId,
+            HttpServletRequest request) throws PayException {
+        // 构建交易订单
+        ElectricityTradeOrder electricityTradeOrder = this.buildElectricityTradeOrder(request, commonPayOrder, payConfig);
+        baseMapper.insert(electricityTradeOrder);
+        
+        // 构建参数转换模型
+        OrderCreateParamConverterModel model = new OrderCreateParamConverterModel();
+        model.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        model.setExpireTime(System.currentTimeMillis() + 3600000);
+        model.setDescription(commonPayOrder.getDescription());
+        model.setAttach(commonPayOrder.getAttach());
+        model.setAmount(commonPayOrder.getPayAmount());
+        model.setCurrency("CNY");
+        model.setOpenId(openId);
+        model.setPayConfig(payConfig);
+        
+        
+        BasePayRequest basePayRequest = payConfigConverter
+                .converterOrderCreate(model, config -> config.getPayCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
+        
+        return payServiceDispatcher.order(basePayRequest);
+    }
+    
     
     /**
      * 处理月卡回调
@@ -1148,6 +1188,34 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
                 storeAmountService.handleSplitAccount(store, electricityMemberCardOrder, percent2);
             }
         }
+    }
+    
+    /**
+     * 构建交易订单
+     *
+     * @param request
+     * @param commonPayOrder
+     * @param payConfig
+     * @author caobotao.cbt
+     * @date 2024/7/18 19:36
+     */
+    private ElectricityTradeOrder buildElectricityTradeOrder(HttpServletRequest request, CommonPayOrder commonPayOrder, BasePayConfig payConfig) {
+        String ip = request.getRemoteAddr();
+        ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+        electricityTradeOrder.setOrderNo(commonPayOrder.getOrderId());
+        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()) + commonPayOrder.getUid());
+        electricityTradeOrder.setClientId(ip);
+        electricityTradeOrder.setCreateTime(System.currentTimeMillis());
+        electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrder.setOrderType(commonPayOrder.getOrderType());
+        electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
+        electricityTradeOrder.setTotalFee(commonPayOrder.getPayAmount().multiply(new BigDecimal(100)));
+        electricityTradeOrder.setUid(commonPayOrder.getUid());
+        electricityTradeOrder.setTenantId(commonPayOrder.getTenantId());
+        electricityTradeOrder.setPayFranchiseeId(payConfig.getFranchiseeId());
+        electricityTradeOrder.setWechatMerchantId(payConfig.getThirdPartyMerchantId());
+        electricityTradeOrder.setPaymentChannel(payConfig.getPaymentChannel());
+        return electricityTradeOrder;
     }
     
 }

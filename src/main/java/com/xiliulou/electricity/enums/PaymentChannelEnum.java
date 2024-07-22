@@ -7,13 +7,13 @@ package com.xiliulou.electricity.enums;
 import lombok.Getter;
 
 /**
- * description:支付方式枚举
+ * description:支付渠道枚举
  *
  * @author caobotao.cbt
  * @date 2024/7/17 10:13
  */
 @Getter
-public enum PaymentMethodEnum {
+public enum PaymentChannelEnum {
     
     WECHAT("WECHAT", "微信小程序支付"),
     ALI_PAY("ALI_PAY", "支付宝小程序支付");
@@ -23,7 +23,7 @@ public enum PaymentMethodEnum {
     private String desc;
     
     
-    PaymentMethodEnum(String code, String desc) {
+    PaymentChannelEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }

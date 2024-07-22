@@ -133,4 +133,10 @@ public class CarRentalPackageDepositPayPo extends BasicCarPo {
      */
     private Long payFranchiseeId;
     
+    /**
+     * 支付渠道
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
+    
 }

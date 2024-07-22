@@ -5,7 +5,7 @@
 package com.xiliulou.electricity.bo.wechat;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.enums.PaymentMethodEnum;
+import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import lombok.Data;
 
 import java.math.BigInteger;
@@ -122,8 +122,8 @@ public class WechatPayParamsDetails extends BasePayConfig {
     
     
     @Override
-    public String getPaymentMethod() {
-        return PaymentMethodEnum.WECHAT.getCode();
+    public String getPaymentChannel() {
+        return PaymentChannelEnum.WECHAT.getCode();
     }
     
 }

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
@@ -231,6 +232,12 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
      * 支付加盟商ID
      */
     private Long payFranchiseeId;
+    
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
     
     public List<Long> getCouponIds() {
         Set<Long> result = new HashSet<>();

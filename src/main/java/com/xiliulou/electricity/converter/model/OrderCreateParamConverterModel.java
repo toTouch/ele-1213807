@@ -5,7 +5,6 @@
 package com.xiliulou.electricity.converter.model;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.bo.pay.PayParamsBizDetails;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +22,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderCreateParamConverterModel<T extends BasePayConfig> {
+public class OrderCreateParamConverterModel {
     
     /**
      * 交易订单(系统发起支付时的订单号,我们系统交易订单唯一)
@@ -64,6 +63,6 @@ public class OrderCreateParamConverterModel<T extends BasePayConfig> {
     /**
      * 支付配置信息
      */
-    private PayParamsBizDetails<T> payParamsBizDetails;
+    private BasePayConfig payConfig;
     
 }
