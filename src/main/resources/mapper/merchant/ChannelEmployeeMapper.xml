@@ -219,7 +219,7 @@
                 and tce.franchisee_id = #{franchiseeId}
             </if>
         
-            <if test="franchiseeIdList != null and franchiseeIdList.size() > ">
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
                 and tce.franchisee_id in
                 <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
                     #{item}
