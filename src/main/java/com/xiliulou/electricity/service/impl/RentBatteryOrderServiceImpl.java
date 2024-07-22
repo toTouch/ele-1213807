@@ -33,6 +33,7 @@ import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
@@ -75,6 +76,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -244,6 +246,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     private static final String ELE_CABINET_VERSION = "2.1.7";
     @Autowired
     OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
+    @Resource
+    private TenantService tenantService;
     
     /**
      * 新增数据
@@ -1287,7 +1292,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("导出报表失败！", e);
         }
     }
-    
+    @Slave
     @Override
     public R queryNewStatus(String orderId) {
         Map<String, Object> map = new HashMap<>();
@@ -1859,6 +1864,36 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return rentBatteryOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(RentBatteryOrderQuery rentBatteryOrderQuery) {
+        List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.selectListSuperAdminPage(rentBatteryOrderQuery);
+        if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
+            return R.ok(new ArrayList<>());
+        }
+        if (ObjectUtil.isNotEmpty(rentBatteryOrderVOList)) {
+            rentBatteryOrderVOList.parallelStream().forEach(e -> {
+                if (Objects.nonNull(e.getTenantId())) {
+                    Tenant tenant = tenantService.queryByIdFromCache(e.getTenantId());
+                    e.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+                }
+                
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+                if (Objects.nonNull(electricityCabinet)) {
+                    e.setElectricityCabinetName(electricityCabinet.getName());
+                }
+            
+                // 设置加盟商名称
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
+                }
+            });
+        }
+    
+        return R.ok(rentBatteryOrderVOList);
     }
     
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.merchant;
 
 import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -89,6 +90,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
         return delete;
     }
     
+    @Slave
     @Override
     public MerchantAttr queryUpgradeCondition(Integer tenantId) {
         MerchantAttr merchantAttr = this.queryByTenantIdFromCache(tenantId);

@@ -66,6 +66,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Resource
+    private TenantService tenantService;
 
     @Override
     public EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo) {
@@ -273,5 +276,40 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
             offset += size;
         }
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(BatteryServiceFeeQuery batteryServiceFeeQuery) {
+        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.selectListSuperAdminPage(batteryServiceFeeQuery);
+    
+        for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.nonNull(eleBatteryServiceFeeOrderVo.getTenantId())) {
+                Integer model = batteryModelService.acquireBatteryModel(eleBatteryServiceFeeOrderVo.getBatteryType(), eleBatteryServiceFeeOrderVo.getTenantId());
+                eleBatteryServiceFeeOrderVo.setModel(model);
+            }
+        
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && BigDecimal.valueOf(0).compareTo(eleBatteryServiceFeeOrderVo.getBatteryServiceFee()) != 0) {
+                eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee(),2,
+                        RoundingMode.DOWN)).intValue());
+            }
+        
+            if(StringUtils.isNotBlank(eleBatteryServiceFeeOrderVo.getBatteryType())){
+                eleBatteryServiceFeeOrderVo.setBatteryTypeList(JsonUtil.fromJsonArray(eleBatteryServiceFeeOrderVo.getBatteryType(),String.class));
+            }
+            
+            if (Objects.nonNull(eleBatteryServiceFeeOrderVo.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(eleBatteryServiceFeeOrderVo.getTenantId());
+                eleBatteryServiceFeeOrderVo.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+        
+        }
+        return R.ok(eleBatteryServiceFeeOrders);
+    }
+    
+    @Override
+    @Slave
+    public R countTotalForSuperAdmin(BatteryServiceFeeQuery batteryServiceFeeQuery) {
+        return R.ok(eleBatteryServiceFeeOrderMapper.countTotalForSuperAdmin(batteryServiceFeeQuery));
     }
 }

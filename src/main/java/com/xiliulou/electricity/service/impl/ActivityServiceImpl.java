@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -102,6 +103,7 @@ public class ActivityServiceImpl implements ActivityService {
      *
      * @return
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> userActivityInfo() {
         ActivityUserInfoVO activityUserInfoVO = new ActivityUserInfoVO();

@@ -67,6 +67,7 @@ public class MerchantWithdrawApplicationRecordServiceImpl implements MerchantWit
         return merchantWithdrawApplicationRecordMapper.selectById(id);
     }
     
+    @Slave
     @Override
     public MerchantWithdrawApplicationRecord selectByOrderNo(String orderNo, Integer tenantId) {
         return merchantWithdrawApplicationRecordMapper.selectByOrderNo(orderNo, tenantId);

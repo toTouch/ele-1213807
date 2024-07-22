@@ -82,4 +82,9 @@ public class AssetWarehouseVO {
      */
     private Integer carCount;
     
+    
+    private Long franchiseeId;
+    
+    
+    private String franchiseeName;
 }

@@ -280,9 +280,14 @@ public class EleOperateQueueHandler {
                 }
     
                 if (finalOpenDTO.getIsProcessFail()) {
+                    RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
+                    //若柜机正在使用中
+                    if (RentBatteryOrder.INIT_DEVICE_USING.equals(finalOpenDTO.getOrderStatus())) {
+                        newRentBatteryOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
+                    }
+                    
                     //取消订单
                     if (finalOpenDTO.getIsNeedEndOrder()) {
-                        RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
                         newRentBatteryOrder.setId(rentBatteryOrder.getId());
                         newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                         newRentBatteryOrder.setOrderSeq(RentBatteryOrder.STATUS_ORDER_CANCEL);
@@ -292,7 +297,6 @@ public class EleOperateQueueHandler {
                     }
         
                     //订单状态
-                    RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
                     newRentBatteryOrder.setId(rentBatteryOrder.getId());
                     newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                     newRentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());

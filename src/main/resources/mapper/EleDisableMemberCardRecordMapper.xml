@@ -25,8 +25,8 @@
         dmcr.apply_reason,
         dmcr.disable_member_card_time ,
         dmcr.auditor_id,
-        emcr.enable_time
-        from  t_ele_disable_member_card_record  dmcr left join t_enable_member_card_record emcr on dmcr.disable_member_card_no=emcr.disable_member_card_no
+        dmcr.franchisee_id
+        from  t_ele_disable_member_card_record  dmcr
         <where>
             <if test="query.tenantId !=null">
                 and dmcr.tenant_id=#{query.tenantId}

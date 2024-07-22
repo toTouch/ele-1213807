@@ -469,6 +469,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
      * @param id
      * @return
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryById(Long id) {
         Integer tenantId = TenantContextHolder.getTenantId();

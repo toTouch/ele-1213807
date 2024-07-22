@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
@@ -83,13 +84,17 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         if (CollectionUtils.isEmpty(depositPayEntityList)) {
             return R.ok(Collections.emptyList());
         }
-
+        
+        Set<Long> franchiseeIds = depositPayEntityList.stream().filter(Objects::nonNull).mapToLong(CarRentalPackageDepositPayPo::getFranchiseeId).boxed().collect(Collectors.toSet());
 
         // 获取辅助业务信息（用户信息）
         Set<Long> uids = depositPayEntityList.stream().map(CarRentalPackageDepositPayPo::getUid).collect(Collectors.toSet());
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
+        
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIds);
 
         // 查询对应的退款单
         List<String> depositPayOrderNoList = depositPayEntityList.stream().map(CarRentalPackageDepositPayPo::getOrderNo).distinct().collect(Collectors.toList());
@@ -129,6 +134,10 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
 
             if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) && refundPoMap.get(depositPayEntity.getOrderNo()).getCreateUid() == 0L && PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
                 depositPayVO.setRefundSpecialFlag(true);
+            }
+            
+            if (!franchiseeMap.isEmpty()){
+                depositPayVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositPayEntity.getFranchiseeId()), new Franchisee()).getName());
             }
             return depositPayVO;
         }).collect(Collectors.toList());
