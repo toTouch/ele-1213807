@@ -6,20 +6,12 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.WechatPayConstant;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.UnionTradeOrder;
-import com.xiliulou.electricity.enums.CallBackEnums;
-import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
 import com.xiliulou.electricity.factory.paycallback.WxRefundPayServiceFactory;
-import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
 import com.xiliulou.pay.alipay.handler.AbstractAliPayPostProcessCallBackHandler;
 import com.xiliulou.pay.alipay.request.AliPayCallBackResource;
-import com.xiliulou.pay.alipay.request.AliPayCreateOrderRequest;
-import com.xiliulou.pay.alipay.request.AliPayOrderRefundRequest;
 import com.xiliulou.pay.alipay.request.ApiPayRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
