@@ -49,4 +49,6 @@ public interface EnterpriseCloudBeanOrderService {
     EnterpriseCloudBeanOrder selectByOrderId(String orderNo);
     
     BigDecimal selectTotalCloudBean(EnterpriseCloudBeanOrderQuery query);
+    
+    List<EnterpriseCloudBeanOrder> listByOrderIdList(List<String> orderIdList);
 }

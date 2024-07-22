@@ -67,4 +67,6 @@ public interface MerchantService {
     void deleteCacheForRepairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
     
     Pair<Boolean, Object> unbindOpenId(MerchantUnbindReq params);
+    
+    List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList);
 }

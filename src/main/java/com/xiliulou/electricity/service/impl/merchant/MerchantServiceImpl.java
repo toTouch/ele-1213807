@@ -1358,6 +1358,7 @@ public class MerchantServiceImpl implements MerchantService {
         return merchant;
     }
     
+    @Slave
     @Override
     public List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId) {
         return merchantMapper.selectByChannelEmployeeUid(channelEmployeeId);
@@ -1427,6 +1428,7 @@ public class MerchantServiceImpl implements MerchantService {
         return integer;
     }
     
+    @Slave
     @Override
     public MerchantUserVO queryMerchantUserDetail() {
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
@@ -1632,6 +1634,12 @@ public class MerchantServiceImpl implements MerchantService {
             return Pair.of(true, "解绑成功");
         }
         return Pair.of(false, "解绑失败,请联系客服处理");
+    }
+    
+    @Override
+    @Slave
+    public List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList) {
+        return merchantMapper.listByEnterpriseList(enterpriseIdList);
     }
     
     @Slave

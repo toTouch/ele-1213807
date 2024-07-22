@@ -4,6 +4,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.FailureAlarm;
+import com.xiliulou.electricity.handler.iot.impl.HardwareFaultMsgHandler;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmBatchSetRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmPageRequest;

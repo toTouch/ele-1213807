@@ -177,6 +177,12 @@ public class EnterpriseCloudBeanOrderServiceImpl implements EnterpriseCloudBeanO
     }
     
     @Override
+    @Slave
+    public List<EnterpriseCloudBeanOrder> listByOrderIdList(List<String> orderIdList) {
+        return enterpriseCloudBeanOrderMapper.selectListByOrderIdList(orderIdList);
+    }
+    
+    @Override
     public EnterpriseCloudBeanOrder selectByOrderId(String orderNo) {
         return this.enterpriseCloudBeanOrderMapper.selectOne(new LambdaQueryWrapper<EnterpriseCloudBeanOrder>().eq(EnterpriseCloudBeanOrder::getOrderId, orderNo));
     }

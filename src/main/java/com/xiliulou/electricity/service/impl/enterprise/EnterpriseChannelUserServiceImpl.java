@@ -1854,6 +1854,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         return Triple.of(true, "", enterpriseInfo);
     }
     
+    @Slave
     @Override
     public ElectricityUserBatteryVo queryBatteryByUid(Long uid) {
         Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);

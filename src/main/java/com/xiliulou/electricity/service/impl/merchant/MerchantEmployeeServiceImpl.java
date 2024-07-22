@@ -284,6 +284,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeVO;
     }
     
+    @Slave
     @Override
     public MerchantEmployeeQrCodeVO queryEmployeeQrCodeByUid(Long uid) {
         MerchantEmployeeQrCodeVO merchantEmployeeQrCodeVO = new MerchantEmployeeQrCodeVO();
@@ -360,6 +361,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeMapper.selectListAllByMerchantUid(queryModel);
     }
     
+    @Slave
     @Override
     public List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest) {
         Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
@@ -388,6 +390,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
         return merchantEmployeeQrCodeVOList;
     }
     
+    @Slave
     @Override
     public List<MerchantEmployeeVO> selectAllMerchantEmployees(MerchantEmployeeRequest merchantEmployeeRequest) {
         

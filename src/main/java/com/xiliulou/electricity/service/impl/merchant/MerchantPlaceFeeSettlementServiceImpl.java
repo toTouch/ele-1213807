@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.google.api.client.util.Lists;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceFeeMonthRecordDTO;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
@@ -73,7 +74,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         // 根据场地id分组 并monthPlaceFee求和
         Map<Long, List<MerchantPlaceFeeMonthRecord>> placeIdListMap = merchantPlaceFeeMonthRecords.stream().filter(item -> Objects.nonNull(item.getPlaceId()))
                 .collect(Collectors.groupingBy(MerchantPlaceFeeMonthRecord::getPlaceId));
-    
+        
         Map<Long, String> placeNameMap = new HashMap<>();
         
         if (ObjectUtils.isNotEmpty(placeIdListMap)) {
@@ -111,7 +112,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         
         // recordDTOList转map
         Map<Long, MerchantPlaceFeeMonthRecordDTO> recordMap = recordDTOList.stream().collect(toMap(MerchantPlaceFeeMonthRecordDTO::getPlaceId, item -> item));
-    
+        
         Map<Long, String> finalPlaceNameMap = placeNameMap;
         
         resultVOs = merchantPlaceFeeMonthRecords.parallelStream().map(merchantPlaceFeeMonthRecord -> {
@@ -142,6 +143,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         return resultVOs;
     }
     
+    @Slave
     @Override
     public void export(String monthDate, HttpServletResponse response, Long franchiseeId) {
         
@@ -164,6 +166,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         }
     }
     
+    @Slave
     @Override
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
@@ -178,6 +181,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         }
     }
     
+    @Slave
     @Override
     public R pageCount(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         return R.ok(merchantPlaceFeeMonthSummaryRecordService.pageCountByCondition(queryModel));
@@ -208,19 +212,6 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         commentList.add(
                 CommentWriteHandler.createCommentMap("场地费出账记录", 1, 8, "当前显示的场地费为本月最新数值，若本月场地费有调整，系统会自动分段计算月场地费，故该列仅供参考。"));
         return commentList;
-    }
-    
-    /**
-     * 创建数据
-     */
-    private static List<List<Object>> getData1() {
-        List<List<Object>> data = new ArrayList<>();
-        data.add(Arrays.asList("2024-01", "XXX", "20.00", "30", "SN10086", "1", "2022-01-25 11:08", "2022-01-27 11:08", "30", "80"));
-        data.add(Arrays.asList("2024-01", "XXX", "20.00", "30", "SN10086", "1", "2022-01-25 11:08", "2022-01-27 11:08", "30", "80"));
-        data.add(Arrays.asList("2024-01", "XXX", "20.00", "30", "SN10086", "1", "2022-01-25 11:08", "2022-01-27 11:08", "30", "80"));
-        data.add(Arrays.asList("2024-01", "SS", "20.00", "30", "SN10087", "1", "2022-01-25 11:08", "2022-01-27 11:08", "30", "80"));
-        data.add(Arrays.asList("2024-01", "SS", "20.00", "30", "SN10086", "1", "2022-01-25 11:08", "2022-01-27 11:08", "30", "80"));
-        return data;
     }
     
 }

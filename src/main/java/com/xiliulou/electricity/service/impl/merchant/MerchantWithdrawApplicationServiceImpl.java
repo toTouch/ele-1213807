@@ -881,6 +881,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         return merchantWithdrawApplicationVOS;
     }
     
+    @Slave
     @Override
     public Integer selectRecordListCount(MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest) {
         return merchantWithdrawApplicationMapper.selectRecordListCount(merchantWithdrawApplicationRequest);

@@ -226,6 +226,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	
 	
 
+	@Slave
 	@Override
 	public R queryInfo(Integer id) {
 		NewUserActivity newUserActivity = queryByIdFromCache(id);
@@ -256,6 +257,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		return R.ok(newUserActivity);
 	}
 
+	@Slave
 	@Override
 	public R queryNewUserActivity() {
 		//租户

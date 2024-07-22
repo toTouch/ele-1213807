@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
@@ -181,6 +182,12 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         // 获取辅助业务信息（用户信息）
         Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getUid).collect(Collectors.toSet());
         
+        //获取辅助业务信息（加盟商）
+        Set<Long> franchiseeIdList = depositRefundEntityList.stream().filter(depositRefundPo -> Objects.nonNull(depositRefundPo.getFranchiseeId())).mapToLong(CarRentalPackageDepositRefundPo::getFranchiseeId).boxed().collect(Collectors.toSet());
+        
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIdList);
+        
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
         
@@ -195,7 +202,9 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
                 depositRefundVO.setUserRelName(userInfo.getName());
                 depositRefundVO.setUserPhone(userInfo.getPhone());
             }
-            
+            if (!franchiseeMap.isEmpty()){
+                depositRefundVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositRefundEntity.getFranchiseeId()), new Franchisee()).getName());
+            }
             return depositRefundVO;
         }).collect(Collectors.toList());
         

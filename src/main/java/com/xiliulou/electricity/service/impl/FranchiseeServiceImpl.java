@@ -622,6 +622,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      * 1对1
      * 1对多，选加盟商
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode) {
         FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
@@ -679,6 +680,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      * @param cityCode
      * @return
      */
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode) {
         FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
@@ -716,6 +718,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return this.franchiseeMapper.checkBatteryModelIsUse(batteryModel, tenantId);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectById(Long id) {
         Franchisee franchisee = this.queryByIdFromCache(id);

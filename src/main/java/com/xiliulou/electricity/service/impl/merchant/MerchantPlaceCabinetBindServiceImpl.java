@@ -408,6 +408,7 @@ public class MerchantPlaceCabinetBindServiceImpl implements MerchantPlaceCabinet
      * @param time
      * @return
      */
+    @Slave
     @Override
     public MerchantPlaceCabinetBindTimeCheckVo checkBindTime(Long placeId, Long time, Integer cabinetId) {
         // 判断绑定的时间是否与解绑的历史数据存在重叠

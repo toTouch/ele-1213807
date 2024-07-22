@@ -66,4 +66,8 @@ public class AssetWarehouseBO {
      */
     private Integer tenantId;
     
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 }
