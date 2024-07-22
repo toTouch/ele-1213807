@@ -1221,6 +1221,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, String userBindingBatterySn) {
         // 自主开仓条件校验
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS);
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo())) {
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
@@ -1252,6 +1253,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, String userBindingBatterySn) {
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
         
         ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());

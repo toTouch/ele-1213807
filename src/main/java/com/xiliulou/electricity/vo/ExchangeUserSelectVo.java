@@ -18,6 +18,11 @@ import lombok.NoArgsConstructor;
 public class ExchangeUserSelectVo {
     
     /**
+     * 是否进入多次换电，1是，0否
+     */
+    private Integer isEnterMoreExchange;
+    
+    /**
      * 上一次换电是否成功,1为上次成功，0失败
      */
     private Integer lastExchangeIsSuccess;
@@ -49,6 +54,11 @@ public class ExchangeUserSelectVo {
     
     
     private String sessionId;
+    
+    
+    public static final Integer ENTER_MORE_EXCHANGE = 1;
+    
+    public static final Integer NOT_ENTER_MORE_EXCHANGE = 0;
     
     
     public static final Integer LAST_EXCHANGE_SUCCESS = 1;
