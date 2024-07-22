@@ -67,6 +67,13 @@
                 and tce.franchisee_id = #{franchiseeId}
             </if>
     
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and tce.franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+    
             <if test="tenantId != null">
                 and tce.tenant_id = #{tenantId}
             </if>
@@ -104,6 +111,13 @@
         
             <if test="franchiseeId != null">
                 and tce.franchisee_id = #{franchiseeId}
+            </if>
+    
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and tce.franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
     
             <if test="tenantId != null">
@@ -203,6 +217,13 @@
             
             <if test="franchiseeId != null">
                 and tce.franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > ">
+                and tce.franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         
             <if test="areaId != null">
