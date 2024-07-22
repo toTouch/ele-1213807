@@ -335,17 +335,20 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         return entity.getId();
     }
 
+    @Slave
     @Override
     public List<UserCarRentalPackageDO> queryUserCarRentalPackageList(UserInfoQuery userInfoQuery) {
         return carRentalPackageMemberTermMapper.queryUserCarRentalPackageList(userInfoQuery);
     }
 
+    @Slave
     @Override
     public Integer queryUserCarRentalPackageCount(UserInfoQuery userInfoQuery) {
 
         return carRentalPackageMemberTermMapper.queryUserCarRentalPackageCount(userInfoQuery);
     }
     
+    @Slave
     @Override
     public List<CarRentalPackageMemberTermPo> listUserPayCountByUidList(List<Long> uidList){
         return carRentalPackageMemberTermMapper.selectListUserPayCount(uidList);

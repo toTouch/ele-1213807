@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.car.CarDataVO;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.UserCarLikeSnQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCarListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCarUpdateFranchiseeAndStoreQueryModel;
 import com.xiliulou.electricity.query.car.CarDataConditionReq;
@@ -151,7 +152,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
      */
     Integer queryOfflineCarDataCount(@Param("query") CarDataConditionReq carDataConditionReq);
     
-    
+    // TODO(heyafeng) 2024/6/7 16:30 换电套餐到期时间<当期时间为过期 车辆套餐<=当前时间为过期
     List<CarDataVO> queryCarPageByCondition(@Param("query") CarDataQuery carDataQuery, @Param("offset") Long offset, @Param("size") Long size);
     
     Integer queryCarDataCountByCondition(@Param("query") CarDataQuery carDataQuery);
@@ -173,8 +174,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     List<ElectricityCarBO> selectListByIds(@Param("idSet") Set<Integer> idSet);
     
-    List<ElectricityCarBO> selectListEnableExitWarehouseCar(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId,
-            @Param("stockStatus") Integer stockStatus);
+    List<ElectricityCarBO> selectListEnableExitWarehouseCar(AssetEnableExitWarehouseQueryModel queryModel);
     
     Integer updateFranchiseeIdAndStoreId(ElectricityCarUpdateFranchiseeAndStoreQueryModel updateFranchiseeAndStoreQueryModel);
     

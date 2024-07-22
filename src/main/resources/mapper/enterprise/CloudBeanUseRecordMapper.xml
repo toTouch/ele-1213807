@@ -175,6 +175,16 @@
         <include refid="pageFilter"/>
     </select>
     
+    <select id="listForEnterpriseId" resultType="com.xiliulou.electricity.bo.enterprisePackage.CloudBeanUseRecordEnterpriseBo">
+        SELECT
+            r.enterprise_id,
+            e.name as 'enterpriseName'
+        FROM
+        t_cloud_bean_use_record r
+        left join t_enterprise_info e on e.id = r.enterprise_id
+        <include refid="pageFilter"/>
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_cloud_bean_use_record

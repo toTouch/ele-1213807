@@ -45,6 +45,7 @@ import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryBatchUpdateFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
@@ -1599,8 +1600,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Slave
     @Override
-    public List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus) {
-        List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableExitWarehouseBattery(idSet, tenantId, franchiseeId, stockStatus);
+    public List<ElectricityBatteryVO> listEnableExitWarehouseBattery(AssetEnableExitWarehouseQueryModel queryModel) {
+        List<ElectricityBatteryBO> electricityBatteryBOList = electricitybatterymapper.selectListEnableExitWarehouseBattery(queryModel);
         
         List<ElectricityBatteryVO> rspList = null;
         

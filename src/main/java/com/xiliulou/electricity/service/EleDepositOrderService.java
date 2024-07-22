@@ -78,4 +78,6 @@ public interface EleDepositOrderService {
     Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
     
     R checkPayParamsDetails(String orderId);
+    
+    R listSuperAdminPage(EleDepositOrderQuery eleDepositOrderQuery);
 }

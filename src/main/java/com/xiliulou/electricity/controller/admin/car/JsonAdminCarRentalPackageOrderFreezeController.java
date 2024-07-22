@@ -3,8 +3,10 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderFreezeQryReq;
@@ -129,7 +131,12 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             rentalPackageIds.add(freezePO.getRentalPackageId());
             userIds.add(freezePO.getAuditorId());
         });
-
+        
+        Set<Long> franchiseeIds = freezeEntityList.stream().filter(freezePO -> Objects.nonNull(freezePO.getFranchiseeId())).mapToLong(BasicCarPo::getFranchiseeId).boxed().collect(Collectors.toSet());
+        
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIds);
+        
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
@@ -157,6 +164,9 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
             if (!userMap.isEmpty()) {
                 User user = userMap.getOrDefault(freezeEntity.getAuditorId(), new User());
                 freezeVO.setAuditorName(user.getName());
+            }
+            if (!franchiseeMap.isEmpty()){
+                freezeVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(freezeEntity.getFranchiseeId()), new Franchisee()).getName());
             }
             return freezeVO;
         }).collect(Collectors.toList());

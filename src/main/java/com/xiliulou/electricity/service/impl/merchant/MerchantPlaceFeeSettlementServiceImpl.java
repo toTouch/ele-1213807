@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.google.api.client.util.Lists;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.merchant.MerchantPlaceFeeMonthRecordDTO;
 import com.xiliulou.electricity.entity.merchant.MerchantPlace;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthRecord;
@@ -142,6 +143,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         return resultVOs;
     }
     
+    @Slave
     @Override
     public void export(String monthDate, HttpServletResponse response) {
         
@@ -164,6 +166,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         }
     }
     
+    @Slave
     @Override
     public R page(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         List<MerchantPlaceFeeMonthSummaryRecord> merchantPlaceFeeMonthSummaryRecords = merchantPlaceFeeMonthSummaryRecordService.selectByCondition(queryModel);
@@ -178,6 +181,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
         }
     }
     
+    @Slave
     @Override
     public R pageCount(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         return R.ok(merchantPlaceFeeMonthSummaryRecordService.pageCountByCondition(queryModel));

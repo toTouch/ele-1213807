@@ -102,5 +102,12 @@ public class CarRentalPackageDepositRefundVo implements Serializable {
      * 用户手机号
      */
     private String userPhone;
+    
+    /**
+     * <p>
+     *    Description: 加盟商名称
+     * </p>
+     */
+    private String franchiseeName;
 
 }
