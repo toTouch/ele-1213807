@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -123,6 +124,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * (FreeDepositOrder)表服务实现类
@@ -283,13 +285,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      */
     @Slave
     @Override
-    public List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query) {
+    public List<FreeDepositOrderVO> selectByPage(FreeDepositOrderQuery query) {
         List<FreeDepositOrder> freeDepositOrders = this.freeDepositOrderMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(freeDepositOrders)) {
             return Collections.EMPTY_LIST;
         }
+        List<FreeDepositOrderVO> freeDepositOrderVOs = freeDepositOrders.parallelStream().map(item -> {
+            FreeDepositOrderVO freeDepositOrderVO = new FreeDepositOrderVO();
+            BeanUtils.copyProperties(item, freeDepositOrderVO);
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            freeDepositOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            return freeDepositOrderVO;
+        }).collect(Collectors.toList());
         
-        return freeDepositOrders;
+        return freeDepositOrderVOs;
     }
     
     @Slave
