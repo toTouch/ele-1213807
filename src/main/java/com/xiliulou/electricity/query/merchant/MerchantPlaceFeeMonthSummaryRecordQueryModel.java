@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 /**
  * @ClassName : MerchantPlaceFeeMonthSummaryRecordQuery
@@ -26,7 +28,7 @@ public class MerchantPlaceFeeMonthSummaryRecordQueryModel
     
     private Integer tenantId;
     
-    private Long franchiseeId;
+    private List<Long> franchiseeIdList;
     
     /**
      * 类型：0-租户，1-加盟商

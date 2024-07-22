@@ -52,17 +52,15 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             throw new CustomBusinessException("用户权限不足");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place fee query warn! franchisee is empty, uid={}", user.getUid());
             }
-        
-            franchiseeId = franchiseeIds.get(0);
         }
         
-        merchantPlaceFeeSettlementService.export(monthDate, response, franchiseeId);
+        merchantPlaceFeeSettlementService.export(monthDate, response, franchiseeIds);
     }
     
     /**
@@ -90,21 +88,19 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");        }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place fee query warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
             type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
         }
     
         MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().size(size).offset(offset).monthDate(monthDate).tenantId(
-                TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).type(type).build();
+                TenantContextHolder.getTenantId()).franchiseeIdList(franchiseeIds).type(type).build();
         
         return merchantPlaceFeeSettlementService.page(queryModel);
     }
@@ -126,21 +122,19 @@ public class JsonMerchantPlaceFeeSettlementController extends BaseController {
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
     
-        Long franchiseeId = null;
+        List<Long> franchiseeIds = null;
         Integer type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_TENANT;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant place fee query warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-        
-            franchiseeId = franchiseeIds.get(0);
             type = MerchantPlaceFeeMonthSummaryRecordConstant.TYPE_FRANCHISEE;
         }
         
         MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel = MerchantPlaceFeeMonthSummaryRecordQueryModel.builder().monthDate(monthDate).tenantId(
-                TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).type(type).build();
+                TenantContextHolder.getTenantId()).franchiseeIdList(franchiseeIds).type(type).build();
         
         return merchantPlaceFeeSettlementService.pageCount(queryModel);
     }
