@@ -33,9 +33,20 @@ public class ExchangeUserSelectVo {
     private Integer isBatteryInCell;
     
     /**
+     * 柜机名称
+     */
+    private String cabinetName;
+    
+    /**
      * 仓门
      */
     private Integer cell;
+    
+    /**
+     * 订单号
+     */
+    private String orderId;
+    
     
     private String sessionId;
     
