@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author maxiaodong
@@ -46,6 +47,6 @@ public class MerchantPlaceCabinetBindSaveRequest {
     /**
      * 登录用户绑定加盟商
      */
-    private Long bindFranchiseeId;
+    private List<Long> bindFranchiseeIdList;
     
 }
