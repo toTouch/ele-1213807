@@ -5,7 +5,7 @@
 package com.xiliulou.electricity.service.pay;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.PayException;
 
 /**
@@ -22,7 +22,7 @@ public interface PayConfigBizService {
      * 1.franchiseeId 不存在配置,则返回运营商默认配置<br/> 2.franchiseeId 存在配置,则返回加盟商配置<br/> 3.如果要查询运营商默认配置，franchiseeId传{@link com.xiliulou.electricity.constant.MultiFranchiseeConstant#DEFAULT_FRANCHISEE}
      * </p>
      *
-     * @param paymentChannel 支付方式 {@link PaymentChannelEnum}
+     * @param paymentChannel 支付方式 {@link ChannelEnum}
      * @param tenantId       租户id
      * @param franchiseeId   加盟商id
      * @return

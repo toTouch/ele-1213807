@@ -5,8 +5,7 @@
 package com.xiliulou.electricity.bo.pay;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.enums.AliPayConfigTypeEnum;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
 /**
@@ -69,7 +68,7 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
     /**
      * 配置类型
      *
-     * @see AliPayConfigTypeEnum
+     * @see ChannelEnum
      */
     private Integer configType;
     
@@ -87,7 +86,7 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
     
     @Override
     public String getPaymentChannel() {
-        return PaymentChannelEnum.ALI_PAY.getCode();
+        return ChannelEnum.ALIPAY.getCode();
     }
     
 }

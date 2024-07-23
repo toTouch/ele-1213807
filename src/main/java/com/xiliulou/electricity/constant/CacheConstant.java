@@ -673,4 +673,11 @@ public interface CacheConstant {
     
     //逾期用户备注重复提交锁
     String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
+    
+    
+    /**
+     * 模版配置缓存key
+     */
+    String TEMPLATE_CONFIG_KEY="saas_electricity:tmp_config:%d:%s";
+    
 }

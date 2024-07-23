@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.basic.BasicCarPo;
 
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -135,7 +136,7 @@ public class CarRentalPackageDepositPayPo extends BasicCarPo {
     
     /**
      * 支付渠道
-     * @see PaymentChannelEnum
+     * @see ChannelEnum
      */
     private String paymentChannel;
     
