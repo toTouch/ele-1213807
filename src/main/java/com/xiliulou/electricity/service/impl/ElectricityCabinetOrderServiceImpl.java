@@ -1264,6 +1264,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
         if (Objects.isNull(history)) {
             // 订单中途未结束【包括初始化订单
+            // todo
             return Pair.of(false, null);
         }
         String msg = history.getMsg();
@@ -1277,7 +1278,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             
         }
         
-        //   新仓门&开门失败
+        //  新仓门&开门失败
         if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
             return newCellOpenFail(lastOrder, cabinetBox, userBindingBatterySn, vo);
         }
