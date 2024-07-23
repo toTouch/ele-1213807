@@ -274,7 +274,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
             }
             
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
+//            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", user.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");

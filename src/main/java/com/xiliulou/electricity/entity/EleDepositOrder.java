@@ -2,6 +2,7 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -119,6 +120,12 @@ public class EleDepositOrder {
      * 微信商户号
      */
     private String wechatMerchantId;
+    
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

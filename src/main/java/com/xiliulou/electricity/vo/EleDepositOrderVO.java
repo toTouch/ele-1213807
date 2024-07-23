@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.Data;
 
@@ -117,5 +118,11 @@ public class EleDepositOrderVO {
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
+    
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
     
 }

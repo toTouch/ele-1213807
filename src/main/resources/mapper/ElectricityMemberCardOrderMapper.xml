@@ -27,6 +27,7 @@
         tel.use_status ,
         tel.send_coupon_id ,
         tel.coupon_ids,
+        tel.payment_channel,
         tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
         
@@ -193,7 +194,7 @@
     <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT
         id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status
-        ,refund_status, order_type
+        ,refund_status, order_type ,payment_channel
         FROM t_electricity_member_card_order
         WHERE uid =#{uid} and member_card_model=0
         <if test="tenantId != null">
@@ -319,6 +320,7 @@
                max_use_count,
                card_name,
                pay_type,
+               payment_channel,
                create_time,
                update_time
         from t_electricity_member_card_order
@@ -566,6 +568,7 @@
         member_card_id ,
         use_status ,
         send_coupon_id,
+        payment_channel,
 		order_type
     </sql>
     
