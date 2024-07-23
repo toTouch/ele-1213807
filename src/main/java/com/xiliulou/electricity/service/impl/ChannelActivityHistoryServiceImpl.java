@@ -6,10 +6,8 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserChannel;
@@ -18,12 +16,10 @@ import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.query.ChannelActivityHistoryQuery;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -37,12 +33,12 @@ import com.xiliulou.electricity.vo.ChannelActivityCodeVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinChannelActivityHistoryVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -57,8 +53,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (ChannelActivityHistory)表服务实现类
@@ -84,12 +78,6 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private ChannelActivityService channelActivityService;
-    
-    @Autowired
-    private UserBatteryMemberCardService userBatteryMemberCardService;
-    
-    @Autowired
-    private CarMemberCardOrderService carMemberCardOrderService;
     
     @Autowired
     private TenantService tenantService;
@@ -593,31 +581,5 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return new String(base64Result);
         }
         return null;
-    }
-    
-    private boolean userBuyMemberCardCheck(Long uid) {
-        boolean batteryMemberCard = true;
-        boolean carMemberCard = true;
-    
-        //        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        //        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
-        //                || Objects
-        //                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-        //            batteryMemberCard = false;
-        //        }
-    
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
-                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.isNull(electricityMemberCardOrder)) {
-            batteryMemberCard = false;
-        }
-    
-        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
-                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
-        if (Objects.isNull(carMemberCardOrder)) {
-            carMemberCard = false;
-        }
-        
-        return batteryMemberCard || carMemberCard;
     }
 }

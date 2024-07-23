@@ -280,8 +280,9 @@
         </foreach>
     </insert>
     
-    <select id="selectAllBoxByBatteryId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
-        SELECT id,
+    
+    <select id="selectHaveBatteryCellId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select id,
                electricity_cabinet_id,
                cell_no,
                sn,
@@ -289,23 +290,18 @@
                status,
                is_lock,
                is_fan,
+               temperature,
                is_heat,
                is_light,
-               create_time,
-               update_time,
-               del_flag,
-               tenant_id,
                temperature,
                battery_type,
-               charge_v,
-               charge_a,
-               version,
-               lock_type,
                power,
-               empty_grid_start_time
-        FROM t_electricity_cabinet_box
-        WHERE electricity_cabinet_id = #{eid}
-          AND del_flag = 0
+               charge_v,
+               b_id
+        from t_electricity_cabinet_box
+        where electricity_cabinet_id = #{eid}
+          and usable_status = 0
+          and status = 0
+          and del_flag = 0
     </select>
-
 </mapper>

@@ -54,6 +54,8 @@ public interface MqProducerConstant {
      */
     String TOPIC_FAILURE_WARNING_BREAKDOWN = "FAILURE_WARNING_BREAKDOWN_TOPIC";
     
+    String FAULT_FAILURE_WARNING_BREAKDOWN = "FAULT_WARNING_BREAKDOWN_TOPIC";
+    
     
     /**
      * 用户优惠券公用 topic
@@ -88,4 +90,9 @@ public interface MqProducerConstant {
      * </p>
      */
     String USER_OPERATION_RECORD_LOG = "USER_OPERATION_RECORD_LOG";
+    
+    /**
+     * 电池电压电流变化
+     */
+    String BATTERY_CHARGE_ATTR_CHANGE_TOPIC = "battery_charge_attr_change_topic";
 }

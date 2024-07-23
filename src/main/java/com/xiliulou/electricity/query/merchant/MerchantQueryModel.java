@@ -32,4 +32,6 @@ public class MerchantQueryModel {
     private List<Long> idList;
     
     private Integer tenantId;
+    
+    private String phone;
 }

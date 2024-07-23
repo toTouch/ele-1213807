@@ -80,9 +80,6 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     private DivisionAccountBatteryMembercardService divisionAccountBatteryMembercardService;
 
     @Autowired
-    private CarMemberCardOrderService carMemberCardOrderService;
-
-    @Autowired
     private ElectricityMemberCardOrderService eleMemberCardOrderService;
 
     @Autowired
@@ -217,85 +214,6 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         return divisionAccountRecordMapper.selectStatisticByPageCount(query);
     }
 
-    @Deprecated
-    @Override
-    public void handleBatteryMembercardDivisionAccount(ElectricityMemberCardOrder batteryMemberCardOrder) {
-        divisionAccountExecutorService.execute(() -> {
-
-            log.info("DIVISION ACCOUNT INFO!batteryMemberCardOrder,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
-
-            try {
-//                Long storeId = null;
-//                if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(batteryMemberCardOrder.getSource()) && Objects.nonNull(batteryMemberCardOrder.getRefId())) {
-//                    ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(batteryMemberCardOrder.getRefId().intValue());
-//                    storeId = Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : null;
-//                }
-
-                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(batteryMemberCardOrder.getMemberCardId().longValue(), null, batteryMemberCardOrder.getFranchiseeId(), batteryMemberCardOrder.getTenantId());
-                if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.info("ELE INFO! batteryMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
-                    return;
-                }
-
-                BigDecimal userPayAmount = batteryMemberCardOrder.getPayAmount();
-                BigDecimal operatorIncome = BigDecimal.ZERO;
-                BigDecimal franchiseeIncome = BigDecimal.ZERO;
-                BigDecimal storeIncome = BigDecimal.ZERO;
-
-                BigDecimal operatorRate = divisionAccountConfigRefVO.getOperatorRate();
-                BigDecimal franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRate();
-                BigDecimal storeRate = divisionAccountConfigRefVO.getStoreRate();
-
-                //二级分帐
-                if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfigRefVO.getHierarchy())) {
-                    operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                    franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                } else if (DivisionAccountConfig.HIERARCHY_THREE.equals(divisionAccountConfigRefVO.getHierarchy())) {//三级分帐
-                    //扫码 门店、加盟商、运营商分帐
-                    if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(batteryMemberCardOrder.getSource())) {
-                        operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                        franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                        storeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getStoreRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getStoreRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                    } else {//非扫码 加盟商、运营商分帐
-                        operatorRate = divisionAccountConfigRefVO.getOperatorRateOther();
-                        franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRateOther();
-
-                        operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRateOther()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRateOther().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                        franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRateOther()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRateOther().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                    }
-                } else {
-                    log.warn("ELE WARN! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
-                }
-
-                //保存分帐记录
-                DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
-                divisionAccountRecord.setMembercardName(batteryMemberCardOrder.getCardName());
-                divisionAccountRecord.setUid(batteryMemberCardOrder.getUid());
-                divisionAccountRecord.setOrderNo(batteryMemberCardOrder.getOrderId());
-                divisionAccountRecord.setPayAmount(batteryMemberCardOrder.getPayAmount());
-                divisionAccountRecord.setPayTime(batteryMemberCardOrder.getUpdateTime());
-                divisionAccountRecord.setDivisionAccountConfigId(divisionAccountConfigRefVO.getId());
-                divisionAccountRecord.setOperatorIncome(operatorIncome);
-                divisionAccountRecord.setFranchiseeIncome(franchiseeIncome);
-                divisionAccountRecord.setStoreIncome(storeIncome);
-                divisionAccountRecord.setOperatorRate(operatorRate);
-                divisionAccountRecord.setFranchiseeRate(franchiseeRate);
-                divisionAccountRecord.setStoreRate(storeRate);
-                divisionAccountRecord.setSource(batteryMemberCardOrder.getSource());
-                divisionAccountRecord.setTenantId(batteryMemberCardOrder.getTenantId());
-                divisionAccountRecord.setFranchiseeId(batteryMemberCardOrder.getFranchiseeId());
-                divisionAccountRecord.setStoreId(batteryMemberCardOrder.getStoreId());
-                divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
-                divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
-                divisionAccountRecord.setCreateTime(System.currentTimeMillis());
-                divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
-                divisionAccountRecordMapper.insert(divisionAccountRecord);
-            } catch (Exception e) {
-                log.error("ELE ERROR! batteryMemberCardOrder division account error,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid(), e);
-            }
-        });
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleDivisionAccountByPackage(DivisionAccountOrderDTO divisionAccountOrderDTO){
@@ -307,7 +225,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         if (!redisService
                 .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value, value, 10 * 1000L, false)) {
             //return Triple.of(false, "000000", "操作频繁，请稍后再试！");
-            log.error("Division Account by package error, operations frequently, order number = {}, package type = {}", orderNo, type);
+            log.warn("Division Account by package error, operations frequently, order number = {}, package type = {}", orderNo, type);
             return;
         }
 
@@ -315,7 +233,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
                 if(Objects.isNull(electricityMemberCardOrder)){
-                    log.error("Division Account error, Not found for electricity member card, order number = {}", orderNo);
+                    log.warn("Division Account error, Not found for electricity member card, order number = {}", orderNo);
                     return;
                 }
                 
@@ -327,7 +245,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 DivisionAccountAmountVO divisionAccountAmountVO = calculateBenefitsByBatteryDA(electricityMemberCardOrder.getPayAmount(), electricityMemberCardOrder.getSource(), divisionAccountConfigRefVO);
                 if(Objects.isNull(divisionAccountAmountVO)){
-                    log.error("calculate Division Account amount error");
+                    log.warn("calculate Division Account amount error");
                     return;
                 }
                 //获取套餐信息
@@ -366,13 +284,13 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             } else {
                 CarRentalPackageOrderPo carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
                 if(Objects.isNull(carRentalPackageOrderPO)){
-                    log.error("Division Account error, Not found for car rental package, order number = {}", orderNo);
+                    log.warn("Division Account error, Not found for car rental package, order number = {}", orderNo);
                     return;
                 }
                 
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carRentalPackageOrderPO.getRentalPackageId(), null, carRentalPackageOrderPO.getFranchiseeId().longValue(), carRentalPackageOrderPO.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.error("Division Account error, Division account for car rental or car-electricity package, not found division account config info, orderId = {},uid = {}", orderNo, carRentalPackageOrderPO.getUid());
+                    log.warn("Division Account error, Division account for car rental or car-electricity package, not found division account config info, orderId = {},uid = {}", orderNo, carRentalPackageOrderPO.getUid());
                     return;
                 }
 
@@ -536,7 +454,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         String value = orderNo + "_" + type;
         if (!redisService
                 .setNx(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value, value, 10 * 1000L, false)) {
-            log.error("Division Account by refund error, operations frequently, order number = {}, package type = {}", orderNo, type);
+            log.warn("Division Account by refund error, operations frequently, order number = {}, package type = {}", orderNo, type);
             return;
         }
 
@@ -546,13 +464,13 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(orderNo);
 
                 if(Objects.isNull(batteryMembercardRefundOrder)) {
-                    log.error("Refund Division Account error, Not found for battery member card refund order, refund order number = {}, package type = {}", orderNo, type);
+                    log.warn("Refund Division Account error, Not found for battery member card refund order, refund order number = {}, package type = {}", orderNo, type);
                     return;
                 }
                 log.info("Refund Division Account flow Start, electricity member card order, refund order id = {}, uid = {}", batteryMembercardRefundOrder.getId(), batteryMembercardRefundOrder.getUid());
                 ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
                 if(Objects.isNull(electricityMemberCardOrder)){
-                    log.error("Refund Division Account error, Not found purchase battery package order data, refund order number = {}", orderNo);
+                    log.warn("Refund Division Account error, Not found purchase battery package order data, refund order number = {}", orderNo);
                     return;
                 }
 
@@ -561,7 +479,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 //检查购买的分账记录是否存在，如果购买记录不存在，则返回。
                 if(Objects.isNull(divisionAccountRecord)){
-                    log.error("Refund Division Account error, Not found division account record for purchase battery package, refund order number = {}", orderNo);
+                    log.warn("Refund Division Account error, Not found division account record for purchase battery package, refund order number = {}", orderNo);
                     return;
                 }
 
@@ -694,105 +612,9 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     }
 
     private BigDecimal getAmountByRate(BigDecimal userPayAmount, BigDecimal rate){
-       /* BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN));
-        return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));*/
         log.info("Calculate user pay amount by division account rate, user pay amount = {}, rate = {}", userPayAmount, rate);
         BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN);
         return userPayAmount.multiply(ratePercent).setScale(2, RoundingMode.DOWN);
-    }
-
-    @Deprecated
-    @Override
-    public void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder) {
-        divisionAccountExecutorService.execute(() -> {
-
-            log.info("DIVISION ACCOUNT INFO!carMemberCardOrder,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
-
-            try {
-                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carMemberCardOrder.getCarModelId(), null, carMemberCardOrder.getFranchiseeId(), carMemberCardOrder.getTenantId());
-                if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.info("ELE INFO! carMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
-                    return;
-                }
-
-                BigDecimal userPayAmount = carMemberCardOrder.getPayAmount();
-                BigDecimal operatorIncome = BigDecimal.ZERO;
-                BigDecimal franchiseeIncome = BigDecimal.ZERO;
-                BigDecimal storeIncome = BigDecimal.ZERO;
-
-                BigDecimal operatorRate = divisionAccountConfigRefVO.getOperatorRate();
-                BigDecimal franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRate();
-                BigDecimal storeRate = divisionAccountConfigRefVO.getStoreRate();
-
-                //二级分帐
-                if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfigRefVO.getHierarchy())) {
-                    operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                    franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                } else if (DivisionAccountConfig.HIERARCHY_THREE.equals(divisionAccountConfigRefVO.getHierarchy())) {//三级分帐
-                    operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                    franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                    storeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getStoreRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getStoreRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
-                } else {
-                    log.warn("ELE WARN! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
-                }
-
-                ElectricityCarModel carModel = eleCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
-
-                //保存分帐记录
-                DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
-                divisionAccountRecord.setMembercardName(Objects.nonNull(carModel)?carModel.getName():"");
-                divisionAccountRecord.setUid(carMemberCardOrder.getUid());
-                divisionAccountRecord.setOrderNo(carMemberCardOrder.getOrderId());
-                divisionAccountRecord.setPayAmount(carMemberCardOrder.getPayAmount());
-                divisionAccountRecord.setPayTime(carMemberCardOrder.getUpdateTime());
-                divisionAccountRecord.setDivisionAccountConfigId(divisionAccountConfigRefVO.getId());
-                divisionAccountRecord.setOperatorIncome(operatorIncome);
-                divisionAccountRecord.setFranchiseeIncome(franchiseeIncome);
-                divisionAccountRecord.setStoreIncome(storeIncome);
-                divisionAccountRecord.setOperatorRate(operatorRate);
-                divisionAccountRecord.setFranchiseeRate(franchiseeRate);
-                divisionAccountRecord.setStoreRate(storeRate);
-                divisionAccountRecord.setFranchiseeId(carMemberCardOrder.getFranchiseeId());
-                divisionAccountRecord.setStoreId(carMemberCardOrder.getStoreId());
-                divisionAccountRecord.setTenantId(carMemberCardOrder.getTenantId());
-                divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
-                divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
-                divisionAccountRecord.setCreateTime(System.currentTimeMillis());
-                divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
-                divisionAccountRecordMapper.insert(divisionAccountRecord);
-            } catch (Exception e) {
-                log.error("ELE ERROR! carMemberCardOrder division account error,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid(), e);
-            }
-        });
-    }
-
-    @Override
-    public Triple<Boolean, String, Object> divisionAccountCompensation(String orderId, Integer type) {
-        DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(orderId);
-        if (Objects.nonNull(divisionAccountRecord) && Objects
-                .equals(divisionAccountRecord.getStatus(), DivisionAccountRecord.STATUS_SUCCESS)) {
-            return Triple.of(false, "", "该订单已分帐");
-        }
-
-        if (Objects.equals(type, DivisionAccountConfig.TYPE_BATTERY)) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderId);
-            if (Objects.isNull(electricityMemberCardOrder)) {
-                return Triple.of(false, "", "订单不存在");
-            }
-
-            this.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
-        }
-
-        if (Objects.equals(type, DivisionAccountConfig.TYPE_CAR)) {
-            CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderId);
-            if (Objects.isNull(carMemberCardOrder)) {
-                return Triple.of(false, "", "订单不存在");
-            }
-
-            this.handleCarMembercardDivisionAccount(carMemberCardOrder);
-        }
-
-        return Triple.of(true, "", "");
     }
 
     @Override

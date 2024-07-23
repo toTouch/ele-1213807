@@ -42,4 +42,6 @@ public interface EleDisableMemberCardRecordService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    R listSuperAdminPage(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 }

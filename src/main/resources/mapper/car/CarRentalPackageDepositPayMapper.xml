@@ -28,6 +28,8 @@
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="sourceOrderNo" column="source_order_no" jdbcType="VARCHAR"/>
         <result property="rentalPackageDeposit" column="rental_package_deposit" jdbcType="DECIMAL"/>
+        <result property="wechatMerchantId" column="wechat_merchant_id" jdbcType="VARCHAR"/>
+        <result property="payFranchiseeId" column="pay_franchisee_id" jdbcType="BIGINT"/>
     </resultMap>
     
     <!-- 表名 -->
@@ -41,7 +43,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`,
-        `pay_type`, `pay_state`, `remark`, `source_order_no`, `rental_package_deposit`
+        `pay_type`, `pay_state`, `remark`, `source_order_no`, `rental_package_deposit`, `wechat_merchant_id`, `pay_franchisee_id`
     </sql>
     
     <!-- 全部字段 -->
@@ -102,6 +104,8 @@
             <if test=" remark != null and remark != '' ">`remark`,</if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' ">`source_order_no`,</if>
             <if test=" rentalPackageDeposit != null ">`rental_package_deposit`,</if>
+            <if test=" wechatMerchantId != null and wechatMerchantId != '' ">`wechat_merchant_id`,</if>
+            <if test=" payFranchiseeId != null ">`pay_franchisee_id`,</if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -129,6 +133,8 @@
             <if test=" remark != null and remark != '' ">#{remark},</if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' ">#{sourceOrderNo},</if>
             <if test=" rentalPackageDeposit != null ">#{rentalPackageDeposit},</if>
+            <if test=" wechatMerchantId != null and wechatMerchantId != '' ">#{wechatMerchantId},</if>
+            <if test=" payFranchiseeId != null ">#{payFranchiseeId},</if>
         </trim>
     </sql>
     

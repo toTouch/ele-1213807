@@ -8,6 +8,7 @@ import com.xiliulou.electricity.dto.asset.CabinetBatchOutWarehouseDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetListSnByFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityCabinetUpdateFranchiseeAndStoreQueryModel;
@@ -53,8 +54,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinet> homeOne(@Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
 
     Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
-
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
 
     Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId, @Param("storeIds") List<Long> storeIds);
 
@@ -106,7 +105,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     
     List<ElectricityCabinetBO> selectListEnableAllocateCabinet(ElectricityCabinetEnableAllocateQueryModel enableAllocateQueryModel);
     
-    List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
+    List<ElectricityCabinetBO> selectListEnableExitWarehouseCabinet(AssetEnableExitWarehouseQueryModel queryModel);
     
     List<ElectricityCabinetBO> selectListBySnList(@Param("snList") List<String> snList, @Param("tenantId")Integer tenantId, @Param("franchiseeId") Long franchiseeId);
     
@@ -142,4 +141,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @since V1.0 2024/3/18
     */
     List<ElectricityCabinetBO> selectListBySnArray(@Param("list") List<String> snList, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long sourceFranchiseeId);
+    
+    List<ElectricityCabinetVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 }

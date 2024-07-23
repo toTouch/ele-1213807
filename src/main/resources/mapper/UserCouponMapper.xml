@@ -238,7 +238,15 @@
     <update id="updatePhoneByUid">
         update t_user_coupon set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
-
+    
+    <update id="batchUpdateByIds">
+        update t_user_coupon set status = #{status}, update_time = #{updateTime}
+        where id in
+        <foreach collection="idList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
         discount_type, tenant_id, name, verified_uid, franchisee_id)

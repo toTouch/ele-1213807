@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.UserCarLikeSnQuery;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.CarAddRequest;
@@ -85,11 +86,8 @@ public interface ElectricityCarService {
      */
     ElectricityCar queryByIdFromCache(Integer id);
     
-    R save(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
     
     R saveV2(CarAddRequest carAddRequest);
-    
-    R edit(ElectricityCarAddAndUpdate electricityCarAddAndUpdate);
     
     R delete(Integer id);
     
@@ -98,18 +96,6 @@ public interface ElectricityCarService {
     Integer queryByModelId(Integer id);
     
     R queryCount(ElectricityCarQuery electricityCarQuery);
-    
-    /**
-     * 废弃此方法 <br /> 替代方法：{@link CarRentalOrderBizServiceImpl#unBindingCar}
-     */
-    @Deprecated
-    R bindUser(ElectricityCarBindUser electricityCarBindUser);
-    
-    /**
-     * 废弃此方法 <br /> 替代方法：{@link CarRentalOrderBizServiceImpl#bindingCar}
-     */
-    @Deprecated
-    R unBindUser(ElectricityCarBindUser electricityCarBindUser);
     
     ElectricityCar queryInfoByUid(Long uid);
     
@@ -162,7 +148,7 @@ public interface ElectricityCarService {
     
     List<ElectricityCarVO> listByIds(Set<Integer> idSet);
     
-    List<ElectricityCarVO> listEnableExitWarehouseCar(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
+    List<ElectricityCarVO> listEnableExitWarehouseCar(AssetEnableExitWarehouseQueryModel queryModel);
     
     Integer batchUpdateRemove(List<ElectricityCarBatchUpdateFranchiseeAndStoreRequest> carBatchUpdateFranchiseeAndStoreRequestList);
     

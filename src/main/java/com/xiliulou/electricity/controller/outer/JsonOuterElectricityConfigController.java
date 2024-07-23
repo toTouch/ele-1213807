@@ -21,19 +21,20 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class JsonOuterElectricityConfigController extends BaseController {
+    
     /**
      * 服务对象
      */
     @Autowired
     ElectricityConfigService electricityConfigService;
-
+    
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
     
     @Autowired
     private RedisService redisService;
-
-
+    
+    
     //查询平台名称
     @GetMapping(value = "/outer/electricityConfig")
     public R queryOne() {
@@ -42,20 +43,7 @@ public class JsonOuterElectricityConfigController extends BaseController {
     }
 
     /**
-     * 根据小程序appId查tenantId
-     *
-     * @param
-     * @return
-     */
-    @GetMapping(value = "/outer/getTenantId")
-    public R getTenantId(@RequestParam("appId") String appId) {
-        return electricityPayParamsService.getTenantId(appId);
-    }
-
-
-    /**
      * 根据小程序appId获取tenantId及租户配置信息
-     *
      */
     @GetMapping(value = "/outer/tenantConfig")
     public R tenantConfig(@RequestParam("appId") String appId) {
@@ -63,6 +51,7 @@ public class JsonOuterElectricityConfigController extends BaseController {
     }
     
     
+    @Deprecated
     @GetMapping(value = "/outer/merchant/minPro/config")
     public R merchantMinProConfig(@RequestParam("appId") String appId) {
         return returnTripleResult(electricityPayParamsService.queryByMerchantAppId(appId));
@@ -85,7 +74,7 @@ public class JsonOuterElectricityConfigController extends BaseController {
      * @author HeYafen
      */
     @GetMapping("/outer/weChat/approve/out/cache")
-    public R weChatApproveOutCache(){
+    public R weChatApproveOutCache() {
         return R.ok(redisService.get(CacheConstant.CACHE_WECHAT_APPROVE));
     }
 }

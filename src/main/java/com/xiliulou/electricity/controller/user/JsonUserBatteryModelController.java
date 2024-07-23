@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class JsonUserBatteryModelController {
-
+    
     @Autowired
     private BatteryModelService batteryModelService;
-
+    
     /**
      * 获取租户所有电池型号
      */

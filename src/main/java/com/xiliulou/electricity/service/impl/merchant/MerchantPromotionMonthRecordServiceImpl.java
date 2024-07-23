@@ -266,6 +266,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         return map;
     }
     
+    @Slave
     @Override
     public void exportExcel(MerchantPromotionRequest request, HttpServletResponse response) {
         String fileName = "商户推广费出账记录.xlsx";

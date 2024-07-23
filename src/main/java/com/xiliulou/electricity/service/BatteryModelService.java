@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.query.asset.BatteryModelQueryModel;
@@ -125,4 +126,6 @@ public interface BatteryModelService {
     List<BrandNameAndBatteryVShortVO> listBatteryBrandAndModel(BatteryModelQueryModel batteryModelQueryModel);
     
     List<BatteryModel> listBatteryModelByBatteryTypeList(List<String> batteryTypeList, Integer tenantId);
+    
+    List<BatteryModelDTO> listShortBatteryTypeByMemberIds(List<Long> memberIds, Integer tenantId);
 }
