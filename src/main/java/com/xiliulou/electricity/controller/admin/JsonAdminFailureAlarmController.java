@@ -4,6 +4,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.FailureAlarm;
+import com.xiliulou.electricity.handler.iot.impl.HardwareFailureWarnMsgHandler;
 import com.xiliulou.electricity.handler.iot.impl.HardwareFaultMsgHandler;
 import com.xiliulou.electricity.queryModel.failureAlarm.FailureAlarmQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmBatchSetRequest;
@@ -43,6 +44,39 @@ public class JsonAdminFailureAlarmController {
     
     @Resource
     private FailureAlarmService failureAlarmService;
+    
+    @Resource
+    private HardwareFaultMsgHandler hardwareFaultMsgHandler;
+    
+    @Resource
+    private HardwareFailureWarnMsgHandler hardwareFailureWarnMsgHandler;
+    
+    /**
+     * @param
+     * @description 故障告警设置数量统计
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @PostMapping ("/admin/super/failure/alarm/test")
+    public R test(@RequestBody FailureAlarmSaveRequest request) {
+        log.info("testSignalName:{}", request.getSignalName());
+        hardwareFaultMsgHandler.testSend(request.getSignalName(), request.getType());
+        return R.ok();
+    }
+    
+    
+    /**
+     * @param
+     * @description 故障告警设置数量统计
+     * @date 2023/12/15 18:17:54
+     * @author maxiaodong
+     */
+    @PostMapping ("/admin/super/failure/alarm/test1")
+    public R test1(@RequestBody FailureAlarmSaveRequest request) {
+        log.info("testSignalName:{}", request.getSignalName());
+        hardwareFailureWarnMsgHandler.testSend(request.getSignalName(), request.getId());
+        return R.ok();
+    }
     
     /**
      * 保存
