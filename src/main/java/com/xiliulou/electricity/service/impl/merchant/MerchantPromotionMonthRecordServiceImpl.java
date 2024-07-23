@@ -216,7 +216,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         });
         
         // 处理空数据
-        List<MerchantPromotionDayRecordVO> hasNoDataList = hasNoDataList(detailList);
+        List<MerchantPromotionDayRecordVO> hasNoDataList = noDataList(detailList);
         if (CollectionUtils.isEmpty(hasNoDataList)) {
             return excelVOList;
         }
@@ -243,7 +243,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
                 .filter(item -> !Objects.equals(item.getType(), RebateRecordConstant.NO_DATA) && item.getMoney().compareTo(BigDecimal.ZERO) != 0).collect(Collectors.toList());
     }
     
-    private List<MerchantPromotionDayRecordVO> hasNoDataList(List<MerchantPromotionDayRecordVO> detailList) {
+    private List<MerchantPromotionDayRecordVO> noDataList(List<MerchantPromotionDayRecordVO> detailList) {
         return detailList.parallelStream().filter(item -> Objects.equals(item.getType(), RebateRecordConstant.NO_DATA)).collect(Collectors.toList());
     }
     
