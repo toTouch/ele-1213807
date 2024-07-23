@@ -41,19 +41,19 @@ public class JsonAdminAlipayAppConfigController extends BaseController {
         return R.ok(alipayAppConfigService.listByTenantId(TenantContextHolder.getTenantId()));
     }
     
-    @PostMapping(value = "/admin/electricityPayParams")
+    @PostMapping(value = "/admin/alipayAppConfig")
     @Log(title = "新增支付参数")
     public R save(@RequestBody @Validated(CreateGroup.class) AlipayAppConfigQuery query) {
         return returnTripleResult(alipayAppConfigService.save(query));
     }
     
-    @PutMapping(value = "/admin/electricityPayParams")
+    @PutMapping(value = "/admin/alipayAppConfig")
     @Log(title = "更新支付参数")
     public R modify(@RequestBody @Validated(UpdateGroup.class) AlipayAppConfigQuery query) {
         return returnTripleResult(alipayAppConfigService.modify(query));
     }
     
-    @DeleteMapping(value = "/admin/electricityPayParams/{id}")
+    @DeleteMapping(value = "/admin/alipayAppConfig/{id}")
     @Log(title = "删除支付参数")
     public R remove(@PathVariable("id") Long id) {
         return returnTripleResult(alipayAppConfigService.remove(id));

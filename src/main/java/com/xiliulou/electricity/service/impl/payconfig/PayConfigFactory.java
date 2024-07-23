@@ -5,12 +5,10 @@
 package com.xiliulou.electricity.service.impl.payconfig;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.pay.alipay.exception.AliPayException;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.PayException;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -34,9 +32,9 @@ public class PayConfigFactory {
     private AlipayAppConfigService alipayAppConfigService;
     
     /**
-     * 匹配支付配置策略 {@link PayConfigBizServiceImpl#init()}
+     * 匹配支付配置策略 {@link PayConfigFactory#init()}
      * <p>
-     * key:{@link PaymentChannelEnum#getCode()}
+     * key:{@link ChannelEnum#getCode()}
      * <p>
      * value: {@link PayConfigStrategy#execute(Integer, Long)} ()}
      */
@@ -44,9 +42,9 @@ public class PayConfigFactory {
     
     
     /**
-     * 精确支付配置策略 {@link PayConfigBizServiceImpl#init()}
+     * 精确支付配置策略 {@link PayConfigFactory#init()}
      * <p>
-     * key:{@link PaymentChannelEnum#getCode()}
+     * key:{@link ChannelEnum#getCode()}
      * <p>
      * value: {@link PayConfigStrategy#execute(Integer, Long)} ()}
      */
@@ -77,10 +75,10 @@ public class PayConfigFactory {
      */
     private void registerAliPay() {
         // 支付宝支付参数查询
-        strategyMap.put(PaymentChannelEnum.ALI_PAY.getCode(), (tenantId, franchiseeId) -> alipayAppConfigService.queryByTenantIdAndFranchiseeId(tenantId, franchiseeId));
+        strategyMap.put(ChannelEnum.ALIPAY.getCode(), (tenantId, franchiseeId) -> alipayAppConfigService.queryByTenantIdAndFranchiseeId(tenantId, franchiseeId));
         // 支付宝支付参数精确查询
         preciseStrategyMap
-                .put(PaymentChannelEnum.ALI_PAY.getCode(), (tenantId, franchiseeId) -> alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId));
+                .put(ChannelEnum.ALIPAY.getCode(), (tenantId, franchiseeId) -> alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId));
     }
     
     /**
@@ -91,10 +89,10 @@ public class PayConfigFactory {
      */
     private void registerWxPay() {
         // 微信支付参数查询
-        strategyMap.put(PaymentChannelEnum.WECHAT.getCode(), (tenantId, franchiseeId) -> wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId));
+        strategyMap.put(ChannelEnum.WECHAT.getCode(), (tenantId, franchiseeId) -> wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId));
         
         // 微信支付参数精确查询
-        preciseStrategyMap.put(PaymentChannelEnum.WECHAT.getCode(),
+        preciseStrategyMap.put(ChannelEnum.WECHAT.getCode(),
                 (tenantId, franchiseeId) -> wechatPayParamsBizService.getPreciseDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId));
         
     }

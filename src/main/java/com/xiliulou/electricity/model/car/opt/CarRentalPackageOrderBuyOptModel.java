@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.model.car.opt;
 
 import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -73,8 +73,8 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
     /**
      * 支付方式，默认微信
      *
-     * @see PaymentChannelEnum
+     * @see ChannelEnum
      */
-    private String paymentChannel = PaymentChannelEnum.WECHAT.getCode();
+    private String paymentChannel = ChannelEnum.WECHAT.getCode();
     
 }

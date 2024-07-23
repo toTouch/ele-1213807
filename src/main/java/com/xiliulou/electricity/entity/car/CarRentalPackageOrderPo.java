@@ -9,12 +9,12 @@ import com.xiliulou.electricity.entity.basic.BasicCarPo;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -235,7 +235,7 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     
     /**
      * 支付方式
-     * @see PaymentChannelEnum
+     * @see ChannelEnum
      */
     private String paymentChannel;
     

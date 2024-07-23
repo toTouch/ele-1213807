@@ -1,22 +1,22 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.request.template;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
-/**
- * @author zgw
- * @date 2021/11/30 19:22
- * @mood
- */
 @Data
-@TableName("t_template_config")
-public class TemplateConfigEntity implements Serializable {
+public class TemplateConfigOptRequest implements Serializable {
     
-    @TableId
+    @NotNull(groups = UpdateGroup.class)
     private Long id;
+    
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
     
     /**
      * 电池超时未归还
@@ -27,10 +27,6 @@ public class TemplateConfigEntity implements Serializable {
      * 低电量模板
      */
     private String electricQuantityRemindTemplate;
-    //    /**
-    //     * 套餐到期通知
-    //     */
-    //    private String memberCardExpiringTemplate;
     
     /**
      * 电池月卡快过期提醒模板
@@ -42,20 +38,12 @@ public class TemplateConfigEntity implements Serializable {
      */
     private String carMemberCardExpiringTemplate;
     
-    /**
-     * 租户id
-     */
-    private Integer tenantId;
     
     /**
      * 渠道
      *
      * @see com.xiliulou.pay.base.enums.ChannelEnum
      */
-    private String channel;
-    
-    private Long createTime;
-    
-    private Long updateTime;
+    private String channel = ChannelEnum.WECHAT.getCode();
     
 }

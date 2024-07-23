@@ -3,7 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -67,7 +67,7 @@ public class ElectricityTradeOrder {
     
     /**
      * 支付方式
-     * @see PaymentChannelEnum
+     * @see ChannelEnum
      */
     private String paymentChannel;
     
