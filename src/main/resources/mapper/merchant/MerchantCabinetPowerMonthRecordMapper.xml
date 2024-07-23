@@ -12,8 +12,7 @@
                sum(place_count) as placeCount,
                sum(month_sum_power) as monthSumPower,
                sum(month_sum_charge) as monthSumCharge,
-               any_value(tenant_id) as tenantId,
-               any_value(franchisee_id) as franchiseeId
+               any_value(tenant_id) as tenantId
         from t_merchant_cabinet_power_month_record
         <where>
             del_flag = 0
@@ -46,8 +45,7 @@
         sum(place_count) as placeCount,
         sum(month_sum_power) as monthSumPower,
         sum(month_sum_charge) as monthSumCharge,
-        any_value(tenant_id) as tenantId,
-        any_value(franchisee_id) as franchiseeId
+        any_value(tenant_id) as tenantId
         from t_merchant_cabinet_power_month_record
         <where>
             del_flag = 0

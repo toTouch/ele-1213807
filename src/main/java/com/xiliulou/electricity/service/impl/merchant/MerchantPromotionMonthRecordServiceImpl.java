@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl.merchant;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.merchant.RebateRecordConstant;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord;
@@ -11,7 +10,6 @@ import com.xiliulou.electricity.mapper.merchant.MerchantPromotionMonthRecordMapp
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDayRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionMonthRecordQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantPromotionRequest;
-import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
@@ -74,9 +72,6 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     @Resource
     private UserService userService;
     
-    @Resource
-    private FranchiseeService franchiseeService;
-    
     @Slave
     @Override
     public List<MerchantPromotionMonthRecordVO> listByPage(MerchantPromotionRequest request) {
@@ -99,11 +94,6 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         return list.stream().map(item -> {
             MerchantPromotionMonthRecordVO vo = new MerchantPromotionMonthRecordVO();
             BeanUtils.copyProperties(item, vo);
-    
-            Long franchiseeId = item.getFranchiseeId();
-            if (Objects.nonNull(franchiseeId)) {
-                vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
-            }
             
             return vo;
         }).collect(Collectors.toList());
@@ -223,7 +213,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         
         // 按merchantId进行升序
         hasNoDataList.sort(Comparator.comparing(MerchantPromotionDayRecordVO::getMerchantId));
-    
+        
         hasNoDataList.forEach(item -> {
             Long merchantId = item.getMerchantId();
             MerchantPromotionMonthExcelVO excelVO = MerchantPromotionMonthExcelVO.builder().monthDate(monthDate).date(item.getDate()).build();
@@ -239,8 +229,8 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
     }
     
     private List<MerchantPromotionDayRecordVO> hasDataList(List<MerchantPromotionDayRecordVO> detailList) {
-        return detailList.parallelStream()
-                .filter(item -> !Objects.equals(item.getType(), RebateRecordConstant.NO_DATA) && item.getMoney().compareTo(BigDecimal.ZERO) != 0).collect(Collectors.toList());
+        return detailList.parallelStream().filter(item -> !Objects.equals(item.getType(), RebateRecordConstant.NO_DATA) && item.getMoney().compareTo(BigDecimal.ZERO) != 0)
+                .collect(Collectors.toList());
     }
     
     private List<MerchantPromotionDayRecordVO> noDataList(List<MerchantPromotionDayRecordVO> detailList) {
