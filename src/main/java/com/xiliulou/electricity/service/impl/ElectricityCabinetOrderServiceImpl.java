@@ -455,7 +455,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         if (Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
-                && (System.currentTimeMillis() - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 <= 3) {
+                && Double.valueOf(System.currentTimeMillis() - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 <= 3) {
             CompletableFuture<Integer> isExistNewExchangeOrderFuture = CompletableFuture.supplyAsync(() -> {
                 return electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
                         electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
