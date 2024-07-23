@@ -79,6 +79,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.ExchangeFailCellUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ExchangeOrderMsgShowVO;
@@ -203,6 +204,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private ElectricityCabinetPhysicsOperRecordService operRecordService;
+    
+    public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="";
     
     /**
      * 修改数据
@@ -1162,12 +1165,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     /**
      * @return Boolean=false继续走正常换电
      */
-    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(Long uid, Integer tenantId, ElectricityCabinet cabinet, String userBindingBatterySn) {
-        if (Objects.isNull(tenantId)) {
-            return Pair.of(false, null);
-        }
-       
-        ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, Long.valueOf(tenantId), System.currentTimeMillis());
+    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(Long uid, ElectricityCabinet cabinet, String userBindingBatterySn) {
+        ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
             log.warn("lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
             return Pair.of(false, null);
@@ -2616,11 +2615,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         // todo 柜机版本校验
-        Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet, electricityBattery.getSn());
-        if (pair.getLeft()) {
-            // 返回让前端选择
-            return Triple.of(true, null, pair.getRight());
+        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+            Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), electricityCabinet, electricityBattery.getSn());
+            if (pair.getLeft()) {
+                // 返回让前端选择
+                return Triple.of(true, null, pair.getRight());
+            }
         }
+        
 
         
         //默认是小程序下单
@@ -2724,10 +2726,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         //  todo 柜机版本校验
-        Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet, electricityBattery.getSn());
-        if (pair.getLeft()) {
-            // 返回让前端选择
-            return Triple.of(true, null, pair.getRight());
+        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+            Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), electricityCabinet, electricityBattery.getSn());
+            if (pair.getLeft()) {
+                // 返回让前端选择
+                return Triple.of(true, null, pair.getRight());
+            }
         }
         
         //默认是小程序下单
