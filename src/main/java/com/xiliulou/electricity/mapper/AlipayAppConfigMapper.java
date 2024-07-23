@@ -20,9 +20,11 @@ public interface AlipayAppConfigMapper extends BaseMapper<AlipayAppConfig> {
     
     int deleteById(Long id);
     
+    AlipayAppConfig selectOneByTenantId(Integer tenantId);
+    
     AlipayAppConfig selectByAppId(String appId);
     
-    AlipayAppConfig selectByTenantId(Integer tenantId);
+    AlipayAppConfig selectBySellerIdAndTenantId(@Param("sellerId") String sellerId, @Param("tenantId") Integer tenantId);
     
     /**
      * 根据租户id+加盟商id查询
@@ -32,5 +34,11 @@ public interface AlipayAppConfigMapper extends BaseMapper<AlipayAppConfig> {
      * @date 2024/7/16 16:43
      */
     List<AlipayAppConfig> selectListByTenantIdAndFranchiseeIds(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
+    
+    List<AlipayAppConfig> selectListByTenantId(Integer tenantId);
+    
+    List<AlipayAppConfig> selectByConfigType(@Param("tenantId") Integer tenantId, @Param("type") Integer type);
+    
+    Integer updateSyncByIds(@Param("alipayAppConfig") AlipayAppConfig alipayAppConfigUpdate, @Param("ids") List<Long> syncAlipayAppConfigIds);
     
 }

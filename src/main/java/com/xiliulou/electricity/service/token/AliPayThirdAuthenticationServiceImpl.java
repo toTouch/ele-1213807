@@ -13,8 +13,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.constant.AliPayConstant;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.config.AliPayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.AlipayUserPhoneDTO;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
@@ -32,6 +34,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.pay.alipay.exception.AliPayException;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationToken;
@@ -41,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -131,7 +135,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             throw new AuthenticationServiceException("操作频繁！请稍后再试！");
         }
         
-        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByTenantId(tenantId);
+        AlipayAppConfig alipayAppConfig = acquireAlipayAppConfig(tenantId);
         if (Objects.isNull(alipayAppConfig) || StringUtils.isBlank(alipayAppConfig.getAppId()) || StringUtils.isBlank(alipayAppConfig.getPublicKey()) || StringUtils
                 .isBlank(alipayAppConfig.getAppPrivateKey())) {
             log.warn("ALIPAY LOGIN ERROR! not found appId,publicKey,authMap={}, tenantId={}", authMap, tenantId);
@@ -144,7 +148,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         try {
             //解析手机号 TODO
             String phone = decryptAliPayResponseData(data, iv, alipayAppConfig);
-    
+            
             //解析openId
             String openId = decryptAliPayAuthCodeData(code, appId, alipayAppConfig);
             log.info("ALIPAY LOGIN INFO!user login info,phone={},openId={}", phone, openId);
@@ -274,6 +278,23 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         throw new AuthenticationServiceException("系统异常,请稍后重试！");
     }
     
+    private AlipayAppConfig acquireAlipayAppConfig(Integer tenantId) {
+        try {
+            AlipayAppConfigBizDetails alipayAppConfigBizDetails = alipayAppConfigService
+                    .queryPreciseByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            if (Objects.isNull(alipayAppConfigBizDetails)) {
+                return null;
+            }
+            
+            AlipayAppConfig alipayAppConfig = new AlipayAppConfig();
+            BeanUtils.copyProperties(alipayAppConfigBizDetails, alipayAppConfig);
+            return alipayAppConfig;
+        } catch (AliPayException e) {
+            log.error("ALIPAY LOGIN ERROR!AlipayAppConfig is null,tenantId={}", tenantId);
+            throw new AuthenticationServiceException("系统异常,请稍后重试！");
+        }
+    }
+    
     private Pair<Boolean, UserInfo> checkUserInfoExists(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
@@ -324,7 +345,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     }
     
     private String decryptAliPayAuthCodeData(String code, String appId, AlipayAppConfig alipayAppConfig) {
-         String openId = null;
+        String openId = null;
         try {
             AlipayClient alipayClient = new DefaultAlipayClient(getAlipayConfig(appId, alipayAppConfig));
             // 构造请求参数以调用接口
@@ -336,14 +357,14 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             request.setCode(code);
             // 设置授权方式
             request.setGrantType(GRANT_TYPE);
-    
+            
             AlipaySystemOauthTokenResponse response = alipayClient.execute(request);
             if (!response.isSuccess()) {
                 log.error("ALIPAY TOKEN ERROR!acquire openId failed,msg={}", response);
                 throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
             }
             
-            openId=response.getOpenId();
+            openId = response.getOpenId();
         } catch (AlipayApiException e) {
             log.error("ALIPAY TOKEN ERROR!acquire openId failed", e);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
