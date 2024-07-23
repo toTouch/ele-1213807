@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 查询库房
@@ -26,4 +28,8 @@ public class AssetWarehouseRequest {
     
     private Long offset;
     
+    
+    
+    private Long franchiseeId;
+ 
 }

@@ -138,6 +138,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         return Triple.of(true, null, null);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryListForUser(MaintenanceRecordListQuery query) {
         List<MaintenanceRecord> returnList = maintenanceRecordMapper.queryList(query);
@@ -190,6 +191,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         return Triple.of(true, null, null);
     }
 
+    @Slave
     @Override
     public R queryCountForUser(MaintenanceRecordListQuery query) {
         return R.ok(maintenanceRecordMapper.queryCount(query));

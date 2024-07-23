@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin.warn;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.failureAlarm.FailureWarnCabinetMsgPageRequest;
-import com.xiliulou.electricity.service.EleHardwareFailureCabinetMsgService;
 import com.xiliulou.electricity.service.warn.EleHardwareFaultCabinetMsgService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -25,7 +24,7 @@ import java.util.Objects;
 
 @RestController
 @Slf4j
-public class EleHardwareFaultCabinetMsgController {
+public class JsonAdminEleHardwareFaultCabinetMsgController {
     @Resource
     private EleHardwareFaultCabinetMsgService faultCabinetMsgService;
     

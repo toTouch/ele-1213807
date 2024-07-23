@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeMonthSummaryRecord;
 import com.xiliulou.electricity.mapper.merchant.MerchantPlaceFeeMonthSummaryRecordMapper;
 import com.xiliulou.electricity.query.merchant.MerchantPlaceFeeMonthSummaryRecordQueryModel;
@@ -22,11 +23,13 @@ public class MerchantPlaceFeeMonthSummaryRecordServiceImpl implements MerchantPl
     @Resource
     private MerchantPlaceFeeMonthSummaryRecordMapper merchantPlaceFeeMonthSummaryRecordMapper;
     
+    @Slave
     @Override
     public List<MerchantPlaceFeeMonthSummaryRecord> selectByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         return merchantPlaceFeeMonthSummaryRecordMapper.selectListByCondition(queryModel);
     }
     
+    @Slave
     @Override
     public Integer pageCountByCondition(MerchantPlaceFeeMonthSummaryRecordQueryModel queryModel) {
         Integer count = merchantPlaceFeeMonthSummaryRecordMapper.pageCountByCondition(queryModel);

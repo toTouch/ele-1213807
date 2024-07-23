@@ -654,7 +654,7 @@ public interface CacheConstant {
     
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
     
-    
+    String CACHE_BATTERY_BATCH_IMPORT_LOCK = "cache_battery_batch_import_lock:";
     
     //角色权限绑定操作
     String ROLE_PERMISSION_OPERATE_KEY = "saas_electricity:role_permission_opt:%s";

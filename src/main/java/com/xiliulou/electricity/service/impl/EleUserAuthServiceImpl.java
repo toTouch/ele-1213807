@@ -21,6 +21,7 @@ import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.IdCardCheckService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -84,6 +85,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
     @Autowired
     UserAuthMessageService userAuthMessageService;
+    
+    @Resource
+    private IdCardCheckService idCardCheckService;
+    
 
     /**
      * 新增数据
@@ -144,7 +149,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("审核通过，无法修改!");
         }
     
-        Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
+        Triple<Boolean, String, Object> checkResult = checkIdCard(tenantId,eleUserAuthList);
         if (!checkResult.getLeft()) {
             return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
@@ -224,19 +229,20 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         return result;
     }
     
-    private Triple<Boolean, String, Object> checkIdCardExists(List<EleUserAuth> eleUserAuthList) {
+    
+    private Triple<Boolean, String, Object> checkIdCard(Integer tenantId, List<EleUserAuth> eleUserAuthList) {
         if (CollectionUtils.isEmpty(eleUserAuthList)) {
             return Triple.of(false, "资料项为空", null);
         }
-        
+        String idCard= null;
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
             if (!ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 continue;
             }
-            
+            idCard = eleUserAuth.getValue();
             List<UserInfo> userInfos = userInfoService.queryByIdNumber(eleUserAuth.getValue());
             if (CollectionUtils.isEmpty(userInfos)) {
-                return Triple.of(true, null, null);
+                break;
             }
             
             for (UserInfo userInfo : userInfos) {
@@ -244,10 +250,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                     return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
-            return Triple.of(true, null, null);
+            break;
         }
-        
-        return Triple.of(true, null, null);
+        // 校验身份证是否符合年龄
+        return idCardCheckService.checkIdNumber(tenantId, idCard);
     }
     
     private void sendAuthenticationAuditMessage(UserInfo userInfo) {

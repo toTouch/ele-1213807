@@ -73,5 +73,7 @@ public interface RentBatteryOrderService {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
+    R listSuperAdminPage(RentBatteryOrderQuery rentBatteryOrderQuery);
+    
     Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo);
 }

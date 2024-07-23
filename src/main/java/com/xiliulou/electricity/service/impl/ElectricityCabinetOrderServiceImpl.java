@@ -29,6 +29,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
@@ -63,6 +64,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
@@ -195,6 +197,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Autowired
     BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    @Resource
+    private TenantService tenantService;
     
     @Resource
     private ElectricityCabinetPhysicsOperRecordService electricityCabinetPhysicsOperRecordService;
@@ -2084,6 +2089,65 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return electricityCabinetOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
+        if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
+            return R.ok(new ArrayList<>());
+        }
+    
+        if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            // 批量查询会员信息
+            Map<Long, String> userNameMap = new HashMap<>();
+            List<Long> uIdList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
+            List<UserInfo> userInfos = userInfoService.listByUidList(uIdList);
+            if (ObjectUtils.isNotEmpty(userInfos)) {
+                userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
+            }
+            Map<Long, String> finalUserNameMap = userNameMap;
+        
+            electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+                if (Objects.nonNull(e.getTenantId())) {
+                    Tenant tenant = tenantService.queryByIdFromCache(e.getTenantId());
+                    e.setTenantName(Objects.isNull(tenant) ? null : tenant.getName());
+                }
+                
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+                e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
+            
+                // 设置会员名称
+                if (ObjectUtils.isNotEmpty(finalUserNameMap.get(e.getUid()))) {
+                    e.setUName(finalUserNameMap.get(e.getUid()));
+                }
+            
+                if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
+                        .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+                
+                    ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrderQuery.getTenantId());
+                    ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(e.getOrderId());
+                    if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.ENABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen()) && Objects.nonNull(
+                            electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(),
+                            ElectricityExceptionOrderStatusRecord.NOT_SELF_OPEN_CELL)) {
+                        if (Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+                                && (System.currentTimeMillis() - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 <= 3) {
+                            e.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+                        }
+                    }
+                }
+            
+                // 设置加盟商名称
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
+                }
+            
+            });
+        }
+    
+        return R.ok(electricityCabinetOrderVOList);
     }
     
     @Slave

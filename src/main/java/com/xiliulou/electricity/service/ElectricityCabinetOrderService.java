@@ -103,6 +103,8 @@ public interface ElectricityCabinetOrderService {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
+    R listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    
     R queryListv2(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     
 }

@@ -1484,12 +1484,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     
                     // 删除用户分组
                     userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
-                    
-                    // 原始是线上，则不做更改
-                    if (PayTypeEnum.ON_LINE.getCode().equals(depositRefundEntity.getPayType())) {
-                        depositRefundUpdateEntity.setPayType(null);
-                        depositRefundUpdateEntity.setCompelOffLine(null);
-                    }
                 }
                 
                 // 免押
