@@ -661,4 +661,7 @@ public interface CacheConstant {
     
     //逾期用户备注重复提交锁
     String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
+    
+    
+    String OPEN_FULL_CELL_LIMIT = "open_full_cell_handle_limit:";
 }

@@ -391,7 +391,7 @@
         from t_electricity_cabinet_order teco
         where uid = #{uid}
           and create_time &lt; #{currentTime}
-        order by id desc limit 1
+        order by create_time desc limit 1
     </select>
     
     
