@@ -47,6 +47,13 @@
         where tenant_id = #{tenantId} and del_flag = 0
     </select>
     
+    <select id="selectListByTenantId" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where tenant_id = #{tenantId} and del_flag = 0
+    </select>
+    
     <select id="selectListByTenantIdAndFranchiseeIds" resultMap="AlipayAppConfigMap">
         select
         <include refid="base_column"/>

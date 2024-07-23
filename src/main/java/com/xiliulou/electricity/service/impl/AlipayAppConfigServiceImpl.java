@@ -9,11 +9,16 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.AlipayAppConfigConverter;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.AlipayAppConfigMapper;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.pay.alipay.exception.AliPayException;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.vo.AlipayAppConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -43,16 +48,39 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     @Resource
     private RedisService redisService;
     
+    @Autowired
+    private FranchiseeService franchiseeService;
+    
     @Slave
     @Override
     public AlipayAppConfig queryByAppId(String appId) {
         return this.alipayAppConfigMapper.selectByAppId(appId);
     }
     
+    // TODO 移除
     @Slave
     @Override
     public AlipayAppConfig queryByTenantId(Integer tenantId) {
         return this.alipayAppConfigMapper.selectByTenantId(tenantId);
+    }
+    
+    @Slave
+    @Override
+    public List<AlipayAppConfigVO> listByTenantId(Integer tenantId) {
+        List<AlipayAppConfig> list = this.alipayAppConfigMapper.selectListByTenantId(tenantId);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+    
+        return list.stream().map(item -> {
+            AlipayAppConfigVO alipayAppConfigVO = new AlipayAppConfigVO();
+            BeanUtils.copyProperties(item, alipayAppConfigVO);
+        
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            alipayAppConfigVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        
+            return alipayAppConfigVO;
+        }).collect(Collectors.toList());
     }
     
     @Override

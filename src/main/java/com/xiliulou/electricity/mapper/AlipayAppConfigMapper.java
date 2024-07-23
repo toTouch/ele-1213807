@@ -33,4 +33,5 @@ public interface AlipayAppConfigMapper extends BaseMapper<AlipayAppConfig> {
      */
     List<AlipayAppConfig> selectListByTenantIdAndFranchiseeIds(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
     
+    List<AlipayAppConfig> selectListByTenantId(Integer tenantId);
 }

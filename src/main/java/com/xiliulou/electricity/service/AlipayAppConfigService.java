@@ -1,8 +1,14 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.pay.alipay.exception.AliPayException;
+import com.xiliulou.electricity.query.AlipayAppConfigQuery;
+import com.xiliulou.electricity.vo.AlipayAppConfigVO;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.List;
 
 /**
  * 支付宝小程序配置(AlipayAppConfig)表服务接口
@@ -47,4 +53,11 @@ public interface AlipayAppConfigService {
      */
     AlipayAppConfigBizDetails queryPreciseByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws AliPayException;
     
+    List<AlipayAppConfigVO> listByTenantId(Integer tenantId);
+    
+    Triple<Boolean, String, Object> save(AlipayAppConfigQuery query);
+    
+    Triple<Boolean, String, Object> modify(AlipayAppConfigQuery query);
+    
+    Triple<Boolean, String, Object> remove(Long id);
 }
