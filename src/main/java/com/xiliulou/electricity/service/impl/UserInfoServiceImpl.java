@@ -67,7 +67,6 @@ import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
@@ -1515,7 +1514,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId) {
         return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId, tenantId));
     }
-
+    
     @Slave
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
@@ -1568,8 +1567,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         acquireBatteryFreeDepositResult(userBatteryDeposit, userInfo, userInfoResult);
         
         //车辆订单类型为免押
-//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
-//        acquireCarFreeDepositResult(userCarDeposit, userInfo, userInfoResult);
+        //        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        //        acquireCarFreeDepositResult(userCarDeposit, userInfo, userInfoResult);
         
         //审核状态
         userInfoResult.setAuthStatus(userInfo.getAuthStatus());
@@ -1681,31 +1680,31 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsCarDeposit(UserInfoResultVO.YES);
         }
         
-//        //是否购买租车套餐
-//        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-//        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getOrderId())) {
-//            userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
-//        } else {
-//            userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
-//            userCarDetail.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
-//        }
-//
-//        //租车套餐是否过期
-//        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime())
-//                && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-//            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
-//        } else {
-//            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
-//        }
-//
-//        //是否绑定车辆
-//        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
-//        if (Objects.isNull(userCar) || StringUtils.isBlank(userCar.getSn())) {
-//            userCarDetail.setIsRentCar(UserInfoResultVO.NO);
-//        } else {
-//            userCarDetail.setIsRentCar(UserInfoResultVO.YES);
-//            userCarDetail.setCarSN(userCar.getSn());
-//        }
+        //        //是否购买租车套餐
+        //        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        //        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getOrderId())) {
+        //            userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
+        //        } else {
+        //            userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
+        //            userCarDetail.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+        //        }
+        //
+        //        //租车套餐是否过期
+        //        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime())
+        //                && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        //            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
+        //        } else {
+        //            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
+        //        }
+        //
+        //        //是否绑定车辆
+        //        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        //        if (Objects.isNull(userCar) || StringUtils.isBlank(userCar.getSn())) {
+        //            userCarDetail.setIsRentCar(UserInfoResultVO.NO);
+        //        } else {
+        //            userCarDetail.setIsRentCar(UserInfoResultVO.YES);
+        //            userCarDetail.setCarSN(userCar.getSn());
+        //        }
         
         // V3 版本
         if (CommonConstant.SWITCH_VERSION.equals(switchVersion)) {
@@ -1897,7 +1896,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
         vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
-    
+        
         UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
         BeanUtils.copyProperties(userTurnoverVo, vo);
         
@@ -1966,13 +1965,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         });
         
         //用户租车总套餐消费额
-//        CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
-////            BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
-////            userTurnoverVo.setCarMemberCardTurnover(pay);
-//        }, threadPool).exceptionally(e -> {
-//            log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
-//            return null;
-//        });
+        //        CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+        ////            BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
+        ////            userTurnoverVo.setCarMemberCardTurnover(pay);
+        //        }, threadPool).exceptionally(e -> {
+        //            log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
+        //            return null;
+        //        });
         
         //用户电池服务费消费额
         CompletableFuture<Void> queryBatteryServiceFeePayAmount = CompletableFuture.runAsync(() -> {
@@ -2169,14 +2168,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (CollectionUtils.isEmpty(list)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-    
+        
         List<UserInfoSearchVo> collect = list.stream().peek(vo -> {
             if (Objects.nonNull(vo.getFranchiseeId())) {
                 vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
             
         }).collect(Collectors.toList());
-    
+        
         return R.ok(collect);
     }
     
