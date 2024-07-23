@@ -255,6 +255,7 @@ public class TenantServiceImpl implements TenantService {
                 .delFlag(AssetConstant.DEL_NORMAL)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
+                .franchiseeId(0L)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         
