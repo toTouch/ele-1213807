@@ -399,9 +399,14 @@
         select 1
         from t_electricity_cabinet_order
         where id > #{id}
-          and update_time &lt; #{endTime}
-          and electricity_cabinet_id = #{eid}
-          and cell = #{cell}
-        order by id desc limit 1
+        and electricity_cabinet_id = #{eid}
+        <if test="newOrOldCellFlag == 0">
+            and old_cell_no = #{cell}
+        </if>
+        <if test="newOrOldCellFlag == 1">
+            and new_cell_no = #{cell}
+        </if>
+        and update_time &lt; #{endTime}
+        order by create_time desc limit 1
     </select>
 </mapper>

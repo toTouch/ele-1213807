@@ -108,4 +108,6 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, Object> queryOrderStatusForShowV2(String orderId);
     
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
+    
+    R openFullCell(OpenFullCellQuery query);
 }

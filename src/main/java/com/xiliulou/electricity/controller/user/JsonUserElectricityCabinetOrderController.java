@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
+import com.xiliulou.electricity.query.OpenFullCellQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
@@ -182,6 +183,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     @GetMapping("/user/electricityCabinet/bluetooth/check")
     public R bluetoothExchangeCheck(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return returnTripleResult(electricityCabinetOrderService.bluetoothExchangeCheck(productKey, deviceName));
+    }
+    
+    
+    /**
+     * 打开满电仓取电接口，为快捷换电预留
+     * @param query
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/openFullCell")
+    public R openFullCell(@RequestBody @Validated OpenFullCellQuery query) {
+        return electricityCabinetOrderService.openFullCell(query);
     }
     
 }
