@@ -33,6 +33,13 @@
         where id = #{id} and del_flag = 0
     </select>
     
+    <select id="selectOneByTenantId" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where tenant_id = #{tenantId} and del_flag = 0 order by id limit 1
+    </select>
+    
     <select id="selectByAppId" resultMap="AlipayAppConfigMap">
         select
         <include refid="base_column"/>
@@ -40,11 +47,11 @@
         where app_id = #{appId} and del_flag = 0
     </select>
     
-    <select id="selectByTenantId" resultMap="AlipayAppConfigMap">
+    <select id="selectBySellerIdAndTenantId" resultMap="AlipayAppConfigMap">
         select
         <include refid="base_column"/>
         from t_alipay_app_config
-        where tenant_id = #{tenantId} and del_flag = 0
+        where seller_id = #{sellerId} and tenant_id= #{tenantId} and del_flag = 0
     </select>
     
     <select id="selectListByTenantId" resultMap="AlipayAppConfigMap">
@@ -52,6 +59,13 @@
         <include refid="base_column"/>
         from t_alipay_app_config
         where tenant_id = #{tenantId} and del_flag = 0
+    </select>
+    
+    <select id="selectByConfigType" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where tenant_id = #{tenantId} and config_type = #{type} and del_flag = 0
     </select>
     
     <select id="selectListByTenantIdAndFranchiseeIds" resultMap="AlipayAppConfigMap">
@@ -113,6 +127,28 @@
             </if>
         </set>
         where id = #{id}
+    </update>
+    
+    <update id="updateSyncByIds">
+        update
+        t_alipay_app_config
+        <set>
+            update_time = UNIX_TIMESTAMP()*1000,
+            <if test="alipayAppConfig.appId != null and alipayAppConfig.appId != ''">
+                app_id = #{alipayAppConfig.appId},
+            </if>
+            <if test="alipayAppConfig.publicKey != null and alipayAppConfig.publicKey != ''">
+                public_key = #{alipayAppConfig.publicKey},
+            </if>
+            <if test="alipayAppConfig.appPrivateKey != null and alipayAppConfig.appPrivateKey != ''">
+                app_private_key = #{alipayAppConfig.appPrivateKey},
+            </if>
+        </set>
+        where
+        id in
+        <foreach collection="ids" open="(" close=")" item="item" separator=",">
+            #{item}
+        </foreach>
     </update>
     
     <!--通过主键删除-->

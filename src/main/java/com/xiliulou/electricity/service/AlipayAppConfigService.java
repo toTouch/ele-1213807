@@ -2,7 +2,13 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
+import com.xiliulou.electricity.query.AlipayAppConfigQuery;
+import com.xiliulou.electricity.vo.AlipayAppConfigVO;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.List;
 import com.xiliulou.pay.alipay.exception.AliPayException;
 import com.xiliulou.electricity.query.AlipayAppConfigQuery;
 import com.xiliulou.electricity.vo.AlipayAppConfigVO;
@@ -20,13 +26,11 @@ public interface AlipayAppConfigService {
     
     AlipayAppConfig queryByAppId(String appId);
     
-    AlipayAppConfig queryByIdFromCache(Long id);
+    AlipayAppConfig queryByTenantId(Integer tenantId);
     
     Integer update(AlipayAppConfig alipayAppConfig);
     
     Integer deleteById(Long id);
-    
-    AlipayAppConfig queryByTenantId(Integer tenantId);
     
     /**
      * 根据运营商和加盟商查询
@@ -60,4 +64,5 @@ public interface AlipayAppConfigService {
     Triple<Boolean, String, Object> modify(AlipayAppConfigQuery query);
     
     Triple<Boolean, String, Object> remove(Long id);
+
 }

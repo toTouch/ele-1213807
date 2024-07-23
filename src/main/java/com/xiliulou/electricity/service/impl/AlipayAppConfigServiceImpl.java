@@ -1,22 +1,29 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.AlipayAppConfigConverter;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.enums.AliPayConfigTypeEnum;
 import com.xiliulou.electricity.mapper.AlipayAppConfigMapper;
+import com.xiliulou.electricity.query.AlipayAppConfigQuery;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
-import com.xiliulou.pay.alipay.exception.AliPayException;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.AlipayAppConfigVO;
+import com.xiliulou.pay.alipay.exception.AliPayException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,17 +58,189 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     @Autowired
     private FranchiseeService franchiseeService;
     
+    @Autowired
+    OperateRecordUtil operateRecordUtil;
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> save(AlipayAppConfigQuery query) {
+        query.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 5 * 1000L, true)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        Franchisee franchisee = null;
+        if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(query.getConfigType())) {
+            franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                return Triple.of(false, "100106", "加盟商不存在");
+            }
+        }
+        
+        Triple<Boolean, String, Object> verifyResult = verifySaveParams(query, tenantId);
+        if (Boolean.FALSE.equals(verifyResult.getLeft())) {
+            return verifyResult;
+        }
+        
+        AlipayAppConfig alipayAppConfig = new AlipayAppConfig();
+        BeanUtils.copyProperties(query, alipayAppConfig);
+        alipayAppConfig.setDelFlag(CommonConstant.DEL_N);
+        alipayAppConfig.setTenantId(tenantId);
+        alipayAppConfig.setCreateTime(System.currentTimeMillis());
+        alipayAppConfig.setUpdateTime(System.currentTimeMillis());
+        alipayAppConfigMapper.insert(alipayAppConfig);
+        
+        redisService.delete(buildCacheKey(tenantId, query.getFranchiseeId()));
+        
+        // 操作记录
+        this.operateRecord(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        
+        return Triple.of(true, "", "");
+    }
+    
+    private Triple<Boolean, String, Object> verifySaveParams(AlipayAppConfigQuery query, Integer tenantId) {
+        AlipayAppConfig alipayAppConfig = alipayAppConfigMapper.selectBySellerIdAndTenantId(query.getSellerId(), tenantId);
+        if (Objects.isNull(alipayAppConfig)) {
+            return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
+        }
+        
+        //运营商配置
+        if (AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(query.getConfigType()) && CollectionUtils
+                .isEmpty(queryFromCacheList(tenantId, Collections.singleton(MultiFranchiseeConstant.DEFAULT_FRANCHISEE)))) {
+            return Triple.of(false, "100441", "默认配置已存在,请勿重复添加");
+        }
+        
+        //加盟商配置
+        if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(query.getConfigType())) {
+            List<AlipayAppConfig> alipayAppConfigs = queryFromCacheList(tenantId, Sets.newHashSet(query.getFranchiseeId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
+            if (CollectionUtils.isEmpty(alipayAppConfigs)) {
+                return Triple.of(false, "100442", "默认支付配置不存在，请先添加默认配置");
+            }
+            
+            Map<Long, AlipayAppConfig> franchiseeParamsMap = alipayAppConfigs.stream().collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, v -> v, (k1, k2) -> k1));
+            
+            AlipayAppConfig defaultPayParams = franchiseeParamsMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            if (Objects.isNull(defaultPayParams)) {
+                return Triple.of(false, "100442", "默认支付配置不存在，请先添加默认配置");
+            }
+            
+            if (!Objects.equals(defaultPayParams.getAppId(), query.getAppId())) {
+                return Triple.of(false, "100443", "用户端小程序appid错误");
+            }
+            
+            if (franchiseeParamsMap.containsKey(query.getFranchiseeId())) {
+                return Triple.of(false, "100444", "加盟商配置已存在，请勿重复添加");
+            }
+        }
+        
+        return Triple.of(true, "", "");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> modify(AlipayAppConfigQuery query) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 5 * 1000L, true)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        AlipayAppConfig alipayAppConfig = alipayAppConfigMapper.selectById(query.getId());
+        if (Objects.isNull(alipayAppConfig) || !Objects.equals(alipayAppConfig.getTenantId(), tenantId)) {
+            return Triple.of(false, "100445", "支付配置不存在");
+        }
+        
+        AlipayAppConfig alipayAppConfigOld = alipayAppConfigMapper.selectBySellerIdAndTenantId(query.getSellerId(), tenantId);
+        if (Objects.isNull(alipayAppConfigOld)) {
+            return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
+        }
+        
+        Franchisee franchisee = null;
+        if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(query.getConfigType())) {
+            franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                return Triple.of(false, "100106", "加盟商不存在");
+            }
+        }
+        
+        //获取所有需要同步的加盟商配置
+        List<Long> syncAlipayAppConfigIds = null;
+        List<AlipayAppConfig> syncFranchiseeAlipayAppConfig = listSyncFranchiseeAlipayAppConfig(alipayAppConfigOld, query);
+        if (CollectionUtils.isNotEmpty(syncFranchiseeAlipayAppConfig)) {
+            syncAlipayAppConfigIds = syncFranchiseeAlipayAppConfig.stream().map(AlipayAppConfig::getId).collect(Collectors.toList());
+        }
+        
+        AlipayAppConfig alipayAppConfigUpdate = new AlipayAppConfig();
+        BeanUtils.copyProperties(query, alipayAppConfigUpdate);
+        alipayAppConfigUpdate.setUpdateTime(System.currentTimeMillis());
+        alipayAppConfigMapper.update(alipayAppConfigUpdate);
+        
+        if (CollectionUtils.isNotEmpty(syncAlipayAppConfigIds)) {
+            alipayAppConfigMapper.updateSyncByIds(alipayAppConfigUpdate, syncAlipayAppConfigIds);
+        }
+        
+        // 删除缓存
+        List<String> delKeys = Optional.ofNullable(syncFranchiseeAlipayAppConfig).orElse(Collections.emptyList()).stream()
+                .map(v -> buildCacheKey(v.getTenantId(), v.getFranchiseeId())).collect(Collectors.toList());
+        delKeys.add(buildCacheKey(alipayAppConfigUpdate.getTenantId(), alipayAppConfigUpdate.getFranchiseeId()));
+        
+        redisService.delete(delKeys);
+        
+        this.operateRecord(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        
+        return Triple.of(true, "", "");
+    }
+    
+    private List<AlipayAppConfig> listSyncFranchiseeAlipayAppConfig(AlipayAppConfig alipayAppConfigOld, AlipayAppConfigQuery query) {
+        //是否是默认配置变更
+        if (!AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(query.getConfigType())) {
+            return null;
+        }
+        
+        //默认配置是否变更
+        if (Objects.equals(alipayAppConfigOld.getAppId(), query.getAppId()) && Objects.equals(alipayAppConfigOld.getPublicKey(), query.getPublicKey()) && Objects
+                .equals(alipayAppConfigOld.getAppPrivateKey(), query.getAppPrivateKey())) {
+            return null;
+        }
+        
+        return alipayAppConfigMapper.selectByConfigType(alipayAppConfigOld.getTenantId(), AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType());
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> remove(Long id) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 5 * 1000L, true)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        AlipayAppConfig alipayAppConfig = alipayAppConfigMapper.selectById(id);
+        if (Objects.isNull(alipayAppConfig) || !Objects.equals(alipayAppConfig.getTenantId(), tenantId)) {
+            return Triple.of(false, "100445", "支付配置不存在");
+        }
+        
+        if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(alipayAppConfig.getConfigType())) {
+            return Triple.of(false, "100446", "默认配置不可删除");
+        }
+        
+        AlipayAppConfig alipayAppConfigUpdate = new AlipayAppConfig();
+        alipayAppConfigUpdate.setId(alipayAppConfig.getId());
+        alipayAppConfigUpdate.setDelFlag(CommonConstant.DEL_Y);
+        alipayAppConfigUpdate.setUpdateTime(System.currentTimeMillis());
+        alipayAppConfigMapper.update(alipayAppConfigUpdate);
+        
+        redisService.delete(buildCacheKey(tenantId, alipayAppConfig.getFranchiseeId()));
+        
+        // 操作记录
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(alipayAppConfig.getFranchiseeId());
+        this.operateRecord(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+        
+        return Triple.of(true, "", "");
+    }
+    
     @Slave
     @Override
     public AlipayAppConfig queryByAppId(String appId) {
         return this.alipayAppConfigMapper.selectByAppId(appId);
-    }
-    
-    // TODO 移除
-    @Slave
-    @Override
-    public AlipayAppConfig queryByTenantId(Integer tenantId) {
-        return this.alipayAppConfigMapper.selectByTenantId(tenantId);
     }
     
     @Slave
@@ -71,14 +250,14 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-    
+        
         return list.stream().map(item -> {
             AlipayAppConfigVO alipayAppConfigVO = new AlipayAppConfigVO();
             BeanUtils.copyProperties(item, alipayAppConfigVO);
-        
+            
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             alipayAppConfigVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-        
+            
             return alipayAppConfigVO;
         }).collect(Collectors.toList());
     }
@@ -127,15 +306,9 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         }
     }
     
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
     @Override
-    public AlipayAppConfig queryByIdFromCache(Long id) {
-        return null;
+    public AlipayAppConfig queryByTenantId(Integer tenantId) {
+        return alipayAppConfigMapper.selectOneByTenantId(tenantId);
     }
     
     /**
@@ -227,6 +400,11 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         return payParams;
     }
     
+    private void operateRecord(String franchiseeName) {
+        Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
+        record.put("franchiseeName", franchiseeName);
+        operateRecordUtil.record(null, record);
+    }
     
     /**
      * 构建缓存key
