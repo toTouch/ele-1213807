@@ -1264,7 +1264,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
         if (Objects.isNull(history)) {
-            // 订单中途未结束【包括初始化订单
+            // 订单中途未结束,包括初始化订单
             return Pair.of(false, null);
         }
         String msg = history.getMsg();
@@ -1294,16 +1294,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(true, vo);
         }
         
-        ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(userBindingBatterySn);
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());
         
+        ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(userBindingBatterySn);
         // 用户绑定的电池状态是否为租借状态
         if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             // 下发取满电命令
-            this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn);
+            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn);
+            vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
@@ -1327,7 +1328,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setCell(lastOrder.getNewCellNo());
             // 执行取电流程，下发开满电仓指令
-            this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn);
+            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn);
+            vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
@@ -2721,6 +2723,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
+        //  todo 柜机版本校验
         Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), userInfo.getTenantId(), electricityCabinet, electricityBattery.getSn());
         if (pair.getLeft()) {
             // 返回让前端选择
@@ -2819,7 +2822,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         
-        return openFullBatteryCellHandler(electricityCabinetOrder,electricityCabinet,null,null);
+        return R.ok(openFullBatteryCellHandler(electricityCabinetOrder,electricityCabinet,null,null));
     }
     
     /**
@@ -2830,7 +2833,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      * @param batteryName
      * @return
      */
-    private R openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder,ElectricityCabinet cabinet ,Integer cellNo,String batteryName) {
+    private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName) {
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", cabinetOrder.getOrderId());
@@ -2839,9 +2842,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + cabinetOrder.getId();
         
-        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey())
-                .deviceName(cabinet.getDeviceName()).command(ElectricityIotConstant.OPEN_FULL_CELL).build();
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
+                .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        return R.ok(sessionId);
+        return sessionId;
     }
 }

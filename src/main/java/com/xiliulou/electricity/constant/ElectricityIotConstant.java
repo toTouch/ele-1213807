@@ -383,6 +383,8 @@ public class ElectricityIotConstant {
      * 开满电仓
      */
     public static final String OPEN_FULL_CELL = "open_full_cell";
+    
+    public static final String OPEN_FULL_CELL_RSP = "open_full_cell_rsp";
    
     public static final String OPEN_FULL_CELL_ACK = "open_full_cell_ack";
 
@@ -634,6 +636,7 @@ public class ElectricityIotConstant {
          * 取满电流程
          */
         COMMAND_HANDLER_MAPS.put(OPEN_FULL_CELL, NORMAL_OPEN_FULL_CELL_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OPEN_FULL_CELL_RSP, NORMAL_OPEN_FULL_CELL_HANDLER);
         COMMAND_HANDLER_MAPS.put(OPEN_FULL_CELL_ACK, NORMAL_OPEN_FULL_CELL_HANDLER);
         
     }

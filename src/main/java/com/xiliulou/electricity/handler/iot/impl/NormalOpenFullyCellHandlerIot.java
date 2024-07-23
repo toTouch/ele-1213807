@@ -59,12 +59,12 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         }
         
         // 修改订单最终状态为成功
-        if (openFullCellRsp.getIsOpenSuccess()) {
+        if (Objects.nonNull(openFullCellRsp.getIsOpenSuccess()) && openFullCellRsp.getIsOpenSuccess()) {
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
             newElectricityCabinetOrder.setId(cabinetOrder.getId());
             newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
-            newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+            newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS);
             cabinetOrderService.update(newElectricityCabinetOrder);
         }
         
