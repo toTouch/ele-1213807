@@ -563,6 +563,7 @@ public interface CacheConstant {
      * 商户扩展属性缓存
      */
     String CACHE_MERCHANT_ATTR = "merchantAttr:";
+    String CACHE_MERCHANT_ATTR_CONFIG = "merchantAttrConfig:";
     /**
      * 返利配置
      */

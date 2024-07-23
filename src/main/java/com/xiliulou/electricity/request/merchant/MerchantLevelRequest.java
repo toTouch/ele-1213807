@@ -12,14 +12,15 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class MerchantLevelRequest {
+    
     @NotNull(message = "id不能为空")
     private Long id;
     
     /**
      * 商户等级名称
      */
-//    @NotBlank(message = "商户等级名称不能为空")
-//    @Length(min = 1, max = 10, message = "商户等级名称不合法")
+    //    @NotBlank(message = "商户等级名称不能为空")
+    //    @Length(min = 1, max = 10, message = "商户等级名称不合法")
     private String name;
     
     /**
