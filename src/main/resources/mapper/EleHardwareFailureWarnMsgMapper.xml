@@ -21,7 +21,7 @@
     <sql id="filter">
         <where>
             <if test="alarmId != null">
-                t.alarm_id  = #{alarmId}
+                t.alarm_id = #{alarmId}
             </if>
             <if test="type != null">
                 t.type  = #{type}

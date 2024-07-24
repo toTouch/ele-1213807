@@ -54,7 +54,7 @@ public class JsonAdminEleHardwareFailureWarnMsgController {
             @RequestParam(value = "deviceType", required = false) Integer deviceType, @RequestParam(value = "grade", required = false) Integer grade,
             @RequestParam(value = "signalId", required = false) Integer signalId, @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime,
             @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime, @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag,
-            @RequestParam(value = "alarmId", required = false) Long alarmId) {
+            @RequestParam(value = "alarmId", required = false) String alarmId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -88,7 +88,7 @@ public class JsonAdminEleHardwareFailureWarnMsgController {
     public R pageCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "deviceType", required = false) Integer deviceType,
             @RequestParam(value = "grade", required = false) Integer grade, @RequestParam(value = "signalId", required = false) Integer signalId,
             @RequestParam(value = "alarmStartTime", required = true) Long alarmStartTime, @RequestParam(value = "alarmEndTime", required = true) Long alarmEndTime,
-            @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag, @RequestParam(value = "alarmId", required = false) Long alarmId) {
+            @RequestParam(value = "alarmFlag", required = false) Integer alarmFlag, @RequestParam(value = "alarmId", required = false) String alarmId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
