@@ -188,7 +188,7 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     
     
     /**
-     * 打开满电仓取电接口，为快捷换电预留
+     * todo 打开满电仓取电接口，为快捷换电预留
      * @param query
      * @return
      */

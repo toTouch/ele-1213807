@@ -1231,6 +1231,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 自主开仓条件校验
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
+            log.warn("lastExchangeSuccessHandler is not satisfySelfOpenCondition, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
@@ -1267,12 +1268,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 订单中途未结束,包括初始化订单
             return Pair.of(false, null);
         }
-        String msg = history.getMsg();
-        log.info("lastExchangeFailHandler.lastOrder is{},history.msg is {}", JsonUtil.toJson(lastOrder), msg);
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
+        String msg = history.getMsg();
+        log.info("lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
         //  旧仓门电池检测失败或超时
         if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME)) {
             return oldCellCheckFail(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet);
@@ -1291,6 +1292,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
+            log.warn("newCellOpenFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
@@ -1318,6 +1320,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
             // 旧仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
+            log.warn("oldCellCheckFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         vo.setOrderId(lastOrder.getOrderId());
