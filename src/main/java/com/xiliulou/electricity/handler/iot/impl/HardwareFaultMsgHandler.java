@@ -94,6 +94,7 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
             msg.setTxnNo(hardwareFaultWarnMsg.getTxnNo());
             msg.setTenantName(tenantName);
             msg.setCabinetName(electricityCabinet.getName());
+            msg.setDeviceName(electricityCabinet.getDeviceName());
             list.add(msg);
         });
         return list;
@@ -296,4 +297,6 @@ class HardwareFaultWarnMqMsg {
     private Integer occurNum;
     
     private String cabinetSn;
+    
+    private String deviceName;
 }
