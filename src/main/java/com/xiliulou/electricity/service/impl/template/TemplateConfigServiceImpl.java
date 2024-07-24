@@ -173,7 +173,7 @@ public class TemplateConfigServiceImpl implements TemplateConfigService {
         
         Map<String, String> cacheMap = Maps.newHashMapWithExpectedSize(dbList.size());
         dbList.forEach(config -> {
-            cacheMap.put(buildKey(config.getTenantId(), config.getChannel()), JsonUtil.toJson(cacheMap));
+            cacheMap.put(buildKey(config.getTenantId(), config.getChannel()), JsonUtil.toJson(config));
             caches.add(config);
         });
         
