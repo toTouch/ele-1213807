@@ -13,7 +13,7 @@
         sum(month_first_total_money) as monthFirstTotalMoney,
         sum(month_renew_total_money) as monthRenewTotalMoney,
         sum(month_total_money) as monthTotalMoney,
-        any_value(date) as date,
+        date as date,
         any_value(tenant_id) as tenantId
         from t_merchant_promotion_month_record
         <where>
@@ -34,6 +34,7 @@
                 and franchisee_id = #{franchiseeId}
             </if>
         </where>
+        group by date
         order by date desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
@@ -47,7 +48,7 @@
         sum(month_first_total_money) as monthFirstTotalMoney,
         sum(month_renew_total_money) as monthRenewTotalMoney,
         sum(month_total_money) as monthTotalMoney,
-        any_value(date) as date,
+        date as date,
         any_value(tenant_id) as tenantId
         from t_merchant_promotion_month_record
         <where>
@@ -68,6 +69,7 @@
                 and franchisee_id = #{franchiseeId}
             </if>
         </where>
+        group by date
         ) a
     </select>
 
