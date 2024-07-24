@@ -162,7 +162,7 @@ public class TemplateConfigServiceImpl implements TemplateConfigService {
         
         List<String> needQryDbChannels = channels.stream().filter(c -> !cacheChannels.contains(c)).collect(Collectors.toList());
         
-        if (Objects.isNull(needQryDbChannels)) {
+        if (CollectionUtils.isEmpty(needQryDbChannels)) {
             return caches;
         }
         
