@@ -212,18 +212,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Resource
     private ElectricityCabinetPhysicsOperRecordService electricityCabinetPhysicsOperRecordService;
     
+    @Resource
+    private ExchangeConfig exchangeConfig;
+    
+    public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="";
     
     TtlXllThreadPoolExecutorServiceWrapper executorServiceWrapper = TtlXllThreadPoolExecutorsSupport
             .get(XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_ORDER_LIST", 3, "ele_user_order_list_thread"));
     
-    
-    @Resource
-    private ExchangeConfig exchangeConfig;
-    
-    @Resource
-    private ElectricityCabinetPhysicsOperRecordService operRecordService;
-    
-    public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="";
     
     /**
      * 修改数据
@@ -1316,7 +1312,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("isSatisfySelfOpenCondition.existReturnOrder, orderId:{}", order.getOrderId());
             return false;
         }
-        Integer existOpenRecord = operRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
+        Integer existOpenRecord = electricityCabinetPhysicsOperRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
         if (Objects.nonNull(existOpenRecord)) {
             log.warn("isSatisfySelfOpenCondition.existOpenRecord, orderId:{}", order.getOrderId());
             return false;
