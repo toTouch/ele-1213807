@@ -505,6 +505,13 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             BigDecimal usedAmount = price.multiply(BigDecimal.valueOf(totalUseDay)).setScale(2, RoundingMode.HALF_UP);
             // 剩余金额
             BigDecimal residueAmount = electricityMemberCardOrder.getPayAmount().subtract(usedAmount);
+    
+            // 一般出现在套餐用完的情况下
+            if (Objects.equals(residueAmount.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                residueAmount = BigDecimal.ZERO;
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!residue amount is error, uid={}, orderId={}", userInfo.getUid(), orderId);
+            }
+            
             // 总的使用的云豆数量
             totalUsedCloudBean = totalUsedCloudBean.add(usedAmount);
             // 设置企业的剩余云豆
