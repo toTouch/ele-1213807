@@ -41,10 +41,14 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,9 +126,13 @@ public class TenantServiceImpl implements TenantService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
-
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail(false, "ELECTRICITY.0001", "未找到用户");
+        }
         //限频
-        boolean lockResult = redisService.setNx(CacheConstant.ELE_ADD_TENANT_CACHE + tenantAddAndUpdateQuery.getId(), "1", 5 * 1000L, false);
+        boolean lockResult = redisService.setNx(CacheConstant.ELE_ADD_TENANT_CACHE + user.getUid(), "1", 5 * 1000L, false);
         if (!lockResult) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
