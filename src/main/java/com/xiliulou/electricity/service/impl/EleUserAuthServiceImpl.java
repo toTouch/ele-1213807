@@ -220,7 +220,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         //发送消息到站内信
         siteMessagePublish.publish(
                 SiteMessageEvent.builder(this).code(SiteMessageType.REAL_NAME_VERIFICATION).notifyTime(System.currentTimeMillis()).tenantId(Long.valueOf(tenantId))
-                        .addContext("name", userInfo.getName()).addContext("uid", oldUserInfo.getId()).addContext("phone", oldUserInfo.getPhone()).build());
+                        .addContext("name", userInfo.getName()).addContext("uid", oldUserInfo.getUid()).addContext("phone", oldUserInfo.getPhone()).build());
         return R.ok();
     }
     
