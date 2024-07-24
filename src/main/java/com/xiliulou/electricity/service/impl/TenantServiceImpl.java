@@ -213,21 +213,22 @@ public class TenantServiceImpl implements TenantService {
             return result;
         }
         
-        //获取角色默认权限
-        List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
-        //保存角色默认权限
-        if (CollectionUtils.isNotEmpty(permissionList)) {
-            permissionList.parallelStream().forEach(e -> {
-                rolePermissionService.insert(e);
-            });
-        }
-       
+        initOtherExecutorService.execute(() -> {
+            //获取角色默认权限
+            List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
+            //保存角色默认权限
+            if (CollectionUtils.isNotEmpty(permissionList)) {
+                permissionList.parallelStream().forEach(e -> {
+                    rolePermissionService.insert(e);
+                });
+            }
+        });
       
 
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());
         
-        initOtherExecutorService.execute(()->{
+       
             //新增租户给租户添加的默认系统配置
             ElectricityConfig electricityConfig = ElectricityConfig.builder()
                     .name("")
@@ -243,7 +244,7 @@ public class TenantServiceImpl implements TenantService {
                     .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
                     .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
             electricityConfigService.insertElectricityConfig(electricityConfig);
-        });
+        
         
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
