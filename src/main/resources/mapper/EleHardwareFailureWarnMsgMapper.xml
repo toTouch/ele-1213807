@@ -20,8 +20,8 @@
     
     <sql id="filter">
         <where>
-            <if test="id != null">
-                t.id  = #{id}
+            <if test="alarmId != null">
+                t.alarm_id  = #{alarmId}
             </if>
             <if test="type != null">
                 t.type  = #{type}

@@ -93,5 +93,5 @@ public class EleHardwareFailureWarnMsgPageRequest {
      * id
      * 站内信跳转需要根据id查询
      */
-    private Long id;
+    private Long alarmId;
 }

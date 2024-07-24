@@ -84,5 +84,5 @@ public class FailureWarnMsgPageQueryModel {
     /**
      * id 站内信跳转需要根据id查询
      */
-    private Long id;
+    private Long alarmId;
 }
