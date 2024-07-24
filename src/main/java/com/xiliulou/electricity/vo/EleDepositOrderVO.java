@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.enums.PaymentChannelEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.Data;
 

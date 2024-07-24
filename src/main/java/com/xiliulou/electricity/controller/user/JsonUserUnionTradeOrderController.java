@@ -4,6 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
+import com.xiliulou.electricity.query.ServiceFeePaymentQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,8 +55,8 @@ public class JsonUserUnionTradeOrderController extends BaseController {
      * 滞纳金混合支付
      */
     @PostMapping("/user/payServiceFee")
-    public R payServiceFee(HttpServletRequest request) {
-        return returnTripleResult(tradeOrderService.payServiceFee(request));
+    public R payServiceFee(@RequestBody ServiceFeePaymentQuery query, HttpServletRequest request) {
+        return returnTripleResult(tradeOrderService.payServiceFee(query, request));
     }
 }
 
