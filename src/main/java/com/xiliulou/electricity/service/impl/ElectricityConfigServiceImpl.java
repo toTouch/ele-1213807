@@ -33,12 +33,13 @@ import com.xiliulou.electricity.service.FaceRecognizeDataService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.template.TemplateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -370,7 +371,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
         
         //获取租户模板id
-        List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, ChannelEnum.WECHAT.getCode());
         tenantConfigVO.setTemplateConfigList(templateConfigList);
         
         //获取客服电话
@@ -385,6 +386,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         TenantConfigVO tenantConfigVO = new TenantConfigVO();
     
         Integer tenantId = null;
+        String channel =null;
         if (TokenConstant.THIRD_AUTH_WX_PRO.equals(appType)) {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
             if (Objects.isNull(electricityPayParams)) {
@@ -393,6 +395,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         
             tenantId = electricityPayParams.getTenantId();
+            channel = ChannelEnum.WECHAT.getCode();
         }
     
         if (TokenConstant.THIRD_AUTH_ALI_PAY.equals(appType)) {
@@ -403,6 +406,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         
             tenantId = alipayAppConfig.getTenantId();
+            channel = ChannelEnum.ALIPAY.getCode();
         }
     
         //获取租户配置信息
@@ -410,7 +414,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
     
         //获取租户模板id
-        List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId,channel);
         tenantConfigVO.setTemplateConfigList(templateConfigList);
     
         //获取客服电话

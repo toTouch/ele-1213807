@@ -24,12 +24,16 @@
     </sql>
     
     
-    <select id="selectByChannelAndTenantId" resultMap="TemplateConfigEntityMap">
+    <select id="selectListByTenantIdAndChannels" resultMap="TemplateConfigEntityMap">
         select
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where channel = #{channel} and tenant_id=${tenantId}
+        where tenant_id=${tenantId}
+        and channel in
+        <foreach collection="channels" item="channel" open="(" close=")" separator=",">
+            #{channel}
+        </foreach>
     </select>
     
     <select id="selectById" resultMap="TemplateConfigEntityMap">

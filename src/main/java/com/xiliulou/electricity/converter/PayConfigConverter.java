@@ -14,7 +14,7 @@ import com.xiliulou.electricity.converter.model.OrderCreateParamConverterModel;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.pay.alipay.request.AliPayCreateOrderRequest;
 import com.xiliulou.pay.alipay.request.AliPayOrderRefundRequest;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.request.template;
 
 import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -42,7 +42,7 @@ public class TemplateConfigOptRequest implements Serializable {
     /**
      * 渠道
      *
-     * @see com.xiliulou.pay.base.enums.ChannelEnum
+     * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String channel = ChannelEnum.WECHAT.getCode();
     

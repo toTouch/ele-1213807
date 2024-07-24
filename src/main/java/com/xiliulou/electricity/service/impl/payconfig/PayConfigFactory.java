@@ -7,7 +7,7 @@ package com.xiliulou.electricity.service.impl.payconfig;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.PayException;
 import org.springframework.stereotype.Component;
 

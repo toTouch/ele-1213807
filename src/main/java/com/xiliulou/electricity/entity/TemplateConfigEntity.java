@@ -50,7 +50,7 @@ public class TemplateConfigEntity implements Serializable {
     /**
      * 渠道
      *
-     * @see com.xiliulou.pay.base.enums.ChannelEnum
+     * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String channel;
     

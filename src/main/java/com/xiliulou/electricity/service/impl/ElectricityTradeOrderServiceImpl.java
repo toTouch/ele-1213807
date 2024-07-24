@@ -102,7 +102,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.base.request.BasePayRequest;

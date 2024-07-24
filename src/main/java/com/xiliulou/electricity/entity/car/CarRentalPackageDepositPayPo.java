@@ -5,7 +5,7 @@ import com.xiliulou.electricity.entity.basic.BasicCarPo;
 
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.model.car.opt;
 
 import com.xiliulou.electricity.enums.PayTypeEnum;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.io.Serializable;

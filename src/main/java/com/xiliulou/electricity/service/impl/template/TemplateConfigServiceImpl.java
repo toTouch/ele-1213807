@@ -4,7 +4,9 @@
 
 package com.xiliulou.electricity.service.impl.template;
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.converter.TemplateConfigConverter;
@@ -13,6 +15,7 @@ import com.xiliulou.electricity.mapper.template.TemplateConfigMapper;
 import com.xiliulou.electricity.request.template.TemplateConfigOptRequest;
 import com.xiliulou.electricity.service.template.TemplateConfigService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +23,10 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -41,20 +47,16 @@ public class TemplateConfigServiceImpl implements TemplateConfigService {
     
     @Override
     public TemplateConfigEntity queryByTenantIdAndChannelFromCache(Integer tenantId, String channel) {
-        
-        String key = this.buildKey(tenantId, channel);
-        TemplateConfigEntity configEntity = redisService.getWithHash(key, TemplateConfigEntity.class);
-        if (Objects.nonNull(configEntity)) {
-            return configEntity;
-        }
-        
-        TemplateConfigEntity templateConfig = templateConfigMapper.selectByChannelAndTenantId(channel, tenantId);
-        if (Objects.isNull(templateConfig)) {
+        List<TemplateConfigEntity> templateConfigEntities = queryCache(tenantId, Collections.singletonList(channel));
+        if (CollectionUtils.isEmpty(templateConfigEntities)) {
             return null;
         }
-        redisService.saveWithString(key, templateConfig);
-        
-        return templateConfig;
+        return templateConfigEntities.get(0);
+    }
+    
+    @Override
+    public List<TemplateConfigEntity> queryByTenantIdAndChannelListFromCache(Integer tenantId, List<String> channels) {
+        return queryCache(tenantId, channels);
     }
     
     @Override
@@ -141,4 +143,42 @@ public class TemplateConfigServiceImpl implements TemplateConfigService {
         }
         tmpIds.add(value);
     }
+    
+    
+    /**
+     * 缓存查询
+     *
+     * @param channels
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/7/23 17:51
+     */
+    private List<TemplateConfigEntity> queryCache(Integer tenantId, List<String> channels) {
+        List<String> keys = channels.stream().map(c -> buildKey(tenantId, c)).collect(Collectors.toList());
+        
+        List<TemplateConfigEntity> caches = redisService.multiJsonGet(keys, TemplateConfigEntity.class);
+        
+        List<String> cacheChannels = Optional.ofNullable(caches).orElse(Collections.emptyList()).stream().map(TemplateConfigEntity::getChannel).collect(Collectors.toList());
+        
+        List<String> needQryDbChannels = channels.stream().filter(c -> !cacheChannels.contains(c)).collect(Collectors.toList());
+        
+        if (Objects.isNull(needQryDbChannels)) {
+            return caches;
+        }
+        
+        List<TemplateConfigEntity> dbList = templateConfigMapper.selectListByTenantIdAndChannels(tenantId, needQryDbChannels);
+        if (Objects.isNull(dbList)) {
+            return caches;
+        }
+        
+        Map<String, String> cacheMap = Maps.newHashMapWithExpectedSize(dbList.size());
+        dbList.forEach(config -> {
+            cacheMap.put(buildKey(config.getTenantId(), config.getChannel()), JsonUtil.toJson(cacheMap));
+            caches.add(config);
+        });
+        
+        redisService.multiSet(cacheMap);
+        return caches;
+    }
+    
 }

@@ -5,7 +5,7 @@
 package com.xiliulou.electricity.service.pay;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.PayException;
 
 /**

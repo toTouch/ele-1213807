@@ -28,6 +28,18 @@ public interface TemplateConfigService {
      */
     TemplateConfigEntity queryByTenantIdAndChannelFromCache(Integer tenantId, String channel);
     
+    
+    /**
+     * 根据租户id+渠道集合查询
+     *
+     * @param tenantId
+     * @param channels
+     * @author caobotao.cbt
+     * @date 2024/7/23 15:20
+     * @return
+     */
+    List<TemplateConfigEntity> queryByTenantIdAndChannelListFromCache(Integer tenantId, List<String> channels);
+    
     /**
      * 根据租户id+渠道查询模版id
      *

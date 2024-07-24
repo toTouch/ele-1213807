@@ -40,7 +40,6 @@ public class TemplateConfigConverter {
         templateConfigEntity.setCreateTime(System.currentTimeMillis());
         templateConfigEntity.setUpdateTime(System.currentTimeMillis());
         return templateConfigEntity;
-        
     }
     
 }

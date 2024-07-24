@@ -8,6 +8,8 @@ import cn.hutool.extra.template.TemplateConfig;
 import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * description:
  *
@@ -42,7 +44,7 @@ public interface TemplateConfigMapper {
      * @author caobotao.cbt
      * @date 2024/7/23 14:48
      */
-    TemplateConfigEntity selectByChannelAndTenantId(@Param("channel") String channel, @Param("tenantId") Integer tenantId);
+    List<TemplateConfigEntity> selectListByTenantIdAndChannels(@Param("tenantId") Integer tenantId,@Param("channels") List<String> channels);
     
     
     /**
