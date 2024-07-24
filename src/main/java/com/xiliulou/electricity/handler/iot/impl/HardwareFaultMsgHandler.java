@@ -100,17 +100,6 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
         return list;
     }
     
-    public void testSend(String msg, Integer type) {
-        List<HardwareFailureWarnMqMsg> list = new ArrayList<>();
-        HardwareFailureWarnMqMsg hardwareFailureWarnMsg = JsonUtil.fromJson(msg, HardwareFailureWarnMqMsg.class);
-        long currentTimeMillis = System.currentTimeMillis();
-        hardwareFailureWarnMsg.setAlarmTime(currentTimeMillis);
-        hardwareFailureWarnMsg.setReportTime(currentTimeMillis);
-        list.add(hardwareFailureWarnMsg);
-    
-        log.info("HARDWARE FAULT WARN SEND START MSG={}", JsonUtil.toJson(list));
-        rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
-    }
 }
 
 @Data
