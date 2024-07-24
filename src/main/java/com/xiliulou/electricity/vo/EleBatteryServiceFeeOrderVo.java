@@ -117,6 +117,12 @@ public class EleBatteryServiceFeeOrderVo {
      * 支付时间
      */
     private Long payTime;
+    
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

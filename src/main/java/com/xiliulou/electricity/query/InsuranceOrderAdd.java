@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -19,6 +20,9 @@ public class InsuranceOrderAdd {
 
 	//保险
 	private Integer franchiseeId;
-
-
+	
+	/**
+	 * 支付渠道 WECHAT-微信支付,ALIPAY-支付宝
+	 */
+	private String paymentChannel = ChannelEnum.WECHAT.getCode();
 }

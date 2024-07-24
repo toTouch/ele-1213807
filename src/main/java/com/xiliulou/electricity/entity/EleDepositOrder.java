@@ -119,6 +119,12 @@ public class EleDepositOrder {
      * 微信商户号
      */
     private String wechatMerchantId;
+    
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

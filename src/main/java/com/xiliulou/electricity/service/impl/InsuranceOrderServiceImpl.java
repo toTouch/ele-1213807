@@ -8,13 +8,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -43,10 +43,13 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
+import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
+import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
+import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -126,6 +129,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     
     @Autowired
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Autowired
+    private PayConfigBizService payConfigBizService;
     
     /**
      * 根据来源订单编码、类型查询保险订单信息
@@ -244,16 +250,16 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={}", insuranceOrderAdd.getInsuranceId());
             return R.fail("100305", "未找到保险!");
         }
-        
-        WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+        BasePayConfig payParamConfig = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeInsurance.getFranchiseeId());
-        } catch (WechatPayException e) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
-            return R.fail("PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+            payParamConfig = payConfigBizService.queryPayParams(insuranceOrderAdd.getPaymentChannel(), tenantId, userInfo.getFranchiseeId());
+        } catch (PayException e) {
+            log.warn("CREATE INSURANCE_ORDER ERROR!not found pay params,uid={}", user.getUid(), e);
+            return R.fail("100307", "未配置支付参数!");
         }
-        if (Objects.isNull(wechatPayParamsDetails)) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+        if (Objects.isNull(payParamConfig)) {
+            log.warn("CREATE INSURANCE_ORDER ERROR!not found pay params,uid={}", user.getUid());
             return R.fail("100307", "未配置支付参数!");
         }
         
@@ -314,11 +320,11 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder().orderId(orderId).uid(user.getUid()).payAmount(franchiseeInsurance.getPremium())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_INSURANCE).attach(ElectricityTradeOrder.ATTACH_INSURANCE).description("保险收费").tenantId(tenantId).build();
-            
-            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, wechatPayParamsDetails,
+    
+            BasePayOrderCreateDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParamsV2(commonPayOrder, payParamConfig,
                     userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
-        } catch (WechatPayException e) {
+        } catch (PayException e) {
             log.error("CREATE INSURANCE_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
         

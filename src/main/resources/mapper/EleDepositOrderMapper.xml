@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
         select
-        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
+        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid, edo.payment_channel,
         edo.order_id, edo.status, edo.name, edo.phone, f.name as franchiseeName,
         edo.deposit_type,edo.pay_type, edo.order_type, s.name as store_name
         from t_ele_deposit_order edo
@@ -200,7 +200,7 @@
 
     <select id="queryListForUser" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
         select
-        edo.id, edo.pay_amount, ero.create_time, ero.update_time, edo.uid,
+        edo.id, edo.pay_amount, ero.create_time, ero.update_time, edo.uid,edo.payment_channel,
         edo.order_id, ero.status, edo.name, edo.phone, f.name as franchiseeName,
         ero.refund_amount as refundAmount,ero.err_msg as errMsg, s.name as store_name
         from t_ele_deposit_order edo
@@ -314,7 +314,7 @@
 
 
     <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
-        select id,pay_amount,create_time,update_time,uid,order_id,status,model_type,store_id,pay_type from t_ele_deposit_order
+        select id,pay_amount,create_time,update_time,uid,order_id,status,model_type,store_id,pay_type,payment_channel from t_ele_deposit_order
         where status=1 and uid=#{uid}  ORDER BY id DESC limit 1
     </select>
 
@@ -430,6 +430,7 @@
                model_type,
                store_id,
                source_order_no,
+               payment_channel,
                pay_type
         from t_ele_deposit_order
         <where>

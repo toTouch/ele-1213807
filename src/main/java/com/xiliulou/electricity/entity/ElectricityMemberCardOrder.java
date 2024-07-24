@@ -146,6 +146,12 @@ public class ElectricityMemberCardOrder {
      */
     private String wechatMerchantId;
     
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
+    
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
     

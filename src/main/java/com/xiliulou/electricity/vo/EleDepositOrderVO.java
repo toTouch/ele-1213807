@@ -118,4 +118,10 @@ public class EleDepositOrderVO {
      */
     private Integer orderType;
     
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
+    
 }

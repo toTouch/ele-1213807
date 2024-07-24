@@ -86,4 +86,9 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     
     private List<CouponSearchVo> coupons;
     
+    /**
+     * 支付方式
+     * @see PaymentChannelEnum
+     */
+    private String paymentChannel;
 }
