@@ -47,6 +47,7 @@ public class JsonAdminTemplateConfigController {
      */
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
     public R update(@RequestBody TemplateConfigOptRequest request) {
+        request.setTenantId(TenantContextHolder.getTenantId());
         return templateConfigService.update(request);
     }
     
