@@ -87,6 +87,10 @@
     
     <sql id="filter">
         <where>
+            <if test="alarmId != null">
+                t.alarm_id = #{alarmId}
+            </if>
+            
             <if test="cabinetId != null">
                 t.cabinet_id = #{cabinetId}
             </if>
