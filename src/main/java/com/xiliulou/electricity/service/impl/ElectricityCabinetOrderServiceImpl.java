@@ -48,6 +48,7 @@ import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OpenFullCellQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
+import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -1067,7 +1068,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     @Override
-    public Triple<Boolean, String, Object> orderV3(OrderQueryV2 orderQuery) {
+    public Triple<Boolean, String, Object> orderV3(OrderQueryV3 orderQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ORDER ERROR!  not found user,eid={}", orderQuery.getEid());
@@ -2546,7 +2547,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     
-    private Triple<Boolean, String, Object> handlerSingleExchangeBatteryV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV2 orderQuery,
+    private Triple<Boolean, String, Object> handlerSingleExchangeBatteryV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV3 orderQuery,
             List<String> batteryTypeList) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -2614,16 +2615,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
-        // todo 柜机版本校验
-        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-            Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), electricityCabinet, electricityBattery.getSn());
-            if (pair.getLeft()) {
-                // 返回让前端选择
-                return Triple.of(true, null, pair.getRight());
+        if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
+            //  todo 柜机版本校验
+            if (StringUtils.isNotBlank(electricityCabinet.getVersion())
+                    && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), electricityCabinet, electricityBattery.getSn());
+                if (pair.getLeft()) {
+                    // 返回让前端选择
+                    return Triple.of(true, null, pair.getRight());
+                }
             }
         }
-        
-
         
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {
@@ -2697,7 +2699,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
-    private Triple<Boolean, String, Object> handlerExchangeBatteryCarV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV2 orderQuery,
+    private Triple<Boolean, String, Object> handlerExchangeBatteryCarV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV3 orderQuery,
             List<String> batteryTypeList) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -2725,14 +2727,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
-        //  todo 柜机版本校验
-        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-            Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), electricityCabinet, electricityBattery.getSn());
-            if (pair.getLeft()) {
-                // 返回让前端选择
-                return Triple.of(true, null, pair.getRight());
+        
+        if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
+            //  todo 柜机版本校验
+            if (StringUtils.isNotBlank(electricityCabinet.getVersion())
+                    && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo.getUid(), electricityCabinet, electricityBattery.getSn());
+                if (pair.getLeft()) {
+                    // 返回让前端选择
+                    return Triple.of(true, null, pair.getRight());
+                }
             }
         }
+        
         
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {

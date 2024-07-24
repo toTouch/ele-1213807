@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OpenFullCellQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
+import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -56,7 +57,7 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
      * @return
      */
     @PostMapping("/user/electricityCabinetOrder/order/v3")
-    public R orderV3(@RequestBody @Validated OrderQueryV2 orderQuery) {
+    public R orderV3(@RequestBody @Validated OrderQueryV3 orderQuery) {
         return returnTripleResult(electricityCabinetOrderService.orderV3(orderQuery));
     }
     
