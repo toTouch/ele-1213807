@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("admin/alipay/template/config")
-public class JsonAdminTemplateConfigController {
+public class JsonAdminAlipayTemplateConfigController {
     
     @Autowired
     private TemplateConfigService templateConfigService;
