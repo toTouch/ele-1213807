@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;

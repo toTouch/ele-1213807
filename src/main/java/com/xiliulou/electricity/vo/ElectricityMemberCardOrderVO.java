@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.Data;
@@ -88,7 +89,7 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     
     /**
      * 支付方式
-     * @see PaymentChannelEnum
+     * @see ChannelEnum
      */
     private String paymentChannel;
 }
