@@ -269,8 +269,7 @@
         FROM t_electricity_car
         WHERE del_flag = 0
           and uid = #{uid}
-          AND tenant_id = #{tenantId}
-        LIMIT 1
+          AND tenant_id = #{tenantId} LIMIT 1
     </select>
     
     
@@ -324,8 +323,8 @@
                ec.status      AS carStatus,
                ec.update_time AS updateTime,
                ec.create_time AS creatTime,
-               crpmt.due_time  AS dueTime,
-               ec.latitude AS latitude,
+               crpmt.due_time AS dueTime,
+               ec.latitude    AS latitude,
                ec.longitude   AS longitude
         from t_electricity_car ec
                  left join t_user_info ui on ec.uid = ui.uid
@@ -732,18 +731,10 @@
             </if>
             warehouse_id = #{warehouseId}
         </set>
-        <where>
-            tenant_id = #{tenantId}
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="idList != null and idList.size() > 0">
-                and id in
-                <foreach collection="idList" item="id" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
+        where tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </update>
     
     <select id="existOutWarehouse" resultType="java.lang.Integer">
@@ -761,8 +752,7 @@
         from t_electricity_car
         where warehouse_id = #{wareHouseId}
           and del_flag = 0
-          and stock_status = 0
-        limit 1;
+          and stock_status = 0 limit 1;
     </select>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
@@ -776,17 +766,26 @@
     </select>
     <select id="selectListEnableExitWarehouseCar" resultType="com.xiliulou.electricity.bo.asset.ElectricityCarBO">
         select id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag,
-        tenant_id,lock_type, warehouse_id
+        tenant_id, lock_type, warehouse_id, stock_status
         from t_electricity_car
         <where>
-            del_flag=0 and tenant_id = #{tenantId} and stock_status = #{stockStatus}
+            del_flag=0 and tenant_id = #{tenantId}
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="stockStatus != null">
+                and stock_status = #{stockStatus}
             </if>
             <if test="idSet != null and idSet.size()>0">
                 and id in
                 <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
+                </foreach>
+            </if>
+            <if test="snList != null and snList.size()>0">
+                and sn in
+                <foreach collection="snList" item="sn" index="index" open="(" close=")" separator=",">
+                    #{sn}
                 </foreach>
             </if>
         </where>
@@ -885,7 +884,7 @@
             )
         </if>
     </select>
-
+    
     <update id="batchUpdateFranchiseeIdAndStoreByIdList">
         update t_electricity_car
         <set>

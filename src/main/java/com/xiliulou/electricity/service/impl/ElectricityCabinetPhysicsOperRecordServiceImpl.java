@@ -7,12 +7,12 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetPhysicsOperRecordMapper
 import com.xiliulou.electricity.service.ElectricityCabinetPhysicsOperRecordService;
 import com.xiliulou.electricity.vo.ElectricityCabinetPhysicsOperRecordVo;
 import com.xiliulou.electricity.vo.PageDataAndCountVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 /**
  * (ElectricityCabinetPhysicsOperRecord)表服务实现类
  *
@@ -108,6 +108,11 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
         vo.setData(data);
         vo.setCount(count);
         return R.ok(vo);
+    }
+    
+    @Override
+    public Integer existSameCabinetCellSameTimeOpenRecord(Long createTime, Integer electricityCabinetId, Integer oldCellNo) {
+        return electricityCabinetPhysicsOperRecordMapper.existSameCabinetCellSameTimeOpenRecord(createTime, electricityCabinetId, oldCellNo);
     }
     
     @Override

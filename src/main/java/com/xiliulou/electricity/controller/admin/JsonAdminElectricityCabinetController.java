@@ -157,7 +157,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "sn", required = false) String sn) {
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -215,6 +216,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .deviceName(deviceName)
                 .idList(idList)
                 .sn(sn)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -238,7 +240,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "version", required = false) String version) {
+            @RequestParam(value = "version", required = false) String version,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -287,6 +290,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .productKey(productKey)
                 .deviceName(deviceName)
                 .version(version)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
@@ -928,7 +932,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         

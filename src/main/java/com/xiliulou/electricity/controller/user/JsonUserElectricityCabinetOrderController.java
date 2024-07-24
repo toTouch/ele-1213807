@@ -79,7 +79,15 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return electricityCabinetOrderService.openDoor(openDoorQuery);
     }
     
-    //换电柜订单查询
+    /**
+     * 换电柜订单查询，本次修改了小程序的自主开仓逻辑
+     * 经前端查询，其他接口没有用到自主开仓，为了优化速度，所以更换了底层方法
+     * @param size
+     * @param offset
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     @GetMapping("/user/electricityCabinetOrder/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -103,8 +111,11 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).beginTime(beginTime).endTime(endTime)
                 .uid(user.getUid()).tenantId(tenantId).build();
-        return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+        return electricityCabinetOrderService.queryListv2(electricityCabinetOrderQuery);
     }
+    
+    
+   
     
     //换电柜订单量
     @GetMapping("/user/electricityCabinetOrder/count")
@@ -142,6 +153,11 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShow(orderId));
     }
     
+    /**
+     * 换电柜自助开仓
+     * @param orderSelfOpenCellQuery
+     * @return
+     */
     /**
      * 换电过程中取消自助开仓弹窗
      *

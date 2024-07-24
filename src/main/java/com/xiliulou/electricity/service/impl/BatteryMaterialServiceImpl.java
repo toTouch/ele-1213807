@@ -57,6 +57,7 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
         return this.batteryMaterialMapper.selectByPageCount(query);
     }
 
+    @Slave
     @Override
     public List<BatteryMaterialSearchVO> selectBySearch(BatteryMaterialQuery query) {
         return this.batteryMaterialMapper.selectBySearch(query);

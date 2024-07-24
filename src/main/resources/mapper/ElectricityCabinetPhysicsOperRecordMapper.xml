@@ -184,4 +184,12 @@
           and create_time &lt; #{endTime}
         order by create_time desc limit 1
     </select>
+    
+    <select id="existSameCabinetCellSameTimeOpenRecord" resultType="integer">
+        select 1
+        from t_electricity_cabinet_physics_oper_record
+        where electricity_cabinet_id = #{electricityCabinetId}
+          and cell_no = #{oldCellNo}
+          and create_time &gt; #{createTime} order by create_time  limit 1
+    </select>
 </mapper>

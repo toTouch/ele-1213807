@@ -105,6 +105,11 @@ public interface ElectricityCabinetOrderService {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
+    R listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    
+    R queryListv2(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    
+    
     Triple<Boolean, String, Object> queryOrderStatusForShowV2(String orderId);
     
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);

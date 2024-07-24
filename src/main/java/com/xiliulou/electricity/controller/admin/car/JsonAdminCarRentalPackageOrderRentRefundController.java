@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * 租车套餐订单退租订单 Controller
@@ -144,13 +147,17 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             return R.ok(Collections.emptyList());
         }
         
-        // 获取辅助业务信息（用户信息、租车套餐信息）
+        // 获取辅助业务信息（用户信息、租车套餐信息,加盟商信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIdIds = new HashSet<>();
         refundPOList.forEach(refundPO -> {
             uids.add(refundPO.getUid());
             rentalPackageIdIds.add(refundPO.getRentalPackageId());
         });
+        Set<Long> franchiseeIdIds = refundPOList.stream().filter(rentRefundPo -> Objects.nonNull(rentRefundPo.getFranchiseeId())).mapToLong(CarRentalPackageOrderRentRefundPo::getFranchiseeId).boxed().collect(
+                Collectors.toSet());
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIdIds);
         
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
@@ -172,6 +179,10 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             
             if (!carRentalPackageNameMap.isEmpty()) {
                 rentRefundVo.setCarRentalPackageName(carRentalPackageNameMap.getOrDefault(rentRefundPo.getRentalPackageId(), ""));
+            }
+            
+            if (!franchiseeMap.isEmpty()){
+                rentRefundVo.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(rentRefundPo.getFranchiseeId()), new Franchisee()).getName());
             }
             
             return rentRefundVo;

@@ -280,4 +280,6 @@ public interface ElectricityCabinetService {
     
     
     R rentReturnEditEchoByDeviceName(String productKey, String deviceName);
+    
+    R listSuperAdminPage(ElectricityCabinetQuery electricityCabinetQuery);
 }

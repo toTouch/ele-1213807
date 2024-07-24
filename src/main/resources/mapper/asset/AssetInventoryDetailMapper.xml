@@ -30,17 +30,12 @@
     <update id="batchInventoryBySnList">
         update t_asset_inventory_detail
         set inventory_status = 1, operator = #{operator}, status = #{status}, update_time = #{updateTime}
-        <where>
-            <if test="snList != null and snList.size() > 0">
-                and sn in
-                <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
-                    <if test="item != null and item != ''">
-                        #{item}
-                    </if>
-                </foreach>
+        where tenant_id = #{tenantId} and order_no = #{orderNo} and inventory_status = 0 and sn in
+        <foreach collection="snList" item="item" index="index" separator="," open="(" close=")">
+            <if test="item != null and item != ''">
+                #{item}
             </if>
-            and tenant_id = #{tenantId} and order_no = #{orderNo} and inventory_status = 0
-        </where>
+        </foreach>
     </update>
     
     <select id="selectListByOrderNo" resultType="com.xiliulou.electricity.bo.asset.AssetInventoryDetailBO">
