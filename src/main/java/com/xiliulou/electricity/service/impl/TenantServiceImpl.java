@@ -111,9 +111,7 @@ public class TenantServiceImpl implements TenantService {
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
-   
-    ExecutorService roleExecutorService = XllThreadPoolExecutors.newFixedThreadPool("roleHandlerExecutor", 2, "ROLE_HANDLER_EXECUTORS");
-  
+    
     ExecutorService initOtherExecutorService = XllThreadPoolExecutors.newFixedThreadPool("initTenantOther", 2, "INIT_TENANT_OTHER");
     /**
      * 新增数据
@@ -215,16 +213,15 @@ public class TenantServiceImpl implements TenantService {
             return result;
         }
         
-        roleExecutorService.execute(()->{
-            //获取角色默认权限
-            List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
-            //保存角色默认权限
-            if(CollectionUtils.isNotEmpty(permissionList)){
-                permissionList.parallelStream().forEach(e -> {
-                    rolePermissionService.insert(e);
-                });
-            }
-        });
+        //获取角色默认权限
+        List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
+        //保存角色默认权限
+        if (CollectionUtils.isNotEmpty(permissionList)) {
+            permissionList.parallelStream().forEach(e -> {
+                rolePermissionService.insert(e);
+            });
+        }
+       
       
 
         //新增实名认证审核项
