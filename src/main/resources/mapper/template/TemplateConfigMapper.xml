@@ -29,7 +29,7 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where tenant_id=${tenantId}
+        where tenant_id=#{tenantId}
         and channel in
         <foreach collection="channels" item="channel" open="(" close=")" separator=",">
             #{channel}
@@ -41,7 +41,7 @@
         <include refid="base_column"/>
         from
         <include refid="table_name"/>
-        where id = #{id} and tenant_id=${tenantId}
+        where id = #{id} and tenant_id=#{tenantId}
     </select>
     
     
