@@ -111,6 +111,10 @@ public class TenantServiceImpl implements TenantService {
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
+   
+    ExecutorService roleExecutorService = XllThreadPoolExecutors.newFixedThreadPool("roleHandlerExecutor", 2, "ROLE_HANDLER_EXECUTORS");
+  
+    ExecutorService initOtherExecutorService = XllThreadPoolExecutors.newFixedThreadPool("initTenantOther", 2, "INIT_TENANT_OTHER");
     /**
      * 新增数据
      *
@@ -210,35 +214,40 @@ public class TenantServiceImpl implements TenantService {
         if (result.getCode() == 1) {
             return result;
         }
-
-        //获取角色默认权限
-        List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
-        //保存角色默认权限
-        if(CollectionUtils.isNotEmpty(permissionList)){
-            permissionList.parallelStream().forEach(e -> {
-                rolePermissionService.insert(e);
-            });
-        }
+        
+        roleExecutorService.execute(()->{
+            //获取角色默认权限
+            List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
+            //保存角色默认权限
+            if(CollectionUtils.isNotEmpty(permissionList)){
+                permissionList.parallelStream().forEach(e -> {
+                    rolePermissionService.insert(e);
+                });
+            }
+        });
+      
 
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());
-
-        //新增租户给租户添加的默认系统配置
-        ElectricityConfig electricityConfig = ElectricityConfig.builder()
-                .name("")
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(tenant.getId())
-                .isManualReview(ElectricityConfig.MANUAL_REVIEW)
-                .isWithdraw(ElectricityConfig.WITHDRAW)
-                .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
-                .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
-                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
-                .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
-                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
-                .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
-        electricityConfigService.insertElectricityConfig(electricityConfig);
-
+        
+        initOtherExecutorService.execute(()->{
+            //新增租户给租户添加的默认系统配置
+            ElectricityConfig electricityConfig = ElectricityConfig.builder()
+                    .name("")
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(tenant.getId())
+                    .isManualReview(ElectricityConfig.MANUAL_REVIEW)
+                    .isWithdraw(ElectricityConfig.WITHDRAW)
+                    .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
+                    .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
+                    .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                    .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
+                    .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
+                    .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
+            electricityConfigService.insertElectricityConfig(electricityConfig);
+        });
+        
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
         channelActivity.setName("渠道活动");
@@ -259,10 +268,13 @@ public class TenantServiceImpl implements TenantService {
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         
-        //初始化商户等级
-        merchantLevelService.initMerchantLevel(tenant.getId());
-        //初始化商户升级条件
-        merchantAttrService.initMerchantAttr(tenant.getId());
+        
+        initOtherExecutorService.execute(()->{
+            //初始化商户等级
+            merchantLevelService.initMerchantLevel(tenant.getId());
+            //初始化商户升级条件
+            merchantAttrService.initMerchantAttr(tenant.getId());
+        });
         return R.ok();
     }
 
