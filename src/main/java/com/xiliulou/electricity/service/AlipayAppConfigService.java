@@ -28,9 +28,6 @@ public interface AlipayAppConfigService {
     
     AlipayAppConfig queryByTenantId(Integer tenantId);
     
-    Integer update(AlipayAppConfig alipayAppConfig);
-    
-    Integer deleteById(Long id);
     
     /**
      * 根据运营商和加盟商查询

@@ -312,31 +312,6 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     }
     
     /**
-     * 修改数据
-     *
-     * @param alipayAppConfig 实例对象
-     * @return 实例对象
-     */
-    @Override
-    public Integer update(AlipayAppConfig alipayAppConfig) {
-        int update = this.alipayAppConfigMapper.update(alipayAppConfig);
-        redisService.delete(buildCacheKey(alipayAppConfig.getTenantId(), alipayAppConfig.getFranchiseeId()));
-        return update;
-    }
-    
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    public Integer deleteById(Long id) {
-        return this.alipayAppConfigMapper.deleteById(id);
-    }
-    
-    
-    /**
      * 批量查询缓存
      *
      * @param tenantId

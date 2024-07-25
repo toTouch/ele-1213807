@@ -150,12 +150,5 @@
             #{item}
         </foreach>
     </update>
-    
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete
-        from t_alipay_app_config
-        where id = #{id}
-    </delete>
 
 </mapper>

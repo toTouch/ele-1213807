@@ -18,7 +18,6 @@ public interface AlipayAppConfigMapper extends BaseMapper<AlipayAppConfig> {
     
     int update(AlipayAppConfig alipayAppConfig);
     
-    int deleteById(Long id);
     
     AlipayAppConfig selectOneByTenantId(Integer tenantId);
     
