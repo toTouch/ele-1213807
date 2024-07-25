@@ -1267,19 +1267,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(Long uid, ElectricityCabinet cabinet, String userBindingBatterySn) {
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
-            log.warn("lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
+            log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
             return Pair.of(false, null);
         }
         
         // 默认取3分钟的订单，可选择配置
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
         if (System.currentTimeMillis() - lastOrder.getUpdateTime() > scanTime) {
-            log.warn("lowTimeExchangeTwoCountAssert.lastOrder over 3 mins,lastOrder is {} ", lastOrder.getOrderId());
+            log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 3 mins,lastOrder is {} ", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
         
         if (StrUtil.isEmpty(userBindingBatterySn)) {
-            log.warn("lowTimeExchangeTwoCountAssert.userBindingBatterySn is null, uid is {}", uid);
+            log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.userBindingBatterySn is null, uid is {}", uid);
             return Pair.of(false, null);
         }
         
@@ -1329,7 +1329,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 自主开仓条件校验
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
-            log.warn("lastExchangeSuccessHandler is not satisfySelfOpenCondition, orderId is{}", lastOrder.getOrderId());
+            log.warn("Orderv3 WARN! lastExchangeSuccessHandler is not satisfySelfOpenCondition, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
@@ -1363,7 +1363,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
         if (Objects.isNull(history)) {
-            log.warn("lastExchangeFailHandler.history is null, orderId is{}", lastOrder.getOrderId());
+            log.warn("Orderv3 WARN! lastExchangeFailHandler.history is null, orderId is{}", lastOrder.getOrderId());
             // 订单中途未结束,包括初始化订单
             return Pair.of(false, null);
         }
