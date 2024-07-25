@@ -153,7 +153,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         }
         
         AlipayAppConfig alipayAppConfigOld = alipayAppConfigMapper.selectBySellerIdAndTenantId(query.getSellerId(), tenantId);
-        if (Objects.isNull(alipayAppConfigOld)) {
+        if (Objects.nonNull(alipayAppConfigOld) && !Objects.equals(alipayAppConfigOld.getSellerId(), query.getSellerId())) {
             return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
         }
         
