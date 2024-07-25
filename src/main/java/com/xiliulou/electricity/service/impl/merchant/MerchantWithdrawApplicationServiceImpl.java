@@ -160,12 +160,13 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //查询银行卡信息，检查银行卡是否存在，并且检查该银行卡是否支持转账，若为微信转账，则不需要银行卡信息
         //计算手续费， 微信申请无手续费，若为其他方式提现，则需要考虑
         
+        String businessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW, merchantWithdrawApplicationRequest.getUid());
         //插入提现表
         MerchantWithdrawApplication merchantWithdrawApplication = new MerchantWithdrawApplication();
         merchantWithdrawApplication.setAmount(merchantWithdrawApplicationRequest.getAmount());
         merchantWithdrawApplication.setUid(merchantWithdrawApplicationRequest.getUid());
         merchantWithdrawApplication.setTenantId(merchantWithdrawApplicationRequest.getTenantId());
-        merchantWithdrawApplication.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.MERCHANT_WITHDRAW, merchantWithdrawApplicationRequest.getUid()));
+        merchantWithdrawApplication.setOrderNo(businessOrderId);
         merchantWithdrawApplication.setWithdrawType(MerchantWithdrawConstant.WITHDRAW_TYPE_WECHAT);
         merchantWithdrawApplication.setStatus(MerchantWithdrawConstant.REVIEW_IN_PROGRESS);
         merchantWithdrawApplication.setDelFlag(CommonConstant.DEL_N);
@@ -182,7 +183,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         User user = userService.queryByUidFromCache(merchantWithdrawApplicationRequest.getUid());
         siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(merchantWithdrawApplicationRequest.getTenantId().longValue()).code(SiteMessageType.MERCHANT_WITHDRAWAL)
                 .notifyTime(System.currentTimeMillis()).addContext("name", user.getName()).addContext("phone", user.getPhone())
-                .addContext("orderNo", merchantWithdrawApplicationRequest.getOrderNo()).build());
+                .addContext("orderNo", businessOrderId).build());
         
         return Triple.of(true, null, result);
     }
