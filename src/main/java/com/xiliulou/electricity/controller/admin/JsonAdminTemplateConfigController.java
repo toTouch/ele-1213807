@@ -48,6 +48,7 @@ public class JsonAdminTemplateConfigController {
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
     public R update(@RequestBody TemplateConfigOptRequest request) {
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setChannel(ChannelEnum.WECHAT.getCode());
         return templateConfigService.update(request);
     }
     

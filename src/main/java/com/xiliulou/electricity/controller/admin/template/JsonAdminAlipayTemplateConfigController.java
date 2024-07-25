@@ -55,6 +55,7 @@ public class JsonAdminAlipayTemplateConfigController {
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
     public R update(@RequestBody @Validated(UpdateGroup.class) TemplateConfigOptRequest request) {
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setChannel(ChannelEnum.ALIPAY.getCode());
         return templateConfigService.update(request);
     }
     
