@@ -229,7 +229,7 @@ public class PayConfigConverter {
         aliPayCreateOrderRequest.setBuyerOpenId(wrap.getOpenId());
         aliPayCreateOrderRequest.setOutTradeNo(wrap.getOrderId());
         aliPayCreateOrderRequest.setTotalAmount(wrap.getAmount().toPlainString());
-        aliPayCreateOrderRequest.setTimeExpire(wrap.getExpireTime() + "");
+        aliPayCreateOrderRequest.setTimeExpire(wrap.getExpireTime());
         // TODO: 2024/7/16 CBT Subject？
         aliPayCreateOrderRequest.setSubject(wrap.getDescription());
         aliPayCreateOrderRequest.setBody(wrap.getDescription());
