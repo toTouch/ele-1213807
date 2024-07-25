@@ -506,6 +506,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             // 剩余金额
             BigDecimal residueAmount = electricityMemberCardOrder.getPayAmount().subtract(usedAmount);
     
+            // 套餐全部用完
+            if (Objects.equals(totalUseDay, electricityMemberCardOrder.getValidDays())) {
+                usedAmount = electricityMemberCardOrder.getPayAmount();
+                residueAmount = BigDecimal.ZERO;
+            }
+            
             // 一般出现在套餐用完的情况下
             if (Objects.equals(residueAmount.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
                 residueAmount = BigDecimal.ZERO;
