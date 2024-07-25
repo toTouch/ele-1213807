@@ -110,8 +110,13 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+        
             <if test="name != null and name != ''">
                 and name like concat('%', concat(#{name}, '%'))
+            </if>
+    
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
             </if>
         
             <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
