@@ -40,4 +40,13 @@ public interface AlipayAppConfigMapper extends BaseMapper<AlipayAppConfig> {
     
     Integer updateSyncByIds(@Param("alipayAppConfig") AlipayAppConfig alipayAppConfigUpdate, @Param("ids") List<Long> syncAlipayAppConfigIds);
     
+    /**
+     * 逻辑删除
+     *
+     * @param id
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/7/25 14:51
+     */
+    Integer logicalDelete(@Param("id") Long id, @Param("tenantId") Integer tenantId);
 }

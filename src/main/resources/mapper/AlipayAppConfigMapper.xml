@@ -24,6 +24,14 @@
         id
         , app_id,seller_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time
     </sql>
+    <update id="logicalDelete">
+        update
+            t_alipay_app_config
+        set del_flag   = 1,
+            update_time=now()
+        where id = #{id}
+          and tenant_id = #{tenantId}
+    </update>
     
     <!--查询单个-->
     <select id="selectById" resultMap="AlipayAppConfigMap">

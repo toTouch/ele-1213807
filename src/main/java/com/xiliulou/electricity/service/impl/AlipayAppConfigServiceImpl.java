@@ -220,15 +220,11 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
             return Triple.of(false, "100445", "支付配置不存在");
         }
         
-        if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(alipayAppConfig.getConfigType())) {
+        if (AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(alipayAppConfig.getConfigType())) {
             return Triple.of(false, "100446", "默认配置不可删除");
         }
         
-        AlipayAppConfig alipayAppConfigUpdate = new AlipayAppConfig();
-        alipayAppConfigUpdate.setId(alipayAppConfig.getId());
-        alipayAppConfigUpdate.setDelFlag(CommonConstant.DEL_Y);
-        alipayAppConfigUpdate.setUpdateTime(System.currentTimeMillis());
-        alipayAppConfigMapper.update(alipayAppConfigUpdate);
+        alipayAppConfigMapper.logicalDelete(alipayAppConfig.getId(),alipayAppConfig.getTenantId());
         
         redisService.delete(buildCacheKey(tenantId, alipayAppConfig.getFranchiseeId()));
         
