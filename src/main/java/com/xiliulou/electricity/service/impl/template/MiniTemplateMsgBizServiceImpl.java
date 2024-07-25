@@ -26,16 +26,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -58,6 +61,17 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
     
     @Resource
     private MiniTemplateMessageFactory miniTemplateMessageFactory;
+    
+    
+    private Map<Integer, String> sourceChannelMap = new HashMap<>();
+    
+    
+    @PostConstruct
+    public void init() {
+        sourceChannelMap.put(UserOauthBind.SOURCE_WX_PRO, ChannelEnum.WECHAT.getCode());
+        sourceChannelMap.put(UserOauthBind.SOURCE_ALI_PAY, ChannelEnum.ALIPAY.getCode());
+    }
+    
     
     @Override
     public boolean sendLowBatteryReminder(Integer tenantId, Long uid, String soc, String sn) {
@@ -119,27 +133,22 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
     private boolean sendMsg(Integer tenantId, Long uid, GetBaseMsgRequest getBaseMsgRequest) {
         
         try {
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+            List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUidAndTenantId(uid, tenantId);
             
-            if (Objects.isNull(userOauthBind)) {
-                log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! UserOauthBind is null tenantId={}, uid={}", tenantId, uid);
+            if (CollectionUtils.isEmpty(userOauthBinds)) {
+                log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! userOauthBinds  isEmpty tenantId={}, uid={}", tenantId, uid);
                 return false;
             }
             
-            List<String> channels = new ArrayList<>();
+            Map<String, UserOauthBind> channelUserOauthMap = userOauthBinds.stream().filter(u -> sourceChannelMap.containsKey(u.getSource()))
+                    .collect(Collectors.toMap(u -> sourceChannelMap.get(u.getSource()), v -> v, (k1, k2) -> k1));
             
-            if (StringUtils.isNotBlank(userOauthBind.getThirdId())) {
-                channels.add(ChannelEnum.WECHAT.getCode());
-            }
-            
-            // TODO: 2024/7/23 CBT 支付宝openid
-            
-            if (CollectionUtils.isEmpty(channels)) {
+            if (MapUtils.isEmpty(channelUserOauthMap)) {
                 log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! channels is null tenantId={}, uid={}", tenantId, uid);
                 return false;
             }
             
-            List<TemplateConfigEntity> configEntities = templateConfigService.queryByTenantIdAndChannelListFromCache(tenantId, channels);
+            List<TemplateConfigEntity> configEntities = templateConfigService.queryByTenantIdAndChannelListFromCache(tenantId, new ArrayList<>(channelUserOauthMap.keySet()));
             
             if (CollectionUtils.isEmpty(configEntities)) {
                 log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! configEntities is isEmpty tenantId={}", tenantId);
@@ -149,6 +158,7 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
             for (TemplateConfigEntity configEntity : configEntities) {
                 String channel = configEntity.getChannel();
                 
+                UserOauthBind userOauthBind = channelUserOauthMap.get(channel);
                 // 获取渠道service
                 MiniTemplateMessageService messageService = miniTemplateMessageFactory.getChannel(channel);
                 if (Objects.isNull(messageService)) {
@@ -185,7 +195,7 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
         appTemplateQuery.setPage("/pages/start/index");
         appTemplateQuery.setFormId(RandomUtil.randomString(20));
         appTemplateQuery.setUid(uid);
-        //            appTemplateQuery.setOpenId(userOauthBind);
+        appTemplateQuery.setTouser(userOauthBind.getThirdId());
         appTemplateQuery.setAppId(wechatPayParamsDetails.getMerchantMinProAppId());
         appTemplateQuery.setSecret(wechatPayParamsDetails.getMerchantMinProAppSecert());
         return appTemplateQuery;
@@ -198,7 +208,8 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
         alipayMessageRequest.setAppPrivateKey(alipayAppConfigBizDetails.getAppPrivateKey());
         alipayMessageRequest.setAlipayPublicKey(alipayAppConfigBizDetails.getPublicKey());
         alipayMessageRequest.setPage("/pages/start/index");
-        //            alipayMessageRequest.setOpenId(userOauthBind);
+        alipayMessageRequest.setFormId(RandomUtil.randomString(20));
+        alipayMessageRequest.setToOpenId(userOauthBind.getThirdId());
         return alipayMessageRequest;
     }
     

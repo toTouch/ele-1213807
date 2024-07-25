@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -106,22 +107,23 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
             return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
         }
         
+        List<AlipayAppConfig> existAlipayAppConfigs = queryFromCacheList(tenantId, Sets.newHashSet(query.getFranchiseeId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
+        
         //运营商配置
-        if (AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(query.getConfigType()) && CollectionUtils
-                .isEmpty(queryFromCacheList(tenantId, Collections.singleton(MultiFranchiseeConstant.DEFAULT_FRANCHISEE)))) {
+        if (AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(query.getConfigType()) && CollectionUtils.isNotEmpty(existAlipayAppConfigs)) {
             return Triple.of(false, "100441", "默认配置已存在,请勿重复添加");
         }
         
+        Map<Long, AlipayAppConfig> existMap = Optional.ofNullable(existAlipayAppConfigs).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, v -> v, (k1, k2) -> k1));
+        
         //加盟商配置
         if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(query.getConfigType())) {
-            List<AlipayAppConfig> alipayAppConfigs = queryFromCacheList(tenantId, Sets.newHashSet(query.getFranchiseeId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
-            if (CollectionUtils.isEmpty(alipayAppConfigs)) {
+            AlipayAppConfig defaultPayParams = existMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            if (Objects.isNull(defaultPayParams)) {
                 return Triple.of(false, "100442", "默认支付配置不存在，请先添加默认配置");
             }
             
-            Map<Long, AlipayAppConfig> franchiseeParamsMap = alipayAppConfigs.stream().collect(Collectors.toMap(AlipayAppConfig::getFranchiseeId, v -> v, (k1, k2) -> k1));
-            
-            AlipayAppConfig defaultPayParams = franchiseeParamsMap.get(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
             if (Objects.isNull(defaultPayParams)) {
                 return Triple.of(false, "100442", "默认支付配置不存在，请先添加默认配置");
             }
@@ -130,7 +132,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
                 return Triple.of(false, "100443", "用户端小程序appid错误");
             }
             
-            if (franchiseeParamsMap.containsKey(query.getFranchiseeId())) {
+            if (existMap.containsKey(query.getFranchiseeId())) {
                 return Triple.of(false, "100444", "加盟商配置已存在，请勿重复添加");
             }
         }
