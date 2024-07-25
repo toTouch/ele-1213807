@@ -1363,6 +1363,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
         if (Objects.isNull(history)) {
+            log.warn("lastExchangeFailHandler.history is null, orderId is{}", lastOrder.getOrderId());
             // 订单中途未结束,包括初始化订单
             return Pair.of(false, null);
         }
