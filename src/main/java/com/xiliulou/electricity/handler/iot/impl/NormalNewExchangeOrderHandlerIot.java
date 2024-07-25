@@ -572,6 +572,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
         newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+        // 更新上报的仓门(可能会发生切仓)
+        newElectricityCabinetOrder.setOldCellNo(exchangeOrderRsp.getPlaceCellNo());
+        newElectricityCabinetOrder.setNewCellNo(exchangeOrderRsp.getTakeCellNo());
     
         //若柜机正在使用中
         if (ElectricityCabinetOrder.INIT_DEVICE_USING.equals(exchangeOrderRsp.getOrderStatus())) {
