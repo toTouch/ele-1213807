@@ -101,6 +101,9 @@
             <if test="appSecret != null and appSecret != ''">
                 app_secret = #{appSecret},
             </if>
+            <if test="sellerId != null and sellerId != ''">
+                seller_id = #{sellerId},
+            </if>
             <if test="publicKey != null and publicKey != ''">
                 public_key = #{publicKey},
             </if>
