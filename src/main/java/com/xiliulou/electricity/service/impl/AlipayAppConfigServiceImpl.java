@@ -65,7 +65,6 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     
     @Override
     public Triple<Boolean, String, Object> save(AlipayAppConfigQuery query) {
-        query.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         
         Integer tenantId = TenantContextHolder.getTenantId();
         if (!redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId, String.valueOf(System.currentTimeMillis()), 5 * 1000L, true)) {
@@ -74,10 +73,15 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         
         Franchisee franchisee = null;
         if (AliPayConfigTypeEnum.FRANCHISEE_CONFIG.getType().equals(query.getConfigType())) {
+            if (Objects.isNull(query.getFranchiseeId())) {
+                return Triple.of(false, "100106", "加盟商不存在");
+            }
             franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
             if (Objects.isNull(franchisee)) {
                 return Triple.of(false, "100106", "加盟商不存在");
             }
+        } else {
+            query.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         }
         
         Triple<Boolean, String, Object> verifyResult = verifySaveParams(query, tenantId);
