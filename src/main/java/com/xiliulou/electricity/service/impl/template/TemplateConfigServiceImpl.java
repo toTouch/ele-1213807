@@ -95,13 +95,13 @@ public class TemplateConfigServiceImpl implements TemplateConfigService {
     public R update(TemplateConfigOptRequest request) {
         
         TemplateConfigEntity exist = templateConfigMapper.selectById(request.getTenantId(), request.getId());
-        if (Objects.isNull(exist)) {
+        if (Objects.isNull(exist) || !Objects.equals(request.getChannel(), exist.getChannel())) {
             return R.failMsg("数据不存在");
         }
         
         TemplateConfigEntity update = TemplateConfigConverter.optReqToDo(request);
         templateConfigMapper.update(update);
-        redisService.delete(buildKey(request.getTenantId(), request.getChannel()));
+        redisService.delete(buildKey(exist.getTenantId(), exist.getChannel()));
         return R.ok();
     }
     
