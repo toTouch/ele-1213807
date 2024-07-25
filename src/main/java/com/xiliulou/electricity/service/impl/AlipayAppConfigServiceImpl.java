@@ -167,7 +167,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         
         //获取所有需要同步的加盟商配置
         List<Long> syncAlipayAppConfigIds = null;
-        List<AlipayAppConfig> syncFranchiseeAlipayAppConfig = listSyncFranchiseeAlipayAppConfig(alipayAppConfigOld, query);
+        List<AlipayAppConfig> syncFranchiseeAlipayAppConfig = listSyncFranchiseeAlipayAppConfig(alipayAppConfig, query);
         if (CollectionUtils.isNotEmpty(syncFranchiseeAlipayAppConfig)) {
             syncAlipayAppConfigIds = syncFranchiseeAlipayAppConfig.stream().map(AlipayAppConfig::getId).collect(Collectors.toList());
         }
