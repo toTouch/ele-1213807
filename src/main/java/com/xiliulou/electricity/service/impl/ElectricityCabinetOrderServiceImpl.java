@@ -1273,7 +1273,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 默认取3分钟的订单，可选择配置
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
-        if (System.currentTimeMillis() - lastOrder.getCreateTime() > scanTime) {
+        if (System.currentTimeMillis() - lastOrder.getUpdateTime() > scanTime) {
             log.warn("lowTimeExchangeTwoCountAssert.lastOrder over 3 mins,lastOrder is {} ", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
