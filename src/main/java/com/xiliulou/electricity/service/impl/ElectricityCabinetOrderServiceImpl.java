@@ -2017,7 +2017,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
         
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {
@@ -2029,7 +2028,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
-        // 分配满电仓门
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
