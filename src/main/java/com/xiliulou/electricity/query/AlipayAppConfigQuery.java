@@ -24,6 +24,7 @@ public class AlipayAppConfigQuery {
     /**
      * 卖家支付宝用户ID
      */
+    @NotBlank(message = "sellerId不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String sellerId;
     
     /**

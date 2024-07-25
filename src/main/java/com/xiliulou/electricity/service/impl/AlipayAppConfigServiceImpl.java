@@ -102,7 +102,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     
     private Triple<Boolean, String, Object> verifySaveParams(AlipayAppConfigQuery query, Integer tenantId) {
         AlipayAppConfig alipayAppConfig = alipayAppConfigMapper.selectBySellerIdAndTenantId(query.getSellerId(), tenantId);
-        if (Objects.isNull(alipayAppConfig)) {
+        if (Objects.nonNull(alipayAppConfig)) {
             return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
         }
         
