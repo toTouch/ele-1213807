@@ -2819,7 +2819,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100218", "下单消息发送失败");
         }
         
-        return Triple.of(true, null, electricityCabinetOrder.getOrderId());
+        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        vo.setOrderId(electricityCabinetOrder.getOrderId());
+        return Triple.of(true, null, vo);
     }
     
     
@@ -2928,7 +2931,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100218", "下单消息发送失败");
         }
         
-        return Triple.of(true, null, electricityCabinetOrder.getOrderId());
+        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        vo.setOrderId(electricityCabinetOrder.getOrderId());
+        return Triple.of(true, null, vo);
     }
     
     @Override
