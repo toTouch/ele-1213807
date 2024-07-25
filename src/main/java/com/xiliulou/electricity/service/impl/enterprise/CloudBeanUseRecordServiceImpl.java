@@ -345,6 +345,11 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
             // 花费金额
             BigDecimal usedAmount = price.multiply(BigDecimal.valueOf(totalUseDay)).setScale(2, RoundingMode.HALF_UP);
+            
+            // 花费的金额大于支付金额则按照支付金额计算
+            if (usedAmount.compareTo(electricityMemberCardOrder.getPayAmount()) == 1) {
+                usedAmount = electricityMemberCardOrder.getPayAmount();
+            }
             // 总的使用的云豆数量
             totalUsedCloudBean = totalUsedCloudBean.add(usedAmount);
         
@@ -1249,10 +1254,5 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             log.error("dateDifferent error!", e);
         }
         return result;
-    }
-    
-    public static void main(String[] args) {
-        CloudBeanUseRecordTypeEnum typeEnum = BasicEnum.getEnum(2, CloudBeanUseRecordTypeEnum.class);
-        System.out.printf("");
     }
 }
