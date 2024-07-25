@@ -1297,24 +1297,28 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      * @return
      */
     private Boolean isSatisfySelfOpenCondition(ElectricityCabinetOrder order, Integer cell, Integer newOrOldCellFlag) {
+        if (Objects.isNull(cell)){
+            log.error("orderv3 Error! isSatisfySelfOpenCondition.params.cell is null");
+            return false;
+        }
         // 上个订单+3分钟是否存在换电、退电、操作记录
         Long startTime = order.getUpdateTime();
         Long endTime = startTime + 1000 * 60 * 3;
         Integer eid = order.getElectricityCabinetId();
-        log.debug("isSatisfySelfOpenCondition.params, startTime is{},endTime is {},eid is{},cell is{},newOrOldCellFlag is{}", startTime, endTime, eid, cell, newOrOldCellFlag);
+        log.debug("isSatisfySelfOpenCondition.params, startTime is {},endTime is {},eid is {},cell is {},newOrOldCellFlag is {}", startTime, endTime, eid, cell, newOrOldCellFlag);
         Integer existExchangeOrder = electricityCabinetOrderMapper.existExchangeOrderInSameCabinetAndCell(order.getId(), endTime, eid, cell, newOrOldCellFlag);
         if (Objects.nonNull(existExchangeOrder)) {
-            log.warn("isSatisfySelfOpenCondition.existExchangeOrder, orderId:{}", order.getOrderId());
+            log.warn("orderv3 warn! isSatisfySelfOpenCondition.existExchangeOrder, orderId:{}", order.getOrderId());
             return false;
         }
         Integer existReturnOrder = rentBatteryOrderService.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
         if (Objects.nonNull(existReturnOrder)) {
-            log.warn("isSatisfySelfOpenCondition.existReturnOrder, orderId:{}", order.getOrderId());
+            log.warn("orderv3 warn! isSatisfySelfOpenCondition.existReturnOrder, orderId:{}", order.getOrderId());
             return false;
         }
         Integer existOpenRecord = electricityCabinetPhysicsOperRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
         if (Objects.nonNull(existOpenRecord)) {
-            log.warn("isSatisfySelfOpenCondition.existOpenRecord, orderId:{}", order.getOrderId());
+            log.warn("orderv3 warn! isSatisfySelfOpenCondition.existOpenRecord, orderId:{}", order.getOrderId());
             return false;
         }
         
