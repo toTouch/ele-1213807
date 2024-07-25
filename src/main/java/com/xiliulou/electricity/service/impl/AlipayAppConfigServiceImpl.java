@@ -179,6 +179,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         AlipayAppConfig alipayAppConfigUpdate = new AlipayAppConfig();
         BeanUtils.copyProperties(query, alipayAppConfigUpdate);
         alipayAppConfigUpdate.setUpdateTime(System.currentTimeMillis());
+        alipayAppConfigUpdate.setTenantId(tenantId);
         alipayAppConfigMapper.update(alipayAppConfigUpdate);
         
         if (CollectionUtils.isNotEmpty(syncAlipayAppConfigIds)) {
