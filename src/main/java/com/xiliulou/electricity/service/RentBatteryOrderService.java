@@ -2,7 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.EleCabinetUsedRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -78,4 +81,6 @@ public interface RentBatteryOrderService {
     Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo);
     
     Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell);
+    
+    String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee);
 }

@@ -1458,7 +1458,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
     }
     
-    private String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee) {
+    @Override
+    public String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee) {
         electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
