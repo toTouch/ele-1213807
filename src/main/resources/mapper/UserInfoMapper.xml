@@ -1207,8 +1207,11 @@
     </select>
     <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserInfo">
         SELECT
-            name,
-            uid
+        name,
+        uid,
+        phone,
+        del_flag,
+        update_time
         FROM
         t_user_info
         <where>
