@@ -1457,7 +1457,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Boolean.FALSE.equals(getFullCellResult.getLeft())) {
             throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
         }
-        return this.openFullBatteryCellHandler(lastOrder, cabinet, (Integer) getFullCellResult.getRight(), userBindingBatterySn);
+        return this.openFullBatteryCellHandler(lastOrder, cabinet, Integer.valueOf((String) getFullCellResult.getRight()), userBindingBatterySn);
     }
     
     
