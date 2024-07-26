@@ -215,7 +215,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Resource
     private ExchangeConfig exchangeConfig;
     
-    public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.7";
+    public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.18";
     
     TtlXllThreadPoolExecutorServiceWrapper executorServiceWrapper = TtlXllThreadPoolExecutorsSupport
             .get(XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_ORDER_LIST", 3, "ele_user_order_list_thread"));
