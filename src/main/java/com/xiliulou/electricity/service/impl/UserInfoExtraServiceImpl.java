@@ -168,7 +168,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        if (Objects.isNull(electricityMemberCardOrder.getPayCount()) || electricityMemberCardOrder.getPayCount() > 1) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo.getPayCount()) || userInfo.getPayCount() > 1) {
             log.info("BIND MERCHANT WARN!payCount is illegal,uid={},orderId={}", uid, orderId);
             return;
         }
