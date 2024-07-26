@@ -331,7 +331,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             }
         }
         catch(Exception e){
-            log.error("Division Account error, Division account for purchase package error, order number = {}, package type = {}", orderNo, type, e);
+            log.warn("Division Account error, Division account for purchase package error, order number = {}, package type = {}", orderNo, type, e);
             throw new BizException("100000", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_PURCHASE_KEY + value);
@@ -521,7 +521,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             }
 
         }catch (Exception e){
-            log.error("Division Account for refund error, Division account for refund package error, order number = {}, package type = {}", orderNo, type, e);
+            log.warn("Division Account for refund error, Division account for refund package error, order number = {}, package type = {}", orderNo, type, e);
             throw new BizException("100001", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_DIVISION_ACCOUNT_PACKAGE_REFUND_KEY + value);
