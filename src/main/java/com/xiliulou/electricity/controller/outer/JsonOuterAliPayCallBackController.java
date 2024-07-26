@@ -54,7 +54,7 @@ public class JsonOuterAliPayCallBackController {
             throw new AliPayException("alipayAppConfig is null");
         }
         
-        Map requestParams = request.getParameterMap();
+        Map<String, String[]> requestParams = request.getParameterMap();
         aliPayPostProcessHandler.postProcessAfterAliPay(new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), null));
     }
     
@@ -72,7 +72,7 @@ public class JsonOuterAliPayCallBackController {
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
-        Map requestParams = request.getParameterMap();
+        Map<String, String[]> requestParams = request.getParameterMap();
         aliPayPostProcessHandler.postProcessAfterAliRefund(
                 new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), WxRefundPayOptTypeEnum.BATTERY_DEPOSIT_REFUND_CALL_BACK.getCode()));
     }
@@ -91,7 +91,7 @@ public class JsonOuterAliPayCallBackController {
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
-        Map requestParams = request.getParameterMap();
+        Map<String, String[]> requestParams = request.getParameterMap();
         aliPayPostProcessHandler.postProcessAfterAliRefund(
                 new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), WxRefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode()));
         return WechatV3CallBackResult.success();
@@ -114,7 +114,7 @@ public class JsonOuterAliPayCallBackController {
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
-        Map requestParams = request.getParameterMap();
+        Map<String, String[]> requestParams = request.getParameterMap();
         aliPayPostProcessHandler.postProcessAfterAliRefund(
                 new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode()));
         
@@ -136,7 +136,7 @@ public class JsonOuterAliPayCallBackController {
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
-        Map requestParams = request.getParameterMap();
+        Map<String, String[]> requestParams = request.getParameterMap();
         aliPayPostProcessHandler.postProcessAfterAliRefund(
                 new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), WxRefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode()));
         
