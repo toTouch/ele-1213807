@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
+import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -79,5 +80,61 @@ public class JsonMerchantJoinRecordController {
                 .merchantId(merchantId).status(status).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(merchantJoinRecordService.listByPage(merchantJoinRecordPageRequest));
+    }
+    
+    
+    
+    
+    @GetMapping("/admin/merchantScanCodeRecord/count")
+    public R scanCodeRecordCount(@RequestParam(value = "merchantId", required = false) Long merchantId,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "scanTimeStart", required = false) Long scanTimeStart,
+            @RequestParam(value = "scanTimeEnd", required = false) Long scanTimeEnd, @RequestParam(value = "buyTimeStart", required = false) Long buyTimeStart,
+            @RequestParam(value = "buyTimeEnd", required = false) Long buyTimeEnd) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest = MerchantScanCodeRecordPageRequest.builder().merchantId(merchantId)
+                .tenantId(TenantContextHolder.getTenantId()).scanTimeStart(scanTimeStart).scanTimeEnd(scanTimeEnd).buyTimeStart(buyTimeStart).buyTimeEnd(buyTimeEnd).phone(phone)
+                .franchiseeId(franchiseeId).build();
+        
+        return R.ok(merchantJoinRecordService.countScanCodeRecord(merchantScanCodeRecordPageRequest));
+    }
+    
+    @GetMapping("/admin/merchantScanCodeRecord/page")
+    public R scanCodeRecordPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "merchantId", required = false) Long merchantId,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "scanTimeStart", required = false) Long scanTimeStart,
+            @RequestParam(value = "scanTimeEnd", required = false) Long scanTimeEnd, @RequestParam(value = "buyTimeStart", required = false) Long buyTimeStart,
+            @RequestParam(value = "buyTimeEnd", required = false) Long buyTimeEnd) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest = MerchantScanCodeRecordPageRequest.builder().offset(offset).size(size).merchantId(merchantId)
+                .tenantId(TenantContextHolder.getTenantId()).scanTimeStart(scanTimeStart).scanTimeEnd(scanTimeEnd).buyTimeStart(buyTimeStart).buyTimeEnd(buyTimeEnd).phone(phone)
+                .franchiseeId(franchiseeId).build();
+        
+        return R.ok(merchantJoinRecordService.listScanCodeRecordPage(merchantScanCodeRecordPageRequest));
     }
 }

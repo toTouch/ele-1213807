@@ -12,6 +12,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryM
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
+import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 
@@ -119,4 +120,8 @@ public interface MerchantJoinRecordService {
     Integer countEmployeeScanCodeSuccessNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
     
     R canJoinActivity(UserInfo userInfo, UserInfoExtra userInfoExtra, Integer shareActivityId, Integer shareActivityType);
+    
+    List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
+    
+    Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
 }
