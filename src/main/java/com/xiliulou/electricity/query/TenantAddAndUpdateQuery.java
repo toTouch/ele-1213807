@@ -18,7 +18,7 @@ public class TenantAddAndUpdateQuery {
     @NotNull(groups = UpdateGroup.class, message = "租户ID不能为空")
     private Integer id;
 
-    @NotBlank(groups = CreateGroup.class, message = "租户名称不能为空")
+    @NotBlank(groups = {UpdateGroup.class,CreateGroup.class}, message = "租户名称不能为空")
     private String name;
 
     private String code;

@@ -24,7 +24,7 @@ public class StoreAddAndUpdate {
     /**
     * 门店名称
     */
-    @NotBlank(message = "门店名称不能为空!", groups = {CreateGroup.class})
+    @NotBlank(message = "门店名称不能为空!", groups = {CreateGroup.class,UpdateGroup.class})
     private String name;
     /**
     * 门店地址
