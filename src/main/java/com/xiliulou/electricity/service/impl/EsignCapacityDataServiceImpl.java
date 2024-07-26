@@ -15,7 +15,6 @@ import com.xiliulou.electricity.query.EsignCapacityDataQuery;
 import com.xiliulou.electricity.query.EsignCapacityRechargeRecordQuery;
 import com.xiliulou.electricity.service.EsignCapacityDataService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -56,7 +55,7 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
     public EsignCapacityData queryCapacityDataByTenantId(Long tenantId) {
         EsignCapacityData esignCapacityData = esignCapacityDataMapper.selectByTenantId(tenantId);
         siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
+                .tenantId(tenantId).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
                 .addContext("count", esignCapacityData.getEsignCapacity()).build());
         return esignCapacityData;
     }

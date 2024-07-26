@@ -11,7 +11,6 @@ import com.xiliulou.electricity.mapper.FreeDepositDataMapper;
 import com.xiliulou.electricity.query.FreeDepositDataQuery;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositRechargeRecordService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * (FreeDepositData)表服务实现类
@@ -119,9 +119,12 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     public FreeDepositData selectByTenantId(Integer tenantId) {
         //发送站内信
         FreeDepositData freeDepositData = this.freeDepositDataMapper.selectByTenantId(tenantId);
-        siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.SESAME_CREDIT)
-                .addContext("count", freeDepositData.getFreeDepositCapacity()).build());
+        Optional.ofNullable(tenantId).ifPresent(
+                id -> siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
+                        .tenantId(id.longValue()).addContext("type", RechargeAlarm.SESAME_CREDIT)
+                        .addContext("count", freeDepositData.getFreeDepositCapacity()).build())
+        );
+        
         return freeDepositData;
     }
     
