@@ -22,10 +22,14 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RebateConfigRequest {
+    
     private Integer tenantId;
     
     @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
+    
+    @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class})
+    private Long franchiseeId;
     
     /**
      * 商户等级

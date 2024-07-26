@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,6 +43,9 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     private MerchantLevelMapper merchantLevelMapper;
     
     @Autowired
+    private ApplicationContext applicationContext;
+    
+    @Autowired
     private MerchantAttrService merchantAttrService;
     
     @Slave
@@ -52,8 +56,14 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     
     @Slave
     @Override
+    public List<MerchantLevel> listByFranchiseeId(Integer tenantId, Long franchiseeId) {
+        return this.merchantLevelMapper.selectByFranchiseeId(tenantId, franchiseeId);
+    }
+    
+    @Slave
+    @Override
     public List<MerchantLevel> listByTenantId(Integer tenantId) {
-        return this.merchantLevelMapper.selectByTenantId(tenantId);
+        return this.merchantLevelMapper.selectListByTenantId(tenantId);
     }
     
     @Override
@@ -68,26 +78,26 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     }
     
     @Override
-    public Integer deleteById(Long id) {
-        return this.merchantLevelMapper.deleteById(id);
+    public Integer deleteByFranchiseeId(Long franchiseeId) {
+        return this.merchantLevelMapper.deleteByFranchiseeId(franchiseeId);
     }
     
     @Slave
     @Override
-    public MerchantLevel queryNextByMerchantLevel(String level, Integer tenantId) {
-        return this.merchantLevelMapper.selectNextByMerchantLevel(level, tenantId);
+    public MerchantLevel queryNextByMerchantLevel(String level, Long franchiseeId) {
+        return this.merchantLevelMapper.selectNextByMerchantLevel(level, franchiseeId);
     }
     
     @Slave
     @Override
-    public MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId) {
-        return this.merchantLevelMapper.selectLastByMerchantLevel(level, tenantId);
+    public MerchantLevel queryLastByMerchantLevel(String level, Long franchiseeId) {
+        return this.merchantLevelMapper.selectLastByMerchantLevel(level, franchiseeId);
     }
     
     @Slave
     @Override
-    public MerchantLevel queryByMerchantLevelAndTenantId(String level, Integer tenantId) {
-        return this.merchantLevelMapper.selectByMerchantLevelAndTenantId(level, tenantId);
+    public MerchantLevel queryByMerchantLevelAndFranchiseeId(String level, Long franchiseeId) {
+        return this.merchantLevelMapper.selectByMerchantLevelAndFranchiseeId(level, franchiseeId);
     }
     
     @Slave
@@ -98,13 +108,13 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
     
     @Slave
     @Override
-    public Integer existsLevelName(String name, Integer tenantId) {
-        return merchantLevelMapper.existsLevelName(name, tenantId);
+    public Integer existsLevelName(String name, Long franchiseeId) {
+        return merchantLevelMapper.existsLevelName(name, franchiseeId);
     }
     
     @Override
-    public List<MerchantLevelVO> list(Integer tenantId) {
-        List<MerchantLevel> merchantLevels = this.listByTenantId(tenantId);
+    public List<MerchantLevelVO> list(Integer tenantId, Long franchiseeId) {
+        List<MerchantLevel> merchantLevels = applicationContext.getBean(MerchantLevelServiceImpl.class).listByFranchiseeId(tenantId, franchiseeId);
         if (CollectionUtils.isEmpty(merchantLevels)) {
             return Collections.emptyList();
         }
@@ -134,33 +144,34 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             return Triple.of(true, null, null);
         }
         
-        if (!Objects.equals(merchantLevel.getName(), request.getName()) && Objects.nonNull(existsLevelName(request.getName(), merchantLevel.getTenantId()))) {
+        if (!Objects.equals(merchantLevel.getName(), request.getName()) && Objects.nonNull(existsLevelName(request.getName(), merchantLevel.getFranchiseeId()))) {
             return Triple.of(false, "100322", "等级名称已存在");
         }
         
         //商户升级条件
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchantLevel.getTenantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchantLevel.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             return Triple.of(false, "100323", "商户升级条件不存在");
         }
         
-        if (!(Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL) || Objects.equals(merchantAttr.getUpgradeCondition(),
-                MerchantConstant.UPGRADE_CONDITION_INVITATION) || Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL))) {
+        if (!(Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL) || Objects
+                .equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_INVITATION) || Objects
+                .equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL))) {
             return Triple.of(false, "100323", "商户升级条件不合法");
         }
-    
+        
         MerchantLevel merchantLevelUpdate = new MerchantLevel();
         merchantLevelUpdate.setId(merchantLevel.getId());
         merchantLevelUpdate.setUpdateTime(System.currentTimeMillis());
-    
+        
         //仅修改商户等级名称
         if (Objects.nonNull(request.getName())) {
             merchantLevelUpdate.setName(request.getName());
         }
-    
+        
         //仅修改商户拉新人数或续费人数
         if (Objects.nonNull(request.getInvitationUserCount()) || Objects.nonNull(request.getRenewalUserCount())) {
-            MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
+            MerchantLevel nextMerchantLevel = this.queryNextByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getFranchiseeId());
             if (Objects.nonNull(nextMerchantLevel) && StringUtils.isNotBlank(nextMerchantLevel.getRule())) {
                 MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(nextMerchantLevel.getRule(), MerchantLevelDTO.class);
                 if (Objects.nonNull(merchantLevelDTO)) {
@@ -171,7 +182,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                             return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
                         }
                     }
-                
+                    
                     //续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
                         if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && Objects.nonNull(request.getRenewalUserCount())
@@ -179,7 +190,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                             return Triple.of(false, "100320", "当前等级设置的人数需小于上一级别，请进行调整");
                         }
                     }
-                
+                    
                     //拉新人数+续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
                         if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && Objects.nonNull(request.getInvitationUserCount())
@@ -190,8 +201,8 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     }
                 }
             }
-        
-            MerchantLevel lastMerchantLevel = this.queryLastByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getTenantId());
+            
+            MerchantLevel lastMerchantLevel = this.queryLastByMerchantLevel(merchantLevel.getLevel(), merchantLevel.getFranchiseeId());
             if (Objects.nonNull(lastMerchantLevel) && StringUtils.isNotBlank(lastMerchantLevel.getRule())) {
                 MerchantLevelDTO merchantLevelDTO = JsonUtil.fromJson(lastMerchantLevel.getRule(), MerchantLevelDTO.class);
                 if (Objects.nonNull(merchantLevelDTO)) {
@@ -202,7 +213,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                             return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
                         }
                     }
-                
+                    
                     //续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_RENEWAL)) {
                         if (Objects.nonNull(merchantLevelDTO.getRenewalUserCount()) && Objects.nonNull(request.getRenewalUserCount())
@@ -210,7 +221,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                             return Triple.of(false, "100321", "当前等级设置的人数需大于下一级别，请进行调整");
                         }
                     }
-                
+                    
                     //拉新人数+续费人数
                     if (Objects.equals(merchantAttr.getUpgradeCondition(), MerchantConstant.UPGRADE_CONDITION_ALL)) {
                         if ((Objects.nonNull(merchantLevelDTO.getInvitationUserCount()) && Objects.nonNull(request.getInvitationUserCount())
@@ -221,30 +232,30 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
                     }
                 }
             }
-        
+            
             if (Objects.nonNull(request.getInvitationUserCount()) || Objects.nonNull(request.getRenewalUserCount())) {
                 MerchantLevelDTO merchantLevelDTO = new MerchantLevelDTO();
                 MerchantLevelDTO oldMerchantLevel = JsonUtil.fromJson(merchantLevel.getRule(), MerchantLevelDTO.class);
                 BeanUtils.copyProperties(oldMerchantLevel, merchantLevelDTO);
                 
-                if(Objects.nonNull(request.getInvitationUserCount())){
+                if (Objects.nonNull(request.getInvitationUserCount())) {
                     merchantLevelDTO.setInvitationUserCount(request.getInvitationUserCount());
                 }
-    
-                if(Objects.nonNull(request.getRenewalUserCount())){
+                
+                if (Objects.nonNull(request.getRenewalUserCount())) {
                     merchantLevelDTO.setRenewalUserCount(request.getRenewalUserCount());
                 }
                 
                 merchantLevelUpdate.setRule(JsonUtil.toJson(merchantLevelDTO));
             }
         }
-    
+        
         this.updateById(merchantLevelUpdate);
         return Triple.of(true, null, null);
     }
     
     @Override
-    public Integer initMerchantLevel(Integer tenantId) {
+    public Integer initMerchantLevel(Long franchiseeId, Integer tenantId) {
         var merchantLevelList = new ArrayList<MerchantLevel>();
         
         for (int i = 1; i < 6; i++) {
@@ -254,6 +265,7 @@ public class MerchantLevelServiceImpl implements MerchantLevelService {
             merchantLevel.setName("");
             merchantLevel.setRule(JsonUtil.toJson(merchantLevelDTO));
             merchantLevel.setDelFlag(CommonConstant.DEL_N);
+            merchantLevel.setFranchiseeId(franchiseeId);
             merchantLevel.setTenantId(tenantId);
             merchantLevel.setCreateTime(System.currentTimeMillis());
             merchantLevel.setUpdateTime(System.currentTimeMillis());

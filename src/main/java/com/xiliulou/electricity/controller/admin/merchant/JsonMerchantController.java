@@ -60,17 +60,13 @@ public class JsonMerchantController extends BaseController {
      * 查询商户升级条件
      */
     @PutMapping("/admin/merchantAttr/upgradeConditionInfo")
-    public R upgradeConditionInfo() {
+    public R upgradeConditionInfo(@RequestParam(value = "franchiseeId") Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-    
-        return R.ok(merchantAttrService.queryUpgradeCondition(TenantContextHolder.getTenantId()));
+        
+        return R.ok(merchantAttrService.queryUpgradeCondition(franchiseeId));
     }
     
     /**
@@ -78,17 +74,13 @@ public class JsonMerchantController extends BaseController {
      */
     @PutMapping("/admin/merchantAttr/upgradeCondition")
     @Log(title = "修改商户升级条件")
-    public R updateUpgradeCondition(@RequestParam("condition") Integer condition) {
+    public R updateUpgradeCondition(@RequestParam("condition") Integer condition,@RequestParam(value = "franchiseeId") Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
-        return returnTripleResult(merchantAttrService.updateUpgradeCondition(TenantContextHolder.getTenantId(), condition));
+        return returnTripleResult(merchantAttrService.updateUpgradeCondition(franchiseeId, condition));
     }
     
     /**
@@ -102,10 +94,6 @@ public class JsonMerchantController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
         return returnTripleResult(merchantAttrService.updateInvitationCondition(request));
     }
     
@@ -114,7 +102,7 @@ public class JsonMerchantController extends BaseController {
      */
     @GetMapping("/admin/merchantAttr/switchState")
     @Log(title = "修改渠道员变更返利开关")
-    public R updateChannelSwitchState(@RequestParam("status") Integer status) {
+    public R updateChannelSwitchState(@RequestParam("status") Integer status,@RequestParam("franchiseeId") Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -124,7 +112,7 @@ public class JsonMerchantController extends BaseController {
             return R.ok();
         }
         
-        return returnTripleResult(merchantAttrService.updateChannelSwitchState(TenantContextHolder.getTenantId(), status));
+        return returnTripleResult(merchantAttrService.updateChannelSwitchState(franchiseeId, status));
     }
     
     /**
@@ -198,7 +186,7 @@ public class JsonMerchantController extends BaseController {
         if (!r.getLeft()) {
             return R.fail(r.getMiddle(), (String) r.getRight());
         }
-    
+        
         MerchantDeleteCacheDTO merchantDeleteCacheDTO = (MerchantDeleteCacheDTO) r.getRight();
         merchantService.deleteCache(merchantDeleteCacheDTO);
         
@@ -254,7 +242,7 @@ public class JsonMerchantController extends BaseController {
     public R repairEnterprise(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
         List<Long> enterpriseIds = new ArrayList<>();
         List<Long> merchantIds = new ArrayList<>();
-    
+        
         merchantService.repairEnterprise(enterpriseIds, merchantIds, tenantId);
         
         merchantService.deleteCacheForRepairEnterprise(enterpriseIds, merchantIds);
