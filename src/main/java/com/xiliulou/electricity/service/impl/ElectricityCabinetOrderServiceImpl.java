@@ -1436,12 +1436,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            vo.setCell(lastOrder.getNewCellNo());
             
             // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
-            String sessionId = this.chooseFullBatteryAndIssueOpenCell(lastOrder, userBindingBatterySn, cabinet, userInfo);
-            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            Triple<Boolean, String, Object> getFullCellResult = allocateFullBatteryBox(cabinet, userInfo, franchisee);
+            if (Boolean.FALSE.equals(getFullCellResult.getLeft())) {
+                throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
+            }
+            Integer cellNo = Integer.valueOf((String) getFullCellResult.getRight());
+            vo.setCell(cellNo);
+            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn);
             vo.setSessionId(sessionId);
+            
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
@@ -1449,15 +1455,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setCell(lastOrder.getOldCellNo());
             return Pair.of(true, vo);
         }
-    }
-    
-    private String chooseFullBatteryAndIssueOpenCell(ElectricityCabinetOrder lastOrder, String userBindingBatterySn, ElectricityCabinet cabinet, UserInfo userInfo) {
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        Triple<Boolean, String, Object> getFullCellResult = allocateFullBatteryBox(cabinet, userInfo, franchisee);
-        if (Boolean.FALSE.equals(getFullCellResult.getLeft())) {
-            throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
-        }
-        return this.openFullBatteryCellHandler(lastOrder, cabinet, Integer.valueOf((String) getFullCellResult.getRight()), userBindingBatterySn);
     }
     
     
