@@ -308,7 +308,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         Integer refundOrderStatus = EleRefundOrder.STATUS_FAIL;
         boolean result = false;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.refundStatusIsSuccess()) {
             refundOrderStatus = EleRefundOrder.STATUS_SUCCESS;
             result = true;
         } else {

@@ -489,7 +489,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
@@ -592,7 +592,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
             log.warn("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
@@ -1445,7 +1445,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
             log.warn("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);

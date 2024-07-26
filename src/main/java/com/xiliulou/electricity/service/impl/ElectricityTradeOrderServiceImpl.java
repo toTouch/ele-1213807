@@ -365,7 +365,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         // 用户ID
         Long uid = electricityTradeOrder.getUid();
         
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             return handSuccess(orderNo, tenantId, uid, transactionId, callBackResource.getChannel());
         } else {
             return handFailed(orderNo, tenantId, uid);
@@ -520,7 +520,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer memberOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
         boolean result = false;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             memberOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
             result = true;
@@ -649,7 +649,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
@@ -741,7 +741,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_FAIL;
         boolean result = false;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_SUCCESS;
             result = true;
@@ -971,7 +971,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer insuranceOrderStatus = EleBatteryServiceFeeOrder.STATUS_FAIL;
         boolean result = false;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             insuranceOrderStatus = EleBatteryServiceFeeOrder.STATUS_SUCCESS;
             result = true;
@@ -1038,7 +1038,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         String transactionId = callBackResource.getTransactionId();
         
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        if (callBackResource.isSuccess()) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
             log.error("NOTIFY CLOUD BEAN RECHARGE ERROR!pay fail,tradeOrderNo={}", callBackResource.getOutTradeNo());
