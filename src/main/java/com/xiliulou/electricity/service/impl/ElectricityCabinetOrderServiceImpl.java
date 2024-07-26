@@ -1439,6 +1439,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             
             // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            // 分配满电仓
             Triple<Boolean, String, Object> getFullCellResult = allocateFullBatteryBox(cabinet, userInfo, franchisee);
             if (Boolean.FALSE.equals(getFullCellResult.getLeft())) {
                 throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
@@ -2978,7 +2979,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         
-        return R.ok(openFullBatteryCellHandler(electricityCabinetOrder,electricityCabinet,null,null));
+        return null;
     }
     
     /**
@@ -2993,7 +2994,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", cabinetOrder.getOrderId());
-        dataMap.put("cellNo", cellNo);
+        dataMap.put("placeCellNo", cabinetOrder.getOldCellNo());
+        dataMap.put("takeCellNo", cellNo);
         dataMap.put("batteryName", batteryName);
         
         String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + cabinetOrder.getId();
