@@ -113,7 +113,8 @@ public class JsonAdminWithdrawController extends BaseController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "type", required = false) Integer type) {
+                       @RequestParam(value = "type", required = false) Integer type,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -165,6 +166,7 @@ public class JsonAdminWithdrawController extends BaseController {
                 .type(type)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return withdrawRecordService.queryList(withdrawRecordQuery);
@@ -177,7 +179,8 @@ public class JsonAdminWithdrawController extends BaseController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "type", required = false) Integer type) {
+                        @RequestParam(value = "type", required = false) Integer type,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -220,6 +223,7 @@ public class JsonAdminWithdrawController extends BaseController {
                 .type(type)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return withdrawRecordService.queryCount(withdrawRecordQuery);
