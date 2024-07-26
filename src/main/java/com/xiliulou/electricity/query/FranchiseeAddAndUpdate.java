@@ -26,7 +26,7 @@ public class FranchiseeAddAndUpdate {
     /**
      * 加盟商名称
      */
-    @NotEmpty(message = "加盟商名称不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotBlank(message = "加盟商名称不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
     /**
      * 租电池押金
@@ -38,7 +38,7 @@ public class FranchiseeAddAndUpdate {
     private String password;
 
 
-    @NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
+    @NotBlank(message = "手机号的不能为空", groups = {CreateGroup.class})
     private String phone;
 
     /**

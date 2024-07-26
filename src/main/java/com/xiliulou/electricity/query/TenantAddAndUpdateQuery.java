@@ -4,6 +4,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -17,7 +18,7 @@ public class TenantAddAndUpdateQuery {
     @NotNull(groups = UpdateGroup.class, message = "租户ID不能为空")
     private Integer id;
 
-    @NotNull(groups = CreateGroup.class, message = "租户名称不能为空")
+    @NotBlank(groups = CreateGroup.class, message = "租户名称不能为空")
     private String name;
 
     private String code;

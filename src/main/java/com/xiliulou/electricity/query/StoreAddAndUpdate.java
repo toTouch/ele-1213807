@@ -24,12 +24,12 @@ public class StoreAddAndUpdate {
     /**
     * 门店名称
     */
-    @NotEmpty(message = "门店名称不能为空!", groups = {CreateGroup.class})
+    @NotBlank(message = "门店名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
     * 门店地址
     */
-    @NotEmpty(message = "门店地址不能为空!", groups = {CreateGroup.class})
+    @NotBlank(message = "门店地址不能为空!", groups = {CreateGroup.class})
     private String address;
     /**
     * 地址经度
