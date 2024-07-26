@@ -294,6 +294,9 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public User queryByUserName(String username) {
+        if (StringUtils.isBlank(username)){
+            return null;
+        }
         return this.userMapper.queryByUserName(username);
         //        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
     }
