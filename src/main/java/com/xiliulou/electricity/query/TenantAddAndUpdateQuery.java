@@ -23,10 +23,10 @@ public class TenantAddAndUpdateQuery {
 
     private String code;
 
-    @NotNull(groups = CreateGroup.class, message = "密码不能为空")
+    @NotBlank(groups = CreateGroup.class, message = "密码不能为空")
     private String password;
 
-    @NotNull(groups = CreateGroup.class, message = "手机号不能为空")
+    @NotBlank(groups = CreateGroup.class, message = "手机号不能为空")
     private String phone;
 
     private Integer status;
