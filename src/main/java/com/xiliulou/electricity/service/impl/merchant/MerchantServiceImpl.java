@@ -30,7 +30,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserHistoryMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
@@ -179,9 +178,6 @@ public class MerchantServiceImpl implements MerchantService {
     private MerchantChannelEmployeeBindHistoryService merchantChannelEmployeeBindHistoryService;
     
     @Resource
-    private EnterpriseChannelUserHistoryMapper enterpriseChannelUserHistoryMapper;
-    
-    @Resource
     private EnterpriseChannelUserMapper enterpriseChannelUserMapper;
     
     @Resource
@@ -251,9 +247,9 @@ public class MerchantServiceImpl implements MerchantService {
             return Triple.of(false, "120204", "商户等级不存在");
         }
         
-        // todo 商户等级添加加盟商不一致的判断
-        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), 0L)) {
         
+        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), merchantLevel.getFranchiseeId())) {
+            return Triple.of(false, "120241", "商户等级的加盟商和选中的加盟商不一致");
         }
         
         // 检测渠道员是否存在
@@ -588,10 +584,9 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             return Triple.of(false, "120204", "商户等级不存在");
         }
-    
-        // todo 商户等级添加加盟商不一致的判断
-        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), 0L)) {
         
+        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), merchantLevel.getFranchiseeId())) {
+            return Triple.of(false, "120241", "商户等级的加盟商和选中的加盟商不一致");
         }
         
         // 检测渠道员是否存在

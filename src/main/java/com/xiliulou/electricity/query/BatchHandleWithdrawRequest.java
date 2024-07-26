@@ -25,4 +25,9 @@ public class BatchHandleWithdrawRequest {
     
     @NotBlank(message = "密码不能为空")
     private String password;
+    
+    /**
+     * 绑定加盟商id
+     */
+    private List<Long> bindFranchiseeIdList;
 }

@@ -56,6 +56,23 @@ public class JsonAdminWithdrawController extends BaseController {
 		if(!Objects.equals(tenantId,wechatConfig.getTenantId())){
 			return R.fail("ELECTRICITY.0066", "用户权限不足");
 		}*/
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("handle withdraw warn! franchisee is empty, uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+    
+            handleWithdrawQuery.setBindFranchiseeIdList(franchiseeIds);
+        }
+        
         return withdrawRecordService.handleWithdraw(handleWithdrawQuery);
     }
     
@@ -68,6 +85,21 @@ public class JsonAdminWithdrawController extends BaseController {
     @PostMapping(value = "/admin/batchHandleWithdraw")
     @Log(title = "批量提现审核")
     public R batchHandleWithdraw(@Validated @RequestBody BatchHandleWithdrawRequest batchHandleWithdrawRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("handle withdraw warn! franchisee is empty, uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+    
+            batchHandleWithdrawRequest.setBindFranchiseeIdList(franchiseeIds);
+        }
         
         return withdrawRecordService.batchHandleWithdraw(batchHandleWithdrawRequest);
     }
