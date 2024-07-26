@@ -449,4 +449,14 @@
         where uid = #{uid}
           and tenant_id = #{tenantId}
     </update>
+    
+    
+    <select id="existSameCabinetCellSameTimeOpenExchangeOrder" resultType="integer">
+        select 1
+        from t_electricity_cabinet_order
+        where electricity_cabinet_id = #{electricityCabinetId}
+          and id &gt; #{id}
+          and old_cell_no = #{oldCellNo}
+        order by id limit 1
+    </select>
 </mapper>

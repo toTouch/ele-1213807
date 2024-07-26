@@ -1699,6 +1699,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.ok();
         }
         
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+        
         // 套餐过期时间
         Long memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime();
         // 当前套餐过期时间
@@ -1764,6 +1766,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             
             // 处理企业用户对应的支付记录时间
             anotherPayMembercardRecordService.enableMemberCardHandler(userBatteryMemberCard.getUid());
+            
+            serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
         }
         
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
@@ -1774,16 +1778,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
         userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-        
-        ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-        serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-        serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeGenerateTime);
-        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
-        serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
-        serviceFeeUserInfoUpdate.setExpireOrderNo("");
-        serviceFeeUserInfoUpdate.setPauseOrderNo("");
-        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         
         // 更新滞纳金订单状态
         if (StringUtils.isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
@@ -1797,6 +1791,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             disableMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             disableMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(disableMembercardServiceFeeOrder);
+            
+            serviceFeeUserInfoUpdate.setPauseOrderNo("");
         }
         if (StringUtils.isNotBlank(serviceFeeUserInfo.getExpireOrderNo())) {
             EleBatteryServiceFeeOrder expireMembercardServiceFeeOrder = new EleBatteryServiceFeeOrder();
@@ -1807,7 +1803,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             expireMembercardServiceFeeOrder.setUpdateTime(System.currentTimeMillis());
             expireMembercardServiceFeeOrder.setPayTime(System.currentTimeMillis());
             batteryServiceFeeOrderService.updateByOrderNo(expireMembercardServiceFeeOrder);
+            
+            serviceFeeUserInfoUpdate.setExpireOrderNo("");
         }
+        
+        serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+        serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(serviceFeeGenerateTime);
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
+        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         
         // 兼容套餐过期，定时任务还未生成滞纳金订单的场景
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && StringUtils.isBlank(serviceFeeUserInfo.getExpireOrderNo())) {

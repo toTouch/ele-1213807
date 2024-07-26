@@ -4,14 +4,13 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -55,6 +54,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetPhysicsOperRecordService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
@@ -75,9 +75,10 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorServiceWrapper;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ExchangeOrderMsgShowVO;
@@ -96,11 +97,7 @@ import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -110,6 +107,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -202,6 +200,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private TenantService tenantService;
+    
+    @Resource
+    private ElectricityCabinetPhysicsOperRecordService electricityCabinetPhysicsOperRecordService;
+    
+    
+    TtlXllThreadPoolExecutorServiceWrapper executorServiceWrapper = TtlXllThreadPoolExecutorsSupport
+            .get(XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_ORDER_LIST", 3, "ele_user_order_list_thread"));
+    
     
     /**
      * 修改数据
@@ -393,7 +399,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             List<Long> uIdList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
             List<UserInfo> userInfos = userInfoService.listByUidList(uIdList);
             if (ObjectUtils.isNotEmpty(userInfos)) {
-                 userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
+                userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
             }
             Map<Long, String> finalUserNameMap = userNameMap;
             
@@ -409,7 +415,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || Objects.nonNull(e.getStatus()) && e.getStatus()
                         .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
-                    
                     ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrderQuery.getTenantId());
                     ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(e.getOrderId());
                     if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.ENABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen()) && Objects.nonNull(
@@ -432,6 +437,70 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         return R.ok(electricityCabinetOrderVOList);
+    }
+    
+    private void isConformSpecialScene(ElectricityCabinetOrderVO electricityCabinetOrder, Integer tenantId) {
+        if (Objects.isNull(electricityCabinetOrder.getElectricityCabinetId()) || Objects.isNull(electricityCabinetOrder.getOldCellNo())) {
+            log.warn("isConformSpecialScene.electricityCabinetOrder info is null, eid is{}", electricityCabinetOrder.getElectricityCabinetId());
+            return;
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen())) {
+            log.warn("isConformSpecialScene.electricityConfig is null,tenantId is {}", tenantId);
+            return;
+        }
+        
+        ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(
+                electricityCabinetOrder.getOrderId());
+        if (Objects.isNull(electricityExceptionOrderStatusRecord) || Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(),
+                ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
+            log.warn("isConformSpecialScene.electricityExceptionOrderStatusRecord is null or selfOpenCell, orderId is {}", electricityCabinetOrder.getOrderId());
+            return;
+        }
+        
+        if (Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+                && Double.valueOf(System.currentTimeMillis() - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 <= 3) {
+            CompletableFuture<Integer> isExistNewExchangeOrderFuture = CompletableFuture.supplyAsync(() -> {
+                return electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
+                        electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            }, executorServiceWrapper).exceptionally(e -> {
+                log.error("isConformSpecialScene.isExistNewExchangeOrderFuture is error, ,orderId is :{} !", electricityCabinetOrder.getOrderId(), e);
+                return null;
+            });
+            
+            CompletableFuture<Integer> isExistNewReturnOrderFuture = CompletableFuture.supplyAsync(() -> {
+                return rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
+                        electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            }, executorServiceWrapper).exceptionally(e -> {
+                log.error("isConformSpecialScene.isExistNewReturnOrderFuture is error, ,orderId is :{}  !", electricityCabinetOrder.getOrderId(), e);
+                return null;
+            });
+            
+            CompletableFuture<Integer> isExistNewOperRecordFuture = CompletableFuture.supplyAsync(() -> {
+                return electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
+                        electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo());
+            }, executorServiceWrapper).exceptionally(e -> {
+                log.error("isConformSpecialScene.isExistNewOperRecordFuture is error,orderId is :{} !", electricityCabinetOrder.getOrderId(), e);
+                return null;
+            });
+            
+            try {
+                CompletableFuture.allOf(isExistNewExchangeOrderFuture, isExistNewReturnOrderFuture, isExistNewOperRecordFuture).get();
+                Integer isExistNewExchangeOrder = isExistNewExchangeOrderFuture.get();
+                Integer isExistNewReturnOrder = isExistNewReturnOrderFuture.get();
+                Integer isExistNewOperRecord = isExistNewOperRecordFuture.get();
+                log.debug("isConformSpecialScene start selfOpen check, orderId is {}，isExistNewExchangeOrder is {},isExistNewReturnOrder is {},isExistNewOperRecord is {} ",
+                        electricityCabinetOrder.getOrderId(), isExistNewExchangeOrder, isExistNewReturnOrder, isExistNewOperRecord);
+                if (Objects.isNull(isExistNewExchangeOrder) && Objects.isNull(isExistNewReturnOrder) && Objects.isNull(isExistNewOperRecord)) {
+                    electricityCabinetOrder.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+                }
+            } catch (Exception e) {
+                log.error("isConformSpecialScene.complateFuture is error", e);
+            }
+            
+        }
+        
     }
     
     @Override
@@ -768,7 +837,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("100020", "非旧仓门异常无法自主开仓");
         }
         
-        if ((now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
+        if (Double.valueOf(now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
             log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100026", "自助开仓已超开仓时间");
         }
@@ -838,6 +907,28 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(electricityCabinetBox)) {
             log.warn("self open cell order  WARN! not find cellNO! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
+        }
+        
+        // 自主开仓特殊场景校验
+        if (Objects.nonNull(electricityCabinetOrder.getElectricityCabinetId()) && Objects.nonNull(electricityExceptionOrderStatusRecord.getCellNo())) {
+            Integer isExistNewExchangeOrder = electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewExchangeOrder)) {
+                log.warn("selfOpenCell.existExchangeOrder, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
+            }
+            Integer isExistNewReturnOrder = rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewReturnOrder)) {
+                log.warn("selfOpenCell.existNewReturnOrder, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
+            }
+            Integer isExistNewOperRecord = electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewOperRecord)) {
+                log.warn("selfOpenCell.existNewOperRecord, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
+            }
         }
         
         try {
@@ -1132,7 +1223,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Boolean.FALSE.equals(exchangeStatus.getLeft())) {
             return exchangeStatus;
         }
-    
+        
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(selectBox.getElectricityCabinetId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             log.warn("SELECTION EXCHANGE ORDER WARN!  not found usable empty cell!uid={},eid={}", userInfo.getUid(), electricityCabinet.getId());
@@ -1453,7 +1544,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-    
+        
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
@@ -1566,7 +1657,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-    
+        
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
@@ -1698,7 +1789,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-    
+        
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
@@ -1876,7 +1967,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         return Triple.of(true, null, null);
     }
-
+    
     private Triple<Boolean, String, Object> checkUserExistsUnFinishOrder(Long uid) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);
         if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
@@ -1946,6 +2037,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         return Triple.of(true, null, showVo);
     }
+    
+   
     
     @Override
     public ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId) {
@@ -2068,6 +2161,51 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public List<ElectricityCabinetOrder> selectMonthExchangeOrders(Integer eid, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId) {
         return electricityCabinetOrderMapper.selectMonthExchangeOrders(eid, todayStartTimeStamp, todayEndTimeStamp, tenantId);
     }
+    
+    @Override
+    public R queryListv2(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
+            return R.ok(new ArrayList<>());
+        }
+        
+        // 批量查询会员信息
+        Map<Long, String> userNameMap = new HashMap<>();
+        List<Long> uIdList = electricityCabinetOrderVOList.stream().map(ElectricityCabinetOrderVO::getUid).collect(Collectors.toList());
+        List<UserInfo> userInfos = userInfoService.listByUidList(uIdList);
+        if (ObjectUtils.isNotEmpty(userInfos)) {
+            userNameMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, UserInfo::getName));
+        }
+        Map<Long, String> finalUserNameMap = userNameMap;
+        
+        electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+            
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+            e.setElectricityCabinetName(Objects.isNull(electricityCabinet) ? "" : electricityCabinet.getName());
+            
+            // 设置会员名称
+            if (ObjectUtils.isNotEmpty(finalUserNameMap.get(e.getUid()))) {
+                e.setUName(finalUserNameMap.get(e.getUid()));
+            }
+            
+            if (Objects.nonNull(e.getStatus()) && (e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL) || e.getStatus()
+                    .equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL))) {
+                // 自主开仓判断
+                isConformSpecialScene(e, electricityCabinetOrderQuery.getTenantId());
+            }
+            
+            // 设置加盟商名称
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                e.setFranchiseeName(franchisee.getName());
+            }
+            
+        });
+        
+        
+        return R.ok(electricityCabinetOrderVOList);
+    }
+    
     
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
