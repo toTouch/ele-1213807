@@ -83,11 +83,8 @@ public class JsonMerchantJoinRecordController {
     }
     
     
-    
-    
     @GetMapping("/admin/merchantScanCodeRecord/count")
-    public R scanCodeRecordCount(@RequestParam(value = "merchantId", required = false) Long merchantId,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+    public R scanCodeRecordCount(@RequestParam(value = "merchantId", required = false) Long merchantId, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "scanTimeStart", required = false) Long scanTimeStart,
             @RequestParam(value = "scanTimeEnd", required = false) Long scanTimeEnd, @RequestParam(value = "buyTimeStart", required = false) Long buyTimeStart,
             @RequestParam(value = "buyTimeEnd", required = false) Long buyTimeEnd) {
@@ -110,10 +107,9 @@ public class JsonMerchantJoinRecordController {
     
     @GetMapping("/admin/merchantScanCodeRecord/page")
     public R scanCodeRecordPage(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "merchantId", required = false) Long merchantId,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "scanTimeStart", required = false) Long scanTimeStart,
-            @RequestParam(value = "scanTimeEnd", required = false) Long scanTimeEnd, @RequestParam(value = "buyTimeStart", required = false) Long buyTimeStart,
-            @RequestParam(value = "buyTimeEnd", required = false) Long buyTimeEnd) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "scanTimeStart", required = false) Long scanTimeStart, @RequestParam(value = "scanTimeEnd", required = false) Long scanTimeEnd,
+            @RequestParam(value = "buyTimeStart", required = false) Long buyTimeStart, @RequestParam(value = "buyTimeEnd", required = false) Long buyTimeEnd) {
         if (size < 0 || size > 50) {
             size = 10L;
         }

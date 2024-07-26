@@ -43,4 +43,6 @@ public class MerchantScanCodeRecordPageRequest {
     private List<Long> uids;
     
     private List<String> orderIdList;
+    
+    private List<Long> franchiseeIds;
 }

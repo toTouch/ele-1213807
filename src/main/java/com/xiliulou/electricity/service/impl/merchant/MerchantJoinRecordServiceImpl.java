@@ -46,6 +46,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -62,6 +63,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -126,6 +128,9 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private AssertPermissionService assertPermissionService;
     
     @Override
     public R joinScanCode(MerchantJoinScanRequest request) {
@@ -695,6 +700,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             request.setOrderIdList(orderIdList);
         }
         
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO;
+        }
+        request.setFranchiseeIds(pair.getRight());
+        
         return merchantJoinRecordMapper.countScanCodeRecord(request);
     }
     
@@ -714,6 +725,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             List<String> orderIdList = orderList.stream().map(ElectricityMemberCardOrder::getOrderId).collect(Collectors.toList());
             request.setOrderIdList(orderIdList);
         }
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        request.setFranchiseeIds(pair.getRight());
         
         List<MerchantJoinRecord> list = merchantJoinRecordMapper.selectListScanCodeRecordPage(request);
         if (ObjectUtils.isEmpty(list)) {

@@ -457,6 +457,12 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeIds!=null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by id desc
         limit #{offset}, #{size}
@@ -495,6 +501,12 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds!=null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
