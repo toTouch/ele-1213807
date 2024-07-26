@@ -1944,9 +1944,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         }
         try {
-            siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_FREEZE)
-                    .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
-                    .addContext("orderNo", freezeEntity.getOrderNo()).build());
+            //站内信，仅小程序
+            if (systemDefinitionEnum.equals(SystemDefinitionEnum.WX_APPLET)){
+                siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_FREEZE)
+                        .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                        .addContext("orderNo", freezeEntity.getOrderNo()).build());
+            }
             CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
             Map<String, Object> map = new HashMap<>();
             map.put("username", userInfo.getName());
