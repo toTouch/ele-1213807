@@ -102,8 +102,8 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 throw new BizException("300000", "数据有误");
             }
 
-            // 微信退款状态
-            Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
+            // 退款状态
+            Integer refundState = callBackResource.converterTradeState(RefundStateEnum.SUCCESS.getCode(), RefundStateEnum.FAILED.getCode());
 
             long nowTime = System.currentTimeMillis();
             // 更新退款单数据

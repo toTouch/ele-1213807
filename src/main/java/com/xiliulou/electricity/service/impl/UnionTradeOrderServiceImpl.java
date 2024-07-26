@@ -333,7 +333,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Autowired
     private PayConfigConverter payConfigConverter;
     
-    @Autowired
+    @Resource
     private PayServiceDispatcher payServiceDispatcher;
     
     @Deprecated
@@ -412,7 +412,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
         unionTradeOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
         baseMapper.insert(unionTradeOrder);
-    
+        
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
         for (int i = 0; i < jsonOrderList.size(); i++) {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
@@ -431,7 +431,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
             electricityTradeOrderService.insert(electricityTradeOrder);
         }
-    
+        
         OrderCreateParamConverterModel model = new OrderCreateParamConverterModel();
         model.setOrderId(unionTradeOrder.getTradeOrderNo());
         model.setExpireTime(System.currentTimeMillis() + 3600000);
@@ -441,10 +441,10 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         model.setCurrency("CNY");
         model.setOpenId(openId);
         model.setPayConfig(payParamConfig);
-    
+        
         BasePayRequest basePayRequest = payConfigConverter
                 .converterOrderCreate(model, config -> config.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + payParamConfig.getFranchiseeId());
-    
+        
         return payServiceDispatcher.order(basePayRequest);
     }
     
@@ -457,7 +457,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         // 回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
@@ -490,7 +489,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
@@ -562,7 +561,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     public Pair<Boolean, Object> notifyMembercardInsurance(BaseOrderCallBackResource callBackResource) {
         
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
@@ -594,7 +592,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
             log.warn("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
@@ -1409,7 +1407,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     public Pair<Boolean, Object> notifyServiceFee(BaseOrderCallBackResource callBackResource) {
         // 回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
@@ -1448,7 +1445,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
             log.warn("NOTIFY SERVICE FEE UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);

@@ -334,12 +334,10 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         // 支付状态
-        Integer tradeOrderStatus =
-                WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState) ? ElectricityTradeOrder.STATUS_SUCCESS : ElectricityTradeOrder.STATUS_FAIL;
+        Integer tradeOrderStatus = callBackResource.converterTradeState(ElectricityTradeOrder.STATUS_SUCCESS, ElectricityTradeOrder.STATUS_FAIL);
         
         // 1. 处理交易流水订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
@@ -367,7 +365,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         // 用户ID
         Long uid = electricityTradeOrder.getUid();
         
-        if (WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState)) {
+        if (callBackResource.isSuccess()) {
             return handSuccess(orderNo, tenantId, uid, transactionId, callBackResource.getChannel());
         } else {
             return handFailed(orderNo, tenantId, uid);
@@ -449,8 +447,8 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     }
     
     @Override
-    public BasePayOrderCreateDTO commonCreateTradeOrderAndGetPayParamsV2(CommonPayOrder commonPayOrder, BasePayConfig payConfig , String openId,
-            HttpServletRequest request) throws PayException {
+    public BasePayOrderCreateDTO commonCreateTradeOrderAndGetPayParamsV2(CommonPayOrder commonPayOrder, BasePayConfig payConfig, String openId, HttpServletRequest request)
+            throws PayException {
         // 构建交易订单
         ElectricityTradeOrder electricityTradeOrder = this.buildElectricityTradeOrder(request, commonPayOrder, payConfig);
         baseMapper.insert(electricityTradeOrder);
@@ -465,7 +463,6 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         model.setCurrency("CNY");
         model.setOpenId(openId);
         model.setPayConfig(payConfig);
-        
         
         BasePayRequest basePayRequest = payConfigConverter
                 .converterOrderCreate(model, config -> config.getPayCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
@@ -485,7 +482,6 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     public Pair<Boolean, Object> notifyMemberOrder(BaseOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         //交易订单
@@ -524,7 +520,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer memberOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             memberOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
             result = true;
@@ -625,7 +621,6 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     public Pair<Boolean, Object> notifyDepositOrder(BaseOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         //系统订单
@@ -654,7 +649,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
@@ -719,7 +714,6 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(BaseOrderCallBackResource callBackResource) {
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         //系统订单
@@ -747,7 +741,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_SUCCESS;
             result = true;
@@ -944,7 +938,6 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         //系统订单
@@ -978,7 +971,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer insuranceOrderStatus = EleBatteryServiceFeeOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             insuranceOrderStatus = EleBatteryServiceFeeOrder.STATUS_SUCCESS;
             result = true;
@@ -1042,11 +1035,10 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
      */
     @Override
     public Pair<Boolean, Object> notifyCloudBeanRechargeOrder(BaseOrderCallBackResource callBackResource) {
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.isSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
         } else {
             log.error("NOTIFY CLOUD BEAN RECHARGE ERROR!pay fail,tradeOrderNo={}", callBackResource.getOutTradeNo());

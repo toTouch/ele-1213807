@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -117,7 +118,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             }
 
             // 微信退款状态
-            Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
+            Integer refundState = callBackResource.converterTradeState(RefundStateEnum.SUCCESS.getCode(), RefundStateEnum.FAILED.getCode());
 
             // 构建押金退款订单表更新实体信息
             CarRentalPackageDepositRefundPo depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundState);

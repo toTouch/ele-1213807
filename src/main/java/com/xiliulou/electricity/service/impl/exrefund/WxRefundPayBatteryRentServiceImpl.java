@@ -106,8 +106,8 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
             return;
         }
         
-        Integer status = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS")
-                ? BatteryMembercardRefundOrder.STATUS_SUCCESS : BatteryMembercardRefundOrder.STATUS_FAIL;
+        Integer status = callBackResource.converterTradeState(BatteryMembercardRefundOrder.STATUS_SUCCESS, BatteryMembercardRefundOrder.STATUS_FAIL);
+        
         if (Objects.equals(status, BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
             if (Objects.equals(userBatteryMemberCard.getOrderId(), memberCardOrderNo)) {
                 //退使用中的

@@ -286,7 +286,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 回调参数
         String tradeRefundNo = callBackResource.getOutRefundNo();
         String outTradeNo = callBackResource.getOutTradeNo();
-        String refundStatus = callBackResource.getRefundStatus();
         
         // 退款订单
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, tradeRefundNo));
@@ -309,7 +308,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         Integer refundOrderStatus = EleRefundOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(refundStatus) && ObjectUtil.equal(refundStatus, "SUCCESS")) {
+        if (callBackResource.isSuccess()) {
             refundOrderStatus = EleRefundOrder.STATUS_SUCCESS;
             result = true;
         } else {
