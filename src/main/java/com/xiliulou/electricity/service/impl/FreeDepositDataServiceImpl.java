@@ -119,6 +119,11 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     public FreeDepositData selectByTenantId(Integer tenantId) {
         //发送站内信
         FreeDepositData freeDepositData = this.freeDepositDataMapper.selectByTenantId(tenantId);
+        
+        if (Objects.isNull(freeDepositData)) {
+            return null;
+        }
+        
         Optional.ofNullable(tenantId).ifPresent(
                 id -> siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
                         .tenantId(id.longValue()).addContext("type", RechargeAlarm.SESAME_CREDIT)

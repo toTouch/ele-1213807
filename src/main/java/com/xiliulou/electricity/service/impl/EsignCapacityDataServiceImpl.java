@@ -54,6 +54,11 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
     @Override
     public EsignCapacityData queryCapacityDataByTenantId(Long tenantId) {
         EsignCapacityData esignCapacityData = esignCapacityDataMapper.selectByTenantId(tenantId);
+        
+        if (Objects.isNull(esignCapacityData)) {
+            return null;
+        }
+        
         siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
                 .tenantId(tenantId).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
                 .addContext("count", esignCapacityData.getEsignCapacity()).build());
