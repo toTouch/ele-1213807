@@ -1231,4 +1231,9 @@
         update t_user_info set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
     
+    <select id="selectListUserInfoByPhone" resultType="com.xiliulou.electricity.entity.UserInfo">
+        select
+        <include refid="all_field"/>
+        from t_user_info where phone =#{phone}
+    </select>
 </mapper>

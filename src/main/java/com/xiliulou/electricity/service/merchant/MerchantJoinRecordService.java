@@ -15,6 +15,7 @@ import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantScanCodeRecordVO;
 
 import java.util.List;
 

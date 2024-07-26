@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -161,7 +162,9 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public void bindMerchant(Long uid, String orderId, Long memberCardId) {
+    public void bindMerchant(UserInfo userInfo, String orderId, Long memberCardId) {
+        Long uid = userInfo.getUid();
+        
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.warn("BIND MERCHANT WARN!electricityMemberCardOrder is null,uid={},orderId={}", uid, orderId);
@@ -217,6 +220,24 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         if (Objects.isNull(rebateConfig.getStatus()) || Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
             log.warn("BIND MERCHANT WARN!rebateConfig status illegal,id={},uid={}", rebateConfig.getId(), uid);
+            return;
+        }
+        
+        // 加盟商一致校验
+        if (!Objects.equals(userInfo.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
+            log.warn("BIND MERCHANT WARN! userInfo franchisee not equal order franchisee, uid ={} , order.franchiseeId={}", uid, electricityMemberCardOrder.getFranchiseeId());
+            return;
+        }
+        
+        if (!Objects.equals(merchant.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
+            log.warn("BIND MERCHANT WARN! merchant franchisee not equal order franchisee,merchant.id = {} , order.franchiseeId={}", merchant.getId(),
+                    electricityMemberCardOrder.getFranchiseeId());
+            return;
+        }
+        
+        List<RebateConfig> rebateConfigs = rebateConfigService.listRebateConfigByMid(electricityMemberCardOrder.getMemberCardId());
+        if (CollUtil.isEmpty(rebateConfigs)) {
+            log.warn("BIND MERCHANT WARN! current member not in rebateConfig, memberId={}", electricityMemberCardOrder.getMemberCardId());
             return;
         }
         

@@ -180,4 +180,6 @@ public interface UserInfoService extends IService<UserInfo> {
     void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId);
     
     List<UserInfo> listByUids(List<Long> uidList, Integer tenantId);
+    
+    List<UserInfo> queryListUserInfoByPhone(String phone);
 }

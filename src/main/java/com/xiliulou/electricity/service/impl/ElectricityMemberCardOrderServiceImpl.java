@@ -4218,5 +4218,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok(ElectricityMemberCardOrderVOs);
     }
     
-    
+    @Override
+    @Slave
+    public List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime) {
+        return baseMapper.selectListByCreateTime(buyStartTime, buyEndTime);
+    }
 }
