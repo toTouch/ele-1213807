@@ -376,6 +376,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
+    
+            if (!Objects.equals(userInfo.getFranchiseeId(), merchant.getFranchiseeId())) {
+                log.warn("Modify inviter fail! not same franchisee, uid={}, merchantId={}", uid, merchantId);
+                return R.ok();
+            }
         
             // 参与成功的记录
             MerchantInviterVO successInviterVO = querySuccessInviter(uid);
