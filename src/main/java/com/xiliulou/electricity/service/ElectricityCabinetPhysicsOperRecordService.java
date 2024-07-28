@@ -63,4 +63,6 @@ public interface ElectricityCabinetPhysicsOperRecordService {
     Boolean deleteById(Long id);
 
     R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer type, Long beginTime, Long endTime, Integer cellNo, String userName, String phone);
+    
+    Integer existSameCabinetCellSameTimeOpenRecord(Long createTime, Integer electricityCabinetId, Integer oldCellNo);
 }
