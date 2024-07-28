@@ -1,35 +1,52 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -62,9 +79,26 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     @Resource
     private BatteryTrackRecordService batteryTrackRecordService;
     
-    
     @Resource
     private ExchangeBatterySocService exchangeBatterySocService;
+    
+    @Resource
+    private UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Resource
+    private BatteryMemberCardService batteryMemberCardService;
+    
+    @Resource
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Resource
+    EleHardwareHandlerManager eleHardwareHandlerManager;
     
     XllThreadPoolExecutorService openFullBatteryExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPEN_FULL_BATTERY_SOC_ANALYZE", 1,
             "open-full-battery-soc-pool-thread");
@@ -100,10 +134,19 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         
-        if (openFullCellRsp.isException) {
+        //是否开启异常仓门锁仓
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetOrder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK) && openFullCellRsp.getIsException()) {
+            lockExceptionDoor(electricityCabinet, cabinetOrder, openFullCellRsp);
+        }
+        
+        if (openFullCellRsp.getIsException()) {
             log.warn("normalOpenFullyCellHandlerIot error! openFullCellRsp exception,requestId={}", receiverMessage.getSessionId());
             return;
         }
+        
+        // 订单完成。扣减套餐次数
+        deductionPackageNumberHandler(cabinetOrder);
         
         // 修改订单最终状态为成功
         ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
@@ -118,8 +161,40 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         }
         cabinetOrderService.update(newElectricityCabinetOrder);
         
-        //处理取走电池的相关信息
+        // 处理取走电池的相关信息（解绑&绑定）
         takeBatteryHandler(openFullCellRsp, cabinetOrder, electricityCabinet);
+    }
+    
+    private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder) {
+        
+        // 通过订单的 UID 获取用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
+        
+        // 扣减单电套餐次数
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                    log.info("normalOpenFullyCellHandlerIot.deductionPackageNumberHandler deduct battery member card,");
+                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
+                    if (row < 1) {
+                        log.warn("normalOpenFullyCellHandlerIot WARN! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(),
+                                userBatteryMemberCard.getId());
+                        throw new BizException("100213", "换电套餐剩余次数不足");
+                    }
+                }
+            }
+        }
+        
+        // 扣减车电一体套餐次数
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user car_battery member number.");
+            if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
+                throw new BizException("100213", "车电一体套餐剩余次数不足");
+            }
+        }
+        
     }
     
     private void takeBatteryHandler(EleOpenFullCellRsp openFullCellRsp, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
@@ -284,13 +359,13 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
      */
     private void handlerUserTakeBatterySoc(Long uid, String takeBatterySn, Double takeAwayPower) {
         if (Objects.isNull(takeAwayPower)) {
-            log.warn("normalOpenFullyCellHandlerIot.handlerUserTakeBatterySoc is error,takeAwayPower is null, sn={}", takeBatterySn);
+            log.warn("normalOpenFullyCellHandlerIot.handlerUserTakeBatterySoc is warn,takeAwayPower is null, sn={}", takeBatterySn);
             return;
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("normalOpenFullyCellHandlerIot.handlerUserTakeBatterySoc is error,userInfo is null, uid={},sn={}", uid, takeBatterySn);
+            log.warn("normalOpenFullyCellHandlerIot.handlerUserTakeBatterySoc is warn,userInfo is null, uid={},sn={}", uid, takeBatterySn);
             return;
         }
         
@@ -308,7 +383,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             batterySoc.setCreateTime(System.currentTimeMillis());
             exchangeBatterySocService.insertOne(batterySoc);
         } catch (Exception e) {
-            log.error("NormalNewExchangeOrderHandlerIot/handlerUserTakeBatterySoc/insert is exception, uid={},sn={}", userInfo.getUid(), takeBatterySn, e);
+            log.error("normalOpenFullyCellHandlerIot.handlerUserTakeBatterySoc.insert is warn, uid={},sn={}", userInfo.getUid(), takeBatterySn, e);
         }
         
     }
@@ -318,18 +393,18 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
      */
     private void handlerUserRentBatterySoc(String returnSn, Double returnPower) {
         if (StrUtil.isBlank(returnSn)) {
-            log.warn("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error,returnSn is null");
+            log.warn("normalOpenFullyCellHandlerIot.handlerUserRentBatterySoc is warn,returnSn is null");
             return;
         }
         if (Objects.isNull(returnPower)) {
-            log.warn("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error,returnPower is null, returnSn={}", returnSn);
+            log.warn("normalOpenFullyCellHandlerIot.handlerUserRentBatterySoc is warn,returnPower is null, returnSn={}", returnSn);
             return;
         }
         
         //  上报的sn绑定的用户+Sn;兼容异常交换场景
         ExchangeBatterySoc exchangeBatterySoc = exchangeBatterySocService.queryOneByUidAndSn(returnSn);
         if (Objects.isNull(exchangeBatterySoc)) {
-            log.warn("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc is error, rentBatterySoc is  null,sn={}", returnSn);
+            log.warn("normalOpenFullyCellHandlerIot.handlerUserRentBatterySoc is warn, rentBatterySoc is  null,sn={}", returnSn);
             return;
         }
         try {
@@ -342,7 +417,47 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
                 exchangeBatterySocService.update(batterySoc);
             }
         } catch (Exception e) {
-            log.error("NormalNewExchangeOrderHandlerIot/handlerUserRentBatterySoc update is exception,sn={}", returnPower, e);
+            log.error("normalOpenFullyCellHandlerIot.handlerUserRentBatterySoc update is warn,sn={}", returnPower, e);
+        }
+        
+    }
+    
+    private void lockExceptionDoor(ElectricityCabinet cabinet, ElectricityCabinetOrder electricityCabinetOrder, EleOpenFullCellRsp openFullCellRsp) {
+        
+        // 上报的订单状态值
+        String orderStatus = openFullCellRsp.getOrderStatus();
+        if (Objects.isNull(orderStatus)) {
+            log.error("normalOpenFullyCellHandlerIot.lock.cell warn! orderStatus is null! orderId={}", openFullCellRsp.getOrderId());
+            return;
+        }
+        
+        // 只有新仓门存在异常
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)) {
+            Integer cellNo = electricityCabinetOrder.getNewCellNo();
+            Integer electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
+            
+            if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
+                log.warn("normalOpenFullyCellHandlerIot.lock.cell warn! cell or electricityCabinetId is null! orderId:{}", openFullCellRsp.getOrderId());
+                return;
+            }
+            
+            //对异常仓门进行锁仓处理
+            electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
+            
+            // 发送锁仓命令,锁仓原因1008
+            Map<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", cellNo);
+            dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_SYSTEM);
+            dataMap.put("isForbidden", true);
+            dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_EXCEPTION);
+            
+            HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap).productKey(cabinet.getProductKey())
+                    .deviceName(cabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
+            
+            Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            if (!sendResult.getLeft()) {
+                log.error("normalOpenFullyCellHandlerIot.lock.cell warn! send command error! orderId:{}", openFullCellRsp.getOrderId());
+            }
         }
         
     }
