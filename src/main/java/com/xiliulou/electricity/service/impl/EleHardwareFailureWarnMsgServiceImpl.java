@@ -168,21 +168,21 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (ObjectUtils.isEmpty(list)) {
             return R.ok(Collections.emptyList());
         }
-    
+        
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         }
-    
+        
         Set<Long> batteryIdSet = list.stream().filter(item -> !Objects.equals(item.getBatteryId(), NumberConstant.ZERO_L)).map(EleHardwareFailureWarnMsg::getBatteryId)
                 .collect(Collectors.toSet());
-    
+        
         Map<Long, String> batterySnMap = new HashMap<>();
         if (ObjectUtils.isNotEmpty(batteryIdSet)) {
             List<Long> idList = batteryIdSet.stream().collect(Collectors.toList());
             List<ElectricityBattery> batteryList = batteryService.queryListByIdList(idList);
             if (ObjectUtils.isNotEmpty(batteryList)) {
-                 batterySnMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getId, ElectricityBattery::getSn));
+                batterySnMap = batteryList.stream().collect(Collectors.toMap(ElectricityBattery::getId, ElectricityBattery::getSn));
             }
         }
         
@@ -205,7 +205,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             });
             
             Map<String, Map<String, String>> map = new HashMap<>();
-    
+            
             // 上报的记录没有
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
@@ -215,11 +215,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     descMap = getDescMap(failureAlarm.getEventDesc());
                     map.put(failureAlarm.getSignalId(), descMap);
                 }
-    
+                
                 if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
                     signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                 }
-    
+                
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());
                 vo.setDeviceType(failureAlarm.getDeviceType());
@@ -228,7 +228,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 vo.setGrade(null);
                 vo.setDeviceType(null);
             }
-    
+            
             if (ObjectUtils.isNotEmpty(item.getBatterySn())) {
                 vo.setSn(item.getBatterySn());
             }
@@ -280,7 +280,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             List<String> signalIdList = failureAlarmList.stream().map(FailureAlarm::getSignalId).collect(Collectors.toList());
             queryModel.setSignalIdList(signalIdList);
         }
-        
         
         return Triple.of(true, null, null);
     }
@@ -392,7 +391,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         // 故障环比
         vo.setFailureCycleRate(failureCycleRate);
-    
+        
         BigDecimal warnCycleRate = BigDecimal.ZERO;
         // 环比增长速度=（本期数－上期数）÷上期数×100%，上一期为0，则环比为0
         if (!Objects.equals(warnNum, NumberConstant.ZERO)) {
@@ -467,19 +466,16 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (triple.getLeft() && Objects.isNull(triple.getRight())) {
             list = failureWarnMsgMapper.selectListExport(queryModel);
         }
-    
+        
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         if (Objects.equals(request.getType(), EleHardwareFailureWarnMsg.FAILURE)) {
             type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode();
         }
         
-        
         if (ObjectUtils.isNotEmpty(list)) {
             
-    
             Map<Long, String> batterySnMap = new HashMap<>();
             setBatterySnMap(batterySnMap, list);
-            
             
             Map<String, Map<String, String>> map = new HashMap<>();
             for (FailureWarnMsgExcelVo vo : list) {
@@ -493,7 +489,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 
                 if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), type)) {
                     String signalName = failureAlarm.getSignalName();
-    
+                    
                     Map<String, String> descMap = map.get(failureAlarm.getSignalId());
                     if (ObjectUtils.isEmpty(descMap)) {
                         descMap = getDescMap(failureAlarm.getEventDesc());
@@ -504,7 +500,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                         signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
                     }
                     
-    
                     vo.setFailureAlarmName(signalName);
                     vo.setGrade(String.valueOf(failureAlarm.getGrade()));
                     vo.setDeviceType(String.valueOf(failureAlarm.getDeviceType()));
@@ -512,12 +507,12 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                     if (ObjectUtils.isNotEmpty(deviceTypeEnum)) {
                         vo.setDeviceType(deviceTypeEnum.getDesc());
                     }
-    
+                    
                     FailureAlarmGradeEnum gradeEnum = BasicEnum.getEnum(Integer.valueOf(vo.getGrade()), FailureAlarmGradeEnum.class);
                     if (ObjectUtils.isNotEmpty(gradeEnum)) {
                         vo.setGrade(gradeEnum.getDesc());
                     }
-                } else if (Objects.isNull(request.getNoLimitSignalId())){
+                } else if (Objects.isNull(request.getNoLimitSignalId())) {
                     vo.setFailureAlarmName("");
                     vo.setGrade("");
                     vo.setDeviceType("");
@@ -545,7 +540,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
                     vo.setSn(vo.getBatterySn());
                 }
-    
+                
                 if (ObjectUtils.isNotEmpty(vo.getBatterySn())) {
                     vo.setSn(vo.getBatterySn());
                 }
@@ -565,7 +560,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     private void setBatterySnMap(Map<Long, String> batterySnMap, List<FailureWarnMsgExcelVo> list) {
         Set<Long> batteryIdSet = list.stream().filter(item -> !Objects.equals(item.getBatteryId(), NumberConstant.ZERO_L)).map(FailureWarnMsgExcelVo::getBatteryId)
                 .collect(Collectors.toSet());
-    
+        
         if (ObjectUtils.isNotEmpty(batteryIdSet)) {
             List<Long> collect = batteryIdSet.stream().collect(Collectors.toList());
             List<List<Long>> partition = ListUtils.partition(collect, 500);
@@ -640,16 +635,17 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (!triple.getLeft()) {
             throw new CustomBusinessException((String) triple.getRight());
         }
-    
+        
         FailureWarnMsgPageQueryModel queryModel = FailureWarnMsgPageQueryModel.builder().alarmStartTime(request.getAlarmStartTime()).alarmEndTime(request.getAlarmEndTime())
-                  .type(request.getType()).build();
+                .type(request.getType()).build();
         
         List<FailureWarnProportionExportVo> exportVoList = new ArrayList<>();
         
         // 统计每个信号量故障或者告警的数量
         List<FailureWarnProportionVo> failureWarnProportionVos = failureWarnMsgMapper.selectListProportion(queryModel);
         if (ObjectUtils.isNotEmpty(failureWarnProportionVos)) {
-            List<FailureWarnProportionVo> list = failureWarnProportionVos.stream().sorted(Comparator.comparing(FailureWarnProportionVo::getCount, Comparator.reverseOrder())).collect(Collectors.toList());
+            List<FailureWarnProportionVo> list = failureWarnProportionVos.stream().sorted(Comparator.comparing(FailureWarnProportionVo::getCount, Comparator.reverseOrder()))
+                    .collect(Collectors.toList());
             int i = 1;
             
             for (FailureWarnProportionVo item : list) {
@@ -680,7 +676,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
                 exportVoList.add(vo);
             }
         }
-    
+        
         String fileName = "故障告警占比导出.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -700,22 +696,22 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     public Triple<Boolean, String, Object> warnNoteNotice(WarnNoteCallBack warnNoteCallBack) {
         log.info("warn note notice info! failure warn sessionId = {}, alarmId={}, tenantId={}, count={}", warnNoteCallBack.getSessionId(), warnNoteCallBack.getAlarmId(),
                 warnNoteCallBack.getTenantId(), warnNoteCallBack.getCount());
-    
+        
         if (Objects.isNull(warnNoteCallBack.getCount()) || warnNoteCallBack.getCount() < NumberConstant.ZERO_L) {
             log.warn("warn note notice info! failure warn count is empty, count={}", warnNoteCallBack.getCount());
             return Triple.of(false, "300832", "无效的短信次数");
         }
-    
+        
         if (Objects.isNull(warnNoteCallBack.getTenantId())) {
             log.warn("warn note notice info! failure warn tenantId is empty, tenantId={}", warnNoteCallBack.getTenantId());
             return Triple.of(false, "300833", "无效的租户id");
         }
-    
+        
         if (Objects.isNull(warnNoteCallBack.getAlarmId())) {
             log.warn("warn note notice info! failure warn alarmId is empty, alarmId={}", warnNoteCallBack.getAlarmId());
             return Triple.of(false, "300834", "无效的告警id");
         }
-    
+        
         // 检测告警是否存在
         int count = eleHardwareWarnMsgService.existByAlarmId(warnNoteCallBack.getAlarmId());
         if (count == 0) {
@@ -726,13 +722,13 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 修改租户对应的短信次数：更新缓存等。
         // 查询每个租户对应的短信的次数
         TenantNote tenantNote = tenantNoteService.queryFromCacheByTenantId(warnNoteCallBack.getTenantId());
-    
+        
         // 判断租户是否分配过短信次数
         if (ObjectUtils.isEmpty(tenantNote)) {
             log.warn("warn note notice error! failure warn not find tenant note config, tenantId={}", warnNoteCallBack.getTenantId());
             return Triple.of(false, "300836", "租户未充值短信");
         }
-    
+        
         TenantNote tenantNoteUpdate = new TenantNote();
         tenantNoteUpdate.setId(tenantNote.getId());
         tenantNoteUpdate.setNoteNum(warnNoteCallBack.getCount());
@@ -743,7 +739,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         // 修改短信标志
         eleHardwareWarnMsgService.updateNoteFlagByAlarmId(warnNoteCallBack.getAlarmId());
-    
+        
         Long noteNum = tenantNote.getNoteNum();
         for (int i = 0; i < warnNoteCallBack.getCount(); i++) {
             noteNum = noteNum - NumberConstant.ONE_L;
@@ -758,7 +754,6 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
             }
         }
         
-    
         return Triple.of(true, null, null);
     }
     
@@ -769,13 +764,13 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         if (Objects.isNull(electricityConfig)) {
             log.warn("send lower note notice warn! not find electricity config, tenantId={}", tenantId);
         }
-    
+        
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones()) || ObjectUtils.isEmpty(notifyConfig.getPermissions())) {
             log.warn("send lower note notice warn! not found maintenanceUserNotifyConfig,tenantId={}", tenantId);
             return;
         }
-    
+        
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (CollectionUtils.isEmpty(phones)) {
             log.info("send lower note notice warn! phones is empty,tenantId={}", tenantId);
@@ -783,7 +778,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         }
         
         String sessionId = UUID.randomUUID().toString().replace("-", "");
-    
+        
         MessageCenterRequest messageCenterRequest = new MessageCenterRequest();
         // 消息模板编码
         messageCenterRequest.setMessageTemplateCode(messageCenterConfig.getLowNoteNoticeMessageTemplateCode());
@@ -791,12 +786,11 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         messageCenterRequest.setMessageId(sessionId);
         // 租户id
         messageCenterRequest.setTenantId(tenantId);
-    
+        
         // 设置消息内容
         TenantNoteLowerNotice tenantNoteLowerNotice = TenantNoteLowerNotice.builder().platformName(electricityConfig.getName()).noteNum(noteNum).build();
         messageCenterRequest.setParamMap(tenantNoteLowerNotice);
-    
-    
+        
         // 短信通知
         MessageCenterSendReceiver noteMessageCenterSendReceiver = MessageCenterSendReceiver.builder().sendChannel(MessageCenterConstant.SEND_CHANNEL_NOTE).callBackUrl(null)
                 .callBackMap(null).receiver(phones).build();
@@ -804,18 +798,18 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         // 消息接收者
         List<MessageCenterSendReceiver> sendReceiverList = new ArrayList<>();
         sendReceiverList.add(noteMessageCenterSendReceiver);
-    
+        
         messageCenterRequest.setSendReceiverList(sendReceiverList);
         try {
-            ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest),
-                    null);
+            ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(messageCenterRequest), null);
             
             if (Objects.isNull(responseEntity)) {
                 log.error("send lower note notice error! failure warn send note result is null, sessionId={}, alarmId={}", sessionId, warnNoteCallBack.getAlarmId());
             }
-    
+            
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                log.error("send lower note notice error! failure warn send note error, sessionId={}, alarmId={}, msg = {}", sessionId, warnNoteCallBack.getAlarmId(), responseEntity.getBody());
+                log.error("send lower note notice error! failure warn send note error, sessionId={}, alarmId={}, msg = {}", sessionId, warnNoteCallBack.getAlarmId(),
+                        responseEntity.getBody());
             }
             
         } catch (Exception e) {

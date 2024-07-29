@@ -95,4 +95,14 @@ public interface MqProducerConstant {
      * 电池电压电流变化
      */
     String BATTERY_CHARGE_ATTR_CHANGE_TOPIC = "battery_charge_attr_change_topic";
+    
+    /**
+     * 站内信所在新项目主题
+     */
+    String AUX_MQ_TOPIC_NAME="XILIULOU_SAAS_AUX_TOPIC";
+    
+    /**
+     * 站内信所在新项目主题TAG
+     */
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
 }

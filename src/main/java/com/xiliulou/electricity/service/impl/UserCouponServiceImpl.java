@@ -856,7 +856,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                     userCouponDTO.getCouponId(), userCouponDTO.getUid());
             
         } catch (Exception e) {
-            log.error("Send coupon to user for purchase package error, uid = {}, coupon id = {}, source order number = {}", userCouponDTO.getUid(), userCouponDTO.getCouponId(),
+            log.warn("Send coupon to user for purchase package error, uid = {}, coupon id = {}, source order number = {}", userCouponDTO.getUid(), userCouponDTO.getCouponId(),
                     userCouponDTO.getSourceOrderNo(), e);
             throw new BizException("200000", e.getMessage());
         } finally {
