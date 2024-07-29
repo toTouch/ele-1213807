@@ -5,6 +5,7 @@
 package com.xiliulou.electricity.converter.model;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -60,4 +61,16 @@ public class OrderRefundParamConverterModel {
      */
     private BasePayConfig payConfig;
     
+    
+    /**
+     * 退款类型
+     * @see RefundPayOptTypeEnum
+     */
+    private String refundType;
+    
+    
+    
+    private Integer tenantId;
+    
+    private Long franchiseeId;
 }

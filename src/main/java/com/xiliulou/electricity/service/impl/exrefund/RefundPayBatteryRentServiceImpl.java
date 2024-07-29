@@ -8,15 +8,12 @@ import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
-import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +27,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Service("wxRefundPayBatteryRentServiceImpl")
-public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
+public class RefundPayBatteryRentServiceImpl implements RefundPayService {
     
     @Autowired
     private RedisService redisService;
@@ -197,6 +194,6 @@ public class WxRefundPayBatteryRentServiceImpl implements WxRefundPayService {
     
     @Override
     public String getOptType() {
-        return WxRefundPayOptTypeEnum.BATTERY_DEPOSIT_REFUND_CALL_BACK.getCode();
+        return RefundPayOptTypeEnum.BATTERY_DEPOSIT_REFUND_CALL_BACK.getCode();
     }
 }

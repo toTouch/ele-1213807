@@ -43,6 +43,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -274,8 +275,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         model.setRefund(batteryMembercardRefundOrder.getRefundAmount());
         model.setPayConfig(basePayConfig);
         model.setTotal(total);
+        model.setRefundType(RefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode());
+        model.setTenantId(basePayConfig.getTenantId());
+        model.setFranchiseeId(basePayConfig.getFranchiseeId());
         BasePayRequest basePayRequest = payConfigConverter
-                .converterOrderRefund(model, config -> config.getBatteryRentRefundCallBackUrl() + basePayConfig.getTenantId() + "/" + basePayConfig.getFranchiseeId());
+                .converterOrderRefund(model);
     
         log.info("WECHAT INFO! wechatv3 refund query={}", JsonUtil.toJson(basePayRequest));
         return payServiceDispatcher.refund(basePayRequest);

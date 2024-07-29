@@ -65,4 +65,10 @@ public class OrderCreateParamConverterModel {
      */
     private BasePayConfig payConfig;
     
+    
+    
+    private Integer tenantId;
+    
+    private Long franchiseeId;
+    
 }

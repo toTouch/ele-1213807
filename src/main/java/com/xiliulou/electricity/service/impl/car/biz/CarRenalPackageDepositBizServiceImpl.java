@@ -16,7 +16,6 @@ import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -36,6 +35,7 @@ import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
@@ -69,7 +69,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -141,7 +141,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private InsuranceUserInfoService insuranceUserInfoService;
     
     @Resource(name = "wxRefundPayCarDepositServiceImpl")
-    private WxRefundPayService wxRefundPayService;
+    private RefundPayService refundPayService;
     
     @Resource
     private ElectricityTradeOrderService electricityTradeOrderService;
@@ -1606,8 +1606,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         model.setTotal(electricityTradeOrder.getTotalFee().intValue());
         model.setCurrency("CNY");
         model.setPayConfig(config);
-        BasePayRequest basePayRequest = payConfigConverter
-                .converterOrderRefund(model, cf -> cf.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
+        model.setTenantId(electricityTradeOrder.getTenantId());
+        model.setFranchiseeId(electricityTradeOrder.getPayFranchiseeId());
+        model.setRefundType(RefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode());
+        BasePayRequest basePayRequest = payConfigConverter.converterOrderRefund(model);
         
         return payServiceDispatcher.refund(basePayRequest);
     }
@@ -1620,43 +1622,43 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @return
      * @throws WechatPayException
      */
-    private WechatJsapiRefundResultDTO wxRefund(RefundOrder refundOrder) throws WechatPayException {
-        //第三方订单号
-        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
-        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
-            log.warn("CarRenalPackageDepositBizService.wxRefund failed, not found t_electricity_trade_order. orderId is {}", refundOrder.getOrderId());
-            throw new BizException("300000", "数据有误");
-        }
-        
-        //调用退款
-        WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
-        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
-        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId());
-        
-        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
-        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
-        wechatV3RefundRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
-        wechatV3RefundRequest.setReason("押金退款");
-        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
-        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundRequest.setTotal(electricityTradeOrder.getTotalFee().intValue());
-        wechatV3RefundRequest.setCurrency("CNY");
-        
-        // 调用支付配置参数
-        WechatPayParamsDetails wechatPayParamsDetails = null;
-        try {
-            wechatPayParamsDetails = wechatPayParamsBizService
-                    .getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId());
-        } catch (Exception e) {
-            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
-            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
-            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-        }
-        
-        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
-        
-        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
-    }
+//    private WechatJsapiRefundResultDTO wxRefund(RefundOrder refundOrder) throws WechatPayException {
+//        //第三方订单号
+//        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
+//        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
+//            log.warn("CarRenalPackageDepositBizService.wxRefund failed, not found t_electricity_trade_order. orderId is {}", refundOrder.getOrderId());
+//            throw new BizException("300000", "数据有误");
+//        }
+//
+//        //调用退款
+//        WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
+//        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
+//        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId());
+//
+//        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
+//        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
+//        wechatV3RefundRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
+//        wechatV3RefundRequest.setReason("押金退款");
+//        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
+//        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+//        wechatV3RefundRequest.setTotal(electricityTradeOrder.getTotalFee().intValue());
+//        wechatV3RefundRequest.setCurrency("CNY");
+//
+//        // 调用支付配置参数
+//        WechatPayParamsDetails wechatPayParamsDetails = null;
+//        try {
+//            wechatPayParamsDetails = wechatPayParamsBizService
+//                    .getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId());
+//        } catch (Exception e) {
+//            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+//            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
+//            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+//        }
+//
+//        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+//
+//        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
+//    }
     
     /**
      * C端退押申请

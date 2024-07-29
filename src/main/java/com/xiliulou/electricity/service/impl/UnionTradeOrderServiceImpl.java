@@ -441,9 +441,10 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         model.setCurrency("CNY");
         model.setOpenId(openId);
         model.setPayConfig(payParamConfig);
+        model.setTenantId(unionTradeOrder.getTenantId());
+        model.setFranchiseeId(payParamConfig.getFranchiseeId());
         
-        BasePayRequest basePayRequest = payConfigConverter
-                .converterOrderCreate(model, config -> config.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + payParamConfig.getFranchiseeId());
+        BasePayRequest basePayRequest = payConfigConverter.converterOrderCreate(model);
         
         return payServiceDispatcher.order(basePayRequest);
     }

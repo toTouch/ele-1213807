@@ -12,6 +12,7 @@ import com.xiliulou.electricity.config.BasePayCallBackConfig;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.converter.model.OrderCreateParamConverterModel;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import com.xiliulou.pay.alipay.request.AliPayCreateOrderRequest;
 import com.xiliulou.pay.alipay.request.AliPayOrderRefundRequest;
 import com.xiliulou.core.base.enums.ChannelEnum;
@@ -57,34 +58,33 @@ public class PayConfigConverter {
     
     private void initAlipay() {
         // 支付宝下单转换
-        orderCreateMap.put(ChannelEnum.ALIPAY.getCode(), (model, call) -> alipayOrderCreateParamConverter(model, call));
+        orderCreateMap.put(ChannelEnum.ALIPAY.getCode(), (model) -> alipayOrderCreateParamConverter(model));
         //微信退款转换
-        orderRefundMap.put(ChannelEnum.ALIPAY.getCode(), (model, call) -> alipayOrderRefundParamConverter(model, call));
+        orderRefundMap.put(ChannelEnum.ALIPAY.getCode(), (model) -> alipayOrderRefundParamConverter(model));
     }
     
     
     private void initWx() {
         //微信下单转换
-        orderCreateMap.put(ChannelEnum.WECHAT.getCode(), (model, call) -> wechatOrderCreateParamConverter(model, call));
+        orderCreateMap.put(ChannelEnum.WECHAT.getCode(), (model) -> wechatOrderCreateParamConverter(model));
         //微信退款转换
-        orderRefundMap.put(ChannelEnum.WECHAT.getCode(), (model, call) -> wechatOrderRefundParamConverter(model, call));
+        orderRefundMap.put(ChannelEnum.WECHAT.getCode(), (model) -> wechatOrderRefundParamConverter(model));
     }
     
     /**
      * 下单转换
      *
      * @param model
-     * @param callBackUrlGet
      * @author caobotao.cbt
      * @date 2024/7/19 13:54
      */
-    public BasePayRequest converterOrderCreate(OrderCreateParamConverterModel model, CallBackUrlGet callBackUrlGet) {
+    public BasePayRequest converterOrderCreate(OrderCreateParamConverterModel model) {
         BasePayConfig payConfig = model.getPayConfig();
         PayConfigConverterHandler<OrderCreateParamConverterModel> handler = orderCreateMap.get(payConfig.getPaymentChannel());
         if (Objects.isNull(handler)) {
             return null;
         }
-        return handler.execute(model, callBackUrlGet);
+        return handler.execute(model);
     }
     
     /***
@@ -92,15 +92,14 @@ public class PayConfigConverter {
      * @author caobotao.cbt
      * @date 2024/7/19 13:54
      * @param model
-     * @param callBackUrlGet
      */
-    public BasePayRequest converterOrderRefund(OrderRefundParamConverterModel model, CallBackUrlGet callBackUrlGet) {
+    public BasePayRequest converterOrderRefund(OrderRefundParamConverterModel model) {
         BasePayConfig payConfig = model.getPayConfig();
         PayConfigConverterHandler<OrderRefundParamConverterModel> handler = orderRefundMap.get(payConfig.getPaymentChannel());
         if (Objects.isNull(handler)) {
             return null;
         }
-        return handler.execute(model, callBackUrlGet);
+        return handler.execute(model);
     }
     
     /**
@@ -109,7 +108,7 @@ public class PayConfigConverter {
      * @author caobotao.cbt
      * @date 2024/7/17 10:37
      */
-    private BasePayRequest<WechatV3OrderRequest> wechatOrderCreateParamConverter(OrderCreateParamConverterModel model, CallBackUrlGet callBackUrlGet) {
+    private BasePayRequest<WechatV3OrderRequest> wechatOrderCreateParamConverter(OrderCreateParamConverterModel model) {
         
         BasePayConfig payConfig = model.getPayConfig();
         if (Objects.isNull(payConfig)) {
@@ -127,7 +126,7 @@ public class PayConfigConverter {
         wechatV3OrderRequest.setAmount(model.getAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3OrderRequest.setCurrency(model.getCurrency());
         wechatV3OrderRequest.setOpenId(model.getOpenId());
-        wechatV3OrderRequest.setNotifyUrl(callBackUrlGet.getCallBackUrl(this.wechatConfig));
+        wechatV3OrderRequest.setNotifyUrl(wechatConfig.getPayCallBackUrl() + model.getTenantId() + "/" + model.getFranchiseeId());
         wechatV3OrderRequest.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
         wechatV3OrderRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         
@@ -142,11 +141,10 @@ public class PayConfigConverter {
      * 微信退款
      *
      * @param wrap
-     * @param callBackUrlGet
      * @author caobotao.cbt
      * @date 2024/7/18 09:59
      */
-    private BasePayRequest<WechatV3RefundRequest> wechatOrderRefundParamConverter(OrderRefundParamConverterModel wrap, CallBackUrlGet callBackUrlGet) {
+    private BasePayRequest<WechatV3RefundRequest> wechatOrderRefundParamConverter(OrderRefundParamConverterModel wrap) {
         
         BasePayConfig payConfig = wrap.getPayConfig();
         if (Objects.isNull(payConfig)) {
@@ -158,15 +156,29 @@ public class PayConfigConverter {
         wechatV3RefundRequest.setRefundId(wrap.getRefundId());
         wechatV3RefundRequest.setOrderId(wrap.getOrderId());
         wechatV3RefundRequest.setReason(wrap.getReason());
-        wechatV3RefundRequest.setNotifyUrl(callBackUrlGet.getCallBackUrl(this.wechatConfig));
         wechatV3RefundRequest.setRefund(wrap.getRefund().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundRequest.setTotal(wrap.getTotal());
         wechatV3RefundRequest.setCurrency(wrap.getCurrency());
         wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
         
+        if (RefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode().equals(wrap.getRefundType())) {
+            String url = wechatConfig.getBatteryRentRefundCallBackUrl() + wrap.getTenantId() + "/" + wrap.getFranchiseeId();
+            wechatV3RefundRequest.setNotifyUrl(url);
+        } else if (RefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode().equals(wrap.getRefundType())) {
+            String url = wechatConfig.getCarRentRefundCallBackUrl() + wrap.getTenantId() + "/" + wrap.getFranchiseeId();
+            wechatV3RefundRequest.setNotifyUrl(url);
+        } else if (RefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode().equals(wrap.getRefundType())) {
+            String url = wechatConfig.getCarDepositRefundCallBackUrl() + wrap.getTenantId() + "/" + wrap.getFranchiseeId();
+            wechatV3RefundRequest.setNotifyUrl(url);
+        } else if (RefundPayOptTypeEnum.BATTERY_DEPOSIT_REFUND_CALL_BACK.getCode().equals(wrap.getRefundType())) {
+            String url = wechatConfig.getRefundCallBackUrl() + wrap.getTenantId() + "/" + wrap.getFranchiseeId();
+            wechatV3RefundRequest.setNotifyUrl(url);
+        }
+        
         BasePayRequest<WechatV3RefundRequest> basePayRequest = new BasePayRequest();
         basePayRequest.setChannel(ChannelEnum.WECHAT.getCode());
         basePayRequest.setBizParam(wechatV3RefundRequest);
+        
         return basePayRequest;
     }
     
@@ -174,11 +186,10 @@ public class PayConfigConverter {
      * 支付宝退款
      *
      * @param wrap
-     * @param callBackUrlGet
      * @author caobotao.cbt
      * @date 2024/7/18 10:04
      */
-    private BasePayRequest<AliPayOrderRefundRequest> alipayOrderRefundParamConverter(OrderRefundParamConverterModel wrap, CallBackUrlGet callBackUrlGet) {
+    private BasePayRequest<AliPayOrderRefundRequest> alipayOrderRefundParamConverter(OrderRefundParamConverterModel wrap) {
         BasePayConfig payConfig = wrap.getPayConfig();
         if (Objects.isNull(payConfig)) {
             return null;
@@ -192,10 +203,12 @@ public class PayConfigConverter {
         aliPayOrderRefundRequest.setRefundAmount(wrap.getRefund().toPlainString());
         aliPayOrderRefundRequest.setRefundCurrency(wrap.getCurrency());
         aliPayOrderRefundRequest.setOpenId(wrap.getOrderId());
+        aliPayOrderRefundRequest.setRefundType(wrap.getRefundType());
         aliPayOrderRefundRequest.setAppId(config.getAppId());
         aliPayOrderRefundRequest.setAppPrivateKey(config.getAppPrivateKey());
         aliPayOrderRefundRequest.setAlipayPublicKey(config.getPublicKey());
-        aliPayOrderRefundRequest.setNotifyUrl(callBackUrlGet.getCallBackUrl(this.aliPayConfig));
+        
+        //        aliPayOrderRefundRequest.setNotifyUrl(callBackUrlGet.getCallBackUrl(this.aliPayConfig));
         
         BasePayRequest<AliPayOrderRefundRequest> basePayRequest = new BasePayRequest();
         basePayRequest.setChannel(ChannelEnum.ALIPAY.getCode());
@@ -209,7 +222,7 @@ public class PayConfigConverter {
      * @author caobotao.cbt
      * @date 2024/7/17 10:42
      */
-    private BasePayRequest<AliPayCreateOrderRequest> alipayOrderCreateParamConverter(OrderCreateParamConverterModel wrap, CallBackUrlGet callBackUrlGet) {
+    private BasePayRequest<AliPayCreateOrderRequest> alipayOrderCreateParamConverter(OrderCreateParamConverterModel wrap) {
         
         BasePayConfig payConfig = wrap.getPayConfig();
         if (Objects.isNull(payConfig)) {
@@ -225,7 +238,7 @@ public class PayConfigConverter {
         aliPayCreateOrderRequest.setAlipayPublicKey(alipayAppConfig.getPublicKey());
         
         // 其他参数
-        aliPayCreateOrderRequest.setNotifyUrl(callBackUrlGet.getCallBackUrl(this.aliPayConfig));
+        aliPayCreateOrderRequest.setNotifyUrl(aliPayConfig.getPayCallBackUrl() + wrap.getTenantId() + "/" + wrap.getFranchiseeId());
         aliPayCreateOrderRequest.setBuyerOpenId(wrap.getOpenId());
         aliPayCreateOrderRequest.setOutTradeNo(wrap.getOrderId());
         aliPayCreateOrderRequest.setTotalAmount(wrap.getAmount().toPlainString());
@@ -246,14 +259,8 @@ public class PayConfigConverter {
     interface PayConfigConverterHandler<T> {
         
         
-        BasePayRequest execute(T p, CallBackUrlGet callBackUrlGet);
+        BasePayRequest execute(T p);
         
-    }
-    
-    @FunctionalInterface
-    public interface CallBackUrlGet {
-        
-        String getCallBackUrl(BasePayCallBackConfig config);
     }
     
 }

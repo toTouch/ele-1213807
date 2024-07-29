@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl.exrefund;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
-import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -21,17 +20,14 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * 微信退款-租车押金退款 ServiceImpl
@@ -40,7 +36,7 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service("wxRefundPayCarDepositServiceImpl")
-public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
+public class RefundPayCarDepositServiceImpl implements RefundPayService {
 
     @Resource
     private UserBatteryDepositService userBatteryDepositService;
@@ -140,7 +136,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      */
     @Override
     public String getOptType() {
-        return WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode();
+        return RefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode();
     }
 
     /**

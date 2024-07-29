@@ -463,9 +463,9 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         model.setCurrency("CNY");
         model.setOpenId(openId);
         model.setPayConfig(payConfig);
-        
-        BasePayRequest basePayRequest = payConfigConverter
-                .converterOrderCreate(model, config -> config.getPayCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
+        model.setTenantId(electricityTradeOrder.getTenantId());
+        model.setFranchiseeId(electricityTradeOrder.getPayFranchiseeId());
+        BasePayRequest basePayRequest = payConfigConverter.converterOrderCreate(model);
         
         return payServiceDispatcher.order(basePayRequest);
     }

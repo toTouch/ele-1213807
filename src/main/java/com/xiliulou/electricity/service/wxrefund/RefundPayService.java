@@ -4,11 +4,11 @@ import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 
 /**
- * 微信退款顶级 Service
+ * 退款顶级 Service
  *
  * @author xiaohui.song
  **/
-public interface WxRefundPayService {
+public interface RefundPayService {
 
     /**
      * 执行方法

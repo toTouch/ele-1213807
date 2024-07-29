@@ -18,26 +18,5 @@ public interface BasePayCallBackConfig {
      */
     String getPayCallBackUrl();
     
-    /**
-     * 电池押金退款回调
-     */
-    String getRefundCallBackUrl();
-    
-    /**
-     * 电池套餐退租金回调
-     */
-    String getBatteryRentRefundCallBackUrl();
-    
-    
-    /**
-     * 租车押金退款回调
-     */
-    String getCarDepositRefundCallBackUrl();
-    
-    
-    /**
-     * 租车租金退款回调
-     */
-    String getCarRentRefundCallBackUrl();
     
 }

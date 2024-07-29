@@ -6,13 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 微信支付回调业务类型枚举
+ * 支付回调业务类型枚举
  *
  * @author xiaohui.song
  **/
 @Getter
 @AllArgsConstructor
-public enum WxRefundPayOptTypeEnum implements BasicEnum<String, String> {
+public enum RefundPayOptTypeEnum implements BasicEnum<String, String> {
 
     
     CAR_DEPOSIT_REFUND_CALL_BACK("CAR_DEPOSIT_REFUND_CALL_BACK", "租车套餐押金退还"),
