@@ -105,7 +105,6 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
             log.error("normalOpenFullyCellHandlerIot error! sessionId is null");
@@ -128,11 +127,13 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             log.error("normalOpenFullyCellHandlerIot error! order is null,sessionId is{}, orderId is {}", sessionId, openFullCellRsp.getOrderId());
         }
         
+        /*
         if (cabinetOrder.getOrderSeq() > openFullCellRsp.getOrderSeq()) {
             log.warn("normalOpenFullyCellHandlerIot error! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(),
                     openFullCellRsp.getOrderId(), cabinetOrder.getUid());
             return;
         }
+        */
         
         //是否开启异常仓门锁仓
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetOrder.getTenantId());
