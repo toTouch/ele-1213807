@@ -25,6 +25,7 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.RentRefundAuditMessageNotify;
@@ -272,6 +273,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         model.setReason("退款");
         model.setRefund(batteryMembercardRefundOrder.getRefundAmount());
         model.setPayConfig(basePayConfig);
+        model.setTotal(total);
         BasePayRequest basePayRequest = payConfigConverter
                 .converterOrderRefund(model, config -> config.getBatteryRentRefundCallBackUrl() + basePayConfig.getTenantId() + "/" + basePayConfig.getFranchiseeId());
     
