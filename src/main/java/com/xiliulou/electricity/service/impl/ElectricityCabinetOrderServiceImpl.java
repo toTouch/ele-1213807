@@ -1373,28 +1373,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(false, null);
         }
         
-        // 用户电池是否在仓
-        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
-        
         String msg = history.getMsg();
         log.info("lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
         
         //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
         if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
                 lastOrder.getOldCellNo(), msg))) {
-            return oldCellCheckFail(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
+            return oldCellCheckFail(lastOrder, userBindingBatterySn, vo, cabinet, userInfo);
         }
         
         //  新仓门&开门失败
         if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
-            return newCellOpenFail(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet);
+            return newCellOpenFail(lastOrder, userBindingBatterySn, vo, cabinet);
         }
         
         return Pair.of(false, null);
     }
     
-    private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo,
-            ElectricityCabinet cabinet) {
+    private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet) {
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
@@ -1405,6 +1401,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());
+        
+        // 用户电池是否在仓
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
         ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(userBindingBatterySn);
         // 用户绑定的电池状态是否为租借状态
@@ -1420,8 +1419,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Pair<Boolean, Object> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo,
-            ElectricityCabinet cabinet, UserInfo userInfo) {
+    private Pair<Boolean, Object> oldCellCheckFail(ElectricityCabinetOrder lastOrder, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
+            UserInfo userInfo) {
         
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
             // 旧仓门不满足开仓条件
@@ -1433,23 +1432,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setOrderId(lastOrder.getOrderId());
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         
+        // 用户电池是否在仓
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
+        
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            
-            // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-            // 分配满电仓
-            Triple<Boolean, String, Object> getFullCellResult = allocateFullBatteryBox(cabinet, userInfo, franchisee);
-            if (Boolean.FALSE.equals(getFullCellResult.getLeft())) {
-                throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
-            }
-            Integer cellNo = Integer.valueOf((String) getFullCellResult.getRight());
-            vo.setCell(cellNo);
-            
-            // 下发取电命令
-            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn,cabinetBox);
-            vo.setSessionId(sessionId);
+            this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
@@ -1457,6 +1446,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setCell(lastOrder.getOldCellNo());
             return Pair.of(true, vo);
         }
+    }
+    
+    private void getFullCellAndOpenFullCell(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
+            UserInfo userInfo) {
+        // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        // 分配满电仓
+        Triple<Boolean, String, Object> getFullCellResult = allocateFullBatteryBox(cabinet, userInfo, franchisee);
+        if (Boolean.FALSE.equals(getFullCellResult.getLeft())) {
+            throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
+        }
+        Integer cellNo = Integer.valueOf((String) getFullCellResult.getRight());
+        vo.setCell(cellNo);
+        
+        // 下发取电命令
+        String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox);
+        vo.setSessionId(sessionId);
     }
     
     
@@ -2618,7 +2624,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         try {
-            // todo msg前端传递
+            // 用户自助开仓
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
                     .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
