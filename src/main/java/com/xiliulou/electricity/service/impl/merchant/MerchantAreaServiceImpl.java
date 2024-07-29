@@ -137,7 +137,7 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         }
     
         // 判断修改的加盟商是否有改变
-        if (!Objects.equals(updateRequest.getFranchiseeId(), oldMerchantArea.getFranchiseeId())) {
+        if (Objects.nonNull(updateRequest.getFranchiseeId()) && !Objects.equals(updateRequest.getFranchiseeId(), oldMerchantArea.getFranchiseeId())) {
             log.info("merchant area update info, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", updateRequest.getId(), oldMerchantArea.getFranchiseeId(), updateRequest.getFranchiseeId());
             return R.fail( "120123", "商户加盟商不允许修改");
         }
