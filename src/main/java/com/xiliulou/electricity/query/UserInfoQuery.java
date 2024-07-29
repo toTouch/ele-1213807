@@ -127,6 +127,11 @@ public class UserInfoQuery {
     
     private List<Integer> userTypeList;
     
+    /**
+     * 身份证号
+     */
+    private String idNumber;
+    
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     
     public static final Integer SORT_TYPE_AUTH_TIME = 1;
