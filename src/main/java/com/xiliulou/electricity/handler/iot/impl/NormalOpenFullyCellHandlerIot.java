@@ -475,18 +475,16 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     
     
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder, EleOpenFullCellRsp openFullCellRsp) {
-        if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-            return;
-        }
-        
-        HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("orderId", electricityCabinetOrder.getOrderId());
-        
-        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + electricityCabinetOrder.getOrderId()).data(dataMap)
-                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OPEN_FULL_CELL_ACK).build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        if (Boolean.FALSE.equals(sendResult.getLeft())) {
-            log.error("normalOpenFullyCellHandlerIot ERROR! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
+        if (Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("orderId", electricityCabinetOrder.getOrderId());
+            
+            HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + electricityCabinetOrder.getOrderId()).data(dataMap)
+                    .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OPEN_FULL_CELL_ACK).build();
+            Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            if (Boolean.FALSE.equals(sendResult.getLeft())) {
+                log.error("normalOpenFullyCellHandlerIot ERROR! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
+            }
         }
     }
     
