@@ -1349,7 +1349,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             // 后台自主开仓
-            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), userBindingBatterySn, lastOrder, cabinet, "新电池被吞，自主开仓");
+            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), userBindingBatterySn, lastOrder, cabinet, "后台自主开仓");
             vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
@@ -1461,10 +1461,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     private String backSelfOpen(Integer cell,String userBindingBatterySn,ElectricityCabinetOrder order,ElectricityCabinet cabinet,String msg){
-        // todo 操作记录
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
                 .orderId(order.getOrderId()).tenantId(order.getTenantId()).msg(msg)
-                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
         electricityCabinetOrderOperHistoryService.insert(history);
         
@@ -2621,7 +2620,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         try {
             // todo msg前端传递
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
-                    .tenantId(electricityCabinet.getTenantId()).msg("自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                    .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
             
