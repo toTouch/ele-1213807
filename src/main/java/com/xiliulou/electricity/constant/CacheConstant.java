@@ -92,6 +92,8 @@ public interface CacheConstant {
     //换电柜开门的前缀
     String ELE_OPERATOR_SESSION_PREFIX = "ele";
     
+    String OPEN_FULL_CELL = "open_full_cell";
+    
     
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
     

@@ -43,6 +43,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -134,6 +135,8 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         */
+        // 确认订单ack
+        senOrderSuccessMsg(electricityCabinet, cabinetOrder, openFullCellRsp);
         
         //是否开启异常仓门锁仓
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(cabinetOrder.getTenantId());
@@ -147,7 +150,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         }
         
         // 订单完成。扣减套餐次数
-        deductionPackageNumberHandler(cabinetOrder);
+        deductionPackageNumberHandler(cabinetOrder, openFullCellRsp);
         
         // 修改订单最终状态为成功
         ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
@@ -166,7 +169,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         takeBatteryHandler(openFullCellRsp, cabinetOrder, electricityCabinet);
     }
     
-    private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder) {
+    private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, EleOpenFullCellRsp eleOpenFullCellRsp) {
+        if (!Objects.equals(eleOpenFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+            return;
+        }
         
         // 通过订单的 UID 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
@@ -199,6 +205,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     }
     
     private void takeBatteryHandler(EleOpenFullCellRsp openFullCellRsp, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
+        // 成功解绑
         if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             log.warn("normalOpenFullyCellHandlerIot error! takeBatteryHandler.orderStatus not is success,orderStatus is {}", openFullCellRsp.getOrderStatus());
             return;
@@ -461,6 +468,23 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             }
         }
         
+    }
+    
+    
+    private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder, EleOpenFullCellRsp openFullCellRsp) {
+        if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+            return;
+        }
+        
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("orderId", electricityCabinetOrder.getOrderId());
+        
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + electricityCabinetOrder.getOrderId()).data(dataMap)
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OPEN_FULL_CELL_ACK).build();
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        if (Boolean.FALSE.equals(sendResult.getLeft())) {
+            log.error("normalOpenFullyCellHandlerIot ERROR! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
+        }
     }
     
     
