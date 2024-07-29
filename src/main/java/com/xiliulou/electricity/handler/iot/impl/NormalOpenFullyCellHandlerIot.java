@@ -209,9 +209,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     private void takeBatteryHandler(EleOpenFullCellRsp openFullCellRsp, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
         // 成功解绑
         if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-            log.warn("normalOpenFullyCellHandlerIot error! takeBatteryHandler.orderStatus not is success,orderStatus is {}", openFullCellRsp.getOrderStatus());
             return;
         }
+        
+        log.warn("normalOpenFullyCellHandlerIot info! takeBatteryHandler.orderStatus not is success,orderStatus is {}", openFullCellRsp.getOrderStatus());
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
