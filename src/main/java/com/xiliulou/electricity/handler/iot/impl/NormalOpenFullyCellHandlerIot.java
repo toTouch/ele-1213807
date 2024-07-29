@@ -158,7 +158,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         newElectricityCabinetOrder.setOrderSeq(openFullCellRsp.getOrderSeq());
         newElectricityCabinetOrder.setStatus(openFullCellRsp.getOrderStatus());
+        newElectricityCabinetOrder.setOldElectricityBatterySn(openFullCellRsp.getPlaceBatteryName());
         newElectricityCabinetOrder.setNewElectricityBatterySn(openFullCellRsp.getTakeBatteryName());
+        newElectricityCabinetOrder.setOldCellNo(openFullCellRsp.getPlaceCellNo());
         newElectricityCabinetOrder.setNewCellNo(openFullCellRsp.getTakeCellNo());
         if (openFullCellRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             newElectricityCabinetOrder.setSwitchEndTime(openFullCellRsp.getReportTime());

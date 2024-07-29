@@ -3000,7 +3000,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         dataMap.put("takeCellNo", cellNo);
         dataMap.put("batteryName", batteryName);
         
-        String sessionId = CacheConstant.OPEN_FULL_CELL + ":" + cabinetOrder.getOrderId();
+        String sessionId = CacheConstant.OPEN_FULL_CELL + "_" + cabinetOrder.getOrderId();
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
                 .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
