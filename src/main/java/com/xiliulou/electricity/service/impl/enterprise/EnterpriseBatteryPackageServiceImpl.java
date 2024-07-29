@@ -2347,6 +2347,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return Triple.of(true, null, enterprisePackageOrderVOList);
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByEnterpriseId(Long enterpriseId) {
         

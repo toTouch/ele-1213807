@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
@@ -212,6 +213,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
         
     }
     
+    @Slave
     @Override
     public R queryList(WithdrawRecordQuery withdrawRecordQuery) {
         List<WithdrawRecord> withdrawRecordList = withdrawRecordMapper.queryList(withdrawRecordQuery);
@@ -254,6 +256,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
         return R.ok(withdrawRecordVOs);
     }
     
+    @Slave
     @Override
     public R queryCount(WithdrawRecordQuery withdrawRecordQuery) {
         return R.ok(withdrawRecordMapper.queryCount(withdrawRecordQuery));

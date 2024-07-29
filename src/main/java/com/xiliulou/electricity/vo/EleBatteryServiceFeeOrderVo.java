@@ -124,6 +124,11 @@ public class EleBatteryServiceFeeOrderVo {
      * @see ChannelEnum
      */
     private String paymentChannel;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

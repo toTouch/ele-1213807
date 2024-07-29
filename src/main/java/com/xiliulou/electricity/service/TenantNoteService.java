@@ -21,4 +21,6 @@ public interface TenantNoteService {
     TenantNote queryFromDbByTenantId(Integer tenantId);
     
     void deleteCache(Integer tenantId);
+    
+    int reduceNoteNumById(TenantNote tenantNote);
 }

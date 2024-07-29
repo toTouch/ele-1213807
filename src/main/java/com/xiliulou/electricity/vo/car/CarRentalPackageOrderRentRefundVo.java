@@ -155,5 +155,12 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      * 拼接好的余量
      */
     private String residueStr;
+    
+    /**
+     * <p>
+     *    Description: 加盟商名称
+     * </p>
+    */
+    private String franchiseeName;
 
 }

@@ -125,4 +125,9 @@ public class EleDepositOrderVO {
      */
     private String paymentChannel;
     
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
 }

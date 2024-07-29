@@ -47,4 +47,6 @@ public interface EnterpriseCloudBeanOrderMapper extends BaseMapper<EnterpriseClo
     void updateOneById(EnterpriseCloudBeanOrder enterpriseCloudBeanOrder);
     
     List<EnterpriseCloudBeanOrder> selectListByEnterpriseId(@Param("enterpriseId") Long id);
+    
+    List<EnterpriseCloudBeanOrder> selectListByOrderIdList(@Param("orderIdList") List<String> orderIdList);
 }

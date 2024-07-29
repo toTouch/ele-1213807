@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -76,7 +77,7 @@ public class JsonAdminUserController extends BaseController {
             offset = 0L;
         }
     
-        UserInfoQuery query = UserInfoQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+        UserInfoQuery query = UserInfoQuery.builder().size(size).offset(offset).name(name).userTypeList(Arrays.asList(User.TYPE_USER_OPERATE, User.TYPE_USER_MERCHANT)).tenantId(TenantContextHolder.getTenantId()).build();
         
         return R.ok(userService.search(query));
     }

@@ -92,4 +92,8 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      * @see ChannelEnum
      */
     private String paymentChannel;
+    private String tenantName;
+    
+    private Integer tenantId;
+    
 }

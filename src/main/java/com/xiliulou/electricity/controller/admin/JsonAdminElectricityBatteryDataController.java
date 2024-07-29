@@ -47,7 +47,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getAllBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -91,7 +91,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/allBattery/count")
     public R getAllBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -133,7 +133,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getInCabinetBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -177,7 +177,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/inCabinetBattery/count")
     public R getInCabinetBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -209,7 +209,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getPendingRentalBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -253,7 +253,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/pendingRentalBattery/count")
     public R getPendingRentalBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -284,7 +284,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getLeasedBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -328,7 +328,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/leasedBattery/count")
     public R getLeasedBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -359,7 +359,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getStrayBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -403,7 +403,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/strayBattery/count")
     public R getStrayBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -435,7 +435,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getOverdueBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
             @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort
     ) {
         if (size < 0 || size > 50) {
@@ -481,7 +481,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/overdueBattery/count")
     public R getOverdueBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -512,7 +512,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getOverdueCarBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
             @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort) {
         if (size < 0 || size > 50) {
             size = 10;
@@ -557,7 +557,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/overdueCarBattery/count")
     public R getOverdueCarBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -594,7 +594,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/stockBattery/page")
     public R getStockBatteryPageDate(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
             @RequestParam(value = "uid", required = false) Long uid) {
         if (size < 0 || size > 50) {
             size = 10;
@@ -638,7 +638,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/stockBattery/count")
     public R getStockBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
             @RequestParam(value = "uid", required = false) Long uid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

@@ -16,6 +16,7 @@ import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,10 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
             msg.setSignalId(item.getId());
             msg.setCellNo(item.getBoxId());
             msg.setSn(electricityCabinet.getSn());
+            msg.setCabinetSn(electricityCabinet.getSn());
+            if (StringUtils.isNotEmpty(item.getBatterySn())) {
+                msg.setSn(item.getBatterySn());
+            }
             msg.setBatterySn(item.getBatterySn());
             msg.setDevId(hardwareFailureWarnMsg.getDevId());
             msg.setReportTime(hardwareFailureWarnMsg.getT());
@@ -203,6 +208,11 @@ class HardwareFailureWarnMqMsg {
      * 设备sn
      */
     private String sn;
+    
+    /**
+     * 柜机sn
+     */
+    private String cabinetSn;
     
     /**
      * 换电柜地址

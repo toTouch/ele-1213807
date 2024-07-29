@@ -505,6 +505,19 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             BigDecimal usedAmount = price.multiply(BigDecimal.valueOf(totalUseDay)).setScale(2, RoundingMode.HALF_UP);
             // 剩余金额
             BigDecimal residueAmount = electricityMemberCardOrder.getPayAmount().subtract(usedAmount);
+    
+            // 套餐全部用完
+            if (Objects.equals(totalUseDay, electricityMemberCardOrder.getValidDays())) {
+                usedAmount = electricityMemberCardOrder.getPayAmount();
+                residueAmount = BigDecimal.ZERO;
+            }
+            
+            // 一般出现在套餐用完的情况下
+            if (Objects.equals(residueAmount.compareTo(BigDecimal.ZERO), NumberConstant.MINUS_ONE)) {
+                residueAmount = BigDecimal.ZERO;
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!residue amount is error, uid={}, orderId={}", userInfo.getUid(), orderId);
+            }
+            
             // 总的使用的云豆数量
             totalUsedCloudBean = totalUsedCloudBean.add(usedAmount);
             // 设置企业的剩余云豆
@@ -1049,6 +1062,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 .selectOne(new LambdaQueryWrapper<EnterpriseInfo>().eq(EnterpriseInfo::getDelFlag, EnterpriseInfo.DEL_NORMAL).eq(EnterpriseInfo::getName, name).last("limit 0,1"));
     }
     
+    @Slave
     @Override
     public EnterpriseInfoVO selectDetailByUid(Long uid) {
         EnterpriseInfo enterpriseInfo = this.enterpriseInfoMapper.selectByUid(uid);
@@ -1738,6 +1752,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         eleRefundOrderService.updateById(eleRefundOrderUpdate);
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> cloudBeanGeneralView() {
         EnterpriseInfo enterpriseInfo = this.selectByUid(SecurityUtils.getUid());

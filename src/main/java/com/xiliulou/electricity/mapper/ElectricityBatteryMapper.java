@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.asset.AssetBatchExitWarehouseQueryModel;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryBatchUpdateFranchiseeQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryEnableAllocateQueryModel;
 import com.xiliulou.electricity.query.asset.ElectricityBatteryListSnByFranchiseeQueryModel;
@@ -134,6 +135,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBatteryDataVO> queryOverdueBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                               @Param("offset") Long offset, @Param("size") Long size);
+    // TODO(heyafeng) 2024/6/7 16:30 换电套餐到期时间<当期时间为过期 车辆套餐<=当前时间为过期
     Integer queryOverdueBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 
     List<ElectricityBatteryDataVO> queryOverdueCarBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
@@ -170,7 +172,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     Integer updateFranchiseeId(ElectricityBatteryBatchUpdateFranchiseeQueryModel updateFranchiseeQueryModel);
     
-    List<ElectricityBatteryBO> selectListEnableExitWarehouseBattery(@Param("idSet") Set<Long> idSet, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("stockStatus") Integer stockStatus);
+    List<ElectricityBatteryBO> selectListEnableExitWarehouseBattery(AssetEnableExitWarehouseQueryModel queryModel);
     
     List<ElectricityBattery> selectListByIdList(@Param("idList") List<Long> idList);
     

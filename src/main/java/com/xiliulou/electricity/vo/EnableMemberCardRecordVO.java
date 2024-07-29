@@ -103,11 +103,21 @@ public class EnableMemberCardRecordVO {
      */
     private Long franchiseeId;
     
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+    
     private Long storeId;
     
     /**
      * 服务费金额
      */
     private BigDecimal serviceFee;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
     
 }

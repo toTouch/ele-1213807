@@ -243,6 +243,8 @@ public class ElectricityCabinetVO {
      * 场地费
      */
     private BigDecimal placeFee;
+    
+    private String tenantName;
 
     //全天
     public static final String ALL_DAY = "-1";
