@@ -2992,6 +2992,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      */
     private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName,
             ElectricityCabinetBox cabinetBox) {
+        
+        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                .orderId(cabinetOrder.getOrderId()).tenantId(cabinet.getTenantId()).msg("电池检测成功")
+                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+        electricityCabinetOrderOperHistoryService.insert(history);
+        
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", cabinetOrder.getOrderId());
