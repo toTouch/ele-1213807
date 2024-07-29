@@ -1410,7 +1410,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 用户绑定的电池状态是否为租借状态
         if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn);
+            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox);
             vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
@@ -1446,9 +1446,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
             Integer cellNo = Integer.valueOf((String) getFullCellResult.getRight());
             vo.setCell(cellNo);
-            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn);
-            vo.setSessionId(sessionId);
             
+            // 下发取电命令
+            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn,cabinetBox);
+            vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
@@ -2990,11 +2991,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      * @param batteryName
      * @return
      */
-    private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName) {
+    private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName,
+            ElectricityCabinetBox cabinetBox) {
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", cabinetOrder.getOrderId());
-        dataMap.put("placeCellNo", cabinetOrder.getOldCellNo());
+        dataMap.put("placeCellNo", cabinetBox.getCellNo());
         dataMap.put("takeCellNo", cellNo);
         dataMap.put("batteryName", batteryName);
         
