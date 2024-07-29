@@ -209,22 +209,24 @@ public class EleHardwareFaultMsgBusinessServiceImpl implements EleHardwareFaultM
             vo.setCabinetShipment(count);
         });
     
-        FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().status(FailureAlarm.enable).type(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()).build();
+        FailureAlarmQueryModel failureAlarmQueryModel = FailureAlarmQueryModel.builder().status(FailureAlarm.enable).build();
         List<FailureAlarm> failureAlarmList = failureAlarmService.listByParams(failureAlarmQueryModel);
         if (ObjectUtils.isEmpty(failureAlarmList)) {
             return Triple.of(true, null, vo);
         }
     
-        List<String> signalIdList = failureAlarmList.parallelStream().map(FailureAlarm::getSignalId).collect(Collectors.toList());
-    
+        Map<Integer, List<String>> typeMap = failureAlarmList.parallelStream().collect(Collectors.groupingBy(FailureAlarm::getType,
+                Collectors.collectingAndThen(Collectors.toList(), e -> e.stream().map(FailureAlarm::getSignalId).collect(Collectors.toList()))));
+        
         FailureWarnMsgPageQueryModel queryModel = new FailureWarnMsgPageQueryModel();
         queryModel.setAlarmStartTime(request.getAlarmStartTime());
         queryModel.setAlarmEndTime(request.getAlarmEndTime());
-        queryModel.setSignalIdList(signalIdList);
+        queryModel.setSignalIdList(typeMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_FAILURE.getCode()));
     
         // 设置故障信息
         eleHardwareFaultMsgService.setFailureInfo(vo, queryModel);
     
+        queryModel.setSignalIdList(typeMap.get(FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode()));
         // 设置告警数量和设备数量
         eleHardwareWarnMsgService.setWarnInfo(vo, queryModel);
         

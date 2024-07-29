@@ -145,7 +145,7 @@
         FROM
             t_ele_hardware_warn_msg t
         <where>
-            alarm_time between  #{startTime} and #{endTime}
+            alarm_time between  #{alarmStartTime} and #{alarmEndTime}
             and signal_id in
             <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
                 #{signalId}
