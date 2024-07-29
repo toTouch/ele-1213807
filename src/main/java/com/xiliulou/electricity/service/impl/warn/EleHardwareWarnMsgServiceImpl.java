@@ -496,7 +496,7 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         if (days > daySize) {
             return Triple.of(false, "300825", String.format("查询天数不能大于%s天", daySize));
         }
-        
+        queryModel.setAlarmId(request.getAlarmId());
         // 设置查询参数
         BeanUtils.copyProperties(request, queryModel);
         if (ObjectUtils.isNotEmpty(queryModel.getDeviceType()) || ObjectUtils.isNotEmpty(queryModel.getGrade()) || ObjectUtils.isNotEmpty(request.getTenantVisible())
