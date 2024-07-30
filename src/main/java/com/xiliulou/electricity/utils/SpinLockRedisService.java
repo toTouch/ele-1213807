@@ -38,7 +38,7 @@ public class SpinLockRedisService extends RedisService {
             }
             
             try {
-                Thread.sleep(100L);
+                Thread.sleep(50L);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
