@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper">
-
-
+    
+    
     <select id="queryListByOrderId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory">
-		select
-		id ,order_id ,type , msg , create_time,seq,result,tenant_id
-		from t_electricity_cabinet_order_oper_history
-		where order_id = #{query.orderId} and tenant_id=#{query.tenantId}
-		AND type =#{query.type}
-		order by seq asc
+        select
+        id ,order_id ,title,type , msg , create_time,seq,result,tenant_id
+        from t_electricity_cabinet_order_oper_history
+        where order_id = #{query.orderId} and tenant_id=#{query.tenantId}
+        AND type =#{query.type}
+        order by seq asc
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
         </if>
-	</select>
+    </select>
 
     <select id="queryCountByOrderId" resultType="java.lang.Integer">
 		select count(1)
