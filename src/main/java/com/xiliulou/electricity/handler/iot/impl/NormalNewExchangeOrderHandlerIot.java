@@ -162,14 +162,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder, exchangeOrderRsp);
             
-            // 处理失败回退电池套餐次数
-            handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
-            
+       
             if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
                 log.warn("EXCHANGE ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
                         electricityCabinetOrder.getUid());
                 return;
             }
+            
+            // 处理失败回退电池套餐次数
+            handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
+            
             
             //是否开启异常仓门锁仓
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
