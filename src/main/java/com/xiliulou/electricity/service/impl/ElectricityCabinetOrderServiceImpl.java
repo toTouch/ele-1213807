@@ -1469,7 +1469,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private String backSelfOpen(Integer cell,String userBindingBatterySn,ElectricityCabinetOrder order,ElectricityCabinet cabinet,String msg){
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
                 .orderId(order.getOrderId()).tenantId(order.getTenantId()).msg(msg)
-                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
         electricityCabinetOrderOperHistoryService.insert(history);
         
