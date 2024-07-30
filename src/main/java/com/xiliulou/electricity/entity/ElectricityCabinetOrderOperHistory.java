@@ -73,14 +73,14 @@ public class ElectricityCabinetOrderOperHistory {
     /**
      * renhang 20240726修改
      */
-    public static final Integer SELF_OPEN_CELL_SEQ = 6;
+    public static final Integer SELF_OPEN_CELL_SEQ = 7;
 
     
-    public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 7;
+    public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 8;
     
-    public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY = 8;
+    public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY = 9;
     
-    public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE = 9;
+    public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE = 10;
     
     /**
      * 自助开仓
