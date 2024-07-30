@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark, modify_inviter
+        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark, modify_inviter,franchisee_id,package_id,package_type,order_id
     </sql>
     
     <!--新增所有列-->
