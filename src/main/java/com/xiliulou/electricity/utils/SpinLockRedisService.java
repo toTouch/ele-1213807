@@ -22,7 +22,7 @@ public class SpinLockRedisService extends RedisService {
     final Long DEFAULT_MAX_SPIN_TIME = 5 * 1000L;
     
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisService redisService;
     
     public boolean tryLockWithSpin(String lockKey) {
         return tryLockWithSpin(lockKey, DEFAULT_EXPIRE_TIME, DEFAULT_MAX_SPIN_TIME);
@@ -32,15 +32,14 @@ public class SpinLockRedisService extends RedisService {
         long startTime = System.currentTimeMillis();
         
         while (System.currentTimeMillis() - startTime < maxSpinTime) {
-            Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", expireTime, TimeUnit.MILLISECONDS);
-            if (result != null && result) {
+            if (redisService.setNx(lockKey, "1", expireTime, false)) {
                 return true;
             }
             
             try {
                 Thread.sleep(50L);
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                log.warn("GET LOCK FAIL, thread sleep error, lockKey:{}", lockKey, e);
             }
         }
         
