@@ -32,7 +32,7 @@ public class AlipayAppConfigConverter {
         AlipayAppConfigBizDetails alipayAppConfigBizDetails = new AlipayAppConfigBizDetails();
         alipayAppConfigBizDetails.setId(alipayAppConfig.getId());
         alipayAppConfigBizDetails.setAppId(alipayAppConfig.getAppId());
-        alipayAppConfigBizDetails.setOpAppId(alipayAppConfig.getOpAppId());
+        alipayAppConfigBizDetails.setReceivableAccounts(alipayAppConfig.getReceivableAccounts());
         alipayAppConfigBizDetails.setAppSecret(alipayAppConfig.getAppSecret());
         alipayAppConfigBizDetails.setPublicKey(alipayAppConfig.getPublicKey());
         alipayAppConfigBizDetails.setPrivateKey(alipayAppConfig.getPrivateKey());

@@ -31,9 +31,9 @@ public class AlipayAppConfig {
     private String appId;
     
     /**
-     * 小程序支付中，商户实际经营主体的小程序应用的appid，也即最终唤起收银台支付所在的小程序的应用id
+     * 收款账号
      */
-    private String opAppId;
+    private String receivableAccounts;
     
     /**
      * 支付宝小程序appSecret

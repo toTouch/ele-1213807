@@ -105,7 +105,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     }
     
     private Triple<Boolean, String, Object> verifySaveParams(AlipayAppConfigQuery query, Integer tenantId) {
-        AlipayAppConfig alipayAppConfig = alipayAppConfigMapper.selectByOpAppIdAndTenantId(query.getOpAppId(), tenantId);
+        AlipayAppConfig alipayAppConfig = alipayAppConfigMapper.selectByReceivableAccountsAndTenantId(query.getReceivableAccounts(), tenantId);
         if (Objects.nonNull(alipayAppConfig)) {
             return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
         }
@@ -155,8 +155,8 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
             return Triple.of(false, "100445", "支付配置不存在");
         }
         
-        AlipayAppConfig alipayAppConfigOld = alipayAppConfigMapper.selectByOpAppIdAndTenantId(query.getOpAppId(), tenantId);
-        if (Objects.nonNull(alipayAppConfigOld) && !Objects.equals(alipayAppConfigOld.getOpAppId(), query.getOpAppId())) {
+        AlipayAppConfig alipayAppConfigOld = alipayAppConfigMapper.selectByReceivableAccountsAndTenantId(query.getReceivableAccounts(), tenantId);
+        if (Objects.nonNull(alipayAppConfigOld) && !Objects.equals(alipayAppConfigOld.getReceivableAccounts(), query.getReceivableAccounts())) {
             return Triple.of(false, "100440", "卖家支付宝账号与现有支付配置重复，请修改后操作");
         }
         

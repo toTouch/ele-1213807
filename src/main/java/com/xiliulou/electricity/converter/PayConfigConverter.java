@@ -233,7 +233,9 @@ public class PayConfigConverter {
         // 支付配置转换
         AliPayCreateOrderRequest aliPayCreateOrderRequest = new AliPayCreateOrderRequest();
         aliPayCreateOrderRequest.setAppId(alipayAppConfig.getAppId());
-        aliPayCreateOrderRequest.setOpAppId(alipayAppConfig.getOpAppId());
+        aliPayCreateOrderRequest.setOpAppId(alipayAppConfig.getAppId());
+        // TODO: 2024/7/30 收款账号待定
+        aliPayCreateOrderRequest.setSellerId(alipayAppConfig.getReceivableAccounts());
         aliPayCreateOrderRequest.setAppPrivateKey(alipayAppConfig.getAppPrivateKey());
         aliPayCreateOrderRequest.setAlipayPublicKey(alipayAppConfig.getPublicKey());
         
@@ -243,7 +245,6 @@ public class PayConfigConverter {
         aliPayCreateOrderRequest.setOutTradeNo(wrap.getOrderId());
         aliPayCreateOrderRequest.setTotalAmount(wrap.getAmount().toPlainString());
         aliPayCreateOrderRequest.setTimeExpire(wrap.getExpireTime());
-        // TODO: 2024/7/16 CBT Subject？
         aliPayCreateOrderRequest.setSubject(wrap.getDescription());
         aliPayCreateOrderRequest.setBody(wrap.getDescription());
         aliPayCreateOrderRequest.setPassbackParams(wrap.getAttach());
