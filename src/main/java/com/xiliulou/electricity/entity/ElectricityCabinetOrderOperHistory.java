@@ -32,10 +32,6 @@ public class ElectricityCabinetOrderOperHistory {
      */
     private String orderId;
     
-    /**
-     * 订单状态阶段
-     */
-    private String title;
     
     /**
      * 订单的类型 1--租、还电,2--换电
@@ -76,10 +72,10 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer OPERATE_RESULT_FAIL = 1;
     
     
-    public static final Integer SELF_OPEN_CELL_SEQ = 5;
-    
-    public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 6;
-    
+    public static final Integer SELF_OPEN_CELL_SEQ = 9;
+
+    public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 10;
+
     public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY = 7;
     
     public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE = 8;
