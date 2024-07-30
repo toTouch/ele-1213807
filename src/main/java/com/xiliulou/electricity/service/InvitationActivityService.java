@@ -70,8 +70,8 @@ public interface InvitationActivityService {
     List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
-
-    Integer checkUsableActivity(Integer tenantId, Long franchiseeId);
+    
+    List<InvitationActivity> queryOnlineActivity(Integer tenantId, Long franchiseeId);
 
     Triple<Boolean, String, Object> activityInfo();
     

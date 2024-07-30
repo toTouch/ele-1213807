@@ -15,6 +15,7 @@ import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
@@ -65,6 +66,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -492,7 +494,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
         
         //邀请活动
-        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
+        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, userInfo.getFranchiseeId());
         if (Objects.isNull(shareMoneyActivity)) {
             log.info("queryInfo Activity INFO! not found Activity,tenantId={} ", tenantId);
             return R.ok();
@@ -613,13 +615,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
         
         //邀请返现活动
-        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
+        ShareMoneyActivity shareMoneyActivity = this.queryOnlineActivity(tenantId, userInfo.getFranchiseeId());
         if (Objects.isNull(shareMoneyActivity)) {
             map.put("shareMoneyActivity", 1);
         }
         
         //邀请活动
-        ShareActivity shareActivity = shareActivityService.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
+        ShareActivity shareActivity = shareActivityService.queryOnlineActivity(tenantId, userInfo.getFranchiseeId());
         if (Objects.isNull(shareActivity)) {
             map.put("shareActivity", 1);
         }
@@ -630,8 +632,8 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             map.put("channelActivity", 1);
         }
         
-        Integer invitationActivity = invitationActivityService.checkUsableActivity(tenantId, userInfo.getFranchiseeId());
-        if (Objects.isNull(invitationActivity)) {
+        List<InvitationActivity> invitationActivityList = invitationActivityService.queryOnlineActivity(tenantId, userInfo.getFranchiseeId());
+        if (CollectionUtils.isEmpty(invitationActivityList)) {
             map.put("invitationActivity", 1);
         } else {
             map.put("invitationActivity", 0);
@@ -720,8 +722,21 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     
     @Slave
     @Override
-    public ShareMoneyActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId) {
-        return shareMoneyActivityMapper.selectOnlineActivity(tenantId, franchiseeId);
+    public ShareMoneyActivity queryOnlineActivity(Integer tenantId, Long franchiseeId) {
+        List<ShareMoneyActivity> activityList = shareMoneyActivityMapper.selectOnlineActivity(tenantId);
+        if (CollectionUtils.isEmpty(activityList)) {
+            return null;
+        }
+        
+        List<ShareMoneyActivity> activityListByFranchisee = activityList.stream()
+                .filter(shareMoneyActivity -> Objects.nonNull(shareMoneyActivity.getFranchiseeId()) && Objects.equals(shareMoneyActivity.getFranchiseeId().longValue(),
+                        franchiseeId)).collect(Collectors.toList());
+        
+        if (CollectionUtils.isNotEmpty(activityListByFranchisee)) {
+            return activityListByFranchisee.get(0);
+        }
+        
+        return activityList.get(0);
     }
 }
 

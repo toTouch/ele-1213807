@@ -288,8 +288,19 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     
     @Override
     @Slave
-    public Integer checkUsableActivity(Integer tenantId, Long franchiseeId) {
-        return invitationActivityMapper.checkUsableActivity(tenantId, franchiseeId);
+    public List<InvitationActivity> queryOnlineActivity(Integer tenantId, Long franchiseeId) {
+        List<InvitationActivity> activityList = invitationActivityMapper.selectUsableActivity(tenantId);
+        if (CollectionUtils.isEmpty(activityList)) {
+            return Collections.emptyList();
+        }
+        
+        List<InvitationActivity> activityListByFranchisee = activityList.stream()
+                .filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && Objects.equals(activity.getFranchiseeId(), franchiseeId)).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(activityListByFranchisee)) {
+            return activityListByFranchisee;
+        }
+        
+        return activityList;
     }
     
     @Override

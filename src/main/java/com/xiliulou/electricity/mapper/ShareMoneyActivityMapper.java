@@ -55,5 +55,5 @@ public interface ShareMoneyActivityMapper extends BaseMapper<ShareMoneyActivity>
      */
     int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
     
-    ShareMoneyActivity selectOnlineActivity(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Integer franchiseeId);
+    List<ShareMoneyActivity> selectOnlineActivity(@Param("tenantId") Integer tenantId);
 }

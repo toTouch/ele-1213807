@@ -71,5 +71,5 @@ public interface ShareActivityService {
      */
     R<?> removeById(Long id);
     
-    ShareActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId);
+    ShareActivity queryOnlineActivity(Integer tenantId, Long franchiseeId);
 }

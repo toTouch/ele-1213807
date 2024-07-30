@@ -629,7 +629,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         }
         
         //邀请活动
-        ShareActivity shareActivity = this.queryOnlineActivity(tenantId, Objects.isNull(userInfo.getFranchiseeId()) ? null : userInfo.getFranchiseeId().intValue());
+        ShareActivity shareActivity = this.queryOnlineActivity(tenantId, userInfo.getFranchiseeId());
         if (Objects.isNull(shareActivity)) {
             log.warn("ACTIVITY WARN!not found Activity,tenantId={},uid={}", tenantId, user.getUid());
             return R.ok();
@@ -663,7 +663,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             shareActivityVO.setCarRentalPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
             shareActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(shareActivity.getId(), PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
         }
-    
+        
         Integer franchiseeId = shareActivity.getFranchiseeId();
         if (Objects.nonNull(franchiseeId)) {
             shareActivityVO.setFranchiseeName(
@@ -1105,8 +1105,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     
     @Slave
     @Override
-    public ShareActivity queryOnlineActivity(Integer tenantId, Integer franchiseeId) {
-        return shareActivityMapper.selectOnlineActivity(tenantId, franchiseeId);
+    public ShareActivity queryOnlineActivity(Integer tenantId, Long franchiseeId) {
+        List<ShareActivity> activityList = shareActivityMapper.selectOnlineActivity(tenantId);
+        if (CollectionUtils.isEmpty(activityList)) {
+            return null;
+        }
+        
+        List<ShareActivity> activityListByFranchisee = activityList.stream()
+                .filter(shareActivity -> Objects.nonNull(shareActivity.getFranchiseeId()) && Objects.equals(shareActivity.getFranchiseeId().longValue(), franchiseeId))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(activityListByFranchisee)) {
+            return activityListByFranchisee.get(0);
+        }
+        
+        return activityList.get(0);
     }
     
 }
