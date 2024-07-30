@@ -3005,6 +3005,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
         electricityCabinetOrderOperHistoryService.insert(history);
         
+        
+        ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
+        electricityCabinetOrderUpdate.setId(cabinetOrder.getId());
+        electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetOrderUpdate.setRemark("取电流程");
+        update(electricityCabinetOrderUpdate);
+        
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", cabinetOrder.getOrderId());
