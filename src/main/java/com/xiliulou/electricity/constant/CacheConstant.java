@@ -661,4 +661,6 @@ public interface CacheConstant {
     
     //逾期用户备注重复提交锁
     String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
+    
+    String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
 }
