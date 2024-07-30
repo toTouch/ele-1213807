@@ -28,9 +28,9 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
     private String appId;
     
     /**
-     * 卖家支付宝用户ID
+     * 小程序支付中，商户实际经营主体的小程序应用的appid，也即最终唤起收银台支付所在的小程序的应用id
      */
-    private String sellerId;
+    private String opAppId;
     
     /**
      * 支付宝小程序appSecret
@@ -81,7 +81,7 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
     
     @Override
     public String getThirdPartyMerchantId() {
-        return this.sellerId;
+        return this.opAppId;
     }
     
     @Override

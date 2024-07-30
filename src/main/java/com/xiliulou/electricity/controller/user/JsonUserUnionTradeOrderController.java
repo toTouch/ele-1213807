@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.ServiceFeePaymentQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TradeOrderService;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class JsonUserUnionTradeOrderController extends BaseController {
     // 集成支付
     @PostMapping("/user/integratedPayment")
     public R payDeposit(@RequestBody IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
+        integratedPaymentAdd.setPaymentChannel(ChannelSourceContextHolder.get());
         return returnTripleResult(tradeOrderService.integratedPayment(integratedPaymentAdd, request));
     }
     
@@ -48,6 +50,7 @@ public class JsonUserUnionTradeOrderController extends BaseController {
      */
     @PostMapping("/user/payMemberCardAndInsurance")
     public R payMemberCardAndInsurance(@RequestBody @Validated(value = CreateGroup.class) BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request) {
+        query.setPaymentChannel(ChannelSourceContextHolder.get());
         return returnTripleResult(tradeOrderService.payMemberCardAndInsurance(query, request));
     }
     
@@ -55,8 +58,8 @@ public class JsonUserUnionTradeOrderController extends BaseController {
      * 滞纳金混合支付
      */
     @PostMapping("/user/payServiceFee")
-    public R payServiceFee(@RequestBody ServiceFeePaymentQuery query, HttpServletRequest request) {
-        return returnTripleResult(tradeOrderService.payServiceFee(query, request));
+    public R payServiceFee(HttpServletRequest request) {
+        return returnTripleResult(tradeOrderService.payServiceFee(request));
     }
 }
 

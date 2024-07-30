@@ -5,7 +5,7 @@
     <resultMap type="com.xiliulou.electricity.entity.AlipayAppConfig" id="AlipayAppConfigMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="appId" column="app_id" jdbcType="VARCHAR"/>
-        <result property="sellerId" column="seller_id" jdbcType="VARCHAR"/>
+        <result property="opAppId" column="op_app_id" jdbcType="VARCHAR"/>
         <result property="appSecret" column="app_secret" jdbcType="VARCHAR"/>
         <result property="publicKey" column="public_key" jdbcType="VARCHAR"/>
         <result property="privateKey" column="private_key" jdbcType="VARCHAR"/>
@@ -22,7 +22,7 @@
     
     <sql id="base_column">
         id
-        , app_id,seller_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time
+        , app_id,op_app_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time
     </sql>
     <update id="logicalDelete">
         update
@@ -55,11 +55,11 @@
         where app_id = #{appId} and del_flag = 0
     </select>
     
-    <select id="selectBySellerIdAndTenantId" resultMap="AlipayAppConfigMap">
+    <select id="selectByOpAppIdAndTenantId" resultMap="AlipayAppConfigMap">
         select
         <include refid="base_column"/>
         from t_alipay_app_config
-        where seller_id = #{sellerId} and tenant_id= #{tenantId} and del_flag = 0
+        where op_app_id = #{opAppId} and tenant_id= #{tenantId} and del_flag = 0
     </select>
     
     <select id="selectListByTenantId" resultMap="AlipayAppConfigMap">
@@ -91,10 +91,10 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_alipay_app_config(app_id, seller_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, config_type,
+        insert into t_alipay_app_config(app_id, op_app_id, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, config_type,
                                         franchisee_id,
                                         del_flag, create_time, update_time)
-        values (#{appId}, #{sellerId}, #{appSecret}, #{publicKey}, #{privateKey}, #{appPublicKey}, #{appPrivateKey}, #{loginDecryptionKey}, #{tenantId}, #{configType},
+        values (#{appId}, #{opAppId}, #{appSecret}, #{publicKey}, #{privateKey}, #{appPublicKey}, #{appPrivateKey}, #{loginDecryptionKey}, #{tenantId}, #{configType},
                 #{franchiseeid},
                 #{delFlag} #{createTime}, #{updateTime})
     </insert>
@@ -109,8 +109,8 @@
             <if test="appSecret != null and appSecret != ''">
                 app_secret = #{appSecret},
             </if>
-            <if test="sellerId != null and sellerId != ''">
-                seller_id = #{sellerId},
+            <if test="opAppId != null and opAppId != ''">
+                op_app_id = #{opAppId},
             </if>
             <if test="publicKey != null and publicKey != ''">
                 public_key = #{publicKey},

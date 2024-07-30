@@ -77,6 +77,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -707,7 +708,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> payServiceFee(ServiceFeePaymentQuery query, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> payServiceFee(HttpServletRequest request) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -740,7 +741,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
     
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(query.getPaymentChannel(), tenantId, userInfo.getFranchiseeId());
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), tenantId, userInfo.getFranchiseeId());
             if (Objects.isNull(payParamConfig)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");

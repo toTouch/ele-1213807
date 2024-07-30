@@ -75,6 +75,6 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
      *
      * @see ChannelEnum
      */
-    private String paymentChannel = ChannelEnum.WECHAT.getCode();
+    private String paymentChannel;
     
 }

@@ -233,7 +233,7 @@ public class PayConfigConverter {
         // 支付配置转换
         AliPayCreateOrderRequest aliPayCreateOrderRequest = new AliPayCreateOrderRequest();
         aliPayCreateOrderRequest.setAppId(alipayAppConfig.getAppId());
-        aliPayCreateOrderRequest.setSellerId(alipayAppConfig.getSellerId());
+        aliPayCreateOrderRequest.setOpAppId(alipayAppConfig.getOpAppId());
         aliPayCreateOrderRequest.setAppPrivateKey(alipayAppConfig.getAppPrivateKey());
         aliPayCreateOrderRequest.setAlipayPublicKey(alipayAppConfig.getPublicKey());
         

@@ -4,6 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -59,6 +60,7 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @PostMapping("/user/freeBatteryDeposit/hybridOrderV3")
     public R freeBatteryDepositHybridOrderV3(@RequestBody @Validated FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
+        query.setPaymentChannel(ChannelSourceContextHolder.get());
         return returnTripleResult(freeDepositOrderService.freeBatteryDepositHybridOrderV3(query, request));
     }
     

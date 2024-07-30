@@ -39,5 +39,5 @@ public class BatteryMemberCardAndInsuranceQuery {
     /**
      * 支付渠道 WECHAT-微信支付,ALIPAY-支付宝
      */
-    private String paymentChannel = ChannelEnum.WECHAT.getCode();
+    private String paymentChannel ;
 }
