@@ -2641,7 +2641,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("orderId", query.getOrderId());
             dataMap.put("cellNo", query.getCellNo());
-            dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
+            //dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
             
             String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
             
