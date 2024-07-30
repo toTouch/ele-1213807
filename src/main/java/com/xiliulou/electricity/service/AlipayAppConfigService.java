@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.query.AlipayAppConfigQuery;
 import com.xiliulou.electricity.vo.AlipayAppConfigVO;
@@ -10,11 +8,6 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 import com.xiliulou.pay.alipay.exception.AliPayException;
-import com.xiliulou.electricity.query.AlipayAppConfigQuery;
-import com.xiliulou.electricity.vo.AlipayAppConfigVO;
-import org.apache.commons.lang3.tuple.Triple;
-
-import java.util.List;
 
 /**
  * 支付宝小程序配置(AlipayAppConfig)表服务接口
@@ -24,7 +17,7 @@ import java.util.List;
  */
 public interface AlipayAppConfigService {
     
-    AlipayAppConfig queryByAppId(String appId);
+    List<AlipayAppConfig> queryListByAppId(String appId);
     
     AlipayAppConfig queryByTenantId(Integer tenantId);
     

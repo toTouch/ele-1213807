@@ -21,7 +21,7 @@ public interface AlipayAppConfigMapper extends BaseMapper<AlipayAppConfig> {
     
     AlipayAppConfig selectOneByTenantId(Integer tenantId);
     
-    AlipayAppConfig selectByAppId(String appId);
+    List<AlipayAppConfig> selectByAppId(String appId);
     
     AlipayAppConfig selectBySellerIdAndTenantId(@Param("sellerId") String sellerId, @Param("tenantId") Integer tenantId);
     

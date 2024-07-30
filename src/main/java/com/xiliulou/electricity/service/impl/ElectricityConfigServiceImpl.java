@@ -399,13 +399,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
     
         if (TokenConstant.THIRD_AUTH_ALI_PAY.equals(appType)) {
-            AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByAppId(appId);
-            if (Objects.isNull(alipayAppConfig)) {
+            List<AlipayAppConfig> alipayAppConfigs = alipayAppConfigService.queryListByAppId(appId);
+            if (CollectionUtils.isEmpty(alipayAppConfigs)) {
                 log.warn("ELE WARN! not found alipayAppConfig,appId={}", appId);
                 return tenantConfigVO;
             }
         
-            tenantId = alipayAppConfig.getTenantId();
+            tenantId = alipayAppConfigs.stream().findFirst().get().getTenantId();
             channel = ChannelEnum.ALIPAY.getCode();
         }
     

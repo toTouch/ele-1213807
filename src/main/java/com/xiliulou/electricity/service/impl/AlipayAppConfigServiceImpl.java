@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -242,7 +241,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     
     @Slave
     @Override
-    public AlipayAppConfig queryByAppId(String appId) {
+    public List<AlipayAppConfig> queryListByAppId(String appId) {
         return this.alipayAppConfigMapper.selectByAppId(appId);
     }
     
