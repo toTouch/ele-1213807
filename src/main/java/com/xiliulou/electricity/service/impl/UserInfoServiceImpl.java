@@ -1084,7 +1084,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         if (!redisService.setNx(CacheConstant.CACHE_USER_BIND_BATTERY_LOCK + userInfoBatteryAddAndUpdate.getUid(), "1", 5 * 1000L, false)) {
-            return R.fail("100019", "该电池已经绑定用户");
+            return R.fail("100032", "该用户已经绑定电池");
         }
         
         try {
