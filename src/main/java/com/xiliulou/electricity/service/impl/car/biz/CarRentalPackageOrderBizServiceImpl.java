@@ -136,6 +136,7 @@ import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
+import com.xiliulou.pay.base.enums.CommonRefundStatusEnum;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
@@ -1640,9 +1641,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             log.warn("save approve refund rentOrderTx failed. t_electricity_trade_order status is wrong. orderNo is {}", orderNo);
                             throw new BizException("300000", "数据有误");
                         }
-                        // 赋值退款单状态及审核时间
-                        rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-                        carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
+                        
                         
                         // 调用微信支付，进行退款
                         RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
@@ -1650,6 +1649,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         log.info("save approve refund rentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
                         BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
                         log.info("save approve refund rentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
+    
+                        if(CommonRefundStatusEnum.REFUNDING.getCode().equals(wxRefundDto.getCommonRefundStatus())){
+                            // 微信有中间态，支付宝没有
+                            rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                        }
+                        carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
                         
                         
                     } catch (PayException e) {
