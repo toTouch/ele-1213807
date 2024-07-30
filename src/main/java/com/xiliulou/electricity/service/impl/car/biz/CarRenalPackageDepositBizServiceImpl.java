@@ -821,7 +821,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert = buildCarRentalPackageDepositPayEntity(tenantId, uid, carRentalPackage, YesNoEnum.YES.getCode(),
                 PayTypeEnum.EXEMPT.getCode());
         // 创建免押记录
-        FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq);
+        FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq, carRentalPackage);
         // 创建租车会员信息
         CarRentalPackageMemberTermPo memberTermInsertOrUpdateEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage,
                 carRentalPackageDepositPayInsert.getOrderNo(), memberTermEntity);
@@ -940,7 +940,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @return 免押记录订单
      */
     private FreeDepositOrder buildFreeDepositOrderEntity(Integer tenantId, Long uid, CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert,
-            FreeDepositOptReq freeDepositOptReq) {
+            FreeDepositOptReq freeDepositOptReq, CarRentalPackagePo carRentalPackagePo) {
         Integer depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageDepositPayInsert.getRentalPackageType())) {
             depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY;
@@ -948,7 +948,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         return FreeDepositOrder.builder().uid(uid).authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE).idCard(freeDepositOptReq.getIdCard())
                 .orderId(carRentalPackageDepositPayInsert.getOrderNo()).phone(freeDepositOptReq.getPhoneNumber()).realName(freeDepositOptReq.getRealName())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).tenantId(tenantId)
-                .transAmt(carRentalPackageDepositPayInsert.getDeposit().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(depositType).build();
+                .transAmt(carRentalPackageDepositPayInsert.getDeposit().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(depositType)
+                .franchiseeId(Long.valueOf(carRentalPackagePo.getFranchiseeId())).build();
     }
     
     /**
