@@ -106,7 +106,10 @@
                 #{id}
             </foreach>
         </if>
-        order by tui.auth_status, tui.create_time desc
+        order by case tui.auth_status
+                    when 0 then 0
+                    else 1
+                 end, tui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
