@@ -45,19 +45,21 @@ public class AliPayPostProcessHandlerImpl extends AbstractAliPayPostProcessCallB
      * @date 2024/7/29 19:29
      */
     @Override
-    protected void refundCallback(ApiPayRefundOrderCallBackResource backResource, String customParam) {
+    protected String refundCallback(ApiPayRefundOrderCallBackResource backResource, String customParam) {
         log.info("AliPayPostProcessHandlerImpl.refundCallback Refunds are not processed");
+        return AliPayConstant.CALL_BACK_SUCCESS;
     }
     
     @Override
-    protected void payOrderCallback(AliPayCallBackResource backResource, String customParam) {
+    protected String payOrderCallback(AliPayCallBackResource backResource, String customParam) {
         //幂等加锁
         String orderNo = backResource.getOutTradeNo();
         if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             log.info("ELE INFO! alipay order in process orderNo={}", orderNo);
-            return;
+            return AliPayConstant.CALL_BACK_SUCCESS;
         }
         orderCallbackDispatcher.dispatch(backResource);
+        return AliPayConstant.CALL_BACK_SUCCESS;
     }
     
     @Override

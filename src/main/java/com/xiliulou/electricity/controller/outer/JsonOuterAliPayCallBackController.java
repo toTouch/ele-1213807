@@ -40,24 +40,22 @@ public class JsonOuterAliPayCallBackController {
     private AlipayAppConfigService alipayAppConfigService;
     
     /**
-     * 支付宝支付通知
-     * 支付宝小程序支付所以的都是一个通知接口
+     * 支付宝支付通知 支付宝小程序支付所以的都是一个通知接口
+     *
      * @return
      */
     @SneakyThrows
     @PostMapping("/outer/alipay/pay/notified/{tenantId}/{franchiseeId}")
-    public void payNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId, HttpServletRequest request) {
-    
+    public String payNotified(@PathVariable("tenantId") Integer tenantId, @PathVariable(value = "franchiseeId") Long franchiseeId, HttpServletRequest request) {
+        
         AlipayAppConfigBizDetails alipayAppConfig = alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
         if (Objects.isNull(alipayAppConfig)) {
             throw new AliPayException("alipayAppConfig is null");
         }
         
         Map<String, String[]> requestParams = request.getParameterMap();
-        aliPayPostProcessHandler.postProcessCallback(new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), null));
+        return aliPayPostProcessHandler.postProcessCallback(new AliPayOrderCallBackRequest(requestParams, alipayAppConfig.getPublicKey(), null));
     }
-    
-    
     
     
 }
