@@ -83,6 +83,11 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE = 10;
     
     /**
+     * 取满电仓操作记录seq
+     */
+    public static final Integer OPEN_FULL_CELL_BATTERY = 14;
+    
+    /**
      * 自助开仓
      */
     public static final Integer ORDER_TYPE_SELF_OPEN = 3;
