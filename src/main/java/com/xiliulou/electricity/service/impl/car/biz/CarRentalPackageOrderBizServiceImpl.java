@@ -136,7 +136,6 @@ import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
-import com.xiliulou.pay.base.enums.CommonRefundStatusEnum;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
