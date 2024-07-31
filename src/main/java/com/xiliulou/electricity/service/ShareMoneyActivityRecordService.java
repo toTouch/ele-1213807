@@ -13,17 +13,17 @@ import java.math.BigDecimal;
  * @since 2021-07-14 09:45:04
  */
 public interface ShareMoneyActivityRecordService {
-
-
-      /**
+    
+    
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
-      ShareMoneyActivityRecord queryByIdFromDB(Long id);
-
-
+    ShareMoneyActivityRecord queryByIdFromDB(Long id);
+    
+    
     /**
      * 新增数据
      *
@@ -31,7 +31,7 @@ public interface ShareMoneyActivityRecordService {
      * @return 实例对象
      */
     ShareMoneyActivityRecord insert(ShareMoneyActivityRecord shareMoneyActivityRecord);
-
+    
     /**
      * 修改数据
      *
@@ -42,15 +42,24 @@ public interface ShareMoneyActivityRecordService {
     
     
     R generateSharePicture(Integer activityId, String page, String envVersion);
-
-
-	ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId);
-
-
-	void addCountByUid(Long uid, BigDecimal money);
-
-
-	R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
-
-	R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+    
+    
+    ShareMoneyActivityRecord queryByUid(Long uid, Integer activityId);
+    
+    
+    void addCountByUid(Long uid, BigDecimal money);
+    
+    
+    R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+    
+    R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+    
+    /**
+     * 获取二维码生成参数
+     *
+     * @param activityId
+     * @author caobotao.cbt
+     * @date 2024/7/31 15:17
+     */
+    R getQrCodeShareParam(Integer activityId);
 }

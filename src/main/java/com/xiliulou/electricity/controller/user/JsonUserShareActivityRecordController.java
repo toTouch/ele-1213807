@@ -40,4 +40,16 @@ public class JsonUserShareActivityRecordController {
     }
     
     
+    /**
+     * 获取二维码生成参数
+     *
+     * @param activityId
+     * @author caobotao.cbt
+     * @date 2024/7/31 15:00
+     */
+    @PostMapping(value = "/user/shareActivityRecord/generateShareUrl")
+    public R getQrCodeShareParam(@RequestParam(value = "activityId") Integer activityId) {
+        return shareActivityRecordService.getQrCodeShareParam(activityId);
+    }
+    
 }
