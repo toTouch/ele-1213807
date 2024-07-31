@@ -1339,8 +1339,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCabinetName(cabinet.getName());
-        vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());
+        // 上一次成功，这次只能返回新仓门
+        vo.setCell(lastOrder.getNewCellNo());
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
@@ -1352,8 +1353,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
-            // 没有在仓，需要返回前端仓门号
-            vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+            // 没有在仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             return Pair.of(true, vo);
         }
@@ -2765,8 +2765,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
+        // 多次扫码处理
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
-            //  todo 柜机版本校验
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery.getSn());
@@ -2881,7 +2881,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
-            //  todo 柜机版本校验
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery.getSn());
