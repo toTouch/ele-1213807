@@ -644,7 +644,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setRefundStatus("SUCCESS");
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                 refundPayService.process(callBackResource);
-                carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
             } else {
                 try {
                     // 根据购买订单编码获取当初的支付流水
@@ -659,9 +658,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         throw new BizException("300000", "数据有误");
                     }
     
-                    // 赋值退款单状态及审核时间
-                    updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-                    carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
+                    
                     
                     // 调用微信支付，进行退款
                     RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
@@ -670,6 +667,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
                     log.info("save approve refund rentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
                     
+                    updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
                     
                 } catch (PayException e) {
                     log.error("save approve refund rentOrderTx failed.", e);
@@ -686,10 +684,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             callBackResource.setRefundStatus("SUCCESS");
             callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
             refundPayService.process(callBackResource);
-            carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
         }
-        
-        
+    
+        carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
         log.info("save approve refund order flow end, order No = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getUid());
         
     }
@@ -1532,7 +1529,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     callBackResource.setRefundStatus("SUCCESS");
                     callBackResource.setOutRefundNo(refundRentOrderNo);
                     refundPayService.process(callBackResource);
-                    carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
                 } else {
                     try {
                         // 根据购买订单编码获取当初的支付流水
@@ -1546,10 +1542,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             log.warn("saveApproveRefundRentOrderTx faild. t_electricity_trade_order status is wrong. orderNo is {}", orderNo);
                             throw new BizException("300000", "数据有误");
                         }
-    
-                        // 赋值退款单状态及审核时间
-                        rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-                        carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
                         
                         // 调用微信支付，进行退款
                         RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
@@ -1557,7 +1549,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         log.info("saveApproveRefundRentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
                         BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
                         log.info("saveApproveRefundRentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
-                        
+    
+                        // 赋值退款单状态及审核时间
+                        rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
                         
                     } catch (PayException e) {
                         log.error("saveApproveRefundRentOrderTx failed.", e);
@@ -1574,9 +1568,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setRefundStatus("SUCCESS");
                 callBackResource.setOutRefundNo(refundRentOrderNo);
                 refundPayService.process(callBackResource);
-                carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             }
-            
+    
+            carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             
         } else {
             // 1. 更新退租申请单状态
@@ -1627,7 +1621,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     callBackResource.setRefundStatus("SUCCESS");
                     callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                     refundPayService.process(callBackResource);
-                    carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
                 } else {
                     try {
                         // 根据购买订单编码获取当初的支付流水
@@ -1649,14 +1642,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         log.info("save approve refund rentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
                         BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
                         log.info("save approve refund rentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
-    
-                        if(CommonRefundStatusEnum.REFUNDING.getCode().equals(wxRefundDto.getCommonRefundStatus())){
-                            // 微信有中间态，支付宝没有
-                            rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-                        }
-                        carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
-                        
-                        
+                       
+                        rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
                     } catch (PayException e) {
                         log.error("save approve refund rentOrderTx failed.", e);
                         // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
@@ -1672,10 +1659,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setRefundStatus("SUCCESS");
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                 refundPayService.process(callBackResource);
-                carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             }
-            
-            
+    
+            carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         } else {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());

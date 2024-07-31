@@ -5,9 +5,12 @@
 package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.factory.paycallback.RefundPayServiceFactory;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.alipay.constants.AliPayConstant;
 import com.xiliulou.pay.alipay.dto.AliPayRefundOrderDTO;
 import com.xiliulou.pay.alipay.exception.AliPayException;
@@ -36,6 +39,10 @@ public class AliPayPostProcessHandlerImpl extends AbstractAliPayPostProcessCallB
     @Resource
     private OrderCallbackDispatcher orderCallbackDispatcher;
     
+    
+    @Resource
+    private RocketMqService rocketMqService;
+    
     /**
      * 支付宝退款回调只有部分退款才会回调，此处不做处理，统一在退款后同步处理
      *
@@ -62,18 +69,16 @@ public class AliPayPostProcessHandlerImpl extends AbstractAliPayPostProcessCallB
         return AliPayConstant.CALL_BACK_SUCCESS;
     }
     
+    
+    /**
+     * 支付宝全额和部分退款结果会同步通知，此处将转为异步消息模式。
+     *
+     * @param orderDTO
+     * @author caobotao.cbt
+     * @date 2024/7/31 08:40
+     */
     @Override
     public void postProcessAfterAliRefund(AliPayRefundOrderDTO orderDTO) throws AliPayException {
-        // 成功
-        ApiPayRefundOrderCallBackResource backResource = new ApiPayRefundOrderCallBackResource();
-        backResource.setTradeStatus(orderDTO.getRefundStatus());
-        backResource.setOutTradeNo(orderDTO.getOutTradeNo());
-        backResource.setOutBizNo(orderDTO.getRefundNo());
-        RefundPayService service = RefundPayServiceFactory.getService(orderDTO.getRefundType());
-        if (Objects.isNull(service)) {
-            log.warn("RefundPayService is null RefundType={}", orderDTO.getRefundType());
-            return;
-        }
-        service.process(backResource);
+        rocketMqService.sendAsyncMsg(MqProducerConstant.ALIPAY_REFUND_NOTIFY_TOPIC, JsonUtil.toJson(orderDTO));
     }
 }
