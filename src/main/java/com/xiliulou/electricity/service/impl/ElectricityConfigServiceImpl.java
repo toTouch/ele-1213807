@@ -226,6 +226,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
             electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+            electricityConfig.setAlipayCustomer(electricityConfigAddAndUpdateQuery.getAlipayCustomer());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -265,7 +266,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
         electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
         electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
-        
+        electricityConfig.setAlipayCustomer(electricityConfigAddAndUpdateQuery.getAlipayCustomer());
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
