@@ -79,7 +79,8 @@ public class ShareMoneyActivityAddAndUpdateQuery {
     /**
      * 加盟商Id
      */
-    private Integer franchiseeId;
+    @NotNull(message = "加盟商不能为空!", groups = {CreateGroup.class})
+    private Long franchiseeId;
 
     /**
      * 邀请标准 0-登录注册 1-实名认证 2-购买套餐

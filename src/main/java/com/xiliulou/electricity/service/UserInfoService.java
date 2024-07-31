@@ -5,12 +5,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
-import com.xiliulou.electricity.vo.UserInfoDetailVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -143,7 +141,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryDetailsBatteryInfo(Long uid);
     
-    R userInfoSearch(Long size, Long offset, String name);
+    R userInfoSearch(Long size, Long offset, String name, Long franchiseeId);
     
     R queryEleList(UserInfoQuery userInfoQuery);
     
@@ -173,10 +171,11 @@ public interface UserInfoService extends IService<UserInfo> {
     
     /**
      * <p>
-     *    Description: 强制用户下线
+     * Description: 强制用户下线
      * </p>
+     *
      * @param userOauthBinds userOauthBinds
-    */
+     */
     void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId);
     
     List<UserInfo> listByUids(List<Long> uidList, Integer tenantId);

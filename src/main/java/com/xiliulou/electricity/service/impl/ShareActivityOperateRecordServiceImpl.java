@@ -8,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ShareActivityOperateRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -31,6 +32,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +58,9 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
 
     @Autowired
     private CarRentalPackageService carRentalPackageService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -109,6 +114,12 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
                 //若存在2.0旧的数据，只能从memberCard中获取，处理查不出套餐信息的bug，该问题出现在后台代码已经更新，saas前端仍然是老版本的bug.
                 String memberCards = item.getMemberCard();
                 shareActivityOperateRecordVO.setMembercardNames(getOldBatteryPackages(memberCards));
+            }
+    
+            Integer franchiseeId = item.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                shareActivityOperateRecordVO.setFranchiseeId(franchiseeId.longValue());
+                shareActivityOperateRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
 
             return shareActivityOperateRecordVO;

@@ -84,7 +84,8 @@ public class ShareActivityAddAndUpdateQuery {
     /**
      * 加盟商Id
      */
-    private Integer franchiseeId;
+    @NotNull(message = "加盟商不能为空!", groups = {CreateGroup.class})
+    private Long franchiseeId;
 
     /**
      * 可发放优惠券的套餐

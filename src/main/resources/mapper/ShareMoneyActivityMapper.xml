@@ -1,34 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ShareMoneyActivityMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.ShareMoneyActivity" id="ShareMoneyActivityMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="description" column="description" jdbcType="VARCHAR"/>
-        <result property="uid" column="uid" jdbcType="INTEGER" />
-        <result property="userName" column="user_name" jdbcType="VARCHAR" />
-        <result property="hours" column="hours" jdbcType="INTEGER" />
-        <result property="money" column="money" jdbcType="INTEGER" />
-        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
-        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
-        <result property="invitationCriteria" column="invitation_criteria" jdbcType="INTEGER" />
-        <result property="delFlg" column="del_flg" jdbcType="INTEGER" />
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="hours" column="hours" jdbcType="INTEGER"/>
+        <result property="money" column="money" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="invitationCriteria" column="invitation_criteria" jdbcType="INTEGER"/>
+        <result property="delFlg" column="del_flg" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!-- 基础字段 -->
     <sql id="selectShareMoneyActivity">
-        select id, name, status, type, description, uid, user_name, hours, money, tenant_id, franchisee_id, invitation_criteria, del_flg, create_time, update_time from t_share_money_activity
+        select id,
+               name,
+               status,
+               type,
+               description,
+               uid,
+               user_name,
+               hours,
+               money,
+               tenant_id,
+               franchisee_id,
+               invitation_criteria,
+               del_flg,
+               create_time,
+               update_time
+        from t_share_money_activity
     </sql>
-
+    
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareMoneyActivity">
         select
-        id, name, type, status,  description, del_flg, create_time,
+        id, name, type, status, description, del_flg, create_time,
         update_time, uid,user_name,franchisee_id,hours,minutes,money, invitation_criteria
         from t_share_money_activity
         where `del_flg` = 0
@@ -47,12 +62,15 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.franchiseeId != null ">
+            and franchisee_id = #{query.franchiseeId}
+        </if>
         order by update_time desc
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
         </if>
     </select>
-
+    
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_share_money_activity
@@ -72,8 +90,11 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.franchiseeId != null ">
+            and franchisee_id = #{query.franchiseeId}
+        </if>
     </select>
-
+    
     <select id="selectActivityByTenantIdAndStatus" resultMap="ShareMoneyActivityMap">
         <include refid="selectShareMoneyActivity"/>
         <where>
@@ -84,9 +105,12 @@
             <if test="status != null">
                 and status = #{status}
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
     </select>
-
+    
     <!--修改活动数据-->
     <update id="updateActivity">
         update t_share_money_activity
@@ -102,12 +126,43 @@
     </update>
     <!--9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除 start-->
     <update id="removeById">
-        update t_share_money_activity set `del_flg` = 1,`status`=2 where `del_flg` = 0 and `tenant_id` = #{tenantId} and `id` = #{id};
+        update t_share_money_activity
+        set `del_flg` = 1,
+            `status`=2
+        where `del_flg` = 0
+          and `tenant_id` = #{tenantId}
+          and `id` = #{id};
     </update>
     <!--9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除 end-->
     
-    <select id="existShareMoneyActivity"  resultType="java.lang.Integer">
-        select 1 from t_share_money_activity where del_flg=0 and tenant_id = #{tenantId} and status =1 limit 1
+    <select id="existShareMoneyActivity" resultType="java.lang.Integer">
+        select 1
+        from t_share_money_activity
+        where del_flg = 0
+          and tenant_id = #{tenantId}
+          and status = 1 limit 1
+    </select>
+    
+    <select id="selectOnlineActivity" resultType="com.xiliulou.electricity.entity.ShareMoneyActivity">
+        select id,
+               name,
+               type,
+               status,
+               description,
+               del_flg,
+               create_time,
+               update_time,
+               uid,
+               user_name,
+               franchisee_id,
+               hours,
+               minutes,
+               money,
+               invitation_criteria
+        from t_share_money_activity
+        where del_flg = 0
+          and status = 1
+          and tenant_id = #{tenantId}
     </select>
 
 </mapper>

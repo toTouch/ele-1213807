@@ -7,7 +7,7 @@
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.ShareActivityRecordVO">
 		select
         tsar.id as id, tsar.activity_id as activityId, tsar.count as count,
-		tsar.create_time as createTime, tsar.update_time as updateTime,
+		tsar.create_time as createTime, tsar.update_time as updateTime, tsar.franchisee_id as franchiseeId,
 		tsar.tenant_id as tenantId,tsar.status as status,tsar.available_count as availableCount,
 		tui.phone as phone,tui.name as name,tsa.name as activityName,tsar.uid as uid
 		from t_share_activity_record as tsar
@@ -32,14 +32,17 @@
             <if test="endTime != null">
                 and tsar.create_time &lt;= #{endTime}
             </if>
+			<if test="franchiseeId != null">
+				and tsar.franchisee_id = #{franchiseeId}
+			</if>
 			<if test="franchiseeIds != null and franchiseeIds.size()>0">
-				and tui.franchisee_id in
+				and tsar.franchisee_id in
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 			<if test="storeIds != null and storeIds.size()>0">
-				and tui.store_id in
+				and tsar.store_id in
 				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
@@ -74,14 +77,17 @@
             <if test="endTime != null">
                 and tsar.create_time &lt;= #{endTime}
             </if>
+			<if test="franchiseeId != null">
+				and tsar.franchisee_id = #{franchiseeId}
+			</if>
 			<if test="franchiseeIds != null and franchiseeIds.size()>0">
-				and tui.franchisee_id in
+				and tsar.franchisee_id in
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 			<if test="storeIds != null and storeIds.size()>0">
-				and tui.store_id in
+				and tsar.store_id in
 				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 场地电费查询
@@ -23,4 +25,8 @@ public class MerchantPowerQueryModel {
     private String monthDate;
     
     private Integer tenantId;
+    
+    private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

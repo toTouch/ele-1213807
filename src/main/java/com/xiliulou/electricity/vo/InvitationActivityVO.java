@@ -87,4 +87,8 @@ public class InvitationActivityVO {
      * 车电一体套餐IDs
      */
     private List<BatteryMemberCardVO> carWithBatteryPackages;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 }

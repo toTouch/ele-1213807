@@ -26,9 +26,16 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -46,128 +53,194 @@ import java.util.stream.Collectors;
 @RestController
 @Slf4j
 public class JsonAdminShareActivityController extends BaseController {
+    
     /**
      * 服务对象
      */
     @Autowired
     private ShareActivityService shareActivityService;
+    
     @Autowired
     FranchiseeService franchiseeService;
+    
     @Autowired
     UserDataScopeService userDataScopeService;
-
+    
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
-
+    
     @Autowired
     private CarRentalPackageService carRentalPackageService;
-
+    
     //新增
     @PostMapping(value = "/admin/shareActivity")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+        
+        shareActivityAddAndUpdateQuery.setUid(user.getUid());
+        shareActivityAddAndUpdateQuery.setUserName(user.getUsername());
+        
         return shareActivityService.insert(shareActivityAddAndUpdateQuery);
     }
-
+    
     @GetMapping(value = "/admin/shareActivity/detail/{id}")
-    public R detail(@PathVariable("id") Integer id){
+    public R detail(@PathVariable("id") Integer id) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         return returnTripleResult(shareActivityService.shareActivityDetail(id));
     }
-
+    
     /**
      * 编辑功能
+     *
      * @param shareActivityAddAndUpdateQuery
      * @return
      */
     @PutMapping(value = "/admin/shareActivity/update")
     public R updateActivity(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+        
         return returnTripleResult(shareActivityService.updateShareActivity(shareActivityAddAndUpdateQuery));
     }
-
+    
     /**
      * 上下架活动
+     *
      * @param shareActivityAddAndUpdateQuery
      * @return
      */
     @PutMapping(value = "/admin/shareActivity")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-        return shareActivityService.update(shareActivityAddAndUpdateQuery);
-    }
-
-    //列表查询
-    @GetMapping(value = "/admin/shareActivity/list")
-    public R queryList(@RequestParam("size") Long size,
-                       @RequestParam("offset") Long offset,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "franchiseeIds", required = false) List<Long> franchiseeIds,
-                       @RequestParam(value = "type", required = false) String type,
-                       @RequestParam(value = "status", required = false) Integer status) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-
-        if (offset < 0) {
-            offset = 0L;
-        }
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(Collections.EMPTY_LIST);
-        //}
-
-        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId())
-                .status(status).build();
-
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+        
+        return shareActivityService.update(shareActivityAddAndUpdateQuery);
+    }
+    
+    //列表查询
+    @GetMapping(value = "/admin/shareActivity/list")
+    public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeIds", required = false) List<Long> franchiseeIds, @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder().offset(offset).size(size).name(name).franchiseeIds(franchiseeIds)
+                .tenantId(TenantContextHolder.getTenantId()).status(status).franchiseeId(franchiseeId).build();
+        
         if (StringUtils.isNotEmpty(type)) {
-            Integer[] types = (Integer[])
-                    JSONUtil.parseArray(type).toArray(Integer[].class);
-
+            Integer[] types = (Integer[]) JSONUtil.parseArray(type).toArray(Integer[].class);
+            
             List<Integer> typeList = Arrays.asList(types);
             shareActivityQuery.setTypeList(typeList);
         }
         return shareActivityService.queryList(shareActivityQuery);
     }
-
+    
     //列表查询
     @GetMapping(value = "/admin/shareActivity/count")
-    public R queryCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "franchiseeIds", required = false) List<Long> franchiseeIds,
-                        @RequestParam(value = "type", required = false) String type,
-                        @RequestParam(value = "status", required = false) Integer status) {
-
+    public R queryCount(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeIds", required = false) List<Long> franchiseeIds,
+            @RequestParam(value = "type", required = false) String type, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-        //    return R.ok(NumberConstant.ZERO);
-        //}
-
-        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
-                .name(name)
-                .franchiseeIds(franchiseeIds)
-                .tenantId(TenantContextHolder.getTenantId())
-                .status(status).build();
-
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
+            }
+        }
+        
+        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder().name(name).franchiseeIds(franchiseeIds).tenantId(TenantContextHolder.getTenantId()).status(status)
+                .franchiseeId(franchiseeId).build();
+        
         if (StringUtils.isNotEmpty(type)) {
             Integer[] types = (Integer[]) JSONUtil.parseArray(type).toArray(Integer[].class);
-
+            
             List<Integer> typeList = Arrays.asList(types);
             shareActivityQuery.setTypeList(typeList);
         }
         return shareActivityService.queryCount(shareActivityQuery);
     }
-
-    //根据id查询活动详情
+    
+    //根据id查询活动详情（跟时孟杨确认该接口暂无调用）
     @GetMapping(value = "/admin/shareActivity/queryInfo/{id}")
     public R queryInfo(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
@@ -175,71 +248,65 @@ public class JsonAdminShareActivityController extends BaseController {
         }
         return shareActivityService.queryInfo(id);
     }
-
+    
     @GetMapping(value = "/admin/shareActivity/queryPackages")
-    public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
-                                       @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "type",  required = true) Integer type) {
-
+    public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
+            @RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
-        if(!packageTypes.contains(type)){
+        if (!packageTypes.contains(type)) {
             return R.fail("000200", "业务类型参数不合法");
         }
-
+        
         //需要获取租金不可退的套餐
-        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)){
-            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                    .offset(offset)
-                    .size(size)
-                    .delFlag(BatteryMemberCard.DEL_NORMAL)
-                    .status(BatteryMemberCard.STATUS_UP)
-                    .isRefund(BatteryMemberCard.NO)
-                    .tenantId(TenantContextHolder.getTenantId()).build();
+        if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)) {
+            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().offset(offset).size(size).delFlag(BatteryMemberCard.DEL_NORMAL).status(BatteryMemberCard.STATUS_UP)
+                    .isRefund(BatteryMemberCard.NO).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
             return R.ok(batteryMemberCardService.selectByQuery(query));
-        }else{
+        } else {
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
             qryModel.setOffset(offset.intValue());
             qryModel.setSize(size.intValue());
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
-
-            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
+            qryModel.setFranchiseeId(Objects.isNull(franchiseeId) ? null : franchiseeId.intValue());
+            
+            if (PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)) {
                 qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
-            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)){
+            } else if (PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)) {
                 qryModel.setType(RentalPackageTypeEnum.CAR.getCode());
             }
-
+            
             return R.ok(batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel));
         }
-
+        
     }
-
+    
     @GetMapping(value = "/admin/shareActivity/queryPackagesCount")
-    public R getElectricityUsablePackageCount(@RequestParam(value = "type",  required = true) Integer type) {
-
+    public R getElectricityUsablePackageCount(@RequestParam(value = "type", required = true) Integer type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
-        if(!packageTypes.contains(type)){
+        if (!packageTypes.contains(type)) {
             return R.fail("000200", "业务类型参数不合法");
         }
-
+        
         //需要获取租金不可退的套餐
-        if(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)){
-            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
-                    .delFlag(BatteryMemberCard.DEL_NORMAL)
-                    .status(BatteryMemberCard.STATUS_UP)
-                    .isRefund(BatteryMemberCard.NO)
-                    .tenantId(TenantContextHolder.getTenantId()).build();
+        if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)) {
+            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().delFlag(BatteryMemberCard.DEL_NORMAL).status(BatteryMemberCard.STATUS_UP).isRefund(BatteryMemberCard.NO)
+                    .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
             return R.ok(batteryMemberCardService.selectByPageCount(query));
-        }else{
+        } else {
             CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
             qryModel.setTenantId(TenantContextHolder.getTenantId());
             qryModel.setStatus(UpDownEnum.UP.getCode());
             qryModel.setRentRebate(YesNoEnum.NO.getCode());
-
-            if(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)){
+            qryModel.setFranchiseeId(franchiseeId.intValue());
+            
+            if (PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode().equals(type)) {
                 qryModel.setType(RentalPackageTypeEnum.CAR_BATTERY.getCode());
-            }else if(PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)){
+            } else if (PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode().equals(type)) {
                 qryModel.setType(RentalPackageTypeEnum.CAR.getCode());
             }
             return R.ok(carRentalPackageService.count(qryModel));
@@ -248,7 +315,7 @@ public class JsonAdminShareActivityController extends BaseController {
     
     
     @GetMapping(value = "/admin/shareActivity/checkExistActivity")
-    public R checkExistActivity(){
+    public R checkExistActivity() {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -260,9 +327,9 @@ public class JsonAdminShareActivityController extends BaseController {
     
     /**
      * <p>
-     *    Description: delete
-     *    9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
+     * Description: delete 9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
      * </p>
+     *
      * @param id id 主键id
      * @return com.xiliulou.core.web.R<?>
      * <p>Project: saas-electricity</p>
@@ -273,18 +340,28 @@ public class JsonAdminShareActivityController extends BaseController {
      * @since V1.0 2024/3/14
      */
     @GetMapping("/admin/shareActivity/delete")
-    public R<?> delete(@RequestParam("id") Long id){
+    public R<?> delete(@RequestParam("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             throw new CustomBusinessException("未找到用户!");
         }
-        if (Objects.isNull(id)){
+        
+        if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
         }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+        
         return shareActivityService.removeById(id);
     }
 }

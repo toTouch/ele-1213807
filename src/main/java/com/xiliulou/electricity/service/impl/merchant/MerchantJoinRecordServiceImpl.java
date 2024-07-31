@@ -441,6 +441,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             if (Objects.nonNull(merchant)) {
                 vo.setMerchantName(merchant.getName());
             }
+    
+            // 加盟商名称
+            Long franchiseeId = merchantJoinRecord.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
             
             voList.add(vo);
         }

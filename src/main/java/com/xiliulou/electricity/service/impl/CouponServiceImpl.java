@@ -7,8 +7,14 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.CouponActivityPackage;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -22,22 +28,20 @@ import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +53,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 优惠券规则表(TCoupon)表服务实现类
@@ -90,9 +95,8 @@ public class CouponServiceImpl implements CouponService {
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
     
-    @Autowired
-    private AssertPermissionService assertPermissionService;
-    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 通过ID查询单条数据从缓存
@@ -133,48 +137,10 @@ public class CouponServiceImpl implements CouponService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R insert(CouponQuery couponQuery) {
-        //创建账号
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("Coupon  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         couponQuery.setTenantId(tenantId);
-        
-        //        //判断参数
-        //        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-        //            coupon.setType(Coupon.TYPE_FRANCHISEE);
-        //            if (Objects.isNull(coupon.getFranchiseeId())) {
-        //                log.error("Coupon  ERROR! not found FranchiseeId ");
-        //                return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-        //            }
-        //        } else {
-        //            if (Objects.equals(coupon.getType(), Coupon.TYPE_FRANCHISEE)) {
-        //                if (Objects.isNull(coupon.getFranchiseeId())) {
-        //                    log.error("Coupon  ERROR! not found FranchiseeId ");
-        //                    return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-        //                }
-        //            }
-        //        }
-        
-        //判断参数
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            couponQuery.setType(Coupon.TYPE_FRANCHISEE);
-            if (Objects.isNull(couponQuery.getFranchiseeId())) {
-                log.error("Coupon  ERROR! not found FranchiseeId ");
-                return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-            }
-        } else {
-            if (Objects.equals(couponQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
-                if (Objects.isNull(couponQuery.getFranchiseeId())) {
-                    log.error("Coupon  ERROR! not found FranchiseeId ");
-                    return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-                }
-            }
-        }
+        couponQuery.setType(Coupon.TYPE_FRANCHISEE);
         
         //参数判断
         if (Objects.equals(couponQuery.getDiscountType(), Coupon.FULL_REDUCTION)) {
@@ -216,20 +182,14 @@ public class CouponServiceImpl implements CouponService {
         
         Coupon coupon = new Coupon();
         BeanUtils.copyProperties(couponQuery, coupon);
-        coupon.setUid(user.getUid());
-        coupon.setUserName(user.getUsername());
         coupon.setCreateTime(System.currentTimeMillis());
         coupon.setUpdateTime(System.currentTimeMillis());
         coupon.setTenantId(tenantId);
         coupon.setDays(Integer.parseInt(couponQuery.getValidDays()));
+        coupon.setFranchiseeId(couponQuery.getFranchiseeId().intValue());
         
         if (Objects.isNull(coupon.getStatus())) {
             coupon.setStatus(Coupon.STATUS_OFF);
-        }
-        
-        //先默认为自营活动 以后需要前端传值 TODO
-        if (Objects.isNull(coupon.getType())) {
-            coupon.setType(Coupon.TYPE_SYSTEM);
         }
         
         int insert = couponMapper.insert(coupon);
@@ -353,8 +313,8 @@ public class CouponServiceImpl implements CouponService {
     public R update(CouponQuery couponQuery) {
         Coupon oldCoupon = queryByIdFromCache(couponQuery.getId());
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("update Coupon  ERROR! not found coupon ! couponId={} ", couponQuery.getId());
-            return R.fail("ELECTRICITY.00104", "找不到优惠券");
+            log.error("update coupon ERROR! not found coupon ! couponId={} ", couponQuery.getId());
+            return R.fail("120124", "找不到优惠券");
         }
         
         //检查优惠券是否已经绑定用户
@@ -395,18 +355,20 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCouponList(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()) {
-            return R.ok(new ArrayList<>());
-        }
-        couponQuery.setFranchiseeIds(pair.getRight());
-        
         List<Coupon> couponList = couponMapper.queryList(couponQuery);
         List<CouponActivityVO> couponActivityVOList = Lists.newArrayList();
         for (Coupon coupon : couponList) {
             CouponActivityVO couponActivityVO = new CouponActivityVO();
             BeanUtils.copyProperties(coupon, couponActivityVO);
             couponActivityVO.setValidDays(String.valueOf(coupon.getDays()));
+            
+            Integer franchiseeId = coupon.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                couponActivityVO.setFranchiseeId(franchiseeId.longValue());
+                couponActivityVO.setFranchiseeName(
+                        Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
+            
             couponActivityVOList.add(couponActivityVO);
         }
         
@@ -416,12 +378,6 @@ public class CouponServiceImpl implements CouponService {
     @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
-        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()) {
-            return R.ok(NumberConstant.ZERO);
-        }
-        couponQuery.setFranchiseeIds(pair.getRight());
-        
         return R.ok(couponMapper.queryCount(couponQuery));
     }
     
@@ -455,6 +411,13 @@ public class CouponServiceImpl implements CouponService {
                 couponActivityVO.setCarWithBatteryPackages(getAllCarBatteryPackages(PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
         }
+        
+        Integer franchiseeId = coupon.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId)) {
+            couponActivityVO.setFranchiseeName(
+                    Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+        }
+        
         return Triple.of(true, null, couponActivityVO);
     }
     

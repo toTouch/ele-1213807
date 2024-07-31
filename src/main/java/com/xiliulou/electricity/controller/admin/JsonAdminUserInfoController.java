@@ -8,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -506,7 +507,8 @@ public class JsonAdminUserInfoController extends BaseController {
      * 下拉列表搜索
      */
     @GetMapping(value = "/admin/userInfo/search")
-    public R userInfoSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name) {
+    public R userInfoSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (Objects.isNull(size) || size < 0 || size > 20) {
             size = 20L;
         }
@@ -514,7 +516,7 @@ public class JsonAdminUserInfoController extends BaseController {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
-        return userInfoService.userInfoSearch(size, offset, name);
+        return userInfoService.userInfoSearch(size, offset, name, franchiseeId);
     }
     
     @GetMapping("/admin/userInfo/exportCarRentalExcel")
@@ -585,7 +587,7 @@ public class JsonAdminUserInfoController extends BaseController {
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -593,7 +595,7 @@ public class JsonAdminUserInfoController extends BaseController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -625,16 +627,16 @@ public class JsonAdminUserInfoController extends BaseController {
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(NumberConstant.ZERO);
             }
         }
         
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
             }
         }
         

@@ -61,6 +61,8 @@ public class InvitationActivityRecord {
     private Long updateTime;
 
     private Integer tenantId;
+    
+    private Long franchiseeId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

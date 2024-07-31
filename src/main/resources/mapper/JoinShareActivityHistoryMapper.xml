@@ -41,7 +41,7 @@
         select
         jsah.id as id, jsah.start_time as startTime,
          jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
-        jsah.update_time as updateTime, jsah.tenant_id as tenantId, tui.phone as join_phone, tui.name as join_name
+        jsah.update_time as updateTime, jsah.tenant_id as tenantId, jsah.franchisee_id as franchiseeId, tui.phone as join_phone, tui.name as join_name
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
         <where>
@@ -65,6 +65,15 @@
             </if>
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
+            </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and jsah.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
 		order by jsah.update_time desc
@@ -109,6 +118,15 @@
             </if>
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
+            </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and jsah.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>
@@ -162,10 +180,10 @@
             tui.name as joinName,
             jsah.activity_id as activityId,
             tsa.invitation_criteria as invitationCriteria,
-            tsa.name as activityName
+            tsa.name as activityName,
+            jsah.franchisee_id as franchiseeId
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
-        left join t_user_info as tu on tu.uid = jsah.uid
         left join t_share_activity as tsa on tsa.id = jsah.activity_id
         <where>
             <if test="uid != null">
@@ -198,14 +216,17 @@
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id &lt;= #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null">
-                and tu.franchisee_id in
+                and jsah.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tu.store_id in
+                and jsah.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
@@ -223,7 +244,6 @@
             count(1)
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
-        left join t_user_info as tu on tu.uid = jsah.uid
         left join t_share_activity as tsa on tsa.id = jsah.activity_id
         <where>
             <if test="uid != null">
@@ -256,14 +276,17 @@
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id &lt;= #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null">
-                and tu.franchisee_id in
+                and jsah.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tu.store_id in
+                and jsah.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>

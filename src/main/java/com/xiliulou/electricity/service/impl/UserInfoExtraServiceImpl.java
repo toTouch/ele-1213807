@@ -400,6 +400,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
+    
+            if (!Objects.equals(userInfo.getFranchiseeId(), merchant.getFranchiseeId())) {
+                log.warn("Modify inviter fail! not same franchisee, uid={}, merchantId={}", uid, merchantId);
+                return R.ok();
+            }
         
             // 参与成功的记录
             MerchantInviterVO successInviterVO = querySuccessInviter(uid);
@@ -469,7 +474,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
         
             // 新增商户参与记录
-            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId);
+            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId, merchant.getFranchiseeId());
             merchantJoinRecordService.insertOne(merchantJoinRecord);
         
             // 新增修改记录
@@ -488,7 +493,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
     }
     
-    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId) {
+    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId, Long franchiseeId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
@@ -521,6 +526,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid)
                 .inviterType(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF).joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime)
                 .status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime).protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)
-                .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES).build();
+                .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES)
+                .franchiseeId(franchiseeId).build();
     }
 }
