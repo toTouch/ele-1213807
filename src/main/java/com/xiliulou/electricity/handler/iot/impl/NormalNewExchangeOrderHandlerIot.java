@@ -596,6 +596,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityExceptionOrderStatusRecord.setUpdateTime(System.currentTimeMillis());
             electricityExceptionOrderStatusRecord.setCellNo(electricityCabinetOrder.getOldCellNo());
             electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
+            
+            // 新自主开仓的开始时间
+            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + exchangeOrderRsp.getOrderId(), String.valueOf(System.currentTimeMillis()), 3L, TimeUnit.MINUTES);
         }
         
         //错误信息保存到缓存里，方便前端显示
