@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -33,7 +35,6 @@ import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -52,19 +53,19 @@ import java.util.stream.Collectors;
 public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandler {
     
     
-    @Autowired
+    @Resource
     RedisService redisService;
     
-    @Autowired
+    @Resource
     EleOperateQueueHandler eleOperateQueueHandler;
     
-    @Autowired
+    @Resource
     ElectricityCabinetOrderService electricityCabinetOrderService;
     
-    @Autowired
+    @Resource
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
     
-    @Autowired
+    @Resource
     ElectricityBatteryService electricityBatteryService;
     
     @Resource
@@ -79,7 +80,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
     
-    
     @Resource
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
@@ -88,6 +88,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     
     @Resource
     private BatteryTrackRecordService batteryTrackRecordService;
+    
+    @Resource
+    ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     
     
     @Override
@@ -111,6 +114,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         // 上报的仓门==订单新仓门 && 订单旧电池存在 & 新电池不存在 && 上报开门成功
         if (Objects.equals(electricityCabinetOrder.getNewCellNo(), eleSelfOPenCellOrderVo.getCellNo()) && Objects.nonNull(electricityCabinetOrder.getOldElectricityBatterySn())
                 && Objects.isNull(electricityCabinetOrder.getNewElectricityBatterySn()) && eleSelfOPenCellOrderVo.getResult()) {
+           
             log.info("SELF OPEN CELL INFO! Open Full Cell");
             
             if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
@@ -120,6 +124,12 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             
             // 订单完成。扣减套餐次数
             deductionPackageNumberHandler(electricityCabinetOrder);
+            
+            // 增加换电完成的操作记录
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(electricityCabinetOrder.getOrderId())
+                    .tenantId(electricityCabinetOrder.getTenantId()).msg("换电完成").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+            electricityCabinetOrderOperHistoryService.insert(history);
             
             // 修改订单最终状态为成功
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
@@ -138,13 +148,14 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(eleSelfOPenCellOrderVo, electricityCabinetOrder);
             
+            return;
         }
         
-        // 新的自主开仓无法走到这里
+        // 注意成功率优化2期，添加后台自主开仓和前端自主开仓(不使用这个表存储),这里会查询为空返回。 新的自主开新仓 无法走到这里,这里保留作为旧的自主开仓
         ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(
                 eleSelfOPenCellOrderVo.getOrderId());
         if (Objects.isNull(electricityExceptionOrderStatusRecord)) {
-            log.warn("SELF OPEN CELL ERROR! not found user! userId:{}", eleSelfOPenCellOrderVo.getOrderId());
+            log.warn("SELF OPEN CELL WARN! not found user! userId:{}", eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
         

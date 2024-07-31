@@ -116,6 +116,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -2571,6 +2572,26 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
         
+        ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(
+                electricityCabinetOrder.getOrderId());
+        
+        Long now = System.currentTimeMillis();
+        if (Objects.isNull(electricityExceptionOrderStatusRecord) || !Objects.equals(electricityExceptionOrderStatusRecord.getStatus(),
+                ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
+            log.warn("SELF OPEN CELL WARN! not old cell exception,orderId={}", electricityCabinetOrder.getOrderId());
+            return R.fail("100020", "非旧仓门异常无法自主开仓");
+        }
+        
+        if (Double.valueOf(now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
+            log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", electricityCabinetOrder.getOrderId());
+            return R.fail("100026", "自助开仓已超开仓时间");
+        }
+        
+        if (Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
+            log.warn("SELF OPEN CELL WARN! self open cell fail,orderId={}", electricityCabinetOrder.getOrderId());
+            return R.fail("100021", "该订单已进行自助开仓");
+        }
+        
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
             log.warn("self open cell order  WARN! not found store ！electricityCabinetId={}", electricityCabinet.getId());
@@ -2624,6 +2645,28 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(electricityCabinetBox)) {
             log.warn("self open cell order  WARN! not find cellNO! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
+        }
+        
+        // 自主开仓特殊场景校验
+        if (Objects.nonNull(electricityCabinetOrder.getElectricityCabinetId()) && Objects.nonNull(electricityExceptionOrderStatusRecord.getCellNo())) {
+            Integer isExistNewExchangeOrder = electricityCabinetOrderMapper.existSameCabinetCellSameTimeOpenExchangeOrder(electricityCabinetOrder.getId(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewExchangeOrder)) {
+                log.warn("selfOpenCell.existExchangeOrder, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
+            }
+            Integer isExistNewReturnOrder = rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewReturnOrder)) {
+                log.warn("selfOpenCell.existNewReturnOrder, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
+            }
+            Integer isExistNewOperRecord = electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
+                    electricityCabinetOrder.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo());
+            if (Objects.nonNull(isExistNewOperRecord)) {
+                log.warn("selfOpenCell.existNewOperRecord, orderId is {}", electricityCabinetOrder.getOrderId());
+                return R.fail("100666", "系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
+            }
         }
         
         try {
@@ -2880,6 +2923,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
+        // 多次换电拦截
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {

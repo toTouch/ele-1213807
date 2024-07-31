@@ -72,6 +72,8 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer OPERATE_RESULT_FAIL = 1;
     
     
+    public static final Integer SELF_OPEN_CELL_SEQ_SUCCESS = 6;
+    
     public static final Integer SELF_OPEN_CELL_SEQ = 9;
 
     public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 10;
