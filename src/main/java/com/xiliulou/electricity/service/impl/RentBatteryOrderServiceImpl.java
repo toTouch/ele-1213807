@@ -90,6 +90,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
@@ -504,7 +505,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .phone(userInfo.getPhone()).name(userInfo.getName()).batteryDeposit(userBatteryDeposit.getBatteryDeposit()).type(RentBatteryOrder.TYPE_USER_RENT)
                 .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT).electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).storeId(store.getId()).franchiseeId(store.getFranchiseeId())
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .channel(ChannelSourceContextHolder.get())
+                .build();
         rentBatteryOrderMapper.insert(rentBatteryOrder);
         
         //发送开门命令
@@ -652,7 +655,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .updateTime(System.currentTimeMillis())
                 .storeId(store.getId())
                 .franchiseeId(store.getFranchiseeId())
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .channel(ChannelSourceContextHolder.get())
+                .build();
         rentBatteryOrderMapper.insert(rentBatteryOrder);
         
         //发送开门命令
@@ -870,7 +875,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .storeId(store.getId())
                     .franchiseeId(store.getFranchiseeId())
-                    .tenantId(TenantContextHolder.getTenantId()).build();
+                    .tenantId(TenantContextHolder.getTenantId())
+                    .channel(ChannelSourceContextHolder.get())
+                    .build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
             
             //发送开门命令
