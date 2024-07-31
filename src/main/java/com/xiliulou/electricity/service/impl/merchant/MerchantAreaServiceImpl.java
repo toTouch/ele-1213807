@@ -143,7 +143,8 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         }
     
         // 检测选中的加盟商和当前登录加盟商是否一致
-        if (ObjectUtils.isNotEmpty(updateRequest.getBindFranchiseeIdList()) && !updateRequest.getBindFranchiseeIdList().contains(updateRequest.getFranchiseeId())) {
+        if (ObjectUtils.isNotEmpty(updateRequest.getBindFranchiseeIdList()) && !Objects.equals(updateRequest.getFranchiseeId(), NumberConstant.ZERO_L)
+                && !updateRequest.getBindFranchiseeIdList().contains(updateRequest.getFranchiseeId())) {
             log.info("merchant area update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", updateRequest.getId(), updateRequest.getFranchiseeId(), updateRequest.getBindFranchiseeIdList());
             return R.fail("120240", "当前加盟商无权限操作");
         }
@@ -187,10 +188,6 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             if (Objects.nonNull(franchisee)) {
                 merchantAreaVO.setFranchiseeName(franchisee.getName());
-            }
-            
-            if (Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L)) {
-                item.setFranchiseeId(null);
             }
             return merchantAreaVO;
             
