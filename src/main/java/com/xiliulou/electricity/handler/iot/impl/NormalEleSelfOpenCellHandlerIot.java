@@ -32,12 +32,15 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author: hrp
@@ -129,7 +132,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             newElectricityCabinetOrder.setRemark("新仓门自助开仓");
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
-            // 处理取走电池的相关信息（解绑&绑定）
+            // 处理取走电池的相关信息（解绑(包括异常交换)&绑定）
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);
             
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
@@ -240,7 +243,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     
     
     private void takeBatteryHandler(EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
-        
         UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("SELF OPEN CELL  error! userInfo is null!uid={},sessionId is {} ,orderId={}", cabinetOrder.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
@@ -248,31 +250,32 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             return;
         }
         
-        //  用户以前绑定的电池
+        // 用户以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(cabinetOrder.getUid());
+        
+        // 订单中的归还电池
+        ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(cabinetOrder.getOldElectricityBatterySn());
         
         // 电池解绑
         if (Objects.nonNull(oldElectricityBattery)) {
-            log.info("SELF OPEN CELL info! userBindBatterSn:{}", oldElectricityBattery.getSn());
-            
-            ElectricityBattery updateBattery = new ElectricityBattery();
-            updateBattery.setId(oldElectricityBattery.getId());
-            updateBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
-            updateBattery.setUid(null);
-            updateBattery.setGuessUid(null);
-            updateBattery.setBorrowExpireTime(null);
-            updateBattery.setElectricityCabinetId(null);
-            updateBattery.setElectricityCabinetName(null);
-            updateBattery.setUpdateTime(System.currentTimeMillis());
-            
-            Long bindTime = oldElectricityBattery.getBindTime();
-            //如果绑定时间为空 或者 电池绑定时间小于当前时间则更新电池信息
-            log.info("SELF OPEN CELL info! bindTime={},current time={}", bindTime, System.currentTimeMillis());
-            if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
-                updateBattery.setBindTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(updateBattery);
+            log.info("SELF OPEN CELL  info! userBindBatterSn:{}, returnBatterSn:{}", oldElectricityBattery.getSn(), cabinetOrder.getOldElectricityBatterySn());
+            // 如果放入的电池与用户绑定的电池不一致,异常交换
+            if (!Objects.equals(oldElectricityBattery.getSn(), cabinetOrder.getOldElectricityBatterySn())) {
+                // 解绑用户 原来绑定的电池
+                unbindUserOriginalBattery(oldElectricityBattery, placeBattery);
+                
+                if (Objects.nonNull(placeBattery)) {
+                    // 解绑归还的电池
+                    returnBattery(placeBattery, cabinetOrder.getUid());
+                }
+                
+            } else {
+                // 正常换电：没有异常交换, 解绑用户原来的电池
+                returnBattery(oldElectricityBattery, cabinetOrder.getUid());
             }
-            
+        } else {
+            // 异常交换如果放入的电池的uid为空，则需要清除guessId
+            returnBattery(placeBattery, cabinetOrder.getUid());
         }
         
         // 取走的电池绑定用户
@@ -294,12 +297,10 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                 newElectricityBattery.setBindTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
-                
             }
             
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(cabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
-            
             
         } else {
             log.error("SELF OPEN CELL error! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
@@ -317,6 +318,69 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
                 .setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
+    }
+    
+    
+    private void unbindUserOriginalBattery(ElectricityBattery oldElectricityBattery, ElectricityBattery placeBattery) {
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(oldElectricityBattery.getId());
+        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+        newElectricityBattery.setUid(null);
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        newElectricityBattery.setElectricityCabinetId(null);
+        newElectricityBattery.setElectricityCabinetName(null);
+        
+        //如果放入的电池和用户绑定的电池不一样且放入的电池uid不为空
+        if (Objects.nonNull(placeBattery) && !Objects.equals(oldElectricityBattery.getUid(), placeBattery.getUid()) && Objects.nonNull(placeBattery.getUid())) {
+            log.info("SELF OPEN CELL INFO! placeBatteryUid={},oldElectricityBattery uid={}", placeBattery.getUid(), oldElectricityBattery.getUid());
+            newElectricityBattery.setGuessUid(placeBattery.getUid());
+        }
+        
+        //如果放入的电池和用户绑定的电池不一样且放入的电池uid为空,guessUid不为空
+        if (Objects.nonNull(placeBattery) && Objects.isNull(placeBattery.getUid()) && Objects.nonNull(placeBattery.getGuessUid())) {
+            log.info("SELF OPEN CELL INFO! placeBatteryUid is null,oldElectricityBattery uid={},placeBatteryGuessUid={}", oldElectricityBattery.getUid(),
+                    placeBattery.getGuessUid());
+            newElectricityBattery.setGuessUid(placeBattery.getGuessUid());
+        }
+        
+        //如果放入的电池和用户绑定的电池不一样且放入的电池uid为空,guessUid不为空
+        if (Objects.nonNull(placeBattery) && Objects.isNull(placeBattery.getUid()) && Objects.isNull(placeBattery.getGuessUid())) {
+            log.info("SELF OPEN CELL INFO!  placeBatteryUid is null,placeBatteryGuessUid is null");
+            newElectricityBattery.setGuessUid(null);
+        }
+        
+        electricityBatteryService.updateBatteryUser(newElectricityBattery);
+    }
+    
+    private void returnBattery(ElectricityBattery placeBattery, Long uid) {
+        //通过guessUid获取电池信息; 如果有电池的guessUid为当前换电用户 ,则将此电池更新为放入电池的Uid
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.listBatteryByGuessUid(uid);
+        if (CollectionUtils.isNotEmpty(electricityBatteries) && !Objects.equals(placeBattery.getUid(), uid)) {
+            List<Long> batteryIdList = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+            if (Objects.nonNull(placeBattery.getUid())) {
+                electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, placeBattery.getUid());
+            } else {
+                electricityBatteryService.batchUpdateBatteryGuessUid(batteryIdList, placeBattery.getGuessUid());
+            }
+        }
+        
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(placeBattery.getId());
+        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+        newElectricityBattery.setUid(null);
+        newElectricityBattery.setGuessUid(null);
+        newElectricityBattery.setBorrowExpireTime(null);
+        newElectricityBattery.setElectricityCabinetId(null);
+        newElectricityBattery.setElectricityCabinetName(null);
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        
+        Long bindTime = placeBattery.getBindTime();
+        //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
+        log.info("SELF OPEN CELL INFO! returnBattery.bindTime={},current time={}", bindTime, System.currentTimeMillis());
+        if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+            newElectricityBattery.setBindTime(System.currentTimeMillis());
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
+        }
     }
     
     @Data
