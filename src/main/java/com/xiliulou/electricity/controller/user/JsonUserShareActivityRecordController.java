@@ -47,7 +47,7 @@ public class JsonUserShareActivityRecordController {
      * @author caobotao.cbt
      * @date 2024/7/31 15:00
      */
-    @PostMapping(value = "/user/shareActivityRecord/generateShareUrl")
+    @PostMapping(value = "/user/shareActivityRecord/getQrCodeShareParam")
     public R getQrCodeShareParam(@RequestParam(value = "activityId") Integer activityId) {
         return shareActivityRecordService.getQrCodeShareParam(activityId);
     }
