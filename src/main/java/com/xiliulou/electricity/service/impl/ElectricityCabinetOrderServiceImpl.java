@@ -1349,7 +1349,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             // 后台自主开仓
-            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), userBindingBatterySn, lastOrder, cabinet, "后台自主开仓");
+            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), userBindingBatterySn, lastOrder, cabinet, "后台自助开仓");
             vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
@@ -1466,13 +1466,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
-    private String backSelfOpen(Integer cell,String userBindingBatterySn,ElectricityCabinetOrder order,ElectricityCabinet cabinet,String msg){
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                .orderId(order.getOrderId()).tenantId(order.getTenantId()).msg(msg)
-                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+    private String backSelfOpen(Integer cell, String userBindingBatterySn, ElectricityCabinetOrder order, ElectricityCabinet cabinet, String msg) {
+        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
+                .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
         electricityCabinetOrderOperHistoryService.insert(history);
         
+        ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
+        electricityCabinetOrderUpdate.setId(order.getId());
+        electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetOrderUpdate.setRemark("后台自助开仓");
+        update(electricityCabinetOrderUpdate);
         
         //发送自助开仓命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
@@ -1482,8 +1486,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + order.getOrderId();
         
-        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey())
-                .deviceName(cabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
+                .command(ElectricityIotConstant.SELF_OPEN_CELL).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         return sessionId;
     }
@@ -2633,7 +2637,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
             electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            electricityCabinetOrderUpdate.setRemark("自助开仓");
+            electricityCabinetOrderUpdate.setRemark("用户自助开仓");
             update(electricityCabinetOrderUpdate);
             
             //发送自助开仓命令
