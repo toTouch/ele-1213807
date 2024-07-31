@@ -93,7 +93,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1471,8 +1470,8 @@ public class MerchantServiceImpl implements MerchantService {
                 log.error("repair enterprise error, merchant enterprise is exists,id={}", enterpriseInfo.getId());
                 return;
             }
-            
-            List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
+    
+            List<MerchantLevel> merchantLevels = merchantLevelService.listByFranchiseeId(tenantId, enterpriseInfo.getFranchiseeId());
             Long levelId = NumberConstant.ZERO_L;
             if (ObjectUtils.isNotEmpty(merchantLevels)) {
                 MerchantLevel merchantLevel = merchantLevels.stream().sorted(Comparator.comparing(MerchantLevel::getLevel).reversed()).findFirst().orElse(null);
@@ -1496,7 +1495,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantSaveRequest.setEnterprisePackageAuth(0);
             merchantSaveRequest.setPurchaseAuthority(0);
             merchantSaveRequest.setAutoUpGrade(0);
-            merchantSaveRequest.setMerchantGradeId(levelId);
+//            merchantSaveRequest.setMerchantGradeId(levelId);
             merchantSaveRequest.setEnterpriseId(enterpriseInfo.getId());
             
             // 为该企业创建商户

@@ -172,7 +172,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        if (Objects.isNull(electricityMemberCardOrder.getPayCount()) || electricityMemberCardOrder.getPayCount() > 1) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo.getPayCount()) || userInfo.getPayCount() > 1) {
             log.info("BIND MERCHANT WARN!payCount is illegal,uid={},orderId={}", uid, orderId);
             return;
         }
@@ -200,7 +201,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
+//        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
             return;
@@ -393,7 +395,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
     
             // 获取商户保护期和有效期
-            MerchantAttr merchantAttr = merchantAttrService.queryByTenantIdFromCache(merchant.getTenantId());
+            MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
             if (Objects.isNull(merchantAttr)) {
                 log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
