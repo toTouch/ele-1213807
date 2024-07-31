@@ -44,7 +44,8 @@ public class JsonAdminUserAmountController {
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "uid", required = false) Long uid,
-                       @RequestParam(value = "phone", required = false) String phone) {
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -82,6 +83,7 @@ public class JsonAdminUserAmountController {
                 .uid(uid)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userAmountService.queryList(userAmountQuery);
@@ -92,7 +94,7 @@ public class JsonAdminUserAmountController {
      */
     @GetMapping(value = "/admin/userAmount/queryCount")
     public R queryCount(@RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "uid", required = false) Long uid) {
+                        @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -120,6 +122,7 @@ public class JsonAdminUserAmountController {
                 .uid(uid)
                 .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userAmountService.queryCount(userAmountQuery);

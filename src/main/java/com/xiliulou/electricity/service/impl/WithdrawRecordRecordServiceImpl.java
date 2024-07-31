@@ -21,10 +21,12 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
@@ -38,9 +40,11 @@ import com.xiliulou.electricity.query.WithdrawRecordQueryModel;
 import com.xiliulou.electricity.service.BankCardService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
@@ -54,7 +58,9 @@ import com.xiliulou.pay.weixin.transferPay.TransferPayHandlerService;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -136,6 +142,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
     
     @Autowired
     WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
+    
+    @Resource
+    private UserInfoService userInfoService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -250,6 +262,15 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
                     withdrawRecordVO.setAuditorName(auditor.getName());
                 }
             }
+            
+            // 查询加盟商名称
+            if (Objects.nonNull(withdrawRecord.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(withdrawRecord.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    withdrawRecordVO.setFranchiseeName(franchisee.getName());
+                }
+            }
+            
             withdrawRecordVOs.add(withdrawRecordVO);
             
         }
@@ -303,7 +324,13 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
             log.error("UPDATE WITHDRAW PASSWORD ERROR! repeat audit error! statusNumber={}", withdrawRecord.getStatus());
             return R.fail("不能重复审核");
         }
-        
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(withdrawRecord.getUid());
+        if (ObjectUtils.isNotEmpty(handleWithdrawQuery.getBindFranchiseeIdList()) && Objects.nonNull(userInfo)
+                && !handleWithdrawQuery.getBindFranchiseeIdList().contains(userInfo.getFranchiseeId())) {
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+    
         withdrawRecord.setStatus(handleWithdrawQuery.getStatus());
         withdrawRecord.setUpdateTime(System.currentTimeMillis());
         withdrawRecord.setCheckTime(System.currentTimeMillis());
@@ -498,6 +525,16 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
         if (CollectionUtils.isEmpty(withdrawRecordList) || !Objects.equals(withdrawRecordList.size(), batchHandleWithdrawRequest.getIdList().size())) {
             log.error("batch handle withdraw record is not exists! idList={}", batchHandleWithdrawRequest.getIdList());
             return R.fail("100419", "提现记录不存在。");
+        }
+        
+        if (ObjectUtils.isNotEmpty(batchHandleWithdrawRequest.getBindFranchiseeIdList())) {
+            List<Long> franchiseeIdList = withdrawRecordList.stream().map(WithdrawRecord::getFranchiseeId)
+                    .filter(franchiseeId -> Objects.nonNull(franchiseeId) && !batchHandleWithdrawRequest.getBindFranchiseeIdList().contains(franchiseeId)).distinct()
+                    .collect(Collectors.toList());
+            
+            if (ObjectUtils.isNotEmpty(franchiseeIdList)) {
+                return R.fail("120240", "当前加盟商无权限操作");
+            }
         }
         
         // 过滤已经审核的提现订单

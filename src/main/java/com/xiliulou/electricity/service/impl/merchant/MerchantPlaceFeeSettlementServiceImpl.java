@@ -63,10 +63,10 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     @Resource
     private MerchantPlaceFeeMonthSummaryRecordService merchantPlaceFeeMonthSummaryRecordService;
     
-    private List<MerchantPlaceFeeMonthRecordExportVO> getData(String monthDate) {
+    private List<MerchantPlaceFeeMonthRecordExportVO> getData(String monthDate, List<Long> franchiseeIds) {
         
         List<MerchantPlaceFeeMonthRecordExportVO> resultVOs = new ArrayList<>();
-        List<MerchantPlaceFeeMonthRecord> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId());
+        List<MerchantPlaceFeeMonthRecord> merchantPlaceFeeMonthRecords = merchantPlaceFeeMonthRecordService.selectByMonthDate(monthDate, TenantContextHolder.getTenantId(), franchiseeIds);
         if (CollectionUtils.isEmpty(merchantPlaceFeeMonthRecords)) {
             return resultVOs;
         }
@@ -145,7 +145,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
     
     @Slave
     @Override
-    public void export(String monthDate, HttpServletResponse response) {
+    public void export(String monthDate, HttpServletResponse response, List<Long> franchiseeIds) {
         
         String fileName = "场地费出账记录.xlsx";
         try {
@@ -160,7 +160,7 @@ public class MerchantPlaceFeeSettlementServiceImpl implements MerchantPlaceFeeSe
                     .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("场地费出账记录").doWrite(getData(monthDate));
+                    .sheet("场地费出账记录").doWrite(getData(monthDate, franchiseeIds));
         } catch (Exception e) {
             log.error("导出报表失败！", e);
         }

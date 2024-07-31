@@ -255,7 +255,11 @@
             <if test="endTime != null ">
                 and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
-    
+            
+            <if test="franchiseeId != null">
+                and tm.franchisee_id = #{franchiseeId}
+            </if>
+        
             <if test="franchiseeIds != null">
                 and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -279,7 +283,8 @@
         tmwa.tenant_id,
         tmwa.del_flag,
         tmwa.create_time,
-        tmwa.update_time
+        tmwa.update_time,
+        tm.franchisee_id
         from t_merchant_withdraw_application tmwa
         left join t_user tu on tu.uid = tmwa.uid
         left join t_merchant tm on tm.uid = tmwa.uid
@@ -304,7 +309,11 @@
             <if test="endTime != null ">
                 and tmwa.create_time <![CDATA[ <=  ]]> #{endTime}
             </if>
-    
+            
+            <if test="franchiseeId != null">
+                and tm.franchisee_id = #{franchiseeId}
+            </if>
+        
             <if test="franchiseeIds != null">
                 and tm.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -381,7 +390,8 @@
             tmwa.update_time,
             tmwa.`check_time`,
             tmwair.`transaction_batch_id`,
-            tmwair.`transaction_detail_id`
+            tmwair.`transaction_detail_id`,
+            tm.`franchisee_id`
         from t_merchant_withdraw_application tmwa
         LEFT JOIN `t_merchant_withdraw_application_record` tmwair on tmwair.`order_no` = tmwa.`order_no`
         left join t_merchant tm on tm.uid = tmwa.uid
@@ -408,6 +418,9 @@
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and tm.franchisee_id = #{franchiseeId}
             </if>
         </where>
         order by tmwa.create_time desc
@@ -444,6 +457,9 @@
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and tm.franchisee_id = #{franchiseeId}
             </if>
         </where>
     </select>

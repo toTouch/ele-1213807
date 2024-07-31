@@ -14,6 +14,8 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawApplicationRecordConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantWithdrawConstant;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -29,6 +31,8 @@ import com.xiliulou.electricity.mapper.merchant.MerchantWithdrawApplicationMappe
 import com.xiliulou.electricity.request.merchant.BatchReviewWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.MerchantWithdrawApplicationRequest;
 import com.xiliulou.electricity.request.merchant.ReviewWithdrawApplicationRequest;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
@@ -64,6 +68,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,6 +77,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -119,6 +125,9 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
     
     @Autowired
     private SiteMessagePublish siteMessagePublish;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     
     @Transactional(rollbackFor = Exception.class)
@@ -221,8 +230,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(false, "120212", "商户不存在");
         }
         
-        if (Objects.nonNull(reviewWithdrawApplicationRequest.getBindFranchiseeId()) && !Objects.equals(reviewWithdrawApplicationRequest.getBindFranchiseeId(),
-                merchant.getFranchiseeId())) {
+        if (ObjectUtils.isNotEmpty(reviewWithdrawApplicationRequest.getBindFranchiseeIdList()) && !reviewWithdrawApplicationRequest.getBindFranchiseeIdList().contains(merchant.getFranchiseeId())) {
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -428,10 +436,8 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         Long franchiseeId = franchiseeIdList.get(NumberConstant.ZERO);
         
         // 登录用户的加盟商id和提现订单对应的加盟商id是否相等
-        if (Objects.nonNull(batchReviewWithdrawApplicationRequest.getBindFranchiseeId()) && !Objects.equals(batchReviewWithdrawApplicationRequest.getBindFranchiseeId(),
-                franchiseeId)) {
-            log.info("batch handle withdraw record info, franchisee id is not equal, user uid={}, franchisee id={}, ids = {}", user.getUid(), franchiseeId,
-                    batchReviewWithdrawApplicationRequest.getIds());
+        if (ObjectUtils.isNotEmpty(batchReviewWithdrawApplicationRequest.getBindFranchiseeIdList()) && !batchReviewWithdrawApplicationRequest.getBindFranchiseeIdList().contains(franchiseeId)) {
+            log.info("batch handle withdraw record info, franchisee id is not equal, user uid={}, franchisee id={}, ids = {}", user.getUid(), franchiseeId, batchReviewWithdrawApplicationRequest.getIds());
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -664,6 +670,11 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 merchantWithdrawApplicationVO.setRealReason(merchantWithdrawApplicationRecord.getRemark());
             }
             
+            // 查询加盟商名称
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(merchantWithdrawApplicationVO.getFranchiseeId());
+            Optional.ofNullable(franchisee).ifPresent(f -> {
+                merchantWithdrawApplicationVO.setFranchiseeName(f.getName());
+            });
         });
         
         return merchantWithdrawApplicationVOList;
@@ -873,6 +884,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 User user = userService.queryByUidFromCache(Long.valueOf(e.getUid()));
                 e.setPhone(ObjectUtils.isNotEmpty(user) ? user.getPhone() : null);
             }
+    
+            // 查询加盟商名称
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+            Optional.ofNullable(franchisee).ifPresent(f -> {
+                e.setFranchiseeName(f.getName());
+            });
         });
         
         return merchantWithdrawApplicationVOS;
