@@ -112,7 +112,7 @@
                invitation_criteria,
                franchisee_id
         from t_share_activity
-        where del_flg = 0
+        where del_flag = 0
           and status = 1
           and tenant_id = #{tenantId}
     </select>
