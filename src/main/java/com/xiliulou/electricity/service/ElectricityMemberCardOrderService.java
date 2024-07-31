@@ -158,4 +158,6 @@ public interface ElectricityMemberCardOrderService {
     List<ElectricityMemberCardOrder> queryListByOrderIds(List<String> orderIdList);
     
     R listSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
+    
+    List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
 }

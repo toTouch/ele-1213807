@@ -246,7 +246,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (Objects.equals(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode(), latestActivitySource) && Objects.equals(ElectricityMemberCardOrder.ONLINE_PAYMENT,
                 electricityMemberCardOrder.getPayType())) {
             //用户绑定商户
-            userInfoExtraService.bindMerchant(uid, electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+            userInfoExtraService.bindMerchant(userInfo, electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
         
             //商户返利
             sendMerchantRebateMQ(uid, electricityMemberCardOrder.getOrderId());

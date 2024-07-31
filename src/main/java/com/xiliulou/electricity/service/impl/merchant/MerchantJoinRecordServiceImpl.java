@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.PhoneUtils;
@@ -13,6 +15,7 @@ import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.Tenant;
@@ -33,14 +36,17 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryM
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantJoinRecordPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
+import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -51,20 +57,26 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantScanCodeRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author HeYafeng
@@ -113,6 +125,12 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     
     @Resource
     private ShareMoneyActivityService shareMoneyActivityService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
+    
+    @Resource
+    private AssertPermissionService assertPermissionService;
     
     @Override
     public R joinScanCode(MerchantJoinScanRequest request) {
@@ -664,4 +682,113 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         
         return R.ok();
     }
+    
+    @Override
+    @Slave
+    public Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest request) {
+        if (StrUtil.isNotBlank(request.getPhone())) {
+            if (!PhoneUtils.isChinaPhoneNum(request.getPhone())) {
+                return NumberConstant.ZERO;
+            }
+            List<UserInfo> userList = userInfoService.queryListUserInfoByPhone(request.getPhone());
+            List<Long> uids = userList.stream().map(UserInfo::getUid).collect(Collectors.toList());
+            request.setUids(uids);
+        }
+        if (Objects.nonNull(request.getBuyTimeStart()) && Objects.nonNull(request.getBuyTimeEnd())) {
+            List<ElectricityMemberCardOrder> orderList = electricityMemberCardOrderService.queryListByCreateTime(request.getBuyTimeStart(), request.getBuyTimeEnd());
+            List<String> orderIdList = orderList.stream().map(ElectricityMemberCardOrder::getOrderId).collect(Collectors.toList());
+            request.setOrderIdList(orderIdList);
+        }
+        
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return NumberConstant.ZERO;
+        }
+        request.setFranchiseeIds(pair.getRight());
+        
+        return merchantJoinRecordMapper.countScanCodeRecord(request);
+    }
+    
+    @Override
+    public List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest request) {
+        if (StrUtil.isNotBlank(request.getPhone())) {
+            if (!PhoneUtils.isChinaPhoneNum(request.getPhone())){
+                return new ArrayList<>();
+            }
+            List<UserInfo> userList = userInfoService.queryListUserInfoByPhone(request.getPhone());
+            List<Long> uids = userList.stream().map(UserInfo::getUid).collect(Collectors.toList());
+            request.setUids(uids);
+        }
+        
+        if (Objects.nonNull(request.getBuyTimeStart()) && Objects.nonNull(request.getBuyTimeEnd())) {
+            List<ElectricityMemberCardOrder> orderList = electricityMemberCardOrderService.queryListByCreateTime(request.getBuyTimeStart(), request.getBuyTimeEnd());
+            List<String> orderIdList = orderList.stream().map(ElectricityMemberCardOrder::getOrderId).collect(Collectors.toList());
+            request.setOrderIdList(orderIdList);
+        }
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        request.setFranchiseeIds(pair.getRight());
+        
+        List<MerchantJoinRecord> list = merchantJoinRecordMapper.selectListScanCodeRecordPage(request);
+        if (ObjectUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        
+        // 提前查询订单信息和用户信息
+        List<String> orderIdList = list.stream().map(MerchantJoinRecord::getOrderId).collect(Collectors.toList());
+        Map<String, ElectricityMemberCardOrder> memberCardOrderMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(orderIdList)) {
+            List<ElectricityMemberCardOrder> orderList = electricityMemberCardOrderService.queryListByOrderIds(orderIdList);
+            memberCardOrderMap = orderList.stream().collect(Collectors.toMap(ElectricityMemberCardOrder::getOrderId, Function.identity(), (k1, k2) -> k1));
+        }
+        
+        List<Long> uidList = list.parallelStream().map(MerchantJoinRecord::getJoinUid).collect(Collectors.toList());
+        Map<Long, UserInfo> userInfoMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(uidList)) {
+            List<UserInfo> userInfo = userInfoService.listByUidList(uidList);
+            userInfoMap = userInfo.stream().collect(Collectors.toMap(UserInfo::getUid, Function.identity(), (k1, k2) -> k1));
+        }
+        
+        
+        Map<String, ElectricityMemberCardOrder> finalMemberCardOrderMap = memberCardOrderMap;
+        Map<Long, UserInfo> finalUserInfoMap = userInfoMap;
+        return list.parallelStream().map(e -> {
+            MerchantScanCodeRecordVO vo = BeanUtil.copyProperties(e, MerchantScanCodeRecordVO.class);
+            // 查询商户名称
+            Merchant merchant = merchantService.queryByIdFromCache(e.getMerchantId());
+            if (Objects.nonNull(merchant)) {
+                vo.setMerchantName(merchant.getName());
+            }
+            
+            ElectricityMemberCardOrder cardOrder = finalMemberCardOrderMap.get(e.getOrderId());
+            if (Objects.nonNull(cardOrder)) {
+                vo.setCardName(cardOrder.getCardName());
+                vo.setOrderBuyTime(cardOrder.getCreateTime());
+            }
+            if (Objects.nonNull(e.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    vo.setFranchiseeId(e.getFranchiseeId());
+                    vo.setFranchiseeName(franchisee.getName());
+                }
+            }
+            
+            // 查询用户信息
+            UserInfo userInfo = finalUserInfoMap.get(e.getJoinUid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("queryScanCodeRecordPage.userInfo is null,uid is {}", e.getJoinUid());
+                return vo;
+            }
+            vo.setUserName(userInfo.getName());
+            vo.setPhone(userInfo.getPhone());
+            vo.setDelFlag(userInfo.getDelFlag());
+            vo.setDelTime(Objects.equals(userInfo.getDelFlag(), UserInfo.DEL_DEL) ? userInfo.getUpdateTime() : null);
+            
+            return vo;
+        }).collect(Collectors.toList());
+    }
+    
 }

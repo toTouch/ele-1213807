@@ -2618,4 +2618,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Override
+    @Slave
+    public List<UserInfo> queryListUserInfoByPhone(String phone) {
+        return baseMapper.selectListUserInfoByPhone(phone);
+    }
 }
