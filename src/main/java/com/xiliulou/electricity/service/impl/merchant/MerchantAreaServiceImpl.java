@@ -183,12 +183,15 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             BeanUtils.copyProperties(item, merchantAreaVO);
             
             merchantAreaVO.setCabinetNun(Optional.ofNullable(finalCabinetNumMap).map(map -> map.get(item.getId())).orElse(NumberConstant.ZERO));
-    
+            
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             if (Objects.nonNull(franchisee)) {
                 merchantAreaVO.setFranchiseeName(franchisee.getName());
             }
             
+            if (Objects.equals(item.getFranchiseeId(), NumberConstant.ZERO_L)) {
+                item.setFranchiseeId(null);
+            }
             return merchantAreaVO;
             
         }).collect(Collectors.toList());
