@@ -115,4 +115,10 @@ public class ElectricityCabinetOrderVO {
      * 租户名称
      */
     private String tenantName;
+    
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String channel;
 }
