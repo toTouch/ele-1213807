@@ -255,17 +255,24 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         if (Objects.nonNull(oldElectricityBattery)) {
             log.info("SELF OPEN CELL info! userBindBatterSn:{}", oldElectricityBattery.getSn());
             
-            ElectricityBattery newElectricityBattery = new ElectricityBattery();
-            newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-            newElectricityBattery.setUid(null);
-            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            newElectricityBattery.setElectricityCabinetId(null);
-            newElectricityBattery.setElectricityCabinetName(null);
+            ElectricityBattery updateBattery = new ElectricityBattery();
+            updateBattery.setId(oldElectricityBattery.getId());
+            updateBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+            updateBattery.setUid(null);
+            updateBattery.setGuessUid(null);
+            updateBattery.setBorrowExpireTime(null);
+            updateBattery.setElectricityCabinetId(null);
+            updateBattery.setElectricityCabinetName(null);
+            updateBattery.setUpdateTime(System.currentTimeMillis());
             
-            // todo gueesId
+            Long bindTime = oldElectricityBattery.getBindTime();
+            //如果绑定时间为空 或者 电池绑定时间小于当前时间则更新电池信息
+            log.info("SELF OPEN CELL info! bindTime={},current time={}", bindTime, System.currentTimeMillis());
+            if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
+                updateBattery.setBindTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(updateBattery);
+            }
             
-            electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
         
         // 取走的电池绑定用户
