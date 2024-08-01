@@ -199,6 +199,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             }
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
+            // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
+            log.debug("EXCHANGE ORDER INFO! setNewSelfOpen.setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
+            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 3L,
+                    TimeUnit.MINUTES);
+            
             //处理放入电池的相关信息
             //            handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
             
@@ -597,9 +602,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityExceptionOrderStatusRecord.setCellNo(electricityCabinetOrder.getOldCellNo());
             electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
             
-            // 新自主开仓的开始时间
-            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 3L, TimeUnit.MINUTES);
         }
+        
+        if (allowNewSelfOpenStatus(exchangeOrderRsp.orderStatus)) {
+            log.info("EXCHANGE ORDER INFO! order fail setNewSelfOpen setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
+            // 新自主开仓的开始时间
+            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 3L,
+                    TimeUnit.MINUTES);
+        }
+        
+        
         
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);
@@ -652,6 +664,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     private boolean allowSelfOpenStatus(String orderStatus, ElectricityConfig electricityConfig) {
         return orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) && Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableSelfOpen(),
                 ElectricityConfig.ENABLE_SELF_OPEN);
+    }
+    
+    private boolean allowNewSelfOpenStatus(String orderStatus) {
+        return (orderStatus.equals(ElectricityCabinetOrder.INIT_OPEN_FAIL)
+                || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+                || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)
+                || orderStatus.equals(ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) );
     }
     
     // TODO: 2022/8/1 异常锁定格挡
