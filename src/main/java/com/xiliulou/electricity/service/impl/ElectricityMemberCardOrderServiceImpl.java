@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -2797,6 +2798,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         // 赠送优惠券
         sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         
+        // 添加用户操作记录
+        try {
+            BatteryMemberCard card = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            Map<String, Object> map = Maps.newHashMap();
+            map.put("packageName", card.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("name", userInfo.getName());
+            operateRecordUtil.record(null, map);
+        } catch (Exception e) {
+            log.error("The user failed to modify the battery plan record because: ", e);
+        }
         return Triple.of(true, null, null);
     }
     
