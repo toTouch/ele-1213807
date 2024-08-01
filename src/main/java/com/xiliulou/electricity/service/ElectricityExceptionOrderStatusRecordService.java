@@ -19,5 +19,8 @@ public interface ElectricityExceptionOrderStatusRecordService {
     ElectricityExceptionOrderStatusRecord queryByOrderId(String orderId);
 
     void update(ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord);
+    
+    
+    void queryRecordAndUpdateStatus(String orderId);
 
 }

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -106,6 +108,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     @Resource
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
+    @Resource
+    ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
+    
     XllThreadPoolExecutorService openFullBatteryExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPEN_FULL_BATTERY_SOC_ANALYZE", 1,
             "open-full-battery-soc-pool-thread");
     
@@ -177,6 +182,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
         handleExpireMemberCard(openFullCellRsp, cabinetOrder);
+        
+        // 如果旧电池检测失败会在这个表里面，导致在订单记录中存在自主开仓，所以移除旧版本的自主开仓记录
+        electricityExceptionOrderStatusRecordService.queryRecordAndUpdateStatus(cabinetOrder.getOrderId());
+        
     }
     
     private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, EleOpenFullCellRsp eleOpenFullCellRsp) {
