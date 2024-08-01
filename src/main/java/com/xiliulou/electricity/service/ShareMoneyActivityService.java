@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 
+import java.util.List;
+
 /**
  * 活动表(Activity)表服务接口
  *
@@ -68,7 +70,7 @@ public interface ShareMoneyActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> removeById(Long id);
+    R<?> removeById(Long id, List<Long> franchiseeIds);
     
     ShareMoneyActivity queryOnlineActivity(Integer tenantId, Long franchiseeId);
 }

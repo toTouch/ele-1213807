@@ -6,6 +6,8 @@ import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.List;
+
 /**
  * 活动表(Activity)表服务接口
  *
@@ -69,7 +71,7 @@ public interface ShareActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> removeById(Long id);
+    R<?> removeById(Long id, List<Long> franchiseeIds);
     
     ShareActivity queryOnlineActivity(Integer tenantId, Long franchiseeId);
 }

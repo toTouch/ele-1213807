@@ -133,12 +133,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
+        
+        query.setFranchiseeIds(franchiseeIds);
         
         return returnTripleResult(invitationActivityService.save(query));
     }
@@ -174,12 +177,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
+        
+        query.setFranchiseeIds(franchiseeIds);
         
         return returnTripleResult(invitationActivityService.modify(query));
     }
@@ -198,12 +204,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
+        
+        query.setFranchiseeIds(franchiseeIds);
         
         return returnTripleResult(invitationActivityService.updateStatus(query));
     }
@@ -363,14 +372,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
         
-        return invitationActivityService.removeById(id);
+        return invitationActivityService.removeById(id, franchiseeIds);
     }
     
 }

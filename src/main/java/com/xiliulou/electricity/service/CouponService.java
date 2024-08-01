@@ -51,7 +51,7 @@ public interface CouponService {
     
     R queryCount(CouponQuery couponQuery);
     
-    Triple<Boolean, String, Object> deleteById(Long id);
+    Triple<Boolean, String, Object> deleteById(Long id, List<Long> franchiseeIds);
     
     List<SearchVo> search(CouponQuery query);
     
