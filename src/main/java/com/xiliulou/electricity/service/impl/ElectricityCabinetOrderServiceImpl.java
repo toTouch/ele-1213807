@@ -2576,11 +2576,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String orderExceptionStartTime = redisService.get(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + query.getOrderId());
         log.info("lessExchangeSelfOpenCell Info! orderExceptionStartTime is {}", orderExceptionStartTime);
         if (StrUtil.isEmpty(orderExceptionStartTime)) {
-            return R.fail("100026", "请联系客服人员，来解决您的问题");
+            return R.fail("100667", "自主开仓超时");
         }
         if (Double.valueOf(System.currentTimeMillis() - Long.valueOf(orderExceptionStartTime)) / 1000 / 60 > 3) {
             log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", query.getOrderId());
-            return R.fail("100026", "请联系客服人员，来解决您的问题");
+            return R.fail("100667", "自主开仓超时");
         }
         
         
@@ -2645,19 +2645,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     electricityCabinetOrder.getElectricityCabinetId(), query.getCellNo());
             if (Objects.nonNull(isExistNewExchangeOrder)) {
                 log.warn("selfOpenCell.existExchangeOrder, orderId is {}", electricityCabinetOrder.getOrderId());
-                return R.fail("100667", "请联系客服人员，来解决您的问题。");
+                return R.fail("100667", "用户自主开仓，系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
             }
             Integer isExistNewReturnOrder = rentBatteryOrderService.existSameCabinetCellSameTimeOpenReturnOrder(electricityCabinetOrder.getCreateTime(),
                     electricityCabinetOrder.getElectricityCabinetId(), query.getCellNo());
             if (Objects.nonNull(isExistNewReturnOrder)) {
                 log.warn("selfOpenCell.existNewReturnOrder, orderId is {}", electricityCabinetOrder.getOrderId());
-                return R.fail("100667", "请联系客服人员，来解决您的问题。");
+                return R.fail("100667", "用户自主开仓，系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
             }
             Integer isExistNewOperRecord = electricityCabinetPhysicsOperRecordService.existSameCabinetCellSameTimeOpenRecord(electricityCabinetOrder.getCreateTime(),
                     electricityCabinetOrder.getElectricityCabinetId(), query.getCellNo());
             if (Objects.nonNull(isExistNewOperRecord)) {
                 log.warn("selfOpenCell.existNewOperRecord, orderId is {}", electricityCabinetOrder.getOrderId());
-                return R.fail("100667", "请联系客服人员，来解决您的问题。");
+                return R.fail("100667", "用户自主开仓，系统识别归还仓门内电池为新订单，无法执行自助开仓操作");
             }
         }
         
