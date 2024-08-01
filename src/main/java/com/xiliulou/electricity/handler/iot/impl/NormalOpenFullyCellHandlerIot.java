@@ -215,7 +215,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         
         // 扣减车电一体套餐次数
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user car_battery member number.");
+            log.info("NormalNewExchangeOrderHandlerIot.deductionPackageNumberHandler deduct car member card,");
             if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
                 throw new BizException("100213", "车电一体套餐剩余次数不足");
             }
