@@ -404,9 +404,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         Integer activityFranchiseeId = oldShareActivity.getFranchiseeId();
         if (Objects.nonNull(activityFranchiseeId)) {
             if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
-                int count = shareActivityMapper.selectCount(
-                        new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, activityFranchiseeId)
-                                .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+                int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).isNull(ShareActivity::getFranchiseeId)
+                        .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
                 if (count > 0) {
                     return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
                 }
