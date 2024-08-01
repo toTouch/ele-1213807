@@ -114,20 +114,22 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         // 上报的仓门==订单新仓门 && 订单旧电池存在 & 新电池不存在 && 上报开门成功
         if (Objects.equals(electricityCabinetOrder.getNewCellNo(), eleSelfOPenCellOrderVo.getCellNo()) && Objects.nonNull(electricityCabinetOrder.getOldElectricityBatterySn())
                 && Objects.isNull(electricityCabinetOrder.getNewElectricityBatterySn()) && eleSelfOPenCellOrderVo.getResult()) {
-           
-            log.info("SELF OPEN CELL INFO! Open Full Cell");
             
+            log.info("SELF OPEN CELL INFO! Open Full Cell， sessionId is {}", sessionId);
+            
+            // 幂等
             if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
-                log.warn("order status have succeeded, orderId is {}", electricityCabinetOrder.getOrderId());
+                log.warn("order status have succeeded,sessionId is {}, orderId is {}", sessionId, electricityCabinetOrder.getOrderId());
                 return;
             }
             
             // 订单完成。扣减套餐次数
-            deductionPackageNumberHandler(electricityCabinetOrder);
+            deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
             // 增加换电完成的操作记录
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(electricityCabinetOrder.getOrderId())
-                    .tenantId(electricityCabinetOrder.getTenantId()).msg("换电完成").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                    .orderId(electricityCabinetOrder.getOrderId()).tenantId(electricityCabinetOrder.getTenantId()).msg("换电完成")
+                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
             
@@ -155,7 +157,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(
                 eleSelfOPenCellOrderVo.getOrderId());
         if (Objects.isNull(electricityExceptionOrderStatusRecord)) {
-            log.warn("SELF OPEN CELL WARN! not found user! userId:{}", eleSelfOPenCellOrderVo.getOrderId());
+            log.warn("SELF OPEN CELL WARN! not found user! sessionId is {}, userId:{}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
         
@@ -184,7 +186,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     }
     
     
-    private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder) {
+    private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId) {
         
         // 通过订单的 UID 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
@@ -195,7 +197,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             if (Objects.nonNull(userBatteryMemberCard)) {
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    log.info("SELF OPEN CELL INFO! deductionPackageNumberHandler deduct battery member card, orderId is {}", cabinetOrder.getOrderId());
+                    log.info("SELF OPEN CELL INFO! deductionPackageNumberHandler deduct battery member card,sessionId is {}, orderId is {}", sessionId, cabinetOrder.getOrderId());
                     Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                     if (row < 1) {
                         log.warn("SELF OPEN CELL  WARN! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(), userBatteryMemberCard.getId());
@@ -207,7 +209,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         
         // 扣减车电一体套餐次数
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.info("SELF OPEN CELL INFO! deductionPackageNumberHandler deduct car member card,orderId is {}", cabinetOrder.getOrderId());
+            log.info("SELF OPEN CELL INFO! deductionPackageNumberHandler deduct car member card, sessionId is {}, orderId is {}", sessionId, cabinetOrder.getOrderId());
             if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
                 throw new BizException("100213", "车电一体套餐剩余次数不足");
             }
@@ -220,14 +222,14 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("SELF OPEN CELL ERROR! userInfo is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), oPenCellOrderVo.getSessionId(),
+            log.error("SELF OPEN CELL ERROR! userInfo is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), oPenCellOrderVo.getSessionId(),
                     oPenCellOrderVo.getOrderId());
             return;
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("SELF OPEN CELL  WARN! userBatteryMemberCard is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), oPenCellOrderVo.getSessionId(),
+            log.warn("SELF OPEN CELL  WARN! userBatteryMemberCard is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), oPenCellOrderVo.getSessionId(),
                     oPenCellOrderVo.getOrderId());
             return;
         }
@@ -269,7 +271,8 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         
         // 电池解绑
         if (Objects.nonNull(oldElectricityBattery)) {
-            log.info("SELF OPEN CELL  info! userBindBatterSn:{}, returnBatterSn:{}", oldElectricityBattery.getSn(), cabinetOrder.getOldElectricityBatterySn());
+            log.info("SELF OPEN CELL  info! sessionId is {}, userBindBatterSn:{}, returnBatterSn:{}", eleSelfOPenCellOrderVo.getSessionId(), oldElectricityBattery.getSn(),
+                    cabinetOrder.getOldElectricityBatterySn());
             // 如果放入的电池与用户绑定的电池不一致,异常交换
             if (!Objects.equals(oldElectricityBattery.getSn(), cabinetOrder.getOldElectricityBatterySn())) {
                 // 解绑用户 原来绑定的电池
@@ -304,7 +307,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             
             //设置电池的绑定时间
             Long bindTime = electricityBattery.getBindTime();
-            log.info("SELF OPEN CELL info! takeBattery.bindTime={},current time={}", bindTime, System.currentTimeMillis());
+            log.info("SELF OPEN CELL info! sessionId is {}, takeBattery.bindTime={},current time={}", eleSelfOPenCellOrderVo.getSessionId(), bindTime, System.currentTimeMillis());
             if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                 newElectricityBattery.setBindTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
