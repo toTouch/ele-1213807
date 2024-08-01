@@ -63,6 +63,11 @@ public class WarnMsgPageQueryModel {
     private Integer alarmFlag;
     
     /**
+     * alarmId
+     */
+    private String alarmId;
+    
+    /**
      * 信号量Id集合
      */
     private List<String> signalIdList;
