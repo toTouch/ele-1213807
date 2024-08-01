@@ -160,7 +160,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 已过保护期+已参与状态 的记录，需要更新为已失效，才能再扫码
             MerchantJoinRecord needUpdatedToInvalidRecord = null;
             List<MerchantJoinRecord> joinRecordList = this.listByJoinUidAndStatus(joinUid, List.of(MerchantJoinRecordConstant.STATUS_INIT));
-    
+            
             if (CollectionUtils.isNotEmpty(joinRecordList)) {
                 MerchantJoinRecord joinRecord = joinRecordList.get(NumberConstant.ZERO);
                 if (Objects.nonNull(joinRecord)) {
@@ -173,7 +173,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                         if (protectionTime >= System.currentTimeMillis()) {
                             log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
                                     joinUid);
-                    
+                            
                             return R.fail(false, "120104", "商户保护期内，请稍后再试");
                         } else {
                             // 已过保护期
@@ -277,7 +277,8 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             Long placeId = Optional.ofNullable(merchantEmployeeService.queryMerchantEmployeeByUid(inviterUid)).orElse(new MerchantEmployeeVO()).getPlaceId();
             
             // 保存参与记录
-            MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId());
+            MerchantJoinRecord record = this.assembleRecord(merchantId, inviterUid, inviterType, joinUid, channelEmployeeUid, placeId, merchantAttr, tenant.getId(),
+                    merchant.getFranchiseeId());
             Integer result = merchantJoinRecordMapper.insertOne(record);
             
             // 将旧的已参与记录改为已失效
@@ -300,7 +301,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Integer inviterType, Long joinUid, Long channelEmployeeUid, Long placeId, MerchantAttr merchantAttr,
-            Integer tenantId) {
+            Integer tenantId, Long franchiseeId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
@@ -333,7 +334,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).franchiseeId(franchiseeId).build();
     }
     
     @Slave
@@ -428,7 +429,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             if (Objects.nonNull(merchant)) {
                 vo.setMerchantName(merchant.getName());
             }
-    
+            
             // 加盟商名称
             Long franchiseeId = merchantJoinRecord.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
@@ -602,10 +603,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
     }
     
     /**
-     * 活动互斥判断:
-     * 1.是否成功参与过活动
-     * 2.平台用户，是否购买过套餐
-     * 3.平台用户，是否实名认证
+     * 活动互斥判断: 1.是否成功参与过活动 2.平台用户，是否购买过套餐 3.平台用户，是否实名认证
      *
      * @param userInfo
      * @param shareActivityId   邀请返券或邀请返现活动的id（其它活动该参数为null）
