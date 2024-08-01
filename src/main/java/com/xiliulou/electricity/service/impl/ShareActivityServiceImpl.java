@@ -427,8 +427,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         // 判断该加盟商是否有启用的活动，有则不能启用
         if (Objects.nonNull(franchiseeId)) {
             if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
-                int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).isNull(ShareActivity::getFranchiseeId)
-                        .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+                int count = shareActivityMapper.selectCount(
+                        new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, franchiseeId)
+                                .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
                 if (count > 0) {
                     return R.fail("ELECTRICITY.00102", "该加盟商已有启用中的邀请活动，请勿重复添加");
                 }
@@ -436,9 +437,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         } else {
             //查询该租户是否有邀请活动，有则不能启用
             if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
-                int count = shareActivityMapper.selectCount(
-                        new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getFranchiseeId, null)
-                                .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON).eq(ShareActivity::getType, ShareActivity.SYSTEM));
+                int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).isNull(ShareActivity::getFranchiseeId)
+                        .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON).eq(ShareActivity::getType, ShareActivity.SYSTEM));
                 if (count > 0) {
                     return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
                 }
