@@ -211,36 +211,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         
-        // 通过订单的 UID 获取用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
-        
-        // 扣减单电套餐次数
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    log.info("normalOpenFullyCellHandlerIot.deductionPackageNumberHandler deduct battery member card, sessionId is {}, orderId is {}",
-                            eleOpenFullCellRsp.getSessionId(), cabinetOrder.getOrderId());
-                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
-                    if (row < 1) {
-                        log.warn("normalOpenFullyCellHandlerIot WARN! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(),
-                                userBatteryMemberCard.getId());
-                        throw new BizException("100213", "换电套餐剩余次数不足");
-                    }
-                }
-            }
-        }
-        
-        // 扣减车电一体套餐次数
-        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.info("NormalNewExchangeOrderHandlerIot.deductionPackageNumberHandler deduct car member card,sessionId is {},  orderId is {}", eleOpenFullCellRsp.getSessionId(),
-                    cabinetOrder.getOrderId());
-            if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
-                throw new BizException("100213", "车电一体套餐剩余次数不足");
-            }
-        }
-        
+        userBatteryMemberCardService.deductionPackageNumberHandler(cabinetOrder, eleOpenFullCellRsp.getSessionId());
     }
     
     private void takeBatteryHandler(EleOpenFullCellRsp openFullCellRsp, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
@@ -533,39 +504,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         if (!openFullCellRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             return;
         }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("normalOpenFullyCellHandlerIot error! userInfo is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), openFullCellRsp.getSessionId(),
-                    openFullCellRsp.getOrderId());
-            return;
-        }
-        
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("normalOpenFullyCellHandlerIot warn! userBatteryMemberCard is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(),
-                    openFullCellRsp.getSessionId(), openFullCellRsp.getOrderId());
-            return;
-        }
-        
-        //判断套餐是否限次
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            return;
-        }
-        
-        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
-            return;
-        }
-        
-        UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = userBatteryMemberCardPackageService.selectNearestByUid(userBatteryMemberCard.getUid());
-        if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
-            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-        }
+        userBatteryMemberCardService.handleExpireMemberCard(openFullCellRsp.getSessionId(),electricityCabinetOrder);
     }
     
     

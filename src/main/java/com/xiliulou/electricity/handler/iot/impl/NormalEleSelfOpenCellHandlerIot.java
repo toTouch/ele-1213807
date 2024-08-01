@@ -104,9 +104,20 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         
         EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleSelfOPenCellOrderVo.class);
         
+        if (Objects.isNull(eleSelfOPenCellOrderVo)) {
+            log.error("SELF OPEN CELL ERROR! eleSelfOPenCellOrderVo is null , sessionId {}", sessionId);
+            return;
+        }
+        //幂等加锁
+        Boolean result = redisService.setNx(CacheConstant.SELF_OPEN_CALL_CACHE_KEY + eleSelfOPenCellOrderVo.getOrderId(), "true", 10 * 1000L, true);
+        if (!result) {
+            log.error("SELF OPEN CELL ERROR orderId is lock, sessionId is {}, orderId is {}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
+            return;
+        }
+        
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleSelfOPenCellOrderVo.getOrderId());
         if (Objects.isNull(electricityCabinetOrder)) {
-            log.error("SELF OPEN CELL ERROR! not found order! orderId:{}", eleSelfOPenCellOrderVo.getOrderId());
+            log.error("SELF OPEN CELL ERROR! not found order! sessionId is {}, orderId:{}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
         
@@ -124,7 +135,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             }
             
             // 订单完成。扣减套餐次数
-            deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
+            userBatteryMemberCardService.deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
             // 增加换电完成的操作记录
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
@@ -148,7 +159,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);
             
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-            handleExpireMemberCard(eleSelfOPenCellOrderVo, electricityCabinetOrder);
+            userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(),electricityCabinetOrder);
             
             return;
         }
@@ -158,13 +169,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
                 eleSelfOPenCellOrderVo.getOrderId());
         if (Objects.isNull(electricityExceptionOrderStatusRecord)) {
             log.warn("SELF OPEN CELL WARN! not found user! sessionId is {}, userId:{}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
-            return;
-        }
-        
-        //幂等加锁
-        Boolean result = redisService.setNx(CacheConstant.SELF_OPEN_CALL_CACHE_KEY + eleSelfOPenCellOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
-        if (!result) {
-            log.error("OFFLINE EXCHANGE orderId is lock,{}", eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
         
@@ -186,73 +190,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     }
     
     
-    private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId) {
-        
-        // 通过订单的 UID 获取用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
-        
-        // 扣减单电套餐次数
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    log.info("SELF OPEN CELL INFO! deductionPackageNumberHandler deduct battery member card,sessionId is {}, orderId is {}", sessionId, cabinetOrder.getOrderId());
-                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
-                    if (row < 1) {
-                        log.warn("SELF OPEN CELL  WARN! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(), userBatteryMemberCard.getId());
-                        throw new BizException("100213", "换电套餐剩余次数不足");
-                    }
-                }
-            }
-        }
-        
-        // 扣减车电一体套餐次数
-        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.info("SELF OPEN CELL INFO! deductionPackageNumberHandler deduct car member card, sessionId is {}, orderId is {}", sessionId, cabinetOrder.getOrderId());
-            if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
-                throw new BizException("100213", "车电一体套餐剩余次数不足");
-            }
-        }
-        
-    }
-    
-    
-    private void handleExpireMemberCard(EleSelfOPenCellOrderVo oPenCellOrderVo, ElectricityCabinetOrder electricityCabinetOrder) {
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("SELF OPEN CELL ERROR! userInfo is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), oPenCellOrderVo.getSessionId(),
-                    oPenCellOrderVo.getOrderId());
-            return;
-        }
-        
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("SELF OPEN CELL  WARN! userBatteryMemberCard is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), oPenCellOrderVo.getSessionId(),
-                    oPenCellOrderVo.getOrderId());
-            return;
-        }
-        
-        //判断套餐是否限次
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            return;
-        }
-        
-        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
-            return;
-        }
-        
-        UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = userBatteryMemberCardPackageService.selectNearestByUid(userBatteryMemberCard.getUid());
-        if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
-            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-        }
-    }
     
     
     private void takeBatteryHandler(EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {

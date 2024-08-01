@@ -622,42 +622,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("EXCHANGE ORDER ERROR! userInfo is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
-                    exchangeOrderRsp.getOrderId());
-            return;
-        }
-        
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityCabinetOrder.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("EXCHANGE ORDER WARN! userBatteryMemberCard is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
-                    exchangeOrderRsp.getOrderId());
-            return;
-        }
-        
-        //判断套餐是否限次
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            return;
-        }
-        
-        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
-            return;
-        }
-        
-        /*UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-        userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-        userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
-        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);*/
-        UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = userBatteryMemberCardPackageService.selectNearestByUid(userBatteryMemberCard.getUid());
-        if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
-            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-        }
+        userBatteryMemberCardService.handleExpireMemberCard(exchangeOrderRsp.sessionId, electricityCabinetOrder);
     }
     
     
