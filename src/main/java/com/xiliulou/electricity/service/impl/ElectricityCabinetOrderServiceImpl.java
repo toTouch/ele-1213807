@@ -2576,11 +2576,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String orderExceptionStartTime = redisService.get(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + query.getOrderId());
         log.info("lessExchangeSelfOpenCell Info! orderExceptionStartTime is {}", orderExceptionStartTime);
         if (StrUtil.isEmpty(orderExceptionStartTime)) {
-            return R.fail("100026", "自助开仓已超开仓时间");
+            return R.fail("100026", "请联系客服人员，来解决您的问题");
         }
         if (Double.valueOf(System.currentTimeMillis() - Long.valueOf(orderExceptionStartTime)) / 1000 / 60 > 3) {
             log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", query.getOrderId());
-            return R.fail("100026", "自助开仓已超开仓时间");
+            return R.fail("100026", "请联系客服人员，来解决您的问题");
         }
         
         
