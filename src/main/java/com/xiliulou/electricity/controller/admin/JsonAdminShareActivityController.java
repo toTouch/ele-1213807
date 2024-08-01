@@ -84,8 +84,9 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
@@ -93,6 +94,7 @@ public class JsonAdminShareActivityController extends BaseController {
         
         shareActivityAddAndUpdateQuery.setUid(user.getUid());
         shareActivityAddAndUpdateQuery.setUserName(user.getUsername());
+        shareActivityAddAndUpdateQuery.setFranchiseeIds(franchiseeIds);
         
         return shareActivityService.insert(shareActivityAddAndUpdateQuery);
     }
@@ -128,12 +130,15 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
+        
+        shareActivityAddAndUpdateQuery.setFranchiseeIds(franchiseeIds);
         
         return returnTripleResult(shareActivityService.updateShareActivity(shareActivityAddAndUpdateQuery));
     }
@@ -155,12 +160,15 @@ public class JsonAdminShareActivityController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
+        
+        shareActivityAddAndUpdateQuery.setFranchiseeIds(franchiseeIds);
         
         return shareActivityService.update(shareActivityAddAndUpdateQuery);
     }
@@ -346,22 +354,23 @@ public class JsonAdminShareActivityController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             throw new CustomBusinessException("未找到用户!");
         }
-        
+    
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        
+    
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
-        
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
-        
-        return shareActivityService.removeById(id);
+    
+        return shareActivityService.removeById(id, franchiseeIds);
     }
 }

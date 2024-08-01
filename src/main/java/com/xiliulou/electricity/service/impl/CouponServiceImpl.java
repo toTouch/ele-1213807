@@ -41,13 +41,13 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.activity.CouponActivityVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -142,6 +142,14 @@ public class CouponServiceImpl implements CouponService {
         couponQuery.setTenantId(tenantId);
         couponQuery.setType(Coupon.TYPE_FRANCHISEE);
         
+        // 加盟商一致性校验
+        Long franchiseeId = couponQuery.getFranchiseeId();
+        List<Long> franchiseeIds = couponQuery.getFranchiseeIds();
+        if (CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Insert coupon fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
         //参数判断
         if (Objects.equals(couponQuery.getDiscountType(), Coupon.FULL_REDUCTION)) {
             if (Objects.isNull(couponQuery.getAmount())) {
@@ -186,7 +194,7 @@ public class CouponServiceImpl implements CouponService {
         coupon.setUpdateTime(System.currentTimeMillis());
         coupon.setTenantId(tenantId);
         coupon.setDays(Integer.parseInt(couponQuery.getValidDays()));
-        coupon.setFranchiseeId(couponQuery.getFranchiseeId().intValue());
+        coupon.setFranchiseeId(franchiseeId.intValue());
         
         if (Objects.isNull(coupon.getStatus())) {
             coupon.setStatus(Coupon.STATUS_OFF);
@@ -315,6 +323,14 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("update coupon ERROR! not found coupon ! couponId={} ", couponQuery.getId());
             return R.fail("120124", "找不到优惠券");
+        }
+        
+        // 加盟商一致性校验
+        Integer franchiseeId = oldCoupon.getFranchiseeId();
+        List<Long> franchiseeIds = couponQuery.getFranchiseeIds();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Update coupon fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
         }
         
         //检查优惠券是否已经绑定用户
@@ -498,10 +514,17 @@ public class CouponServiceImpl implements CouponService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> deleteById(Long id) {
+    public Triple<Boolean, String, Object> deleteById(Long id, List<Long> franchiseeIds) {
         Coupon coupon = this.queryByIdFromCache(id.intValue());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
+        }
+    
+        // 加盟商一致性校验
+        Integer franchiseeId = coupon.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Update coupon fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);

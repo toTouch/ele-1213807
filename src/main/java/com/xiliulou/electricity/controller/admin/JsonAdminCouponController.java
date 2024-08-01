@@ -96,8 +96,9 @@ public class JsonAdminCouponController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
@@ -105,6 +106,7 @@ public class JsonAdminCouponController extends BaseController {
         
         couponQuery.setUid(user.getUid());
         couponQuery.setUserName(user.getUsername());
+        couponQuery.setFranchiseeIds(franchiseeIds);
         
         return couponService.insert(couponQuery);
     }
@@ -122,12 +124,15 @@ public class JsonAdminCouponController extends BaseController {
             return R.ok();
         }
         
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
+        
+        couponQuery.setFranchiseeIds(franchiseeIds);
         
         return couponService.update(couponQuery);
     }
@@ -163,15 +168,16 @@ public class JsonAdminCouponController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
-        
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
         
-        return returnTripleResult(couponService.deleteById(id));
+        return returnTripleResult(couponService.deleteById(id, franchiseeIds));
     }
     
     //列表查询

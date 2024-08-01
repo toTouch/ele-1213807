@@ -112,6 +112,8 @@ public class ShareActivityAddAndUpdateQuery {
      * 车电一体套餐IDs
      */
     private List<Long> carWithBatteryPackages;
+    
+    private List<Long> franchiseeIds;
 
 }
 

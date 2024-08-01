@@ -104,7 +104,7 @@ public class ShareMoneyActivityAddAndUpdateQuery {
      */
     private List<Long> carWithBatteryPackages;
 
-
+    private List<Long> franchiseeIds;
 }
 
 

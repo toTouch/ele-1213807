@@ -208,6 +208,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             return R.fail("110209", "有效时间不能为空");
         }
         
+        // 加盟商一致性校验
+        Long franchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
+        List<Long> franchiseeIds = shareActivityAddAndUpdateQuery.getFranchiseeIds();
+        if (CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Insert shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
         Integer tenantId = TenantContextHolder.getTenantId();
         if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
             int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId)
@@ -347,6 +355,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             return Triple.of(true, "", "");
         }
         
+        // 加盟商一致性校验
+        Integer franchiseeId = shareActivity.getFranchiseeId();
+        List<Long> franchiseeIds = shareActivityAddAndUpdateQuery.getFranchiseeIds();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Update shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
+        
         shareActivity.setName(shareActivityAddAndUpdateQuery.getName());
         
         DbUtils.dbOperateSuccessThenHandleCache(shareActivityMapper.updateById(shareActivity), i -> {
@@ -400,9 +416,16 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             return R.ok();
         }
         
+        // 加盟商一致性校验
+        Integer franchiseeId = oldShareActivity.getFranchiseeId();
+        List<Long> franchiseeIds = shareActivityAddAndUpdateQuery.getFranchiseeIds();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Update shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
         // 判断该加盟商是否有启用的活动，有则不能启用
-        Integer activityFranchiseeId = oldShareActivity.getFranchiseeId();
-        if (Objects.nonNull(activityFranchiseeId)) {
+        if (Objects.nonNull(franchiseeId)) {
             if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
                 int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId).isNull(ShareActivity::getFranchiseeId)
                         .eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
@@ -1063,7 +1086,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
      * @since V1.0 2024/3/14
      */
     @Override
-    public R<?> removeById(Long id) {
+    public R<?> removeById(Long id, List<Long> franchiseeIds) {
         ShareActivity shareActivity = this.queryByIdFromCache(Math.toIntExact(id));
         if (Objects.isNull(shareActivity)) {
             log.warn("delete Activity WARN! not found Activity ! ActivityId={} ", id);
@@ -1073,6 +1096,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         // 租户一致性校验
         if (!Objects.equals(TenantContextHolder.getTenantId(), shareActivity.getTenantId())) {
             return R.ok();
+        }
+        
+        // 加盟商一致性校验
+        Integer franchiseeId = shareActivity.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Remove shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
         }
         
         int count = this.shareActivityMapper.removeById(id, TenantContextHolder.getTenantId().longValue());

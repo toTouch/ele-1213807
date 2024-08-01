@@ -594,7 +594,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         if (!isSameFranchisee(coupon, userInfo)) {
             log.error("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
-            return R.fail("120126", "所属加盟商不一致，无法领取优惠券");
+            return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
         }
         
         if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {

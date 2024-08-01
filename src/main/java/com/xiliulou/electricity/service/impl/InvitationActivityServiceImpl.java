@@ -142,10 +142,13 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(InvitationActivityQuery query) {
-        //        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
-        //        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
-        //            return Triple.of(false, "", "已存在上架的活动");
-        //        }
+        // 加盟商一致性校验
+        Long franchiseeId = query.getFranchiseeId();
+        List<Long> franchiseeIds = query.getFranchiseeIds();
+        if (CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Insert invitationActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
         
         if (ObjectUtil.isEmpty(query.getHours()) && ObjectUtil.isEmpty(query.getMinutes())) {
             return Triple.of(false, "110209", "有效时间不能为空");
@@ -227,6 +230,14 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             return Triple.of(false, "100390", "活动不存在");
         }
         
+        // 加盟商一致性校验
+        Long franchiseeId = invitationActivity.getFranchiseeId();
+        List<Long> franchiseeIds = query.getFranchiseeIds();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Update invitationActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
+        
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
         invitationActivityUpdate.setId(query.getId());
         invitationActivityUpdate.setName(query.getName());
@@ -270,6 +281,14 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         InvitationActivity invitationActivity = this.queryByIdFromCache(query.getId());
         if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100390", "活动不存在");
+        }
+        
+        // 加盟商一致性校验
+        Long franchiseeId = invitationActivity.getFranchiseeId();
+        List<Long> franchiseeIds = query.getFranchiseeIds();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Update invitationActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
@@ -625,7 +644,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
      * @since V1.0 2024/3/14
      */
     @Override
-    public R<?> removeById(Long id) {
+    public R<?> removeById(Long id, List<Long> franchiseeIds) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(id);
         if (Objects.isNull(invitationActivity)) {
             log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
@@ -635,6 +654,13 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         // 租户一致性校验
         if (!Objects.equals(TenantContextHolder.getTenantId(), invitationActivity.getTenantId())) {
             return R.ok();
+        }
+    
+        // 加盟商一致性校验
+        Long franchiseeId = invitationActivity.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Remove invitationActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
         }
         
         int count = this.invitationActivityMapper.removeById(id, TenantContextHolder.getTenantId().longValue());

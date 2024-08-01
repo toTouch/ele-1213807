@@ -167,6 +167,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //加盟商
         Long franchiseeId = shareMoneyActivityAddAndUpdateQuery.getFranchiseeId();
         
+        // 加盟商一致性校验
+        List<Long> franchiseeIds = shareMoneyActivityAddAndUpdateQuery.getFranchiseeIds();
+        if (CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.info("Insert shareMoneyActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
         //查询该租户是否有邀请活动，有则不能添加
         // int count = shareMoneyActivityMapper.selectCount(new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         //3.0后修改为，如果状态为上架时，先提示确定上架，确定后则直接上架，并将之前的活动下架
@@ -314,9 +321,16 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
             return R.ok();
         }
         
+        // 加盟商一致性校验
+        Integer franchiseeId = oldShareMoneyActivity.getFranchiseeId();
+        List<Long> franchiseeIds = shareMoneyActivityAddAndUpdateQuery.getFranchiseeIds();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Update shareMoneyActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
         // 判断该加盟商是否有启用的活动，有则不能启用
-        Integer activityFranchiseeId = oldShareMoneyActivity.getFranchiseeId();
-        if (Objects.nonNull(activityFranchiseeId)) {
+        if (Objects.nonNull(franchiseeId)) {
             if (Objects.equals(shareMoneyActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
                 int count = shareMoneyActivityMapper.selectCount(
                         new LambdaQueryWrapper<ShareMoneyActivity>().eq(ShareMoneyActivity::getTenantId, tenantId).isNull(ShareMoneyActivity::getFranchiseeId)
@@ -681,7 +695,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
      * @since V1.0 2024/3/14
      */
     @Override
-    public R<?> removeById(Long id) {
+    public R<?> removeById(Long id, List<Long> franchiseeIds) {
         ShareMoneyActivity shareMoneyActivity = this.queryByIdFromCache(Math.toIntExact(id));
         if (Objects.isNull(shareMoneyActivity)) {
             log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
@@ -691,6 +705,13 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         // 租户一致性校验
         if (!Objects.equals(TenantContextHolder.getTenantId(), shareMoneyActivity.getTenantId())) {
             return R.ok();
+        }
+        
+        // 加盟商一致性校验
+        Integer franchiseeId = shareMoneyActivity.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
+            log.info("Remove shareMoneyActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
         }
         
         int count = this.shareMoneyActivityMapper.removeById(id, TenantContextHolder.getTenantId().longValue());
