@@ -161,7 +161,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         
-        if (!(Objects.equals(openFullCellRsp.getOrderSeq(), 6) || Objects.equals(openFullCellRsp.getOrderSeq(), ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS))) {
+        if (!Objects.equals(openFullCellRsp.getOrderSeq(), ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS)) {
             log.warn("normalOpenFullyCellHandlerIot error! openFullCellRsp.orderSeq not equal 6,  sessionId is {}, orderId is {}, orderSeq is {}", receiverMessage.getSessionId(),
                     openFullCellRsp.getOrderId(), openFullCellRsp.getOrderSeq());
             return;
