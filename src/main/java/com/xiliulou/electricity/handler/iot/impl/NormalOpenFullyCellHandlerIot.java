@@ -202,7 +202,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             if (Objects.nonNull(userBatteryMemberCard)) {
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                 if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    log.info("normalOpenFullyCellHandlerIot.deductionPackageNumberHandler deduct battery member card,");
+                    log.info("normalOpenFullyCellHandlerIot.deductionPackageNumberHandler deduct battery member card, orderId is {}", cabinetOrder.getOrderId());
                     Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                     if (row < 1) {
                         log.warn("normalOpenFullyCellHandlerIot WARN! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(),
@@ -215,7 +215,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         
         // 扣减车电一体套餐次数
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            log.info("NormalNewExchangeOrderHandlerIot.deductionPackageNumberHandler deduct car member card,");
+            log.info("NormalNewExchangeOrderHandlerIot.deductionPackageNumberHandler deduct car member card,  orderId is {}", cabinetOrder.getOrderId());
             if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
                 throw new BizException("100213", "车电一体套餐剩余次数不足");
             }
