@@ -50,10 +50,10 @@
                 and tui.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeId != null">
-                and iau.franchisee_id = #{franchiseeId}
+                and ia.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
-                and iau.franchisee_id in
+                and ia.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>

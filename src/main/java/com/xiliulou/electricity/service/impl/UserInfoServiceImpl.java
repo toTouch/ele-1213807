@@ -2163,20 +2163,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Slave
     @Override
-    public R userInfoSearch(Long size, Long offset, String name, Long franchiseeId) {
-        List<UserInfoSearchVo> list = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId(), franchiseeId);
-        if (CollectionUtils.isEmpty(list)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        
-        List<UserInfoSearchVo> collect = list.stream().peek(vo -> {
-            if (Objects.nonNull(vo.getFranchiseeId())) {
-                vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
-            }
-            
-        }).collect(Collectors.toList());
-        
-        return R.ok(collect);
+    public R userInfoSearch(Long size, Long offset, String name) {
+        List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
+        return R.ok(qeury);
     }
     
     private void queryUserBattery(DetailsBatteryInfoVo vo, UserInfo userInfo) {

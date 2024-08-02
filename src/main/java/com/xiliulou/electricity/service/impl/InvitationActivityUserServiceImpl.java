@@ -231,10 +231,18 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
     
     @Override
-    public Triple<Boolean, String, Object> delete(Long id) {
+    public Triple<Boolean, String, Object> delete(Long id, List<Long> franchiseeIds) {
         InvitationActivityUser invitationActivityUser = this.queryByIdFromDB(id);
         if (Objects.isNull(invitationActivityUser) || !Objects.equals(invitationActivityUser.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 加盟商一致性校验
+        Long franchiseeId = invitationActivityUser.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(
+                franchiseeId)) {
+            log.warn("Delete invitationActivityUser WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         invitationActivityUserMapper.deleteById(id);

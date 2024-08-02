@@ -71,7 +71,7 @@ public interface InvitationActivityUserService {
     
     Triple<Boolean, String, Object> save(InvitationActivityUserSaveQuery query);
     
-    Triple<Boolean, String, Object> delete(Long id);
+    Triple<Boolean, String, Object> delete(Long id, List<Long> franchiseeIds);
     
     List<InvitationActivityUser> selectByUid(Long uid);
 }

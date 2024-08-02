@@ -12,7 +12,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -374,7 +373,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             if (CollectionUtils.isEmpty(userCouponList)) {
                 return;
             }
-    
+            
             List<Long> idList = userCouponList.parallelStream().map(UserCoupon::getId).collect(Collectors.toList());
             userCouponMapper.batchUpdateByIds(idList, UserCoupon.STATUS_EXPIRED, System.currentTimeMillis());
         }
@@ -464,7 +463,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
         
         //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
-        userCouponVOList = userCouponVOList.stream().filter(userCouponVO -> isSameFranchisee(userCouponVO, userInfo)).peek(userCouponVO -> {
+        for (UserCouponVO userCouponVO : userCouponVOList) {
             if (Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode()
                     .equals(userCouponVO.getSpecificPackages())) {
                 Long couponId = userCouponVO.getCouponId().longValue();
@@ -472,18 +471,9 @@ public class UserCouponServiceImpl implements UserCouponService {
                 userCouponVO.setCarRentalPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 userCouponVO.setCarWithBatteryPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
             }
-        }).collect(Collectors.toList());
-        
-        return R.ok(userCouponVOList);
-    }
-    
-    private boolean isSameFranchisee(UserCouponVO userCouponVO, UserInfo userInfo) {
-        Coupon coupon = couponService.queryByIdFromCache(userCouponVO.getCouponId());
-        if (Objects.isNull(coupon)) {
-            return true;
         }
         
-        return isSameFranchisee(coupon, userInfo);
+        return R.ok(userCouponVOList);
     }
     
     private static boolean isSameFranchisee(Coupon coupon, UserInfo userInfo) {
