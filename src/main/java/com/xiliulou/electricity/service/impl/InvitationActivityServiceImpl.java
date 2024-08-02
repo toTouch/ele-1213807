@@ -316,7 +316,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         List<InvitationActivity> list;
         // 如果没有加盟商，则查租户的活动
         if (Objects.isNull(franchiseeId) || Objects.equals(franchiseeId, NumberConstant.ZERO_L)) {
-            list = activityList.stream().filter(invitationActivity -> Objects.nonNull(invitationActivity.getFranchiseeId())).collect(Collectors.toList());
+            list = activityList.stream().filter(invitationActivity -> Objects.isNull(invitationActivity.getFranchiseeId())).collect(Collectors.toList());
         } else {
             // 如果有加盟商，则查加盟商的活动
             list = activityList.stream()
