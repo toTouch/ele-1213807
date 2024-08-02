@@ -142,18 +142,19 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+    
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
+    
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok();
             }
         }
-        
-        return returnTripleResult(invitationActivityUserService.delete(id));
+    
+        return returnTripleResult(invitationActivityUserService.delete(id, franchiseeIds));
     }
 }
