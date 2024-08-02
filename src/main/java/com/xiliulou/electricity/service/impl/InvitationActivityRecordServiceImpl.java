@@ -10,7 +10,16 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.InvitationActivity;
+import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
+import com.xiliulou.electricity.entity.InvitationActivityRecord;
+import com.xiliulou.electricity.entity.InvitationActivityUser;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -22,7 +31,18 @@ import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
+import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
+import com.xiliulou.electricity.service.InvitationActivityRecordService;
+import com.xiliulou.electricity.service.InvitationActivityService;
+import com.xiliulou.electricity.service.InvitationActivityUserService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -77,36 +97,37 @@ import java.util.stream.Collectors;
 @Service("invitationActivityRecordService")
 @Slf4j
 public class InvitationActivityRecordServiceImpl implements InvitationActivityRecordService {
+    
     @Resource
     private InvitationActivityRecordMapper invitationActivityRecordMapper;
-
+    
     @Autowired
     private UserInfoService userInfoService;
-
+    
     @Autowired
     private RedisService redisService;
-
+    
     @Autowired
     private TenantService tenantService;
-
+    
     @Autowired
     private InvitationActivityUserService invitationActivityUserService;
-
+    
     @Autowired
     private InvitationActivityService invitationActivityService;
-
+    
     @Autowired
     private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
-
+    
     @Autowired
     private InvitationActivityMemberCardService invitationActivityMemberCardService;
-
+    
     @Autowired
     private UserAmountService userAmountService;
-
+    
     @Autowired
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
-
+    
     @Autowired
     private CarRentalPackageOrderService carRentalPackageOrderService;
     
@@ -124,7 +145,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     
     @Resource
     private FranchiseeService franchiseeService;
-
+    
     @Override
     @Slave
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
@@ -139,57 +160,57 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             }
         }).collect(Collectors.toList());
     }
-
+    
     @Override
     @Slave
     public Integer selectByPageCount(InvitationActivityRecordQuery query) {
         return invitationActivityRecordMapper.selectByPageCount(query);
     }
-
+    
     @Override
     public InvitationActivityRecord queryByIdFromDB(Long id) {
         return this.invitationActivityRecordMapper.queryById(id);
     }
-
+    
     @Override
     public List<InvitationActivityRecord> queryAllByLimit(int offset, int limit) {
         return this.invitationActivityRecordMapper.queryAllByLimit(offset, limit);
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public InvitationActivityRecord insert(InvitationActivityRecord invitationActivityRecord) {
         this.invitationActivityRecordMapper.insertOne(invitationActivityRecord);
         return invitationActivityRecord;
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(InvitationActivityRecord invitationActivityRecord) {
         return this.invitationActivityRecordMapper.update(invitationActivityRecord);
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.invitationActivityRecordMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public Integer addCountAndMoneyByUid(BigDecimal rewardAmount, Long recordId) {
         return this.invitationActivityRecordMapper.addCountAndMoneyByUid(rewardAmount, recordId);
     }
-
+    
     @Override
     public Integer addMoneyByRecordId(BigDecimal rewardAmount, Long recordId) {
         return this.invitationActivityRecordMapper.addMoneyByRecordId(rewardAmount, recordId);
     }
-
+    
     @Override
     public List<InvitationActivityRecord> selectByActivityIdAndUid(List<Long> activityIds, Long uid) {
         return this.invitationActivityRecordMapper.selectByActivityIdAndUid(activityIds, uid);
     }
-
+    
     @Override
     @Slave
     public List<InvitationActivityRecord> selectByUid(Long uid) {
@@ -201,106 +222,105 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     public Triple<Boolean, String, Object> countByStatics() {
         // 封装结果集
         InvitationActivityStaticsVO invitationActivityStaticsVO = new InvitationActivityStaticsVO();
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
+        
         List<InvitationActivityRecord> recordList = this.selectByUid(userInfo.getUid());
-    
+        
         BigDecimal totalMoney = BigDecimal.ZERO;
         Integer totalInvitationCount = NumberConstant.ZERO;
         if (CollectionUtils.isNotEmpty(recordList)) {
             totalMoney = recordList.stream().map(InvitationActivityRecord::getMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
             totalInvitationCount = recordList.stream().mapToInt(InvitationActivityRecord::getInvitationCount).sum();
         }
-    
+        
         invitationActivityStaticsVO.setTotalMoney(totalMoney);
         invitationActivityStaticsVO.setTotalInvitationCount(totalInvitationCount);
-    
+        
         return Triple.of(true, null, invitationActivityStaticsVO);
     }
     
     @Override
     public Triple<Boolean, String, Object> listInvitationLineData() {
         List<InvitationActivityLineDataVO> lineDataVOList = new ArrayList<>();
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
+        
         // 查询近7天的
         Long startTime = DateUtils.getLastDayStartTime(NumberConstant.SEVEN);
-    
+        
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(query);
-    
+        
         if (CollectionUtils.isNotEmpty(historyVOList)) {
             // 将每天的数据进行分组，并按createTime升序排序
             Map<LocalDate, List<InvitationActivityJoinHistoryVO>> dateListMap = historyVOList.stream().collect(
                     Collectors.groupingBy(item -> LocalDate.ofEpochDay(item.getCreateTime() / TimeConstant.DAY_MILLISECOND), Collectors.collectingAndThen(Collectors.toList(),
                             list -> list.stream().sorted(Comparator.comparingLong(InvitationActivityJoinHistoryVO::getCreateTime)).collect(Collectors.toList()))));
-    
+            
             dateListMap.forEach((k, v) -> {
                 InvitationActivityLineDataVO lineDataVO = new InvitationActivityLineDataVO();
                 Integer totalShareCount = NumberConstant.ZERO;
                 Integer totalInvitationCount = NumberConstant.ZERO;
-    
+                
                 if (CollectionUtils.isNotEmpty(v)) {
                     List<InvitationActivityJoinHistoryVO> uniqueHistoryVOList = v.stream().collect(
                             Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                     map -> new ArrayList<>(map.values())));
-        
+                    
                     if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
                         totalShareCount = uniqueHistoryVOList.size();
                     }
-        
-                    List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = v.stream()
-                            .filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).collect(Collectors.collectingAndThen(
-                                    Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                    
+                    List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = v.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).collect(
+                            Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                     map -> new ArrayList<>(map.values())));
-        
+                    
                     if (CollectionUtils.isNotEmpty(uniqueInvitationHistoryVOList)) {
                         totalInvitationCount = uniqueInvitationHistoryVOList.size();
                     }
                 }
-            
+                
                 lineDataVO.setCreateTime(DateUtils.getDayStartTimeByLocalDate(k));
                 lineDataVO.setTotalShareCount(totalShareCount);
                 lineDataVO.setTotalInvitationCount(totalInvitationCount);
-            
+                
                 lineDataVOList.add(lineDataVO);
             });
         }
-    
+        
         if (CollectionUtils.isEmpty(lineDataVOList)) {
             return Triple.of(true, null, Collections.emptyList());
         }
-    
+        
         return Triple.of(true, null, lineDataVOList);
     }
     
@@ -308,23 +328,23 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     public Triple<Boolean, String, Object> queryInvitationAnalysis(Integer timeType) {
         // 封装结果集
         InvitationActivityAnalysisVO activityAnalysisVO = new InvitationActivityAnalysisVO();
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
+        
         // 根据时间范围查询：昨日/本月/累计
         Long startTime = null;
         Long endTime = null;
@@ -337,11 +357,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
         // startTime=null、endTime = null 查询累计
-    
-        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid())
-                .beginTime(startTime).endTime(endTime).build();
+        
+        InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUidOfAdmin(historyQuery);
-    
+        
         // 邀请总人数、邀请成功总人数
         Integer totalShareCount = NumberConstant.ZERO;
         Integer totalInvitationCount = NumberConstant.ZERO;
@@ -352,22 +371,21 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                             map -> new ArrayList<>(map.values())));
             
             if (CollectionUtils.isNotEmpty(uniqueHistoryVOList)) {
-                totalShareCount =  uniqueHistoryVOList.size();
+                totalShareCount = uniqueHistoryVOList.size();
             }
-    
-            List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = historyVOList.stream()
-                    .filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO)).collect(Collectors.collectingAndThen(
-                            Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+            
+            List<InvitationActivityJoinHistoryVO> uniqueInvitationHistoryVOList = historyVOList.stream().filter(item -> Objects.equals(item.getStatus(), NumberConstant.TWO))
+                    .collect(Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                             map -> new ArrayList<>(map.values())));
-    
+            
             if (CollectionUtils.isNotEmpty(uniqueInvitationHistoryVOList)) {
                 totalInvitationCount = uniqueInvitationHistoryVOList.size();
             }
         }
-    
+        
         activityAnalysisVO.setTotalShareCount(totalShareCount);
         activityAnalysisVO.setTotalInvitationCount(totalInvitationCount);
-    
+        
         return Triple.of(true, null, activityAnalysisVO);
     }
     
@@ -378,17 +396,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
+        
         // 根据时间范围查询：昨日/本月/累计
         Integer timeType = request.getTimeType();
         Long startTime = null;
@@ -402,11 +420,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
         // startTime=null、endTime = null 查询累计
-    
+        
         // 邀请明细
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
                 .offset(request.getOffset()).size(request.getSize()).build();
-    
+        
         Set<Integer> statusSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
         Integer status = request.getStatus();
         if (Objects.nonNull(status) && statusSet.contains(status)) {
@@ -414,30 +432,24 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             status = Objects.equals(status, NumberConstant.ZERO) ? null : status;
             query.setStatus(status);
         }
-    
+        
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUidDistinctJoin(query);
         
         // 根据joinUid进行去重
         List<InvitationActivityDetailVO> rspList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(historyVOList)) {
-            rspList = historyVOList.stream().map(item ->{
+            rspList = historyVOList.stream().map(item -> {
                 Long joinUid = item.getJoinUid();
                 
-                InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder()
-                        .joinUid(joinUid)
-                        .joinTime(item.getStartTime())
-                        .activityId(item.getActivityId())
-                        .activityName(item.getActivityName())
-                        .payCount(ObjectUtils.defaultIfNull(item.getPayCount(), NumberConstant.ZERO))
-                        .money(ObjectUtils.defaultIfNull(item.getMoney(), BigDecimal.ZERO))
-                        .status(item.getStatus())
-                        .build();
-    
+                InvitationActivityDetailVO invitationActivityDetailVO = InvitationActivityDetailVO.builder().joinUid(joinUid).joinTime(item.getStartTime())
+                        .activityId(item.getActivityId()).activityName(item.getActivityName()).payCount(ObjectUtils.defaultIfNull(item.getPayCount(), NumberConstant.ZERO))
+                        .money(ObjectUtils.defaultIfNull(item.getMoney(), BigDecimal.ZERO)).status(item.getStatus()).build();
+                
                 UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
                 if (Objects.isNull(joinUser)) {
                     joinUser = userInfoService.queryByUidFromDb(joinUid);
                 }
-    
+                
                 Optional.ofNullable(joinUser).ifPresent(user -> {
                     invitationActivityDetailVO.setJoinName(user.getName());
                     invitationActivityDetailVO.setJoinPhone(user.getPhone());
@@ -451,7 +463,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 rspList = Collections.emptyList();
             }
         }
-       
+        
         return Triple.of(true, null, rspList);
     }
     
@@ -488,14 +500,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
         // startTime=null、endTime = null 查询累计
-
+        
         // 首返奖励及人数、续返奖励及人数
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime).build();
         
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
         
         InvitationActivityIncomeAnalysisVO incomeAndMemCountVO = this.getIncomeAndMemCount(historyVOList);
-    
+        
         analysisVO.setTotalIncome(Objects.isNull(incomeAndMemCountVO.getTotalIncome()) ? BigDecimal.ZERO : incomeAndMemCountVO.getTotalIncome());
         analysisVO.setFirstTotalIncome(Objects.isNull(incomeAndMemCountVO.getFirstTotalIncome()) ? BigDecimal.ZERO : incomeAndMemCountVO.getFirstTotalIncome());
         analysisVO.setFirstTotalMemCount(Objects.isNull(incomeAndMemCountVO.getFirstTotalMemCount()) ? NumberConstant.ZERO : incomeAndMemCountVO.getFirstTotalMemCount());
@@ -512,17 +524,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("INVITATION ACTIVITY WARN! user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
+        
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("INVITATION ACTIVITY WARN! user not auth,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
+        
         // 根据时间范围查询：昨日/本月/累计
         Integer timeType = request.getTimeType();
         Long startTime = null;
@@ -536,11 +548,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             startTime = DateUtils.getDayOfMonthStartTime(NumberConstant.ONE);
         }
         // startTime=null、endTime = null 查询累计
-    
+        
         // 收入明细
         InvitationActivityJoinHistoryQuery historyQuery = InvitationActivityJoinHistoryQuery.builder().uid(userInfo.getUid()).beginTime(startTime).endTime(endTime)
                 .offset(request.getOffset()).size(request.getSize()).build();
-    
+        
         Set<Integer> statusSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE, NumberConstant.FOUR, NumberConstant.FIVE);
         Integer status = request.getStatus();
         if (Objects.nonNull(status) && statusSet.contains(status)) {
@@ -548,7 +560,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             status = Objects.equals(status, NumberConstant.ZERO) ? null : status;
             historyQuery.setStatus(status);
         }
-    
+        
         List<InvitationActivityJoinHistoryVO> historyVOList = invitationActivityJoinHistoryService.listByInviterUid(historyQuery);
         List<InvitationActivityDetailVO> rspList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(historyVOList)) {
@@ -556,7 +568,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 InvitationActivityDetailVO vo = InvitationActivityDetailVO.builder().activityId(item.getActivityId()).activityName(item.getActivityName())
                         .joinUid(item.getJoinUid()).joinTime(item.getCreateTime()).money(Objects.isNull(item.getMoney()) ? BigDecimal.ZERO : item.getMoney())
                         .payCount(Objects.isNull(item.getPayCount()) ? NumberConstant.ZERO : item.getPayCount()).status(item.getStatus()).build();
-            
+                
                 UserInfo joinUser = userInfoService.queryByUidFromCache(item.getJoinUid());
                 if (Objects.isNull(joinUser)) {
                     joinUser = userInfoService.queryByUidFromDb(item.getJoinUid());
@@ -566,10 +578,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                     vo.setJoinPhone(u.getPhone());
                     vo.setJoinName(u.getName());
                 });
-    
+                
                 Long packageId = item.getPackageId();
                 Integer packageType = item.getPackageType();
-                if(Objects.nonNull(packageId) && Objects.nonNull(packageType)) {
+                if (Objects.nonNull(packageId) && Objects.nonNull(packageType)) {
                     if (Objects.equals(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), packageType)) {
                         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
                         Optional.ofNullable(batteryMemberCard).ifPresent(b -> {
@@ -588,13 +600,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 }
                 return vo;
             }).collect(Collectors.toList());
-        
+            
         }
-    
+        
         if (CollectionUtils.isEmpty(rspList)) {
             rspList = Collections.emptyList();
         }
-    
+        
         return Triple.of(true, null, rspList);
     }
     
@@ -615,7 +627,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             if (CollectionUtils.isNotEmpty(firstHistoryList)) {
                 firstTotalIncome = firstHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-    
+                
                 // 根据joinUid进行去重
                 List<InvitationActivityJoinHistoryVO> uniqueFirstHistoryVOList = firstHistoryList.stream().collect(
                         Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
@@ -632,23 +644,22 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             if (CollectionUtils.isNotEmpty(renewHistoryList)) {
                 renewTotalIncome = renewHistoryList.stream().map(history -> Optional.ofNullable(history.getMoney()).orElse(BigDecimal.ZERO))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-    
-                List<InvitationActivityJoinHistoryVO> uniqueRenewHistoryVOList = renewHistoryList.stream()
-                        .filter(history -> Objects.nonNull(history.getPayCount()))
-                        .collect(Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
+                
+                List<InvitationActivityJoinHistoryVO> uniqueRenewHistoryVOList = renewHistoryList.stream().filter(history -> Objects.nonNull(history.getPayCount())).collect(
+                        Collectors.collectingAndThen(Collectors.toMap(InvitationActivityJoinHistoryVO::getJoinUid, Function.identity(), (oldValue, newValue) -> newValue),
                                 map -> new ArrayList<>(map.values())));
                 
                 if (CollectionUtils.isNotEmpty(uniqueRenewHistoryVOList)) {
                     renewTotalMemCount = uniqueRenewHistoryVOList.size();
                 }
             }
-    
+            
             BigDecimal totalIncome = firstTotalIncome.add(renewTotalIncome);
             
             // 收入为0时，人数也为0
             firstTotalMemCount = Objects.equals(firstTotalIncome, BigDecimal.ZERO) ? NumberConstant.ZERO : firstTotalMemCount;
             renewTotalMemCount = Objects.equals(renewTotalIncome, BigDecimal.ZERO) ? NumberConstant.ZERO : renewTotalMemCount;
-    
+            
             incomeDetailVO.setFirstTotalIncome(firstTotalIncome);
             incomeDetailVO.setFirstTotalMemCount(firstTotalMemCount);
             incomeDetailVO.setRenewTotalIncome(renewTotalIncome);
@@ -783,13 +794,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         if (StringUtils.isBlank(userInfo.getPhone())) {
             log.warn("INVITATION ACTIVITY WARN! phone is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "000001", "系统异常");
+            return Triple.of(false, "100463", "二维码已失效");
         }
         
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
             log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "000001", "系统异常");
+            return Triple.of(false, "100463", "二维码已失效");
         }
         
         InvitationActivityCodeVO invitationActivityCodeVO = new InvitationActivityCodeVO();
@@ -797,8 +808,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         invitationActivityCodeVO.setTenantCode(tenant.getCode());
         invitationActivityCodeVO.setPhone(userInfo.getPhone());
         
-        InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(new LambdaQueryWrapper<InvitationActivityRecord>()
-                .eq(InvitationActivityRecord::getUid, userInfo.getUid()).eq(InvitationActivityRecord::getActivityId, invitationActivityUser.getActivityId()));
+        InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
+                new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, userInfo.getUid())
+                        .eq(InvitationActivityRecord::getActivityId, invitationActivityUser.getActivityId()));
         if (Objects.isNull(invitationActivityRecord)) {
             //第一次分享  生成分享记录
             InvitationActivityRecord invitationActivityRecordInsert = new InvitationActivityRecord();
@@ -813,8 +825,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityRecordInsert.setCreateTime(System.currentTimeMillis());
             invitationActivityRecordInsert.setUpdateTime(System.currentTimeMillis());
             
-            if (Objects.nonNull(invitationActivityUser.getFranchiseeId())) {
-                invitationActivityRecordInsert.setFranchiseeId(invitationActivityUser.getFranchiseeId());
+            InvitationActivity activity = invitationActivityService.queryByIdFromCache(invitationActivityUser.getActivityId());
+            if (Objects.nonNull(activity) && Objects.nonNull(activity.getFranchiseeId())) {
+                invitationActivityRecordInsert.setFranchiseeId(activity.getFranchiseeId());
             }
             
             invitationActivityRecordMapper.insertOne(invitationActivityRecordInsert);
@@ -857,8 +870,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         Set<Long> activityIdList = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         
         //过滤后的
-        List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream().filter(activityUser -> activityIdList.contains(activityUser.getActivityId())).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(newInvitationActivityUserList)) {
+        List<InvitationActivityUser> newInvitationActivityUserList = invitationActivityUserList.stream()
+                .filter(activityUser -> activityIdList.contains(activityUser.getActivityId())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(newInvitationActivityUserList)) {
             log.warn("INVITATION ACTIVITY WARN! all activities bound user is invalid,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
@@ -870,21 +884,23 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         StringJoiner activityIdsStr = new StringJoiner(StrUtil.COMMA);
         newInvitationActivityUserList.forEach(item -> {
-            activityIdsStr.add(item.getActivityId().toString());
+            Long activityId = item.getActivityId();
+            activityIdsStr.add(activityId.toString());
             
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
                     new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, userInfo.getUid())
-                            .eq(InvitationActivityRecord::getActivityId, item.getActivityId()));
+                            .eq(InvitationActivityRecord::getActivityId, activityId));
             
             if (Objects.isNull(invitationActivityRecord)) {
                 //第一次分享  生成分享记录
                 InvitationActivityRecord invitationActivityRecordInsert = new InvitationActivityRecord();
                 
                 BeanUtils.copyProperties(invitationActivityRecordIn, invitationActivityRecordInsert);
-                invitationActivityRecordInsert.setActivityId(item.getActivityId());
-    
-                if (Objects.nonNull(item.getFranchiseeId())) {
-                    invitationActivityRecordInsert.setFranchiseeId(item.getFranchiseeId());
+                invitationActivityRecordInsert.setActivityId(activityId);
+                
+                InvitationActivity activity = invitationActivityService.queryByIdFromCache(activityId);
+                if (Objects.nonNull(activity) && Objects.nonNull(activity.getFranchiseeId())) {
+                    invitationActivityRecordInsert.setFranchiseeId(activity.getFranchiseeId());
                 }
                 
                 invitationActivityRecordList.add(invitationActivityRecordInsert);
@@ -902,39 +918,39 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         return Triple.of(true, null, invitationActivityCodeVO);
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query) {
         if (!redisService.setNx(CacheConstant.CACHE_SCAN_INTO_ACTIVITY_LOCK + SecurityUtils.getUid(), "1", 2000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("INVITATION ACTIVITY WARN! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-    
+        
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfoExtra)) {
             log.warn("joinActivity  WARN! Not found userInfoExtra, joinUid={}", SecurityUtils.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
-    
+        
         // 530活动互斥判断
         R canJoinActivity = merchantJoinRecordService.canJoinActivity(userInfo, userInfoExtra, null, null);
         if (!canJoinActivity.isSuccess()) {
             return Triple.of(false, canJoinActivity.getErrCode(), canJoinActivity.getErrMsg());
         }
-    
+        
         String decrypt = null;
         try {
             decrypt = codeDeCoder(query.getCode());
         } catch (Exception e) {
             log.error("INVITATION ACTIVITY ERROR! decode fail,uid={},code={}", SecurityUtils.getUid(), query.getCode());
         }
-    
+        
         if (StringUtils.isBlank(decrypt)) {
             log.warn("INVITATION ACTIVITY WARN! invitation activity code decrypt error,code={}, uid={}", query.getCode(), userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
@@ -945,57 +961,57 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.warn("INVITATION ACTIVITY WARN! illegal code! code={}, uid={}", query.getCode(), userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
+        
         String activityIdStr = split[NumberConstant.ZERO];
         if (StringUtils.isEmpty(activityIdStr)) {
             log.warn("INVITATION ACTIVITY WARN! not found invitationActivity, uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
+        
         Long invitationUid = Long.parseLong(split[NumberConstant.ONE]);
         // 是否自己扫自己的码
         if (Objects.equals(userInfo.getUid(), invitationUid)) {
             log.info("INVITATION ACTIVITY INFO! illegal operate! invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(true, null, null);
         }
-    
+        
         UserInfo invitationUserInfo = userInfoService.queryByUidFromCache(invitationUid);
         if (Objects.isNull(invitationUserInfo)) {
             log.warn("INVITATION ACTIVITY WARN! not found invitationUserInfo,invitationUid={},uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
+        
         List<Long> activityIdList = Arrays.stream(activityIdStr.split(String.valueOf(StrUtil.C_COMMA))).map(Long::valueOf).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(activityIdList)) {
             log.warn("INVITATION ACTIVITY WARN! joinActivity activityIdList is empty,uid={}", userInfo.getUid());
             return Triple.of(false, "100463", "二维码已失效");
         }
-    
+        
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivities)) {
             log.warn("INVITATION ACTIVITY WARN! joinActivity invitationActivities is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
-    
+        
         List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(invitationUid);
         if (CollectionUtils.isEmpty(invitationActivityUserList)) {
             log.warn("INVITATION ACTIVITY WARN! joinActivity invitationActivityUserList is empty, invitationUid={}, uid={}", invitationUid, userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
-    
-        Set<Long> invitationActivitiesSet =  invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
-        Set<Long> invitationActivityUserSet =  invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
+        
+        Set<Long> invitationActivitiesSet = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
+        Set<Long> invitationActivityUserSet = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
         
         //过滤掉未上线的活动
         Set<Long> newActivityIdSet1 = activityIdList.stream().filter(invitationActivitiesSet::contains).collect(Collectors.toSet());
-        if(CollectionUtils.isEmpty(newActivityIdSet1)) {
+        if (CollectionUtils.isEmpty(newActivityIdSet1)) {
             log.warn("INVITATION ACTIVITY WARN! joinActivity activities in newActivityIdSet1 are all down,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
-    
+        
         //过滤掉邀请人解绑的活动
-        Set<Long> newActivityIdSet2 =  newActivityIdSet1.stream().filter(invitationActivityUserSet::contains).collect(Collectors.toSet());
-        if(CollectionUtils.isEmpty(newActivityIdSet2)) {
+        Set<Long> newActivityIdSet2 = newActivityIdSet1.stream().filter(invitationActivityUserSet::contains).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(newActivityIdSet2)) {
             log.warn("INVITATION ACTIVITY WARN! joinActivity activities in newActivityIdSet2 are all down,uid={}", userInfo.getUid());
             return Triple.of(false, "100399", "该活动已下架，二维码失效");
         }
@@ -1010,17 +1026,17 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 log.warn("INVITATION ACTIVITY WARN! user already join invitation activity,activityId={},uid={}", activityId, userInfo.getUid());
                 return Triple.of(true, "100398", "您已参与过该活动，无法重复参加");
             }
-        
+            
             // 获取活动记录
             InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(
                     new LambdaQueryWrapper<InvitationActivityRecord>().eq(InvitationActivityRecord::getUid, invitationUid).eq(InvitationActivityRecord::getActivityId, activityId));
-        
+            
             // 获取活动
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
-        
+            
             //更新活动邀请次数
             invitationActivityRecordMapper.addShareCount(invitationActivityRecord.getId());
-    
+            
             // 计算活动有效期
             long expiredTime;
             if (Objects.nonNull(invitationActivity.getHours()) && !Objects.equals(invitationActivity.getHours(), NumberConstant.ZERO)) {
@@ -1042,24 +1058,25 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityJoinHistoryInsert.setTenantId(TenantContextHolder.getTenantId());
             invitationActivityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
             invitationActivityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
-    
+            
             Long activityFranchiseeId = invitationActivity.getFranchiseeId();
             if (Objects.nonNull(activityFranchiseeId)) {
                 invitationActivityJoinHistoryInsert.setFranchiseeId(activityFranchiseeId);
             }
-        
+            
             invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
-    
+            
             if (needUpdateUserInfoExtra) {
                 // 530会员扩展表更新最新参与活动类型
-                userInfoExtraService.updateByUid(UserInfoExtra.builder().uid(userInfo.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode()).build());
+                userInfoExtraService.updateByUid(
+                        UserInfoExtra.builder().uid(userInfo.getUid()).latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode()).build());
                 needUpdateUserInfoExtra = false;
             }
-        
+            
         }
         return Triple.of(true, null, null);
     }
-
+    
     @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1070,42 +1087,43 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.info("INVITATION ACTIVITY INFO!not found activityJoinHistory,uid={}", userInfo.getUid());
             return;
         }
-
+        
         InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityJoinHistory.getActivityId());
         if (Objects.isNull(invitationActivity)) {
             log.error("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), activityJoinHistory.getActivityId());
             return;
         }
-
+        
         //是否有上架的套餐返现活动
         List<InvitationActivity> invitationActivitys = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
         if (CollectionUtils.isEmpty(invitationActivitys)) {
             log.info("INVITATION ACTIVITY INFO!invitationActivitys is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return;
         }
-
+        
         List<Long> activityIds = invitationActivitys.stream().map(InvitationActivity::getId).collect(Collectors.toList());
         if (!activityIds.contains(invitationActivity.getId())) {
             log.info("INVITATION ACTIVITY INFO!enable invitationActivitys not contains user join activity,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
             return;
         }
-
+        
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.info("INVITATION ACTIVITY INFO!not found electricityMemberCardOrder,orderId={},uid={}", orderId, userInfo.getUid());
             return;
         }
-
+        
         //是否购买的是活动指定的套餐
         List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
         if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(electricityMemberCardOrder.getMemberCardId())) {
-            log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), electricityMemberCardOrder.getMemberCardId(), userInfo.getUid());
+            log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), electricityMemberCardOrder.getMemberCardId(),
+                    userInfo.getUid());
             return;
         }
-
+        
         //返现金额
         BigDecimal rewardAmount = null;
-
+        
         //首次购买套餐
         if (electricityMemberCardOrder.getPayCount() == 1) {
             //首次购买需要判断活动是否过期
@@ -1113,7 +1131,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 log.error("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
                 return;
             }
-
+            
             rewardAmount = invitationActivity.getFirstReward();
             //修改参与状态
             InvitationActivityJoinHistory activityJoinHistoryUpdate = new InvitationActivityJoinHistory();
@@ -1123,7 +1141,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             activityJoinHistoryUpdate.setPayCount(electricityMemberCardOrder.getPayCount());
             activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
             invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
-
+            
             //给邀请人增加邀请成功人数及返现金额
             this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
         } else {
@@ -1132,7 +1150,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 log.error("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
                 return;
             }
-
+            
             rewardAmount = invitationActivity.getOtherReward();
             //保存参与记录
             InvitationActivityJoinHistory activityJoinHistoryInsert = new InvitationActivityJoinHistory();
@@ -1152,15 +1170,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryInsert.setFranchiseeId(activityJoinHistory.getFranchiseeId());
             }
             invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
-
+            
             //给邀请人增加返现金额
             this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
         }
-
+        
         //处理返现
         userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleInvitationActivityByPackage(UserInfo userInfo, String orderNo, Integer packageType) {
@@ -1170,15 +1188,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.info("Invitation activity info! not found activityJoinHistoryList,uid={}", userInfo.getUid());
             return;
         }
-    
+        
         // 解析状态 用于后面判断非首次购买是否成功
         Set<Integer> activityJoinHistoryStatusSet = activityJoinHistoryList.stream().map(InvitationActivityJoinHistory::getStatus).collect(Collectors.toSet());
-    
+        
         // 根据activityId去重
         activityJoinHistoryList = new ArrayList<>(
                 activityJoinHistoryList.stream().collect(Collectors.toMap(InvitationActivityJoinHistory::getActivityId, history -> history, (existing, replacement) -> existing))
                         .values());
-    
+        
         // 获取租户下所有上架的套餐返现活动
         Integer tenantId = userInfo.getTenantId();
         List<InvitationActivity> invitationActivities = invitationActivityService.selectUsableActivity(tenantId);
@@ -1186,18 +1204,18 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.info("Invitation activity info! invitationActivities is empty,tenantId={},uid={}", tenantId, userInfo.getUid());
             return;
         }
-    
+        
         // 对参与过的活动进行过滤，过滤掉未上架的活动
         Set<Long> activityIdsSet = invitationActivities.stream().map(InvitationActivity::getId).collect(Collectors.toSet());
         activityJoinHistoryList = activityJoinHistoryList.stream().filter(history -> activityIdsSet.contains(history.getActivityId())).collect(Collectors.toList());
-    
+        
         //增加换电套餐和租车及车电一体套餐的判断逻辑
         Long packageId;
         Integer payCount = userInfo.getPayCount();
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(packageType)) {
             // UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromDB(userInfo.getUid());
             ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
-        
+            
             if (Objects.isNull(electricityMemberCardOrder)) {
                 log.info("Invitation activity info, not found battery package order,orderId={},uid={}", orderNo, userInfo.getUid());
                 return;
@@ -1210,37 +1228,37 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 log.info("Invitation activity info, Not found for car rental package, order number = {}", orderNo);
                 return;
             }
-        
+            
             //根据当前用户uid, 订单号, 购买成功等条件查询，当前套餐的购买记录
             CarRentalPackageOrderQryModel queryModel = new CarRentalPackageOrderQryModel();
             queryModel.setUid(userInfo.getUid());
             queryModel.setPayState(PayStateEnum.SUCCESS.getCode());
-        
+            
             packageId = carRentalPackageOrderPO.getRentalPackageId();
         }
-    
+        
         // 获取购买的套餐绑定的所有活动
         List<Long> activityIdsByPackage = invitationActivityMemberCardService.selectActivityIdByPackageIdAndPackageType(packageId, packageType);
         if (CollectionUtils.isEmpty(activityIdsByPackage)) {
             log.info("Invitation activity info! package not bound to any activity, package type = {}, package Id={},uid={}", packageType, packageId, userInfo.getUid());
             return;
         }
-    
+        
         // 获取历史记录和本次参与活动的交集
         Map<Long, InvitationActivityJoinHistory> intersectionActivityMap = activityJoinHistoryList.stream().filter(item -> activityIdsByPackage.contains(item.getActivityId()))
                 .collect(Collectors.toMap(InvitationActivityJoinHistory::getActivityId, item -> item));
-    
+        
         // 由于规则:参与的所有活动下的套餐不会重复，所以上述交集元素唯一
         if (NumberUtil.equals(intersectionActivityMap.size(), NumberConstant.ZERO)) {
             log.info("Invitation activity info! package not bound to activity, package type = {}, package Id={},uid={}", packageType, packageId, userInfo.getUid());
             return;
         }
-    
+        
         intersectionActivityMap.entrySet().stream().findFirst().ifPresent(entry -> {
             //本次购买套餐的活动
             Long activityId = entry.getKey();
             InvitationActivityJoinHistory activityJoinHistory = entry.getValue();
-    
+            
             //获取邀请人绑定的所有活动，判断当前活动是否已解绑，如果解绑，直接返回
             List<InvitationActivityUser> invitationActivityUserList = invitationActivityUserService.selectByUid(activityJoinHistory.getUid());
             Set<Long> activityIdUserSet = invitationActivityUserList.stream().map(InvitationActivityUser::getActivityId).collect(Collectors.toSet());
@@ -1248,13 +1266,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 log.info("Invitation activity info! the activity is bound from inviter, inviter uid={}", activityJoinHistory.getUid());
                 return;
             }
-    
+            
             // 获取购买套餐的活动
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityId);
-        
+            
             //返现金额
             BigDecimal rewardAmount;
-        
+            
             //首次购买套餐
             if (NumberUtil.equals(payCount, NumberConstant.ONE)) {
                 //首次购买需要判断活动是否过期
@@ -1262,7 +1280,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                     log.error("Invitation activity error! activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
                     return;
                 }
-            
+                
                 log.info("handle invitation activity for first purchase package. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(),
                         activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
                 rewardAmount = invitationActivity.getFirstReward();
@@ -1276,10 +1294,10 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryUpdate.setPackageType(packageType);
                 activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
                 invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
-            
+                
                 //给邀请人增加邀请成功人数及返现金额
                 this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
-    
+                
                 //修改会员扩展表活动类型
                 userInfoExtraService.updateByUid(
                         UserInfoExtra.builder().uid(activityJoinHistory.getJoinUid()).activitySource(UserInfoActivitySourceEnum.SUCCESS_INVITATION_ACTIVITY.getCode())
@@ -1302,11 +1320,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 
                 log.info("handle invitation activity for renewal package. join record id = {}, join uid = {}, inviter uid = {}", activityJoinHistory.getRecordId(),
                         activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
-    
+                
                 rewardAmount = invitationActivity.getOtherReward();
                 
                 // 保存参与记录，判断非首次购买有没有已参与状态的历史记录，有-更新，没有-新增
-                InvitationActivityJoinHistory existHistory = invitationActivityJoinHistoryService.queryByJoinUidAndActivityId(activityJoinHistory.getJoinUid(), activityJoinHistory.getActivityId());
+                InvitationActivityJoinHistory existHistory = invitationActivityJoinHistoryService.queryByJoinUidAndActivityId(activityJoinHistory.getJoinUid(),
+                        activityJoinHistory.getActivityId());
                 InvitationActivityJoinHistory insertOrUpdateHistory = new InvitationActivityJoinHistory();
                 insertOrUpdateHistory.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
                 insertOrUpdateHistory.setMoney(rewardAmount);
@@ -1318,7 +1337,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                     insertOrUpdateHistory.setId(existHistory.getId());
                     insertOrUpdateHistory.setUpdateTime(System.currentTimeMillis());
                     invitationActivityJoinHistoryService.update(insertOrUpdateHistory);
-                } else{
+                } else {
                     insertOrUpdateHistory.setUid(activityJoinHistory.getUid());
                     insertOrUpdateHistory.setRecordId(activityJoinHistory.getRecordId());
                     insertOrUpdateHistory.setJoinUid(activityJoinHistory.getJoinUid());
@@ -1328,7 +1347,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                     insertOrUpdateHistory.setTenantId(userInfo.getTenantId());
                     insertOrUpdateHistory.setCreateTime(System.currentTimeMillis());
                     insertOrUpdateHistory.setUpdateTime(System.currentTimeMillis());
-    
+                    
                     Long activityFranchiseeId = invitationActivity.getFranchiseeId();
                     if (Objects.nonNull(activityFranchiseeId)) {
                         insertOrUpdateHistory.setFranchiseeId(activityFranchiseeId);
@@ -1347,12 +1366,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             log.info("handle invitation activity for package end. join record id = {}, join uid = {}, invitor uid = {}", activityJoinHistory.getRecordId(),
                     activityJoinHistory.getJoinUid(), activityJoinHistory.getUid());
         });
-    
+        
     }
-
+    
     private static String codeEnCoder(String activityIds, Long uid) {
         String encrypt = AESUtils.encrypt(activityIds + ":" + uid);
-
+        
         if (StringUtils.isNotBlank(encrypt)) {
             Base64.Encoder encoder = Base64.getUrlEncoder();
             byte[] base64Result = encoder.encode(encrypt.getBytes());
@@ -1360,16 +1379,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
         return null;
     }
-
+    
     private static String codeDeCoder(String code) {
         if (StringUtils.isBlank(code)) {
             return null;
         }
-
+        
         Base64.Decoder decoder = Base64.getUrlDecoder();
         byte[] decode = decoder.decode(code.getBytes());
         String base64Result = new String(decode);
-
+        
         if (StringUtils.isNotBlank(base64Result)) {
             return AESUtils.decrypt(base64Result);
         }

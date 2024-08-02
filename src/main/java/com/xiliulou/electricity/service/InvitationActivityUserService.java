@@ -33,15 +33,6 @@ public interface InvitationActivityUserService {
     InvitationActivityUser queryByIdFromCache(Long id);
     
     /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    List<InvitationActivityUser> queryAllByLimit(int offset, int limit);
-    
-    /**
      * 新增数据
      *
      * @param invitationActivityUser 实例对象
@@ -71,7 +62,7 @@ public interface InvitationActivityUserService {
     
     Triple<Boolean, String, Object> save(InvitationActivityUserSaveQuery query);
     
-    Triple<Boolean, String, Object> delete(Long id, List<Long> franchiseeIds);
+    Triple<Boolean, String, Object> delete(Long id);
     
     List<InvitationActivityUser> selectByUid(Long uid);
 }
