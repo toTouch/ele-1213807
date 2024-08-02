@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -1266,11 +1267,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      * @return Boolean=false继续走正常换电
      */
     private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery) {
-        if (Objects.isNull(electricityBattery)) {
-            log.warn("Orderv3 WARN! electricityBattery is null, currentUid is {}", userInfo.getUid());
-            return Pair.of(false, null);
-        }
-        
         Long uid = userInfo.getUid();
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
@@ -1285,18 +1281,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 3 mins,lastOrder is {} ", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
-        String userBindingBatterySn = electricityBattery.getSn();
-        if (StrUtil.isEmpty(userBindingBatterySn)) {
-            log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.userBindingBatterySn is null, uid is {}", uid);
-            return Pair.of(false, null);
-        }
         
         if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             // 上一个成功
-            return lastExchangeSuccessHandler(lastOrder, cabinet, userBindingBatterySn);
+            return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery);
         } else {
             // 上一个失败
-            return lastExchangeFailHandler(lastOrder, cabinet, userBindingBatterySn, userInfo);
+            return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo);
         }
     }
     
@@ -1333,7 +1324,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return true;
     }
     
-    private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, String userBindingBatterySn) {
+    private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery) {
+        // 上次成功不可能为空
+        if (Objects.isNull(electricityBattery) || (Objects.nonNull(electricityBattery) && StrUtil.isEmpty(electricityBattery.getSn()))) {
+            throw new CustomBusinessException("上次换电成功，但是用户绑定电池为空");
+        }
+        
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS);
@@ -1350,13 +1346,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 上一次成功，这次只能返回新仓门
         vo.setCell(lastOrder.getNewCellNo());
         
+        
         // 用户电池是否在仓
-        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
         if (Objects.nonNull(cabinetBox)) {
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             // 后台自主开仓
-            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), userBindingBatterySn, lastOrder, cabinet, "后台自助开仓");
+            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
             vo.setSessionId(sessionId);
             return Pair.of(true, vo);
         } else {
@@ -1367,7 +1364,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
-    private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, String userBindingBatterySn, UserInfo userInfo) {
+    private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo) {
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
@@ -1385,18 +1382,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
         if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
                 lastOrder.getOldCellNo(), msg))) {
-            return oldCellCheckFail(lastOrder, userBindingBatterySn, vo, cabinet, userInfo);
+            return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
         }
         
         //  新仓门&开门失败
         if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
-            return newCellOpenFail(lastOrder, userBindingBatterySn, vo, cabinet);
+            return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet);
         }
         
         return Pair.of(false, null);
     }
     
-    private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet) {
+    private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet) {
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
@@ -1407,6 +1404,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());
+        
+        // 用户绑定电池为空，返回自主开仓
+        if (Objects.isNull(electricityBattery) || (Objects.nonNull(electricityBattery) && StrUtil.isEmpty(electricityBattery.getSn()))) {
+            // 没有在仓，需要返回前端仓门号
+            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            return Pair.of(true, vo);
+        }
+        String userBindingBatterySn = electricityBattery.getSn();
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
@@ -1425,7 +1430,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Pair<Boolean, Object> oldCellCheckFail(ElectricityCabinetOrder lastOrder, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
+    private Pair<Boolean, Object> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
             UserInfo userInfo) {
         
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
@@ -1438,6 +1443,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setOrderId(lastOrder.getOrderId());
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         
+        // 用户绑定电池为空，返回自主开仓
+        if (Objects.isNull(electricityBattery) || (Objects.nonNull(electricityBattery) && StrUtil.isEmpty(electricityBattery.getSn()))) {
+            // 不在仓，前端会自主开仓
+            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setCell(lastOrder.getOldCellNo());
+            return Pair.of(true, vo);
+        }
+        
+        String userBindingBatterySn = electricityBattery.getSn();
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
