@@ -171,7 +171,7 @@
             and tia.name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
         <if test="uid != null">
-            and iajh.uid = #{uid}
+            and iau.uid = #{uid}
         </if>
         <if test="status != null">
             and tia.status = #{status}

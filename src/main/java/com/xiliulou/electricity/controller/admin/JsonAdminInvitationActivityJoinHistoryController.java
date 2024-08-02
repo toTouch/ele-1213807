@@ -41,7 +41,8 @@ public class JsonAdminInvitationActivityJoinHistoryController {
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "activityId", required = false) Long activityId,
             @RequestParam(value = "id", required = false) Long id, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "joinUid", required = false) Long joinUid, @RequestParam(value = "activityName", required = false) String activityName,
-            @RequestParam(value = "payCount", required = false) Integer payCount, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "payCount", required = false) Integer payCount, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "uid", required = false) Long uid) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -68,7 +69,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         }
         
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().size(size).offset(offset).joinUid(joinUid).recordId(id).beginTime(beginTime)
-                .endTime(endTime).activityId(activityId).activityName(activityName).status(status).payCount(payCount).tenantId(TenantContextHolder.getTenantId())
+                .endTime(endTime).activityId(activityId).activityName(activityName).status(status).payCount(payCount).tenantId(TenantContextHolder.getTenantId()).uid(uid)
                 .franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
         
         return R.ok(invitationActivityJoinHistoryService.selectByPage(query));
@@ -79,7 +80,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "joinUid", required = false) Long joinUid,
             @RequestParam(value = "activityName", required = false) String activityName, @RequestParam(value = "payCount", required = false) Integer payCount,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "uid", required = false) Long uid) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -100,6 +101,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().joinUid(joinUid).recordId(id).beginTime(beginTime).endTime(endTime)
                 .activityId(activityId).activityName(activityName).status(status).payCount(payCount).tenantId(TenantContextHolder.getTenantId()).franchiseeIds(franchiseeIds)
+                .uid(uid)
                 .franchiseeId(franchiseeId).build();
         
         return R.ok(invitationActivityJoinHistoryService.selectByPageCount(query));
