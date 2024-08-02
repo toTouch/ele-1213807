@@ -120,7 +120,7 @@ public class User {
 
 
 	/**
-	 * 用户类型  0：超级管理员，1:普通管理员  11：普通微信小程序用户
+	 * 用户类型  0：超级管理员，1:普通管理员  11：普通小程序用户
 	 */
 	public static final Integer TYPE_USER_SUPER = 0;
 	@Deprecated
@@ -132,7 +132,7 @@ public class User {
 	
 	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
 	
-	public static final Integer TYPE_USER_NORMAL_ALI_PAY = 16;
+//	public static final Integer TYPE_USER_NORMAL_ALI_PAY = 16;
 	
 	public static final Integer TYPE_USER_NORMAL_ADMIN = 1;
 	

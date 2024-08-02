@@ -146,7 +146,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
         String appId = alipayAppConfig.getAppId();
         
         try {
-            //解析手机号 TODO
+            //解析手机号
             String phone = decryptAliPayResponseData(data, iv, alipayAppConfig);
             
             //解析openId
@@ -157,10 +157,10 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             Pair<Boolean, UserOauthBind> existsOpenId = checkAliPayOpenIdExists(openId, UserOauthBind.SOURCE_ALI_PAY, tenantId);
             
             //检查手机号是否存在
-            Pair<Boolean, User> existPhone = checkPhoneExists(phone, User.TYPE_USER_NORMAL_ALI_PAY, tenantId);
+            Pair<Boolean, User> existPhone = checkPhoneExists(phone, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
             
             //1.两个都不存在，创建用户
-            if (Boolean.TRUE.equals(!existPhone.getLeft()) && !existsOpenId.getLeft()) {
+            if (Boolean.TRUE.equals(!existPhone.getLeft()) && Boolean.TRUE.equals(!existsOpenId.getLeft())) {
                 return createUserAndOauthBind(phone, openId, tenantId);
             }
             
@@ -312,7 +312,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
     
     private SecurityUser createUserAndOauthBind(String phone, String openId, Integer tenantId) {
         User insertUser = User.builder().updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone).lockFlag(User.USER_UN_LOCK)
-                .gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_NORMAL_ALI_PAY).name("").salt("").avatar("").tenantId(tenantId)
+                .gender(User.GENDER_MALE).lang(MessageUtils.LOCALE_ZH_CN).userType(User.TYPE_USER_NORMAL_WX_PRO).name("").salt("").avatar("").tenantId(tenantId)
                 .loginPwd(customPasswordEncoder.encode("1234#56!^1mjh")).delFlag(User.DEL_NORMAL).build();
         User insert = userService.insert(insertUser);
         

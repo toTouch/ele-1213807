@@ -87,7 +87,7 @@ public class JsonAdminUserController extends BaseController {
                       @RequestParam(value = "uid", required = false) Long uid,
                       @RequestParam(value = "name", required = false) String name,
                       @RequestParam(value = "phone", required = false) String phone,
-                      @RequestParam(value = "type", required = false) String typeList,
+                      @RequestParam(value = "type", required = false) Integer type,
                       @RequestParam(value = "beginTime", required = false) Long startTime,
                       @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -106,11 +106,6 @@ public class JsonAdminUserController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok(Collections.EMPTY_LIST);
         }
-    
-        List<Integer> types = splitStringToIntegers(typeList);
-        if(StringUtils.isBlank(typeList) || CollectionUtils.isEmpty(types)){
-            return R.fail("ELECTRICITY.0007", "参数不合法");
-        }
         
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -118,14 +113,14 @@ public class JsonAdminUserController extends BaseController {
             tenantId = null;
         }
     
-        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, types, startTime, endTime, tenantId));
+        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime, tenantId));
     }
 
     @GetMapping("/user/queryCount")
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "type", required = false) String typeList,
+            @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "beginTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
     
@@ -137,19 +132,14 @@ public class JsonAdminUserController extends BaseController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.ok(NumberConstant.ZERO);
         }
-    
-        List<Integer> types = splitStringToIntegers(typeList);
-        if(StringUtils.isBlank(typeList) || CollectionUtils.isEmpty(types)){
-            return R.fail("ELECTRICITY.0007", "参数不合法");
-        }
-    
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         if (SecurityUtils.isAdmin()) {
             tenantId = null;
         }
     
-        return returnPairResult(userService.queryCount(uid, name, phone, types, startTime, endTime, tenantId));
+        return returnPairResult(userService.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
     }
 
     @GetMapping("/user/scope/{uid}")

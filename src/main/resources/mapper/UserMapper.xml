@@ -93,17 +93,11 @@
 			<if test="name != null and name != '' ">
 				and name like concat('%',#{name},'%')
 			</if>
-<!--			<if test="type != null and type !=-1">-->
-<!--				and user_type = #{type}-->
-<!--			</if>-->
-			<if test="type != null and type.size > 0">
-				and user_type in
-				<foreach collection="type" item="id" index="index" open="(" close=")" separator=",">
-					#{id}
-				</foreach>
+			<if test="type != null and type !=-1">
+				and user_type = #{type}
 			</if>
 			<if test="type != null and type ==-1">
-				and user_type not in (11, 12, 13, 14, 16)
+				and user_type not in (11, 12, 13, 14)
 			</if>
 			<if test="phone != null and phone != ''">
 				and phone=#{phone}
@@ -134,17 +128,11 @@
 			<if test="name != null and name != '' ">
 				and name like concat('%',#{name},'%')
 			</if>
-<!--			<if test="type != null and type !=-1">-->
-<!--				and user_type in #{type}-->
-<!--			</if>-->
-			<if test="type != null and type.size > 0">
-				and user_type in
-				<foreach collection="type" item="id" index="index" open="(" close=")" separator=",">
-					#{id}
-				</foreach>
+			<if test="type != null and type !=-1">
+				and user_type in #{type}
 			</if>
 			<if test="type != null and type ==-1">
-				and user_type not in (11, 12, 13, 14, 16)
+				and user_type not in (11, 12, 13, 14)
 			</if>
 			<if test="phone != null and phone != ''">
 				and phone=#{phone}
