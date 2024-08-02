@@ -1916,12 +1916,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         // 根据openId判断是否可解绑微信
-        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, tenantId);
-        if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
-            vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
-        } else {
-            vo.setBindWX(UserOauthBind.STATUS_UN_BIND_VX);
-        }
+//        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, tenantId);
+//        if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
+//            vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
+//        } else {
+//            vo.setBindWX(UserOauthBind.STATUS_UN_BIND_VX);
+//        }
         
         // 邀请人是否可被修改
         Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
