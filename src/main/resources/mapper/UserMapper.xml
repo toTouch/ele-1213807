@@ -129,7 +129,7 @@
 				and name like concat('%',#{name},'%')
 			</if>
 			<if test="type != null and type !=-1">
-				and user_type in #{type}
+				and user_type = #{type}
 			</if>
 			<if test="type != null and type ==-1">
 				and user_type not in (11, 12, 13, 14)
