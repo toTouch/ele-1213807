@@ -753,7 +753,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         List<ShareMoneyActivity> list;
         // 如果没有加盟商，则查租户的活动
         if (Objects.isNull(franchiseeId) || Objects.equals(franchiseeId, NumberConstant.ZERO_L)) {
-            list = activityList.stream().filter(shareMoneyActivity -> Objects.nonNull(shareMoneyActivity.getFranchiseeId())).collect(Collectors.toList());
+            list = activityList.stream().filter(shareMoneyActivity -> Objects.isNull(shareMoneyActivity.getFranchiseeId())).collect(Collectors.toList());
         } else {
             // 如果有加盟商，则查加盟商的活动
             list = activityList.stream()
