@@ -43,8 +43,6 @@ public class InvitationActivityUser {
      * 租户id
      */
     private Integer tenantId;
-    
-    private Long franchiseeId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

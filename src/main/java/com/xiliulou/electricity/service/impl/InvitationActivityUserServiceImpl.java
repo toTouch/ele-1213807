@@ -89,19 +89,6 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         return null;
     }
     
-    
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<InvitationActivityUser> queryAllByLimit(int offset, int limit) {
-        return this.invitationActivityUserMapper.queryAllByLimit(offset, limit);
-    }
-    
     /**
      * 新增数据
      *
@@ -231,18 +218,10 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
     
     @Override
-    public Triple<Boolean, String, Object> delete(Long id, List<Long> franchiseeIds) {
+    public Triple<Boolean, String, Object> delete(Long id) {
         InvitationActivityUser invitationActivityUser = this.queryByIdFromDB(id);
         if (Objects.isNull(invitationActivityUser) || !Objects.equals(invitationActivityUser.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
-        }
-        
-        // 加盟商一致性校验
-        Long franchiseeId = invitationActivityUser.getFranchiseeId();
-        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(
-                franchiseeId)) {
-            log.warn("Delete invitationActivityUser WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
-            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         invitationActivityUserMapper.deleteById(id);
