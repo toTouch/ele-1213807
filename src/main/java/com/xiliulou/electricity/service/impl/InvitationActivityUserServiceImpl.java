@@ -222,8 +222,8 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         
         List<InvitationActivityUser> invitationActivityUsers = activityIds.stream()
                 .map(activityId -> InvitationActivityUser.builder().activityId(activityId).uid(query.getUid()).operator(SecurityUtils.getUid())
-                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                        .franchiseeId(query.getFranchiseeId()).build()).collect(Collectors.toList());
+                        .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build())
+                .collect(Collectors.toList());
         
         invitationActivityUserMapper.batchInsert(invitationActivityUsers);
         
