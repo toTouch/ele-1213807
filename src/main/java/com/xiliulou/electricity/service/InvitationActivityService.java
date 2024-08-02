@@ -72,7 +72,15 @@ public interface InvitationActivityService {
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
     
-    public List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query)
+    /**
+     * 有分页 模糊查询
+     *
+     * @param query
+     * @return List<InvitationActivity>
+     */
+    List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query);
+    
+    Integer checkUsableActivity(Integer tenantId);
     
     List<InvitationActivity> queryOnlineActivity(Integer tenantId, Long franchiseeId);
 

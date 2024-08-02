@@ -96,5 +96,9 @@ public class InvitationActivityQuery {
      */
     private List<Long> carWithBatteryPackages;
     
+    @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class})
+    private Long franchiseeId;
+    
+    private List<Long> franchiseeIds;
     
 }

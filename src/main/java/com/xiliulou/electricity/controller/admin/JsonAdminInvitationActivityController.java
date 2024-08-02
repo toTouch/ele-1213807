@@ -217,6 +217,15 @@ public class JsonAdminInvitationActivityController extends BaseController {
         return returnTripleResult(invitationActivityService.updateStatus(query));
     }
     
+    /**
+     * 套餐返现活动 活动配置page
+     *
+     * @param size
+     * @param offset
+     * @param status
+     * @param name
+     * @return
+     */
     @GetMapping("/admin/invitationActivity/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "name", required = false) String name, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
@@ -251,6 +260,37 @@ public class JsonAdminInvitationActivityController extends BaseController {
         return R.ok(invitationActivityService.selectByPage(query));
     }
     
+    /**
+     * 套餐返现活动 活动配置 模糊分页列表
+     *
+     * @param size
+     * @param offset
+     * @param name
+     * @return
+     */
+    @GetMapping("/admin/invitationActivity/pageSearch")
+    public R pageSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 20) {
+            size = 20L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
+        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return R.ok(invitationActivityService.selectByPageSearch(query));
+    }
     @GetMapping("/admin/invitationActivity/queryCount")
     public R count(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
