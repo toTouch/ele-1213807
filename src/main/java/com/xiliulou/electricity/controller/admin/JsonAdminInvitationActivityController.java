@@ -269,7 +269,8 @@ public class JsonAdminInvitationActivityController extends BaseController {
      * @return
      */
     @GetMapping("/admin/invitationActivity/pageSearch")
-    public R pageSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name) {
+    public R pageSearch(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "uid", required = false) Long uid) {
         if (size < 0 || size > 20) {
             size = 20L;
         }
@@ -287,10 +288,11 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.ok(Collections.EMPTY_LIST);
         }
         
-        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset).name(name).tenantId(TenantContextHolder.getTenantId()).uid(uid).build();
         
         return R.ok(invitationActivityService.selectByPageSearch(query));
     }
+    
     @GetMapping("/admin/invitationActivity/queryCount")
     public R count(@RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
@@ -327,7 +329,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("000200", "业务类型参数不合法");
         }
         
-        //需要获取租金不可退的套餐
+        // 需要获取租金不可退的套餐
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)) {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().offset(offset).size(size).delFlag(BatteryMemberCard.DEL_NORMAL).status(BatteryMemberCard.STATUS_UP)
                     .isRefund(BatteryMemberCard.NO).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
@@ -360,7 +362,7 @@ public class JsonAdminInvitationActivityController extends BaseController {
             return R.fail("000200", "业务类型参数不合法");
         }
         
-        //需要获取租金不可退的套餐
+        // 需要获取租金不可退的套餐
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)) {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().delFlag(BatteryMemberCard.DEL_NORMAL).status(BatteryMemberCard.STATUS_UP).isRefund(BatteryMemberCard.NO)
                     .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
