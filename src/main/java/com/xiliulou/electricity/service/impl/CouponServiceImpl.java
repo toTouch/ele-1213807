@@ -146,7 +146,7 @@ public class CouponServiceImpl implements CouponService {
         Long franchiseeId = couponQuery.getFranchiseeId();
         List<Long> franchiseeIds = couponQuery.getFranchiseeIds();
         if (CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
-            log.info("Insert coupon fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Insert coupon WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return R.fail("120240", "当前加盟商无权限操作");
         }
         
@@ -321,7 +321,7 @@ public class CouponServiceImpl implements CouponService {
     public R update(CouponQuery couponQuery) {
         Coupon oldCoupon = queryByIdFromCache(couponQuery.getId());
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("update coupon ERROR! not found coupon ! couponId={} ", couponQuery.getId());
+            log.warn("Update coupon WARN! not found coupon ! couponId={} ", couponQuery.getId());
             return R.fail("120124", "找不到优惠券");
         }
         
@@ -329,14 +329,14 @@ public class CouponServiceImpl implements CouponService {
         Integer franchiseeId = oldCoupon.getFranchiseeId();
         List<Long> franchiseeIds = couponQuery.getFranchiseeIds();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
-            log.info("Update coupon fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Update coupon WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return R.fail("120240", "当前加盟商无权限操作");
         }
         
         //检查优惠券是否已经绑定用户
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(couponQuery.getId().longValue());
         if (!CollectionUtils.isEmpty(userCoupons)) {
-            log.error("update Coupon  ERROR! this coupon already bound user ! couponId={} ", couponQuery.getId());
+            log.warn("Update coupon WARN! this coupon already bound user ! couponId={} ", couponQuery.getId());
             return R.fail("000205", "优惠券已有用户领取");
         }
         
@@ -523,7 +523,7 @@ public class CouponServiceImpl implements CouponService {
         // 加盟商一致性校验
         Integer franchiseeId = coupon.getFranchiseeId();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
-            log.info("Update coupon fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Update coupon WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -551,13 +551,13 @@ public class CouponServiceImpl implements CouponService {
         //检查是否绑定到换电套餐
         List<BatteryMemberCard> batteryMemberCardList = batteryMemberCardService.selectListByCouponId(coupon.getId().longValue());
         if (!CollectionUtils.isEmpty(batteryMemberCardList)) {
-            log.info("find the battery packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
+            log.warn("find the battery packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
             return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
         //检查是否绑定到租车或车电一体套餐
         List<CarRentalPackagePo> carRentalPackagePos = carRentalPackageService.findByCouponId(coupon.getId().longValue());
         if (!CollectionUtils.isEmpty(carRentalPackagePos)) {
-            log.info("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
+            log.warn("find the car rental packages related to coupon, cannot delete. coupon id = {}", coupon.getId());
             return Triple.of(false, "", "删除失败，优惠券已绑定套餐");
         }
         

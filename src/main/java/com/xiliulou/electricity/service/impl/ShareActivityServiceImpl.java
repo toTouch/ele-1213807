@@ -212,7 +212,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         Long franchiseeId = shareActivityAddAndUpdateQuery.getFranchiseeId();
         List<Long> franchiseeIds = shareActivityAddAndUpdateQuery.getFranchiseeIds();
         if (CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
-            log.info("Insert shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Insert shareActivity WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return R.fail("120240", "当前加盟商无权限操作");
         }
         
@@ -229,11 +229,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         if (Objects.equals(shareActivityAddAndUpdateQuery.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)
                 && shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList().size() > 1) {
             return R.fail("", "活动规则不合法！");
-        }
-        
-        // 邀请标准：去掉实名认证，统一为 购买套餐
-        if (ActivityEnum.INVITATION_CRITERIA_REAL_NAME.getCode().equals(shareActivityAddAndUpdateQuery.getInvitationCriteria())) {
-            shareActivityAddAndUpdateQuery.setInvitationCriteria(ActivityEnum.INVITATION_CRITERIA_BUY_PACKAGE.getCode());
         }
         
         //检查所选套餐是否可用
@@ -346,7 +341,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     public Triple<Boolean, String, Object> updateShareActivity(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
         ShareActivity shareActivity = queryByIdFromCache(shareActivityAddAndUpdateQuery.getId());
         if (Objects.isNull(shareActivity)) {
-            log.error("update Activity ERROR! not found Activity ! ActivityId={} ", shareActivityAddAndUpdateQuery.getId());
+            log.warn("update Activity WARN! not found Activity ! ActivityId={} ", shareActivityAddAndUpdateQuery.getId());
             return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
         }
         
@@ -359,7 +354,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         Integer franchiseeId = shareActivity.getFranchiseeId();
         List<Long> franchiseeIds = shareActivityAddAndUpdateQuery.getFranchiseeIds();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
-            log.info("Update shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Update shareActivity WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
@@ -406,7 +401,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     public R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
         ShareActivity oldShareActivity = queryByIdFromCache(shareActivityAddAndUpdateQuery.getId());
         if (Objects.isNull(oldShareActivity)) {
-            log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", shareActivityAddAndUpdateQuery.getId());
+            log.warn("Update Activity WARN! not found Activity ! ActivityId={} ", shareActivityAddAndUpdateQuery.getId());
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
         
@@ -420,7 +415,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         Integer franchiseeId = oldShareActivity.getFranchiseeId();
         List<Long> franchiseeIds = shareActivityAddAndUpdateQuery.getFranchiseeIds();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
-            log.info("Update shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Update shareActivity WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return R.fail("120240", "当前加盟商无权限操作");
         }
         
@@ -1089,7 +1084,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     public R<?> removeById(Long id, List<Long> franchiseeIds) {
         ShareActivity shareActivity = this.queryByIdFromCache(Math.toIntExact(id));
         if (Objects.isNull(shareActivity)) {
-            log.warn("delete Activity WARN! not found Activity ! ActivityId={} ", id);
+            log.warn("Delete Activity WARN! not found Activity ! ActivityId={} ", id);
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
         
@@ -1101,7 +1096,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         // 加盟商一致性校验
         Integer franchiseeId = shareActivity.getFranchiseeId();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {
-            log.info("Remove shareActivity fail! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            log.warn("Remove shareActivity WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
             return R.fail("120240", "当前加盟商无权限操作");
         }
         
@@ -1140,14 +1135,22 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             return null;
         }
         
-        List<ShareActivity> activityListByFranchisee = activityList.stream()
-                .filter(shareActivity -> Objects.nonNull(shareActivity.getFranchiseeId()) && Objects.equals(shareActivity.getFranchiseeId().longValue(), franchiseeId))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(activityListByFranchisee)) {
-            return activityListByFranchisee.get(0);
+        List<ShareActivity> list;
+        // 如果没有加盟商，则查租户的活动
+        if (Objects.isNull(franchiseeId) || Objects.equals(franchiseeId, NumberConstant.ZERO_L)) {
+            list = activityList.stream().filter(shareActivity -> Objects.nonNull(shareActivity.getFranchiseeId())).collect(Collectors.toList());
+        } else {
+            // 如果有加盟商，则查加盟商的活动
+            list = activityList.stream()
+                    .filter(shareActivity -> Objects.nonNull(shareActivity.getFranchiseeId()) && Objects.equals(shareActivity.getFranchiseeId().longValue(), franchiseeId))
+                    .collect(Collectors.toList());
         }
         
-        return activityList.get(0);
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.get(0);
+        }
+        
+        return null;
     }
     
 }
