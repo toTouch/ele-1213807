@@ -79,8 +79,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     
     Integer verifyIdNumberExist(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
     
-    List<UserInfoSearchVo> userInfoSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("tenantId") Integer tenantId,
-            @Param("franchiseeId") Long franchiseeId);
+    List<UserInfoSearchVo> userInfoSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("tenantId") Integer tenantId);
     
     List<UserBatteryInfoVO> queryListByCarMemberCardExpireTime(@Param("query") UserInfoQuery userInfoQuery);
     
