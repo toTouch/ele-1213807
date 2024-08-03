@@ -220,9 +220,6 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         
-        log.warn("normalOpenFullyCellHandlerIot info! takeBatteryHandler.orderStatus not is success, sessionId is {},orderStatus is {}", openFullCellRsp.getSessionId(),
-                openFullCellRsp.getOrderStatus());
-        
         UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("normalOpenFullyCellHandlerIot error! userInfo is null!uid={},sessionId={},orderId={}", cabinetOrder.getUid(), openFullCellRsp.getSessionId(),
