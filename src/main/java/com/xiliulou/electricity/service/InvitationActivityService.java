@@ -80,8 +80,6 @@ public interface InvitationActivityService {
      */
     List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query);
     
-    Integer checkUsableActivity(Integer tenantId);
-    
     List<InvitationActivity> queryOnlineActivity(Integer tenantId, Long franchiseeId);
 
     Triple<Boolean, String, Object> activityInfo();
