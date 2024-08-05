@@ -104,6 +104,14 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         return this.invitationActivityMapper.selectBySearch(query);
     }
     
+    @Override
+    public List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query) {
+        if (Objects.isNull(query.getUid())) {
+            return this.invitationActivityMapper.selectByPageSearchNoUid(query);
+        }
+        return this.invitationActivityMapper.selectByPageSearch(query);
+    }
+    
     /**
      * 通过ID查询单条数据从DB
      *

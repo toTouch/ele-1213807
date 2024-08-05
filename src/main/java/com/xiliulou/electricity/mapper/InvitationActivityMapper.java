@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
+import com.xiliulou.electricity.vo.InvitationActivitySearchVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -65,6 +66,10 @@ public interface InvitationActivityMapper extends BaseMapper<InvitationActivity>
     
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
     
+    List<InvitationActivitySearchVO> selectByPageSearchNoUid(InvitationActivityQuery query);
+    
+    
+    List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query);
     /**
      * <p>
      * Description: removeById 9. 活动管理-套餐返现活动里面的套餐配置记录想能够手动删除
