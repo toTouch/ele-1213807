@@ -201,7 +201,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
             log.debug("EXCHANGE ORDER INFO! setNewSelfOpen.setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
-            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 3L,
+            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 5L,
                     TimeUnit.MINUTES);
             
             //处理放入电池的相关信息
