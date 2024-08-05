@@ -234,7 +234,7 @@
                 </foreach>
             </if>
         </where>
-        order by tjsmah.update_time desc
+        order by tjsmah.update_time desc,tjsmah.id desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
