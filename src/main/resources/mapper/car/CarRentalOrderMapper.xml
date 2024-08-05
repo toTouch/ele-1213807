@@ -24,6 +24,7 @@
         <result property="rentalState" column="rental_state" jdbcType="INTEGER" />
         <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="channel" column="channel" jdbcType="VARCHAR" />
     </resultMap>
 
     <!-- 表名 -->
@@ -36,7 +37,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `pay_type`, `rental_state`, `audit_time`, `remark`
+        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `pay_type`, `rental_state`, `audit_time`, `remark`,`channel`
     </sql>
 
     <!-- 全部字段 -->
@@ -68,6 +69,7 @@
                 #{storeId}
             </foreach>
         </if>
+        <if test=" channel != null and channel != '' "> AND `channel` = #{channel} </if>
     </sql>
 
     <!-- 条件新增字段 -->
@@ -91,6 +93,7 @@
             <if test=" rentalState != null "> `rental_state`, </if>
             <if test=" auditTime != null "> `audit_time`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" channel != null and channel != '' "> `channel`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -114,6 +117,7 @@
             <if test=" rentalState != null "> #{rentalState}, </if>
             <if test=" auditTime != null "> #{auditTime}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" channel != null and channel != '' "> #{channel}, </if>
         </trim>
     </sql>
 
