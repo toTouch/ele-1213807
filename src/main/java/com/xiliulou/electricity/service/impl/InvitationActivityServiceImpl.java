@@ -106,6 +106,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
     
     @Override
+    @Slave
     public List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query) {
         if (Objects.isNull(query.getUid())) {
             return this.invitationActivityMapper.selectByPageSearchNoUid(query);
