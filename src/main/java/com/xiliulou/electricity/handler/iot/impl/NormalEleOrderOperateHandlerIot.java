@@ -57,7 +57,7 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                 ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleOrderOperateVO.getOrderId());
                 if (Objects.nonNull(electricityCabinetOrder)) {
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE;
-                    seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE;
+                    seq = eleOrderOperateVO.getSeq();
                 } else {
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK;
                     seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
