@@ -33,6 +33,8 @@ public class InvitationActivityQuery {
     @NotNull(message = "活动id不能为空", groups = {UpdateGroup.class})
     private Long id;
     
+    private Long uid;
+    
     private Integer status;
     
     @NotBlank(message = "活动名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
@@ -94,9 +96,5 @@ public class InvitationActivityQuery {
      */
     private List<Long> carWithBatteryPackages;
     
-    @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class})
-    private Long franchiseeId;
-    
-    private List<Long> franchiseeIds;
     
 }

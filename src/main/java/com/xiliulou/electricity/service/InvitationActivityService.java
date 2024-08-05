@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
+import com.xiliulou.electricity.vo.InvitationActivitySearchVO;
 import com.xiliulou.electricity.vo.InvitationActivityVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -70,6 +71,8 @@ public interface InvitationActivityService {
     List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
+    
+    public List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query)
     
     List<InvitationActivity> queryOnlineActivity(Integer tenantId, Long franchiseeId);
 

@@ -37,6 +37,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
+import com.xiliulou.electricity.vo.InvitationActivitySearchVO;
 import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
