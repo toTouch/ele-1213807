@@ -1266,11 +1266,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     /**
      * @return Boolean=false继续走正常换电
      */
-    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery) {
+    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, OrderQueryV3 orderQueryV3) {
         Long uid = userInfo.getUid();
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
             log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
+            return Pair.of(false, null);
+        }
+        // 扫码柜机和订单不是同一个柜机走正常换电
+        if (!Objects.equals(lastOrder.getElectricityCabinetId(), orderQueryV3.getEid())) {
+            log.warn("Orderv3 WARN! scan eid not equal order eid, orderEid is {}, scanEid is {}", lastOrder.getElectricityCabinetId(), orderQueryV3.getEid());
             return Pair.of(false, null);
         }
         
@@ -2836,7 +2841,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery);
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
@@ -2951,7 +2956,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery);
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
