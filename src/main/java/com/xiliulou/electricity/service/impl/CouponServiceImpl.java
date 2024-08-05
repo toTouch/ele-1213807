@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponActivityPackage;
@@ -458,6 +459,16 @@ public class CouponServiceImpl implements CouponService {
         return result;
     }
     
+    @Override
+    public Boolean isSameFranchisee(Integer couponFranchiseeId, Long targetFranchiseeId) {
+        if (Objects.isNull(couponFranchiseeId) || Objects.equals(couponFranchiseeId, NumberConstant.ZERO) || Objects.isNull(targetFranchiseeId) || Objects.equals(
+                targetFranchiseeId, NumberConstant.ZERO_L)) {
+            return true;
+        }
+        
+        return Objects.equals(couponFranchiseeId.longValue(), targetFranchiseeId);
+    }
+    
     public List<BatteryMemberCardVO> getAllBatteryPackages() {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().delFlag(BatteryMemberCard.DEL_NORMAL).status(BatteryMemberCard.STATUS_UP)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -519,7 +530,7 @@ public class CouponServiceImpl implements CouponService {
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(true, null, null);
         }
-    
+        
         // 加盟商一致性校验
         Integer franchiseeId = coupon.getFranchiseeId();
         if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId.longValue())) {

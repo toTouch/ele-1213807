@@ -187,7 +187,7 @@
         jsah.activity_id as activityId,
         tsa.invitation_criteria as invitationCriteria,
         tsa.name as activityName,
-        jsah.franchisee_id as franchiseeId
+        tsa.franchisee_id as franchiseeId
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
         left join t_share_activity as tsa on tsa.id = jsah.activity_id
@@ -226,13 +226,13 @@
                 and jsah.franchisee_id &lt;= #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
-                and jsah.franchisee_id in
+                and tsa.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and jsah.store_id in
+                and tsa.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -286,13 +286,13 @@
                 and jsah.franchisee_id &lt;= #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
-                and jsah.franchisee_id in
+                and tsa.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and jsah.store_id in
+                and tsa.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>

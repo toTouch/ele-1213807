@@ -52,7 +52,7 @@ public interface CarRentalPackageBizService {
      * @param packageType   套餐类型：1-租电、2-租车、3-车电一体 @see com.xiliulou.electricity.enums.PackageTypeEnum
      * @return Triple<BigDecimal, List < Long>, Boolean> 实际支付金额、已用的优惠券ID、Boolean（暂无实际意义）
      */
-    Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType);
+    Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType, Integer franchiseeId);
     
     
     /**
