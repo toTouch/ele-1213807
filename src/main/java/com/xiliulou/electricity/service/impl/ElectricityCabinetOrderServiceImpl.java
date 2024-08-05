@@ -1457,8 +1457,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
+        
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
-        if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
+        if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && Objects.equals(cabinetBox.getElectricityCabinetId(),
+                lastOrder.getElectricityCabinetId()) && Objects.equals(cabinetBox.getCellNo(), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
             return Pair.of(true, vo);
@@ -2705,6 +2707,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("orderId", query.getOrderId());
             dataMap.put("cellNo", query.getCellNo());
+            if (Objects.equals(electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
+                dataMap.put("isTakeCell", true);
+            }
+           
             //dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
             
             String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();

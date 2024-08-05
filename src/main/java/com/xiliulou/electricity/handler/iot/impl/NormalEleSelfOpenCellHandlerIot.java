@@ -137,12 +137,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             // 订单完成。扣减套餐次数
             userBatteryMemberCardService.deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
-            // 增加换电完成的操作记录
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                    .orderId(electricityCabinetOrder.getOrderId()).tenantId(electricityCabinetOrder.getTenantId()).msg("换电完成")
-                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_SUCCESS).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
+            
             
             // 修改订单最终状态为成功
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
