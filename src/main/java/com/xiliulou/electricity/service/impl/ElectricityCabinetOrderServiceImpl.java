@@ -1276,9 +1276,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 默认取3分钟的订单，可选择配置
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
-        log.debug("Orderv3 INFO! lessTimeExchangeTwoCountAssert.scanTime is {} ,currentTime is {}", scanTime, System.currentTimeMillis());
+        log.info("Orderv3 INFO! lessTimeExchangeTwoCountAssert.scanTime is {} ,currentTime is {}", scanTime, System.currentTimeMillis());
         if (System.currentTimeMillis() - lastOrder.getCreateTime() > scanTime) {
-            log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 3 mins,lastOrder is {} ", lastOrder.getOrderId());
+            log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 5 mins,lastOrder is {} ", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
         
@@ -1300,9 +1300,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("orderv3 Error! isSatisfySelfOpenCondition.params.cell is null");
             return false;
         }
-        // 上个订单+3分钟是否存在换电、退电、操作记录
+        // 上个订单+5分钟是否存在换电、退电、操作记录
         Long startTime = order.getUpdateTime();
-        Long endTime = startTime + 1000 * 60 * 3;
+        Long endTime = startTime + 1000 * 60 * 5;
         Integer eid = order.getElectricityCabinetId();
         log.debug("isSatisfySelfOpenCondition.params, startTime is {},endTime is {},eid is {},cell is {},newOrOldCellFlag is {}", startTime, endTime, eid, cell, newOrOldCellFlag);
         Integer existExchangeOrder = electricityCabinetOrderMapper.existExchangeOrderInSameCabinetAndCell(order.getId(), endTime, eid, cell, newOrOldCellFlag);
@@ -2602,7 +2602,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (StrUtil.isEmpty(orderExceptionStartTime)) {
             return R.fail("100667", "自主开仓超时");
         }
-        if (Double.valueOf(System.currentTimeMillis() - Long.valueOf(orderExceptionStartTime)) / 1000 / 60 > 3) {
+        if (Double.valueOf(System.currentTimeMillis() - Long.valueOf(orderExceptionStartTime)) / 1000 / 60 > 5) {
             log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", query.getOrderId());
             return R.fail("100667", "自主开仓超时");
         }

@@ -607,7 +607,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (allowNewSelfOpenStatus(exchangeOrderRsp.orderStatus)) {
             log.info("EXCHANGE ORDER INFO! order fail setNewSelfOpen setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
             // 新自主开仓的开始时间
-            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 3L,
+            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 5L,
                     TimeUnit.MINUTES);
         }
         
