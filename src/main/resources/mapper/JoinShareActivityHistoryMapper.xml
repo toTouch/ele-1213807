@@ -223,7 +223,7 @@
                 and jsah.start_time &lt;= #{endTime}
             </if>
             <if test="franchiseeId != null">
-                and jsah.franchisee_id &lt;= #{franchiseeId}
+                and tsa.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
                 and tsa.franchisee_id in
@@ -283,7 +283,7 @@
                 and jsah.start_time &lt;= #{endTime}
             </if>
             <if test="franchiseeId != null">
-                and jsah.franchisee_id &lt;= #{franchiseeId}
+                and jsah.franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
                 and tsa.franchisee_id in
