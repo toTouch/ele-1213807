@@ -424,7 +424,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     @Override
-    public R queryMyCoupons(List<Integer> statusList, List<Integer> typeList) {
+    public R queryMyCoupons(List<Integer> statusList, List<Integer> typeList, Long franchiseeId) {
         //用户信息
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
@@ -464,6 +464,11 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
         for (UserCouponVO userCouponVO : userCouponVOList) {
+            // 优惠券加盟商和所选套餐加盟商是否一致
+            if (!couponService.isSameFranchisee(userCouponVO.getFranchiseeId(), franchiseeId)) {
+                break;
+            }
+            
             if (Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode()
                     .equals(userCouponVO.getSpecificPackages())) {
                 Long couponId = userCouponVO.getCouponId().longValue();
@@ -474,14 +479,6 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
         
         return R.ok(userCouponVOList);
-    }
-    
-    private static boolean isSameFranchisee(Coupon coupon, UserInfo userInfo) {
-        if (Objects.isNull(coupon.getFranchiseeId()) || Objects.isNull(userInfo.getFranchiseeId()) || Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
-            return true;
-        }
-        
-        return Objects.equals(coupon.getFranchiseeId().longValue(), userInfo.getFranchiseeId());
     }
     
     private List<BatteryMemberCardVO> getBatteryPackages(Long couponId) {
@@ -582,7 +579,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
         
-        if (!isSameFranchisee(coupon, userInfo)) {
+        if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), userInfo.getFranchiseeId())) {
             log.error("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
             return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
         }

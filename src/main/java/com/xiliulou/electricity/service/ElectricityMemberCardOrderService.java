@@ -116,7 +116,7 @@ public interface ElectricityMemberCardOrderService {
 
     List<BatteryMemberCardOrderCoupon> buildMemberCardOrderCoupon(String orderId, Set<Integer> couponSet);
 
-    Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds);
+    Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds, Long franchiseeId);
 
     Integer checkOrderByMembercardId(Long membercardId);
 

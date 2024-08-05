@@ -58,4 +58,6 @@ public interface CouponService {
     Triple<Boolean, String, Object> findCouponById(Long id);
     
     List<CarCouponNamePO> queryListByIdsFromCache(List<Long> couponId);
+    
+    Boolean isSameFranchisee(Integer couponFranchiseeId, Long targetFranchiseeId);
 }
