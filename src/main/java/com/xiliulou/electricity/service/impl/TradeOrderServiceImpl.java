@@ -296,7 +296,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100307", "未配置支付参数!");
             }
             
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), tenantId,integratedPaymentAdd.getPaymentChannel());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", user.getUid());
                 return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
@@ -499,7 +499,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100307", "未配置支付参数!");
             }
             
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(userInfo.getUid(), tenantId,query.getPaymentChannel());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", userInfo.getUid());
                 return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
@@ -747,7 +747,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100307", "未配置支付参数!");
             }
             
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), tenantId,ChannelSourceContextHolder.get());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("SERVICE FEE WARN!not found useroauthbind or thirdid is null,uid={}", user.getUid());
                 return Triple.of(false, "100308", "未找到用户的第三方授权信息!");

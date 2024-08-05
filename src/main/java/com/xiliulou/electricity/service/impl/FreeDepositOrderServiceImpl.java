@@ -1363,7 +1363,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
         
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId,query.getPaymentChannel());
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.warn("FREE DEPOSIT HYBRID WARN!not found userOauthBind,uid={}", uid);
             return Triple.of(false, "100235", "未找到用户的第三方授权信息!");

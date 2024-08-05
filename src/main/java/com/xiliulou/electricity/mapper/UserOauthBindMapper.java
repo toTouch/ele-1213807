@@ -67,4 +67,15 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
      * @date 2024/7/25 11:15
      */
     List<UserOauthBind> selectListByUidAndTenantId(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+    
+    /**
+     * 根据用户id+租户id+source查询
+     *
+     * @param uid
+     * @param tenantId
+     * @param source
+     * @author caobotao.cbt
+     * @date 2024/8/5 18:56
+     */
+    UserOauthBind selectByUidAndTenantIdAndSource(@Param("uid") Long uid, @Param("tenantId") Integer tenantId, @Param("source") Integer source);
 }

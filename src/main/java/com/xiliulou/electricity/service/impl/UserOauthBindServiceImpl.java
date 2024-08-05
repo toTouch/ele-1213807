@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.web.query.OauthBindQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -116,14 +118,31 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Slave
     @Override
     public List<UserOauthBind> queryListByUidAndTenantId(Long uid, Integer tenantId) {
-        return userOauthBindMapper.selectListByUidAndTenantId(uid,tenantId);
+        return userOauthBindMapper.selectListByUidAndTenantId(uid, tenantId);
+    }
+    
+    @Override
+    public UserOauthBind queryByUidAndTenantAndChannel(Long uid, Integer tenantId, String channel) {
+        if (Objects.isNull(uid) || Objects.isNull(tenantId) || StringUtils.isBlank(channel)) {
+            return null;
+        }
+        Integer source = null;
+        if (ChannelEnum.WECHAT.getCode().equals(channel)) {
+            source = UserOauthBind.SOURCE_WX_PRO;
+        } else if (ChannelEnum.ALIPAY.getCode().equals(channel)) {
+            source = UserOauthBind.SOURCE_ALI_PAY;
+        } else {
+            return null;
+        }
+       return userOauthBindMapper.selectByUidAndTenantIdAndSource(uid,tenantId,source);
     }
     
     @Slave
     @Override
     public UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId) {
-        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid).eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
-                .eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId, tenantId));
+        return this.userOauthBindMapper.selectOne(
+                new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid).eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source)
+                        .eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId, tenantId));
     }
     
     @Slave
@@ -207,12 +226,10 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     /**
-     *
      * @param phone
      * @param source
      * @param tenantId
      * @return
-     *
      * @see UserOauthBindServiceImpl#listUserByPhone(String, Integer, Integer)
      */
     @Deprecated
@@ -273,16 +290,17 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
             return Boolean.FALSE;
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId.intValue(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
-        if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil.isEmpty(
-                electricityPayParams.getMerchantMinProAppSecert())) {
+        ElectricityPayParams electricityPayParams = electricityPayParamsService
+                .queryPreciseCacheByTenantIdAndFranchiseeId(tenantId.intValue(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+        if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getMerchantMinProAppId()) || StrUtil
+                .isEmpty(electricityPayParams.getMerchantMinProAppSecert())) {
             log.warn("check open id failed, not found appId,appSecret! uid = {}, tenantId = {}", uid, tenantId);
             //throw new AuthenticationServiceException("未能查找到appId和appSecret！");
             return Boolean.FALSE;
         }
         
-        String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantMinProAppId(),
-                electricityPayParams.getMerchantMinProAppSecert(), jsCode);
+        String codeUrl = String
+                .format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert(), jsCode);
         
         String bodyStr = restTemplateService.getForString(codeUrl, null);
         log.info("check open id from wx, call wx pro auth for query open id message={}", bodyStr);
