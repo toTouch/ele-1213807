@@ -1131,16 +1131,16 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             refundOrderDetailVO.setRemainingNumber(userBatteryMemberCardPackage.getRemainingNumber());
             refundOrderDetailVO.setRemainingTime(
-                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCardPackage.getMemberCardExpireTime() + 24*60*60*1000 - 1) / 24 / 60 / 60 / 1000
-                            : (userBatteryMemberCardPackage.getMemberCardExpireTime() + 60*1000 - 1) / 60 / 1000);
+                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000
+                            : userBatteryMemberCardPackage.getMemberCardExpireTime() / 60 / 1000);
         }
         
         // 使用中
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
             refundOrderDetailVO.setRemainingTime(
-                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis() + 24*60*60*1000 - 1)
-                            / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis() + 60*1000 - 1) / 60 / 1000);
+                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis())
+                            / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 60 / 1000);
         }
     }
     
@@ -1155,16 +1155,16 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCardPackage.getRemainingNumber());
             batteryMembercardRefundOrder.setRemainingTime(
-                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCardPackage.getMemberCardExpireTime() + 24*60*60*1000 - 1) / 24 / 60 / 60 / 1000
-                            : (userBatteryMemberCardPackage.getMemberCardExpireTime() + 60*1000 - 1) / 60 / 1000);
+                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000
+                            : userBatteryMemberCardPackage.getMemberCardExpireTime() / 60 / 1000);
         }
         
         // 使用中
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
             batteryMembercardRefundOrder.setRemainingTime(
-                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis() + 24*60*60*1000 - 1)
-                            / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis() + 60*1000 - 1) / 60 / 1000);
+                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis())
+                            / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 60 / 1000);
         }
     }
     
