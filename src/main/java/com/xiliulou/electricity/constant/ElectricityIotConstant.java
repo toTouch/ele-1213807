@@ -79,6 +79,10 @@ public class ElectricityIotConstant {
      * 离线换电密码设置
      */
     public static final String NORMAL_OFFLINE_EXCHANGE_PASSWORD_HANDLER = "normalOfflineExchangePasswordHandler";
+    
+    
+    public static final String NORMAL_OPEN_FULL_CELL_HANDLER = "NormalOpenFullyCellHandler";
+    
 
 
     public static String acquireChargeHandlerName(String command) {
@@ -374,6 +378,15 @@ public class ElectricityIotConstant {
      * 设置离线换电密码
      */
     public static final String  ELE_BATTERY_OFFLINE_PASSWORD_RESET = "offline_password_reset";
+    
+    /**
+     * 开满电仓
+     */
+    public static final String OPEN_FULL_CELL = "open_full_cell";
+    
+    public static final String OPEN_FULL_CELL_RSP = "open_full_cell_rsp";
+   
+    public static final String OPEN_FULL_CELL_ACK = "open_full_cell_ack";
 
 
     static {
@@ -618,6 +631,13 @@ public class ElectricityIotConstant {
          * 离线换电密码设置
          */
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_OFFLINE_PASSWORD_RESET, NORMAL_OFFLINE_EXCHANGE_PASSWORD_HANDLER);
+        
+        /**
+         * 取满电流程
+         */
+        COMMAND_HANDLER_MAPS.put(OPEN_FULL_CELL, NORMAL_OPEN_FULL_CELL_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OPEN_FULL_CELL_RSP, NORMAL_OPEN_FULL_CELL_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OPEN_FULL_CELL_ACK, NORMAL_OPEN_FULL_CELL_HANDLER);
         
     }
 }

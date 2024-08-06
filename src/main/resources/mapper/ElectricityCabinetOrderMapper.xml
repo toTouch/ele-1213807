@@ -450,6 +450,49 @@
           and tenant_id = #{tenantId}
     </update>
     
+    <select id="selectLatelyExchangeOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
+        select teco.id,
+               teco.order_id,
+               teco.phone,
+               teco.uid,
+               teco.pay_amount,
+               teco.electricity_cabinet_id,
+               teco.old_electricity_battery_sn,
+               teco.new_electricity_battery_sn,
+               teco.old_cell_no,
+               teco.new_cell_no,
+               teco.status,
+               teco.payment_method,
+               teco.source,
+               teco.remark,
+               teco.switch_begin_time,
+               teco.switch_end_time,
+               teco.create_time,
+               teco.update_time,
+               teco.franchisee_id,
+               teco.tenant_id
+        from t_electricity_cabinet_order teco
+        where uid = #{uid}
+          and create_time &lt; #{currentTime}
+        order by create_time desc limit 1
+    </select>
+    
+    
+    <select id="existExchangeOrderInSameCabinetAndCell" resultType="integer">
+        select 1
+        from t_electricity_cabinet_order
+        where id > #{id}
+        and electricity_cabinet_id = #{eid}
+        <if test="newOrOldCellFlag == 0">
+            and old_cell_no = #{cell}
+        </if>
+        <if test="newOrOldCellFlag == 1">
+            and new_cell_no = #{cell}
+        </if>
+        and update_time &lt; #{endTime}
+        order by create_time desc limit 1
+    </select>
+    
     
     <select id="existSameCabinetCellSameTimeOpenExchangeOrder" resultType="integer">
         select 1

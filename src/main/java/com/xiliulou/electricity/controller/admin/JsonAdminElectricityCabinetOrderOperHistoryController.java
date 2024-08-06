@@ -38,7 +38,7 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 			@RequestParam("type") Integer type) {
 
 		if (size < 0 || size > 50) {
-			size = 10L;
+			size = 20L;
 		}
 
 		if (offset < 0) {
