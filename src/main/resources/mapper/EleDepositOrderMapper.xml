@@ -64,6 +64,9 @@
             <if test="query.orderType != null">
                 and edo.order_type = #{query.orderType}
             </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and edo.payment_channel = #{query.paymentChannel}
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
@@ -74,7 +77,7 @@
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
         edo.order_id, edo.status, edo.name, edo.phone, ts.name as storeName,tecm.name as carModel,
-        edo.deposit_type, edo.order_type, edo.pay_type
+        edo.deposit_type, edo.order_type, edo.pay_type, edo.payment_channel
         from t_ele_deposit_order edo
         left join t_store ts on edo.store_id=ts.id
         left join t_electricity_car_model tecm on edo.car_model_id=tecm.id
@@ -126,6 +129,9 @@
             </if>
             <if test="query.storeName != null and query.storeName != ''">
                 and ts.name like concat('%', #{query.storeName}, '%')
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and edo.payment_channel = #{query.paymentChannel}
             </if>
         </where>
         order by edo.create_time desc
@@ -193,6 +199,9 @@
             </if>
             <if test="query.orderType != null">
                 and edo.order_type = #{query.orderType}
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and edo.payment_channel = #{query.paymentChannel}
             </if>
         </where>
     </select>
