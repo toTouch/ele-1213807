@@ -2745,7 +2745,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("orderId", query.getOrderId());
             dataMap.put("cellNo", query.getCellNo());
-            if (Objects.equals(electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
+            if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) && Objects.equals(
+                    electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
                 dataMap.put("isTakeCell", true);
             }
            
