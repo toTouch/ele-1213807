@@ -76,5 +76,10 @@ public class EleRefundQuery {
      */
     private String refundOrderNo;
     
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    
     
 }

@@ -79,6 +79,13 @@ public class EleRefundOrder {
      * 退款交易方式 0--线上 1--线下
      */
     private Integer payType;
+    
+    
+    /**
+     * 支付渠道
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

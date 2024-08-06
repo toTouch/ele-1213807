@@ -402,7 +402,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid())).payAmount(payAmount).refundAmount(eleRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId())
-                .memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
+                .memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel()).build();
         
         // 退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
