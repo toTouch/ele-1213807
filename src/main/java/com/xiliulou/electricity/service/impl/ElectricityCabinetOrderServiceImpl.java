@@ -1304,8 +1304,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("Orderv3 WARN! scan eid not equal order eid, userBindingBatterySn is null, uid is {}", userInfo.getUid());
             return Pair.of(false, null);
         }
-        // 用户电池在上一个柜机，并且仓门关闭
+        
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
+        if (Objects.isNull(cabinetBox)) {
+            log.warn("Orderv3 WARN! userBindingBatterySn.cabinetBox is null, sn is {}", electricityBattery.getSn());
+            return Pair.of(false, null);
+        }
+        // 用户电池在上一个柜机，并且仓门关闭
         if (Objects.equals(lastOrder.getElectricityCabinetId(), cabinetBox.getElectricityCabinetId()) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
             // 返回柜机名称和重新扫码标识
             ElectricityCabinet orderCabinet = electricityCabinetService.queryByIdFromCache(lastOrder.getElectricityCabinetId());
