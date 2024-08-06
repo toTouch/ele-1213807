@@ -1273,18 +1273,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
             return Pair.of(false, null);
         }
-        // 扫码柜机和订单不是同一个柜机走正常换电
-        if (!Objects.equals(lastOrder.getElectricityCabinetId(), orderQueryV3.getEid())) {
-            log.warn("Orderv3 WARN! scan eid not equal order eid, orderEid is {}, scanEid is {}", lastOrder.getElectricityCabinetId(), orderQueryV3.getEid());
-            return Pair.of(false, null);
-        }
         
-        // 默认取3分钟的订单，可选择配置
+        // 默认取5分钟的订单，可选择配置
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
         log.info("Orderv3 INFO! lessTimeExchangeTwoCountAssert.scanTime is {} ,currentTime is {}", scanTime, System.currentTimeMillis());
         if (System.currentTimeMillis() - lastOrder.getCreateTime() > scanTime) {
             log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 5 mins,lastOrder is {} ", lastOrder.getOrderId());
             return Pair.of(false, null);
+        }
+        
+        // 扫码柜机和订单不是同一个柜机进行处理
+        if (!Objects.equals(lastOrder.getElectricityCabinetId(), orderQueryV3.getEid())) {
+            log.warn("Orderv3 WARN! scan eid not equal order eid, orderEid is {}, scanEid is {}", lastOrder.getElectricityCabinetId(), orderQueryV3.getEid());
+            return scanCabinetNotEqualOrderCabinetHandler(userInfo, cabinet, electricityBattery, lastOrder);
         }
         
         if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
@@ -1293,6 +1294,29 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         } else {
             // 上一个失败
             return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo);
+        }
+    }
+    
+    private Pair<Boolean, Object> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+            ElectricityCabinetOrder lastOrder) {
+        // 用户绑定的电池为空，走正常换电
+        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
+            log.warn("Orderv3 WARN! scan eid not equal order eid, userBindingBatterySn is null, uid is {}", userInfo.getUid());
+            return Pair.of(false, null);
+        }
+        // 用户电池在上一个柜机，并且仓门关闭
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
+        if (Objects.equals(lastOrder.getElectricityCabinetId(), cabinetBox.getElectricityCabinetId()) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
+            // 返回柜机名称和重新扫码标识
+            ElectricityCabinet orderCabinet = electricityCabinetService.queryByIdFromCache(lastOrder.getElectricityCabinetId());
+            if (Objects.isNull(orderCabinet)) {
+                log.error("Orderv3 ERROR! lastOrder.cabinet is null, eid is {}", lastOrder.getElectricityCabinetId());
+                return Pair.of(false, null);
+            }
+            ExchangeUserSelectVo vo = ExchangeUserSelectVo.builder().isTheSameCabinet(ExchangeUserSelectVo.NOT_SAME_CABINET).cabinetName(orderCabinet.getName()).build();
+            return Pair.of(true, vo);
+        } else {
+            return Pair.of(false, null);
         }
     }
     
@@ -1351,10 +1375,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 上一次成功，这次只能返回新仓门
         vo.setCell(lastOrder.getNewCellNo());
         
-        
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
-        if (Objects.nonNull(cabinetBox)) {
+        // 电池在仓，并且电池所在仓门=上个订单的新仓门
+        if (Objects.nonNull(cabinetBox) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getNewCellNo())) {
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             // 后台自主开仓
@@ -1423,8 +1447,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
         ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(userBindingBatterySn);
-        // 用户绑定的电池状态是否为租借状态
-        if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+        // 用户绑定的电池状态是否为租借状态 && 用户绑定的电池在仓 & 电池所在的仓门=上个订单的旧仓门
+        if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && StrUtil.isNotBlank(
+                cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox);
             vo.setSessionId(sessionId);
@@ -1450,7 +1475,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         
         // 用户绑定电池为空，返回自主开仓
-        if (Objects.isNull(electricityBattery) || (Objects.nonNull(electricityBattery) && StrUtil.isEmpty(electricityBattery.getSn()))) {
+        if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("oldCellCheckFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 不在仓，前端会自主开仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
@@ -1462,10 +1487,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
-        
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
-        if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && Objects.equals(cabinetBox.getElectricityCabinetId(),
-                lastOrder.getElectricityCabinetId()) && Objects.equals(cabinetBox.getCellNo(), lastOrder.getOldCellNo())) {
+        if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
+                Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
             return Pair.of(true, vo);
