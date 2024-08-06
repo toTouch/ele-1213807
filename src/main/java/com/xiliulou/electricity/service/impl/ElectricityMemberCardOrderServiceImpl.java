@@ -696,6 +696,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(BigDecimal.valueOf(0));
     }
     
+    /**
+     * 打开或禁用会员卡
+     *
+     * @param usableStatus
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R openOrDisableMemberCard(Integer usableStatus) {
@@ -841,6 +847,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok();
     }
     
+    /**
+     * 限制时间停卡
+     *
+     * @param disableCardDays
+     * @param disableDeadline
+     * @param applyReason
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline, String applyReason) {

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * @date 2024-08-01
  */
 @Data
-@Builder
+@AllArgsConstructor
 public class InvitationActivityJoinHistoryRequest {
     
     /**
