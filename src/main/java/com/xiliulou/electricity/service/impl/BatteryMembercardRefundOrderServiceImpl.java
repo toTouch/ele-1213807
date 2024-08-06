@@ -535,6 +535,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
             batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+            batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
             
             this.insert(batteryMembercardRefundOrderInsert);
@@ -688,6 +689,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
         batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
         
         applicationContext.getBean(BatteryMembercardRefundOrderService.class).insert(batteryMembercardRefundOrderInsert);

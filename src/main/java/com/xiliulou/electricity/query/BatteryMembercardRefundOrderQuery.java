@@ -49,4 +49,10 @@ public class BatteryMembercardRefundOrderQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    
 }
