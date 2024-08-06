@@ -1136,14 +1136,18 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         }
         
         List<ShareActivity> list;
-        // 如果没有加盟商，则查租户的活动
-        if (Objects.isNull(franchiseeId) || Objects.equals(franchiseeId, NumberConstant.ZERO_L)) {
-            list = activityList.stream().filter(shareActivity -> Objects.isNull(shareActivity.getFranchiseeId())).collect(Collectors.toList());
-        } else {
-            // 如果有加盟商，则查加盟商的活动
-            list = activityList.stream()
-                    .filter(shareActivity -> Objects.nonNull(shareActivity.getFranchiseeId()) && Objects.equals(shareActivity.getFranchiseeId().longValue(), franchiseeId))
+        // 如果有加盟商，则查加盟商的活动
+        list = activityList.stream().filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && Objects.equals(
+                activity.getFranchiseeId().longValue(), franchiseeId)).collect(Collectors.toList());
+        
+        if (CollectionUtils.isEmpty(list)) {
+            // 如果没有加盟商，则查租户的活动
+            list = activityList.stream().filter(activity -> Objects.isNull(activity.getFranchiseeId()) || Objects.equals(franchiseeId, NumberConstant.ZERO_L))
                     .collect(Collectors.toList());
+        }
+        
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.get(0);
         }
         
         if (CollectionUtils.isNotEmpty(list)) {

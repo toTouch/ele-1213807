@@ -601,7 +601,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     
     @Override
     public R checkActivity() {
-        
         Map<String, Integer> map = new HashMap<>();
         map.put("shareMoneyActivity", 0);
         map.put("shareActivity", 0);
@@ -751,14 +750,14 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         }
         
         List<ShareMoneyActivity> list;
-        // 如果没有加盟商，则查租户的活动
-        if (Objects.isNull(franchiseeId) || Objects.equals(franchiseeId, NumberConstant.ZERO_L)) {
-            list = activityList.stream().filter(shareMoneyActivity -> Objects.isNull(shareMoneyActivity.getFranchiseeId())).collect(Collectors.toList());
-        } else {
-            // 如果有加盟商，则查加盟商的活动
-            list = activityList.stream()
-                    .filter(shareMoneyActivity -> Objects.nonNull(shareMoneyActivity.getFranchiseeId()) && Objects.equals(shareMoneyActivity.getFranchiseeId().longValue(),
-                            franchiseeId)).collect(Collectors.toList());
+        // 如果有加盟商，则查加盟商的活动
+        list = activityList.stream().filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && Objects.equals(
+                activity.getFranchiseeId().longValue(), franchiseeId)).collect(Collectors.toList());
+        
+        if (CollectionUtils.isEmpty(list)) {
+            // 如果没有加盟商，则查租户的活动
+            list = activityList.stream().filter(activity -> Objects.isNull(activity.getFranchiseeId()) || Objects.equals(franchiseeId, NumberConstant.ZERO_L))
+                    .collect(Collectors.toList());
         }
         
         if (CollectionUtils.isNotEmpty(list)) {
