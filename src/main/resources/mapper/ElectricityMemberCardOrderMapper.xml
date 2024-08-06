@@ -100,6 +100,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.paymentChannel != null and query.paymentChannel != ''">
+            and tel.payment_channel = #{query.paymentChannel}
+        </if>
         order by tel.id desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -174,6 +177,9 @@
         </if>
         <if test="query.cardPayCount != null">
             and tel.pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.paymentChannel != null and query.paymentChannel != ''">
+            and tel.payment_channel = #{query.paymentChannel}
         </if>
     </select>
     
