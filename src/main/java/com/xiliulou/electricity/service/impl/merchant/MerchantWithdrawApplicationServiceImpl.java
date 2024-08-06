@@ -136,14 +136,14 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //检查商户是否存在
         Merchant queryMerchant = merchantService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if (Objects.isNull(queryMerchant)) {
-            log.error("merchant user not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
+            log.warn("merchant user not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120003", "商户不存在");
         }
         
         //查询商户余额表，是否存在商户账户
         MerchantUserAmount merchantUserAmount = merchantUserAmountService.queryByUid(merchantWithdrawApplicationRequest.getUid());
         if (Objects.isNull(merchantUserAmount)) {
-            log.error("merchant user balance account not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
+            log.warn("merchant user balance account not found, uid = {}", merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120010", "商户余额账户不存在");
         }
         
@@ -155,7 +155,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         
         //检查余额表中的余额是否满足提现金额
         if (merchantUserAmount.getBalance().compareTo(merchantWithdrawApplicationRequest.getAmount()) < 0) {
-            log.error("merchant user balance amount not enough, amount = {}, uid = {}", merchantWithdrawApplicationRequest.getAmount(),
+            log.warn("merchant user balance amount not enough, amount = {}, uid = {}", merchantWithdrawApplicationRequest.getAmount(),
                     merchantWithdrawApplicationRequest.getUid());
             return Triple.of(false, "120012", "提现金额不足");
         }
@@ -203,7 +203,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(reviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
                 reviewWithdrawApplicationRequest.getStatus())) {
-            log.warn("Illegal parameter error for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
+            log.warn("Illegal parameter warn for approve withdraw application,  status = {}", reviewWithdrawApplicationRequest.getStatus());
             return Triple.of(false, "120014", "参数不合法");
         }
         
@@ -391,13 +391,13 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
         //检查入参中的状态是否为同意或者拒绝状态，若为其他状态，则提示错误。
         if (!MerchantWithdrawConstant.REVIEW_REFUSED.equals(batchReviewWithdrawApplicationRequest.getStatus()) && !MerchantWithdrawConstant.REVIEW_SUCCESS.equals(
                 batchReviewWithdrawApplicationRequest.getStatus())) {
-            log.error("Illegal parameter error for approve withdraw application,  status = {}", batchReviewWithdrawApplicationRequest.getStatus());
+            log.warn("Illegal parameter warn for approve withdraw application,  status = {}", batchReviewWithdrawApplicationRequest.getStatus());
             return Triple.of(false, "120014", "参数不合法");
         }
         
         //检查审批条数是否超过100条，如果超过100条，则提示错误信息
         if (batchReviewWithdrawApplicationRequest.getIds().size() > 100) {
-            log.error("batch handle withdraw record is more than 100, ids = {}", batchReviewWithdrawApplicationRequest.getIds());
+            log.warn("batch handle withdraw record is more than 100, ids = {}", batchReviewWithdrawApplicationRequest.getIds());
             return Triple.of(false, "120025", "提现申请数量不能超过100条");
         }
         
@@ -405,7 +405,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 tenantId.longValue());
         
         if (CollectionUtils.isEmpty(merchantWithdrawApplications) || !Objects.equals(merchantWithdrawApplications.size(), batchReviewWithdrawApplicationRequest.getIds().size())) {
-            log.error("batch handle withdraw record is not exists, ids = {}", batchReviewWithdrawApplicationRequest.getIds());
+            log.warn("batch handle withdraw record is not exists, ids = {}", batchReviewWithdrawApplicationRequest.getIds());
             return Triple.of(false, "120015", "提现申请不存在");
         }
         
@@ -545,7 +545,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             //创建转账批次明细单
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), merchantWithdrawApplication.getTenantId());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.error("batch review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}, tenant id = {}",
+                log.warn("batch review Merchant withdraw application warn, not found user auth bind info for merchant user. uid = {}, tenant id = {}",
                         merchantWithdrawApplication.getUid(), merchantWithdrawApplication.getTenantId());
             }
             
@@ -705,7 +705,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                 // 检测当前批次号是否存在加盟商不同的提现订单如果存在则查询使用的是默认的配置
                 List<MerchantWithdrawApplicationBO> merchantWithdrawApplicationBOS = merchantWithdrawApplicationMapper.selectListByBatchNoList(batchNoList);
                 if (CollectionUtils.isEmpty(merchantWithdrawApplicationBOS)) {
-                    log.warn("Merchant withdraw application update status task error, withdraw application is empty, batchNoList = {}", batchNoList);
+                    log.warn("Merchant withdraw application update status task warn, withdraw application is empty, batchNoList = {}", batchNoList);
                     return;
                 }
                 
@@ -733,12 +733,12 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     }
                     
                     if (ObjectUtils.isEmpty(franchiseeIdMap.get(batchNo))) {
-                        log.warn("update merchant withdraw status error!, franchisee id is empty, batch no = {}", batchNo);
+                        log.warn("update merchant withdraw status warn!, franchisee id is empty, batch no = {}", batchNo);
                         return;
                     }
                     
                     if (ObjectUtils.isEmpty(payConfigTypeMap.get(batchNo))) {
-                        log.warn("update merchant withdraw status error!, pay config type is empty, batch no = {}", batchNo);
+                        log.warn("update merchant withdraw status warn!, pay config type is empty, batch no = {}", batchNo);
                         return;
                     }
                     
@@ -760,7 +760,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                     }
                     
                     if (Objects.isNull(details)) {
-                        log.warn("update merchant withdraw status error! , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);
+                        log.warn("update merchant withdraw status warn! , wechat pay params details is null, batchNo = {}, tenantId = {}, franchiseeId={}", batchNo, tenantId, franchiseeId);
                         return;
                     }
                     
@@ -775,7 +775,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
                         updateWithdrawApplicationUpdate.setPayConfigWhetherChange(MerchantWithdrawApplicationConstant.PAY_CONFIG_WHETHER_CHANGE_YES);
                         merchantWithdrawApplicationMapper.updatePayConfigWhetherChangeByBatchNo(updateWithdrawApplicationUpdate);
                         
-                        log.warn("update merchant withdraw status error! , wechat merchant id is not equal, batchNo = {}, tenantId = {}, franchiseeId={}, oldWechatMerchantId = {}, newWechatMerchantId", batchNo, tenantId, franchiseeId, merchantWithdrawApplication.getWechatMerchantId(), details.getWechatMerchantId());
+                        log.warn("update merchant withdraw status warn! , wechat merchant id is not equal, batchNo = {}, tenantId = {}, franchiseeId={}, oldWechatMerchantId = {}, newWechatMerchantId", batchNo, tenantId, franchiseeId, merchantWithdrawApplication.getWechatMerchantId(), details.getWechatMerchantId());
                         return;
                     }
                     
