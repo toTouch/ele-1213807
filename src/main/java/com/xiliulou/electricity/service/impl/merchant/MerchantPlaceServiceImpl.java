@@ -185,12 +185,12 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             MerchantArea merchantArea = merchantAreaService.queryById(merchantPlaceSaveRequest.getMerchantAreaId());
             
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
-                log.error("merchant place save error, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
+                log.warn("merchant place save warn, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
     
             if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), merchantArea.getFranchiseeId())) {
-                log.error("merchant place save error, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
+                log.warn("merchant place save warn, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
         }
@@ -520,7 +520,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
         
         MerchantPlace merchantPlace = merchantPlaceMapper.selectById(id);
         if (Objects.isNull(merchantPlace) || !Objects.equals(merchantPlace.getTenantId(), tenantId)) {
-            log.info("merchant place info, query by id error, placeId={}", id);
+            log.info("merchant place info, query by id fault, placeId={}", id);
             return Triple.of(false, "", "场地不存在");
         }
         
