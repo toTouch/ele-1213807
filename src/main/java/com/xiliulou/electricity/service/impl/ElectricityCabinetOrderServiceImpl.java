@@ -1290,7 +1290,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 扫码柜机和订单不是同一个柜机进行处理
         if (!Objects.equals(lastOrder.getElectricityCabinetId(), orderQueryV3.getEid())) {
             log.warn("Orderv3 WARN! scan eid not equal order eid, orderEid is {}, scanEid is {}", lastOrder.getElectricityCabinetId(), orderQueryV3.getEid());
-            return scanCabinetNotEqualOrderCabinetHandler(userInfo, cabinet, electricityBattery, lastOrder);
+            return scanCabinetNotEqualOrderCabinetHandler(userInfo, electricityBattery, lastOrder);
         }
         
         if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
@@ -1302,8 +1302,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Pair<Boolean, Object> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
-            ElectricityCabinetOrder lastOrder) {
+    private Pair<Boolean, Object> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityBattery electricityBattery, ElectricityCabinetOrder lastOrder) {
         // 用户绑定的电池为空，走正常换电
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("Orderv3 WARN! scan eid not equal order eid, userBindingBatterySn is null, uid is {}", userInfo.getUid());
@@ -1316,7 +1315,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(false, null);
         }
         // 用户电池在上一个柜机，并且仓门关闭
-        if (Objects.equals(lastOrder.getElectricityCabinetId(), cabinetBox.getElectricityCabinetId()) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR)) {
+        if (Objects.equals(lastOrder.getElectricityCabinetId(), cabinetBox.getElectricityCabinetId())) {
             // 返回柜机名称和重新扫码标识
             ElectricityCabinet orderCabinet = electricityCabinetService.queryByIdFromCache(lastOrder.getElectricityCabinetId());
             if (Objects.isNull(orderCabinet)) {
