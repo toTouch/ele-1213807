@@ -68,4 +68,9 @@ public class MerchantJoinRecordVO {
     private Long franchiseeId;
     
     private String franchiseeName;
+    
+    /**
+     * 邀请成功时间
+     */
+    private Long successTime;
 }
