@@ -42,7 +42,7 @@
 				</foreach>
 			</if>
 		</where>
-		order by tsar.update_time desc
+		order by tsar.update_time desc, tsar.id desc
 		limit #{offset}, #{size}
 	</select>
 

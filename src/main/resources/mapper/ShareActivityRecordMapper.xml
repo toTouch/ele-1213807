@@ -48,7 +48,7 @@
 				</foreach>
 			</if>
 		</where>
-		order by tsar.update_time desc
+		order by tsar.update_time desc, tsar.id desc
 		<if test="offset != null and size != null">
 			limit #{offset}, #{size}
 		</if>

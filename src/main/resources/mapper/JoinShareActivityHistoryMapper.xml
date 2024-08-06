@@ -81,7 +81,7 @@
                 </foreach>
             </if>
         </where>
-        order by jsah.update_time desc
+        order by jsah.update_time desc, jsah.id desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
