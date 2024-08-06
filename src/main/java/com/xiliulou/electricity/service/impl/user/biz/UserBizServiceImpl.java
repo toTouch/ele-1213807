@@ -368,7 +368,7 @@ public class UserBizServiceImpl implements UserBizService {
 
                     if (Objects.nonNull(shareMoneyActivity)) {
                         //给邀请人增加邀请成功人数
-                        shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+                        shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney(), joinShareMoneyActivityRecord.getActivityId());
                     }
 
                     //返现

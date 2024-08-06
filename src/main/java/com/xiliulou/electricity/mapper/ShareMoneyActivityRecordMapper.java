@@ -16,14 +16,14 @@ import java.util.List;
  * @author makejava
  * @since 2021-07-14 09:45:04
  */
-public interface ShareMoneyActivityRecordMapper extends BaseMapper<ShareMoneyActivityRecord>{
-
-
-    @Update("update t_share_money_activity_record set count=count+1,money=money+#{money} where uid =#{uid}")
-	void addCountByUid(@Param("uid") Long uid, @Param("money")BigDecimal money);
-
-
-	List<ShareMoneyActivityRecordVO> queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
-
-	Integer queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+public interface ShareMoneyActivityRecordMapper extends BaseMapper<ShareMoneyActivityRecord> {
+    
+    
+    @Update("update t_share_money_activity_record set count=count+1,money=money+#{money} where uid =#{uid} and activity_id={activityId}")
+    void addCountByUid(@Param("uid") Long uid, @Param("money") BigDecimal money, @Param("activityId") Integer activityId);
+    
+    
+    List<ShareMoneyActivityRecordVO> queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+    
+    Integer queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
 }
