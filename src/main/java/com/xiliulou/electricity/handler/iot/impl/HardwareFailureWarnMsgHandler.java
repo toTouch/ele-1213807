@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -45,6 +46,9 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
     @Resource
     TenantService tenantService;
     
+    @Resource
+    private ElectricityCabinetService electricityCabinetService;
+    
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         HardwareFailureWarnMsg hardwareFailureWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFailureWarnMsg.class);
@@ -54,7 +58,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         }
         
         List<HardwareFailureWarnMqMsg> list = convertMqMsg(hardwareFailureWarnMsg, electricityCabinet);
-        rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
+        rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("sessionId", receiverMessage.getSessionId());
@@ -95,6 +99,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
             msg.setTxnNo(hardwareFailureWarnMsg.getTxnNo());
             msg.setTenantName(tenantName);
             msg.setCabinetName(electricityCabinet.getName());
+            msg.setDeviceName(electricityCabinet.getDeviceName());
             list.add(msg);
         });
         return list;
@@ -283,4 +288,6 @@ class HardwareFailureWarnMqMsg {
      * 故障发生次数
      */
     private Integer occurNum;
+    
+    private String deviceName;
 }

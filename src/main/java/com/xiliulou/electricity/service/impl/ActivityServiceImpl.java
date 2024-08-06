@@ -224,7 +224,7 @@ public class ActivityServiceImpl implements ActivityService {
             }
         
         } catch (Exception e) {
-            log.error("handle activity for purchase package error, order number = {}, package type = {}", orderNo, packageType, e);
+            log.warn("handle activity for purchase package error, order number = {}, package type = {}", orderNo, packageType, e);
             throw new BizException("110004", e.getMessage());
         } finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_PACKAGE_PURCHASE_KEY + value);
@@ -409,7 +409,7 @@ public class ActivityServiceImpl implements ActivityService {
 
             }
         } catch (Exception e) {
-            log.error("handle activity for user register error, uid = {}", uid, e);
+            log.warn("handle activity for user register error, uid = {}", uid, e);
             throw new BizException("110005", e.getMessage());
         } finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_USER_REGISTER_KEY + uid);
@@ -526,7 +526,7 @@ public class ActivityServiceImpl implements ActivityService {
                 }
             }
         }catch (Exception e){
-            log.error("handle activity for real name auth error, uid = {}",uid, e);
+            log.warn("handle activity for real name auth error, uid = {}",uid, e);
             throw new BizException("110007", e.getMessage());
         }finally {
             redisService.delete(CacheConstant.CACHE_HANDLE_ACTIVITY_REAL_NAME_AUTH_KEY + uid);
