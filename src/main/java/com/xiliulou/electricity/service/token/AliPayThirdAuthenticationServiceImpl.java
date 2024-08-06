@@ -254,7 +254,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
                     userOauthBindService.update(userOauthBind);
                 } else {
                     userOauthBind = UserOauthBind.builder().createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).phone(existPhone.getRight().getPhone())
-                            .uid(existPhone.getRight().getUid()).thirdId(openId).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND).tenantId(tenantId)
+                            .uid(existPhone.getRight().getUid()).thirdId(openId).source(UserOauthBind.SOURCE_ALI_PAY).status(UserOauthBind.STATUS_BIND).tenantId(tenantId)
                             .accessToken("").refreshToken("").thirdNick("").build();
                     userOauthBindService.insert(userOauthBind);
                 }
