@@ -1305,7 +1305,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(false, null);
         }
         
-        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
+        ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), lastOrder.getElectricityCabinetId());
         if (Objects.isNull(cabinetBox)) {
             log.warn("Orderv3 WARN! userBindingBatterySn.cabinetBox is null, sn is {}", electricityBattery.getSn());
             return Pair.of(false, null);
