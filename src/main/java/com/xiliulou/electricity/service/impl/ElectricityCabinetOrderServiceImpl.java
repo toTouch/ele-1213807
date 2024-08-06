@@ -1274,6 +1274,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(false, null);
         }
         
+        if (Objects.equals(orderQueryV3.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
+            log.info("Orderv3 INFO! not same cabinet, normal exchange");
+            return Pair.of(false, null);
+        }
+        
         // 默认取5分钟的订单，可选择配置
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
         log.info("Orderv3 INFO! lessTimeExchangeTwoCountAssert.scanTime is {} ,currentTime is {}", scanTime, System.currentTimeMillis());
