@@ -157,22 +157,22 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
             BigDecimal balance;
             UserAmount userAmount = userAmountService.queryByUid(query.getUid());
             if (Objects.isNull(userAmount)) {
-                log.error("AMOUNT ERROR! userAmount is null error! uid={}", query.getUid());
+                log.warn("AMOUNT WARN! userAmount is null! uid={}", query.getUid());
                 return R.fail("PAY_TRANSFER.0013", "未查询到用户账户");
             }
             balance = userAmount.getBalance();
             
             if (balance.compareTo(BigDecimal.valueOf(query.getAmount())) < 0) {
-                log.error("AMOUNT ERROR! insufficient amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
+                log.warn("AMOUNT WARN! insufficient amount fault! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
                 return R.fail("PAY_TRANSFER.0014", "提现余额不足");
             }
             if (query.getAmount() <= 2) {
-                log.error("AMOUNT ERROR! less than the minimum amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
+                log.warn("AMOUNT WARN! less than the minimum amount fault! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
                 return R.fail("PAY_TRANSFER.0015", "小于最低提现金额");
             }
             
             if (query.getAmount() > 20000) {
-                log.error("AMOUNT ERROR! greater than the minimum amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
+                log.warn("AMOUNT WARN! greater than the minimum amount fault! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
                 return R.fail("PAY_TRANSFER.0016", "大于单次最大提现金额");
             }
             
@@ -180,12 +180,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
             BankCard bankCard = bankCardService.getOne(Wrappers.<BankCard>lambdaQuery().eq(BankCard::getUid, query.getUid()).eq(BankCard::getEncBankNo, query.getBankNumber())
                     .eq(BankCard::getDelFlag, BankCard.DEL_NORMAL));
             if (Objects.isNull(bankCard)) {
-                log.error("BANKCARD ERROR! bankCard is null error! uid={}, bankNumber={}", query.getUid(), query.getBankNumber());
+                log.warn("BANKCARD WARN! bankCard is null fault! uid={}, bankNumber={}", query.getUid(), query.getBankNumber());
                 return R.fail("PAY_TRANSFER.0017", "找不到此银行卡");
             }
             
             if (ObjectUtil.isEmpty(BankNoConstants.BankNoMap.get(bankCard.getEncBankCode()))) {
-                log.error("BANKCARD ERROR! bankCard not support payment error! uid={}, bankNumber={}", query.getUid(), query.getBankNumber());
+                log.warn("BANKCARD WARN! bankCard not support payment fault! uid={}, bankNumber={}", query.getUid(), query.getBankNumber());
                 return R.fail("PAY_TRANSFER.0018", "不支持此银行卡转账");
             }
             
@@ -305,23 +305,23 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
             //解密密码
             decryptPassword = decryptPassword(encryptPassword);
             if (StrUtil.isEmpty(decryptPassword)) {
-                log.error("UPDATE WITHDRAW PASSWORD ERROR! decryptPassword error! password={}", withdrawPassword.getPassword());
+                log.warn("UPDATE WITHDRAW PASSWORD WARN! decryptPassword fault! password={}", withdrawPassword.getPassword());
                 return R.fail("系统错误!");
             }
         }
         
         if (!customPasswordEncoder.matches(decryptPassword, withdrawPassword.getPassword())) {
-            log.error("UPDATE WITHDRAW PASSWORD ERROR! password is not equals error! password={}, withdrawPassword={}", decryptPassword, withdrawPassword);
+            log.warn("UPDATE WITHDRAW PASSWORD WARN! password is not equals fault! password={}, withdrawPassword={}", decryptPassword, withdrawPassword);
             return R.fail("提现密码错误");
         }
         
         if (!Objects.equals(handleWithdrawQuery.getStatus(), WithdrawRecord.CHECK_REFUSE) && !Objects.equals(handleWithdrawQuery.getStatus(), WithdrawRecord.CHECK_PASS)) {
-            log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", handleWithdrawQuery.getStatus());
+            log.warn("UPDATE WITHDRAW PASSWORD WARN! Illegal parameter! statusNumber={}", handleWithdrawQuery.getStatus());
             return R.fail("参数不合法");
         }
         WithdrawRecord withdrawRecord = withdrawRecordMapper.selectById(handleWithdrawQuery.getId());
         if (!Objects.equals(withdrawRecord.getStatus(), WithdrawRecord.CHECKING)) {
-            log.error("UPDATE WITHDRAW PASSWORD ERROR! repeat audit error! statusNumber={}", withdrawRecord.getStatus());
+            log.warn("UPDATE WITHDRAW PASSWORD WARN! repeat audit fault! statusNumber={}", withdrawRecord.getStatus());
             return R.fail("不能重复审核");
         }
     
@@ -383,7 +383,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
     public R updateStatus(String orderId, Double amount, Double handlingFee, Boolean result, String arriveTime) {
         WithdrawRecord withdrawRecord = withdrawRecordMapper.selectOne(new LambdaQueryWrapper<WithdrawRecord>().eq(WithdrawRecord::getOrderId, orderId));
         if (Objects.isNull(withdrawRecord)) {
-            log.error("withdrawRecord  is null! orderId:{}", orderId);
+            log.warn("withdrawRecord  is null! orderId:{}", orderId);
             return R.fail("查不到该笔流水");
         }
         
@@ -436,18 +436,18 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
     public R check(CheckQuery query) {
         BankCard bankCard = bankCardService.queryByUidAndDel(query.getUid());
         if (Objects.isNull(bankCard)) {
-            log.error("user is not bind card! uid:{}", query.getUid());
+            log.warn("user is not bind card! uid:{}", query.getUid());
             return R.fail("PAY_TRANSFER.0011", "您未绑定银行卡，不能提现");
         }
         
         //校验姓名
         if (!Objects.equals(bankCard.getEncBindUserName(), query.getName())) {
-            log.error("phone is not equal! uName:{} ,qName:{},uid:{}", bankCard.getEncBindUserName(), query.getName(), query.getUid());
+            log.warn("phone is not equal! uName:{} ,qName:{},uid:{}", bankCard.getEncBindUserName(), query.getName(), query.getUid());
             return R.fail("PAY_TRANSFER.0010", "姓名与绑定人不符");
         }
         
         if (!bankCard.getEncBindIdNumber().contains(query.getIdNumber())) {
-            log.error("idNumber is not equal! uIdNumber:{} ,qIdNumber:{},uid:{}", bankCard.getEncBindIdNumber(), query.getIdNumber(), query.getUid());
+            log.warn("idNumber is not equal! uIdNumber:{} ,qIdNumber:{},uid:{}", bankCard.getEncBindIdNumber(), query.getIdNumber(), query.getUid());
             return R.fail("PAY_TRANSFER.0012", "身份证后四位与绑定的不一致");
         }
         
@@ -497,33 +497,33 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
             //解密密码
             decryptPassword = decryptPassword(encryptPassword);
             if (StrUtil.isEmpty(decryptPassword)) {
-                log.error("UPDATE WITHDRAW PASSWORD ERROR! decryptPassword error! password={}", withdrawPassword.getPassword());
+                log.warn("UPDATE WITHDRAW PASSWORD WARN! decryptPassword fault! password={}", withdrawPassword.getPassword());
                 return R.fail("SYSTEM.0001", "系统错误!");
             }
         }
         
         if (!customPasswordEncoder.matches(decryptPassword, withdrawPassword.getPassword())) {
-            log.error("UPDATE WITHDRAW PASSWORD ERROR! password is not equals error! password={}, withdrawPassword={}", decryptPassword, withdrawPassword);
+            log.warn("UPDATE WITHDRAW PASSWORD WARN! password is not equals fault! password={}, withdrawPassword={}", decryptPassword, withdrawPassword);
             return R.fail("100420", "提现密码错误");
         }
         
         if (!Objects.equals(batchHandleWithdrawRequest.getStatus(), WithdrawRecord.CHECK_REFUSE) && !Objects.equals(batchHandleWithdrawRequest.getStatus(),
                 WithdrawRecord.CHECK_PASS)) {
-            log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
+            log.warn("UPDATE WITHDRAW PASSWORD WARN! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
             return R.fail("100423", "错误的审批操作");
         }
         
         // 判断当前租户是否允许线下提现
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
-            log.error("UPDATE WITHDRAW PASSWORD ERROR! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
+            log.warn("UPDATE WITHDRAW PASSWORD WARN! Illegal parameter! statusNumber={}", batchHandleWithdrawRequest.getStatus());
             return R.fail("100422", "系统设置中-提现方式（线下）未生效");
         }
         
         WithdrawRecordQueryModel withdrawRecordQueryModel = WithdrawRecordQueryModel.builder().tenantId(tenantId).idList(batchHandleWithdrawRequest.getIdList()).build();
         List<WithdrawRecord> withdrawRecordList = withdrawRecordMapper.selectList(withdrawRecordQueryModel);
         if (CollectionUtils.isEmpty(withdrawRecordList) || !Objects.equals(withdrawRecordList.size(), batchHandleWithdrawRequest.getIdList().size())) {
-            log.error("batch handle withdraw record is not exists! idList={}", batchHandleWithdrawRequest.getIdList());
+            log.warn("batch handle withdraw record is not exists! idList={}", batchHandleWithdrawRequest.getIdList());
             return R.fail("100419", "提现记录不存在。");
         }
         
