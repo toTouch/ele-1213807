@@ -1386,6 +1386,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
+        
+        log.info("Orderv3 INFO! lastExchangeSuccessHandler.cabinetBox is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
+                JsonUtil.toJson(lastOrder));
         // 电池在仓，并且电池所在仓门=上个订单的新仓门
         if (Objects.nonNull(cabinetBox) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getNewCellNo())) {
             // 在仓内，分配上一个订单的新仓门
@@ -1415,7 +1418,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         String msg = history.getMsg();
-        log.info("lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
+        log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
         
         //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
         if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
@@ -1435,7 +1438,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
-            log.warn("newCellOpenFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
+            log.warn("Orderv3 WARN!newCellOpenFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
@@ -1445,7 +1448,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || (Objects.nonNull(electricityBattery) && StrUtil.isEmpty(electricityBattery.getSn()))) {
-            log.warn("newCellOpenFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
+            log.warn("Orderv3 WARN!newCellOpenFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 没有在仓，需要返回前端仓门号
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             return Pair.of(true, vo);
@@ -1455,7 +1458,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
+        
         ElectricityBattery battery = electricityBatteryService.queryBySnFromDb(userBindingBatterySn);
+        
+        log.info("Orderv3 INFO! newCellOpenFail.cabinetBox is {}, battery is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
+                Objects.nonNull(battery) ? JsonUtil.toJson(battery) : "null", JsonUtil.toJson(lastOrder));
         // 用户绑定的电池状态是否为租借状态 && 用户绑定的电池在仓 & 电池所在的仓门=上个订单的旧仓门
         if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && StrUtil.isNotBlank(
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
@@ -1476,7 +1483,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
             // 旧仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
-            log.warn("oldCellCheckFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
+            log.warn("Orderv3 WARN! oldCellCheckFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
@@ -1485,7 +1492,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
-            log.warn("oldCellCheckFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
+            log.warn("Orderv3 WARN!oldCellCheckFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 不在仓，前端会自主开仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getOldCellNo());
@@ -1496,6 +1503,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
+        log.info("Orderv3 INFO! oldCellCheckFail.cabinetBox is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
+                JsonUtil.toJson(lastOrder));
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
