@@ -2814,12 +2814,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         // 添加用户操作记录失败
         try {
-            BatteryMemberCard card = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             Map<String, Object> map = Maps.newHashMap();
-            map.put("packageName", card.getName());
+            map.put("packageName", batteryMemberCard.getName());
             map.put("phone", userInfo.getPhone());
             map.put("name", userInfo.getName());
-            map.put("businessType", card.getBusinessType());
+            map.put("businessType", batteryMemberCard.getBusinessType());
             operateRecordUtil.record(null, map);
         } catch (Exception e) {
             log.error("Failed to add user action record: ", e);
