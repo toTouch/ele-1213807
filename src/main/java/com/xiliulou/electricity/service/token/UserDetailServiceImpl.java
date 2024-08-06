@@ -5,6 +5,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.security.authentication.authorization.AuthorizationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,9 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        if (StringUtils.isBlank(username)){
+            throw new UsernameNotFoundException("用户名或者密码错误!");
+        }
         //查询用户
         User user = userService.queryByUserName(username);
         if (Objects.isNull(user) || Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL_WX_PRO)) {

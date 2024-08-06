@@ -57,7 +57,8 @@ public class JsonMerchantWithdrawController extends BaseController {
     public R queryMerchantWithdrawList(@RequestParam(value = "size", required = true) Long size, @RequestParam(value = "offset", required = true) Long offset,
             @RequestParam(value = "merchantUid", required = false) Long merchantUid, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "orderNo", required = false) String orderNo) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -89,7 +90,7 @@ public class JsonMerchantWithdrawController extends BaseController {
         }
         
         MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId())
-                .franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).size(size).offset(offset).uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).build();
+                .franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).size(size).offset(offset).uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).orderNo(orderNo).build();
         
         return R.ok(merchantWithdrawApplicationService.queryMerchantWithdrawApplicationList(merchantWithdrawApplicationRequest));
         
@@ -98,7 +99,8 @@ public class JsonMerchantWithdrawController extends BaseController {
     @GetMapping(value = "/admin/merchant/withdraw/pageCount")
     public R queryMerchantWithdrawCount(@RequestParam(value = "merchantUid", required = false) Long merchantUid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "orderNo", required = false) String orderNo) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -122,7 +124,7 @@ public class JsonMerchantWithdrawController extends BaseController {
         }
         
         MerchantWithdrawApplicationRequest merchantWithdrawApplicationRequest = MerchantWithdrawApplicationRequest.builder().tenantId(user.getTenantId())
-                .franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).build();
+                .franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).uid(merchantUid).status(status).beginTime(beginTime).endTime(endTime).orderNo(orderNo).build();
         
         return R.ok(merchantWithdrawApplicationService.countMerchantWithdrawApplication(merchantWithdrawApplicationRequest));
     }

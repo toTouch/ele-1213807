@@ -67,6 +67,9 @@ import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
@@ -298,6 +301,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
     
     
     public static final Integer ELE = 0;
@@ -1938,6 +1944,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         }
         try {
+            //站内信，仅小程序
+            if (systemDefinitionEnum.equals(SystemDefinitionEnum.WX_APPLET)){
+                siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_FREEZE)
+                        .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                        .addContext("orderNo", freezeEntity.getOrderNo()).build());
+            }
             CarRentalPackagePo packagePo = carRentalPackageService.selectById(packageOrderEntity.getRentalPackageId());
             Map<String, Object> map = new HashMap<>();
             map.put("username", userInfo.getName());
@@ -2218,6 +2230,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         //发送审核通知
         batteryMembercardRefundOrderService.sendAuditNotify(userInfo);
         
+        // 发送站内信
+        siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_AND_TERMINATION)
+                .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                .addContext("orderNo", rentRefundOrderEntity.getOrderNo()).build());
         return true;
     }
     
