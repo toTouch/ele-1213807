@@ -205,7 +205,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), tenantId,insuranceOrderAdd.getPaymentChannel());
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");

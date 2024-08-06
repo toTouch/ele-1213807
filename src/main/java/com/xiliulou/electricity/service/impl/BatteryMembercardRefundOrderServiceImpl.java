@@ -72,6 +72,7 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderDetailVO;
@@ -389,7 +390,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         try {
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), TenantContextHolder.getTenantId());
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), TenantContextHolder.getTenantId(), ChannelSourceContextHolder.get());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN!not found userOauthBind,uid={}", user.getUid());
                 return Triple.of(false, "", "未找到用户的第三方授权信息!");

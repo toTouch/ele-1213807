@@ -237,10 +237,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      *
      * @param tenantId 租户ID
      * @param uid      用户UID
+     * @param channel
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean refundCarOrderApply(Integer tenantId, Long uid) {
+    public boolean refundCarOrderApply(Integer tenantId, Long uid, String channel) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -287,7 +288,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
                 throw new BizException("100265", "还车审核中，请耐心等待");
             }
             
-            CarRentalOrderPo carRentalOrderPoInsert = buildCarRentalOrderPo(userInfo, RentalTypeEnum.RETURN.getCode(), memberTermEntity, electricityCar);
+            CarRentalOrderPo carRentalOrderPoInsert = buildCarRentalOrderPo(userInfo, RentalTypeEnum.RETURN.getCode(), memberTermEntity, electricityCar,channel);
             
             // 事务处理
             refundCarOrderApplyTx(carRentalOrderPoInsert);
@@ -321,9 +322,10 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @param type             租赁类型
      * @param memberTermEntity 租车会员信息
      * @param electricityCar   车辆信息
+     * @param channel ${@link com.xiliulou.core.base.enums.ChannelEnum}
      * @return 租赁订单
      */
-    private CarRentalOrderPo buildCarRentalOrderPo(UserInfo userInfo, Integer type, CarRentalPackageMemberTermPo memberTermEntity, ElectricityCar electricityCar) {
+    private CarRentalOrderPo buildCarRentalOrderPo(UserInfo userInfo, Integer type, CarRentalPackageMemberTermPo memberTermEntity, ElectricityCar electricityCar, String channel) {
         CarRentalOrderPo carRentalOrderPoInsert = new CarRentalOrderPo();
         carRentalOrderPoInsert.setUid(userInfo.getUid());
         
@@ -345,7 +347,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         carRentalOrderPoInsert.setStoreId(userInfo.getStoreId().intValue());
         carRentalOrderPoInsert.setCreateUid(userInfo.getUid());
         carRentalOrderPoInsert.setCreateTime(System.currentTimeMillis());
-        
+        carRentalOrderPoInsert.setChannel(channel);
         return carRentalOrderPoInsert;
         
     }
@@ -358,10 +360,11 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
      * @param uid          用户UID
      * @param carSn        车辆SN码
      * @param optUid       操作用户UID
+     * @param channel
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid) {
+    public boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid, String channel) {
         if (!ObjectUtils.allNotNull(tenantId, uid, carSn, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -512,6 +515,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         // 生成租赁订单
         CarRentalOrderPo carRentalOrderEntityInsert = buildCarRentalOrder(rentalPackageEntity, uid, rentalPackageOrderNo, electricityCar, optUid, RentalTypeEnum.RENTAL.getCode(),
                 PayTypeEnum.ON_LINE.getCode());
+        carRentalOrderEntityInsert.setChannel(channel);
         
         // 生成用户租赁状态
         UserInfo userInfoUpdate = buildUserInfo(uid, RentalTypeEnum.RENTAL.getCode());

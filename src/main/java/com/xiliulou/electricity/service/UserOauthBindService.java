@@ -119,4 +119,15 @@ public interface UserOauthBindService {
      */
     List<UserOauthBind> queryListByUidAndTenantId(Long uid, Integer tenantId);
     
+    /**
+     * 根据用户id+租户id+用户渠道来源查询
+     *
+     * @param uid      用户
+     * @param tenantId 租户
+     * @param channel  ${@link com.xiliulou.core.base.enums.ChannelEnum}
+     * @author caobotao.cbt
+     * @date 2024/8/5 18:51
+     */
+    UserOauthBind queryByUidAndTenantAndChannel(Long uid, Integer tenantId, String channel);
+    
 }

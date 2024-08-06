@@ -653,8 +653,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         log.warn("save approve refund rentOrderTx failed. t_electricity_trade_order status is wrong. orderNo is {}", orderNo);
                         throw new BizException("300000", "数据有误");
                     }
-    
-                    
                     
                     // 调用微信支付，进行退款
                     RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
@@ -681,7 +679,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
             refundPayService.process(callBackResource);
         }
-    
+        
         carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
         log.info("save approve refund order flow end, order No = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getUid());
         
@@ -1545,7 +1543,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         log.info("saveApproveRefundRentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
                         BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
                         log.info("saveApproveRefundRentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
-    
+                        
                         // 赋值退款单状态及审核时间
                         rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
                         
@@ -1565,7 +1563,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setOutRefundNo(refundRentOrderNo);
                 refundPayService.process(callBackResource);
             }
-    
+            
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             
         } else {
@@ -1631,14 +1629,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                             throw new BizException("300000", "数据有误");
                         }
                         
-                        
                         // 调用微信支付，进行退款
                         RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
                                 .refundOrderNo(carRentRefundVo.getOrderNo()).refundAmount(carRentRefundVo.getAmount()).build();
                         log.info("save approve refund rentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
                         BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
                         log.info("save approve refund rentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
-                       
+                        
                         rentRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
                     } catch (PayException e) {
                         log.error("save approve refund rentOrderTx failed.", e);
@@ -1656,7 +1653,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                 refundPayService.process(callBackResource);
             }
-    
+            
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         } else {
             // 1. 更新退租申请单状态
@@ -2834,7 +2831,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             // 4. 三方授权相关
-            UserOauthBind userOauthBindEntity = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+            UserOauthBind userOauthBindEntity = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId, buyOptModel.getPaymentChannel());
             if (Objects.isNull(userOauthBindEntity) || Objects.isNull(userOauthBindEntity.getThirdId())) {
                 throw new BizException("100235", "未找到用户的第三方授权信息");
             }

@@ -84,4 +84,11 @@ public class CarRentalOrderPo extends BasicCarPo {
      * 备注
      */
     private String remark;
+    
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String channel;
+    
 }
