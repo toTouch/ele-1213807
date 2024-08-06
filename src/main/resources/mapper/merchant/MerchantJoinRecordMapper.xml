@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark, modify_inviter,franchisee_id,package_id,package_type,order_id
+        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark, modify_inviter,franchisee_id,package_id,package_type,order_id, success_time
     </sql>
     
     <!--新增所有列-->
@@ -11,11 +11,11 @@
         insert into t_merchant_join_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
             merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag,
-            create_time, update_time, tenant_id, remark, modify_inviter,franchisee_id
+            create_time, update_time, tenant_id, remark, modify_inviter, franchisee_id, success_time
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime},
-            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{modifyInviter}, #{franchiseeId}
+            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{modifyInviter}, #{franchiseeId}, #{successTime}
         </trim>
     </insert>
     

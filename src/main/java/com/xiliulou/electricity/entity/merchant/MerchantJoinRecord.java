@@ -123,10 +123,16 @@ public class MerchantJoinRecord {
     
     /**
      * 套餐类型
+     *
      * @see PackageTypeEnum
      */
     private Integer packageType;
     
     private String orderId;
+    
+    /**
+     * 邀请成功时间
+     */
+    private Long successTime;
     
 }

@@ -200,7 +200,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-//        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
+        //        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
@@ -268,6 +268,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             merchantJoinRecordUpdate.setPackageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
             // 加盟商
             merchantJoinRecordUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+            merchantJoinRecordUpdate.setSuccessTime(System.currentTimeMillis());
             merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
         } else {
             MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
@@ -282,24 +283,24 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     public R selectInviterList(MerchantModifyInviterRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Long uid = request.getUid();
-    
+        
         MerchantInviterVO successInviterVO = this.querySuccessInviter(uid);
         if (Objects.isNull(successInviterVO)) {
             log.warn("Modify inviter fail! not found success record, uid={}", uid);
             return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
         }
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
             return R.ok();
         }
-    
+        
         // 商户列表
         MerchantPageRequest merchantPageRequest = MerchantPageRequest.builder().size(request.getSize()).offset(request.getOffset()).name(request.getMerchantName())
                 .tenantId(tenantId).franchiseeId(userInfo.getFranchiseeId()).build();
@@ -307,7 +308,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (CollectionUtils.isEmpty(merchantList)) {
             return R.ok();
         }
-    
+        
         Integer inviterSource = successInviterVO.getInviterSource();
         Long inviterMerchantId = successInviterVO.getMerchantId();
         List<MerchantVO> filterMerchantList = merchantList;
@@ -315,18 +316,18 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             // 去除原商户邀请人
             filterMerchantList = merchantList.stream().filter(merchant -> !Objects.equals(merchant.getId(), inviterMerchantId)).collect(Collectors.toList());
         }
-    
+        
         if (CollectionUtils.isEmpty(filterMerchantList)) {
             return R.ok();
         }
-    
+        
         List<MerchantForModifyInviterVO> merchantVOList = filterMerchantList.stream().map(item -> {
             MerchantForModifyInviterVO merchantForModifyInviterVO = new MerchantForModifyInviterVO();
             BeanUtils.copyProperties(item, merchantForModifyInviterVO);
-        
+            
             return merchantForModifyInviterVO;
         }).collect(Collectors.toList());
-    
+        
         return R.ok(merchantVOList);
     }
     
@@ -337,7 +338,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.error("querySuccessInviter userInfoExtra not exist, uid={}", uid);
             return null;
         }
-    
+        
         Long inviterUid = userInfoExtra.getInviterUid();
         Integer activitySource = userInfoExtra.getActivitySource();
         if (Objects.isNull(inviterUid) || Objects.equals(inviterUid, NumberConstant.ZERO_L) || Objects.isNull(activitySource) || Objects.equals(activitySource,
@@ -345,7 +346,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             log.warn("querySuccessInviter has no inviter, uid={}", uid);
             return null;
         }
-    
+        
         String inviterName = StringUtils.EMPTY;
         Long merchantId = NumberConstant.ZERO_L;
         if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
@@ -357,7 +358,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } else {
             inviterName = Optional.ofNullable(userInfoService.queryByUidFromDb(inviterUid)).map(UserInfo::getName).orElse("");
         }
-    
+        
         return MerchantInviterVO.builder().uid(uid).inviterUid(inviterUid).inviterName(inviterName).inviterSource(activitySource).merchantId(merchantId).build();
     }
     
@@ -371,47 +372,47 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-    
+        
         try {
             Integer tenantId = TenantContextHolder.getTenantId();
             Long merchantId = merchantModifyInviterUpdateRequest.getMerchantId();
-        
+            
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
-        
+            
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
                 log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
                 return R.ok();
             }
-        
+            
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
             if (Objects.isNull(merchant)) {
                 log.warn("Modify inviter fail! merchant not exist, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
-    
+            
             // 获取商户保护期和有效期
             MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
             if (Objects.isNull(merchantAttr)) {
                 log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
-    
+            
             if (!Objects.equals(userInfo.getFranchiseeId(), merchant.getFranchiseeId())) {
                 log.warn("Modify inviter fail! not same franchisee, uid={}, merchantId={}", uid, merchantId);
                 return R.ok();
             }
-        
+            
             // 参与成功的记录
             MerchantInviterVO successInviterVO = querySuccessInviter(uid);
             if (Objects.isNull(successInviterVO)) {
                 log.warn("Modify inviter fail! not found success record, uid={}", uid);
                 return R.fail("120107", "该用户未成功参与活动，无法修改邀请人");
             }
-        
+            
             Integer inviterSource = successInviterVO.getInviterSource();
             Long oldInviterUid = successInviterVO.getInviterUid();
             String oldInviterName = successInviterVO.getInviterName();
@@ -423,7 +424,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 log.warn("Modify inviter fail! inviters can not be the same, uid={}, oldInviterUid={}, newInviterUid={}", uid, oldInviterUid, newInviterUid);
                 return R.fail("120108", "只可修改为非当前商户，请重新选择");
             }
-        
+            
             // 逻辑删除旧的记录
             switch (inviterSource) {
                 case 1:
@@ -449,7 +450,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 default:
                     break;
             }
-        
+            
             // 新增用户商户绑定
             UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
             if (Objects.nonNull(userInfoExtra)) {
@@ -461,38 +462,38 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 userInfoExtra.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
                 userInfoExtra.setInviterUid(newInviterUid);
                 userInfoExtra.setLatestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
-        
+                
                 this.updateByUid(userInfoExtra);
             } else {
                 UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                         .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .activitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).inviterUid(newInviterUid)
                         .latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).build();
-        
+                
                 this.insert(insertUserInfoExtra);
             }
-        
+            
             // 新增商户参与记录
             MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId, merchant.getFranchiseeId());
             merchantJoinRecordService.insertOne(merchantJoinRecord);
-        
+            
             // 新增修改记录
             MerchantInviterModifyRecord merchantInviterModifyRecord = MerchantInviterModifyRecord.builder().uid(uid).inviterUid(newInviterUid)
                     .inviterName(Optional.ofNullable(merchantService.queryByIdFromCache(merchantId)).orElse(new Merchant()).getName()).oldInviterUid(oldInviterUid)
-                    .oldInviterName(oldInviterName)
-                    .oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId).operator(operator)
-                    .remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
+                    .oldInviterName(oldInviterName).oldInviterSource(inviterSource).merchantId(merchantId).franchiseeId(merchant.getFranchiseeId()).tenantId(tenantId)
+                    .operator(operator).remark(merchantModifyInviterUpdateRequest.getRemark()).delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
-        
+            
             merchantInviterModifyRecordService.insertOne(merchantInviterModifyRecord);
-        
+            
             return R.ok();
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid);
         }
     }
     
-    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId, Long franchiseeId) {
+    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId,
+            Long franchiseeId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
@@ -526,6 +527,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 .inviterType(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF).joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime)
                 .status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime).protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)
                 .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES)
-                .franchiseeId(franchiseeId).build();
+                .franchiseeId(franchiseeId).successTime(nowTime).build();
     }
 }
