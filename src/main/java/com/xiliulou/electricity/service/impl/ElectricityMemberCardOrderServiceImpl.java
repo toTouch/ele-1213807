@@ -2812,16 +2812,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         // 赠送优惠券
         sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         
-        // 添加用户操作记录
+        // 添加用户操作记录失败
         try {
             BatteryMemberCard card = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             Map<String, Object> map = Maps.newHashMap();
             map.put("packageName", card.getName());
             map.put("phone", userInfo.getPhone());
             map.put("name", userInfo.getName());
+            map.put("businessType", card.getBusinessType());
             operateRecordUtil.record(null, map);
         } catch (Exception e) {
-            log.error("The user failed to modify the battery plan record because: ", e);
+            log.error("Failed to add user action record: ", e);
         }
         return Triple.of(true, null, null);
     }
