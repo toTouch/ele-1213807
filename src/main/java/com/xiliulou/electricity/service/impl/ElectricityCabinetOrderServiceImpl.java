@@ -1267,15 +1267,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      * @return Boolean=false继续走正常换电
      */
     private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, OrderQueryV3 orderQueryV3) {
+        if (Objects.equals(orderQueryV3.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
+            log.info("Orderv3 INFO! not same cabinet, normal exchange");
+            return Pair.of(false, null);
+        }
+       
         Long uid = userInfo.getUid();
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
             log.warn("Orderv3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
-            return Pair.of(false, null);
-        }
-        
-        if (Objects.equals(orderQueryV3.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
-            log.info("Orderv3 INFO! not same cabinet, normal exchange");
             return Pair.of(false, null);
         }
         
