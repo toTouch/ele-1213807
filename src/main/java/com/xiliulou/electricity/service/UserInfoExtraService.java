@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
@@ -24,7 +25,7 @@ public interface UserInfoExtraService {
     
     Integer deleteByUid(Long uid);
     
-    void bindMerchant(Long uid, String orderId ,Long memberCardId);
+    void bindMerchant(UserInfo userInfo, String orderId ,Long memberCardId);
     
     MerchantInviterVO querySuccessInviter(Long uid);
     

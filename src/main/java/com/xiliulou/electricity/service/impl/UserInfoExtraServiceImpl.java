@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
@@ -161,14 +163,15 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public void bindMerchant(Long uid, String orderId, Long memberCardId) {
+    public void bindMerchant(UserInfo userInfo, String orderId, Long memberCardId) {
+        Long uid = userInfo.getUid();
+        
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.warn("BIND MERCHANT WARN!electricityMemberCardOrder is null,uid={},orderId={}", uid, orderId);
             return;
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo.getPayCount()) || userInfo.getPayCount() > 1) {
             log.info("BIND MERCHANT WARN!payCount is illegal,uid={},orderId={}", uid, orderId);
             return;
@@ -222,6 +225,24 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
+        // 加盟商一致校验
+        if (!Objects.equals(userInfo.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
+            log.warn("BIND MERCHANT WARN! userInfo franchisee not equal order franchisee, uid ={} , order.franchiseeId={}", uid, electricityMemberCardOrder.getFranchiseeId());
+            return;
+        }
+        
+        if (!Objects.equals(merchant.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
+            log.warn("BIND MERCHANT WARN! merchant franchisee not equal order franchisee,merchant.id = {} , order.franchiseeId={}", merchant.getId(),
+                    electricityMemberCardOrder.getFranchiseeId());
+            return;
+        }
+        
+        List<RebateConfig> rebateConfigs = rebateConfigService.listRebateConfigByMid(electricityMemberCardOrder.getMemberCardId());
+        if (CollUtil.isEmpty(rebateConfigs)) {
+            log.warn("BIND MERCHANT WARN! current member not in rebateConfig, memberId={}", electricityMemberCardOrder.getMemberCardId());
+            return;
+        }
+        
         //邀请有效期内
         if (merchantAttrService.checkInvitationTime(merchantAttr, merchantJoinRecord.getStartTime())) {
             UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
@@ -242,6 +263,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
             merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
             merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+            merchantJoinRecordUpdate.setPackageId(electricityMemberCardOrder.getMemberCardId());
+            merchantJoinRecordUpdate.setPackageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            // 加盟商
+            merchantJoinRecordUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
         } else {
             MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
@@ -373,6 +399,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
+    
+            if (!Objects.equals(userInfo.getFranchiseeId(), merchant.getFranchiseeId())) {
+                log.warn("Modify inviter fail! not same franchisee, uid={}, merchantId={}", uid, merchantId);
+                return R.ok();
+            }
         
             // 参与成功的记录
             MerchantInviterVO successInviterVO = querySuccessInviter(uid);
@@ -442,7 +473,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             }
         
             // 新增商户参与记录
-            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId);
+            MerchantJoinRecord merchantJoinRecord = this.assembleRecord(merchantId, newInviterUid, uid, channelEmployeeUid, merchantAttr, tenantId, merchant.getFranchiseeId());
             merchantJoinRecordService.insertOne(merchantJoinRecord);
         
             // 新增修改记录
@@ -461,7 +492,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
     }
     
-    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId) {
+    private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId, Long franchiseeId) {
         long nowTime = System.currentTimeMillis();
         Integer protectionTime = merchantAttr.getInvitationProtectionTime();
         Integer protectionTimeUnit = merchantAttr.getProtectionTimeUnit();
@@ -494,6 +525,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid)
                 .inviterType(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF).joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime)
                 .status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime).protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)
-                .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES).build();
+                .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES)
+                .franchiseeId(franchiseeId).build();
     }
 }

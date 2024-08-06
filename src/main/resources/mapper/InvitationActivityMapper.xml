@@ -20,12 +20,13 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityMap">
         select
-          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id
+          id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id, franchisee_id
         from t_invitation_activity
         where id = #{id} and del_flag =0
     </select>
@@ -87,8 +88,7 @@
     <select id="selectByPage" resultMap="InvitationActivityMap">
         select
         id, name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag,
-        create_time, update_time,
-        tenant_id
+        create_time, update_time, tenant_id, franchisee_id
         from t_invitation_activity
         where del_flag=0
         <if test="name != null and name != ''">
@@ -99,6 +99,15 @@
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" separator="," close=")">
+                #{franchiseeId}
+            </foreach>
         </if>
         order by id desc
         limit #{offset}, #{size}
@@ -117,10 +126,24 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" separator="," close=")">
+                #{franchiseeId}
+            </foreach>
+        </if>
     </select>
-
+    
     <select id="checkUsableActivity" resultType="Integer">
-        select 1 from t_invitation_activity where del_flag=0 and tenant_id = #{tenantId} and status =1 limit 1
+        select 1 from t_invitation_activity
+        where del_flag=0 and tenant_id = #{tenantId} and status =1
+        <if test="franchiseeId == null and franchiseeId == 0">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        limit 1
     </select>
 
     <select id="selectBySearch" resultMap="InvitationActivityMap">
@@ -133,19 +156,22 @@
         <if test="status != null">
             and status = #{status}
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
         order by id
     </select>
 
     <select id="selectUsableActivity" resultMap="InvitationActivityMap">
-        select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time
+        select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time, franchisee_id
         from t_invitation_activity
         where tenant_id = #{tenantId} and status=1 and del_flag = 0
     </select>
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity(name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id)
-        values (#{name}, #{type}, #{status}, #{description}, #{hours}, #{minutes}, #{discountType}, #{firstReward}, #{otherReward}, #{operateUid}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId})
+        insert into t_invitation_activity(name, type, status, description, hours, minutes, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id, franchisee_id)
+        values (#{name}, #{type}, #{status}, #{description}, #{hours}, #{minutes}, #{discountType}, #{firstReward}, #{otherReward}, #{operateUid}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{franchiseeId})
     </insert>
 
     <!--通过主键修改数据-->

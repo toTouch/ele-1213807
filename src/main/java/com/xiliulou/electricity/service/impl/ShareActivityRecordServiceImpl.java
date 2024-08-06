@@ -9,16 +9,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -52,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 发起邀请活动记录(ShareActivityRecord)表服务实现类
@@ -91,8 +89,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     
     @Autowired
     private AssertPermissionService assertPermissionService;
-
-
+    
+    @Resource
+    private FranchiseeService franchiseeService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -189,6 +189,12 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             shareActivityRecord.setCreateTime(System.currentTimeMillis());
             shareActivityRecord.setUpdateTime(System.currentTimeMillis());
             shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
+    
+            Integer franchiseeId = getFranchiseeId(activityId);
+            if (Objects.nonNull(franchiseeId)) {
+                shareActivityRecord.setFranchiseeId(franchiseeId.longValue());
+            }
+            
             shareActivityRecordMapper.insert(shareActivityRecord);
         }
 
@@ -228,6 +234,14 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         return R.ok(getShareUrlPair.getRight());
 
     }
+    
+    private Integer getFranchiseeId(Integer activityId) {
+        ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
+        if (Objects.isNull(shareActivity) || Objects.isNull(shareActivity.getFranchiseeId())) {
+            return null;
+        }
+        return shareActivity.getFranchiseeId();
+    }
 
     @Override
     @Slave
@@ -253,6 +267,11 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         //获取用户领取的优惠券数量
         for(ShareActivityRecordVO shareActivityRecordVO : shareActivityRecordVOList){
             shareActivityRecordVO.setCouponCount(getReceivedCouponCount(shareActivityRecordVO));
+    
+            Long franchiseeId = shareActivityRecordVO.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                shareActivityRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
         }
         return R.ok(shareActivityRecordVOList);
     }

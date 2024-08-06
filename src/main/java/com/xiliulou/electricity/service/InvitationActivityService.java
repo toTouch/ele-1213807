@@ -70,8 +70,8 @@ public interface InvitationActivityService {
     List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
-
-    Integer checkUsableActivity(Integer tenantId);
+    
+    List<InvitationActivity> queryOnlineActivity(Integer tenantId, Long franchiseeId);
 
     Triple<Boolean, String, Object> activityInfo();
     
@@ -95,6 +95,6 @@ public interface InvitationActivityService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
-    R<?> removeById(Long id);
+    R<?> removeById(Long id, List<Long> franchiseeIds);
     
 }

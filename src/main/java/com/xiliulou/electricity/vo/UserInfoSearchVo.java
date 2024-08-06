@@ -19,4 +19,8 @@ public class UserInfoSearchVo {
     private String phone;
     
     private String nameAndPhone;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 }

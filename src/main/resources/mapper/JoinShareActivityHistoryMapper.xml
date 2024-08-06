@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper">
     
-    <resultMap type="com.xiliulou.electricity.entity.JoinShareActivityHistory"  id="JoinShareActivityHistoryMap">
+    <resultMap type="com.xiliulou.electricity.entity.JoinShareActivityHistory" id="JoinShareActivityHistoryMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="recordId" column="record_id" jdbcType="INTEGER"/>
@@ -15,33 +15,38 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!-- 基础字段 -->
     <sql id="selectJoinShareActivityHistory">
         select id,
-            uid,
-            record_id,
-            join_uid,
-            start_time,
-            expired_time,
-            status,
-            create_time,
-            update_time,
-            tenant_id,
-            activity_id
+               uid,
+               record_id,
+               join_uid,
+               start_time,
+               expired_time,
+               status,
+               create_time,
+               update_time,
+               tenant_id,
+               activity_id
         from t_join_share_activity_history
     </sql>
     
     <update id="removeByJoinUid">
-        update t_join_share_activity_history set del_flag = 1, update_time = #{updateTime} where join_uid = #{joinUid} and tenant_id = #{tenantId} and status = 2
+        update t_join_share_activity_history
+        set del_flag    = 1,
+            update_time = #{updateTime}
+        where join_uid = #{joinUid}
+          and tenant_id = #{tenantId}
+          and status = 2
     </update>
     
     <!--通过实体作为筛选条件查询-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.JoinShareActivityHistoryVO">
         select
         jsah.id as id, jsah.start_time as startTime,
-         jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
-        jsah.update_time as updateTime, jsah.tenant_id as tenantId, tui.phone as join_phone, tui.name as join_name
+        jsah.expired_time as expiredTime,jsah.status as status, jsah.create_time as createTime,
+        jsah.update_time as updateTime, jsah.tenant_id as tenantId, jsah.franchisee_id as franchiseeId, tui.phone as join_phone, tui.name as join_name
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
         <where>
@@ -66,21 +71,31 @@
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and jsah.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
-		order by jsah.update_time desc
+        order by jsah.update_time desc
         <if test="offset != null and size != null">
-			limit #{offset}, #{size}
-		</if>
-
+            limit #{offset}, #{size}
+        </if>
+    
     </select>
     
     <select id="queryFinalHistoryByJoinUid" resultType="com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo">
         select jsah.id, tui.name as user_name
         from t_join_share_activity_history as jsah
-        left join t_user_info as tui on tui.uid = jsah.uid
-        where tui.tenant_id = #{tenantId} and jsah.join_uid = #{joinUid} and jsah.del_flag = 0
-        order by jsah.create_time desc
-        limit 1
+                 left join t_user_info as tui on tui.uid = jsah.uid
+        where tui.tenant_id = #{tenantId}
+          and jsah.join_uid = #{joinUid}
+          and jsah.del_flag = 0
+        order by jsah.create_time desc limit 1
     </select>
     
     <select id="queryCount" resultType="long">
@@ -109,6 +124,15 @@
             </if>
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
+            </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and jsah.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>
@@ -145,27 +169,27 @@
         order by jsah.update_time desc
         limit #{offset}, #{size}
     </select>
-
+    
     <!-- 根据条件查询参与记录信息-->
     <select id="queryParticipants" resultType="com.xiliulou.electricity.vo.JoinShareActivityHistoryVO">
         select
-            jsah.id as id,
-            jsah.start_time as startTime,
-            jsah.expired_time as expiredTime,
-            jsah.status,
-            jsah.create_time as createTime,
-            jsah.update_time as updateTime,
-            jsah.tenant_id as tenantId,
-            tui.phone as joinPhone,
-            jsah.uid as inviterUid,
-            jsah.join_uid as joinUid,
-            tui.name as joinName,
-            jsah.activity_id as activityId,
-            tsa.invitation_criteria as invitationCriteria,
-            tsa.name as activityName
+        jsah.id as id,
+        jsah.start_time as startTime,
+        jsah.expired_time as expiredTime,
+        jsah.status,
+        jsah.create_time as createTime,
+        jsah.update_time as updateTime,
+        jsah.tenant_id as tenantId,
+        tui.phone as joinPhone,
+        jsah.uid as inviterUid,
+        jsah.join_uid as joinUid,
+        tui.name as joinName,
+        jsah.activity_id as activityId,
+        tsa.invitation_criteria as invitationCriteria,
+        tsa.name as activityName,
+        tsa.franchisee_id as franchiseeId
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
-        left join t_user_info as tu on tu.uid = jsah.uid
         left join t_share_activity as tsa on tsa.id = jsah.activity_id
         <where>
             <if test="uid != null">
@@ -198,32 +222,34 @@
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and tsa.franchisee_id = #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null">
-                and tu.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                and tsa.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tu.store_id in
-                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                and tsa.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
-        order by jsah.update_time desc
+        order by jsah.update_time desc,jsah.id desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
         </if>
-
+    
     </select>
-
+    
     <select id="queryParticipantsCount" resultType="long">
         select
-            count(1)
+        count(1)
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid
-        left join t_user_info as tu on tu.uid = jsah.uid
         left join t_share_activity as tsa on tsa.id = jsah.activity_id
         <where>
             <if test="uid != null">
@@ -256,21 +282,24 @@
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and jsah.franchisee_id = #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null">
-                and tu.franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                and tsa.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tu.store_id in
-                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                and tsa.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
     </select>
-
+    
     <select id="queryUserJoinedActivity" resultMap="JoinShareActivityHistoryMap">
         <include refid="selectJoinShareActivityHistory"/>
         <where>
@@ -278,13 +307,13 @@
             <if test="joinUid != null">
                 and join_uid = #{joinUid}
             </if>
-
+            
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
         </where>
     </select>
-
+    
     <select id="queryActivityByJoinerAndInviter" resultMap="JoinShareActivityHistoryMap">
         <include refid="selectJoinShareActivityHistory"/>
         <where>
@@ -292,13 +321,13 @@
             <if test="joinUid != null">
                 and join_uid = #{joinUid}
             </if>
-
+            
             <if test="inviterUid != null">
                 and uid = #{inviterUid}
             </if>
-
+            
             <if test="activityId != null">
-                and  activity_id = #{activityId}
+                and activity_id = #{activityId}
             </if>
         </where>
     </select>

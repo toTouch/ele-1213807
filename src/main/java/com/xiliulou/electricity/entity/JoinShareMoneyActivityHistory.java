@@ -66,6 +66,8 @@ public class JoinShareMoneyActivityHistory {
     private Integer tenantId;
 
     private Integer delFlag;
+    
+    private Long franchiseeId;
 
     //已参与
     public static Integer STATUS_INIT = 1;

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.service.InvitationActivityRecordService;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,106 +28,93 @@ import java.util.Objects;
 @Slf4j
 @RestController
 public class JsonAdminInvitationActivityRecordController {
-
+    
     @Autowired
     private InvitationActivityRecordService invitationActivityRecordService;
-
+    
     @Autowired
     private UserDataScopeService userDataScopeService;
-
+    
     @GetMapping("/admin/invitationActivityRecord/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                  @RequestParam(value = "beginTime", required = false) Long beginTime,
-                  @RequestParam(value = "endTime", required = false) Long endTime,
-                  @RequestParam(value = "uid", required = false) Long uid,
-                  @RequestParam(value = "phone", required = false) String phone,
-                  @RequestParam(value = "userName", required = false) String userName) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-
+        
         if (offset < 0) {
             offset = 0L;
         }
-
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-
-        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder()
-                .size(size)
-                .offset(offset)
-                .userName(userName)
-                .uid(uid)
-                .tenantId(TenantContextHolder.getTenantId())
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .storeIds(storeIds)
-                .franchiseeIds(franchiseeIds)
-                .build();
-
+        
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().size(size).offset(offset).userName(userName).uid(uid)
+                .tenantId(TenantContextHolder.getTenantId()).phone(phone).beginTime(beginTime).endTime(endTime).storeIds(storeIds).franchiseeIds(franchiseeIds)
+                .franchiseeId(franchiseeId).build();
+        
         return R.ok(invitationActivityRecordService.selectByPage(query));
     }
-
+    
     @GetMapping("/admin/invitationActivityRecord/queryCount")
-    public R count(@RequestParam(value = "phone", required = false) String phone,
-                   @RequestParam(value = "beginTime", required = false) Long beginTime,
-                   @RequestParam(value = "endTime", required = false) Long endTime,
-                   @RequestParam(value = "uid", required = false) Long uid,
-                   @RequestParam(value = "userName", required = false) String userName) {
-
+    public R count(@RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok(NumberConstant.ZERO);
+        }
+        
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
-                return R.ok(Collections.EMPTY_LIST);
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(NumberConstant.ZERO);
             }
         }
-
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
-                return R.ok(Collections.EMPTY_LIST);
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(NumberConstant.ZERO);
             }
         }
-
-        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .uid(uid)
-                .userName(userName)
-                .phone(phone)
-                .storeIds(storeIds)
-                .franchiseeIds(franchiseeIds)
-                .build();
-
+        
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().tenantId(TenantContextHolder.getTenantId()).beginTime(beginTime).endTime(endTime).uid(uid)
+                .userName(userName).phone(phone).storeIds(storeIds).franchiseeIds(franchiseeIds).franchiseeId(franchiseeId).build();
+        
         return R.ok(invitationActivityRecordService.selectByPageCount(query));
     }
-
-
+    
+    
 }

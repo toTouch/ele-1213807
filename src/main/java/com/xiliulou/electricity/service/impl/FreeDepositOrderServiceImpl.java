@@ -1620,8 +1620,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, FreeBatteryDepositHybridOrderQuery query,
             ElectricityCabinet electricityCabinet, WechatPayParamsDetails wechatPayParamsDetails) {
         
+        // 多加盟商版本增加：加盟商一致性校验
         Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(),
-                CollectionUtils.isEmpty(query.getUserCouponIds()) ? null : new HashSet<>(query.getUserCouponIds()));
+                CollectionUtils.isEmpty(query.getUserCouponIds()) ? null : new HashSet<>(query.getUserCouponIds()), batteryMemberCard.getFranchiseeId());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }

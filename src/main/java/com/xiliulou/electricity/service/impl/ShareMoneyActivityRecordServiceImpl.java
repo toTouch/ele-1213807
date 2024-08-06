@@ -8,7 +8,9 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
@@ -30,6 +32,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 发起邀请活动记录(ShareActivityRecord)表服务实现类
@@ -61,6 +64,9 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 
 	@Autowired
 	JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+	
+	@Resource
+	private FranchiseeService franchiseeService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -159,6 +165,12 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 			shareMoneyActivityRecord.setCreateTime(System.currentTimeMillis());
 			shareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
 			shareMoneyActivityRecord.setStatus(ShareMoneyActivityRecord.STATUS_INIT);
+			
+			Integer franchiseeId = getFranchiseeId(activityId);
+			if (Objects.nonNull(franchiseeId)) {
+				shareMoneyActivityRecord.setFranchiseeId(franchiseeId.longValue());
+			}
+			
 			shareMoneyActivityRecordMapper.insert(shareMoneyActivityRecord);
 		}
 
@@ -199,6 +211,14 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		return R.ok(getShareUrlPair.getRight());
 
 	}
+	
+	private Integer getFranchiseeId(Integer activityId) {
+		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(activityId);
+		if (Objects.isNull(shareMoneyActivity.getFranchiseeId())) {
+			return null;
+		}
+		return shareMoneyActivity.getFranchiseeId();
+	}
 
 	@Override
 	@Slave
@@ -224,6 +244,11 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 		for(ShareMoneyActivityRecordVO shareMoneyActivityRecordVO : shareMoneyActivityRecordVOList){
 			List<JoinShareMoneyActivityRecord>  joinShareMoneyActivityRecords = joinShareMoneyActivityRecordService.queryByUidAndActivityId(shareMoneyActivityRecordVO.getUid(), shareMoneyActivityRecordVO.getActivityId().longValue());
 			shareMoneyActivityRecordVO.setTotalCount(joinShareMoneyActivityRecords.size());
+			
+			Long franchiseeId = shareMoneyActivityRecordVO.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				shareMoneyActivityRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
 		}
 
 		return R.ok(shareMoneyActivityRecordVOList);

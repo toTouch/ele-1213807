@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.enums.ActivityEnum;
-import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,5 +53,7 @@ public class ShareActivityQuery {
      * @see ActivityEnum
      */
     private Integer invitationCriteria;
+    
+    private Long franchiseeId;
 
 }

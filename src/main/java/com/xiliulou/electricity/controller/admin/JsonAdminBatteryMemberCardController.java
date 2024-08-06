@@ -308,10 +308,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
-        }
-        
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).id(mid).franchiseeId(franchiseeId).status(status)
                 .businessType(businessType == null ? BatteryMemberCard.BUSINESS_TYPE_BATTERY : businessType).rentType(rentType).rentUnit(rentUnit).name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL).build();

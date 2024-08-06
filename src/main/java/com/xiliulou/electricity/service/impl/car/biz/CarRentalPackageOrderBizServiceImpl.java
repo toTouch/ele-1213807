@@ -1945,7 +1945,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         try {
             //站内信，仅小程序
-            if (systemDefinitionEnum.equals(SystemDefinitionEnum.WX_APPLET)){
+            if (systemDefinitionEnum.equals(SystemDefinitionEnum.WX_APPLET)) {
                 siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_FREEZE)
                         .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
                         .addContext("orderNo", freezeEntity.getOrderNo()).build());
@@ -3043,7 +3043,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Integer packageType = RentalPackageTypeEnum.CAR.getCode().equals(buyPackageEntity.getType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()
                     : PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode();
             Triple<BigDecimal, List<Long>, Boolean> couponTriple = carRentalPackageBizService.calculatePaymentAmount(buyPackageEntity.getRent(), buyOptModel.getUserCouponIds(),
-                    uid, buyRentalPackageId, packageType);
+                    uid, buyRentalPackageId, packageType, buyPackageEntity.getFranchiseeId());
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
             log.info("buyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);

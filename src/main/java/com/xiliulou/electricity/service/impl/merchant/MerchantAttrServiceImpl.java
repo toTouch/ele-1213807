@@ -13,6 +13,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.SpinLockRedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     
     @Autowired
     private OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private SpinLockRedisService spinLockRedisService;
     
     @Override
     public MerchantAttr queryById(Long id) {
@@ -108,34 +112,50 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     
     @Override
     public Triple<Boolean, String, Object> updateUpgradeCondition(Long franchiseeId, Integer condition) {
-        MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);
-        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!spinLockRedisService.tryLockWithSpin(CacheConstant.CACHE_UPGRADE_CONDITION_UPDATE_LOCK + franchiseeId)) {
             return Triple.of(true, null, null);
         }
         
-        MerchantAttr merchantAttrUpdate = new MerchantAttr();
-        merchantAttrUpdate.setUpgradeCondition(condition);
-        merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
-        this.updateByFranchiseeId(merchantAttrUpdate, franchiseeId);
-        return Triple.of(true, null, null);
+        try {
+            MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);
+            if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+                return Triple.of(true, null, null);
+            }
+            
+            MerchantAttr merchantAttrUpdate = new MerchantAttr();
+            merchantAttrUpdate.setUpgradeCondition(condition);
+            merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
+            this.updateByFranchiseeId(merchantAttrUpdate, franchiseeId);
+            return Triple.of(true, null, null);
+        } finally {
+            spinLockRedisService.delete(CacheConstant.CACHE_UPGRADE_CONDITION_UPDATE_LOCK + franchiseeId);
+        }
     }
     
     @Override
     public Triple<Boolean, String, Object> updateInvitationCondition(MerchantAttrRequest request) {
-        MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(request.getFranchiseeId());
-        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!spinLockRedisService.tryLockWithSpin(CacheConstant.CACHE_INVITATION_CONDITION_UPDATE_LOCK + request.getFranchiseeId())) {
             return Triple.of(true, null, null);
         }
         
-        MerchantAttr merchantAttrUpdate = new MerchantAttr();
-        merchantAttrUpdate.setTenantId(TenantContextHolder.getTenantId());
-        merchantAttrUpdate.setInvitationValidTime(request.getInvitationValidTime());
-        merchantAttrUpdate.setValidTimeUnit(request.getValidTimeUnit());
-        merchantAttrUpdate.setInvitationProtectionTime(request.getInvitationProtectionTime());
-        merchantAttrUpdate.setProtectionTimeUnit(request.getProtectionTimeUnit());
-        merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
-        this.updateByFranchiseeId(merchantAttrUpdate, request.getFranchiseeId());
-        return Triple.of(true, null, null);
+        try {
+            MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(request.getFranchiseeId());
+            if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+                return Triple.of(true, null, null);
+            }
+            
+            MerchantAttr merchantAttrUpdate = new MerchantAttr();
+            merchantAttrUpdate.setTenantId(TenantContextHolder.getTenantId());
+            merchantAttrUpdate.setInvitationValidTime(request.getInvitationValidTime());
+            merchantAttrUpdate.setValidTimeUnit(request.getValidTimeUnit());
+            merchantAttrUpdate.setInvitationProtectionTime(request.getInvitationProtectionTime());
+            merchantAttrUpdate.setProtectionTimeUnit(request.getProtectionTimeUnit());
+            merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
+            this.updateByFranchiseeId(merchantAttrUpdate, request.getFranchiseeId());
+            return Triple.of(true, null, null);
+        } finally {
+            spinLockRedisService.delete(CacheConstant.CACHE_INVITATION_CONDITION_UPDATE_LOCK + request.getFranchiseeId());
+        }
     }
     
     @Override
@@ -174,17 +194,25 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     
     @Override
     public Triple<Boolean, String, Object> updateChannelSwitchState(Long franchiseeId, Integer status) {
-        MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);
-        if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!spinLockRedisService.tryLockWithSpin(CacheConstant.CACHE_CHANNEL_SWITCH_STATE_UPDATE_LOCK + franchiseeId)) {
             return Triple.of(true, null, null);
         }
         
-        MerchantAttr merchantAttrUpdate = new MerchantAttr();
-        merchantAttrUpdate.setStatus(status);
-        merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
-        this.updateByFranchiseeId(merchantAttrUpdate, merchantAttr.getFranchiseeId());
-        // 记录操作
-        operateRecordUtil.record(null, MapUtil.of("status",status));
-        return Triple.of(true, null, null);
+        try {
+            MerchantAttr merchantAttr = this.queryByFranchiseeIdFromCache(franchiseeId);
+            if (Objects.isNull(merchantAttr) || !Objects.equals(merchantAttr.getTenantId(), TenantContextHolder.getTenantId())) {
+                return Triple.of(true, null, null);
+            }
+            
+            MerchantAttr merchantAttrUpdate = new MerchantAttr();
+            merchantAttrUpdate.setStatus(status);
+            merchantAttrUpdate.setUpdateTime(System.currentTimeMillis());
+            this.updateByFranchiseeId(merchantAttrUpdate, merchantAttr.getFranchiseeId());
+            // 记录操作
+            operateRecordUtil.record(null, MapUtil.of("status",status));
+            return Triple.of(true, null, null);
+        } finally {
+            spinLockRedisService.delete(CacheConstant.CACHE_CHANNEL_SWITCH_STATE_UPDATE_LOCK + franchiseeId);
+        }
     }
 }
