@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
