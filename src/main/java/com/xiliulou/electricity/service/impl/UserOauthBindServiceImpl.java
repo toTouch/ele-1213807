@@ -134,7 +134,17 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         } else {
             return null;
         }
-       return userOauthBindMapper.selectByUidAndTenantIdAndSource(uid,tenantId,source);
+       return queryByUidAndTenantAndSource(uid,tenantId,source);
+    }
+    
+    @Override
+    public UserOauthBind queryByUidAndTenantAndSource(Long uid, Integer tenantId, Integer source) {
+        return userOauthBindMapper.selectByUidAndTenantIdAndSource(uid,tenantId,source);
+    }
+    
+    @Override
+    public List<UserOauthBind> queryListByUidAndSource(Long uid, Integer source) {
+        return userOauthBindMapper.selectByUidAndSource(uid,source);
     }
     
     @Slave
@@ -201,8 +211,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     @Override
-    public Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId) {
-        return userOauthBindMapper.updateOpenIdByUid(openId, status, uid, tenantId, System.currentTimeMillis());
+    public Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer source, Integer tenantId) {
+        return userOauthBindMapper.updateOpenIdByUid(openId, status, uid, tenantId,source, System.currentTimeMillis());
     }
     
     @Override

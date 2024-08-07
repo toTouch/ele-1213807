@@ -82,7 +82,7 @@ public interface UserOauthBindService {
     @Deprecated
     UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId);
     
-    Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId);
+    Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer source, Integer tenantId);
     
     /**
      * 根据更换手机号
@@ -130,4 +130,24 @@ public interface UserOauthBindService {
      */
     UserOauthBind queryByUidAndTenantAndChannel(Long uid, Integer tenantId, String channel);
     
+    /**
+     * 根据用户id+租户id+source查询
+     *
+     * @param uid      用户
+     * @param tenantId 租户
+     * @param source
+     * @author caobotao.cbt
+     * @date 2024/8/5 18:51
+     */
+    UserOauthBind queryByUidAndTenantAndSource(Long uid, Integer tenantId, Integer source);
+    
+    /**
+     * 根据用户id+source查询
+     *
+     * @param uid
+     * @param source
+     * @author caobotao.cbt
+     * @date 2024/8/7 19:14
+     */
+    List<UserOauthBind> queryListByUidAndSource(Long uid, Integer source);
 }

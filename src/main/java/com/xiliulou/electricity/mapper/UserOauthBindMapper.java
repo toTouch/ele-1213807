@@ -44,7 +44,7 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     UserOauthBind selectUserByPhone(@Param("phone") String phone, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
     
     Integer updateOpenIdByUid(@Param("openId") String openId, @Param("status") Integer status, @Param("uid") Long uid, @Param("tenantId") Integer tenantId,
-            @Param("updateTime") Long updateTime);
+            @Param("source") Integer source, @Param("updateTime") Long updateTime);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone, @Param("updateTime") Long updateTime);
     
@@ -78,4 +78,14 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
      * @date 2024/8/5 18:56
      */
     UserOauthBind selectByUidAndTenantIdAndSource(@Param("uid") Long uid, @Param("tenantId") Integer tenantId, @Param("source") Integer source);
+    
+    /**
+     * 根据uid+source查询
+     *
+     * @param uid
+     * @param source
+     * @author caobotao.cbt
+     * @date 2024/8/7 19:21
+     */
+    List<UserOauthBind> selectByUidAndSource(@Param("uid") Long uid, @Param("source") Integer source);
 }

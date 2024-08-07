@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -425,6 +426,16 @@ public class JsonAdminUserInfoController extends BaseController {
      */
     @PostMapping(value = "/admin/userInfo/details/openId/unbind")
     public R unbindOpenId(@RequestBody @Validated(value = UpdateGroup.class) UnbindOpenIdRequest unbindOpenIdRequest) {
+        unbindOpenIdRequest.setSource(UserOauthBind.SOURCE_WX);
+        return userInfoService.unbindOpenId(unbindOpenIdRequest);
+    }
+    
+    /**
+     * 会员列表详情解绑支付宝
+     */
+    @PostMapping(value = "/admin/userInfo/details/openId/unbindAlipay")
+    public R unbindAlipay(@RequestBody @Validated(value = UpdateGroup.class) UnbindOpenIdRequest unbindOpenIdRequest) {
+        unbindOpenIdRequest.setSource(UserOauthBind.SOURCE_ALI_PAY);
         return userInfoService.unbindOpenId(unbindOpenIdRequest);
     }
     

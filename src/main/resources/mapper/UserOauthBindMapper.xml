@@ -109,6 +109,7 @@
             update_time=#{updateTime}
         where uid = #{uid}
           and tenant_id = #{tenantId}
+          and source=#{source}
     </update>
     
     <update id="updatePhoneByUid">
@@ -217,6 +218,23 @@
         WHERE uid = #{uid}
           and tenant_id = #{tenantId}
           and source = #{source} limit 1
+    </select>
+    <select id="selectByUidAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE uid = #{uid}
+          and source = #{source}
     </select>
     
     <delete id="deleteByUid">
