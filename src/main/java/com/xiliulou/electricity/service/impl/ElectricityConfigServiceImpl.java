@@ -188,6 +188,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.isNull(
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm())) {
+            return R.fail("100668", "优先换电标准不能为空");
+        }
+        
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.nonNull(
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm()) && (
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm() < ElectricityConfigAddAndUpdateQuery.MIN_NORM
+                        || electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm() > ElectricityConfigAddAndUpdateQuery.MAX_NORM)) {
+            return R.fail("100669", "电量标准须满足50-100");
+        }
+        
+        
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         ElectricityConfig oldElectricityConfig = new ElectricityConfig();
         BeanUtil.copyProperties(electricityConfig, oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
@@ -223,6 +236,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
             electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
             electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
+            
+           
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
