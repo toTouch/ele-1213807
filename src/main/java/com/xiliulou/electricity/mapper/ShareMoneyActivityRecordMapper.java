@@ -19,7 +19,7 @@ import java.util.List;
 public interface ShareMoneyActivityRecordMapper extends BaseMapper<ShareMoneyActivityRecord> {
     
     
-    @Update("update t_share_money_activity_record set count=count+1,money=money+#{money} where uid =#{uid} and activity_id={activityId}")
+    @Update("update t_share_money_activity_record set count=count+1,money=money+#{money} where uid =#{uid} and activity_id=#{activityId}")
     void addCountByUid(@Param("uid") Long uid, @Param("money") BigDecimal money, @Param("activityId") Integer activityId);
     
     
