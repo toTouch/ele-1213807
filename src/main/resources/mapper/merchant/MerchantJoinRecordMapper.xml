@@ -129,6 +129,7 @@
         FROM
         t_merchant_join_record
         <include refid="pageFilter"/>
+        order by success_time desc, id desc
         limit #{offset}, #{size}
     </select>
     
