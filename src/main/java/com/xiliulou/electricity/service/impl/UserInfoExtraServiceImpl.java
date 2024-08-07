@@ -364,7 +364,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator) {
+    public R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator, List<Long> franchiseeIds) {
         Long uid = merchantModifyInviterUpdateRequest.getUid();
         
         //操作频繁
@@ -381,6 +381,13 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             if (Objects.isNull(userInfo)) {
                 log.warn("Modify inviter fail! not found userInfo, uid={}", uid);
                 return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+            
+            // 加盟商一致性校验
+            Long franchiseeId = userInfo.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+                log.warn("ModifyInviter WARN! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+                return R.fail("120240", "当前加盟商无权限操作");
             }
             
             if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
