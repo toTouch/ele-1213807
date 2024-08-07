@@ -119,6 +119,9 @@
             <if test="query.source != null">
                 and te.source =#{query.source}
             </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and te.payment_channel =#{query.paymentChannel}
+            </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -184,6 +187,9 @@
             </if>
             <if test="query.source != null">
                 and te.source =#{query.source}
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and te.payment_channel =#{query.paymentChannel}
             </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
