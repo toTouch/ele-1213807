@@ -1165,7 +1165,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).tenantId(userInfo.getTenantId()).uid(userInfo.getUid())
                 .userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).paramFranchiseeId(payParamConfig.getFranchiseeId())
-                .wechatMerchantId(payParamConfig.getThirdPartyMerchantId()).build();
+                .wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
+                .paymentChannel(payParamConfig.getPaymentChannel()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }
