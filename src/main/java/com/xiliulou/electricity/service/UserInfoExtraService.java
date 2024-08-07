@@ -6,6 +6,8 @@ import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 
+import java.util.List;
+
 /**
  * (UserInfoExtra)表服务接口
  *
@@ -30,5 +32,5 @@ public interface UserInfoExtraService {
     
     R selectInviterList(MerchantModifyInviterRequest request);
     
-    R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator);
+    R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator, List<Long> franchiseeIds);
 }

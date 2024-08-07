@@ -11,7 +11,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,14 +61,6 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
             return R.ok();
         }
         
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.emptyList());
-            }
-        }
-        
         MerchantModifyInviterRequest request = MerchantModifyInviterRequest.builder().size(size).offset(offset).uid(uid).merchantName(name).build();
         
         return userInfoExtraService.selectInviterList(request);
@@ -85,11 +76,19 @@ public class JsonMerchantUserInfoExtraController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
         
-        return userInfoExtraService.modifyInviter(merchantModifyInviterUpdateRequest, user.getUid());
+        return userInfoExtraService.modifyInviter(merchantModifyInviterUpdateRequest, user.getUid(), franchiseeIds);
     }
     
 }
