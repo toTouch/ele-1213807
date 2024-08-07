@@ -2496,7 +2496,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentRefundOrderEntity.setConfineResidue(confineResidue);
         // 设置交易方式
         rentRefundOrderEntity.setPayType(packageOrderEntity.getPayType());
-        
+        rentRefundOrderEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
         return rentRefundOrderEntity;
     }
     

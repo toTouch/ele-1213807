@@ -16,11 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface UnionTradeOrderService {
 
-    //通用生成订单，调起支付
-    WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder,
-                                                                    WechatPayParamsDetails wechatPayParamsDetails,
-                                                                    String openId,
-                                                                    HttpServletRequest request) throws WechatPayException;
+    
     
     BasePayOrderCreateDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, BasePayConfig payParamConfig, String openId, HttpServletRequest request)
             throws PayException;

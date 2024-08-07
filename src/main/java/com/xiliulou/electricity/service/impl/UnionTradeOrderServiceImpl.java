@@ -336,63 +336,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Resource
     private PayServiceDispatcher payServiceDispatcher;
     
-    @Deprecated
-    @Override
-    public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
-            HttpServletRequest request) throws WechatPayException {
-        
-        String ip = request.getRemoteAddr();
-        UnionTradeOrder unionTradeOrder = new UnionTradeOrder();
-        unionTradeOrder.setJsonOrderId(unionPayOrder.getJsonOrderId());
-        unionTradeOrder.setJsonSingleFee(unionPayOrder.getJsonSingleFee());
-        unionTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()).substring(2) + unionPayOrder.getUid() + RandomUtil.randomNumbers(6));
-        unionTradeOrder.setClientId(ip);
-        unionTradeOrder.setCreateTime(System.currentTimeMillis());
-        unionTradeOrder.setUpdateTime(System.currentTimeMillis());
-        unionTradeOrder.setJsonOrderType(unionPayOrder.getJsonOrderType());
-        unionTradeOrder.setStatus(UnionTradeOrder.STATUS_INIT);
-        unionTradeOrder.setTotalFee(unionPayOrder.getPayAmount());
-        unionTradeOrder.setUid(unionPayOrder.getUid());
-        unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
-        unionTradeOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
-        unionTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
-        baseMapper.insert(unionTradeOrder);
-        
-        List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
-        for (int i = 0; i < jsonOrderList.size(); i++) {
-            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
-            electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class).get(i));
-            electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
-            electricityTradeOrder.setClientId(ip);
-            electricityTradeOrder.setCreateTime(System.currentTimeMillis());
-            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
-            electricityTradeOrder.setOrderType(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderType(), Integer.class).get(i));
-            electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
-            electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(), BigDecimal.class).get(i));
-            electricityTradeOrder.setUid(unionPayOrder.getUid());
-            electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
-            electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
-            electricityTradeOrder.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
-            electricityTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
-            electricityTradeOrderService.insert(electricityTradeOrder);
-        }
-        
-        // 支付参数
-        WechatV3OrderRequest wechatV3OrderQuery = new WechatV3OrderRequest();
-        wechatV3OrderQuery.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
-        wechatV3OrderQuery.setDescription(unionPayOrder.getDescription());
-        wechatV3OrderQuery.setOrderId(unionTradeOrder.getTradeOrderNo());
-        wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
-        wechatV3OrderQuery.setAttach(unionPayOrder.getAttach());
-        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl() + unionTradeOrder.getTenantId() + "/" + wechatPayParamsDetails.getFranchiseeId());
-        wechatV3OrderQuery.setAmount(unionPayOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3OrderQuery.setCurrency("CNY");
-        wechatV3OrderQuery.setOpenId(openId);
-        wechatV3OrderQuery.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
-        log.info("wechatV3OrderQuery is -->{}", wechatV3OrderQuery);
-        return wechatV3JsapiInvokeService.order(wechatV3OrderQuery);
-    }
-    
     @Override
     public BasePayOrderCreateDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, BasePayConfig payParamConfig, String openId, HttpServletRequest request)
             throws PayException {
@@ -411,6 +354,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
         unionTradeOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
         unionTradeOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
+        unionTradeOrder.setPaymentChannel(payParamConfig.getPaymentChannel());
         baseMapper.insert(unionTradeOrder);
         
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
@@ -1460,7 +1404,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             } else if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR_SLIPPAGE.getCode())) {
                 // 车辆滞纳金
                 handCarSupplierSuccess(orderIdList.get(i), jsonFreeList.get(i), tradeOrderStatus, userInfo, unionTradeOrder.getParamFranchiseeId(),
-                        unionTradeOrder.getWechatMerchantId());
+                        unionTradeOrder.getWechatMerchantId(), unionTradeOrder.getPaymentChannel());
             }
         }
         
@@ -1498,9 +1442,11 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
      * @param userInfo          用户信息
      * @param paramFranchiseeId 支付加盟商ID
      * @param wechatMerchantId  微信商户号
+     * @param paymentChannel    支付渠道
      */
     @Transactional(rollbackFor = Exception.class)
-    public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo, Long paramFranchiseeId, String wechatMerchantId) {
+    public void handCarSupplierSuccess(String orderNo, String freeAmount, Integer tradeOrderStatus, UserInfo userInfo, Long paramFranchiseeId, String wechatMerchantId,
+            String paymentChannel) {
         // 提前发布逾期用户备注清除事件
         overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), userInfo.getTenantId());
         Integer tenantId = userInfo.getTenantId();
@@ -1529,7 +1475,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             slippageUpdateEntity.setPayTime(now);
             slippageUpdateEntity.setPayFranchiseeId(paramFranchiseeId);
             slippageUpdateEntity.setWechatMerchantId(wechatMerchantId);
-            
+            slippageUpdateEntity.setPaymentChannel(paymentChannel);
             Integer type = slippageEntity.getType();
             // 冻结
             if (SlippageTypeEnum.FREEZE.getCode().equals(type)) {
