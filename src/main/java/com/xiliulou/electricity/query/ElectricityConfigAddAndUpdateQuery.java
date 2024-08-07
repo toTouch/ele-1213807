@@ -166,6 +166,16 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 柜机少电多电配置标准:0-统一配置 1-单个柜机配置
      */
     private Integer chargeRateType;
+    
+    /**
+     * 是否开启舒适换电；默认是0关闭，1是开启
+     */
+    private Integer isComfortExchange;
+    
+    /**
+     * 优先换电标准
+     */
+    private Double priorityExchangeNorm;
 }
 
 
