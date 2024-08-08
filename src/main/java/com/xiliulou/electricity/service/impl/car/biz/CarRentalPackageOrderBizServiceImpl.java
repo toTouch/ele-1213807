@@ -177,6 +177,9 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.entity.EleUserOperateRecord.PURCHASE_PACKAGE;
+import static com.xiliulou.electricity.entity.EleUserOperateRecord.RENEWAL_PACKAGE;
+
 /**
  * 租车套餐购买业务聚合 BizServiceImpl
  *
@@ -1126,6 +1129,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             map.put("phone", userInfo.getPhone());
             map.put("packageName", buyPackageEntity.getName());
             map.put("type", buyPackageEntity.getType());
+            map.put("operationType", isFirstBuy ? PURCHASE_PACKAGE : RENEWAL_PACKAGE);
             operateRecordUtil.record(null, map);
         } catch (BizException e) {
             log.error("bindingPackage failed. ", e);
