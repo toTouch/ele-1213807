@@ -289,8 +289,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyDepositRefundOrder(BaseOrderRefundCallBackResource callBackResource) {
         //幂等加锁
-        String orderNo = callBackResource.getOutTradeNo();
-        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+        
+        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + callBackResource.getOutTradeNo(), String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             return Pair.of(false, "频繁操作!");
         }
         // 回调参数
