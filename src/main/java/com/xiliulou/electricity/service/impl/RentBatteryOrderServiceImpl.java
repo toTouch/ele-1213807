@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -25,7 +26,9 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetChooseCellConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -64,7 +67,9 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
+import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -239,6 +244,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Autowired
     ElectricityCabinetExtraService electricityCabinetExtraService;
+    
+    @Autowired
+    private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
+    
+    @Autowired
+    private ElectricityCabinetModelService cabinetModelService;
     
     /**
      * 吞电池优化版本
@@ -1501,6 +1512,83 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return null;
         }
         
+        // 舒适换电
+        Pair<Boolean, String> satisfyComfortExchange = isSatisfyComfortExchange(userInfo, usableBoxes);
+        if (satisfyComfortExchange.getLeft()) {
+            return satisfyComfortExchange.getRight();
+        }
+        
+        return ruleAllotCell(userInfo, usableBoxes);
+    }
+    
+    /**
+     * 检查是否满足舒适换电条件
+     *
+     * @param userInfo 用户信息，包含租户ID等
+     * @param usableBoxes 可用的换电箱列表
+     * @return 返回一个Pair对象，其中包含一个布尔值表示是否满足条件，以及一个字符串表示推荐的换电箱编号（如果满足条件）
+     */
+    private Pair<Boolean, String> isSatisfyComfortExchange(UserInfo userInfo, List<ElectricityCabinetBox> usableBoxes) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsComfortExchange(), ElectricityConfig.NOT_COMFORT_EXCHANGE)) {
+            log.info("RENT BATTERY INFO! isSatisfyComfortExchange.electricityConfig is null");
+            return Pair.of(false, null);
+        }
+        
+        // 满足优先换电标准的电池列表
+        List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
+                .filter(e -> Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(e.getPower(), electricityConfig.getPriorityExchangeNorm()) >= 0)
+                .collect(Collectors.toList());
+        
+        if (CollUtil.isEmpty(comfortExchangeBox)) {
+            log.info("RENT BATTERY INFO! isSatisfyComfortExchange.comfortExchangeBox is empty,uid={}", userInfo.getUid());
+            return Pair.of(false, null);
+        }
+        
+        Integer electricityCabinetId = comfortExchangeBox.get(0).getElectricityCabinetId();
+        ElectricityCabinetModel cabinetModel = cabinetModelService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(cabinetModel)) {
+            log.warn("RENT BATTERY WARN! isSatisfyComfortExchange.cabinetModel is null, eid is {}", electricityCabinetId);
+            return Pair.of(false, null);
+        }
+        // 舒适换电
+        ElectricityCabinetChooseCellConfig cellConfig = chooseCellConfigService.queryConfigByNumFromCache(cabinetModel.getNum());
+        if (Objects.isNull(cellConfig)) {
+            log.warn("RENT BATTERY WARN! isSatisfyComfortExchange.cellConfig is null, eid is {}", cabinetModel.getNum());
+            return Pair.of(false, null);
+        }
+        // 中间
+        Pair<Boolean, String> middleCellBoxPair = getPositionCell(comfortExchangeBox, cellConfig.getMiddleCell());
+        if (middleCellBoxPair.getLeft()) {
+            log.info("RENT BATTERY INFO! isSatisfyComfortExchange.satisfyMiddleCell, middleCell is {}", cellConfig.getMiddleCell());
+            return middleCellBoxPair;
+        }
+        // 下面
+        Pair<Boolean, String> belowCellBoxPair = getPositionCell(comfortExchangeBox, cellConfig.getBelowCell());
+        if (belowCellBoxPair.getLeft()) {
+            log.info("RENT BATTERY INFO! isSatisfyComfortExchange.satisfyBelowCell, belowCell is {}", cellConfig.getBelowCell());
+            return belowCellBoxPair;
+        }
+        
+        log.info("RENT BATTERY INFO! isSatisfyComfortExchange.randomGetCell");
+        // 随机分配
+        return Pair.of(true, comfortExchangeBox.get(ThreadLocalRandom.current().nextInt(comfortExchangeBox.size())).getCellNo());
+    }
+    
+    private static Pair<Boolean, String> getPositionCell(List<ElectricityCabinetBox> comfortExchangeBox, String positionCell) {
+        List<Integer> positionCellList = StrUtil.isNotBlank(positionCell) ? JsonUtil.fromJsonArray(positionCell, Integer.class) : new ArrayList<>();
+        List<ElectricityCabinetBox> boxes = comfortExchangeBox.stream().filter(item -> positionCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList());
+        if (CollUtil.isEmpty(boxes)) {
+            return Pair.of(false, null);
+        }
+        if (Objects.equals(boxes.size(), 1)) {
+            return Pair.of(true, boxes.get(0).getCellNo());
+        }
+        return Pair.of(true, boxes.get(ThreadLocalRandom.current().nextInt(boxes.size())).getCellNo());
+    }
+    
+    
+    private static String ruleAllotCell(UserInfo userInfo, List<ElectricityCabinetBox> usableBoxes) {
         //如果存在多个电量满电且相同的电池，取充电器电压最高的
         Double maxPower = usableBoxes.get(0).getPower();
         ElectricityCabinetBox usableCabinetBox = usableBoxes.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).filter(item -> Objects.nonNull(item.getChargeV()))
@@ -1509,7 +1597,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!usableCabinetBox is null,uid={}", userInfo.getUid());
             return null;
         }
-        
         return usableCabinetBox.getCellNo();
     }
     
