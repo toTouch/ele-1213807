@@ -108,6 +108,7 @@ import com.xiliulou.electricity.service.EleOtherConfigService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
@@ -427,6 +428,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private ElectricityCabinetExtraService electricityCabinetExtraService;
+    
+    @Resource
+    private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
     
     /**
@@ -2719,22 +2723,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
             
-            Double maxPower = usableBatteryCellNos.get(0).getPower();
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
-            if (usableBatteryCellNos.size() == 1) {
-                return Triple.of(true, null, usableBatteryCellNos.get(0));
+            // 舒适换电分配满电仓适配
+            Pair<Boolean, String> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos);
+            if (comfortExchangeGetFullCellPair.getLeft()) {
+                return Triple.of(true, null, comfortExchangeGetFullCellPair.getRight());
             }
             
-            // 如果存在多个电量相同的格挡，取充电器电压最大
-            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.nonNull(item.getChargeV()))
-                    .sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
-            if (Objects.isNull(usableCabinetBox)) {
-                log.warn("EXCHANGE WARN!nou found full battery,eid={}", eid);
-                return Triple.of(false, "100216", "换电柜暂无满电电池");
-            }
-            
-            return Triple.of(true, null, usableCabinetBox);
+            return commonGetFullCell(uid, eid, usableBatteryCellNos);
         }
+    }
+    
+    private static Triple<Boolean, String, Object> commonGetFullCell(Long uid, Integer eid, List<ElectricityCabinetBox> usableBatteryCellNos) {
+        log.info("EXCHANGE INFO! commonGetFullCell.uid is {}, eid is {}", uid, eid);
+        
+        Double maxPower = usableBatteryCellNos.get(0).getPower();
+        usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+        if (usableBatteryCellNos.size() == 1) {
+            return Triple.of(true, null, usableBatteryCellNos.get(0));
+        }
+        
+        // 如果存在多个电量相同的格挡，取充电器电压最大
+        ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.nonNull(item.getChargeV()))
+                .sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second).orElse(null);
+        if (Objects.isNull(usableCabinetBox)) {
+            log.warn("EXCHANGE WARN!nou found full battery,eid={}", eid);
+            return Triple.of(false, "100216", "换电柜暂无满电电池");
+        }
+        
+        return Triple.of(true, null, usableCabinetBox);
     }
     
     /**
