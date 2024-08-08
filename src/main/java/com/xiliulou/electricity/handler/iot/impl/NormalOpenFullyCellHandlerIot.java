@@ -484,7 +484,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder, EleOpenFullCellRsp openFullCellRsp) {
         if (Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) || Objects.equals(openFullCellRsp.getOrderStatus(),
-                ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
+                ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) || Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL)) {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("orderId", electricityCabinetOrder.getOrderId());
             
