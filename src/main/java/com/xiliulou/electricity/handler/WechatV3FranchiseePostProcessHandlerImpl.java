@@ -152,12 +152,6 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
         
         WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
         
-        //幂等加锁
-        String orderNo = callBackResource.getOutTradeNo();
-        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-            return;
-        }
-        
         eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
     }
     

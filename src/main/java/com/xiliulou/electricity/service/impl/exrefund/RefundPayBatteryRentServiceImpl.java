@@ -194,6 +194,6 @@ public class RefundPayBatteryRentServiceImpl implements RefundPayService {
     
     @Override
     public String getOptType() {
-        return RefundPayOptTypeEnum.BATTERY_DEPOSIT_REFUND_CALL_BACK.getCode();
+        return RefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode();
     }
 }

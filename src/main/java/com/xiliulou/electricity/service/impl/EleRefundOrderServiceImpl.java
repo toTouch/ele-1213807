@@ -11,6 +11,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
+import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -287,6 +288,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyDepositRefundOrder(BaseOrderRefundCallBackResource callBackResource) {
+        //幂等加锁
+        String orderNo = callBackResource.getOutTradeNo();
+        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            return Pair.of(false, "频繁操作!");
+        }
         // 回调参数
         String tradeRefundNo = callBackResource.getOutRefundNo();
         String outTradeNo = callBackResource.getOutTradeNo();
