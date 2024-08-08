@@ -781,7 +781,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
     
-        boolean checkConfigConsistency = payConfigBizService.checkConfigConsistency(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getFranchiseeId(),
+        boolean checkConfigConsistency = payConfigBizService.checkConfigConsistency(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getParamFranchiseeId(),
                 eleDepositOrder.getWechatMerchantId());
         if (!checkConfigConsistency) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());

@@ -1093,7 +1093,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return R.fail("100281", "电池套餐订单不存在");
         }
         boolean configConsistency = payConfigBizService
-                .checkConfigConsistency(electricityMemberCardOrder.getPaymentChannel(), electricityMemberCardOrder.getTenantId(), electricityMemberCardOrder.getFranchiseeId(),
+                .checkConfigConsistency(electricityMemberCardOrder.getPaymentChannel(), electricityMemberCardOrder.getTenantId(), electricityMemberCardOrder.getParamFranchiseeId(),
                         electricityMemberCardOrder.getWechatMerchantId());
         
         if (!configConsistency) {
