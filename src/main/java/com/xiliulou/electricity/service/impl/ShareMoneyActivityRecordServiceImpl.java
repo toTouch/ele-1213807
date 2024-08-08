@@ -10,11 +10,13 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.QrCodeParamVO;
 import com.xiliulou.electricity.vo.ShareMoneyActivityRecordVO;
 import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
@@ -22,6 +24,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +50,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
     @Autowired
     RedisService redisService;
     
-    @Autowired
+    @Resource
     GenerateShareUrlService generateShareUrlService;
     
     @Autowired
@@ -61,6 +64,9 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
     
     @Autowired
     JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+    
+    @Resource
+    private TenantService tenantService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -237,6 +243,12 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
+            log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
         //限频
         boolean result = redisService.setNx(CacheConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
         if (!result) {
@@ -270,6 +282,12 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
         
         //3、scene
         String scene = "uid:" + user.getUid() + ",id:" + activityId + ",type:2";
-        return R.ok(scene);
+      
+        QrCodeParamVO qrCodeParamVO = new QrCodeParamVO();
+        qrCodeParamVO.setScene(scene);
+        qrCodeParamVO.setTenantCode(tenant.getCode());
+        qrCodeParamVO.setPhone(user.getPhone());
+        
+        return R.ok(qrCodeParamVO);
     }
 }

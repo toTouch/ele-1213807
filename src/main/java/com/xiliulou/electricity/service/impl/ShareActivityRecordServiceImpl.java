@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
@@ -30,6 +32,7 @@ import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.QrCodeParamVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordExcelVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordVO;
 import com.xiliulou.pay.base.exception.PayException;
@@ -99,6 +102,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     
     @Autowired
     private AssertPermissionService assertPermissionService;
+    
+    @Resource
+    private TenantService tenantService;
     
     
     /**
@@ -366,6 +372,11 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             log.error("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
+            log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         
         //限频
         boolean result = redisService.setNx(CacheConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
@@ -400,7 +411,13 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         }
         //3、scene
         String scene = "uid:" + user.getUid() + ",id:" + activityId + ",type:1";
-        return R.ok(scene);
+        
+        QrCodeParamVO qrCodeParamVO = new QrCodeParamVO();
+        qrCodeParamVO.setScene(scene);
+        qrCodeParamVO.setTenantCode(tenant.getCode());
+        qrCodeParamVO.setPhone(user.getPhone());
+        
+        return R.ok(qrCodeParamVO);
         
     }
     
