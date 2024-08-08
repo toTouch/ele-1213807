@@ -97,6 +97,8 @@ public interface CacheConstant {
     //换电柜开门的前缀
     String ELE_OPERATOR_SESSION_PREFIX = "ele";
     
+    String OPEN_FULL_CELL = "open_full_cell";
+    
     
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
     
@@ -680,4 +682,10 @@ public interface CacheConstant {
      */
     String TEMPLATE_CONFIG_KEY="saas_electricity:tmp_config:%d:%s";
     
+    
+    
+    String OPEN_FULL_CELL_LIMIT = "open_full_cell_handle_limit:";
+    
+    
+    String ALLOW_SELF_OPEN_CELL_START_TIME = "allow_self_open_cell_start_time:";
 }

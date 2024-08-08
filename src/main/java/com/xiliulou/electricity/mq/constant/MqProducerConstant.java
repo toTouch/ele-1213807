@@ -101,4 +101,14 @@ public interface MqProducerConstant {
      * 支付宝退款结果异步通知
      */
     String ALIPAY_REFUND_NOTIFY_TOPIC = "alipay_refund_notify_topic";
+    
+    /**
+     * 站内信所在新项目主题
+     */
+    String AUX_MQ_TOPIC_NAME="XILIULOU_SAAS_AUX_TOPIC";
+    
+    /**
+     * 站内信所在新项目主题TAG
+     */
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
 }

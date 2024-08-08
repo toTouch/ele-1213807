@@ -85,4 +85,6 @@ public interface ElectricityCabinetPhysicsOperRecordMapper  extends BaseMapper<E
     
     Integer existSameCabinetCellSameTimeOpenRecord(@Param("createTime") Long createTime, @Param("electricityCabinetId") Integer electricityCabinetId,
             @Param("oldCellNo") Integer oldCellNo);
+    
+    Integer existOpenRecordInSameCabinetAndCell(@Param("startTime") Long startTime,@Param("endTime") Long endTime,@Param("eid") Integer eid,@Param("cell") Integer cell);
 }

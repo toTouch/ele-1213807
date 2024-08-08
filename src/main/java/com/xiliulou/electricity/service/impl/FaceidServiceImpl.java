@@ -18,7 +18,27 @@ import com.xiliulou.electricity.entity.FaceRecognizeUserRecord;
 import com.xiliulou.electricity.entity.FaceidConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.AlipayUserCertifyInfoQuery;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.FaceAuthResultData;
+import com.xiliulou.electricity.entity.FaceRecognizeData;
+import com.xiliulou.electricity.entity.FaceRecognizeUserRecord;
+import com.xiliulou.electricity.entity.FaceidConfig;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.message.RechargeAlarm;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.query.FaceidResultQuery;
+import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.FaceAuthResultDataService;
+import com.xiliulou.electricity.service.FaceRecognizeDataService;
+import com.xiliulou.electricity.service.FaceRecognizeUserRecordService;
+import com.xiliulou.electricity.service.FaceidConfigService;
+import com.xiliulou.electricity.service.FaceidService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.query.UserCertifyInfoQuery;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.EleUserAuthService;
@@ -115,6 +135,7 @@ public class FaceidServiceImpl implements FaceidService {
     
     @Autowired
     AliPayConfig aliPayConfig;
+    
     
     @Autowired
     private EleUserAuthService eleUserAuthService;
@@ -306,6 +327,10 @@ public class FaceidServiceImpl implements FaceidService {
         return Triple.of(true, "", "");
     }
     
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
+    
     /**
      * 获取人脸核身token
      *
@@ -353,6 +378,11 @@ public class FaceidServiceImpl implements FaceidService {
             log.warn("ELE WARN! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
         }
+        //发送站内信
+        siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
+                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.FACIAL_VERIFICATION)
+                .addContext("count", faceRecognizeData.getFaceRecognizeCapacity()).build());
+        
         if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
             log.warn("ELE WARN! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
@@ -544,8 +574,8 @@ public class FaceidServiceImpl implements FaceidService {
     }
     
     private void uploadIdcardInfo(UserInfo userInfo, FaceidResultRsp faceidResultRsp) {
-        if (Objects.isNull(faceidResultRsp.getIdCardData()) || Objects.isNull(faceidResultRsp.getIdCardData().getOcrFront()) || Objects
-                .isNull(faceidResultRsp.getIdCardData().getOcrBack())) {
+        if (Objects.isNull(faceidResultRsp.getIdCardData()) || Objects.isNull(faceidResultRsp.getIdCardData().getOcrFront()) || Objects.isNull(
+                faceidResultRsp.getIdCardData().getOcrBack())) {
             log.warn("ELE WARN! acquire user idcard picture error,uid={},result={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
             return;
         }
@@ -588,6 +618,7 @@ public class FaceidServiceImpl implements FaceidService {
             }
         });
     }
+    
     
     private FaceAuthResultData buildFaceAuthResultData(FaceidResultRsp faceidResultRsp) {
         FaceAuthResultDTO faceAuthResultDTO = new FaceAuthResultDTO();

@@ -57,7 +57,7 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                 ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleOrderOperateVO.getOrderId());
                 if (Objects.nonNull(electricityCabinetOrder)) {
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE;
-                    seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE;
+                    seq = eleOrderOperateVO.getSeq();
                 } else {
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK;
                     seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
@@ -92,6 +92,11 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
         private Long createTime;
         //
         private Integer orderType;
+        
+        /**
+         * 订单状态阶段
+         */
+        private String title;
         //msg
         private String msg;
         /**

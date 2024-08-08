@@ -44,6 +44,9 @@ import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -204,44 +207,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Resource
     private TenantService tenantService;
     
-//    @Override
-//    public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, WechatPayParamsDetails wechatPayParamsDetails,
-//            HttpServletRequest request) throws WechatPayException {
-//
-//        // 看不懂  抄的退电池押金 @See EleRefundOrderServiceImpl#commonCreateRefundOrder()
-//        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
-//        String tradeOrderNo = null;
-//        Integer total = null;
-//        if (Objects.isNull(electricityTradeOrder)) {
-//            log.error("BATTERY MEMBERCARD REFUND ERROR!not found electricityTradeOrder,memberCardOrderNo={}", batteryMembercardRefundOrder.getMemberCardOrderNo());
-//            throw new CustomBusinessException("未找到交易订单!");
-//        }
-//        tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
-//        total = batteryMembercardRefundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue();
-//
-//        if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
-//            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
-//            if (Objects.nonNull(unionTradeOrder)) {
-//                tradeOrderNo = unionTradeOrder.getTradeOrderNo();
-//                total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
-//            }
-//        }
-//
-//        // 退款
-//        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
-//        wechatV3RefundRequest.setRefundId(batteryMembercardRefundOrder.getRefundOrderNo());
-//        wechatV3RefundRequest.setOrderId(tradeOrderNo);
-//        wechatV3RefundRequest.setReason("退款");
-//        wechatV3RefundRequest.setNotifyUrl(
-//                wechatConfig.getBatteryRentRefundCallBackUrl() + wechatPayParamsDetails.getTenantId() + "/" + wechatPayParamsDetails.getFranchiseeId());
-//        wechatV3RefundRequest.setRefund(batteryMembercardRefundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-//        wechatV3RefundRequest.setTotal(total);
-//        wechatV3RefundRequest.setCurrency("CNY");
-//        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
-//
-//        log.info("WECHAT INFO! wechatv3 refund query={}", JsonUtil.toJson(wechatV3RefundRequest));
-//        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
-//    }
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
     
     @Override
     public BasePayOrderRefundDTO handleRefundOrderV2(BatteryMembercardRefundOrder batteryMembercardRefundOrder, BasePayConfig basePayConfig,
@@ -519,12 +486,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), user.getUid());
                 return Triple.of(false, "100294", "退租金额不合法");
             }
-            
+            String generateBusinessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid());
             BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
             batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
             batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
-            batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+            batteryMembercardRefundOrderInsert.setRefundOrderNo(generateBusinessOrderId);
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
             batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
@@ -548,6 +515,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             // 发送退租审核通知
             sendAuditNotify(userInfo);
+            // 发送站内信
+            siteMessagePublish.publish(
+                    SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.REPLACING_THE_BATTERY_AND_TERMINATING_THE_LEASE)
+                            .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                            .addContext("refundOrderNo", generateBusinessOrderId).build());
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY + user.getUid());
         }
@@ -1135,8 +1107,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
                 electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(electricityPayParams) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId())
-                || !Objects.equals(electricityMemberCardOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
+        if (Objects.isNull(electricityPayParams) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId()) || !Objects.equals(
+                electricityMemberCardOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
@@ -1149,7 +1121,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-    
+        
         return list.parallelStream().map(item -> {
             BatteryMembercardRefundOrderVO batteryMembercardRefundOrderVO = new BatteryMembercardRefundOrderVO();
             BeanUtils.copyProperties(item, batteryMembercardRefundOrderVO);
@@ -1161,13 +1133,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
             batteryMembercardRefundOrderVO.setName(Objects.isNull(userInfo) ? "" : userInfo.getName());
-        
+            
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
             batteryMembercardRefundOrderVO.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
             batteryMembercardRefundOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
             batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
             batteryMembercardRefundOrderVO.setRentPriceUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentPriceUnit());
-        
+            
             return batteryMembercardRefundOrderVO;
         }).collect(Collectors.toList());
     }
