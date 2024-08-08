@@ -669,4 +669,6 @@ public interface CacheConstant {
     
     
     String ALLOW_SELF_OPEN_CELL_START_TIME = "allow_self_open_cell_start_time:";
+    
+    String VEHICLE_BINDING_IDEMPOTENT_LOCK = "vehicle_binding_idempotent_lock:%s";
 }
