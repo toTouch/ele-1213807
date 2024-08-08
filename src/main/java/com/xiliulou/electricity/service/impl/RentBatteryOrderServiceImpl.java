@@ -852,7 +852,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //分配开门格挡
             //Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
-            Triple<Boolean, Integer, String> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(), electricityCabinet.getVersion());
+            Triple<Boolean, Integer, String> usableEmptyCellNo = findUsableEmptyCellNo(userInfo.getUid(), electricityCabinet.getId(), electricityCabinet.getVersion());
             
             if ((!usableEmptyCellNo.getLeft()) || Objects.isNull(usableEmptyCellNo.getMiddle())) {
                 log.warn("RETURNBATTERY WARN! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
@@ -931,7 +931,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok();
     }
     
-    private Triple<Boolean, Integer, String> findUsableEmptyCellNo(Integer eid, String version) {
+    private Triple<Boolean, Integer, String> findUsableEmptyCellNo(Long uid, Integer eid, String version) {
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             return Triple.of(false, null, "换电柜异常，不存在的换电柜扩展信息");
@@ -975,6 +975,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (emptyCellList.size() == 1) {
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
             return Triple.of(true, cellNo, null);
+        }
+        
+        // 舒适换电分配空仓
+        Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
+        if (comfortExchangeGetEmptyCellPair.getLeft()) {
+            return Triple.of(true, comfortExchangeGetEmptyCellPair.getRight(), null);
         }
         
         //有多个空格挡  优先分配开门的格挡

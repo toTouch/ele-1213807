@@ -31,4 +31,14 @@ public interface ElectricityCabinetChooseCellConfigService {
      * @return 返回一个Pair对象，其中包含一个布尔值表示是否满足条件，以及一个字符串表示推荐的换电箱编号（如果满足条件）
      */
     Pair<Boolean, String> comfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes);
+    
+    
+    /**
+     * 舒适换电获取空仓
+     *
+     * @param uid 用户ID等
+     * @param usableBoxes 可用的换电箱列表
+     * @return 返回一个Pair对象，其中包含一个布尔值表示是否满足条件，以及一个字符串表示推荐的换电箱编号（如果满足条件）
+     */
+    Pair<Boolean, Integer> comfortExchangeGetEmptyCell(Long uid, List<ElectricityCabinetBox> usableBoxes);
 }

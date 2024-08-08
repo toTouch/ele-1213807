@@ -2811,7 +2811,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version) {
+    public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version) {
         
         // 旧版本仍走旧分配逻辑
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
@@ -2829,6 +2829,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
             return Pair.of(true, cellNo);
         }
+        
+        // 舒适换电分配空仓
+        Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
+        if (comfortExchangeGetEmptyCellPair.getLeft()) {
+            return comfortExchangeGetEmptyCellPair;
+        }
+        
         
         // 有多个空格挡  优先分配开门的格挡
         List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
@@ -5228,5 +5235,36 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
         return R.ok(electricityCabinetList);
+    }
+    
+    @Override
+    public Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version) {
+        // 旧版本仍走旧分配逻辑
+        if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
+            return this.findUsableEmptyCellNo(eid);
+        }
+        
+        Integer cellNo = null;
+        List<ElectricityCabinetBox> emptyCellList = electricityCabinetBoxService.listUsableEmptyCell(eid);
+        if (CollectionUtils.isEmpty(emptyCellList)) {
+            return Pair.of(false, null);
+        }
+        
+        // 可用格挡只有一个默认直接分配
+        if (emptyCellList.size() == 1) {
+            cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+        
+        // 有多个空格挡  优先分配开门的格挡
+        List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(openDoorEmptyCellList)) {
+            cellNo = Integer.parseInt(openDoorEmptyCellList.get(ThreadLocalRandom.current().nextInt(openDoorEmptyCellList.size())).getCellNo());
+            return Pair.of(true, cellNo);
+        }
+        
+        cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
+        return Pair.of(true, cellNo);
     }
 }
