@@ -9,5 +9,13 @@ import com.xiliulou.electricity.entity.ElectricityCabinetChooseCellConfig;
  */
 public interface ElectricityCabinetChooseCellConfigService {
     
-    ElectricityCabinetChooseCellConfig queryConfigByNum(Integer num);
+    ElectricityCabinetChooseCellConfig queryConfigByNumFromDB(Integer num);
+    
+    /**
+     * 根据编号查询缓存中的机柜选择单元配置
+     *
+     * @param num 编号
+     * @return 返回查询到的配置
+     */
+    ElectricityCabinetChooseCellConfig queryConfigByNumFromCache(Integer num);
 }

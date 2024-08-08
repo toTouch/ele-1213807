@@ -669,4 +669,10 @@ public interface CacheConstant {
     
     
     String ALLOW_SELF_OPEN_CELL_START_TIME = "allow_self_open_cell_start_time:";
+    
+    
+    /**
+     * 柜机仓门配置key
+     */
+    String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
 }
