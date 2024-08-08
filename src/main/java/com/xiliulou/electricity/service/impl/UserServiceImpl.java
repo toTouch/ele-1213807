@@ -294,7 +294,7 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public User queryByUserName(String username) {
-        if (StringUtils.isBlank(username)){
+        if (StringUtils.isBlank(username)) {
             return null;
         }
         return this.userMapper.queryByUserName(username);
@@ -304,7 +304,8 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public User queryByUserNameAndTenantId(String username, Integer tenantId) {
-        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId).last("limit 1"));
+        return this.userMapper.selectOne(
+                new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId).last("limit 1"));
     }
     
     @Override
@@ -939,7 +940,8 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "USER.0001", "登陆用户不合法，无法操作！");
         }
         
-        if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.DATA_TYPE_OPERATE, userInfo.getDataType())) {
+        if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.DATA_TYPE_OPERATE, userInfo.getDataType()) && !Objects.equals(
+                User.DATA_TYPE_FRANCHISEE, userInfo.getDataType())) {
             return Triple.of(false, "AUTH.0002", "没有权限操作！");
         }
         
@@ -1102,12 +1104,12 @@ public class UserServiceImpl implements UserService {
         updateUser.setRefId(query.getSourceId());
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
-    
+        
         int update = this.userMapper.updateUserByUid(updateUser);
         if (update > 0) {
             redisService.delete(CacheConstant.CACHE_USER_UID + query.getUid());
         }
-    
+        
         return update;
     }
     
