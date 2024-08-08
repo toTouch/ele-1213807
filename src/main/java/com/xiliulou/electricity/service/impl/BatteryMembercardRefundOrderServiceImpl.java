@@ -10,12 +10,10 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
-import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -23,7 +21,6 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
@@ -57,7 +54,6 @@ import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
@@ -72,7 +68,6 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
@@ -85,9 +80,6 @@ import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BasePayRequest;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -133,7 +125,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     UserInfoService userInfoService;
     
     @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
+    PayConfigBizService payConfigBizService;
     
     @Autowired
     UserOauthBindService userOauthBindService;
@@ -192,14 +184,10 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     private FranchiseeServiceImpl franchiseeService;
     
-    @Resource
-    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
     @Resource
     private PayServiceDispatcher payServiceDispatcher;
     
-    @Resource
-    private PayConfigBizService payConfigBizService;
     
     @Resource
     private ApplicationContext applicationContext;
@@ -1104,11 +1092,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             log.warn("CHECK PAY PARAMS DETAILS WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return R.fail("100281", "电池套餐订单不存在");
         }
+        boolean configConsistency = payConfigBizService
+                .checkConfigConsistency(electricityMemberCardOrder.getPaymentChannel(), electricityMemberCardOrder.getTenantId(), electricityMemberCardOrder.getFranchiseeId(),
+                        electricityMemberCardOrder.getWechatMerchantId());
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(electricityPayParams) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId()) || !Objects.equals(
-                electricityMemberCardOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
+        if (!configConsistency) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());

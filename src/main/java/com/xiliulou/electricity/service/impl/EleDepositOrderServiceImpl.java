@@ -83,6 +83,7 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -145,10 +146,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     ElectricityTradeOrderService electricityTradeOrderService;
-    
-    @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
-    
     @Autowired
     UserOauthBindService userOauthBindService;
     
@@ -173,8 +170,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     
-    @Resource
-    EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
     
     @Autowired
     ElectricityCarModelService electricityCarModelService;
@@ -249,7 +244,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
+    private PayConfigBizService payConfigBizService;
     
     @Resource
     private TenantService tenantService;
@@ -785,11 +780,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.warn("CHECK PAY PARAMS DETAILS WARN! NOT FOUND ELECTRICITY_REFUND_ORDER orderId={}", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-        
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
-                eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(electricityPayParams) || !Objects.equals(eleDepositOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId()) || !Objects.equals(
-                eleDepositOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
+    
+        boolean checkConfigConsistency = payConfigBizService.checkConfigConsistency(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getFranchiseeId(),
+                eleDepositOrder.getWechatMerchantId());
+        if (!checkConfigConsistency) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());

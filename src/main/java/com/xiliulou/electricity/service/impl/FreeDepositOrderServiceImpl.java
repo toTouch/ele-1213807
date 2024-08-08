@@ -1611,7 +1611,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).paramFranchiseeId(payParamConfig.getFranchiseeId())
                 .wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
-                .paymentChannel(query.getPaymentChannel()).build();
+                .paymentChannel(payParamConfig.getPaymentChannel()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }
@@ -1655,7 +1655,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         electricityMemberCardOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
         electricityMemberCardOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-        
+        electricityMemberCardOrder.setPaymentChannel(payParamConfig.getPaymentChannel());
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     

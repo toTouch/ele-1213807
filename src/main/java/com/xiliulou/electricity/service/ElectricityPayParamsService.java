@@ -14,7 +14,6 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     
     
     
-    R getTenantId(String appId);
     
     /**
      * 上传支付证书

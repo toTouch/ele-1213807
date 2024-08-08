@@ -586,8 +586,9 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
             userInfoUpdate.setPayCount(userInfo.getPayCount() + 1);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
-            
-            shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+            if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())){
+                shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+            }
         } else {
             
             if (CollectionUtils.isNotEmpty(userCouponIds)) {

@@ -1030,7 +1030,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .payAmount(batteryMemberCard.getDeposit()).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(EleDepositOrder.ONLINE_PAYMENT)
                 .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0)
-                .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId()).build();
+                .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
+                .paymentChannel(payParamConfig.getPaymentChannel()).build();
         
         return Triple.of(true, null, eleDepositOrder);
     }
@@ -1076,7 +1077,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         electricityMemberCardOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
         electricityMemberCardOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-        
+        electricityMemberCardOrder.setPaymentChannel(payParamConfig.getPaymentChannel());
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     
@@ -1128,7 +1129,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         electricityMemberCardOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
         electricityMemberCardOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-        
+        electricityMemberCardOrder.setPaymentChannel(payParamConfig.getPaymentChannel());
         return Triple.of(true, null, electricityMemberCardOrder);
     }
     
