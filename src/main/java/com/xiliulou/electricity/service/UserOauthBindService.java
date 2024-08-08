@@ -60,7 +60,7 @@ public interface UserOauthBindService {
     
     Boolean checkOpenIdByJsCode(String jsCode);
     
-    UserOauthBind selectByUidAndPhone(String phone, Long uid, Integer tenantId);
+    List<UserOauthBind> selectListByUidAndPhone(String phone, Long uid, Integer tenantId);
     
     /**
      * 根据手机号、类型、租户查询用户

@@ -44,7 +44,7 @@
     
     </select>
     
-    <select id="selectByUidAndPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+    <select id="selectListByUidAndPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         SELECT id,
                uid,
                source,

@@ -179,8 +179,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO.FREE_OF_CHARGE;
@@ -1918,13 +1920,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setSignFinishStatus(SignStatusEnum.UNSIGNED.getCode());
         }
         
-        // 根据openId判断是否可解绑微信
-        //        UserOauthBind userOauthBind = userOauthBindService.selectByUidAndPhone(vo.getPhone(), uid, tenantId);
-        //        if (Objects.nonNull(userOauthBind) && StringUtils.isNotBlank(userOauthBind.getThirdId())) {
-        //            vo.setBindWX(UserOauthBind.STATUS_BIND_VX);
-        //        } else {
-        //            vo.setBindWX(UserOauthBind.STATUS_UN_BIND_VX);
-        //        }
+        List<UserOauthBind> userOauthBinds = userOauthBindService.selectListByUidAndPhone(vo.getPhone(), uid, tenantId);
+        Map<Integer, UserOauthBind> sourceMap = Optional.ofNullable(userOauthBinds).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(UserOauthBind::getSource, Function.identity(), (k1, k2) -> k1));
+        UserOauthBind wxUserOauthBind = sourceMap.get(UserOauthBind.SOURCE_WX_PRO);
+        vo.setBindWX(this.getIsBindThird(wxUserOauthBind) ? UserOauthBind.STATUS_BIND_VX : UserOauthBind.STATUS_UN_BIND_VX);
+        vo.setBindAlipay(this.getIsBindThird(wxUserOauthBind) ? UserOauthBind.STATUS_BIND_ALIPAY : UserOauthBind.STATUS_UN_BIND_ALIPAY);
         
         // 邀请人是否可被修改
         Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
@@ -1944,6 +1945,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterSource(inviterSource);
         
         return R.ok(vo);
+    }
+    
+    /**
+     * 获取是否绑定第三方
+     *
+     * @param oauthBind
+     * @return
+     * @author caobotao.cbt
+     * @date 2024/8/8 09:25
+     */
+    private boolean getIsBindThird(UserOauthBind oauthBind) {
+        return Objects.nonNull(oauthBind) && StringUtils.isNotBlank(oauthBind.getThirdId());
     }
     
     private UserTurnoverVo queryUserConsumptionPay(Long id) {
@@ -2000,11 +2013,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(uid, TenantContextHolder.getTenantId(),unbindOpenIdRequest.getSource());
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(uid, TenantContextHolder.getTenantId(), unbindOpenIdRequest.getSource());
         
         if (Objects.nonNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())) {
             // 解绑微信成功后 强制用户重新登录
-            List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUidAndSource(uid,unbindOpenIdRequest.getSource());
+            List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUidAndSource(uid, unbindOpenIdRequest.getSource());
             if (DataUtil.collectionIsUsable(userOauthBinds)) {
                 clearUserOauthBindToken(userOauthBinds, CacheConstant.CLIENT_ID);
             }
@@ -2019,11 +2032,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         if (unbindOpenIdRequest.getSource().equals(UserOauthBind.SOURCE_WX_PRO)) {
                             operateContent = EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_VX;
                             oldOperateInfo = EleUserOperateHistoryConstant.UNBIND_VX_OLD_OPERATION;
-                            newOperateInfo =  EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION;
+                            newOperateInfo = EleUserOperateHistoryConstant.UNBIND_VX_NEW_OPERATION;
                         } else if (unbindOpenIdRequest.getSource().equals(UserOauthBind.SOURCE_ALI_PAY)) {
                             operateContent = EleUserOperateHistoryConstant.OPERATE_CONTENT_UNBIND_ALIPAY;
                             oldOperateInfo = EleUserOperateHistoryConstant.UNBIND_ALIPAY_OLD_OPERATION;
-                            newOperateInfo =  EleUserOperateHistoryConstant.UNBIND_ALIPAY_NEW_OPERATION;
+                            newOperateInfo = EleUserOperateHistoryConstant.UNBIND_ALIPAY_NEW_OPERATION;
                         } else {
                             log.warn("UserInfoServiceImpl.unbindOpenId WARN! source={} not fund", unbindOpenIdRequest.getSource());
                             return;

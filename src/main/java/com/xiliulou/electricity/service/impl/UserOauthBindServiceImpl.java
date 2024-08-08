@@ -217,8 +217,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     
     @Override
     @Slave
-    public UserOauthBind selectByUidAndPhone(String phone, Long uid, Integer tenantId) {
-        return userOauthBindMapper.selectByUidAndPhone(phone, uid, tenantId);
+    public List<UserOauthBind> selectListByUidAndPhone(String phone, Long uid, Integer tenantId) {
+        return userOauthBindMapper.selectListByUidAndPhone(phone, uid, tenantId);
     }
     
     /**

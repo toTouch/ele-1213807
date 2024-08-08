@@ -76,5 +76,12 @@ public class UserOauthBind {
 	
 	// 微信可解绑
 	public static final Integer STATUS_BIND_VX = 1;
+	
+	
+	// 支付宝不可解绑
+	public static final Integer STATUS_UN_BIND_ALIPAY = 0;
+	
+	// 支付宝可解绑
+	public static final Integer STATUS_BIND_ALIPAY = 1;
 
 }
