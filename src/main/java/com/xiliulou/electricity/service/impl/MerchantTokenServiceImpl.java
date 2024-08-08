@@ -184,7 +184,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                             .status(UserOauthBind.STATUS_BIND).build();
                     userOauthBindService.insert(oauthBind);
                 } else {
-                    UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
+                    UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(e.getUid(), tenantId,UserOauthBind.SOURCE_WX_PRO);
                     
                     if (ObjectUtils.isNotEmpty(userOauthBind) && !openid.equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());

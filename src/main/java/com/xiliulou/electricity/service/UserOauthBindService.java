@@ -40,19 +40,13 @@ public interface UserOauthBindService {
     Integer update(UserOauthBind userOauthBind);
     
     
-    UserOauthBind queryOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
-    
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
     
     UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId);
     
-    UserOauthBind queryByUserPhone(String phone, int source, Integer tenantId);
-    
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone, Integer tenantId);
     
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
-    
-    UserOauthBind queryUserOauthBySysId(Long uid, Integer tenantId);
     
     List<UserOauthBind> queryListByUid(Long uid);
     
@@ -60,6 +54,15 @@ public interface UserOauthBindService {
     
     Boolean checkOpenIdByJsCode(String jsCode);
     
+    /**
+     * 根据用户id+电话+租户id查询
+     *
+     * @param phone
+     * @param uid
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/8/8 11:29
+     */
     List<UserOauthBind> selectListByUidAndPhone(String phone, Long uid, Integer tenantId);
     
     /**
@@ -72,15 +75,7 @@ public interface UserOauthBindService {
      */
     List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId);
     
-    /**
-     * @param phone
-     * @param source
-     * @param tenantId
-     * @return
-     * @see UserOauthBindService#listUserByPhone(String, Integer, Integer)
-     */
-    @Deprecated
-    UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId);
+    
     
     Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer source, Integer tenantId);
     

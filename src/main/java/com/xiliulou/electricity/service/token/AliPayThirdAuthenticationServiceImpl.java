@@ -51,12 +51,16 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author zzlong
@@ -240,8 +244,11 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             
             //4.如果openId不存在手机号存在，则
             if (!existsOpenId.getLeft() && existPhone.getLeft()) {
-                UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_ALI_PAY, tenantId);
-                if (Objects.nonNull(userOauthBind)) {
+                List<UserOauthBind> userOauthBinds = userOauthBindService.listUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_ALI_PAY, tenantId);
+                UserOauthBind userOauthBind = null;
+                if (!CollectionUtils.isEmpty(userOauthBinds)) {
+                    // 支付宝用户只会存在一条记录
+                    userOauthBind = userOauthBinds.get(0);
                     if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
                         log.error("ALIPAY LOGIN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
                                 userOauthBind.getUid(), existPhone.getRight().getUid());

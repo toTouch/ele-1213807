@@ -100,12 +100,6 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     
     
     @Override
-    public UserOauthBind queryOauthByOpenIdAndSource(String openid, int source, Integer tenantId) {
-        return this.userOauthBindMapper.selectOne(
-                new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getThirdId, openid).eq(UserOauthBind::getSource, source).eq(UserOauthBind::getTenantId, tenantId));
-    }
-    
-    @Override
     public List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId) {
         return userOauthBindMapper.selectListOauthByOpenIdAndSource(openid, source, tenantId);
     }
@@ -155,11 +149,6 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
                         .eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId, tenantId));
     }
     
-    @Slave
-    @Override
-    public UserOauthBind queryByUserPhone(String phone, int source, Integer tenantId) {
-        return this.userOauthBindMapper.selectUserByPhone(phone, source, tenantId);
-    }
     
     @Override
     @Slave
@@ -187,17 +176,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         
         return update(build) == 1 ? Pair.of(true, null) : Pair.of(false, "修改失败 ");
     }
-    
-    /**
-     * @param uid
-     * @return
-     */
-    @Override
-    public UserOauthBind queryUserOauthBySysId(Long uid, Integer tenantId) {
-        
-        return userOauthBindMapper.queryUserOauthBySysId(uid, tenantId);
-    }
-    
+
     @Slave
     @Override
     public List<UserOauthBind> queryListByUid(Long uid) {
@@ -235,19 +214,6 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectListUserByPhone(phone, source, tenantId);
     }
     
-    /**
-     * @param phone
-     * @param source
-     * @param tenantId
-     * @return
-     * @see UserOauthBindServiceImpl#listUserByPhone(String, Integer, Integer)
-     */
-    @Deprecated
-    @Override
-    @Slave
-    public UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId) {
-        return userOauthBindMapper.selectUserByPhone(phone, source, tenantId);
-    }
     
     /**
      * 更新用户手机号

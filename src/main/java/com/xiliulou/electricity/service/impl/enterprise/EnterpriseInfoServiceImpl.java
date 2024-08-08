@@ -770,7 +770,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             wechatPayParamsDetails.setMerchantAppletSecret(merchantConfig.getMerchantAppletSecret());
             
             
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(uid, TenantContextHolder.getTenantId(),UserOauthBind.SOURCE_WX_PRO);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found userOauthBind,uid={}", uid);
                 return Triple.of(false, "100314", "未找到用户的第三方授权信息!");

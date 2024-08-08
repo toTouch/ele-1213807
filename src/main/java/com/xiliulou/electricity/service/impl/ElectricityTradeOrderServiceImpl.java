@@ -426,6 +426,7 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         electricityTradeOrder.setTenantId(commonOrder.getTenantId());
         electricityTradeOrder.setPayFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
         electricityTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+        electricityTradeOrder.setPaymentChannel(wechatPayParamsDetails.getPaymentChannel());
         baseMapper.insert(electricityTradeOrder);
         
         //支付参数

@@ -25,25 +25,6 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="queryUserOauthBySysId" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        SELECT id,
-               uid,
-               source,
-               third_id,
-               third_nick,
-               access_token,
-               refresh_token,
-               status,
-               phone,
-               create_time,
-               update_time,
-               `tenant_id`
-        FROM t_user_oauth_bind
-        WHERE uid = #{uid}
-          and tenant_id = #{tenantId}
-    
-    </select>
-    
     <select id="selectListByUidAndPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         SELECT id,
                uid,
@@ -83,24 +64,6 @@
           and source = #{source}
     </select>
     
-    <select id="selectUserByPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        SELECT id,
-               uid,
-               source,
-               third_id,
-               third_nick,
-               access_token,
-               refresh_token,
-               status,
-               phone,
-               create_time,
-               update_time,
-               `tenant_id`
-        FROM t_user_oauth_bind
-        WHERE phone = #{phone}
-          and tenant_id = #{tenantId}
-          and source = #{source}
-    </select>
     
     <update id="updateOpenIdByUid">
         update t_user_oauth_bind

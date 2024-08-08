@@ -1246,7 +1246,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         //查询openid
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchant.getUid(), merchant.getTenantId());
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchant.getUid(), merchant.getTenantId(),UserOauthBind.SOURCE_WX_PRO);
         if (!Objects.isNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())){
             vo.setOpenId(userOauthBind.getThirdId());
         }

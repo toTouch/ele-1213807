@@ -282,7 +282,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             return Triple.of(true, null, result);
         }
         
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), tenantId);
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchantWithdrawApplication.getUid(), tenantId,UserOauthBind.SOURCE_WX_PRO);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.warn("review Merchant withdraw application warn, not found user auth bind info for merchant user. uid = {}", merchantWithdrawApplication.getUid());
             return Triple.of(false, "120018", "未找到用户的第三方授权信息");
@@ -548,7 +548,7 @@ public class MerchantWithdrawApplicationServiceImpl implements MerchantWithdrawA
             merchantWithdrawApplicationRecords.add(withdrawApplicationRecord);
             
             //创建转账批次明细单
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchantWithdrawApplication.getUid(), merchantWithdrawApplication.getTenantId());
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchantWithdrawApplication.getUid(), merchantWithdrawApplication.getTenantId(),UserOauthBind.SOURCE_WX_PRO);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.error("batch review Merchant withdraw application error, not found user auth bind info for merchant user. uid = {}, tenant id = {}",
                         merchantWithdrawApplication.getUid(), merchantWithdrawApplication.getTenantId());
