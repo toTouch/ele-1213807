@@ -313,10 +313,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             return Collections.emptyList();
         }
         
-        List<InvitationActivity> list;
         // 如果有加盟商，则查加盟商的活动
-        list = activityList.stream().filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && Objects.equals(
-                activity.getFranchiseeId(), franchiseeId)).collect(Collectors.toList());
+        List<InvitationActivity> list = activityList.stream()
+                .filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && Objects.equals(
+                        activity.getFranchiseeId(), franchiseeId)).collect(Collectors.toList());
         
         if (CollectionUtils.isEmpty(list)) {
             // 如果没有加盟商，则查租户的活动
