@@ -1517,9 +1517,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         // 舒适换电
-        Pair<Boolean, String> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes);
+        Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes);
         if (satisfyComfortExchange.getLeft()) {
-            return satisfyComfortExchange.getRight();
+            return satisfyComfortExchange.getRight().getCellNo();
         }
         
         return ruleAllotCell(userInfo, usableBoxes);

@@ -2724,7 +2724,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             // 舒适换电分配满电仓适配
-            Pair<Boolean, String> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos);
+            Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos);
             if (comfortExchangeGetFullCellPair.getLeft()) {
                 return Triple.of(true, null, comfortExchangeGetFullCellPair.getRight());
             }
