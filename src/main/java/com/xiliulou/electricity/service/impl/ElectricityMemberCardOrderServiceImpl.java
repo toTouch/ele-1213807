@@ -3778,7 +3778,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 多加盟商版本增加：加盟商一致性校验
             if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), franchiseeId)) {
                 log.warn("ELE WARN! coupon is not same franchisee,couponId={},franchiseeId={}", userCouponId, franchiseeId);
-                return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
+                return Triple.of(false, "120123", "此优惠券暂不可用，请选择其他优惠券");
             }
             
             // 优惠券是否使用
