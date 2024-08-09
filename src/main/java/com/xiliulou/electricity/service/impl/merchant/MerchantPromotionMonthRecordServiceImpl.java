@@ -133,6 +133,7 @@ public class MerchantPromotionMonthRecordServiceImpl implements MerchantPromotio
         queryModel.setFranchiseeId(request.getFranchiseeId());
         queryModel.setStartDate(DateUtils.getFirstDayByMonth(monthDate));
         queryModel.setEndDate(DateUtils.getLastDayByMonth(monthDate));
+        queryModel.setFranchiseeIds(request.getFranchiseeIds());
         
         List<MerchantPromotionDayRecordVO> detailList = merchantPromotionDayRecordService.listByTenantId(queryModel);
         if (CollectionUtils.isEmpty(detailList)) {
