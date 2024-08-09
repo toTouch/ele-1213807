@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -209,16 +210,28 @@ public class JsonMerchantAreaController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        List<Long> franchiseeIds = null;
+        List<Long> franchiseeIdList = new ArrayList<>();
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            List<Long>  franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
                 log.warn("merchant area query all warn! franchisee is empty, uid = {}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
+    
+            franchiseeIdList.addAll(franchiseeIds);
         }
         
-        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIds).franchiseeId(franchiseeId).build();
+        if (Objects.nonNull(franchiseeId)){
+            franchiseeIdList.add(franchiseeId);
+        }
+        
+        
+        // 如果是租户登录则需将加盟商为零的租户级别的区域返回
+        if (SecurityUtils.isAdmin()) {
+            franchiseeIdList.add(0L);
+        }
+        
+        MerchantAreaRequest request = MerchantAreaRequest.builder().size(size).offset(offset).name(name).franchiseeIdList(franchiseeIdList).build();
         
         return R.ok(merchantAreaService.queryList(request));
     }
