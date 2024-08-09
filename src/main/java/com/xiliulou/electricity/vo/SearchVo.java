@@ -13,4 +13,6 @@ public class SearchVo {
     private Long id;
     
     private String name;
+    
+    private Long franchiseeId;
 }

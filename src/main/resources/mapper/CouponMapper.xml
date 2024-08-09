@@ -4,7 +4,7 @@
     
     <select id="search" resultType="com.xiliulou.electricity.vo.SearchVo">
         select
-        id, name from t_coupon
+        id, name, franchisee_id from t_coupon
         <where>
             del_flag=0
             <if test="name != null and name != ''">
@@ -22,14 +22,9 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="franchiseeId != null ">
-                and franchisee_id = #{franchiseeId}
-            </if>
         </where>
         order by id desc
-        <if test="offset != null">
-            limit #{offset}, #{size}
-        </if>
+        limit #{offset}, #{size}
     </select>
     
     <!--查询指定行数据-->
