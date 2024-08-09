@@ -195,8 +195,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.nonNull(
                 electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm()) && (
-                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm() < ElectricityConfigAddAndUpdateQuery.MIN_NORM
-                        || electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm() > ElectricityConfigAddAndUpdateQuery.MAX_NORM)) {
+                Double.compare(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm(), ElectricityConfigAddAndUpdateQuery.MIN_NORM) < 0
+                        || Double.compare(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm(), ElectricityConfigAddAndUpdateQuery.MAX_NORM) > 0)) {
             return R.fail("100669", "电量标准须满足50-100");
         }
         
