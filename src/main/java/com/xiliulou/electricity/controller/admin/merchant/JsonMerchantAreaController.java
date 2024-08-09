@@ -227,7 +227,7 @@ public class JsonMerchantAreaController extends BaseController {
         
         
         // 如果是租户登录则需将加盟商为零的租户级别的区域返回
-        if (SecurityUtils.isAdmin()) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             franchiseeIdList.add(0L);
         }
         
