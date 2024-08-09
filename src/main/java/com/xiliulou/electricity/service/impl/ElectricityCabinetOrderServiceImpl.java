@@ -1521,8 +1521,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private void getFullCellAndOpenFullCell(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
-            UserInfo userInfo) {
+    private void getFullCellAndOpenFullCell(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo,
+            ElectricityCabinet cabinet, UserInfo userInfo) {
         // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         // 分配满电仓
@@ -3144,6 +3144,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
                 .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        
+        // 删除redis
+        redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId());
+        
         return sessionId;
     }
     
