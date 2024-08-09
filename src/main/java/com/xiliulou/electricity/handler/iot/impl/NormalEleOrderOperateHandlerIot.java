@@ -84,11 +84,12 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
             }
             
             // 租电柜机正在使用中
-            if (StringUtils.isNotBlank(eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg()
-                    .contains(INIT_DEVICE_USING_MSG)) {
-                electricityCabinetOrderOperHistoryService.updateTenantIdByOrderId(eleOrderOperateVO.getOrderId(), Tenant.SUPER_ADMIN_TENANT_ID);
+            if (!Objects.equals(type, ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)) {
+                if (StringUtils.isNotBlank(eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg()
+                        .contains(INIT_DEVICE_USING_MSG)) {
+                    electricityCabinetOrderOperHistoryService.updateTenantIdByOrderId(eleOrderOperateVO.getOrderId(), Tenant.SUPER_ADMIN_TENANT_ID);
+                }
             }
-            
             
         }
     }
