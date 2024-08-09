@@ -3146,7 +3146,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         
         // 删除redis
-        redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId());
+        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId(), "取电中，请稍后", 5L, TimeUnit.MINUTES);
         
         return sessionId;
     }
