@@ -18,6 +18,8 @@ public class ExchangeFailCellUtil {
     
     public static final String BATTERY_CHECK_FAIL_TIME = "电池检测失败或者超时";
     
+    public static final String CABINET_IN_USEING = "换电柜正在使用中操作取消";
+    
     
     public static Boolean judgeOpenFailIsNewCell(Integer cell, String msg) {
         // 定义匹配数字的正则表达式

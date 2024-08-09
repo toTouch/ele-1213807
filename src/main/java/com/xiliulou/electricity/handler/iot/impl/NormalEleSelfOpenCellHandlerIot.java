@@ -75,22 +75,10 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     private UserBatteryMemberCardService userBatteryMemberCardService;
     
     @Resource
-    private BatteryMemberCardService batteryMemberCardService;
-    
-    @Resource
-    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
-    
-    @Resource
-    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
-    
-    @Resource
     private WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
     
     @Resource
     private BatteryTrackRecordService batteryTrackRecordService;
-    
-    @Resource
-    ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     
     
     @Override
