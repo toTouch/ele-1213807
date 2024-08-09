@@ -956,7 +956,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .orderId(orderSelfOpenCellQuery.getOrderId()).tenantId(electricityCabinet.getTenantId()).msg("旧电池检测失败，自助开仓")
                     .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
+            
+            String threePeriodsSuccessRateVersion = "2.1.21";
+            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+                electricityCabinetOrderOperHistoryService.insert(history);
+            }
             
             ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
@@ -970,6 +974,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("orderId", orderSelfOpenCellQuery.getOrderId());
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
+            dataMap.put("userSelfOpenCell", true);
             
             String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
             
@@ -1541,7 +1546,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
                 .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        electricityCabinetOrderOperHistoryService.insert(history);
+        
+        String threePeriodsSuccessRateVersion = "2.1.21";
+        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+            electricityCabinetOrderOperHistoryService.insert(history);
+        }
         
         ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
         electricityCabinetOrderUpdate.setId(order.getId());
@@ -1554,6 +1563,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         dataMap.put("orderId", order.getOrderId());
         dataMap.put("cellNo", cell);
         dataMap.put("batteryName", userBindingBatterySn);
+        dataMap.put("userSelfOpenCell", false);
         
         String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + order.getOrderId();
         
@@ -2123,6 +2133,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
+            log.warn("ORDER WARN! There is no empty cell.");
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
@@ -2163,6 +2174,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
+        String threePeriodsSuccessRateVersion = "2.1.21";
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) > 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
@@ -2737,7 +2753,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
                     .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
+            
+            String threePeriodsSuccessRateVersion = "2.1.21";
+            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+                electricityCabinetOrderOperHistoryService.insert(history);
+            }
             
             // 如果旧电池检测失败会在这个表里面，导致在订单记录中存在自主开仓，所以移除旧版本的自主开仓记录
             electricityExceptionOrderStatusRecordService.queryRecordAndUpdateStatus(electricityCabinetOrder.getOrderId());
@@ -2758,6 +2778,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
                 dataMap.put("isTakeCell", true);
             }
+            dataMap.put("userSelfOpenCell", true);
            
             //dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
             
