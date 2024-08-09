@@ -230,7 +230,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * @return true(成功)、false(失败)
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public boolean substractResidue(Integer tenantId, Long uid) {
         
         // 查询会员当前信息

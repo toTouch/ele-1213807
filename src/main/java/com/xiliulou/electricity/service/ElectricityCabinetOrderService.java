@@ -75,6 +75,8 @@ public interface ElectricityCabinetOrderService {
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
     
+    Triple<Boolean, String, Object> orderV3(OrderQueryV3 orderQuery);
+    
     Triple<Boolean, String, Object> orderSelectionExchange(OrderSelectionExchangeQuery orderQuery);
     
     Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
@@ -107,4 +109,10 @@ public interface ElectricityCabinetOrderService {
     
     R queryListv2(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     
+    
+    Triple<Boolean, String, Object> queryOrderStatusForShowV2(String orderId);
+    
+    R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
+    
+    R openFullCell(OpenFullCellQuery query);
 }

@@ -217,6 +217,13 @@ public class ElectricityCabinetOrder {
      * 订单来源 自助开仓
      */
     public static final Integer ORDER_SOURCE_FOR_SELF_OPEN_CELL = 4;
+    
+    /***
+     * 是否满足自主开仓的新旧仓门常量
+     */
+    public static final Integer OLD_CELL = 0;
+    
+    public static final Integer NEW_CELL = 1;
 
 
 }

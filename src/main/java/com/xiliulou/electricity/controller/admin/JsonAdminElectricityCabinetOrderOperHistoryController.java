@@ -5,13 +5,12 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
 
 /**
  * 订单表(TElectricityCabinetOrder)表控制层
@@ -38,22 +37,17 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 			@RequestParam("type") Integer type) {
 
 		if (size < 0 || size > 50) {
-			size = 10L;
+			size = 20L;
 		}
 
 		if (offset < 0) {
 			offset = 0L;
 		}
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder()
-				.offset(offset)
-				.size(size)
-				.orderId(orderId)
-				.tenantId(tenantId)
-				.type(type).build();
+		Integer tenantId = SecurityUtils.isAdmin() ? null : TenantContextHolder.getTenantId();
+		
+		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder().offset(offset).size(size)
+				.orderId(orderId).tenantId(tenantId).type(type).build();
 		return electricityCabinetOrderOperHistoryService.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
 	}
 
