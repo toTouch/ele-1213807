@@ -157,12 +157,14 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         }
         
         if (openFullCellRsp.getIsException()) {
-            log.warn("normalOpenFullyCellHandlerIot error! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
+            //错误信息保存到缓存里，方便前端显示
+            redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
+            log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
             return;
         }
         
         if (!Objects.equals(openFullCellRsp.getOrderSeq(), ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS)) {
-            log.warn("normalOpenFullyCellHandlerIot error! openFullCellRsp.orderSeq not equal 6,  sessionId is {}, orderId is {}, orderSeq is {}", receiverMessage.getSessionId(),
+            log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp.orderSeq not equal 6,  sessionId is {}, orderId is {}, orderSeq is {}", receiverMessage.getSessionId(),
                     openFullCellRsp.getOrderId(), openFullCellRsp.getOrderSeq());
             return;
         }
