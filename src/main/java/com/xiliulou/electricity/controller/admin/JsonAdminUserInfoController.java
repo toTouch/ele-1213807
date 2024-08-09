@@ -426,7 +426,7 @@ public class JsonAdminUserInfoController extends BaseController {
      */
     @PostMapping(value = "/admin/userInfo/details/openId/unbind")
     public R unbindOpenId(@RequestBody @Validated(value = UpdateGroup.class) UnbindOpenIdRequest unbindOpenIdRequest) {
-        unbindOpenIdRequest.setSource(UserOauthBind.SOURCE_WX);
+        unbindOpenIdRequest.setSource(UserOauthBind.SOURCE_WX_PRO);
         return userInfoService.unbindOpenId(unbindOpenIdRequest);
     }
     

@@ -2045,12 +2045,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         EleUserOperateHistory eleUserOperateHistory = buildEleUserOperateHistory(userInfo, operateContent, oldOperateInfo, newOperateInfo);
                         eleUserOperateHistoryService.asyncHandleEleUserOperateHistory(eleUserOperateHistory);
                     });
-            
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", userInfo.getName());
+            map.put("phone", userInfo.getPhone());
+            operateRecordUtil.record(null, map);
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("username", userInfo.getName());
-        map.put("phone", userInfo.getPhone());
-        operateRecordUtil.record(null, map);
         return R.ok();
     }
     

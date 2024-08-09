@@ -196,50 +196,53 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
                 return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
             }
             
-            //3.如果openId存在手机号不存在，则替换以前的手机号
+            //3.如果openId存在手机号不存在，则新增账号
             if (existsOpenId.getLeft() && !existPhone.getLeft()) {
-                User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
-                if (Objects.isNull(user)) {
-                    log.error("ALIPAY LOGIN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
-                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                }
+                return createUserAndOauthBind(phone,openId,tenantId);
                 
-                //这里的uid必须相同
-                if (!Objects.equals(user.getUid(), existsOpenId.getRight().getUid())) {
-                    log.error("ALIPAY LOGIN ERROR! openId exists,phone not exists! third account uid not equals user account uid! thirdUid={},userId={}",
-                            existsOpenId.getRight().getUid(), user.getUid());
-                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-                }
                 
-                User updateUser = User.builder().uid(user.getUid()).phone(phone).updateTime(System.currentTimeMillis()).build();
-                userService.updateUser(updateUser, user);
-                //                user.setPhone(phone);
-                //如果第三方账号的手机号和现在的手机号不同，就让他同步
-                if (!existsOpenId.getRight().getPhone().equals(phone)) {
-                    UserOauthBind existOpenUser = existsOpenId.getRight();
-                    existOpenUser.setPhone(phone);
-                    userOauthBindService.update(existOpenUser);
-                }
-                
-                Long uid = existsOpenId.getRight().getUid();
-                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
-                if (!existUserInfo.getLeft()) {
-                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone)
-                            .name(user.getName()).delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
-                    userInfoService.insert(insertUserInfo);
-                    
-                } else {
-                    UserInfo updateUserInfo = existUserInfo.getRight();
-                    if (!Objects.equals(phone, updateUserInfo.getPhone())) {
-                        updateUserInfo.setPhone(phone);
-                        updateUserInfo.setUid(uid);
-                        updateUserInfo.setTenantId(tenantId);
-                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                        userInfoService.update(updateUserInfo);
-                    }
-                }
-                
-                return createSecurityUser(user, existsOpenId.getRight());
+//                User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
+//                if (Objects.isNull(user)) {
+//                    log.error("ALIPAY LOGIN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
+//                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+//                }
+//
+//                //这里的uid必须相同
+//                if (!Objects.equals(user.getUid(), existsOpenId.getRight().getUid())) {
+//                    log.error("ALIPAY LOGIN ERROR! openId exists,phone not exists! third account uid not equals user account uid! thirdUid={},userId={}",
+//                            existsOpenId.getRight().getUid(), user.getUid());
+//                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+//                }
+//
+//                User updateUser = User.builder().uid(user.getUid()).phone(phone).updateTime(System.currentTimeMillis()).build();
+//                userService.updateUser(updateUser, user);
+//                //                user.setPhone(phone);
+//                //如果第三方账号的手机号和现在的手机号不同，就让他同步
+//                if (!existsOpenId.getRight().getPhone().equals(phone)) {
+//                    UserOauthBind existOpenUser = existsOpenId.getRight();
+//                    existOpenUser.setPhone(phone);
+//                    userOauthBindService.update(existOpenUser);
+//                }
+//
+//                Long uid = existsOpenId.getRight().getUid();
+//                Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
+//                if (!existUserInfo.getLeft()) {
+//                    UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).phone(phone)
+//                            .name(user.getName()).delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
+//                    userInfoService.insert(insertUserInfo);
+//
+//                } else {
+//                    UserInfo updateUserInfo = existUserInfo.getRight();
+//                    if (!Objects.equals(phone, updateUserInfo.getPhone())) {
+//                        updateUserInfo.setPhone(phone);
+//                        updateUserInfo.setUid(uid);
+//                        updateUserInfo.setTenantId(tenantId);
+//                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+//                        userInfoService.update(updateUserInfo);
+//                    }
+//                }
+//
+//                return createSecurityUser(user, existsOpenId.getRight());
             }
             
             //4.如果openId不存在手机号存在，则
