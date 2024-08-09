@@ -67,29 +67,18 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                 }
             }
             
+            if (StringUtils.isNotBlank(eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg()
+                    .contains(INIT_DEVICE_USING_MSG)) {
+                return;
+            }
+            
             //加入操作记录表
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(eleOrderOperateVO.createTime)
                     .orderId(eleOrderOperateVO.getOrderId()).type(type).tenantId(electricityCabinet.getTenantId()).msg(eleOrderOperateVO.getMsg()).seq(seq)
                     .result(eleOrderOperateVO.getResult()).build();
             electricityCabinetOrderOperHistoryService.insert(history);
             
-            // 换电操作记录适配换电优化二期
-            if (Objects.equals(type, ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)) {
-                ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleOrderOperateVO.getOrderId());
-                if (Objects.nonNull(electricityCabinetOrder) && Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT) && StringUtils.isNotBlank(
-                        eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg().contains(INIT_DEVICE_USING_MSG)) {
-                    electricityCabinetOrderOperHistoryService.updateTenantIdByOrderId(eleOrderOperateVO.getOrderId(), Tenant.SUPER_ADMIN_TENANT_ID);
-                    return;
-                }
-            }
-            
-            // 租电柜机正在使用中
-            if (!Objects.equals(type, ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)) {
-                if (StringUtils.isNotBlank(eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg()
-                        .contains(INIT_DEVICE_USING_MSG)) {
-                    electricityCabinetOrderOperHistoryService.updateTenantIdByOrderId(eleOrderOperateVO.getOrderId(), Tenant.SUPER_ADMIN_TENANT_ID);
-                }
-            }
+          
             
         }
     }
