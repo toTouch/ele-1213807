@@ -1420,14 +1420,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String msg = history.getMsg();
         log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
         
-        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
-        if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
-                lastOrder.getOldCellNo(), msg))) {
+        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败 || 换电柜正在使用中操作取消
+        if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || msg.contains(ExchangeFailCellUtil.CABINET_IN_USEING) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL)
+                && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getOldCellNo(), msg))) {
             return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
         }
         
-        //  新仓门&开门失败
-        if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
+        //  新仓门&开门失败 || 换电柜正在使用中操作取消
+        if (msg.contains(ExchangeFailCellUtil.CABINET_IN_USEING) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
+                lastOrder.getNewCellNo(), msg))) {
             return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet);
         }
         
