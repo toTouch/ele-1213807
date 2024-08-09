@@ -952,13 +952,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
             electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
             
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                    .orderId(orderSelfOpenCellQuery.getOrderId()).tenantId(electricityCabinet.getTenantId()).msg("旧电池检测失败，自助开仓")
-                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            
             String threePeriodsSuccessRateVersion = "2.1.21";
             if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+                ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                        .orderId(orderSelfOpenCellQuery.getOrderId()).tenantId(electricityCabinet.getTenantId()).msg("旧电池检测失败，自助开仓")
+                        .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                        .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+                
                 electricityCabinetOrderOperHistoryService.insert(history);
             }
             
@@ -1543,12 +1543,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     private String backSelfOpen(Integer cell, String userBindingBatterySn, ElectricityCabinetOrder order, ElectricityCabinet cabinet, String msg) {
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
-                .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        
         String threePeriodsSuccessRateVersion = "2.1.21";
         if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
+                    .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+        
             electricityCabinetOrderOperHistoryService.insert(history);
         }
         
@@ -2750,12 +2750,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         try {
             // 用户自助开仓
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
-                    .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
-                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            
             String threePeriodsSuccessRateVersion = "2.1.21";
             if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+                ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
+                        .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                        .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+                
                 electricityCabinetOrderOperHistoryService.insert(history);
             }
             
@@ -3138,12 +3138,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName,
             ElectricityCabinetBox cabinetBox) {
         
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                .orderId(cabinetOrder.getOrderId()).tenantId(cabinet.getTenantId()).msg("电池检测成功")
-                .seq(ElectricityCabinetOrderOperHistory.OPEN_FULL_CELL_BATTERY).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        electricityCabinetOrderOperHistoryService.insert(history);
-        
+        String threePeriodsSuccessRateVersion = "2.1.21";
+        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                    .orderId(cabinetOrder.getOrderId()).tenantId(cabinet.getTenantId()).msg("电池检测成功")
+                    .seq(ElectricityCabinetOrderOperHistory.OPEN_FULL_CELL_BATTERY).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+            
+            electricityCabinetOrderOperHistoryService.insert(history);
+        }
         
         ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
         electricityCabinetOrderUpdate.setId(cabinetOrder.getId());
