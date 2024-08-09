@@ -4,9 +4,17 @@
     
     <select id="search" resultType="com.xiliulou.electricity.vo.SearchVo">
         select
-        id, name, franchisee_id from t_coupon
+        id, name from t_coupon
         <where>
             del_flag=0
+            <choose>
+                <when test="franchiseeIds != null">
+                    and (franchisee_id = #{franchiseeId} or franchisee_id is null )
+                </when>
+                <otherwise>
+                    and franchisee_id is null
+                </otherwise>
+            </choose>
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>

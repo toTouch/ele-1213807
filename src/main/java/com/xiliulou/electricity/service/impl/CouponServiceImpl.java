@@ -52,11 +52,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 优惠券规则表(TCoupon)表服务实现类
@@ -403,22 +401,7 @@ public class CouponServiceImpl implements CouponService {
     
     @Override
     public List<SearchVo> search(CouponQuery query) {
-        List<SearchVo> couponList = couponMapper.search(query);
-        if (CollectionUtils.isEmpty(couponList)) {
-            return Collections.emptyList();
-        }
-        
-        // 历史优惠券（无加盟商，即运营商的优惠券）
-        List<SearchVo> list = couponList.stream().filter(coupon -> Objects.isNull(coupon.getFranchiseeId())).collect(Collectors.toList());
-        
-        // 指定加盟商的优惠券
-        List<SearchVo> franchiseeCouponList = couponList.stream()
-                .filter(coupon -> Objects.nonNull(coupon.getFranchiseeId()) && Objects.equals(coupon.getFranchiseeId(), query.getFranchiseeId())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(franchiseeCouponList)) {
-            list.addAll(franchiseeCouponList);
-        }
-        
-        return list;
+        return couponMapper.search(query);
     }
     
     @Override
