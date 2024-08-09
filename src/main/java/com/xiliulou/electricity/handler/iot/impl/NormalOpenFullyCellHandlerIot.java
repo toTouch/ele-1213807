@@ -11,7 +11,6 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -19,14 +18,9 @@ import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -34,10 +28,8 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -91,12 +83,6 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     private UserBatteryMemberCardService userBatteryMemberCardService;
     
     @Resource
-    private BatteryMemberCardService batteryMemberCardService;
-    
-    @Resource
-    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
-    
-    @Resource
     private ElectricityConfigService electricityConfigService;
     
     @Resource
@@ -104,9 +90,6 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     
     @Resource
     EleHardwareHandlerManager eleHardwareHandlerManager;
-    
-    @Resource
-    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
     @Resource
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
@@ -139,14 +122,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         
-       
-        /*
-        if (cabinetOrder.getOrderSeq() > openFullCellRsp.getOrderSeq()) {
-            log.warn("normalOpenFullyCellHandlerIot error! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(),
-                    openFullCellRsp.getOrderId(), cabinetOrder.getUid());
-            return;
-        }
-        */
+        
         // 确认订单ack
         senOrderSuccessMsg(electricityCabinet, cabinetOrder, openFullCellRsp);
         
