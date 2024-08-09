@@ -39,6 +39,8 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.StringConstant.SPACE;
+
 /**
  * ( Franchisee)表服务实现类
  *
@@ -128,7 +130,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-
+        franchiseeAddAndUpdate.setName(franchiseeAddAndUpdate.getName().replaceAll(SPACE, ""));
         //押金参数判断
         if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             if (Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())) {
@@ -218,7 +220,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-
+        franchiseeAddAndUpdate.setName(franchiseeAddAndUpdate.getName().replaceAll(SPACE, ""));
+        
         Franchisee oldFranchisee = queryByIdFromDB(franchiseeAddAndUpdate.getId());
         if (Objects.isNull(oldFranchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");

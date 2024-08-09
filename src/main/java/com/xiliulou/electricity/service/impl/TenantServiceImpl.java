@@ -63,6 +63,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.StringConstant.SPACE;
+
 /**
  * 租户表(Tenant)表服务实现类
  *
@@ -136,7 +138,7 @@ public class TenantServiceImpl implements TenantService {
         if (!lockResult) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-
+        tenantAddAndUpdateQuery.setName(tenantAddAndUpdateQuery.getName().replaceAll(SPACE, ""));
         //判断用户名是否存在
         if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
             return R.fail("100105", "用户名已存在");
@@ -367,7 +369,7 @@ public class TenantServiceImpl implements TenantService {
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
         tenant.setUpdateTime(System.currentTimeMillis());
         tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
-        tenant.setName(tenantAddAndUpdateQuery.getName());
+        tenant.setName(tenantAddAndUpdateQuery.getName().replaceAll(SPACE, ""));
         tenantMapper.updateById(tenant);
 
         redisService.saveWithHash(CacheConstant.CACHE_TENANT_ID + tenant.getId(), tenant);
