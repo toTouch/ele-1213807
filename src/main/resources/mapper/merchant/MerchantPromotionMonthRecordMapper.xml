@@ -36,9 +36,7 @@
         </where>
         group by date
         order by date desc
-        <if test="offset != null and size != null">
-            limit #{offset}, #{size}
-        </if>
+        limit #{offset}, #{size}
     </select>
     
     <select id="countTotal" resultType="java.lang.Integer">
