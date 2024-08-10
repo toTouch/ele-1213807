@@ -131,11 +131,6 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
                 log.info("merchant place save info, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
-            
-            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), merchantArea.getFranchiseeId())) {
-                log.info("merchant place save info, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
-                return Triple.of(false, "120218", "区域不存在");
-            }
         }
         
         // 保存场地
@@ -186,11 +181,6 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
             
             if (Objects.isNull(merchantArea) || !Objects.equals(merchantArea.getTenantId(), tenantId)) {
                 log.warn("merchant place save warn, area is null name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
-                return Triple.of(false, "120218", "区域不存在");
-            }
-    
-            if (!Objects.equals(merchantPlaceSaveRequest.getFranchiseeId(), merchantArea.getFranchiseeId())) {
-                log.warn("merchant place save warn, area is null franchisee is different ,name={}, merchantAreaId={}", merchantPlaceSaveRequest.getName(), merchantPlaceSaveRequest.getMerchantAreaId());
                 return Triple.of(false, "120218", "区域不存在");
             }
         }
