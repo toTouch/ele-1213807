@@ -128,25 +128,32 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.cellConfig is null, eid is {}", cabinetModel.getNum());
             return Pair.of(false, null);
         }
-        // 中间
-        Pair<Boolean, ElectricityCabinetBox> middleCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getMiddleCell());
-        if (middleCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}", cabinetModel.getNum(), cellConfig.getMiddleCell());
-            return middleCellBoxPair;
+        try {
+            // 中间
+            Pair<Boolean, ElectricityCabinetBox> middleCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getMiddleCell());
+            if (middleCellBoxPair.getLeft()) {
+                log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}", cabinetModel.getNum(), cellConfig.getMiddleCell());
+                return middleCellBoxPair;
+            }
+            // 下面
+            Pair<Boolean, ElectricityCabinetBox> belowCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getBelowCell());
+            if (belowCellBoxPair.getLeft()) {
+                log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; belowCell is {}", cabinetModel.getNum(), cellConfig.getBelowCell());
+                return belowCellBoxPair;
+            }
+            
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.getTopCell num is {}", cabinetModel.getNum());
+            return getPositionFullCell(comfortExchangeBox, cellConfig.getTopCell());
+            
+        } catch (Exception e) {
+            log.error("COMFORT EXCHANGE GET FULL ERROR!", e);
         }
-        // 下面
-        Pair<Boolean, ElectricityCabinetBox> belowCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getBelowCell());
-        if (belowCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; belowCell is {}", cabinetModel.getNum(), cellConfig.getBelowCell());
-            return belowCellBoxPair;
-        }
-        
-        log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.getTopCell num is {}", cabinetModel.getNum());
-        return getPositionFullCell(comfortExchangeBox, cellConfig.getTopCell());
+        return Pair.of(false, null);
     }
     
     
     private static Pair<Boolean, ElectricityCabinetBox> getPositionFullCell(List<ElectricityCabinetBox> comfortExchangeBox, String positionCell) {
+        // 每个位置的数据反序列
         List<Integer> positionCellList = StrUtil.isNotBlank(positionCell) ? JsonUtil.fromJsonArray(positionCell, Integer.class) : new ArrayList<>();
         List<ElectricityCabinetBox> boxes = comfortExchangeBox.stream().filter(item -> positionCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList());
         if (CollUtil.isEmpty(boxes)) {
@@ -164,7 +171,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         ElectricityCabinetBox usableCabinetBox = boxes.stream().filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV))
                 .reduce((first, second) -> second).orElse(null);
         if (Objects.isNull(usableCabinetBox)) {
-            log.warn("COMFORT EXCHANGE GET FULL WARN! nou found full battery,eid={}", usableCabinetBox.getElectricityCabinetId());
+            log.warn("COMFORT EXCHANGE GET FULL WARN! nou found full battery,eid={}", boxes.get(0).getElectricityCabinetId());
             return Pair.of(false, null);
         }
         
@@ -216,13 +223,20 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         if (Objects.equals(openDoorEmptyCellList.size(), 1)) {
             return Pair.of(true, Integer.valueOf(openDoorEmptyCellList.get(0).getCellNo()));
         }
+        
         log.info("COMFORT EXCHANGE GET EMPTY INFO! start.conformWay, num is {}", cabinetModel.getNum());
-        // 舒适匹配规则
-        if (CollUtil.isNotEmpty(openDoorEmptyCellList)) {
-            return Pair.of(true, Integer.valueOf(getConformationCell(openDoorEmptyCellList, cellConfig).getRight()));
-        } else {
-            return Pair.of(true, Integer.valueOf(getConformationCell(emptyCellBoxList, cellConfig).getRight()));
+        
+        try {
+            // 舒适匹配规则
+            if (CollUtil.isNotEmpty(openDoorEmptyCellList)) {
+                return Pair.of(true, Integer.valueOf(getConformationCell(openDoorEmptyCellList, cellConfig).getRight()));
+            } else {
+                return Pair.of(true, Integer.valueOf(getConformationCell(emptyCellBoxList, cellConfig).getRight()));
+            }
+        } catch (Exception e) {
+            log.error("COMFORT EXCHANGE GET EMPTY ERROR!", e);
         }
+        return Pair.of(false, null);
     }
     
     /**
