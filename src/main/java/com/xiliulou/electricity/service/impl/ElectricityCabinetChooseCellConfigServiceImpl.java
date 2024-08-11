@@ -125,7 +125,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 舒适换电
         ElectricityCabinetChooseCellConfig cellConfig = chooseCellConfigService.queryConfigByNumFromCache(cabinetModel.getNum());
         if (Objects.isNull(cellConfig)) {
-            log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.cellConfig is null, eid is {}", cabinetModel.getNum());
+            log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.cellConfig is null, num is {}", cabinetModel.getNum());
             return Pair.of(false, null);
         }
         try {
@@ -213,7 +213,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 舒适换电
         ElectricityCabinetChooseCellConfig cellConfig = chooseCellConfigService.queryConfigByNumFromCache(cabinetModel.getNum());
         if (Objects.isNull(cellConfig)) {
-            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.cellConfig is null, eid is {}", cabinetModel.getNum());
+            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.cellConfig is null, num is {}", cabinetModel.getNum());
             return Pair.of(false, null);
         }
         
@@ -229,6 +229,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         try {
             // 舒适匹配规则
             if (CollUtil.isNotEmpty(openDoorEmptyCellList)) {
+                log.info("COMFORT EXCHANGE GET EMPTY INFO! allot open door empty cell, openDoorEmptyCellList is {}", JsonUtil.toJson(openDoorEmptyCellList));
                 return Pair.of(true, Integer.valueOf(getConformationCell(openDoorEmptyCellList, cellConfig).getRight()));
             } else {
                 return Pair.of(true, Integer.valueOf(getConformationCell(emptyCellBoxList, cellConfig).getRight()));
