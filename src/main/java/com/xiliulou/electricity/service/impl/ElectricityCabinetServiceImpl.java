@@ -1909,6 +1909,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
         map.put("operateType", 1);
+        map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
         if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
             map.put("command", "cell_update_down");
         }
