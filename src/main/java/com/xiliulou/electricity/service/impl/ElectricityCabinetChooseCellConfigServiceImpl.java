@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetChooseCellConfig;
@@ -56,6 +57,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     private UserInfoService userInfoService;
     
     @Override
+    @Slave
     public ElectricityCabinetChooseCellConfig queryConfigByNumFromDB(Integer num) {
         return electricityCabinetChooseCellConfigMapper.selectConfigByNum(num);
     }
@@ -65,9 +67,9 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         if (Objects.isNull(num)) {
             return null;
         }
+        String cacheKey = CacheConstant.CACHE_ELECTRICITY_CABINET_CELL_CONFIG + num;
         //先查缓存
-        ElectricityCabinetChooseCellConfig chooseCellConfig = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_CELL_CONFIG + num,
-                ElectricityCabinetChooseCellConfig.class);
+        ElectricityCabinetChooseCellConfig chooseCellConfig = redisService.getWithHash(cacheKey, ElectricityCabinetChooseCellConfig.class);
         if (Objects.nonNull(chooseCellConfig)) {
             return chooseCellConfig;
         }
@@ -77,7 +79,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return null;
         }
         
-        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + num, chooseCellConfigFromDb);
+        redisService.saveWithHash(cacheKey, chooseCellConfigFromDb);
         return chooseCellConfigFromDb;
     }
     
@@ -101,10 +103,12 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsComfortExchange(), ElectricityConfig.NOT_COMFORT_EXCHANGE)) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig is null, tenantId is {}", userInfo.getTenantId());
+            log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig is null or Not comfort exchange, tenantId is {}", userInfo.getTenantId());
             return Pair.of(false, null);
         }
-        log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig is {}", JsonUtil.toJson(electricityConfig));
+        
+        log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}", electricityConfig.getIsComfortExchange(),
+                electricityConfig.getPriorityExchangeNorm());
         
         // 是否可以满足优先换电标准的电池列表
         List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
@@ -193,16 +197,16 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         }
         
         if (CollUtil.isEmpty(emptyCellBoxList)) {
-            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.usableBoxes is null, uid is {}", uid);
+            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.emptyCellBoxList is null, uid is {}", uid);
             return Pair.of(false, null);
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsComfortExchange(), ElectricityConfig.NOT_COMFORT_EXCHANGE)) {
-            log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell.electricityConfig is null, tenantId is {}", userInfo.getTenantId());
+            log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell.electricityConfig is null or isComfortExchange not equal 1, tenantId is {}",
+                    userInfo.getTenantId());
             return Pair.of(false, null);
         }
-        log.info("COMFORT EXCHANGE GET EMPTY INFO!comfortExchangeGetEmptyCell.electricityConfig is {}", JsonUtil.toJson(electricityConfig));
         
         Integer electricityCabinetId = emptyCellBoxList.get(0).getElectricityCabinetId();
         ElectricityCabinetModel cabinetModel = cabinetModelService.queryByIdFromCache(electricityCabinetId);
@@ -210,6 +214,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.cabinetModel is null, eid is {}", electricityCabinetId);
             return Pair.of(false, null);
         }
+        
         // 舒适换电
         ElectricityCabinetChooseCellConfig cellConfig = chooseCellConfigService.queryConfigByNumFromCache(cabinetModel.getNum());
         if (Objects.isNull(cellConfig)) {
@@ -229,6 +234,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         try {
             // 舒适匹配规则
             if (CollUtil.isNotEmpty(openDoorEmptyCellList)) {
+                // 开门的格挡
                 log.info("COMFORT EXCHANGE GET EMPTY INFO! allot open door empty cell, openDoorEmptyCellList is {}", JsonUtil.toJson(openDoorEmptyCellList));
                 return Pair.of(true, Integer.valueOf(getConformationCell(openDoorEmptyCellList, cellConfig).getRight()));
             } else {
