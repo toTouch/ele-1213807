@@ -139,6 +139,9 @@
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}
             </if>
+            <if test="uid != null">
+                and iajh.uid = #{uid}
+            </if>
             <if test="recordId != null">
                 and iajh.record_id = #{recordId}
             </if>

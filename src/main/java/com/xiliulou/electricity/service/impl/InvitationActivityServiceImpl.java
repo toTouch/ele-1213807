@@ -37,6 +37,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.InvitationActivityMemberCardVO;
+import com.xiliulou.electricity.vo.InvitationActivitySearchVO;
 import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -102,6 +103,15 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Slave
     public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
         return this.invitationActivityMapper.selectBySearch(query);
+    }
+    
+    @Override
+    @Slave
+    public List<InvitationActivitySearchVO> selectByPageSearch(InvitationActivityQuery query) {
+        if (Objects.isNull(query.getUid())) {
+            return this.invitationActivityMapper.selectByPageSearchNoUid(query);
+        }
+        return this.invitationActivityMapper.selectByPageSearch(query);
     }
     
     /**

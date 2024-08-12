@@ -162,6 +162,37 @@
         order by id
     </select>
 
+    <select id="selectByPageSearch" resultType="com.xiliulou.electricity.vo.InvitationActivitySearchVO">
+        SELECT tia.id,tia.NAME
+        FROM t_invitation_activity tia
+        LEFT JOIN t_invitation_activity_user iau ON tia.id = iau.activity_id
+        where tia.tenant_id = #{tenantId} and tia.del_flag=0
+        <if test="name != null and name != ''">
+            and tia.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="uid != null">
+            and iau.uid = #{uid}
+        </if>
+        <if test="status != null">
+            and tia.status = #{status}
+        </if>
+        order by tia.id limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectByPageSearchNoUid" resultType="com.xiliulou.electricity.vo.InvitationActivitySearchVO">
+        SELECT tia.id,tia.NAME
+        FROM t_invitation_activity tia
+        where tia.tenant_id = #{tenantId} and tia.del_flag=0
+        <if test="name != null and name != ''">
+            and tia.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="status != null">
+            and tia.status = #{status}
+        </if>
+        order by tia.id limit #{offset}, #{size}
+    
+    </select>
+    
     <select id="selectUsableActivity" resultMap="InvitationActivityMap">
         select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time, franchisee_id
         from t_invitation_activity
