@@ -48,6 +48,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.StringConstant.SPACE;
+
 /**
  * 门店表(TStore)表服务实现类
  *
@@ -140,6 +142,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R save(StoreAddAndUpdate storeAddAndUpdate) {
+        storeAddAndUpdate.setName(storeAddAndUpdate.getName().replaceAll(SPACE, ""));
         TokenUser user = SecurityUtils.getUserInfo();
     
         if (!redisService.setNx(CacheConstant.STORE_SAVE_UID + user.getUid(), "1", 3 * 1000L, false)) {
@@ -239,7 +242,8 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> edit(StoreAddAndUpdate storeAddAndUpdate) {
-
+        storeAddAndUpdate.setName(storeAddAndUpdate.getName().replaceAll(SPACE, ""));
+        
         Store store = new Store();
         BeanUtil.copyProperties(storeAddAndUpdate, store);
         Store oldStore = queryByIdFromCache(store.getId());

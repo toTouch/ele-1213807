@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -695,6 +696,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(BigDecimal.valueOf(0));
     }
     
+    /**
+     * 打开或禁用会员卡
+     *
+     * @param usableStatus
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R openOrDisableMemberCard(Integer usableStatus) {
@@ -840,6 +847,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok();
     }
     
+    /**
+     * 限制时间停卡
+     *
+     * @param disableCardDays
+     * @param disableDeadline
+     * @param applyReason
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline, String applyReason) {
@@ -2797,6 +2812,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         // 赠送优惠券
         sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         
+        // 添加用户操作记录失败
+        try {
+            Map<String, Object> map = Maps.newHashMap();
+            map.put("packageName", batteryMemberCard.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("name", userInfo.getName());
+            map.put("businessType", batteryMemberCard.getBusinessType());
+            operateRecordUtil.record(null, map);
+        } catch (Exception e) {
+            log.error("Failed to add user action record: ", e);
+        }
         return Triple.of(true, null, null);
     }
     

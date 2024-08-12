@@ -33,15 +33,11 @@ public class JsonAdminInvitationActivityJoinHistoryController {
     UserDataScopeService userDataScopeService;
 
     @GetMapping("/admin/invitationActivityJoinHistory/page")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                  @RequestParam(value = "beginTime", required = false) Long beginTime,
-                  @RequestParam(value = "endTime", required = false) Long endTime,
-                  @RequestParam(value = "activityId", required = false) Long activityId,
-                  @RequestParam(value = "id", required = false) Long id,
-                  @RequestParam(value = "status", required = false) Integer status,
-                  @RequestParam(value = "joinUid", required = false) Long joinUid,
-                  @RequestParam(value = "activityName", required = false) String activityName,
-                  @RequestParam(value = "payCount", required = false) Integer payCount) {
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "activityId", required = false) Long activityId,
+            @RequestParam(value = "id", required = false) Long id, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "joinUid", required = false) Long joinUid, @RequestParam(value = "activityName", required = false) String activityName,
+            @RequestParam(value = "payCount", required = false) Integer payCount) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -57,14 +53,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         
         InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
                 .size(size)
-                .offset(offset)
-                .joinUid(joinUid)
-                .recordId(id)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .activityId(activityId)
-                .activityName(activityName)
-                .status(status)
+                .offset(offset).joinUid(joinUid).recordId(id).beginTime(beginTime).endTime(endTime).activityId(activityId).activityName(activityName).status(status)
                 .payCount(payCount)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
@@ -73,29 +62,18 @@ public class JsonAdminInvitationActivityJoinHistoryController {
     }
 
     @GetMapping("/admin/invitationActivityJoinHistory/queryCount")
-    public R count(@RequestParam(value = "activityId", required = false) Long activityId,
-                   @RequestParam(value = "id", required = false) Long id,
-                   @RequestParam(value = "beginTime", required = false) Long beginTime,
-                   @RequestParam(value = "endTime", required = false) Long endTime,
-                   @RequestParam(value = "status", required = false) Integer status,
-                   @RequestParam(value = "joinUid", required = false) Long joinUid,
-                   @RequestParam(value = "activityName", required = false) String activityName,
-                   @RequestParam(value = "payCount", required = false) Integer payCount) {
+    public R count(@RequestParam(value = "activityId", required = false) Long activityId, @RequestParam(value = "id", required = false) Long id,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "joinUid", required = false) Long joinUid,
+            @RequestParam(value = "activityName", required = false) String activityName, @RequestParam(value = "payCount", required = false) Integer payCount) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder()
-                .joinUid(joinUid)
-                .recordId(id)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .activityId(activityId)
-                .activityName(activityName)
-                .status(status)
-                .payCount(payCount)
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().joinUid(joinUid).recordId(id).beginTime(beginTime).endTime(endTime)
+                .activityId(activityId).activityName(activityName).status(status).payCount(payCount)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
 
@@ -117,7 +95,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         InvitationActivityAnalysisRequest request = InvitationActivityAnalysisRequest.builder().uid(uid).activityId(activityId).timeType(timeType).beginTime(beginTime).endTime(endTime).build();
         
         return R.ok(invitationActivityJoinHistoryService.queryInvitationAdminAnalysis(request));
