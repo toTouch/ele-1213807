@@ -117,7 +117,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsComfortExchange(), ElectricityConfig.NOT_COMFORT_EXCHANGE)) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig is null or Not comfort exchange, tenantId is {}", userInfo.getTenantId());
+            log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig is null or ComfortExchange is close, tenantId is {}", userInfo.getTenantId());
             return Pair.of(false, null);
         }
         
@@ -236,7 +236,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsComfortExchange(), ElectricityConfig.NOT_COMFORT_EXCHANGE)) {
-            log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell.electricityConfig is null or isComfortExchange not equal 1, tenantId is {}",
+            log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell.electricityConfig is null or ComfortExchange is close, tenantId is {}",
                     userInfo.getTenantId());
             return Pair.of(false, null);
         }
