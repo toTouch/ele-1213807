@@ -169,7 +169,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer chargeRateType;
     
     /**
-     * 是否开启舒适换电；默认是0关闭，1是开启
+     * 是否开启舒适换电；默认是1是关闭，0是开启
      */
     private Integer isComfortExchange;
     

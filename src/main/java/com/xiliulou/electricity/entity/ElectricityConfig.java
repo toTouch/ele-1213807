@@ -324,10 +324,10 @@ public class ElectricityConfig {
     /**
      * 舒适换电打开
      */
-    public static Integer COMFORT_EXCHANGE = 1;
+    public static Integer COMFORT_EXCHANGE = 0;
     
     /**
      * 舒适换电关闭
      */
-    public static Integer NOT_COMFORT_EXCHANGE = 0;
+    public static Integer NOT_COMFORT_EXCHANGE = 1;
 }
