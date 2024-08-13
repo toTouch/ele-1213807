@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetChooseCellConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityCabinetChooseCellConfigMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.UserInfoService;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +57,9 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     
     @Resource
     private UserInfoService userInfoService;
+    
+    @Resource
+    private ElectricityCabinetService cabinetService;
     
     @Override
     @Slave
@@ -121,9 +126,15 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         }
         
         Integer electricityCabinetId = comfortExchangeBox.get(0).getElectricityCabinetId();
-        ElectricityCabinetModel cabinetModel = cabinetModelService.queryByIdFromCache(electricityCabinetId);
+        ElectricityCabinet cabinet = cabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(cabinet)) {
+            log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.cabinet is null, eid is {}", electricityCabinetId);
+            return Pair.of(false, null);
+        }
+        
+        ElectricityCabinetModel cabinetModel = cabinetModelService.queryByIdFromCache(cabinet.getModelId());
         if (Objects.isNull(cabinetModel)) {
-            log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.cabinetModel is null, eid is {}", electricityCabinetId);
+            log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.cabinetModel is null, eid is {}, modelId is {}", electricityCabinetId, cabinet.getModelId());
             return Pair.of(false, null);
         }
         // 舒适换电
@@ -209,9 +220,15 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         }
         
         Integer electricityCabinetId = emptyCellBoxList.get(0).getElectricityCabinetId();
-        ElectricityCabinetModel cabinetModel = cabinetModelService.queryByIdFromCache(electricityCabinetId);
+        ElectricityCabinet cabinet = cabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(cabinet)) {
+            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.cabinet is null, eid is {}", electricityCabinetId);
+            return Pair.of(false, null);
+        }
+        
+        ElectricityCabinetModel cabinetModel = cabinetModelService.queryByIdFromCache(cabinet.getModelId());
         if (Objects.isNull(cabinetModel)) {
-            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.cabinetModel is null, eid is {}", electricityCabinetId);
+            log.warn("COMFORT EXCHANGE GET EMPTY WARN! comfortExchangeGetEmptyCell.cabinetModel is null, eid is {}, modelId is {}", electricityCabinetId, cabinet.getModelId());
             return Pair.of(false, null);
         }
         
