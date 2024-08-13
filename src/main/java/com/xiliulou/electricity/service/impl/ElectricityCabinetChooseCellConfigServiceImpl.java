@@ -94,8 +94,8 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return getComfortExchangeGetFullCell(uid, usableBoxes);
         } catch (Exception e) {
             log.error("comfortExchangeGetFullCell.error, continue norm getFullCell, uid is {}", uid, e);
+            return Pair.of(false, null);
         }
-        return Pair.of(false, null);
     }
     
     private Pair<Boolean, ElectricityCabinetBox> getComfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes) {
@@ -156,18 +156,27 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 中间
         Pair<Boolean, ElectricityCabinetBox> middleCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getMiddleCell());
         if (middleCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}", cabinetModel.getNum(), cellConfig.getMiddleCell());
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}, cell is{}", cabinetModel.getNum(), cellConfig.getMiddleCell(),
+                    Objects.nonNull(middleCellBoxPair.getRight()) ? middleCellBoxPair.getRight().getCellNo() : "null");
             return middleCellBoxPair;
         }
         // 下面
         Pair<Boolean, ElectricityCabinetBox> belowCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getBelowCell());
         if (belowCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; belowCell is {}", cabinetModel.getNum(), cellConfig.getBelowCell());
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; belowCell is {}, cell is {}", cabinetModel.getNum(), cellConfig.getBelowCell(),
+                    Objects.nonNull(belowCellBoxPair.getRight()) ? belowCellBoxPair.getRight().getCellNo() : "null");
             return belowCellBoxPair;
         }
         
-        log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.getTopCell num is {}", cabinetModel.getNum());
-        return getPositionFullCell(comfortExchangeBox, cellConfig.getTopCell());
+        // 上面
+        Pair<Boolean, ElectricityCabinetBox> topCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getTopCell());
+        if (topCellBoxPair.getLeft()) {
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; topCell is {}, cell is {}", cabinetModel.getNum(), cellConfig.getTopCell(),
+                    Objects.nonNull(topCellBoxPair.getRight()) ? topCellBoxPair.getRight().getCellNo() : "null");
+            return topCellBoxPair;
+        }
+        log.warn("COMFORT EXCHANGE GET FULL WARN! getConformationCell is null");
+        return Pair.of(false, null);
     }
     
     
@@ -204,8 +213,8 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return getComfortExchangeGetEmptyCell(uid, emptyCellBoxList);
         } catch (Exception e) {
             log.error("comfortExchangeGetEmptyCell.error, continue norm getEmptyCell, uid is {}", uid, e);
+            return Pair.of(false, null);
         }
-        return Pair.of(false, null);
     }
     
     private Pair<Boolean, Integer> getComfortExchangeGetEmptyCell(Long uid, List<ElectricityCabinetBox> emptyCellBoxList) {
@@ -282,13 +291,13 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 中间
         Pair<Boolean, String> middleCellBoxPair = getPositionEmptyCell(cabinetBoxList, cellConfig.getMiddleCell());
         if (middleCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET EMPTY INFO! getConformationCell, middleCell is {}", cellConfig.getMiddleCell());
+            log.info("COMFORT EXCHANGE GET EMPTY INFO! getConformationCell, middleCell is {} , cell is {}", cellConfig.getMiddleCell(), middleCellBoxPair.getRight());
             return middleCellBoxPair;
         }
         // 下面
         Pair<Boolean, String> belowCellBoxPair = getPositionEmptyCell(cabinetBoxList, cellConfig.getBelowCell());
         if (belowCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET EMPTY INFO! getConformationCell, belowCell is {}", cellConfig.getBelowCell());
+            log.info("COMFORT EXCHANGE GET EMPTY INFO! getConformationCell, belowCell is {} , cell is {}", cellConfig.getBelowCell(), belowCellBoxPair.getRight());
             return belowCellBoxPair;
         }
         
