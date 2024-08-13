@@ -149,4 +149,10 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      * </p>
      */
     private String franchiseeName;
+    
+    /**
+     * 支付渠道
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
 }
