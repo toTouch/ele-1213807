@@ -156,7 +156,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 中间
         Pair<Boolean, ElectricityCabinetBox> middleCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getMiddleCell());
         if (middleCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}, cell is{}", cabinetModel.getNum(), cellConfig.getMiddleCell(),
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}, cell is {}", cabinetModel.getNum(), cellConfig.getMiddleCell(),
                     Objects.nonNull(middleCellBoxPair.getRight()) ? middleCellBoxPair.getRight().getCellNo() : "null");
             return middleCellBoxPair;
         }
