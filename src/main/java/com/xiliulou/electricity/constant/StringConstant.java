@@ -15,5 +15,7 @@ public interface StringConstant {
     String CHANGE_ROW = "\n";
     
     String PERCENT = "%";
+    
+    String SPACE = " ";
 
 }

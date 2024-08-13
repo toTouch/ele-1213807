@@ -6,11 +6,15 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
@@ -21,6 +25,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
@@ -75,6 +80,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
+    
+    @Resource
+    private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
     
     private final ScheduledThreadPoolExecutor scheduledExecutor = ThreadUtil.createScheduledExecutor(2);
 
@@ -409,4 +417,69 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         return userBatteryMemberCardMapper.selectRenewalNumberByMerchantId(merchantId, tenantId);
     }
     
+    @Override
+    public void handleExpireMemberCard(String sessionId, ElectricityCabinetOrder electricityCabinetOrder) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! userInfo is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), sessionId,
+                    electricityCabinetOrder.getOrderId());
+            return;
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(electricityCabinetOrder.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("ELE WARN! userBatteryMemberCard is null!uid={},sessionId={},orderId={}", electricityCabinetOrder.getUid(), sessionId,
+                    electricityCabinetOrder.getOrderId());
+            return;
+        }
+        
+        //判断套餐是否限次
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return;
+        }
+        
+        if (!((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0))) {
+            return;
+        }
+        
+        UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest = userBatteryMemberCardPackageService.selectNearestByUid(userBatteryMemberCard.getUid());
+        if (Objects.isNull(userBatteryMemberCardPackageLatest)) {
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
+            this.updateByUid(userBatteryMemberCardUpdate);
+        }
+    }
+    
+    @Override
+    public void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId) {
+        // 通过订单的 UID 获取用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
+        
+        // 扣减单电套餐次数
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                    log.info("ELE INFO! deductionPackageNumberHandler deduct battery member card,sessionId is {}, orderId is {}", sessionId, cabinetOrder.getOrderId());
+                    Integer row = this.minCount(userBatteryMemberCard);
+                    if (row < 1) {
+                        log.warn("SELF OPEN CELL  WARN! memberCard's count modify fail, uid={} ,mid={}", userBatteryMemberCard.getUid(), userBatteryMemberCard.getId());
+                        throw new BizException("100213", "换电套餐剩余次数不足");
+                    }
+                }
+            }
+        }
+        
+        // 扣减车电一体套餐次数
+        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.info("ELE INFO! deductionPackageNumberHandler deduct car member card, sessionId is {}, orderId is {}", sessionId, cabinetOrder.getOrderId());
+            if (!carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid())) {
+                throw new BizException("100213", "车电一体套餐剩余次数不足");
+            }
+        }
+    }
 }

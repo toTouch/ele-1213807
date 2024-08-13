@@ -41,10 +41,14 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +62,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.StringConstant.SPACE;
 
 /**
  * 租户表(Tenant)表服务实现类
@@ -104,6 +110,8 @@ public class TenantServiceImpl implements TenantService {
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
+    
+    ExecutorService initOtherExecutorService = XllThreadPoolExecutors.newFixedThreadPool("initTenantOther", 2, "INIT_TENANT_OTHER");
     /**
      * 新增数据
      *
@@ -113,13 +121,17 @@ public class TenantServiceImpl implements TenantService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
-
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail(false, "ELECTRICITY.0001", "未找到用户");
+        }
         //限频
-        boolean lockResult = redisService.setNx(CacheConstant.ELE_ADD_TENANT_CACHE + tenantAddAndUpdateQuery.getId(), "1", 5 * 1000L, false);
+        boolean lockResult = redisService.setNx(CacheConstant.ELE_ADD_TENANT_CACHE + user.getUid(), "1", 5 * 1000L, false);
         if (!lockResult) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-
+        tenantAddAndUpdateQuery.setName(tenantAddAndUpdateQuery.getName().replaceAll(SPACE, ""));
         //判断用户名是否存在
         if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
             return R.fail("100105", "用户名已存在");
@@ -203,35 +215,40 @@ public class TenantServiceImpl implements TenantService {
         if (result.getCode() == 1) {
             return result;
         }
-
-        //获取角色默认权限
-        List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
-        //保存角色默认权限
-        if(CollectionUtils.isNotEmpty(permissionList)){
-            permissionList.parallelStream().forEach(e -> {
-                rolePermissionService.insert(e);
-            });
-        }
+        
+        initOtherExecutorService.execute(() -> {
+            //获取角色默认权限
+            List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
+            //保存角色默认权限
+            if (CollectionUtils.isNotEmpty(permissionList)) {
+                permissionList.parallelStream().forEach(e -> {
+                    rolePermissionService.insert(e);
+                });
+            }
+        });
+      
 
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());
-
-        //新增租户给租户添加的默认系统配置
-        ElectricityConfig electricityConfig = ElectricityConfig.builder()
-                .name("")
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(tenant.getId())
-                .isManualReview(ElectricityConfig.MANUAL_REVIEW)
-                .isWithdraw(ElectricityConfig.WITHDRAW)
-                .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
-                .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
-                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
-                .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
-                .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
-                .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
-        electricityConfigService.insertElectricityConfig(electricityConfig);
-
+        
+       
+            //新增租户给租户添加的默认系统配置
+            ElectricityConfig electricityConfig = ElectricityConfig.builder()
+                    .name("")
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(tenant.getId())
+                    .isManualReview(ElectricityConfig.MANUAL_REVIEW)
+                    .isWithdraw(ElectricityConfig.WITHDRAW)
+                    .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
+                    .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
+                    .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                    .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
+                    .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
+                    .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
+            electricityConfigService.insertElectricityConfig(electricityConfig);
+        
+        
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
         channelActivity.setName("渠道活动");
@@ -248,9 +265,17 @@ public class TenantServiceImpl implements TenantService {
                 .delFlag(AssetConstant.DEL_NORMAL)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
+                .franchiseeId(0L)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         
+        
+        initOtherExecutorService.execute(()->{
+            //初始化商户等级
+            merchantLevelService.initMerchantLevel(tenant.getId());
+            //初始化商户升级条件
+            merchantAttrService.initMerchantAttr(tenant.getId());
+        });
         return R.ok();
     }
 
@@ -337,7 +362,7 @@ public class TenantServiceImpl implements TenantService {
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
         tenant.setUpdateTime(System.currentTimeMillis());
         tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
-        tenant.setName(tenantAddAndUpdateQuery.getName());
+        tenant.setName(tenantAddAndUpdateQuery.getName().replaceAll(SPACE, ""));
         tenantMapper.updateById(tenant);
 
         redisService.saveWithHash(CacheConstant.CACHE_TENANT_ID + tenant.getId(), tenant);

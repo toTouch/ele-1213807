@@ -98,6 +98,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.StringConstant.SPACE;
+
 /**
  * (User)表服务实现类
  *
@@ -328,6 +330,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, null, "手机号已存在");
         }
         
+        adminUserQuery.setName(adminUserQuery.getName().replaceAll(SPACE, ""));
         User userNameExists = queryByUserName(adminUserQuery.getName());
         if (Objects.nonNull(userNameExists)) {
             return Triple.of(false, null, "用户名已存在");
@@ -572,7 +575,7 @@ public class UserServiceImpl implements UserService {
                 return Pair.of(false, "手机号已存在！无法修改!");
             }
         }
-        
+        adminUserQuery.setName(adminUserQuery.getName().replaceAll(SPACE, ""));
         if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
             User nameUser = queryByUserName(adminUserQuery.getName());
             if (Objects.nonNull(nameUser) && !Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
