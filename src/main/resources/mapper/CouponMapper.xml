@@ -8,7 +8,7 @@
         <where>
             del_flag=0
             <choose>
-                <when test="franchiseeIds != null">
+                <when test="franchiseeId != null">
                     and (franchisee_id = #{franchiseeId} or franchisee_id is null )
                 </when>
                 <otherwise>
