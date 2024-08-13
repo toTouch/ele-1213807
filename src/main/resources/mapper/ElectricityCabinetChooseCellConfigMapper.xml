@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetChooseCellConfigMapper">
     
     <sql id="basic_field">
-        id, num, column, middle_cell, below_cell, top_cell, del_flag, create_time, update_time
+        id, num, `column`, middle_cell, below_cell, top_cell, del_flag, create_time, update_time
     </sql>
     
     <select id="selectConfigByNum" resultType="com.xiliulou.electricity.entity.ElectricityCabinetChooseCellConfig">
