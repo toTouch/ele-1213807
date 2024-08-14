@@ -185,8 +185,6 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 每个位置的数据反序列
         List<Integer> positionCellList = StrUtil.isNotBlank(positionCell) ? JsonUtil.fromJsonArray(positionCell, Integer.class) : new ArrayList<>();
         List<ElectricityCabinetBox> boxes = comfortExchangeBox.stream().filter(item -> positionCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList());
-        log.info("COMFORT EXCHANGE GET FULL INFO! getPositionFullCell.comfortExchangeBox is {}, positionCellBox is {}", JsonUtil.toJson(comfortExchangeBox),
-                CollUtil.isNotEmpty(boxes) ? JsonUtil.toJson(boxes) : "null");
         
         if (CollUtil.isEmpty(boxes)) {
             log.info("COMFORT EXCHANGE GET FULL INFO! box is null, positionCell is {}", positionCell);
@@ -313,8 +311,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     private static Pair<Boolean, String> getPositionEmptyCell(List<ElectricityCabinetBox> comfortExchangeBox, String positionCell) {
         List<Integer> positionCellList = StrUtil.isNotBlank(positionCell) ? JsonUtil.fromJsonArray(positionCell, Integer.class) : new ArrayList<>();
         List<ElectricityCabinetBox> boxes = comfortExchangeBox.stream().filter(item -> positionCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList());
-        log.info("COMFORT EXCHANGE GET EMPTY INFO! getPositionEmptyCell.comfortExchangeBox is {}, positionCellBox is {}", JsonUtil.toJson(comfortExchangeBox),
-                CollUtil.isNotEmpty(boxes) ? JsonUtil.toJson(boxes) : "null");
+     
         
         if (CollUtil.isEmpty(boxes)) {
             return Pair.of(false, null);
