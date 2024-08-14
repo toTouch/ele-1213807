@@ -123,7 +123,8 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         }
         
         log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}, usableBoxes is {}",
-                electricityConfig.getIsComfortExchange(), electricityConfig.getPriorityExchangeNorm(), JsonUtil.toJson(usableBoxes));
+                electricityConfig.getIsComfortExchange(), electricityConfig.getPriorityExchangeNorm(),
+                JsonUtil.toJson(usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList())));
         
         // 是否可以满足优先换电标准的电池列表
         List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
@@ -311,7 +312,6 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     private static Pair<Boolean, String> getPositionEmptyCell(List<ElectricityCabinetBox> comfortExchangeBox, String positionCell) {
         List<Integer> positionCellList = StrUtil.isNotBlank(positionCell) ? JsonUtil.fromJsonArray(positionCell, Integer.class) : new ArrayList<>();
         List<ElectricityCabinetBox> boxes = comfortExchangeBox.stream().filter(item -> positionCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList());
-     
         
         if (CollUtil.isEmpty(boxes)) {
             return Pair.of(false, null);
