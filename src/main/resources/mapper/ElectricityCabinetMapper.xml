@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
         id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,power_type,
-        online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
+        online_status, model_id, version, fully_charged, service_phone, business_time, create_time, pattern,
         update_time, del_flag,tenant_id,store_id,franchisee_id, exchange_type,stock_status,warehouse_id,area_id,place_fee
         from t_electricity_cabinet
         where del_flag=0

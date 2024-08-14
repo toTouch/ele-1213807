@@ -1030,8 +1030,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.batchEditRentReturn(rentReturnQuery);
     }
     
-    
-    
     /**
      * 运维端编辑租退标准回显
      */
@@ -1039,5 +1037,14 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName);
     }
+    
+    /**
+     * 批量修改柜机模式
+     */
+//    @PostMapping(value = "/admin/electricityCabinet/batchUpdateCabinetPattern")
+//    public R batchUpdateCabinetPattern(@RequestBody @Validated ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
+//
+//    }
+    
     
 }

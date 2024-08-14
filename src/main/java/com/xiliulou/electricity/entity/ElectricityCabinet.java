@@ -129,6 +129,11 @@ public class ElectricityCabinet {
     private Integer exchangeType;
     
     /**
+     * 柜机模式：0--iot,1-tcp
+     */
+    private Integer pattern;
+    
+    /**
      * 区域id
      */
     private Long areaId;
