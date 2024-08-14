@@ -134,6 +134,31 @@
         where id = #{id}
     </update>
     
+    <update id="updateByUk">
+        update t_box_other_properties
+        <set>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="lockReason != null">
+                lock_reason = #{lockReason},
+            </if>
+            <if test="lockStatusChangeTime != null">
+                lock_status_change_time = #{lockStatusChangeTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where electricity_cabinet_id = #{electricityCabinetId} and cell_no = #{cellNo}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_box_other_properties where id = #{id}

@@ -2,17 +2,14 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.mapper.BoxOtherPropertiesMapper;
-import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 import com.xiliulou.electricity.service.BoxOtherPropertiesService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.Objects;
 
 /**
  * 换电柜仓门其它属性(BoxOtherProperties)表服务实现类
@@ -69,12 +66,16 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public BoxOtherProperties insertOrUpdate(BoxOtherProperties boxOtherProperties) {
         boxOtherProperties.setCreateTime(System.currentTimeMillis());
         boxOtherProperties.setUpdateTime(System.currentTimeMillis());
         boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
-        this.boxOtherPropertiesMapper.insertBoxOtherProperties(boxOtherProperties);
+    
+        int update = this.boxOtherPropertiesMapper.updateByUk(boxOtherProperties);
+        if (Objects.equals(update, 0)) {
+            this.boxOtherPropertiesMapper.insertOne(boxOtherProperties);
+        }
+    
         return boxOtherProperties;
     }
     

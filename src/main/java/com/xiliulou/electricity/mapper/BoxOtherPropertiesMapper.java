@@ -1,12 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * 换电柜仓门其它属性(BoxOtherProperties)表数据库访问层
@@ -57,6 +55,14 @@ public interface BoxOtherPropertiesMapper extends BaseMapper<BoxOtherProperties>
      * @return 影响行数
      */
     int update(BoxOtherProperties boxOtherProperties);
+    
+    /**
+     * 根据唯一键修改数据
+     *
+     * @param boxOtherProperties 实例对象
+     * @return 影响行数
+     */
+    int updateByUk(BoxOtherProperties boxOtherProperties);
     
     /**
      * 通过主键删除数据
