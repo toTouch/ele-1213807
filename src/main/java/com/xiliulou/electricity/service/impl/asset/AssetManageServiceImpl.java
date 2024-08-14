@@ -15,7 +15,6 @@ import com.xiliulou.electricity.service.asset.ElectricityCabinetV2Service;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -50,7 +49,6 @@ public class AssetManageServiceImpl implements AssetManageService {
     private AssetExitWarehouseRecordService assetExitWarehouseRecordService;
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void batchExistWarehouseTx(List<AssetBatchExitWarehouseBO> dataList) {
         AtomicBoolean flag = new AtomicBoolean(false);
         // 资产退库
@@ -59,7 +57,6 @@ public class AssetManageServiceImpl implements AssetManageService {
             Integer type = data.getType();
             AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = data.getAssetBatchExitWarehouseRequest();
             if (CollectionUtils.isNotEmpty(assetBatchExitWarehouseRequest.getIdList())) {
-                flag.set(true);
                 if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
                     // 电柜批量退库
                     count = electricityCabinetV2Service.batchExitWarehouse(assetBatchExitWarehouseRequest);
@@ -84,6 +81,8 @@ public class AssetManageServiceImpl implements AssetManageService {
                         assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
                                 WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
                     }
+                    
+                    flag.set(true);
                 }
             }
         });
