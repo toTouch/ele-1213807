@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.mapper.BoxOtherPropertiesMapper;
 import com.xiliulou.electricity.service.BoxOtherPropertiesService;
@@ -71,8 +72,10 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
         boxOtherProperties.setUpdateTime(System.currentTimeMillis());
         boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
     
-        int update = this.boxOtherPropertiesMapper.updateByUk(boxOtherProperties);
-        if (Objects.equals(update, 0)) {
+        Integer exists = this.existsByUk(boxOtherProperties.getElectricityCabinetId(), boxOtherProperties.getCellNo());
+        if (Objects.nonNull(exists)) {
+            this.boxOtherPropertiesMapper.updateByUk(boxOtherProperties);
+        } else {
             this.boxOtherPropertiesMapper.insertOne(boxOtherProperties);
         }
     
@@ -102,5 +105,11 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.boxOtherPropertiesMapper.deleteById(id) > 0;
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByUk(Integer electricityCabinetId, String cellNo) {
+        return boxOtherPropertiesMapper.existsByUk(electricityCabinetId, cellNo);
     }
 }

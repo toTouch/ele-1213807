@@ -73,4 +73,6 @@ public interface BoxOtherPropertiesMapper extends BaseMapper<BoxOtherProperties>
     int deleteById(Long id);
     
     int insertBoxOtherProperties(BoxOtherProperties boxOtherProperties);
+    
+    Integer existsByUk(@Param("electricityCabinetId") Integer electricityCabinetId, @Param("cellNo") String cellNo);
 }
