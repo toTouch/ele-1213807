@@ -136,6 +136,13 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             //错误信息保存到缓存里，方便前端显示
             redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
             log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
+            
+            // 修改取电的状态
+            ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+            newElectricityCabinetOrder.setId(cabinetOrder.getId());
+            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
+            cabinetOrderService.update(newElectricityCabinetOrder);
             return;
         }
         
@@ -158,6 +165,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         newElectricityCabinetOrder.setNewElectricityBatterySn(openFullCellRsp.getTakeBatteryName());
         newElectricityCabinetOrder.setOldCellNo(openFullCellRsp.getPlaceCellNo());
         newElectricityCabinetOrder.setNewCellNo(openFullCellRsp.getTakeCellNo());
+        newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
         if (openFullCellRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             newElectricityCabinetOrder.setSwitchEndTime(openFullCellRsp.getReportTime());
         }

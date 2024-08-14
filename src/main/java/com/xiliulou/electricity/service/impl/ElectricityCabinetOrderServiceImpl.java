@@ -1410,24 +1410,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
         
-        ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
-        if (Objects.isNull(history)) {
-            log.warn("Orderv3 WARN! lastExchangeFailHandler.history is null, orderId is{}", lastOrder.getOrderId());
-            // 订单中途未结束,包括初始化订单
+        String orderStatus = lastOrder.getOrderStatus();
+        if (StrUtil.isEmpty(orderStatus)) {
+            log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is {}", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
         
-        String msg = history.getMsg();
-        log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
-        
-        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败 || 换电柜正在使用中操作取消
-        if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
-                lastOrder.getOldCellNo(), msg))) {
+        log.info("Orderv3 INFO! lastExchangeFailHandler.orderStatus is {}", orderStatus);
+        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
             return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
         }
         
-        //  新仓门&开门失败 || 换电柜正在使用中操作取消
-        if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
+        //  新仓门开门失败
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
             return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet);
         }
         
