@@ -90,6 +90,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     
     @Override
     public Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes) {
+        log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell");
         try {
             return getComfortExchangeGetFullCell(uid, usableBoxes);
         } catch (Exception e) {
@@ -209,6 +210,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     
     @Override
     public Pair<Boolean, Integer> comfortExchangeGetEmptyCell(Long uid, List<ElectricityCabinetBox> emptyCellBoxList) {
+        log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell");
         try {
             return getComfortExchangeGetEmptyCell(uid, emptyCellBoxList);
         } catch (Exception e) {
