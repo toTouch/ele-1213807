@@ -673,4 +673,5 @@ public interface CacheConstant {
     String VEHICLE_BINDING_IDEMPOTENT_LOCK = "vehicle_binding_idempotent_lock:%s";
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
+    String CACHE_OFFLINE_KEY = "cache_offline_key:";
 }

@@ -120,9 +120,14 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 return;
             }
 
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
                 log.warn("ELE WARN! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                return;
+            }
+
+            if (redisService.hasKey(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId())) {
+                log.warn("ELE WARN! device is repeat report status! p={},d={},status={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(), receiverMessage.getStatus());
                 return;
             }
 
@@ -145,6 +150,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
+                redisService.set(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId(), "1", 30L, TimeUnit.SECONDS);
             }
 
 //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
