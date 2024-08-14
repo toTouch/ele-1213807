@@ -147,7 +147,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             // 处理数据
             if (CollectionUtils.isNotEmpty(dataList)) {
                 // 持久化
-                assetManageService.batchExistWarehouseTx(dataList);
+                assetManageService.batchExistWarehouse(dataList);
                 
                 // 清除缓存
                 handleClearCache(dataList);

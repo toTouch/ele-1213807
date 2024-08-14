@@ -49,41 +49,44 @@ public class AssetManageServiceImpl implements AssetManageService {
     private AssetExitWarehouseRecordService assetExitWarehouseRecordService;
     
     @Override
-    public void batchExistWarehouseTx(List<AssetBatchExitWarehouseBO> dataList) {
-        AtomicBoolean flag = new AtomicBoolean(false);
+    public void batchExistWarehouse(List<AssetBatchExitWarehouseBO> dataList) {
+        AtomicBoolean flag = new AtomicBoolean(true);
         // 资产退库
         dataList.parallelStream().forEach(data -> {
-            Integer count;
-            Integer type = data.getType();
-            AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = data.getAssetBatchExitWarehouseRequest();
-            if (CollectionUtils.isNotEmpty(assetBatchExitWarehouseRequest.getIdList())) {
-                if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-                    // 电柜批量退库
-                    count = electricityCabinetV2Service.batchExitWarehouse(assetBatchExitWarehouseRequest);
-                } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-                    // 电池批量退库
-                    count = electricityBatteryService.batchExitWarehouse(assetBatchExitWarehouseRequest);
-                } else {
-                    //车辆批量退库
-                    count = electricityCarService.batchExitWarehouse(assetBatchExitWarehouseRequest);
-                }
-                
-                // 记录
-                if (count > NumberConstant.ZERO) {
-                    Long operator = data.getOperator();
-                    // 新增资产退库详情
-                    assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
-                    
-                    //库房记录
-                    Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
-                    if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
-                        
-                        assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
-                                WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
+            try {
+                Integer count;
+                Integer type = data.getType();
+                AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = data.getAssetBatchExitWarehouseRequest();
+                if (CollectionUtils.isNotEmpty(assetBatchExitWarehouseRequest.getIdList())) {
+                    if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
+                        // 电柜批量退库
+                        count = electricityCabinetV2Service.batchExitWarehouse(assetBatchExitWarehouseRequest);
+                    } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
+                        // 电池批量退库
+                        count = electricityBatteryService.batchExitWarehouse(assetBatchExitWarehouseRequest);
+                    } else {
+                        //车辆批量退库
+                        count = electricityCarService.batchExitWarehouse(assetBatchExitWarehouseRequest);
                     }
                     
-                    flag.set(true);
+                    // 记录
+                    if (count > NumberConstant.ZERO) {
+                        Long operator = data.getOperator();
+                        // 新增资产退库详情
+                        assetExitWarehouseDetailService.batchInsert(data.getDetailSaveQueryModelList(), operator);
+                        
+                        //库房记录
+                        Long warehouseId = assetBatchExitWarehouseRequest.getWarehouseId();
+                        if (Objects.nonNull(warehouseId) && !Objects.equals(warehouseId, NumberConstant.ZERO_L)) {
+                            
+                            assetWarehouseRecordService.asyncRecordByWarehouseId(assetBatchExitWarehouseRequest.getTenantId(), operator, warehouseId, data.getSnList(), type,
+                                    WarehouseOperateTypeEnum.WAREHOUSE_OPERATE_TYPE_EXIT.getCode());
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                flag.set(false);
+                log.error("batchExistWarehouseTx error!", e);
             }
         });
         
