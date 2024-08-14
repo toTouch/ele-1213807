@@ -122,8 +122,8 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return Pair.of(false, null);
         }
         
-        log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}", electricityConfig.getIsComfortExchange(),
-                electricityConfig.getPriorityExchangeNorm());
+        log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}, usableBoxes is {}",
+                electricityConfig.getIsComfortExchange(), electricityConfig.getPriorityExchangeNorm(), JsonUtil.toJson(usableBoxes));
         
         // 是否可以满足优先换电标准的电池列表
         List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
@@ -238,8 +238,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsComfortExchange(), ElectricityConfig.NOT_COMFORT_EXCHANGE)) {
-            log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell.electricityConfig is null or ComfortExchange is close, tenantId is {}",
-                    userInfo.getTenantId());
+            log.info("COMFORT EXCHANGE GET EMPTY INFO! comfortExchangeGetEmptyCell.electricityConfig is null or ComfortExchange is close, tenantId is {}", userInfo.getTenantId());
             return Pair.of(false, null);
         }
         
