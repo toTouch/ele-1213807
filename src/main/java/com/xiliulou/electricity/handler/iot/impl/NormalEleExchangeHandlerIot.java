@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetExtra;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,12 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
                 newElectricityCabinet.setId(eid);
                 newElectricityCabinet.setVersion(receiverMessage.getVersion());
+                
+                //柜机模式修改
+                newElectricityCabinet.setPattern(EleCabinetConstant.IOT_PATTERN);
+                //从TCP列表中移除
+                redisService.deleteInList(CacheConstant.CACHE_TCP_CABINET_LIST, 0, String.class,
+                        DeviceTextUtil.assembleSn(receiverMessage.getProductKey(), receiverMessage.getDeviceName()));
                 
                 if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());

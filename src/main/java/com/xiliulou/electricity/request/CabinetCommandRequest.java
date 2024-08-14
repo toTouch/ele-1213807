@@ -1,0 +1,23 @@
+package com.xiliulou.electricity.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2024-08-14-17:46
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CabinetCommandRequest {
+    private String productKey;
+    
+    private String deviceName;
+    
+    private String txnNo;
+    
+    private String content;
+}

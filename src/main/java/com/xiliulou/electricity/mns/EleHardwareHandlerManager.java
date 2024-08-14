@@ -4,19 +4,25 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DeviceReportConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
+import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.service.EleOnlineLogService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.utils.DateUtils;
+import com.xiliulou.electricity.utils.DeviceTextUtil;
+import com.xiliulou.electricity.utils.Ipv4Util;
 import com.xiliulou.feishu.config.FeishuConfig;
 import com.xiliulou.feishu.entity.query.FeishuBotSendMsgQuery;
 import com.xiliulou.feishu.entity.query.msg.FeishuMsgPostQuery;
@@ -33,9 +39,17 @@ import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,14 +91,27 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     @Autowired
     EleOnlineLogService eleOnlineLogService;
-
+    
+    @Autowired
+    @Qualifier("deviceReportRestTemplate")
+    RestTemplate restTemplate;
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(hardwareCommandQuery.getProductKey(), hardwareCommandQuery.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELE ERROR! not found electricityCabinet,p={},d={}", hardwareCommandQuery.getProductKey(), hardwareCommandQuery.getDeviceName());
+            return Pair.of(false, "未找到换电柜！");
+        }
+        
+        if(Objects.equals( electricityCabinet.getPattern(), EleCabinetConstant.TCP_PATTERN)){
+            return sendCommandToEleForTcp(hardwareCommandQuery);
+        }
+        
         IElectricityHandler electricityHandler = electricityHandlerMap.get(ElectricityIotConstant.acquireChargeHandlerName(hardwareCommandQuery.getCommand()));
         if (Objects.isNull(electricityHandler)) {
-            log.error("ELE ERROR! command not support handle,command:{}", hardwareCommandQuery.getCommand());
+            log.error("ELE ERROR! command not support handle,command={}", hardwareCommandQuery.getCommand());
             return Pair.of(false, "发送失败，命令不存在！");
         }
 
@@ -112,7 +139,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         if (StringUtils.isNotBlank(receiverMessage.getType())) {
             return;
         }
-
 
         //电柜在线状态
         executorService.execute(() -> {
@@ -147,6 +173,14 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             eleOnlineLog.setCreateTime(System.currentTimeMillis());
             eleOnlineLog.setMsg(receiverMessage.getStatus());
             eleOnlineLogService.insert(eleOnlineLog);
+            
+            //柜机模式修改
+            if (CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus())) {
+                newElectricityCabinet.setPattern(EleCabinetConstant.IOT_PATTERN);
+                //从TCP列表中移除
+                redisService.deleteInList(CacheConstant.CACHE_TCP_CABINET_LIST, 0, String.class,
+                        DeviceTextUtil.assembleSn(receiverMessage.getProductKey(), receiverMessage.getDeviceName()));
+            }
 
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
@@ -158,9 +192,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             //TODO 发送MQ通知
             maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
         });
-
     }
-
 
     private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time) {
         //租户不发上下线通知
@@ -256,5 +288,46 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 break;
         }
         return str;
+    }
+    
+    public Pair<Boolean, String> sendCommandToEleForTcp(HardwareCommandQuery query) {
+        String serverIp = electricityCabinetService.acquireDeviceBindServerIp(query.getProductKey(), query.getDeviceName());
+        if (org.apache.commons.lang3.StringUtils.isBlank(serverIp) || Objects.equals(Ipv4Util.ipv4ToLong(serverIp, 0), 0)) {
+            log.warn("ELE WARN! device's server ip not found! txnNo={},p={},d={},ip={}", query.getSessionId(), query.getProductKey(), query.getDeviceName(), serverIp);
+            return Pair.of(false, "设备IP不存在");
+        }
+        
+        Map params = null;
+        Object data = query.getData();
+        if (Objects.nonNull(data)) {
+            params = (Map) data;
+            params.put("type", query.getCommand());
+        }
+        
+        CabinetCommandRequest request = new CabinetCommandRequest();
+        request.setProductKey(query.getProductKey());
+        request.setDeviceName(query.getDeviceName());
+        request.setTxnNo(query.getSessionId());
+        request.setContent(Objects.isNull(params) ? null : JsonUtil.toJson(params));
+        
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.APPLICATION_JSON;
+        headers.setContentType(type);
+        HttpEntity<String> httpEntity = new HttpEntity<>(JsonUtil.toJson(request), headers);
+        ResponseEntity<R> rResponseEntity = restTemplate.postForEntity(
+                "http://" + serverIp + ":" + DeviceReportConstant.REPORT_SERVER_PORT + DeviceReportConstant.REPORT_SERVER_CONTEXT_PATH
+                        + DeviceReportConstant.REPORT_SERVER_SEND_COMMAND_URL, httpEntity, R.class);
+        if (!rResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
+            log.warn("ELE WARN! call device server error! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
+            return Pair.of(false, "设备消息发送失败");
+        }
+        
+        R result = rResponseEntity.getBody();
+        if (Objects.isNull(result) || !result.isSuccess()) {
+            log.warn("ELE SEND COMMAND WARN! call device rsp fail! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
+            return Pair.of(false, "设备消息发送失败");
+        }
+        
+        return Pair.of(true, null);
     }
 }

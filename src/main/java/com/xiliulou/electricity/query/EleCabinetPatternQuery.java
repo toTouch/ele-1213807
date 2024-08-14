@@ -3,9 +3,7 @@ package com.xiliulou.electricity.query;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * @author zzlong
@@ -21,15 +19,9 @@ public class EleCabinetPatternQuery {
     @NotNull(message = "柜机模式不能为空")
     private Integer pattern;
     
-    @NotEmpty(message = "柜机不能为空")
-    private List<EleCabinetListQuery> list;
+    @NotBlank(message = "柜机不能为空")
+    private String productKey;
     
-    class EleCabinetListQuery {
-        
-        @NotBlank(message = "柜机不能为空")
-        private String productKey;
-        
-        @NotBlank(message = "柜机不能为空")
-        private String deviceName;
-    }
+    @NotBlank(message = "柜机不能为空")
+    private String deviceName;
 }

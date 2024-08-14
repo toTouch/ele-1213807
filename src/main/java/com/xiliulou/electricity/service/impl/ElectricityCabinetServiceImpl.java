@@ -6,6 +6,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.DeviceReportConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -91,6 +93,7 @@ import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
+import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
@@ -141,6 +144,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
@@ -187,9 +191,15 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -891,7 +901,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     fullyElectricityBattery = (int) cabinetBoxList.stream().filter(i -> isExchangeable(i, fullyCharged)).count();
                 }
                 
-                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName(), e.getPattern());
                 
                 ElectricityCabinet item = new ElectricityCabinet();
                 item.setUpdateTime(System.currentTimeMillis());
@@ -958,7 +968,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
         
-        if (deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName())) {
+        if (deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern())) {
             electricityCabinetUpdate.setOnlineStatus(electricityCabinet.getOnlineStatus());
             checkCupboardStatusAndUpdateDiff(true, electricityCabinetUpdate);
         } else {
@@ -1467,7 +1477,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public boolean deviceIsOnline(String productKey, String deviceName) {
+    public boolean deviceIsOnlineForIot(String productKey, String deviceName) {
         GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
         if (Objects.isNull(getDeviceStatusResponse)) {
             return false;
@@ -1485,6 +1495,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return false;
     }
     
+    @Override
+    public boolean deviceIsOnline(String productKey, String deviceName, Integer pattern) {
+        if (Objects.equals(pattern, EleCabinetConstant.TCP_PATTERN)) {
+            return deviceIsOnlineForIot(productKey, deviceName);
+        }
+        
+        return deviceIsOnlineForIot(productKey, deviceName);
+    }
+    
+    @Override
+    public boolean deviceIsOnlineForTcp(String productKey, String deviceName) {
+        return redisService.hasKey(CacheConstant.CACHE_CABINET_SN_ONLINE + DeviceTextUtil.assembleSn(productKey, deviceName));
+    }
     
     @Override
     public Integer queryByModelId(Integer id) {
@@ -1780,13 +1803,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 换电柜是否在线
-        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             return R.fail("100004", "柜机不在线");
         }
         
-        // 不合法的命令
-        //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
         if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
@@ -1863,6 +1884,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(sessionId);
     }
     
+    @Override
+    public String acquireDeviceBindServerIp(String productKey, String deviceName) {
+        return redisService.get(CacheConstant.CACHE_CABINET_SN_ONLINE + DeviceTextUtil.assembleSn(productKey, deviceName));
+    }
     
     @Override
     public R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery) {
@@ -2071,7 +2096,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setFranchiseeId(franchisee.getId());
         }
         
-        if (deviceIsOnline(productKey, deviceName)) {
+        if (deviceIsOnline(productKey, deviceName, electricityCabinet.getPattern())) {
             electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
         } else {
@@ -2153,7 +2178,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 动态查询在线状态
-        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
@@ -3725,7 +3750,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("QUERY SELECTION EXCHANGE ERROR! electricityCabinet is offline,electricityCabinetId={},,userId={}", electricityCabinet.getId(), userInfo.getUid());
             return Triple.of(false, "100004", "柜机不在线");
@@ -4906,7 +4931,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         String netType = null;
         // 如果柜机在线，则需要取柜机上报的信号
         if (eleResult) {
@@ -5159,7 +5184,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     fullyElectricityBattery = (int) cabinetBoxList.stream().filter(i -> isExchangeable(i, fullyCharged)).count();
                 }
                 
-                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName(), e.getPattern());
                 
                 ElectricityCabinet item = new ElectricityCabinet();
                 item.setUpdateTime(System.currentTimeMillis());

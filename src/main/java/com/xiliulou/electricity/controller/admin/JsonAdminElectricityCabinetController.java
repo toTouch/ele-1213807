@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
@@ -1039,12 +1040,32 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     }
     
     /**
-     * 批量修改柜机模式
+     * 修改柜机模式
      */
 //    @PostMapping(value = "/admin/electricityCabinet/batchUpdateCabinetPattern")
 //    public R batchUpdateCabinetPattern(@RequestBody @Validated ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
 //
 //    }
+    
+    /**
+     * 修改柜机模式
+     */
+    @PostMapping(value = "/admin/electricityCabinet/updateCabinetPattern")
+    public R updateCabinetPattern(@RequestBody @Validated EleCabinetPatternQuery query) {
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("pattern", query.getPattern());
+        
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(query.getProductKey());
+        commandQuery.setDeviceName(query.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+        return electricityCabinetService.sendCommandToEleForOuter(commandQuery);
+    }
     
     
 }

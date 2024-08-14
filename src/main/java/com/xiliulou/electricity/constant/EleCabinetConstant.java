@@ -21,5 +21,10 @@ public interface EleCabinetConstant {
     int BATTERY_COUNT_TYPE_LESS = 1;
     int BATTERY_COUNT_TYPE_MORE = 2;
     
+    /**
+     * 柜机模式：0--iot,1-tcp
+     */
+    int IOT_PATTERN = 0;
+    int TCP_PATTERN = 1;
     
 }
