@@ -141,7 +141,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         return;
                     }
                     
-                    MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(userInfo.getTenantId());
+                    MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(item.getFranchiseeId());
                     if (Objects.isNull(merchantAttr)) {
                         log.warn("MERCHANT MODIFY CONSUMER WARN! merchantAttr is null, tenantId={}", userInfo.getTenantId());
                         return;

@@ -693,4 +693,14 @@
             limit #{query.offset}, #{query.size}
  
     </select>
+    
+    
+    <select id="selectListByCreateTime" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where
+        create_time &gt;=#{beginTime}
+        and create_time &lt;=#{endTime}
+    </select>
 </mapper>

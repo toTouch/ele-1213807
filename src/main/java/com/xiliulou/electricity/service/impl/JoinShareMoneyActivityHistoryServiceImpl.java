@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 参与邀请活动记录(JoinShareActivityHistory)表服务实现类
@@ -59,6 +61,9 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	
 	@Autowired
 	UserInfoService userInfoService;
+	
+	@Resource
+	private FranchiseeService franchiseeService;
 
 
 	/**
@@ -135,13 +140,16 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
         }
         
         for (JoinShareMoneyActivityHistoryVO vo : voList) {
-            
             ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(vo.getActivityId());
 
 			if(Objects.nonNull(shareMoneyActivity)){
                 vo.setMoney(shareMoneyActivity.getMoney());
 			}
-        
+	
+	        Long franchiseeId = vo.getFranchiseeId();
+	        if (Objects.nonNull(franchiseeId)) {
+		        vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+	        }
         }
         
         return R.ok(voList);
@@ -150,18 +158,28 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	@Slave
 	@Override
 	public R queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
-        ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService
-                .queryByIdFromDB(jsonShareMoneyActivityHistoryQuery.getId());
-        if (Objects.isNull(shareMoneyActivityRecord)) {
-            return R.ok(new ArrayList<>());
-        }
-        
-        jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
-        jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
-		List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper
-				.queryList(jsonShareMoneyActivityHistoryQuery);
-        
-        return R.ok(voList);
+		ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService.queryByIdFromDB(jsonShareMoneyActivityHistoryQuery.getId());
+		if (Objects.isNull(shareMoneyActivityRecord)) {
+			return R.ok(new ArrayList<>());
+		}
+		
+		jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
+		jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
+		
+		List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper.queryList(jsonShareMoneyActivityHistoryQuery);
+		if (CollectionUtils.isEmpty(voList)) {
+			return R.ok(Collections.emptyList());
+		}
+		
+		List<JoinShareMoneyActivityHistoryVO> list = voList.stream().peek(vo -> {
+			Long franchiseeId = vo.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
+			
+		}).collect(Collectors.toList());
+		
+		return R.ok(list);
 	}
 
 	@Slave
@@ -250,6 +268,11 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	@Override
 	public R queryParticipantsRecord(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
 		List<JoinShareMoneyActivityHistoryVO> joinShareMoneyActivityHistoryVOS = joinShareMoneyActivityHistoryMapper.queryParticipantsRecord(jsonShareMoneyActivityHistoryQuery);
+		
+		if (CollectionUtils.isEmpty(joinShareMoneyActivityHistoryVOS)) {
+			return R.ok(Collections.emptyList());
+		}
+		
 		for(JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO : joinShareMoneyActivityHistoryVOS){
 			Long inviterUid = joinShareMoneyActivityHistoryVO.getInviterUid();
 			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
@@ -257,9 +280,14 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 				joinShareMoneyActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareMoneyActivityHistoryVO.setInviterPhone(userInfo.getPhone());
 			}
+			
+			Long franchiseeId = joinShareMoneyActivityHistoryVO.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				joinShareMoneyActivityHistoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
 		}
 
-		return R.ok(Optional.ofNullable(joinShareMoneyActivityHistoryVOS).orElse(new ArrayList<>()));
+		return R.ok(joinShareMoneyActivityHistoryVOS);
 	}
 
 	@Slave

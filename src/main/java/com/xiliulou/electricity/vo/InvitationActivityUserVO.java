@@ -37,4 +37,8 @@ public class InvitationActivityUserVO {
 
     private Long activityId;
     private String activityName;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 }

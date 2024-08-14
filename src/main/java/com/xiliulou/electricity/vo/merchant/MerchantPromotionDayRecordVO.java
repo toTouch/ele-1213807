@@ -48,6 +48,11 @@ public class MerchantPromotionDayRecordVO {
     private String remark;
     
     /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
      * 返利类型 拉新
      */
     public static final int LASH = 0;

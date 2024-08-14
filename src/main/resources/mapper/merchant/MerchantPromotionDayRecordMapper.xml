@@ -2,17 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantPromotionDayRecordMapper">
     <sql id="basics_field">
-        id, merchant_id, inviter_uid, money, balance_from_first, balance_from_renew, type, date, tenant_id, del_flag, create_time, update_time, remark
+        id, merchant_id, inviter_uid, money, balance_from_first, balance_from_renew, type, date, tenant_id, del_flag, create_time, update_time, remark, franchisee_id
     </sql>
     
     <select id="selectListByTenantId" resultType="com.xiliulou.electricity.vo.merchant.MerchantPromotionDayRecordVO">
         select
         <include refid="basics_field"/>
         from t_merchant_promotion_day_record
-        where tenant_id = #{tenantId}
-        and del_flag = 0
-        and date &gt;= #{startDate}
-        and date &lt;= #{endDate}
+        <where>
+            tenant_id = #{tenantId} and del_flag = 0 and date &gt;= #{startDate} and date &lt;= #{endDate}
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        </where>
     </select>
 
 </mapper>

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -86,6 +87,10 @@ public class WithdrawRecord {
     
     // 审核员ID
     private Long auditorId;
+    
+    // 加盟商id
+    @TableField(exist = false)
+    private Long franchiseeId;
 
     //状态
     //审核中

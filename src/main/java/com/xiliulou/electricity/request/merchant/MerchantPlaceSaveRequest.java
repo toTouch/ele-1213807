@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * @author maxiaodong
@@ -65,4 +66,9 @@ public class MerchantPlaceSaveRequest {
      * 地址纬度
      */
     private Double latitude;
+    
+    /**
+     * 加盟商用户绑定的加盟商
+     */
+    private List<Long> bindFranchiseeIdList;
 }

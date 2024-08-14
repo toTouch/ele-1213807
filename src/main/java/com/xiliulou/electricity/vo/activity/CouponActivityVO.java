@@ -62,6 +62,8 @@ public class CouponActivityVO {
      * 加盟商Id
      */
     private Long franchiseeId;
+    
+    private String franchiseeName;
 
     private List<Long> franchiseeIds;
 

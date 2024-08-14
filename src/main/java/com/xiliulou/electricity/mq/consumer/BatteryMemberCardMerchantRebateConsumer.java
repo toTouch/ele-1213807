@@ -169,7 +169,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(userInfo.getTenantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(electricityMemberCardOrder.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("REBATE CONSUMER WARN!not found merchantAttr by tenant,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
@@ -268,6 +268,12 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setTenantId(electricityMemberCardOrder.getTenantId());
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
+        
+        //若渠道员与商户的返利差额都为0  则不生成返利差额记录
+        if (BigDecimal.ZERO.compareTo(channelerRebate) == 0 && BigDecimal.ZERO.compareTo(merchantRebate) == 0) {
+            log.info("REBATE CONSUMER WARN! Rebate is zero,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
         
         //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {

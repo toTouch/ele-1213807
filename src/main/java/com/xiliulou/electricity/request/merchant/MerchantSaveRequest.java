@@ -103,4 +103,9 @@ public class MerchantSaveRequest {
      * 企业id
      */
     private Long enterpriseId;
+    
+    /**
+     * 加盟商绑定的数据权限的加盟商id
+     */
+    private List<Long> bindFranchiseeIdList;
 }

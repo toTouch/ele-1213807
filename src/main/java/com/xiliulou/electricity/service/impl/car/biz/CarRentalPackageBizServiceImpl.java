@@ -475,7 +475,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      * @return Triple<BigDecimal, List < Long>, Boolean> 实际支付金额、已用的用户优惠券ID、Boolean（暂无实际意义）
      */
     @Override
-    public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType) {
+    public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid, Long packageId, Integer packageType,
+            Integer franchiseeId) {
         log.info("calculatePaymentAmount amount is {}", amount);
         if (BigDecimal.ZERO.compareTo(amount) == 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIds, true);
@@ -501,8 +502,15 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException(couponResult.getErrMsg());
         }
         
+        if (Objects.isNull(couponResult.getData())) {
+            throw new BizException("300034", "使用优惠券有误");
+        }
+        
         List<Coupon> couponQryList = (List<Coupon>) couponResult.getData();
-        Map<Integer, Coupon> couponQryMap = couponQryList.stream().collect(Collectors.toMap(Coupon::getId, Function.identity(), (k1, k2) -> k2));
+        
+        // 多加盟商版本增加：加盟商一致性校验
+        Map<Integer, Coupon> couponQryMap = couponQryList.stream().filter(coupon -> couponService.isSameFranchisee(coupon.getFranchiseeId(), franchiseeId.longValue()))
+                .collect(Collectors.toMap(Coupon::getId, Function.identity(), (k1, k2) -> k2));
         // 定义一个本地的要使用的优惠券集合, 存在使用同一张优惠券
         List<Coupon> couponUseList = new ArrayList<>();
         couponIds.forEach(couponId -> {

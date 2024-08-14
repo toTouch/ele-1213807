@@ -25,6 +25,13 @@ public class MerchantPlaceFeeMonthSummaryRecord {
     
     private Integer tenantId;
     
+    private Long franchiseeId;
+    
+    /**
+     * 类型：0-租户，1-加盟商
+     */
+    private Integer type;
+    
     private Integer delFlag;
     
     private Long createTime;

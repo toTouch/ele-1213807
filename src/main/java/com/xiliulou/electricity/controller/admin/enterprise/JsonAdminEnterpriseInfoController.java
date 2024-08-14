@@ -220,10 +220,20 @@ public class JsonAdminEnterpriseInfoController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                log.warn("review merchant withdraw error! franchisee is empty");
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+    
+            enterpriseCloudBeanRechargeQuery.setBindFranchiseeIdList(franchiseeIds);
+        }
+        
         return returnTripleResult(enterpriseInfoService.rechargeForAdmin(enterpriseCloudBeanRechargeQuery));
     }
     

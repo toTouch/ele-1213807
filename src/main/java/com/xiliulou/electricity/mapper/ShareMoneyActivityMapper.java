@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import org.apache.ibatis.annotations.Param;
@@ -31,8 +32,8 @@ public interface ShareMoneyActivityMapper extends BaseMapper<ShareMoneyActivity>
             "        update_time, uid,user_name\n" +
             "        from t_share_activity where end_time < #{currentTime} and status = 1 and del_flg = 0 ")
     List<ShareMoneyActivity> getExpiredActivity(long currentTimeMillis);
-
-    ShareMoneyActivity selectActivityByTenantIdAndStatus(@Param("tenantId") Long tenantId, @Param("status") Integer status);
+    
+    ShareMoneyActivity selectActivityByTenantIdAndStatus(@Param("tenantId") Long tenantId, @Param("franchiseeId") Integer franchiseeId, @Param("status") Integer status);
 
     Integer updateActivity(ShareMoneyActivity shareMoneyActivity);
     
@@ -53,4 +54,6 @@ public interface ShareMoneyActivityMapper extends BaseMapper<ShareMoneyActivity>
      * @since V1.0 2024/3/14
      */
     int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
+    
+    List<ShareMoneyActivity> selectOnlineActivity(@Param("tenantId") Integer tenantId);
 }

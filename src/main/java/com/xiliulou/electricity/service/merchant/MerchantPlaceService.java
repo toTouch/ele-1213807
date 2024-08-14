@@ -25,7 +25,7 @@ public interface MerchantPlaceService {
     
     void deleteCache(MerchantPlace merchantPlace);
     
-    Triple<Boolean, String, Object> remove(Long id);
+    Triple<Boolean, String, Object> remove(Long id, List<Long> franchiseeId);
     
     Integer countTotal(MerchantPlacePageRequest merchantPlacePageRequest);
     
@@ -37,7 +37,7 @@ public interface MerchantPlaceService {
     
     List<MerchantPlaceVO> queryListPlace(MerchantPlacePageRequest merchantPlacePageRequest);
     
-    Triple<Boolean, String, Object> queryById(Long id);
+    Triple<Boolean, String, Object> queryById(Long id, List<Long> franchiseeId);
     
     List<MerchantPlace> queryByIdList(List<Long> placeIdList,Integer tenantId);
 }

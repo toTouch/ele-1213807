@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.query;
 
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -13,8 +12,12 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class InvitationActivityStatusQuery {
+    
     @NotNull(message = "活动id不能为空")
     private Long id;
+    
     @NotNull(message = "活动状态能为空")
     private Integer status;
+    
+    private List<Long> franchiseeIds;
 }

@@ -108,7 +108,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             log.warn("joinActivity WARN! not found Activity ! ActivityId:{} ", activityId);
             return R.fail("ELECTRICITY.00106", "活动已下架");
         }
-    
+        
         //查找分享的用户
         User oldUser = userService.queryByUidFromCache(uid);
         if (Objects.isNull(oldUser)) {
@@ -152,6 +152,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityRecord.setTenantId(tenantId);
         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
         joinShareActivityRecord.setActivityId(activityId);
+    
+        Integer activityFranchiseeId = shareActivity.getFranchiseeId();
+        if (Objects.nonNull(activityFranchiseeId)) {
+            joinShareActivityRecord.setFranchiseeId(activityFranchiseeId.longValue());
+        }
+    
         joinShareActivityRecordMapper.insert(joinShareActivityRecord);
     
         //新增邀请历史记录
@@ -166,6 +172,11 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
         joinShareActivityHistory.setTenantId(tenantId);
         joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
         joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
+    
+        if (Objects.nonNull(activityFranchiseeId)) {
+            joinShareActivityHistory.setFranchiseeId(activityFranchiseeId.longValue());
+        }
+    
         joinShareActivityHistoryService.insert(joinShareActivityHistory);
     
         // 530会员扩展表更新最新参与活动类型
@@ -173,7 +184,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     
         return R.ok();
     }
-
+    
     @Override
     @Slave
     public JoinShareActivityRecord queryByJoinUid(Long uid) {
