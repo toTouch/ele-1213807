@@ -8,12 +8,20 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityRecordMapper;
 import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.QrCodeParamVO;
@@ -33,6 +41,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 发起邀请活动记录(ShareActivityRecord)表服务实现类
@@ -50,7 +59,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
     @Autowired
     RedisService redisService;
     
-    @Resource
+    @Autowired
     GenerateShareUrlService generateShareUrlService;
     
     @Autowired
@@ -66,9 +75,13 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
     JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
     
     @Resource
-    private TenantService tenantService;
-    
-    /**
+    private FranchiseeService franchiseeService;
+	
+	@Resource
+	private TenantService tenantService;
+	
+	
+	/**
      * 通过ID查询单条数据从DB
      *
      * @param id 主键
@@ -160,6 +173,12 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
             shareMoneyActivityRecord.setCreateTime(System.currentTimeMillis());
             shareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
             shareMoneyActivityRecord.setStatus(ShareMoneyActivityRecord.STATUS_INIT);
+            
+            Integer franchiseeId = getFranchiseeId(activityId);
+            if (Objects.nonNull(franchiseeId)) {
+                shareMoneyActivityRecord.setFranchiseeId(franchiseeId.longValue());
+            }
+            
             shareMoneyActivityRecordMapper.insert(shareMoneyActivityRecord);
         }
         
@@ -199,16 +218,24 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
         
     }
     
-    @Override
-    @Slave
-    public ShareMoneyActivityRecord queryByUid(Long uid, Integer activityId) {
-        return shareMoneyActivityRecordMapper
-                .selectOne(new LambdaQueryWrapper<ShareMoneyActivityRecord>().eq(ShareMoneyActivityRecord::getUid, uid).eq(ShareMoneyActivityRecord::getActivityId, activityId));
+    private Integer getFranchiseeId(Integer activityId) {
+        ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(activityId);
+        if (Objects.isNull(shareMoneyActivity.getFranchiseeId())) {
+            return null;
+        }
+        return shareMoneyActivity.getFranchiseeId();
     }
     
     @Override
-    public void addCountByUid(Long uid, BigDecimal money) {
-        shareMoneyActivityRecordMapper.addCountByUid(uid, money);
+    @Slave
+    public ShareMoneyActivityRecord queryByUid(Long uid, Integer activityId) {
+        return shareMoneyActivityRecordMapper.selectOne(
+                new LambdaQueryWrapper<ShareMoneyActivityRecord>().eq(ShareMoneyActivityRecord::getUid, uid).eq(ShareMoneyActivityRecord::getActivityId, activityId));
+    }
+    
+    @Override
+    public void addCountByUid(Long uid, BigDecimal money, Integer activityId) {
+        shareMoneyActivityRecordMapper.addCountByUid(uid, money, activityId);
     }
     
     
@@ -220,9 +247,15 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
         
         //需要查询参与邀请返现活动的总记录数，无论是否成功参与。
         for (ShareMoneyActivityRecordVO shareMoneyActivityRecordVO : shareMoneyActivityRecordVOList) {
-            List<JoinShareMoneyActivityRecord> joinShareMoneyActivityRecords = joinShareMoneyActivityRecordService
-                    .queryByUidAndActivityId(shareMoneyActivityRecordVO.getUid(), shareMoneyActivityRecordVO.getActivityId().longValue());
+            List<JoinShareMoneyActivityRecord> joinShareMoneyActivityRecords = joinShareMoneyActivityRecordService.queryByUidAndActivityId(shareMoneyActivityRecordVO.getUid(),
+                    shareMoneyActivityRecordVO.getActivityId().longValue());
             shareMoneyActivityRecordVO.setTotalCount(joinShareMoneyActivityRecords.size());
+            
+            Long franchiseeId = shareMoneyActivityRecordVO.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                shareMoneyActivityRecordVO.setFranchiseeName(
+                        Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
         }
         
         return R.ok(shareMoneyActivityRecordVOList);
@@ -233,61 +266,61 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
     public R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery) {
         return R.ok(shareMoneyActivityRecordMapper.queryCount(shareMoneyActivityRecordQuery));
     }
-    
-    @Override
-    public R getQrCodeShareParam(Integer activityId) {
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
-            log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        //限频
-        boolean result = redisService.setNx(CacheConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
-        if (!result) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
-        //1、判断是否分享过
-        ShareMoneyActivityRecord oldShareMoneyActivityRecord = shareMoneyActivityRecordMapper.selectOne(
-                new LambdaQueryWrapper<ShareMoneyActivityRecord>().eq(ShareMoneyActivityRecord::getUid, user.getUid()).eq(ShareMoneyActivityRecord::getActivityId, activityId));
-        
-        //第一次分享
-        if (Objects.isNull(oldShareMoneyActivityRecord)) {
-            //2、生成分享记录
-            //2.1 、生成code
-            String code = RandomUtil.randomNumbers(6);
-            
-            //2.2、生成分享记录
-            ShareMoneyActivityRecord shareMoneyActivityRecord = new ShareMoneyActivityRecord();
-            shareMoneyActivityRecord.setActivityId(activityId);
-            shareMoneyActivityRecord.setUid(user.getUid());
-            shareMoneyActivityRecord.setTenantId(tenantId);
-            shareMoneyActivityRecord.setCode(code);
-            shareMoneyActivityRecord.setCreateTime(System.currentTimeMillis());
-            shareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-            shareMoneyActivityRecord.setStatus(ShareMoneyActivityRecord.STATUS_INIT);
-            shareMoneyActivityRecordMapper.insert(shareMoneyActivityRecord);
-        }
-        
-        //3、scene
-        String scene = "uid:" + user.getUid() + ",id:" + activityId + ",type:2";
-      
-        QrCodeParamVO qrCodeParamVO = new QrCodeParamVO();
-        qrCodeParamVO.setScene(scene);
-        qrCodeParamVO.setTenantCode(tenant.getCode());
-        qrCodeParamVO.setPhone(user.getPhone());
-        
-        return R.ok(qrCodeParamVO);
-    }
+	
+	@Override
+	public R getQrCodeShareParam(Integer activityId) {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("order  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+		if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
+			log.warn("INVITATION ACTIVITY WARN! tenant is null,uid={}", user.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		//限频
+		boolean result = redisService.setNx(CacheConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
+		if (!result) {
+			return R.fail("ELECTRICITY.0034", "操作频繁");
+		}
+		
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		
+		//1、判断是否分享过
+		ShareMoneyActivityRecord oldShareMoneyActivityRecord = shareMoneyActivityRecordMapper.selectOne(
+				new LambdaQueryWrapper<ShareMoneyActivityRecord>().eq(ShareMoneyActivityRecord::getUid, user.getUid()).eq(ShareMoneyActivityRecord::getActivityId, activityId));
+		
+		//第一次分享
+		if (Objects.isNull(oldShareMoneyActivityRecord)) {
+			//2、生成分享记录
+			//2.1 、生成code
+			String code = RandomUtil.randomNumbers(6);
+			
+			//2.2、生成分享记录
+			ShareMoneyActivityRecord shareMoneyActivityRecord = new ShareMoneyActivityRecord();
+			shareMoneyActivityRecord.setActivityId(activityId);
+			shareMoneyActivityRecord.setUid(user.getUid());
+			shareMoneyActivityRecord.setTenantId(tenantId);
+			shareMoneyActivityRecord.setCode(code);
+			shareMoneyActivityRecord.setCreateTime(System.currentTimeMillis());
+			shareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+			shareMoneyActivityRecord.setStatus(ShareMoneyActivityRecord.STATUS_INIT);
+			shareMoneyActivityRecordMapper.insert(shareMoneyActivityRecord);
+		}
+		
+		//3、scene
+		String scene = "uid:" + user.getUid() + ",id:" + activityId + ",type:2";
+		
+		QrCodeParamVO qrCodeParamVO = new QrCodeParamVO();
+		qrCodeParamVO.setScene(scene);
+		qrCodeParamVO.setTenantCode(tenant.getCode());
+		qrCodeParamVO.setPhone(user.getPhone());
+		
+		return R.ok(qrCodeParamVO);
+	}
 }

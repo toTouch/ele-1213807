@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author BaoYu
@@ -29,6 +30,6 @@ public class ReviewWithdrawApplicationRequest {
     
     private String remark;
     
-    private Long bindFranchiseeId;
+    private List<Long> bindFranchiseeIdList;
     
 }

@@ -55,4 +55,6 @@ public class CouponIssueOperateRecord {
     private Long updateTime;
 
     private Integer tenantId;
+    
+    private Long franchiseeId;
 }

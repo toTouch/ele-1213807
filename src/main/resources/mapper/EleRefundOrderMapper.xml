@@ -69,7 +69,7 @@
                 and tero.tenant_id = #{query.tenantId}
             </if>
             <if test="query.payType != null">
-                and tedo.pay_type = #{query.payType}
+                and tero.pay_type = #{query.payType}
             </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}

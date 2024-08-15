@@ -79,12 +79,16 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.EMPTY_LIST);
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
-                //.franchiseeIds(franchiseeIds)
+                .franchiseeIds(franchiseeIds)
                 .delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name).catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0)
                 .build();
         
@@ -302,10 +306,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).id(mid).franchiseeId(franchiseeId).status(status)

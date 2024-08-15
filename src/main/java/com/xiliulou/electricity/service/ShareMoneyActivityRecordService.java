@@ -42,17 +42,17 @@ public interface ShareMoneyActivityRecordService {
     
     
     R generateSharePicture(Integer activityId, String page, String envVersion);
-    
-    
-    ShareMoneyActivityRecord queryByUid(Long uid, Integer activityId);
-    
-    
-    void addCountByUid(Long uid, BigDecimal money);
-    
-    
-    R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
-    
-    R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+
+
+	ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId);
+
+
+	void addCountByUid(Long uid, BigDecimal money, Integer activityId);
+
+
+	R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
+
+	R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
     
     /**
      * 获取二维码生成参数

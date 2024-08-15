@@ -54,6 +54,8 @@ public class MerchantAttr {
     
     private Integer delFlag;
     
+    private Long franchiseeId;
+    
     private Integer tenantId;
     
     private Long createTime;

@@ -49,4 +49,6 @@ public interface ShareActivityMapper extends BaseMapper<ShareActivity>{
      * @since V1.0 2024/3/14
      */
     int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
+    
+    List<ShareActivity> selectOnlineActivity(@Param("tenantId") Integer tenantId);
 }

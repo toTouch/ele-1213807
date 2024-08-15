@@ -1430,13 +1430,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String msg = history.getMsg();
         log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
         
-        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
+        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败 || 换电柜正在使用中操作取消
         if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
                 lastOrder.getOldCellNo(), msg))) {
             return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
         }
         
-        //  新仓门&开门失败
+        //  新仓门&开门失败 || 换电柜正在使用中操作取消
         if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
             return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet);
         }
@@ -1479,6 +1479,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox);
             vo.setSessionId(sessionId);
+            vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
@@ -1520,6 +1521,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
+            vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
@@ -1529,8 +1531,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private void getFullCellAndOpenFullCell(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
-            UserInfo userInfo) {
+    private void getFullCellAndOpenFullCell(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo,
+            ElectricityCabinet cabinet, UserInfo userInfo) {
         // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         // 分配满电仓
@@ -3152,6 +3154,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
                 .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        
+        // 删除redis
+        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId(), "取电中，请稍后", 5L, TimeUnit.MINUTES);
+        
         return sessionId;
     }
     

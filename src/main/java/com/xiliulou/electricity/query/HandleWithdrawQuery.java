@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author: Miss.Li
@@ -23,4 +24,9 @@ public class HandleWithdrawQuery {
 
 	@NotEmpty(message = "密码不能为空")
 	private String password;
+	
+	/**
+	 * 绑定加盟商id
+	 */
+	private List<Long> bindFranchiseeIdList;
 }

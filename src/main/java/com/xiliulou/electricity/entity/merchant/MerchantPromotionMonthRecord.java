@@ -56,4 +56,9 @@ public class MerchantPromotionMonthRecord {
     private Long updateTime;
     
     private String remark;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
 }

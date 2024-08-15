@@ -64,4 +64,13 @@ public class MerchantJoinRecordVO {
      * 某个商户下的用户的数量
      */
     private Integer merchantUserNum;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
+    
+    /**
+     * 邀请成功时间
+     */
+    private Long successTime;
 }

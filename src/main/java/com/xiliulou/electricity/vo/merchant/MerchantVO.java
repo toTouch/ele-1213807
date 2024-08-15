@@ -134,5 +134,10 @@ public class MerchantVO {
      */
     private Long createTime;
     
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
+    
     
 }

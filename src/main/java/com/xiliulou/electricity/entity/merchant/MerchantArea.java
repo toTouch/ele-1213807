@@ -50,4 +50,9 @@ public class MerchantArea {
      * 备注
      */
     private String remark;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
 }

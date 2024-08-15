@@ -52,7 +52,8 @@ public class JsonUserUserCouponController {
     }
     
     @GetMapping(value = "/user/userCoupon/queryMyCoupons")
-    public R queryMyCoupons(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) String type) {
+    public R queryMyCoupons(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         List<Integer> typeList = null;
         if (StringUtils.isNotEmpty(type)) {
             Integer[] types = (Integer[]) JSONUtil.parseArray(type).toArray(Integer[].class);
@@ -66,7 +67,7 @@ public class JsonUserUserCouponController {
             
             statusList = Arrays.asList(statuses);
         }
-        return userCouponService.queryMyCoupons(statusList, typeList);
+        return userCouponService.queryMyCoupons(statusList, typeList, franchiseeId);
         
     }
     

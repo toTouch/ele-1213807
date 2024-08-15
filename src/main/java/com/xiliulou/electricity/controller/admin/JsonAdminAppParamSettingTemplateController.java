@@ -24,6 +24,13 @@ public class JsonAdminAppParamSettingTemplateController {
     @Resource
     private AppParamSettingTemplateService appParamSettingTemplateService;
     
+    /**
+     * 柜机模板列表(批量设置操作)
+     *
+     * @param size
+     * @param offset
+     * @return
+     */
     @GetMapping("/admin/appParamSettingTemplate/list")
     public R queryList(@RequestParam(value = "size", required = false, defaultValue = "10") Long size,
             @RequestParam(value = "offset", required = false, defaultValue = "0") Long offset) {
@@ -53,7 +60,7 @@ public class JsonAdminAppParamSettingTemplateController {
         return appParamSettingTemplateService.updateOne(query);
     }
     
-    @DeleteMapping("/admin/appParamSettingTemplate/{id}")
+    @GetMapping("/admin/appParamSettingTemplate/{id}")
     public R deleteOne(@PathVariable("id") Long id) {
         return appParamSettingTemplateService.deleteOne(id);
     }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 商户推广费日结统计查询
@@ -21,4 +23,8 @@ public class MerchantPromotionDayRecordQueryModel {
     private String startDate;
     
     private String endDate;
+    
+    private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

@@ -436,7 +436,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     request);
             return Triple.of(true, null, resultDTO);
             
-        // 友好提示，对用户端不展示错误信息
+            // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         } finally {
@@ -636,7 +636,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     request);
             return Triple.of(true, null, resultDTO);
             
-        // 友好提示，对用户端不展示错误信息
+            // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
         } finally {
@@ -784,7 +784,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     request);
             return Triple.of(true, null, resultDTO);
             
-        // 友好提示，对用户端不展示错误信息
+            // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
         } finally {
@@ -1041,7 +1041,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds);
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds,
+                batteryMemberCard.getFranchiseeId());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
@@ -1091,10 +1092,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getMemberId());
             return Triple.of(false, "ELECTRICITY.100000", acquireUserBatteryServiceFeeResult.getRight());
         }
-        
+    
+        // 多加盟商版本增加：加盟商一致性校验
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), query.getUserCouponIds());
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), query.getUserCouponIds(),
+                batteryMemberCard.getFranchiseeId());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }

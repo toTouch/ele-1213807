@@ -67,5 +67,9 @@ public class InvitationActivityJoinHistoryVO {
      * @see PackageTypeEnum
      */
     private Integer packageType;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 
 }

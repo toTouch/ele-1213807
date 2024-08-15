@@ -24,6 +24,8 @@ public class UserAmountQuery {
     private Long uid;
 
     private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 
     private List<Long> storeIds;
 }
