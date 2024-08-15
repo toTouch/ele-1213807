@@ -155,17 +155,20 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return Pair.of(false, null);
         }
         
+        log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.num is {}, exchangeBox is {}", cabinetModel.getNum(),
+                JsonUtil.toJson(comfortExchangeBox.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList())));
+        
         // 中间
         Pair<Boolean, ElectricityCabinetBox> middleCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getMiddleCell());
         if (middleCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; middleCell is {}, cell is {}", cabinetModel.getNum(), cellConfig.getMiddleCell(),
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.middleCell is {}, cell is {}", cellConfig.getMiddleCell(),
                     Objects.nonNull(middleCellBoxPair.getRight()) ? middleCellBoxPair.getRight().getCellNo() : "null");
             return middleCellBoxPair;
         }
         // 下面
         Pair<Boolean, ElectricityCabinetBox> belowCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getBelowCell());
         if (belowCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; belowCell is {}, cell is {}", cabinetModel.getNum(), cellConfig.getBelowCell(),
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.belowCell is {}, cell is {}", cellConfig.getBelowCell(),
                     Objects.nonNull(belowCellBoxPair.getRight()) ? belowCellBoxPair.getRight().getCellNo() : "null");
             return belowCellBoxPair;
         }
@@ -173,7 +176,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         // 上面
         Pair<Boolean, ElectricityCabinetBox> topCellBoxPair = getPositionFullCell(comfortExchangeBox, cellConfig.getTopCell());
         if (topCellBoxPair.getLeft()) {
-            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell,num is {}; topCell is {}, cell is {}", cabinetModel.getNum(), cellConfig.getTopCell(),
+            log.info("COMFORT EXCHANGE GET FULL INFO! getConformationCell.topCell is {}, cell is {}", cellConfig.getTopCell(),
                     Objects.nonNull(topCellBoxPair.getRight()) ? topCellBoxPair.getRight().getCellNo() : "null");
             return topCellBoxPair;
         }
