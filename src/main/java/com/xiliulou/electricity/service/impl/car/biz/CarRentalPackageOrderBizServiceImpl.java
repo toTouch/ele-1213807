@@ -2811,7 +2811,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_BUY_UID_KEY, uid);
         
         // 加锁
-        if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
+        if (!redisService.setNx(buyLockKey, uid.toString(), 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
