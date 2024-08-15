@@ -1412,7 +1412,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         String orderStatus = lastOrder.getOrderStatus();
         if (StrUtil.isEmpty(orderStatus)) {
-            log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is {}", lastOrder.getOrderId());
+            log.info("Orderv3 INFO! lastExchangeFailHandler.orderStatus is null, orderId is {}", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
         
