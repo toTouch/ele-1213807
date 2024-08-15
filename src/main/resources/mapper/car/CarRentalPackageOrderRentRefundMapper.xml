@@ -177,6 +177,7 @@
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
             <if test=" payType != null "> , `pay_type` = #{payType} </if>
             <if test=" compelOffLine != null "> , `compel_offLine` = #{compelOffLine} </if>
+            <if test=" payment_channel != null and payment_channel != '' "> , `payment_channel` = #{paymentChannel} </if>
         </set>
         <where>
             `order_no` = #{orderNo}

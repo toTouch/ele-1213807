@@ -1537,11 +1537,16 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     freeDepositOrderService.update(freeDepositOrderUpdate);
                 }
             }
+            if (PayTypeEnum.OFF_LINE.getCode().equals(payType)){
+                depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
+            }
+            
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
         } else {
             
             // 1. 更新退押申请单状态
             depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+            depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
             
             // 2. 更新会员期限
@@ -1579,7 +1584,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             }
             // 赋值退款单状态：退款中
             depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-            
+            depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
             //此处新开事物提前提交，解决异步通知订单状态更新先后顺序问题
             carRentalPackageDepositRefundTxService.update(depositRefundUpdateEntity);
             // 调用微信支付，进行退款
@@ -1836,7 +1841,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         refundDepositInsertEntity.setRentalPackageType(memberTermEntity.getRentalPackageType());
         // 默认状态，待审核
         refundDepositInsertEntity.setRefundState(RefundStateEnum.PENDING_APPROVAL.getCode());
-        refundDepositInsertEntity.setPaymentChannel(paymentChannel);
+//        refundDepositInsertEntity.setPaymentChannel(paymentChannel);
         
         // 设置退款状态
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {

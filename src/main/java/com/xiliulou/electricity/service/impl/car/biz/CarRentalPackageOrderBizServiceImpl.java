@@ -10,13 +10,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
@@ -150,7 +148,6 @@ import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.mq.service.RocketMqService;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
@@ -656,6 +653,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             updateRentRefundEntity.setCompelOffLine(YesNoEnum.YES.getCode());
         }
         
+       
         // 购买订单时的支付订单号
         String orderNo = packageOrderEntity.getOrderNo();
         
@@ -671,7 +669,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                 refundPayService.process(callBackResource);
             } else {
-                this.onLineRefund(orderNo, carRentRefundVo, updateRentRefundEntity, packageOrderEntity.getTenantId(), packageOrderEntity.getUid());
+                this.onLineRefund(orderNo, carRentRefundVo, updateRentRefundEntity, packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),packageOrderEntity.getPaymentChannel());
                 // 直接结束
                 return;
             }
@@ -684,7 +682,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
             refundPayService.process(callBackResource);
         }
-        
+    
+        if(PayTypeEnum.OFF_LINE.getCode().equals(payType)){
+            updateRentRefundEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+        }
+    
+    
         carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
         log.info("save approve refund order flow end, order No = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getUid());
         
@@ -698,10 +701,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param updateRentRefundEntity
      * @param tenantId
      * @param uid
+     * @param paymentChannel
      * @author caobotao.cbt
      * @date 2024/8/15 11:08
      */
-    private void onLineRefund(String orderNo, CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo updateRentRefundEntity, Integer tenantId, Long uid) {
+    private void onLineRefund(String orderNo, CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo updateRentRefundEntity, Integer tenantId, Long uid,
+            String paymentChannel) {
         try {
             // 根据购买订单编码获取当初的支付流水
             ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(orderNo);
@@ -716,7 +721,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-            
+            updateRentRefundEntity.setPaymentChannel(paymentChannel);
             carRentalPackageOrderRentRefundTxService.update(updateRentRefundEntity);
             
             // 调用微信支付，进行退款
@@ -1549,6 +1554,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentRefundUpdateEntity.setUpdateUid(apploveUid);
         // 1. 更新退租申请单状态
         rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+        rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
         carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         
         // 2. 更新会员期限
@@ -1580,6 +1586,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 rentRefundUpdateEntity.setCompelOffLine(YesNoEnum.YES.getCode());
             }
             
+            if (PayTypeEnum.ON_LINE.getCode().equals(payType)){
+                rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+            }
+            
             // 购买订单时的支付订单号
             String orderNo = packageOrderEntity.getOrderNo();
             
@@ -1595,7 +1605,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                     refundPayService.process(callBackResource);
                 } else {
-                    this.onLineRefund(orderNo, carRentRefundVo, rentRefundUpdateEntity, rentRefundEntity.getTenantId(), rentRefundEntity.getUid());
+                    this.onLineRefund(orderNo, carRentRefundVo, rentRefundUpdateEntity, rentRefundEntity.getTenantId(), rentRefundEntity.getUid(),
+                            packageOrderEntity.getPaymentChannel());
                     return;
                 }
             } else {
@@ -1612,6 +1623,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         } else {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+            rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             
             // 2. 更新会员期限
@@ -2504,7 +2516,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentRefundOrderEntity.setConfineResidue(confineResidue);
         // 设置交易方式
         rentRefundOrderEntity.setPayType(packageOrderEntity.getPayType());
-        rentRefundOrderEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+//        rentRefundOrderEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
         return rentRefundOrderEntity;
     }
     

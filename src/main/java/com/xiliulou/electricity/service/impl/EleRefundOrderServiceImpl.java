@@ -449,6 +449,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 拒绝退款
         if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
         }
@@ -483,6 +484,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         try {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
             eleRefundOrderTxService.update(eleRefundOrderUpdate);
             
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
@@ -499,6 +501,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 提交失败
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
         eleRefundOrderService.update(eleRefundOrderUpdate);
         
         return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
@@ -864,7 +867,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                     .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType())
-                    .paymentChannel(eleDepositOrder.getPaymentChannel()).build();
+                    .build();
             eleRefundOrderService.insert(eleRefundOrder);
             
             // 更新用户状态
@@ -923,7 +926,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType())
-                .paymentChannel(eleDepositOrder.getPaymentChannel()).build();
+                .build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         return Triple.of(true, "100413", "免押押金解冻中");
@@ -983,97 +986,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return Triple.of(true, "", null);
     }
     
-    /**
-     * 电池免押退押金
-     */
-    @Deprecated
-    private Triple<Boolean, String, Object> handleBatteryFreeDepositRefundOrder(UserBatteryDeposit userBatteryDeposit, EleRefundOrder eleRefundOrder,
-            EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
-            return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
-        }
-        
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
-        if (Objects.isNull(freeDepositOrder)) {
-            log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
-            return Triple.of(false, "100403", "免押订单不存在");
-        }
-        
-        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> testQuery = new PxzCommonRequest<>();
-        testQuery.setAesSecret(pxzConfig.getAesKey());
-        testQuery.setDateTime(System.currentTimeMillis());
-        testQuery.setSessionId(userBatteryDeposit.getOrderId());
-        testQuery.setMerchantCode(pxzConfig.getMerchantCode());
-        
-        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
-        queryRequest.setRemark("电池押金解冻");
-        queryRequest.setTransId(freeDepositOrder.getOrderId());
-        testQuery.setData(queryRequest);
-        
-        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzUnfreezeDepositCommonRsp = null;
-        
-        try {
-            pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
-        } catch (Exception e) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
-            return Triple.of(false, "100401", "免押解冻调用失败！");
-        }
-        
-        if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
-            return Triple.of(false, "100401", "免押调用失败！");
-        }
-        
-        if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
-            return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
-        }
-        
-        if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-            // 更新免押订单状态
-            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
-            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            freeDepositOrderService.update(freeDepositOrderUpdate);
-            
-            // 更新退款订单
-            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderService.update(eleRefundOrderUpdate);
-            
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
-            
-            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-            userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-            userBatteryService.deleteByUid(userInfo.getUid());
-            
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo);
-            }
-            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-        }
-        
-        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
-        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        freeDepositOrderService.update(freeDepositOrderUpdate);
-        
-        // 更新退款订单
-        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleRefundOrderService.update(eleRefundOrderUpdate);
-        
-        return Triple.of(true, "", "退款中，请稍后");
-    }
     
     @Override
     public R queryUserDepositPayType(Long uid) {
@@ -1208,7 +1120,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
         eleRefundOrder.setPayType(eleDepositOrder.getPayType());
-        eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
         
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
