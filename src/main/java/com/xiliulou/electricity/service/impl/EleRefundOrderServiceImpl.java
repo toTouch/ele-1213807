@@ -1208,7 +1208,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
         eleRefundOrder.setPayType(eleDepositOrder.getPayType());
-        eleRefundOrder.setPaymentChannel(eleRefundOrder.getPaymentChannel());
+        eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
         
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
