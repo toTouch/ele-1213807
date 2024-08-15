@@ -136,8 +136,8 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             //错误信息保存到缓存里，方便前端显示
             redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
             
-            // 设备正在使用中，依然走二次扫码，其他情况不让走二次扫码,所以修改订单阶段状态
-            if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
+            // 设备正在使用中/开满电仓失败，不更新； 电池前置检测失败更新状态
+            if (Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL)) {
                 // 修改取电的状态
                 ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
                 newElectricityCabinetOrder.setId(cabinetOrder.getId());
