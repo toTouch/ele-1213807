@@ -68,17 +68,16 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
      */
     @Override
     public BoxOtherProperties insertOrUpdate(BoxOtherProperties boxOtherProperties) {
-        boxOtherProperties.setCreateTime(System.currentTimeMillis());
-        boxOtherProperties.setUpdateTime(System.currentTimeMillis());
-        boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
-    
         Integer exists = this.existsByUk(boxOtherProperties.getElectricityCabinetId(), boxOtherProperties.getCellNo());
         if (Objects.nonNull(exists)) {
+            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
             this.boxOtherPropertiesMapper.updateByUk(boxOtherProperties);
         } else {
+            boxOtherProperties.setCreateTime(System.currentTimeMillis());
+            boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
             this.boxOtherPropertiesMapper.insertOne(boxOtherProperties);
         }
-    
+        
         return boxOtherProperties;
     }
     
