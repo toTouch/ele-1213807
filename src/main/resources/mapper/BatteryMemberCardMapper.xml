@@ -826,7 +826,7 @@
         order by tbmc.status, tbmc.sort_param desc
         limit #{offset}, #{size}
     </select>
-    <select id="selectListByIds" resultMap="BatteryMemberCardTypePageMap">
+    <select id="selectListByIds" resultMap="BatteryMemberCardMap">
         SELECT
         <include refid="column"/>
         FROM
