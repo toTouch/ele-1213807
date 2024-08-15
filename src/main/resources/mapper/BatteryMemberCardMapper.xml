@@ -826,5 +826,16 @@
         order by tbmc.status, tbmc.sort_param desc
         limit #{offset}, #{size}
     </select>
+    <select id="selectListByIds" resultMap="BatteryMemberCardTypePageMap">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_battery_member_card tbmc
+        where del_flag = 0
+        and id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 
 </mapper>

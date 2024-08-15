@@ -261,7 +261,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
 
     @Override
-    public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
+    public List<UserBatteryMemberCard> batteryMemberCardExpire(Integer offset, Integer size,
                                                                             Long firstTime, Long lastTime) {
         return userBatteryMemberCardMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
     }

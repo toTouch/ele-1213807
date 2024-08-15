@@ -91,7 +91,7 @@ public interface UserBatteryMemberCardService {
 
     List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId);
 
-    List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime,
+    List<UserBatteryMemberCard> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime,
                                                                      Long lastTime);
 
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,

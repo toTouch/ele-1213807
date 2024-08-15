@@ -313,6 +313,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
     
+    @Resource
+    private BatteryMemberCardService batteryMemberCardService;
+    
     @Autowired
     UserBatteryDepositService userBatteryDepositService;
     
@@ -352,8 +355,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ShareActivityMemberCardService shareActivityMemberCardService;
     
-    @Autowired
-    private BatteryMemberCardService batteryMemberCardService;
     
     @Autowired
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
@@ -1576,8 +1577,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
         
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(
-                userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects
+                .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
             log.warn("ADMIN ENABLE BATTERY MEMBER CARD WARN! member card not disable userId={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100001", "用户未停卡");
         }
@@ -2062,14 +2063,29 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         redisService.set(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
         
         while (true) {
-            List<BatteryMemberCardExpiringSoonQuery> franchiseeUserInfos = userBatteryMemberCardService.batteryMemberCardExpire(offset, size, firstTime, lastTime);
-            if (!DataUtil.collectionIsUsable(franchiseeUserInfos)) {
+            
+            List<UserBatteryMemberCard> memberCards = userBatteryMemberCardService.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+            if (CollectionUtils.isEmpty(memberCards)) {
                 return;
             }
+            List<Long> memberCardIds = memberCards.stream().map(UserBatteryMemberCard::getMemberCardId).distinct().collect(Collectors.toList());
             
-            franchiseeUserInfos.parallelStream().forEach(item -> {
+            List<BatteryMemberCard> batteryMemberCards = batteryMemberCardService.queryListByIdList(memberCardIds);
+            if (CollectionUtils.isEmpty(batteryMemberCards)) {
+                return;
+            }
+            Map<Long, BatteryMemberCard> idMap = batteryMemberCards.stream().collect(Collectors.toMap(BatteryMemberCard::getId, v -> v, (k1, k2) -> k1));
+            
+            memberCards.parallelStream().forEach(item -> {
+                if (!idMap.containsKey(item.getMemberCardId())){
+                    log.warn("ElectricityMemberCardOrderServiceImpl.batteryMemberCardExpireReminder WARN! id:{}, memberCardId:{} , not exist!",item.getId(),item.getMemberCardId());
+                    return;
+                }
+    
+                BatteryMemberCard batteryMemberCard = idMap.get(item.getMemberCardId());
+                
                 date.setTime(item.getMemberCardExpireTime());
-                miniTemplateMsgBizService.sendBatteryMemberCardExpiring(item.getTenantId(), item.getUid(), item.getCardName(), simp.format(date));
+                miniTemplateMsgBizService.sendBatteryMemberCardExpiring(item.getTenantId(), item.getUid(), batteryMemberCard.getName(), simp.format(date));
             });
             offset += size;
         }
@@ -2282,24 +2298,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     //        weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
     //    }
     
-//    private void sendBatteryMemberCardExpiringTemplate(BatteryMemberCardExpiringSoonQuery batteryMemberCardExpiringSoonQuery) {
-//        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-//        appTemplateQuery.setAppId(batteryMemberCardExpiringSoonQuery.getMerchantMinProAppId());
-//        appTemplateQuery.setSecret(batteryMemberCardExpiringSoonQuery.getMerchantMinProAppSecert());
-//        appTemplateQuery.setTouser(batteryMemberCardExpiringSoonQuery.getThirdId());
-//        appTemplateQuery.setFormId(RandomUtil.randomString(20));
-//        appTemplateQuery.setTemplateId(batteryMemberCardExpiringSoonQuery.getMemberCardExpiringTemplate());
-//        Map<String, Object> data = new HashMap<>(4);
-//        appTemplateQuery.setData(data);
-//
-//        data.put("thing2", batteryMemberCardExpiringSoonQuery.getCardName());
-//        data.put("date4", batteryMemberCardExpiringSoonQuery.getMemberCardExpireTimeStr());
-//        data.put("thing3", "电池套餐即将过期，请及时续费。");
-//
-//        log.info("BATTERY MEMBER CARD EXPIRING REMINDER: param={}", batteryMemberCardExpiringSoonQuery);
-//
-//        weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
-//    }
+    //    private void sendBatteryMemberCardExpiringTemplate(BatteryMemberCardExpiringSoonQuery batteryMemberCardExpiringSoonQuery) {
+    //        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+    //        appTemplateQuery.setAppId(batteryMemberCardExpiringSoonQuery.getMerchantMinProAppId());
+    //        appTemplateQuery.setSecret(batteryMemberCardExpiringSoonQuery.getMerchantMinProAppSecert());
+    //        appTemplateQuery.setTouser(batteryMemberCardExpiringSoonQuery.getThirdId());
+    //        appTemplateQuery.setFormId(RandomUtil.randomString(20));
+    //        appTemplateQuery.setTemplateId(batteryMemberCardExpiringSoonQuery.getMemberCardExpiringTemplate());
+    //        Map<String, Object> data = new HashMap<>(4);
+    //        appTemplateQuery.setData(data);
+    //
+    //        data.put("thing2", batteryMemberCardExpiringSoonQuery.getCardName());
+    //        data.put("date4", batteryMemberCardExpiringSoonQuery.getMemberCardExpireTimeStr());
+    //        data.put("thing3", "电池套餐即将过期，请及时续费。");
+    //
+    //        log.info("BATTERY MEMBER CARD EXPIRING REMINDER: param={}", batteryMemberCardExpiringSoonQuery);
+    //
+    //        weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+    //    }
     
     private String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid + RandomUtil.randomNumbers(6);
@@ -4170,8 +4186,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderVO.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
             }
             
-            if (Objects.equals(electricityMemberCardOrderVO.getIsBindActivity(), ElectricityMemberCardOrder.BIND_ACTIVITY) && Objects.nonNull(
-                    electricityMemberCardOrderVO.getActivityId())) {
+            if (Objects.equals(electricityMemberCardOrderVO.getIsBindActivity(), ElectricityMemberCardOrder.BIND_ACTIVITY) && Objects
+                    .nonNull(electricityMemberCardOrderVO.getActivityId())) {
                 OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCardOrderVO.getActivityId());
                 if (Objects.nonNull(oldUserActivity)) {
                     

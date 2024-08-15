@@ -71,6 +71,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.tx.EleRefundOrderTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
@@ -137,6 +138,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+    
+    @Autowired
+    EleRefundOrderTxService eleRefundOrderTxService;
     
     @Autowired
     PayConfigConverter payConfigConverter;
@@ -477,14 +481,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         try {
-            RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
-                    .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
-            
-            eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, request);
-            
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderService.update(eleRefundOrderUpdate);
+            eleRefundOrderTxService.update(eleRefundOrderUpdate);
+            
+            RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                    .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+            eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, request);
+            
+            
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
@@ -1326,15 +1331,17 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 调起退款
             try {
-                RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
-                        .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
-                
-                eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, null);
                 // 提交成功
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-                eleRefundOrderService.insert(eleRefundOrder);
+                eleRefundOrderTxService.insert(eleRefundOrder);
+                
+                RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                        .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
+                
+                eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, null);
+                
                 return R.ok();
             } catch (Exception e) {
                 log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);

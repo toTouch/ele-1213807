@@ -401,6 +401,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return batteryMemberCardMapper.listByIdList(query);
     }
     
+    @Slave
+    @Override
+    public List<BatteryMemberCard> queryListByIdList(List<Long> ids) {
+        return batteryMemberCardMapper.selectListByIds(ids);
+    }
+    
     
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)

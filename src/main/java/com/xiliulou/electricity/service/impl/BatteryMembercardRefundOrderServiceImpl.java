@@ -71,6 +71,7 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.tx.BatteryMembercardRefundOrderTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderDetailVO;
@@ -135,6 +136,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Resource
+    private BatteryMembercardRefundOrderTxService batteryMembercardRefundOrderTxService;
     
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
@@ -685,14 +689,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         try {
-            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
+            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
+    
+            batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
+            
             applicationContext.getBean(BatteryMembercardRefundOrderService.class).handleRefundOrderV2(batteryMembercardRefundOrderInsert, basePayConfig, request);
             
-            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-            applicationContext.getBean(BatteryMembercardRefundOrderService.class).update(batteryMembercardRefundOrderUpdate);
+            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
             
-            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
-            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
@@ -825,14 +829,10 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         try {
+            batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
+            
             batteryMembercardRefundOrder.setRefundAmount(refundAmount);
             this.handleRefundOrderV2(batteryMembercardRefundOrder, basePayConfig, request);
-            
-            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-            this.update(batteryMembercardRefundOrderUpdate);
-            
-            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
-            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
