@@ -122,7 +122,6 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         
-        
         // 确认订单ack
         senOrderSuccessMsg(electricityCabinet, cabinetOrder, openFullCellRsp);
         
@@ -133,17 +132,20 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         }
         
         if (openFullCellRsp.getIsException()) {
+            log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
             //错误信息保存到缓存里，方便前端显示
             redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
-            log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
             
-            // 修改取电的状态
-            ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
-            newElectricityCabinetOrder.setId(cabinetOrder.getId());
-            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-            newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
-            cabinetOrderService.update(newElectricityCabinetOrder);
-            return;
+            // 设备正在使用中，依然走二次扫码，其他情况不让走二次扫码,所以修改订单阶段状态
+            if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
+                // 修改取电的状态
+                ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+                newElectricityCabinetOrder.setId(cabinetOrder.getId());
+                newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+                newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
+                cabinetOrderService.update(newElectricityCabinetOrder);
+                return;
+            }
         }
         
         if (!Objects.equals(openFullCellRsp.getOrderSeq(), ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS)) {
@@ -487,7 +489,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         if (!openFullCellRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             return;
         }
-        userBatteryMemberCardService.handleExpireMemberCard(openFullCellRsp.getSessionId(),electricityCabinetOrder);
+        userBatteryMemberCardService.handleExpireMemberCard(openFullCellRsp.getSessionId(), electricityCabinetOrder);
     }
     
     

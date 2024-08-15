@@ -96,18 +96,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             return;
         }
         
-        // 自主开仓后修改订单阶段状态
-        ElectricityCabinetOrder updateCabinetOrder = new ElectricityCabinetOrder();
-        updateCabinetOrder.setId(electricityCabinetOrder.getId());
-        updateCabinetOrder.setUpdateTime(System.currentTimeMillis());
-        if (eleSelfOPenCellOrderVo.result){
-            updateCabinetOrder.setOrderStatus(ElectricityCabinetOrder.SELF_OPEN_CELL_SUCCESS);
-        }else {
-            updateCabinetOrder.setOrderStatus(ElectricityCabinetOrder.SELF_OPEN_CELL_FAIL);
-        }
-        electricityCabinetOrderService.update(updateCabinetOrder);
-        
-        
         // 开门电仓判断, 自主新仓开新仓门需要更新订单状态
         // 上报的仓门==订单新仓门 && 订单旧电池存在 & 新电池不存在 && 上报开门成功
         if (Objects.equals(electricityCabinetOrder.getNewCellNo(), eleSelfOPenCellOrderVo.getCellNo()) && Objects.nonNull(electricityCabinetOrder.getOldElectricityBatterySn())

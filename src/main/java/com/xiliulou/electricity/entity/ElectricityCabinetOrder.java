@@ -192,15 +192,6 @@ public class ElectricityCabinetOrder {
      */
     public static final String COMPLETE_BATTERY_TAKE_TIMEOUT = "COMPLETE_BATTERY_TAKE_TIMEOUT";
     
-    /**
-     * 自主开仓成功
-     */
-    public static final String SELF_OPEN_CELL_SUCCESS = "SELF_OPEN_CELL_SUCCESS";
-    
-    /**
-     * 自主开仓失败
-     */
-    public static final String SELF_OPEN_CELL_FAIL = "SELF_OPEN_CELL_FAIL";
 
 
     //订单取消 11.0
