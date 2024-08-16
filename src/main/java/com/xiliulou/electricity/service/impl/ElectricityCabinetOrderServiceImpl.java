@@ -952,8 +952,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
             electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
             
-            String threePeriodsSuccessRateVersion = "2.1.22";
-            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
                 ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
                         .orderId(orderSelfOpenCellQuery.getOrderId()).tenantId(electricityCabinet.getTenantId()).msg("旧电池检测失败，自助开仓")
                         .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
@@ -1543,8 +1542,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     private String backSelfOpen(Integer cell, String userBindingBatterySn, ElectricityCabinetOrder order, ElectricityCabinet cabinet, String msg) {
-        String threePeriodsSuccessRateVersion = "2.1.22";
-        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
                     .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
@@ -2037,8 +2035,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        String threePeriodsSuccessRateVersion = "2.1.22";
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) >= 0) {
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
             commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
@@ -2181,8 +2178,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        String threePeriodsSuccessRateVersion = "2.1.22";
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) >= 0) {
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
             commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
@@ -2755,8 +2751,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         try {
             // 用户自助开仓
-            String threePeriodsSuccessRateVersion = "2.1.22";
-            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
                 ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
                         .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                         .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
@@ -2967,8 +2962,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        String threePeriodsSuccessRateVersion = "2.1.22";
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) >= 0) {
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
             commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
@@ -3083,8 +3077,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        String threePeriodsSuccessRateVersion = "2.1.22";
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), threePeriodsSuccessRateVersion) >= 0) {
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
             commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
@@ -3153,8 +3146,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName,
             ElectricityCabinetBox cabinetBox) {
         
-        String threePeriodsSuccessRateVersion = "2.1.22";
-        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), threePeriodsSuccessRateVersion) < 0) {
+        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
                     .orderId(cabinetOrder.getOrderId()).tenantId(cabinet.getTenantId()).msg("电池检测成功")
                     .seq(ElectricityCabinetOrderOperHistory.OPEN_FULL_CELL_BATTERY).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
