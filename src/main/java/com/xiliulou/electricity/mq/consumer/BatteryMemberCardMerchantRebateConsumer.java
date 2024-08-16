@@ -269,12 +269,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecord.setCreateTime(System.currentTimeMillis());
         rebateRecord.setUpdateTime(System.currentTimeMillis());
         
-        //若渠道员与商户的返利差额都为0  则不生成返利差额记录
-        if (BigDecimal.ZERO.compareTo(channelerRebate) == 0 && BigDecimal.ZERO.compareTo(merchantRebate) == 0) {
-            log.info("REBATE CONSUMER WARN! Rebate is zero,uid={}", batteryMemberCardMerchantRebate.getUid());
-            return;
-        }
-        
         //商户禁用后，不给商户返利；渠道员禁用，不返利
         if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
             rebateRecord.setMerchantRebate(BigDecimal.ZERO);
@@ -282,6 +276,12 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         
         if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK) || Objects.equals(channel.getDelFlag(), User.DEL_DEL)) {
             rebateRecord.setChannelerRebate(BigDecimal.ZERO);
+        }
+        
+        //若渠道员与商户的返利差额都为0  则不生成返利差额记录
+        if (BigDecimal.ZERO.compareTo(rebateRecord.getChannelerRebate()) == 0 && BigDecimal.ZERO.compareTo(rebateRecord.getMerchantRebate()) == 0) {
+            log.info("MERCHANT MODIFY CONSUMER INFO!balance is zero,uid={}", rebateRecord.getUid());
+            return;
         }
         
         rebateRecordService.insert(rebateRecord);
