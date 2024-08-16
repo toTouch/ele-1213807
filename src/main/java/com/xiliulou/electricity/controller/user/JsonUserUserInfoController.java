@@ -8,7 +8,6 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -71,6 +70,14 @@ public class JsonUserUserInfoController extends BaseController {
     @GetMapping("/user/checkUserThirdId")
     public R checkUserThirdId(@RequestParam(value = "jsCode", required = true) String jsCode) {
         return R.ok(userOauthBindService.checkOpenIdByJsCode(jsCode));
+    }
+    
+    /**
+     * 小程序首页-账号管理
+     */
+    @GetMapping("/user/accountInfo")
+    public R userAccountInfo() {
+        return R.ok(userInfoService.selectAccountInfo());
     }
     
 }

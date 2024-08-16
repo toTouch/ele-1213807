@@ -148,6 +148,7 @@ import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import com.xiliulou.electricity.vo.UserTurnoverVo;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
+import com.xiliulou.electricity.vo.userinfo.UserAccountInfoVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalInfoExcelVO;
 import com.xiliulou.electricity.vo.userinfo.UserCarRentalPackageVO;
 import com.xiliulou.electricity.vo.userinfo.UserEleInfoVO;
@@ -179,7 +180,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -2639,5 +2639,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     public List<UserInfo> queryListUserInfoByPhone(String phone) {
         return baseMapper.selectListUserInfoByPhone(phone);
+    }
+    
+    @Override
+    public UserAccountInfoVO selectAccountInfo() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            log.error("selectAccountInfo error! tokenUser is null");
+            return null;
+        }
+        
+        UserInfo userInfo = this.queryByUidFromCache(tokenUser.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("selectAccountInfo error! userInfo is null");
+            return null;
+        }
+        
+        return UserAccountInfoVO.builder().uid(userInfo.getUid()).userName(userInfo.getName()).phone(userInfo.getPhone()).idNumber(userInfo.getIdNumber())
+                .authStatus(userInfo.getAuthStatus()).build();
     }
 }
