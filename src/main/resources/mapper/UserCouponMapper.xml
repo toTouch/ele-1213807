@@ -46,7 +46,7 @@
         select
         tuc.id as id, tuc.name as name,tuc.verified_uid as  verifiedUid, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
-        tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
+        tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tc.franchisee_id as franchiseeId,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
@@ -97,14 +97,17 @@
             <if test="query.tenantId != null ">
                 and tuc.tenant_id = #{query.tenantId}
             </if>
+            <if test="query.franchiseeId != null ">
+                and tc.franchisee_id = #{query.franchiseeId}
+            </if>
             <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and tc.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.storeIds != null and query.storeIds.size()>0">
-                and tui.store_id in
+                and tc.store_id in
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -167,14 +170,17 @@
             <if test="query.tenantId != null ">
                 and tuc.tenant_id = #{query.tenantId}
             </if>
+            <if test="query.franchiseeId != null ">
+                and tc.franchisee_id = #{query.franchiseeId}
+            </if>
             <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
-                and tui.franchisee_id in
+                and tc.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.storeIds != null and query.storeIds.size()>0">
-                and tui.store_id in
+                and tc.store_id in
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -243,11 +249,11 @@
     
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
-        discount_type, tenant_id,name,verified_uid)
+        discount_type, tenant_id, name, verified_uid, franchisee_id)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.uid}, #{item.phone}, #{item.couponId}, #{item.deadline}, #{item.createTime}, #{item.updateTime},
-            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid})
+            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid}, #{item.franchiseeId})
         </foreach>
 
     </insert>

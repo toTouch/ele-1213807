@@ -179,6 +179,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -2634,4 +2635,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Override
+    @Slave
+    public List<UserInfo> queryListUserInfoByPhone(String phone) {
+        return baseMapper.selectListUserInfoByPhone(phone);
+    }
 }

@@ -3108,7 +3108,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Integer packageType = RentalPackageTypeEnum.CAR.getCode().equals(buyPackageEntity.getType()) ? PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()
                     : PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode();
             Triple<BigDecimal, List<Long>, Boolean> couponTriple = carRentalPackageBizService.calculatePaymentAmount(buyPackageEntity.getRent(), buyOptModel.getUserCouponIds(),
-                    uid, buyRentalPackageId, packageType);
+                    uid, buyRentalPackageId, packageType, buyPackageEntity.getFranchiseeId());
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
             log.info("buyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);

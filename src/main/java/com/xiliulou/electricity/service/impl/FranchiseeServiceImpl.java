@@ -12,13 +12,52 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.entity.FranchiseeMoveRecord;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.Region;
+import com.xiliulou.electricity.entity.Role;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserDataScope;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.CityService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeAmountService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeMoveRecordService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceInstructionService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.RegionService;
+import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -36,7 +75,13 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.StringConstant.SPACE;
@@ -115,7 +160,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
-
+    
+    @Autowired
+    private MerchantLevelService merchantLevelService;
+    
+    @Autowired
+    private MerchantAttrService merchantAttrService;
+    
+    
+    
     @Slave
     @Override
     public List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery) {
@@ -209,6 +262,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         userDataScope.setUid(franchisee.getUid());
         userDataScope.setDataId(franchisee.getId());
         userDataScopeService.insert(userDataScope);
+    
+        //初始化商户等级
+        merchantLevelService.initMerchantLevel(franchisee.getId(), tenantId);
+        //初始化商户升级条件
+        merchantAttrService.initMerchantAttr(franchisee.getId(), tenantId);
 
         if (insert > 0) {
             return R.ok();
@@ -289,7 +347,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         //查询加盟商是否绑定的有套餐
         Integer checkMemberCardResult = batteryMemberCardService.isMemberCardBindFranchinsee(id, TenantContextHolder.getTenantId());
-//        Integer checkMemberCardResult = electricityMemberCardService.isMemberCardBindFranchinsee(id, TenantContextHolder.getTenantId());
         if (!Objects.isNull(checkMemberCardResult)) {
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}", id);
             return R.fail(id, "100101", "删除失败，该加盟商已绑定套餐！");
@@ -316,16 +373,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return R.fail(id, "100103", "删除失败，该加盟商已绑定电池！");
         }
 
-        //查询加盟商是否绑定门店，绑定门店则不能删除
-//        Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
-
-        //查询加盟商是否绑定普通用户
-//        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
-
-//        if (count1 > 0 || count2 > 0) {
-//            return R.fail("加盟商已绑定门店或用户");
-//        }
-
         //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
@@ -337,7 +384,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
             //删除加盟商账号
             franchiseeAmountService.deleteByFranchiseeId(id);
-
+            
+            //删除商户等级
+            merchantLevelService.deleteByFranchiseeId(id);
+            //删除加盟商下商户配置
+            merchantAttrService.deleteByFranchiseeId(id);
             return null;
         });
 

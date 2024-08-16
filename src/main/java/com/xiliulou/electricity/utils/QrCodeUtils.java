@@ -14,7 +14,8 @@ public class QrCodeUtils {
     public static void main(String[] args) {
         String code = 45 + ":" + 152161 + ":" + 2;
         System.out.println(codeEnCoder(code));
-        System.out.println(codeDeCoder("aTJWZWErKzZwMmFXNFhoYjE4MHQxUT09"));
+        // https://exchange.kteshd.com/ele?pd=jXbgHM&code=dzJrbXFkSjJXU21HV3lIQzJtc1ZGdz09
+        System.out.println(codeDeCoder("dzJrbXFkSjJXU21HV3lIQzJtc1ZGdz09"));
     }
     
     /**

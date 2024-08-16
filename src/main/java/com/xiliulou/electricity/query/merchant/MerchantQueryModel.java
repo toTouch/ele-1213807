@@ -34,4 +34,7 @@ public class MerchantQueryModel {
     private Integer tenantId;
     
     private String phone;
+    
+    private List<Long> franchiseeIdList;
+    
 }

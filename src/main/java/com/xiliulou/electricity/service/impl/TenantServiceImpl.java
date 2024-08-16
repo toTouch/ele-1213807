@@ -104,14 +104,7 @@ public class TenantServiceImpl implements TenantService {
     
     @Resource
     private TenantNoteService noteService;
-    
-    @Autowired
-    private MerchantLevelService merchantLevelService;
-    
-    @Autowired
-    private MerchantAttrService merchantAttrService;
 
-    
     @Resource
     private AssetWarehouseMapper assetWarehouseMapper;
     
@@ -276,13 +269,6 @@ public class TenantServiceImpl implements TenantService {
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         
-        
-        initOtherExecutorService.execute(()->{
-            //初始化商户等级
-            merchantLevelService.initMerchantLevel(tenant.getId());
-            //初始化商户升级条件
-            merchantAttrService.initMerchantAttr(tenant.getId());
-        });
         return R.ok();
     }
 

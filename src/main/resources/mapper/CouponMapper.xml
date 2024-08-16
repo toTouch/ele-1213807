@@ -7,6 +7,14 @@
         id, name from t_coupon
         <where>
             del_flag=0
+            <choose>
+                <when test="franchiseeId != null">
+                    and (franchisee_id = #{franchiseeId} or franchisee_id is null )
+                </when>
+                <otherwise>
+                    and franchisee_id is null
+                </otherwise>
+            </choose>
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
@@ -24,16 +32,14 @@
             </if>
         </where>
         order by id desc
-        <if test="offset != null">
-            limit #{offset}, #{size}
-        </if>
+        limit #{offset}, #{size}
     </select>
     
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.Coupon">
         select
         id, name, status, apply_type, discount_type, amount, discount, count, days, description, superposition,
-        uid, user_name, create_time, update_time, del_flag,franchisee_id, type, specific_packages
+        uid, user_name, create_time, update_time, del_flag,franchisee_id, type, specific_packages, franchisee_id
         from t_coupon
         <where>
             del_flag=0
@@ -42,6 +48,9 @@
             </if>
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.franchiseeIds!=null">
                 and franchisee_id in
@@ -81,6 +90,9 @@
             </if>
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id = #{query.franchiseeId}
             </if>
             <if test="query.franchiseeIds!=null">
                 and franchisee_id in

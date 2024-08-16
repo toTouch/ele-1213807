@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.MerchantLevelRequest;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -15,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
@@ -36,17 +36,17 @@ public class JsonMerchantLevelController extends BaseController {
      * 获取商户等级列表
      */
     @GetMapping("/admin/merchantLevel/list")
-    public R getMerchantLevel() {
+    public R getMerchantLevel(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if(Objects.isNull(franchiseeId)){
             return R.ok(Collections.emptyList());
         }
         
-        return R.ok(merchantLevelService.list(TenantContextHolder.getTenantId()));
+        return R.ok(merchantLevelService.list(TenantContextHolder.getTenantId(), franchiseeId));
     }
     
     /**
@@ -58,10 +58,6 @@ public class JsonMerchantLevelController extends BaseController {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
         }
         
         return returnTripleResult(merchantLevelService.modify(request));

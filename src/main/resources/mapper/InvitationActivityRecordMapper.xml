@@ -68,6 +68,7 @@
         iar.money,
         iar.create_time,
         iar.update_time,
+        iar.franchisee_id,
         tui.name as userName,
         tui.phone as phone
         from t_invitation_activity_record iar
@@ -95,14 +96,17 @@
             <if test="endTime != null">
                 and iar.create_time &lt;=#{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and iar.franchisee_id = #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null">
-                and tui.franchisee_id in
+                and iar.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tui.store_id in
+                and iar.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
@@ -139,14 +143,17 @@
             <if test="endTime != null">
                 and iar.create_time &lt;=#{endTime}
             </if>
+            <if test="franchiseeId != null">
+                and iar.franchisee_id = #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null">
-                and tui.franchisee_id in
+                and iar.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null">
-                and tui.store_id in
+                and iar.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
@@ -207,15 +214,15 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id)
-        values (#{activityId}, #{code}, #{uid}, #{shareCount}, #{invitationCount}, #{status}, #{money}, #{createTime}, #{updateTime}, #{tenantId})
+        insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id, franchisee_id)
+        values (#{activityId}, #{code}, #{uid}, #{shareCount}, #{invitationCount}, #{status}, #{money}, #{createTime}, #{updateTime}, #{tenantId}, #{franchiseeId})
     </insert>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id) values
+        insert into t_invitation_activity_record(activity_id, code, uid, share_count, invitation_count, status, money, create_time, update_time, tenant_id, franchisee_id) values
         <foreach collection="invitationActivityRecordList" index="index" separator="," item="item">
             (#{item.activityId}, #{item.code}, #{item.uid}, #{item.shareCount}, #{item.invitationCount},
-             #{item.status},#{item.money}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+             #{item.status},#{item.money}, #{item.createTime}, #{item.updateTime}, #{item.tenantId}, #{item.franchiseeId})
         </foreach>
     </insert>
     

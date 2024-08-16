@@ -58,7 +58,11 @@ public class ShareActivityRecord {
     * 租户id
     */
     private Integer tenantId;
-
+    
+    /**
+     * 加盟商Id
+     */
+    private Long franchiseeId;
 
     //初始化
     public static Integer STATUS_INIT = 1;

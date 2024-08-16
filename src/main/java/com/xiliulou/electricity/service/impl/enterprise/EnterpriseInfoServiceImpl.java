@@ -1001,6 +1001,12 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, "100315", "企业配置不存在");
         }
         
+        // 检测加盟商的绑定的id和企业的加盟商的id是否一致
+        if (ObjectUtils.isNotEmpty(enterpriseCloudBeanRechargeQuery.getBindFranchiseeIdList()) && !enterpriseCloudBeanRechargeQuery.getBindFranchiseeIdList().contains(enterpriseInfo.getFranchiseeId())) {
+            log.info("recharge for admin cloud bean info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", enterpriseCloudBeanRechargeQuery.getId(), enterpriseInfo.getFranchiseeId(), enterpriseCloudBeanRechargeQuery.getBindFranchiseeIdList());
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
+        
         EnterpriseInfo enterpriseInfoUpdate = new EnterpriseInfo();
         enterpriseInfoUpdate.setId(enterpriseInfo.getId());
         if (Objects.equals(EnterpriseCloudBeanOrder.TYPE_ADMIN_DEDUCT, enterpriseCloudBeanRechargeQuery.getType())) {

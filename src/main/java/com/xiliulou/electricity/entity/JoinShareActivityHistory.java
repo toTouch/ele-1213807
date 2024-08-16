@@ -67,7 +67,11 @@ public class JoinShareActivityHistory {
     private Integer tenantId;
     
     private Integer delFlag;
-
+    
+    /**
+     * 加盟商Id
+     */
+    private Long franchiseeId;
 
     //已参与
     public static Integer STATUS_INIT = 1;

@@ -4,7 +4,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.request.merchant.RebateConfigRequest;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -20,12 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.Objects;
 
 /**
  * 返利配置
- *
  */
 @Slf4j
 @RestController
@@ -40,17 +37,14 @@ public class JsonMerchantRebateConfigController extends BaseController {
      * @return
      */
     @GetMapping("/admin/rebateConfig/list")
-    public R getRebateConfigList(@RequestParam(value = "level", required = false) String level, @RequestParam(value = "mid", required = false) Long mid) {
+    public R getRebateConfigList(@RequestParam("franchiseeId") Long franchiseeId, @RequestParam(value = "level", required = false) String level,
+            @RequestParam(value = "mid", required = false) Long mid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok(Collections.emptyList());
-        }
-        
-        RebateConfigRequest rebateConfigRequest = RebateConfigRequest.builder().mid(mid).level(level).delFlag(CommonConstant.DEL_N).build();
+        RebateConfigRequest rebateConfigRequest = RebateConfigRequest.builder().mid(mid).level(level).delFlag(CommonConstant.DEL_N).franchiseeId(franchiseeId).build();
         
         return R.ok(rebateConfigService.listByPage(rebateConfigRequest));
     }
@@ -68,10 +62,6 @@ public class JsonMerchantRebateConfigController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
-        }
-        
         return returnTripleResult(rebateConfigService.save(request));
     }
     
@@ -86,10 +76,6 @@ public class JsonMerchantRebateConfigController extends BaseController {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.ok();
         }
         
         return returnTripleResult(rebateConfigService.modify(request));
