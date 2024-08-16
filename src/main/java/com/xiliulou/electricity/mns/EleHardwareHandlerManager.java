@@ -299,7 +299,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         
         Map params = null;
         Object data = query.getData();
-        if (Objects.nonNull(data)) {
+        if (Objects.nonNull(data) && data instanceof Map) {
             params = (Map) data;
             params.put("type", query.getCommand());
         }
