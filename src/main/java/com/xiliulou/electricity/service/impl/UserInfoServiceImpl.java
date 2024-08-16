@@ -2641,6 +2641,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return baseMapper.selectListUserInfoByPhone(phone);
     }
     
+    @Slave
     @Override
     public UserAccountInfoVO selectAccountInfo() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
@@ -2651,7 +2652,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         UserInfo userInfo = this.queryByUidFromCache(tokenUser.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("selectAccountInfo error! userInfo is null");
+            log.warn("selectAccountInfo warn! userInfo is null");
             return null;
         }
         
