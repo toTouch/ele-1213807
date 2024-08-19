@@ -138,7 +138,9 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 if (!r.isSuccess()) {
                     return R.fail(r.getErrCode(), r.getErrMsg());
                 } else {
-                    dataList.add((AssetBatchExitWarehouseBO) r.getData());
+                    if (Objects.nonNull(r.getData())) {
+                        dataList.add((AssetBatchExitWarehouseBO) r.getData());
+                    }
                 }
             }
             
@@ -305,6 +307,11 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             snList = exitWarehouseCarList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
         }
         
+        // 可退资产未空，则返回
+        if (CollectionUtils.isEmpty(idList)) {
+            return R.ok();
+        }
+        
         Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
         Long nowTime = System.currentTimeMillis();
         
@@ -340,17 +347,12 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
     private R judgeInventoryStatus(Long franchiseeId, Integer type) {
         // 查询盘点状态
         Integer inventoryStatus = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, type);
-        if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
-            if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
-                return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
-            }
-        } else if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
-            // 电池退库
-            if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+        if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+            if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
                 return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
-            }
-        } else {
-            if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+            } else if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
+                return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
+            } else {
                 return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
             }
         }
