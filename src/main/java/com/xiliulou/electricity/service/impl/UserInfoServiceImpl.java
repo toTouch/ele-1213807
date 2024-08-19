@@ -2658,6 +2658,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         return UserAccountInfoVO.builder().uid(userInfo.getUid()).userName(userInfo.getName()).phone(userInfo.getPhone())
-                .idNumber(DesensitizationUtil.idCard(userInfo.getIdNumber())).authStatus(userInfo.getAuthStatus()).build();
+                .idNumber(DesensitizationUtil.idCard(userInfo.getIdNumber(), 6, 4)).authStatus(userInfo.getAuthStatus()).build();
     }
+    
 }
