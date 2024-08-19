@@ -47,7 +47,7 @@ public class JsonAdminUserActiveInfoController {
     public R queryList(@RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "day", required = false) Integer day,
             @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "payCount", required = false) Integer payCount,
-            @RequestParam("offset") Long offset, @RequestParam("size") Long size, @RequestParam("isBoundBattery") Integer isBoundBattery) {
+            @RequestParam("offset") Long offset, @RequestParam("size") Long size, @RequestParam(value = "isBoundBattery", required = false) Integer isBoundBattery) {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
@@ -94,7 +94,7 @@ public class JsonAdminUserActiveInfoController {
     public R queryCount(@RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "day", required = false) Integer day,
             @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "payCount", required = false) Integer payCount,
-            @RequestParam("isBoundBattery") Integer isBoundBattery) {
+            @RequestParam(value = "isBoundBattery", required = false) Integer isBoundBattery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
