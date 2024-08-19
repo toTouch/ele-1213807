@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * (UserActiveInfo)表服务实现类
@@ -189,7 +190,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
             return R.ok(new ArrayList<>());
         }
         
-        userActiveInfoList.parallelStream().forEach(item -> {
+        List<Object> list = userActiveInfoList.parallelStream().peek(item -> {
             EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(item.getUid());
             item.setBatteryServiceFee(Objects.nonNull(eleBatteryServiceFeeVO) ? eleBatteryServiceFeeVO.getUserBatteryServiceFee() : BigDecimal.ZERO);
             
@@ -202,8 +203,10 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
             if (Objects.nonNull(batteryInfoDto)) {
                 item.setSoc(batteryInfoDto.getSoc());
             }
-        });
-        return R.ok(userActiveInfoList);
+            
+        }).collect(Collectors.toList());
+        
+        return R.ok(list);
     }
     
     @Override
