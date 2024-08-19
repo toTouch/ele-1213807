@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -24,6 +23,7 @@ import com.xiliulou.electricity.vo.UserActiveInfoVo;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * (UserActiveInfo)表服务实现类
@@ -191,26 +190,25 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
             return R.ok(Collections.EMPTY_LIST);
         }
         
-        List<UserActiveInfoVo> list = userActiveInfoList.parallelStream().map(item -> {
-            UserActiveInfoVo vo = new UserActiveInfoVo();
-            BeanUtil.copyProperties(item, vo);
-            
+        userActiveInfoList.forEach(item -> {
             EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(item.getUid());
-            vo.setBatteryServiceFee(Objects.nonNull(eleBatteryServiceFeeVO) ? eleBatteryServiceFeeVO.getUserBatteryServiceFee() : BigDecimal.ZERO);
+            item.setBatteryServiceFee(Objects.nonNull(eleBatteryServiceFeeVO) ? eleBatteryServiceFeeVO.getUserBatteryServiceFee() : BigDecimal.ZERO);
             
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            vo.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
-            BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
-            batteryInfoQuery.setSn(item.getBatterySn());
-            BatteryInfoDto batteryInfoDto = electricityBatteryDataService.callBatteryServiceQueryBatteryInfo(batteryInfoQuery, query.getTenant());
-            if (Objects.nonNull(batteryInfoDto)) {
-                vo.setSoc(batteryInfoDto.getSoc());
+            String batterySn = item.getBatterySn();
+            if (StringUtils.isNotBlank(batterySn)) {
+                BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
+                batteryInfoQuery.setSn(batterySn);
+                BatteryInfoDto batteryInfoDto = electricityBatteryDataService.callBatteryServiceQueryBatteryInfo(batteryInfoQuery, query.getTenant());
+                if (Objects.nonNull(batteryInfoDto)) {
+                    item.setSoc(batteryInfoDto.getSoc());
+                }
             }
-            return vo;
-        }).collect(Collectors.toList());
+        });
         
-        return R.ok(list);
+        return R.ok(userActiveInfoList);
     }
     
     @Override
