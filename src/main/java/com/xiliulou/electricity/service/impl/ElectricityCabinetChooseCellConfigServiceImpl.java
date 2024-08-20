@@ -134,7 +134,8 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         }
         
         log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}, usableBoxes is {}",
-                electricityConfig.getIsComfortExchange(), electricityConfig.getPriorityExchangeNorm(),
+                Objects.nonNull(electricityConfig.getIsComfortExchange()) ? electricityConfig.getIsComfortExchange() : "null",
+                Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) ? electricityConfig.getPriorityExchangeNorm() : "null",
                 JsonUtil.toJson(usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList())));
         
         // 是否可以满足优先换电标准的电池列表
