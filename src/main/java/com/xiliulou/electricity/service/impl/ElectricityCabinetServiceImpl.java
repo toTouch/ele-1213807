@@ -1498,7 +1498,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public boolean deviceIsOnline(String productKey, String deviceName, Integer pattern) {
         if (Objects.equals(pattern, EleCabinetConstant.TCP_PATTERN)) {
-            return deviceIsOnlineForIot(productKey, deviceName);
+            return deviceIsOnlineForTcp(productKey, deviceName);
         }
         
         return deviceIsOnlineForIot(productKey, deviceName);
