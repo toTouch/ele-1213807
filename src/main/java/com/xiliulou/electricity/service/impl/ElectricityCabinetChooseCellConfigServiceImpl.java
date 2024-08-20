@@ -128,7 +128,7 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
         
         // 是否可以满足优先换电标准的电池列表
         List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
-                .filter(e -> Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(e.getPower(), electricityConfig.getPriorityExchangeNorm()) >= 0)
+                .filter(e -> Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(e.getPower(), electricityConfig.getPriorityExchangeNorm()) > 0)
                 .collect(Collectors.toList());
         
         if (CollUtil.isEmpty(comfortExchangeBox)) {
