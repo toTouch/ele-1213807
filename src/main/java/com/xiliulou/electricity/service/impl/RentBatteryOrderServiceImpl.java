@@ -1489,7 +1489,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
                     .filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getPower())
-                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()
+                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower, Comparator.reverseOrder())
                             .thenComparing(item -> item.getBatteryType().substring(item.getBatteryType().length() - 2), Comparator.reverseOrder())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableBoxes)) {
                 log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!usableBoxes is empty,uid={}", userInfo.getUid());
