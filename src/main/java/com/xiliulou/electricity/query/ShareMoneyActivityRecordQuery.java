@@ -28,5 +28,7 @@ public class ShareMoneyActivityRecordQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+    
+    private Long franchiseeId;
 
 }

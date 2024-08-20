@@ -47,7 +47,7 @@ public interface ShareMoneyActivityRecordService {
 	ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId);
 
 
-	void addCountByUid(Long uid, BigDecimal money);
+	void addCountByUid(Long uid, BigDecimal money, Integer activityId);
 
 
 	R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);

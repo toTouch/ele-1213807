@@ -240,7 +240,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     public Integer removeMerchantEmployee(Long id) {
         MerchantEmployeeVO merchantEmployeeVO = merchantEmployeeMapper.selectById(id);
         if (Objects.isNull(merchantEmployeeVO)) {
-            log.error("not found merchant employee by id, id = {}", id);
+            log.warn("not found merchant employee by id, id = {}", id);
             throw new BizException("120004", "商户员工不存在");
         }
         merchantEmployeeMapper.removeById(id, System.currentTimeMillis());
@@ -366,7 +366,7 @@ public class MerchantEmployeeServiceImpl implements MerchantEmployeeService {
     public List<MerchantEmployeeQrCodeVO> selectMerchantEmployeeQrCodes(MerchantEmployeeRequest merchantEmployeeRequest) {
         Merchant merchant = merchantService.queryByUid(merchantEmployeeRequest.getMerchantUid());
         if (Objects.isNull(merchant)) {
-            log.error("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
+            log.warn("not found merchant by uid, uid = {}", merchantEmployeeRequest.getMerchantUid());
             return Collections.EMPTY_LIST;
         }
         

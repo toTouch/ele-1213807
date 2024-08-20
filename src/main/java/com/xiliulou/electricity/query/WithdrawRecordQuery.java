@@ -35,6 +35,8 @@ public class WithdrawRecordQuery {
 	private Integer tenantId;
 
 	private List<Long> franchiseeIds;
+	
+	private Long franchiseeId;
 
 	private List<Long> storeIds;
 }

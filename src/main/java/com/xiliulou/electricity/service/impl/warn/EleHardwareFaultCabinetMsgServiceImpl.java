@@ -118,13 +118,13 @@ public class EleHardwareFaultCabinetMsgServiceImpl implements EleHardwareFaultCa
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
-        
+        calendar.set(Calendar.MILLISECOND, 999);
         long endTime = calendar.getTimeInMillis();
         
         calendar.set(Calendar.HOUR_OF_DAY, 12);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
-        
+    
         long time = calendar.getTimeInMillis();
         
         request.setStartTime(startTime);

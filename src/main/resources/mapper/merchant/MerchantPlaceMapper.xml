@@ -116,6 +116,12 @@
             <if test="franchiseeId != null">
                 and t.franchisee_id = #{franchiseeId}
             </if>
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and t.franchisee_id in
+                <foreach collection="franchiseeIdList" separator="," open="(" close=")" item="franchiseeId">
+                    #{franchiseeId}
+                </foreach>
+            </if>
             <if test="idList != null and idList.size() > 0">
                 and t.id in
                 <foreach collection="idList" separator="," open="(" close=")" item="id">

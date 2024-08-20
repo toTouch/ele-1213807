@@ -179,6 +179,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -371,6 +372,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
     /**
      * 分页查询
      *
@@ -595,14 +597,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         List<String> ordersOn = userCarRentalPackageDOList.stream().filter(f -> f.getCarDepositStatus() == 1 || f.getCarBatteryDepositStatus() == 0)
                 .map(UserCarRentalPackageDO::getDepositOrderNo).filter(StrUtil::isNotBlank).collect(Collectors.toList());
-        //t_car_rental_package_deposit_pay
+        // t_car_rental_package_deposit_pay
         Map<String, Integer> orderMapPayType = carRentalPackageDepositPayService.selectPayTypeByOrders(ordersOn);
-        //处理租车/车店一体押金状态 和 当前套餐冻结状态
+        // 处理租车/车店一体押金状态 和 当前套餐冻结状态
         List<UserCarRentalPackageVO> userCarRentalPackageVOList = Lists.newArrayList();
         for (UserCarRentalPackageDO userCarRentalPackageDO : userCarRentalPackageDOList) {
             UserCarRentalPackageVO userCarRentalPackageVO = new UserCarRentalPackageVO();
             BeanUtils.copyProperties(userCarRentalPackageDO, userCarRentalPackageVO);
-            //如果用户尚未购买任何套餐则显示未缴纳
+            // 如果用户尚未购买任何套餐则显示未缴纳
             userCarRentalPackageVO.setDepositStatus(UNPAID);
             if (RentalPackageTypeEnum.CAR.getCode().equals(userCarRentalPackageDO.getPackageType())) {
                 userCarRentalPackageVO.setDepositStatus(userCarRentalPackageDO.getCarDepositStatus());
@@ -623,21 +625,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarRentalPackageVOList.add(userCarRentalPackageVO);
         }
         
-        //获取用户电池相关信息
+        // 获取用户电池相关信息
         CompletableFuture<Void> queryUserBatteryInfo = CompletableFuture.runAsync(() -> {
             userCarRentalPackageVOList.forEach(item -> {
                 
-                //获取用户电池信息
+                // 获取用户电池信息
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
                 item.setBatterySn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
-                //item.setBusinessStatus(Objects.isNull(electricityBattery) ? null : electricityBattery.getBusinessStatus());
+                // item.setBusinessStatus(Objects.isNull(electricityBattery) ? null : electricityBattery.getBusinessStatus());
                 item.setBatteryModel(Objects.isNull(electricityBattery) ? "" : electricityBattery.getModel());
                 
-                //获取用户所属加盟商
+                // 获取用户所属加盟商
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
                 
-                //获取租车用户邀请人
+                // 获取租车用户邀请人
                 item.setInviterUserName(queryFinalInviterUserName(item.getUid()));
                 
             });
@@ -646,7 +648,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-        //获取用户租车保险相关信息
+        // 获取用户租车保险相关信息
         CompletableFuture<Void> queryUserInsuranceInfo = CompletableFuture.runAsync(() -> {
             userCarRentalPackageVOList.forEach(item -> {
                 
@@ -667,15 +669,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("Query user insurance info error for car rental.", e);
             return null;
         });
-    
+        
         CompletableFuture<Void> queryUserGroupInfo = CompletableFuture.runAsync(() -> {
             userCarRentalPackageVOList.forEach(item -> {
                 List<UserInfoGroupNamesBO> namesBOList = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(item.getUid()).build());
                 List<UserInfoGroupIdAndNameVO> groupVoList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(namesBOList)) {
-                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build()).collect(Collectors.toList());
+                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build())
+                            .collect(Collectors.toList());
                 }
-            
+                
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
             });
         }, threadPool).exceptionally(e -> {
@@ -690,7 +693,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("Data summary browsing error for car rental.", e);
         }
         
-        //处理payCount为空（押金已退），根据uid查詢套餐列表
+        // 处理payCount为空（押金已退），根据uid查詢套餐列表
         List<Long> uidList = userCarRentalPackageVOList.stream().map(UserCarRentalPackageVO::getUid).collect(Collectors.toList());
         List<CarRentalPackageMemberTermPo> packageDOList = carRentalPackageMemberTermService.listUserPayCountByUidList(uidList);
         
@@ -699,7 +702,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             payCountMap = packageDOList.stream().collect(Collectors.toMap(CarRentalPackageMemberTermPo::getUid, CarRentalPackageMemberTermPo::getPayCount, (k1, k2) -> k1));
         }
         
-        //payCount为空时，进行处理
+        // payCount为空时，进行处理
         Map<Long, Integer> finalPayCountMap = payCountMap;
         userCarRentalPackageVOList.forEach(userCarRentalPackageVO -> {
             if (Objects.isNull(userCarRentalPackageVO.getPayCount()) && finalPayCountMap.containsKey(userCarRentalPackageVO.getUid())) {
@@ -740,7 +743,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional
     public R updateStatus(Long uid, Integer usableStatus) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         UserInfo oldUserInfo = queryByUidFromCache(uid);
@@ -815,7 +818,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.failMsg("未找到用户信息!");
         }
         
-        //判断是否缴纳押金
+        // 判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("ELE WARN! not pay deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
@@ -884,7 +887,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 ownMemberCardInfoVo.setEndTime(userBatteryMemberCard.getDisableMemberCardTime() + eleDisableMemberCardRecord.getChooseDays() * (24 * 60 * 60 * 1000L));
             }
             
-            //兼容旧的小程序  送的次数卡 返回的套餐id必须为null
+            // 兼容旧的小程序  送的次数卡 返回的套餐id必须为null
             ownMemberCardInfoVo.setCardId(userBatteryMemberCard.getMemberCardId().intValue());
         }
         
@@ -911,7 +914,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R verifyAuth(Long id, Integer authStatus, String msg) {
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         UserInfo oldUserInfo = queryByIdFromDB(id);
@@ -934,7 +937,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //            userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
         //        }
         update(userInfo);
-        //修改资料项
+        // 修改资料项
         eleUserAuthService.updateByUid(oldUserInfo.getUid(), authStatus);
         
         if (Objects.equals(UserInfo.AUTH_STATUS_REVIEW_REJECTED, authStatus)) {
@@ -955,7 +958,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional
     public R updateAuth(UserInfo userInfo) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         userInfo.setTenantId(tenantId);
@@ -963,9 +966,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer update = update(userInfo);
         
         DbUtils.dbOperateSuccessThen(update, () -> {
-            //实名认证数据修改
+            // 实名认证数据修改
             UserInfo newUserInfo = this.queryByIdFromDB(userInfo.getId());
-            //身份证
+            // 身份证
             if (Objects.nonNull(userInfo.getIdNumber())) {
                 EleUserAuth eleUserAuth1 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_ID_CARD);
                 if (Objects.nonNull(eleUserAuth1)) {
@@ -984,7 +987,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             }
             
-            //姓名
+            // 姓名
             if (Objects.nonNull(userInfo.getName())) {
                 EleUserAuth eleUserAuth2 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_NAME_ID);
                 if (Objects.nonNull(eleUserAuth2)) {
@@ -1077,240 +1080,252 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.queryCount(userInfoQuery);
     }
     
-    //后台绑定电池
+    // 后台绑定电池
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
-        
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        if (!redisService.setNx(CacheConstant.CACHE_USER_BIND_BATTERY_LOCK + userInfoBatteryAddAndUpdate.getUid(), "1", 5 * 1000L, false)) {
+            return R.fail("100032", "该用户已绑定电池");
         }
         
-        UserInfo oldUserInfo = queryByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
-        if (Objects.isNull(oldUserInfo) || !Objects.equals(tenantId, oldUserInfo.getTenantId())) {
-            return R.fail("ELECTRICITY.0019", "未找到用户");
+        // 查询有没有绑定过电池，区分了绑定与编辑两种操作类型，编辑操作才会退掉已绑定电池，所以对绑定操作在此处做校验进行拦截
+        ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
+        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
+            return R.fail("100032", "该用户已绑定电池");
         }
         
-        //未实名认证
-        if (!Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.warn("WEBBIND WARN! user not auth! uid={} ", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.0041", "未实名认证");
-        }
-        
-        if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            return R.fail("ELECTRICITY.0024", "用户已被禁用");
-        }
-        
-        //判断是否缴纳押金
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
-        if (!(Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(oldUserInfo.getCarBatteryDepositStatus(),
-                YesNoEnum.YES.getCode()))) {
-            log.warn("WEBBIND ERROR WARN! not pay deposit! uid={} ", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
-        
-        Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
-        if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            //判断电池滞纳金
+        try {
+            // 租户
+            Integer tenantId = TenantContextHolder.getTenantId();
             
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
-            if (Objects.isNull(userBatteryMemberCard)) {
-                log.warn("WEBBIND ERROR WARN! user haven't memberCard uid={}", oldUserInfo.getUid());
-                return R.fail("100210", "用户未开通套餐");
+            TokenUser user = SecurityUtils.getUserInfo();
+            if (Objects.isNull(user)) {
+                log.error("ELECTRICITY  ERROR! not found user ");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
             }
             
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                log.warn("WEBBIND ERROR WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
-                return R.fail("100211", "换电套餐停卡审核中");
+            UserInfo oldUserInfo = queryByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
+            if (Objects.isNull(oldUserInfo) || !Objects.equals(tenantId, oldUserInfo.getTenantId())) {
+                return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.warn("WEBBIND ERROR WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
-                return R.fail("100211", "换电套餐已暂停");
+            // 未实名认证
+            if (!Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("WEBBIND WARN! user not auth! uid={} ", oldUserInfo.getUid());
+                return R.fail("ELECTRICITY.0041", "未实名认证");
             }
             
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.isNull(batteryMemberCard)) {
-                log.warn("WEBBIND ERROR WARN! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-                return R.fail("ELECTRICITY.00121", "套餐不存在");
+            if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                return R.fail("ELECTRICITY.0024", "用户已被禁用");
             }
             
-            if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
-                orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
+            // 判断是否缴纳押金
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
+            if (!(Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(oldUserInfo.getCarBatteryDepositStatus(),
+                    YesNoEnum.YES.getCode()))) {
+                log.warn("WEBBIND ERROR WARN! not pay deposit! uid={} ", oldUserInfo.getUid());
+                return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
             
-            //判断用户电池服务费
-            Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(oldUserInfo, userBatteryMemberCard,
-                    batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(oldUserInfo.getUid()));
-            if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-                log.warn("WEBBIND ERROR ERROR! user exist battery service fee,uid={}", oldUserInfo.getUid());
-                return R.fail("ELECTRICITY.100000", "存在电池服务费");
-            }
-            
-            if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
-                    && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-                log.warn("WEBBIND ERROR WARN! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
-                return R.fail("ELECTRICITY.0023", "套餐已过期");
-            }
-    
-            //判断车电关联是否可租电
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(oldUserInfo.getTenantId());
-            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
-                if (Objects.equals(oldUserInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-                    try {
-                        if (carRentalPackageMemberTermBizService.isExpirePackageOrder(oldUserInfo.getTenantId(), oldUserInfo.getUid())) {
-                            log.error("WEBBIND ERROR WARN! user car memberCard expire,uid={}", oldUserInfo.getUid());
-                            return R.fail("100233", "租车套餐已过期");
+            Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
+            if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                // 判断电池滞纳金
+                
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
+                if (Objects.isNull(userBatteryMemberCard)) {
+                    log.warn("WEBBIND ERROR WARN! user haven't memberCard uid={}", oldUserInfo.getUid());
+                    return R.fail("100210", "用户未开通套餐");
+                }
+                
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.warn("WEBBIND ERROR WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
+                    return R.fail("100211", "换电套餐停卡审核中");
+                }
+                
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.warn("WEBBIND ERROR WARN! user's member card is stop! uid={}", oldUserInfo.getUid());
+                    return R.fail("100211", "换电套餐已暂停");
+                }
+                
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    log.warn("WEBBIND ERROR WARN! not found batteryMemberCard,uid={},mid={}", oldUserInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+                    return R.fail("ELECTRICITY.00121", "套餐不存在");
+                }
+                
+                if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
+                    orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
+                }
+                
+                // 判断用户电池服务费
+                Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(oldUserInfo, userBatteryMemberCard,
+                        batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(oldUserInfo.getUid()));
+                if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                    log.warn("WEBBIND ERROR ERROR! user exist battery service fee,uid={}", oldUserInfo.getUid());
+                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                }
+                
+                if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
+                        && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                    log.warn("WEBBIND ERROR WARN! battery memberCard is Expire,uid={}", oldUserInfo.getUid());
+                    return R.fail("ELECTRICITY.0023", "套餐已过期");
+                }
+                
+                // 判断车电关联是否可租电
+                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(oldUserInfo.getTenantId());
+                if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                    if (Objects.equals(oldUserInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+                        try {
+                            if (carRentalPackageMemberTermBizService.isExpirePackageOrder(oldUserInfo.getTenantId(), oldUserInfo.getUid())) {
+                                log.error("WEBBIND ERROR WARN! user car memberCard expire,uid={}", oldUserInfo.getUid());
+                                return R.fail("100233", "租车套餐已过期");
+                            }
+                        } catch (Exception e) {
+                            log.error("WEBBIND ERROR WARN! acquire car membercard expire result fail,uid={}", oldUserInfo.getUid(), e);
                         }
-                    } catch (Exception e) {
-                        log.error("WEBBIND ERROR WARN! acquire car membercard expire result fail,uid={}", oldUserInfo.getUid(), e);
                     }
                 }
+            } else {
+                carRentalPackageMemberTermBizService.verifyMemberSwapBattery(oldUserInfo.getTenantId(), oldUserInfo.getUid());
             }
-        } else {
-            carRentalPackageMemberTermBizService.verifyMemberSwapBattery(oldUserInfo.getTenantId(), oldUserInfo.getUid());
-        }
-        
-        //判断电池是否存在，或者已经被绑定
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-        if (Objects.isNull(oldElectricityBattery)) {
-            log.warn("WEBBIND ERROR WARN! not found Battery! batteryName={}", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
-        }
-        if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfoBatteryAddAndUpdate.getUid())) {
-            log.warn("WEBBIND ERROR WARN! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-            return R.fail("100019", "该电池已经绑定用户");
-        }
-        
-        if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-            log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
-                    oldElectricityBattery.getFranchiseeId());
-            return R.fail("100371", "电池加盟商与用户加盟商不一致");
-        }
-        
-        //多型号  绑定电池需要判断电池是否和用户型号一致
-        Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, oldUserInfo);
-        if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
-            return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
-        }
-        
-        UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(oldUserInfo.getUid());
-        updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
-        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update = updateByUid(updateUserInfo);
-        
-        //之前有电池，将原来的电池解绑
-        ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
-        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
-            if (!Objects.equals(isBindElectricityBattery.getSn(), userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())) {
-                ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
-                notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
-                notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
-                notBindOldElectricityBattery.setElectricityCabinetId(null);
-                notBindOldElectricityBattery.setElectricityCabinetName(null);
-                notBindOldElectricityBattery.setUid(null);
-                notBindOldElectricityBattery.setBorrowExpireTime(null);
-                notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
-                
-                // 添加退电记录
+            
+            // 判断电池是否存在，或者已经被绑定
+            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            if (Objects.isNull(oldElectricityBattery)) {
+                log.warn("WEBBIND ERROR WARN! not found Battery! batteryName={}", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+                return R.fail("ELECTRICITY.0020", "未找到电池");
+            }
+            if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfoBatteryAddAndUpdate.getUid())) {
+                log.warn("WEBBIND ERROR WARN! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+                return R.fail("100019", "该电池已经绑定用户");
+            }
+            
+            if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
+                        oldElectricityBattery.getFranchiseeId());
+                return R.fail("100371", "电池加盟商与用户加盟商不一致");
+            }
+            
+            // 多型号  绑定电池需要判断电池是否和用户型号一致
+            Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, oldUserInfo);
+            if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
+                return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
+            }
+            
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(oldUserInfo.getUid());
+            updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            Integer update = updateByUid(updateUserInfo);
+            
+            // 之前有电池，将原来的电池解绑
+            if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
+                if (!Objects.equals(isBindElectricityBattery.getSn(), userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())) {
+                    ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
+                    notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+                    notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
+                    notBindOldElectricityBattery.setElectricityCabinetId(null);
+                    notBindOldElectricityBattery.setElectricityCabinetName(null);
+                    notBindOldElectricityBattery.setUid(null);
+                    notBindOldElectricityBattery.setBorrowExpireTime(null);
+                    notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                    notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
+                    electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
+                    
+                    // 添加退电记录
+                    RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+                    rentBatteryOrder.setUid(oldUserInfo.getUid());
+                    rentBatteryOrder.setName(oldUserInfo.getName());
+                    rentBatteryOrder.setPhone(oldUserInfo.getPhone());
+                    rentBatteryOrder.setElectricityBatterySn(isBindElectricityBattery.getSn());
+                    rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
+                    rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
+                    rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+                    rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
+                    rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
+                    rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
+                    rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+                    rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                    rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
+                    rentBatteryOrder.setOrderType(orderType);
+                    rentBatteryOrderService.insert(rentBatteryOrder);
+                }
+            }
+            
+            Integer finalOrderType = orderType;
+            DbUtils.dbOperateSuccessThen(update, () -> {
+                // 添加租电池记录
                 RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
                 rentBatteryOrder.setUid(oldUserInfo.getUid());
                 rentBatteryOrder.setName(oldUserInfo.getName());
                 rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-                rentBatteryOrder.setElectricityBatterySn(isBindElectricityBattery.getSn());
+                rentBatteryOrder.setElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
                 rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
-                rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid()));
-                rentBatteryOrder.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
+                rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_BATTERY, user.getUid()));
+                rentBatteryOrder.setStatus(RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS);
                 rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
                 rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
                 rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
                 rentBatteryOrder.setCreateTime(System.currentTimeMillis());
                 rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-                rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
-                rentBatteryOrder.setOrderType(orderType);
+                rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
+                rentBatteryOrder.setOrderType(finalOrderType);
                 rentBatteryOrderService.insert(rentBatteryOrder);
-            }
-        }
-        
-        Integer finalOrderType = orderType;
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录
-            RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
-            rentBatteryOrder.setUid(oldUserInfo.getUid());
-            rentBatteryOrder.setName(oldUserInfo.getName());
-            rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-            rentBatteryOrder.setElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-            rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
-            rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_BATTERY, user.getUid()));
-            rentBatteryOrder.setStatus(RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS);
-            rentBatteryOrder.setFranchiseeId(oldUserInfo.getFranchiseeId());
-            rentBatteryOrder.setStoreId(oldUserInfo.getStoreId());
-            rentBatteryOrder.setTenantId(oldUserInfo.getTenantId());
-            rentBatteryOrder.setCreateTime(System.currentTimeMillis());
-            rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-            rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
-            rentBatteryOrder.setOrderType(finalOrderType);
-            rentBatteryOrderService.insert(rentBatteryOrder);
-            
-            //生成后台操作记录
-            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.BATTERY_MODEL).operateContent(
-                            Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) ? EleUserOperateRecord.EDIT_BATTERY_CONTENT
-                                    : EleUserOperateRecord.BIND_BATTERY_CONTENT).operateUid(user.getUid()).uid(oldUserInfo.getUid()).tenantId(TenantContextHolder.getTenantId())
-                    .name(user.getUsername()).initElectricityBatterySn(Objects.nonNull(isBindElectricityBattery) ? isBindElectricityBattery.getSn() : "")
-                    .nowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn()).createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).build();
-            
-            //判断是单电的电池操作还是车电一体的电池操作
-            if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
-            } else {
-                eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
-            }
-            
-            eleUserOperateRecordService.insert(eleUserOperateRecord);
-            
-            //修改电池状态
-            ElectricityBattery electricityBattery = new ElectricityBattery();
-            electricityBattery.setId(oldElectricityBattery.getId());
-            electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
-            electricityBattery.setElectricityCabinetId(null);
-            electricityBattery.setElectricityCabinetName(null);
-            electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
-            electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBattery.setBindTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(electricityBattery);
-            
-            enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
-            
-            //记录企业用户租电池记录
-            enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
-            
-            try {
-                //发送操作记录
-                //判断没有发送实际的电池变更则不记录
-                if (!Objects.isNull(isBindElectricityBattery) && Objects.equals(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn(), isBindElectricityBattery.getSn())) {
-                    return null;
+                
+                // 生成后台操作记录
+                EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.BATTERY_MODEL).operateContent(
+                                Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) ? EleUserOperateRecord.EDIT_BATTERY_CONTENT
+                                        : EleUserOperateRecord.BIND_BATTERY_CONTENT).operateUid(user.getUid()).uid(oldUserInfo.getUid()).tenantId(TenantContextHolder.getTenantId())
+                        .name(user.getUsername()).initElectricityBatterySn(Objects.nonNull(isBindElectricityBattery) ? isBindElectricityBattery.getSn() : "")
+                        .nowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn()).createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis()).build();
+                
+                // 判断是单电的电池操作还是车电一体的电池操作
+                if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                    eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
+                } else {
+                    eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_CAR);
                 }
-                Map<String, Object> map = new HashMap<>();
-                map.put("username", oldUserInfo.getName());
-                map.put("phone", oldUserInfo.getPhone());
-                map.put("editType", userInfoBatteryAddAndUpdate.getEdiType());
-                map.put("batterySN", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-                operateRecordUtil.record(Objects.isNull(isBindElectricityBattery) ? null : MapUtil.of("batterySN", isBindElectricityBattery.getSn()), map);
-            } catch (Throwable e) {
-                log.error("Recording user operation records failed because:", e);
-            }
-            return null;
-        });
-        return R.ok();
+                
+                eleUserOperateRecordService.insert(eleUserOperateRecord);
+                
+                // 修改电池状态
+                ElectricityBattery electricityBattery = new ElectricityBattery();
+                electricityBattery.setId(oldElectricityBattery.getId());
+                electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
+                electricityBattery.setElectricityCabinetId(null);
+                electricityBattery.setElectricityCabinetName(null);
+                electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
+                electricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBattery.setBindTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(electricityBattery);
+                
+                enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
+                
+                // 记录企业用户租电池记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+                
+                try {
+                    // 发送操作记录
+                    // 判断没有发送实际的电池变更则不记录
+                    if (!Objects.isNull(isBindElectricityBattery) && Objects.equals(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn(), isBindElectricityBattery.getSn())) {
+                        return null;
+                    }
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("username", oldUserInfo.getName());
+                    map.put("phone", oldUserInfo.getPhone());
+                    map.put("editType", userInfoBatteryAddAndUpdate.getEdiType());
+                    map.put("batterySN", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+                    operateRecordUtil.record(Objects.isNull(isBindElectricityBattery) ? null : MapUtil.of("batterySN", isBindElectricityBattery.getSn()), map);
+                } catch (Throwable e) {
+                    log.error("Recording user operation records failed because:", e);
+                }
+                return null;
+            });
+            return R.ok();
+        } finally {
+            redisService.delete(CacheConstant.CACHE_USER_BIND_BATTERY_LOCK + userInfoBatteryAddAndUpdate.getUid());
+        }
     }
     
     private Triple<Boolean, String, Object> verifyUserBatteryType(ElectricityBattery electricityBattery, UserInfo userInfo) {
@@ -1324,7 +1339,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(true, null, null);
         }
         
-        //获取用户绑定的电池型号
+        // 获取用户绑定的电池型号
         List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(userBindBatteryTypes)) {
             return Triple.of(true, null, null);
@@ -1343,7 +1358,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public R webUnBindBattery(Long uid) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1351,7 +1366,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEBUNBIND ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //查找用户
+        // 查找用户
         UserInfo oldUserInfo = queryByUidFromCache(uid);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -1361,7 +1376,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok();
         }
         
-        //未实名认证
+        // 未实名认证
         if (!Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("WEBUNBIND WARN! user not auth,uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
@@ -1384,7 +1399,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            //判断电池滞纳金
+            // 判断电池滞纳金
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(oldUserInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
                 log.warn("WEBBIND WARN! user haven't memberCard uid={}", oldUserInfo.getUid());
@@ -1407,12 +1422,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
             
-            //根据套餐类型，设置租退订单类型
+            // 根据套餐类型，设置租退订单类型
             if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
                 orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
             }
             
-            //判断用户电池服务费
+            // 判断用户电池服务费
             Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(oldUserInfo, userBatteryMemberCard,
                     batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(oldUserInfo.getUid()));
             if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
@@ -1420,14 +1435,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("ELECTRICITY.100000", "存在电池服务费");
             }
         } else {
-            //判断车电一体滞纳金
+            // 判断车电一体滞纳金
             if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(oldUserInfo.getTenantId(), oldUserInfo.getUid()))) {
                 log.warn("ORDER WARN! user exist battery service fee,uid={}", oldUserInfo.getUid());
                 return R.fail("300001", "存在滞纳金，请先缴纳");
             }
         }
         
-        //解绑电池
+        // 解绑电池
         ElectricityBattery electricityBattery = new ElectricityBattery();
         electricityBattery.setId(oldElectricityBattery.getId());
         electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_ADMIN_UNBIND);
@@ -1440,7 +1455,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBatteryService.updateBatteryUser(electricityBattery);
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
-        //生成退电池记录
+        // 生成退电池记录
         RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
         rentBatteryOrder.setUid(oldUserInfo.getUid());
         rentBatteryOrder.setName(oldUserInfo.getName());
@@ -1458,13 +1473,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         rentBatteryOrder.setOrderType(orderType);
         rentBatteryOrderService.insert(rentBatteryOrder);
         
-        //生成后台操作记录
+        // 生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.BATTERY_MODEL)
                 .operateContent(EleUserOperateRecord.UN_BIND_BATTERY_CONTENT).operateUid(user.getUid()).uid(oldUserInfo.getUid()).name(user.getUsername())
                 .initElectricityBatterySn(oldElectricityBattery.getSn()).nowElectricityBatterySn(null).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         OverdueType type = null;
-        //判断是单电的电池操作还是车电一体的电池操作
+        // 判断是单电的电池操作还是车电一体的电池操作
         if (Objects.equals(oldUserInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             eleUserOperateRecord.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
             type = OverdueType.BATTERY;
@@ -1477,10 +1492,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         enterpriseRentRecordService.saveEnterpriseReturnRecord(rentBatteryOrder.getUid());
         
-        //记录企业用户还电池记录
+        // 记录企业用户还电池记录
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
-        //清除逾期用户备注
-        overdueUserRemarkPublish.publish(uid,type.getCode(), tenantId);
+        // 清除逾期用户备注
+        overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -1498,7 +1513,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer deleteByUid(Long uid) {
         //        return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
         
-        //改为逻辑删除
+        // 改为逻辑删除
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(uid);
         userInfo.setDelFlag(UserInfo.DEL_DEL);
@@ -1511,7 +1526,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId) {
         return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId, tenantId));
     }
-
+    
     @Slave
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
@@ -1559,15 +1574,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(false, "100001", userInfoResult);
         }
         
-        //电池订单类型为免押
+        // 电池订单类型为免押
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
         acquireBatteryFreeDepositResult(userBatteryDeposit, userInfo, userInfoResult);
         
-        //车辆订单类型为免押
-//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
-//        acquireCarFreeDepositResult(userCarDeposit, userInfo, userInfoResult);
+        // 车辆订单类型为免押
+        //        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        //        acquireCarFreeDepositResult(userCarDeposit, userInfo, userInfoResult);
         
-        //审核状态
+        // 审核状态
         userInfoResult.setAuthStatus(userInfo.getAuthStatus());
         userInfoResult.setFranchiseeId(userInfo.getFranchiseeId());
         
@@ -1576,12 +1591,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfoResult.setUserCarDetail(userCarDetail);
         userInfoResult.setUserBatteryDetail(userBatteryDetail);
         
-        //是否缴纳租电池押金
-        //是否缴纳租电池押金
+        // 是否缴纳租电池押金
+        // 是否缴纳租电池押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
             
-            //是否缴纳车电一体押金
+            // 是否缴纳车电一体押金
             if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
                 userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
             } else {
@@ -1591,10 +1606,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
         }
         
-        //是否购买租电池套餐
+        // 是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
-                UserBatteryMemberCard.SEND_REMAINING_NUMBER) //如果送的次数卡  首页提示没有购买套餐
+                UserBatteryMemberCard.SEND_REMAINING_NUMBER) // 如果送的次数卡  首页提示没有购买套餐
                 || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
         } else {
@@ -1602,7 +1617,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         }
         
-        //套餐是否过期(前端要兼容旧代码  不能删除)
+        // 套餐是否过期(前端要兼容旧代码  不能删除)
         if (!Objects.isNull(userBatteryMemberCard) && !Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
                 && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && !Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
                 UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
@@ -1611,7 +1626,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
         }
         
-        //是否购买车电一体套餐
+        // 是否购买车电一体套餐
         if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
             CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(userInfo.getTenantId(), userInfo.getUid());
             if (Objects.nonNull(memberTermEntity) && Objects.equals(memberTermEntity.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode()) && Objects.nonNull(
@@ -1622,7 +1637,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
             }
             
-            //车电一体套餐是否过期
+            // 车电一体套餐是否过期
             if (Objects.nonNull(memberTermEntity) && Objects.nonNull(memberTermEntity.getDueTimeTotal()) && memberTermEntity.getDueTimeTotal() < System.currentTimeMillis()) {
                 userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
             } else {
@@ -1630,14 +1645,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
         
-        //套餐是否暂停
+        // 套餐是否暂停
         if (!Objects.isNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             userBatteryDetail.setIsBatteryMemberCardDisable(UserInfoResultVO.YES);
         } else {
             userBatteryDetail.setIsBatteryMemberCardDisable(UserInfoResultVO.NO);
         }
         
-        //是否产生电池服务费
+        // 是否产生电池服务费
         if (Objects.nonNull(userBatteryMemberCard)) {
             Triple<Boolean, Integer, BigDecimal> batteryServiceFeeTriple = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                     batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId()), serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
@@ -1649,11 +1664,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
         
-        //用户状态(离线换电)
+        // 用户状态(离线换电)
         UserFrontDetectionVO userFrontDetection = offLineElectricityCabinetService.getUserFrontDetection(userInfo, userBatteryMemberCard);
         userInfoResult.setUserFrontDetection(userFrontDetection);
         
-        //是否有车电一体滞纳金
+        // 是否有车电一体滞纳金
         if (Objects.isNull(userBatteryMemberCard) || StringUtils.isBlank(userBatteryMemberCard.getOrderId())) {
             if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
                 userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
@@ -1662,7 +1677,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
         
-        //是否绑定的有电池
+        // 是否绑定的有电池
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.YES);
             userBatteryDetail.setBatteryInfo(electricityBatteryService.queryByUid(userInfo.getUid()));
@@ -1670,38 +1685,38 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.NO);
         }
         
-        //是否缴纳租车押金
+        // 是否缴纳租车押金
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.NO.getCode())) {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.YES);
         }
         
-//        //是否购买租车套餐
-//        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-//        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getOrderId())) {
-//            userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
-//        } else {
-//            userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
-//            userCarDetail.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
-//        }
-//
-//        //租车套餐是否过期
-//        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime())
-//                && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-//            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
-//        } else {
-//            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
-//        }
-//
-//        //是否绑定车辆
-//        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
-//        if (Objects.isNull(userCar) || StringUtils.isBlank(userCar.getSn())) {
-//            userCarDetail.setIsRentCar(UserInfoResultVO.NO);
-//        } else {
-//            userCarDetail.setIsRentCar(UserInfoResultVO.YES);
-//            userCarDetail.setCarSN(userCar.getSn());
-//        }
+        //        //是否购买租车套餐
+        //        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        //        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getOrderId())) {
+        //            userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
+        //        } else {
+        //            userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
+        //            userCarDetail.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+        //        }
+        //
+        //        //租车套餐是否过期
+        //        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime())
+        //                && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        //            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
+        //        } else {
+        //            userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
+        //        }
+        //
+        //        //是否绑定车辆
+        //        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        //        if (Objects.isNull(userCar) || StringUtils.isBlank(userCar.getSn())) {
+        //            userCarDetail.setIsRentCar(UserInfoResultVO.NO);
+        //        } else {
+        //            userCarDetail.setIsRentCar(UserInfoResultVO.YES);
+        //            userCarDetail.setCarSN(userCar.getSn());
+        //        }
         
         // V3 版本
         if (CommonConstant.SWITCH_VERSION.equals(switchVersion)) {
@@ -1732,7 +1747,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             }
             
-            //是否绑定车辆
+            // 是否绑定车辆
             ElectricityCar car = electricityCarService.selectByUid(userInfo.getTenantId(), userInfo.getUid());
             if (ObjectUtils.isNotEmpty(car)) {
                 userCarDetail.setIsRentCar(UserInfoResultVO.YES);
@@ -1760,10 +1775,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return;
         }
         
-        //若免押状态为待冻结
+        // 若免押状态为待冻结
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(),
                 FreeDepositOrder.AUTH_PENDING_FREEZE)) {
-            //获取电池免押结果
+            // 获取电池免押结果
             FreeDepositUserInfoVo freeDepositUserInfoVo = null;
             Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.acquireUserFreeBatteryDepositStatus();
             if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
@@ -1831,12 +1846,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         
         this.updateByUid(updateUserInfo);
-        //清除逾期用户备注
-        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)){
-            if (Objects.equals(userInfo.getCarBatteryDepositStatus(),YesNoEnum.YES.getCode())) {
-                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(),TenantContextHolder.getTenantId());
-            }else {
-                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(),TenantContextHolder.getTenantId());
+        // 清除逾期用户备注
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)) {
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.CAR.getCode(), TenantContextHolder.getTenantId());
+            } else {
+                overdueUserRemarkPublish.publish(userInfo.getUid(), OverdueType.BATTERY.getCode(), TenantContextHolder.getTenantId());
             }
         }
         return Triple.of(true, "", null);
@@ -1893,7 +1908,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
         vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
-    
+        
         UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
         BeanUtils.copyProperties(userTurnoverVo, vo);
         
@@ -1910,8 +1925,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(TenantContextHolder.getTenantId()));
         if (Objects.nonNull(eleUserEsignRecord)) {
             vo.setSignFlowId(eleUserEsignRecord.getSignFlowId());
-            vo.setSignFinishStatus(Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
-        }else {
+            vo.setSignFinishStatus(
+                    Objects.equals(1, eleUserEsignRecord.getSignFinishStatus()) ? SignStatusEnum.SIGNED_COMPLETED.getCode() : SignStatusEnum.SIGNED_INCOMPLETE.getCode());
+        } else {
             vo.setSignFinishStatus(SignStatusEnum.UNSIGNED.getCode());
         }
         
@@ -1937,9 +1953,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 邀请人名称
         vo.setInviterName(queryFinalInviterUserName(uid));
-        //邀请人来源
+        // 邀请人来源
         vo.setInviterSource(inviterSource);
-    
+        
         return R.ok(vo);
     }
     
@@ -1947,9 +1963,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer tenantId = TenantContextHolder.getTenantId();
         
         UserTurnoverVo userTurnoverVo = new UserTurnoverVo();
-        //用户电池总套餐消费额
+        // 用户电池总套餐消费额
         CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
-            //用户套餐总支付金额
+            // 用户套餐总支付金额
             BigDecimal pay = electricityMemberCardOrderService.queryTurnOver(tenantId, id);
             BigDecimal refund = batteryMembercardRefundOrderService.selectUserTotalRefund(tenantId, id);
             userTurnoverVo.setMemberCardTurnover(pay.subtract(refund));
@@ -1960,16 +1976,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-        //用户租车总套餐消费额
-//        CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
-////            BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
-////            userTurnoverVo.setCarMemberCardTurnover(pay);
-//        }, threadPool).exceptionally(e -> {
-//            log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
-//            return null;
-//        });
+        // 用户租车总套餐消费额
+        //        CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+        ////            BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
+        ////            userTurnoverVo.setCarMemberCardTurnover(pay);
+        //        }, threadPool).exceptionally(e -> {
+        //            log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
+        //            return null;
+        //        });
         
-        //用户电池服务费消费额
+        // 用户电池服务费消费额
         CompletableFuture<Void> queryBatteryServiceFeePayAmount = CompletableFuture.runAsync(() -> {
             BigDecimal pay = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
             userTurnoverVo.setBatteryServiceFee(pay);
@@ -1978,7 +1994,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-        //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
+        // 等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCardPayAmount, queryBatteryServiceFeePayAmount);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
@@ -2123,7 +2139,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         DetailsBatteryInfoVo vo = new DetailsBatteryInfoVo();
         vo.setUid(userInfo.getUid());
         
-        //用户电池押金
+        // 用户电池押金
         CompletableFuture<Void> queryUserBatteryDeposit = CompletableFuture.runAsync(() -> {
             queryUserBatteryDeposit(vo, userInfo);
         }, threadPool).exceptionally(e -> {
@@ -2131,7 +2147,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-        //用户会员信息
+        // 用户会员信息
         CompletableFuture<Void> queryUserBatteryMemberCard = CompletableFuture.runAsync(() -> {
             queryUserBatteryMemberCard(vo, userInfo);
         }, threadPool).exceptionally(e -> {
@@ -2139,7 +2155,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-        //用户电池信息
+        // 用户电池信息
         CompletableFuture<Void> queryUserBattery = CompletableFuture.runAsync(() -> {
             queryUserBattery(vo, userInfo);
         }, threadPool).exceptionally(e -> {
@@ -2193,7 +2209,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         vo.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
-//        vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
+        //        vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         vo.setCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
@@ -2266,23 +2282,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return;
         }
         
-        //租车押金
+        // 租车押金
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             return;
         }
         
-        //租电池押金
+        // 租电池押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             return;
         }
         
-        //檢查当前用户是否为企业用户，若为企业用户，则不解绑加盟商
+        // 檢查当前用户是否为企业用户，若为企业用户，则不解绑加盟商
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(uid);
         if (Objects.nonNull(enterpriseChannelUserVO)) {
             return;
         }
         
-        //若租车和租电押金都退了，则解绑用户所属加盟商
+        // 若租车和租电押金都退了，则解绑用户所属加盟商
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(uid);
         updateUserInfo.setStoreId(NumberConstant.ZERO_L);
@@ -2382,7 +2398,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         : CarRentalPackageExlConstant.PACKAGE_DEPOSIT_UNPAID_STATUS);
             }
             
-            //设置套餐冻结状态
+            // 设置套餐冻结状态
             if (MemberTermStatusEnum.FREEZE.getCode().equals(userCarRentalPackageDO.getPackageStatus())) {
                 userCarRentalInfoExcelVO.setPackageFreezeStatus(CarRentalPackageExlConstant.PACKAGE_FROZE_STATUS);
             } else {
@@ -2393,24 +2409,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             userCarRentalInfoExcelVO.setPackageExpiredTime(simpleDateFormat.format(new Date(userCarRentalPackageDO.getPackageExpiredTime())));
             
-            //获取电池信息
+            // 获取电池信息
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userCarRentalPackageDO.getUid());
             userCarRentalInfoExcelVO.setCurrentBattery(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
             
-            //获取套餐名称
+            // 获取套餐名称
             CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(userCarRentalPackageDO.getPackageId());
             if (Objects.nonNull(carRentalPackagePo)) {
                 userCarRentalInfoExcelVO.setPackageName(carRentalPackagePo.getName());
             }
             
-            //获取保险信息
+            // 获取保险信息
             InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userCarRentalPackageDO.getUid(),
                     userCarRentalPackageDO.getPackageType());
             userCarRentalInfoExcelVO.setInsuranceStatus(Objects.isNull(insuranceUserInfoVo) ? "" : getInsuranceStatusDesc(insuranceUserInfoVo.getIsUse()));
             userCarRentalInfoExcelVO.setInsuranceExpiredTime(
                     Objects.isNull(insuranceUserInfoVo) ? "" : simpleDateFormat.format(new Date(insuranceUserInfoVo.getInsuranceExpireTime())));
             
-            //获取用户所属加盟商
+            // 获取用户所属加盟商
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userCarRentalPackageDO.getFranchiseeId());
             userCarRentalInfoExcelVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
             
@@ -2469,7 +2485,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             if (Objects.nonNull(inviterUid) && !Objects.equals(inviterUid, NumberConstant.ZERO_L) && Objects.nonNull(activitySource) && !Objects.equals(activitySource,
                     NumberConstant.ZERO)) {
-                //商户活动的邀请人来源于user
+                // 商户活动的邀请人来源于user
                 if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
                     Merchant merchant = merchantService.queryByUid(inviterUid);
                     if (Objects.nonNull(merchant)) {
@@ -2494,24 +2510,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userEleInfoVOS)) {
             return R.ok(Collections.emptyList());
         }
-        //获取用户电池套餐相关信息
+        // 获取用户电池套餐相关信息
         CompletableFuture<Void> queryUserBatteryMemberCardInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
-                //获取用户所属加盟商
+                // 获取用户所属加盟商
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
                 item.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
                 
                 if (Objects.nonNull(item.getMemberCardStatus())) {
                     if (Objects.equals(item.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                        //冻结
+                        // 冻结
                         item.setMemberCardFreezeStatus(1);
                     } else {
-                        //正常
+                        // 正常
                         item.setMemberCardFreezeStatus(0);
                     }
                 }
                 
-                //获取用户当前绑定的套餐
+                // 获取用户当前绑定的套餐
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
                 if (Objects.nonNull(batteryMemberCard)) {
                     item.setMemberCardName(batteryMemberCard.getName());
@@ -2559,15 +2575,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! query user other info error!", e);
             return null;
         });
-    
+        
         CompletableFuture<Void> queryUserGroupInfo = CompletableFuture.runAsync(() -> {
             userEleInfoVOS.forEach(item -> {
                 List<UserInfoGroupNamesBO> namesBOList = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(item.getUid()).build());
                 List<UserInfoGroupIdAndNameVO> groupVoList = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(namesBOList)) {
-                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build()).collect(Collectors.toList());
+                    groupVoList = namesBOList.stream().map(bo -> UserInfoGroupIdAndNameVO.builder().id(bo.getGroupId()).name(bo.getGroupName()).groupNo(bo.getGroupNo()).build())
+                            .collect(Collectors.toList());
                 }
-    
+                
                 item.setGroupList(CollectionUtils.isEmpty(groupVoList) ? Collections.emptyList() : groupVoList);
             });
         }, threadPool).exceptionally(e -> {
@@ -2618,4 +2635,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.updatePhoneByUid(tenantId, uid, newPhone, System.currentTimeMillis());
     }
     
+    @Override
+    @Slave
+    public List<UserInfo> queryListUserInfoByPhone(String phone) {
+        return baseMapper.selectListUserInfoByPhone(phone);
+    }
 }

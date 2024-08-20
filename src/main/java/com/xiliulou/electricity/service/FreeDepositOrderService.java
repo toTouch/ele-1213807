@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +33,7 @@ public interface FreeDepositOrderService {
      *
      * @return 对象列表
      */
-    List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query);
+    List<FreeDepositOrderVO> selectByPage(FreeDepositOrderQuery query);
 
     /**
      * 新增数据

@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -695,6 +696,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(BigDecimal.valueOf(0));
     }
     
+    /**
+     * 打开或禁用会员卡
+     *
+     * @param usableStatus
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R openOrDisableMemberCard(Integer usableStatus) {
@@ -840,6 +847,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok();
     }
     
+    /**
+     * 限制时间停卡
+     *
+     * @param disableCardDays
+     * @param disableDeadline
+     * @param applyReason
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline, String applyReason) {
@@ -2568,10 +2583,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 refId = electricityCabinet.getId().longValue();
             }
         }
-        
+    
+        // 多加盟商版本增加：加盟商一致性校验
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = calculatePayAmount(electricityMemberCard.getHolidayPrice(), userCouponIds);
+        Triple<Boolean, String, Object> calculatePayAmountResult = calculatePayAmount(electricityMemberCard.getHolidayPrice(), userCouponIds, electricityMemberCard.getFranchiseeId());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
@@ -2797,6 +2813,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         // 赠送优惠券
         sendUserCoupon(batteryMemberCard, electricityMemberCardOrder);
         
+        // 添加用户操作记录失败
+        try {
+            Map<String, Object> map = Maps.newHashMap();
+            map.put("packageName", batteryMemberCard.getName());
+            map.put("phone", userInfo.getPhone());
+            map.put("name", userInfo.getName());
+            map.put("businessType", batteryMemberCard.getBusinessType());
+            operateRecordUtil.record(null, map);
+        } catch (Exception e) {
+            log.error("Failed to add user action record: ", e);
+        }
         return Triple.of(true, null, null);
     }
     
@@ -3754,7 +3781,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    public Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds) {
+    public Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds, Long franchiseeId) {
         BigDecimal payAmount = price;
         
         if (CollectionUtils.isEmpty(userCouponIds)) {
@@ -3772,6 +3799,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (Objects.isNull(coupon)) {
                 log.warn("ELE WARN! not found coupon,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
+            }
+    
+            // 多加盟商版本增加：加盟商一致性校验
+            if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), franchiseeId)) {
+                log.warn("ELE WARN! coupon is not same franchisee,couponId={},franchiseeId={}", userCouponId, franchiseeId);
+                return Triple.of(false, "120126", "此优惠券暂不可用，请选择其他优惠券");
             }
             
             // 优惠券是否使用
@@ -4228,5 +4261,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok(ElectricityMemberCardOrderVOs);
     }
     
-    
+    @Override
+    @Slave
+    public List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime) {
+        return baseMapper.selectListByCreateTime(buyStartTime, buyEndTime);
+    }
 }

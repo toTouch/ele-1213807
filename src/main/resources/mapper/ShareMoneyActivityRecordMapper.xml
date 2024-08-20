@@ -8,7 +8,7 @@
 		select
 		tsar.id as id, tsar.activity_id as activityId,  tsar.uid as uid, tsar.count as count,
 		tsar.create_time as createTime, tsar.update_time as updateTime,
-		tsar.tenant_id as tenantId,tsar.status as status,
+		tsar.tenant_id as tenantId,tsar.status as status, tsar.franchisee_id,
 		tui.phone as phone,tui.name as name,tsa.name as activityName, tsar.money as totalMoney
 		from t_share_money_activity_record as tsar
 		left join t_user_info as tui on tui.uid=tsar.uid
@@ -26,20 +26,23 @@
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
 			</if>
+			<if test="franchiseeId != null">
+				and tsar.franchisee_id = #{franchiseeId}
+			</if>
 			<if test="franchiseeIds != null and franchiseeIds.size()>0">
-				and tui.franchisee_id in
+				and tsar.franchisee_id in
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 			<if test="storeIds != null and storeIds.size()>0">
-				and tui.store_id in
+				and tsar.store_id in
 				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 		</where>
-		order by tsar.update_time desc
+		order by tsar.update_time desc, tsar.id desc
 		limit #{offset}, #{size}
 	</select>
 
@@ -60,14 +63,17 @@
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
 			</if>
+			<if test="franchiseeId != null ">
+				and tsar.franchisee_id = #{franchiseeId}
+			</if>
 			<if test="franchiseeIds != null and franchiseeIds.size()>0">
-				and tui.franchisee_id in
+				and tsar.franchisee_id in
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
 			<if test="storeIds != null and storeIds.size()>0">
-				and tui.store_id in
+				and tsar.store_id in
 				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>

@@ -6,18 +6,22 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper;
 import com.xiliulou.electricity.query.merchant.MerchantAreaQueryModel;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaSaveOrUpdateRequest;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantAreaVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +39,7 @@ import java.util.stream.Collectors;
  * @date 2024/2/6 13:54:06
  */
 @Service
+@Slf4j
 public class MerchantAreaServiceImpl implements MerchantAreaService {
     
     @Resource
@@ -52,11 +57,20 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
     @Resource
     private ChannelEmployeeService channelEmployeeService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
     @Override
     public R save(MerchantAreaSaveOrUpdateRequest saveRequest, Long operator) {
         boolean result = redisService.setNx(CacheConstant.CACHE_MERCHANT_AREA_SAVE_LOCK + operator, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (ObjectUtils.isNotEmpty(saveRequest.getBindFranchiseeIdList()) && !saveRequest.getBindFranchiseeIdList().contains(saveRequest.getFranchiseeId())) {
+            log.info("merchant area save info, franchisee is not different ,name = {}, franchiseeId={}, bindFranchiseeId={}", saveRequest.getName(), saveRequest.getFranchiseeId(), saveRequest.getBindFranchiseeIdList());
+            return R.fail(false, "120240", "当前加盟商无权限操作");
         }
         
         try {
@@ -68,7 +82,7 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             
             long now = System.currentTimeMillis();
             MerchantArea merchantArea = MerchantArea.builder().name(saveRequest.getName()).remark(saveRequest.getRemark()).createTime(now).updateTime(now)
-                    .delFlag(NumberConstant.ZERO).tenantId(TenantContextHolder.getTenantId()).build();
+                    .franchiseeId(saveRequest.getFranchiseeId()).delFlag(NumberConstant.ZERO).tenantId(TenantContextHolder.getTenantId()).build();
             
             return R.ok(merchantAreaMapper.insertOne(merchantArea));
         } finally {
@@ -80,7 +94,17 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
      * 逻辑删
      */
     @Override
-    public R deleteById(Long id) {
+    public R deleteById(Long id, List<Long> bindFranchiseeIdList) {
+        MerchantArea merchantArea = merchantAreaMapper.selectById(id);
+        if (Objects.isNull(merchantArea)) {
+            return R.fail("120218", "区域不存在");
+        }
+        
+        if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(merchantArea.getFranchiseeId())) {
+            log.info("merchant area delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchantArea.getFranchiseeId(), merchantArea.getFranchiseeId());
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
         Integer cabinetExist = electricityCabinetService.existsByAreaId(id);
         if (Objects.nonNull(cabinetExist)) {
             return R.fail("120100", "该区域有电柜正在使用，请先解绑后操作");
@@ -110,6 +134,19 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
                     return R.fail("300904", "区域名称不能重复，请修改后操作");
                 }
             }
+        }
+    
+        // 判断修改的加盟商是否有改变
+        if (Objects.nonNull(updateRequest.getFranchiseeId()) && !Objects.equals(updateRequest.getFranchiseeId(), oldMerchantArea.getFranchiseeId())) {
+            log.info("merchant area update info, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", updateRequest.getId(), oldMerchantArea.getFranchiseeId(), updateRequest.getFranchiseeId());
+            return R.fail( "120123", "商户加盟商不允许修改");
+        }
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (ObjectUtils.isNotEmpty(updateRequest.getBindFranchiseeIdList()) && !Objects.equals(updateRequest.getFranchiseeId(), NumberConstant.ZERO_L)
+                && !updateRequest.getBindFranchiseeIdList().contains(updateRequest.getFranchiseeId())) {
+            log.info("merchant area update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", updateRequest.getId(), updateRequest.getFranchiseeId(), updateRequest.getBindFranchiseeIdList());
+            return R.fail("120240", "当前加盟商无权限操作");
         }
         
         MerchantArea merchantArea = MerchantArea.builder().id(updateRequest.getId()).name(areaName).remark(updateRequest.getRemark()).updateTime(System.currentTimeMillis())
@@ -148,6 +185,10 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
             
             merchantAreaVO.setCabinetNun(Optional.ofNullable(finalCabinetNumMap).map(map -> map.get(item.getId())).orElse(NumberConstant.ZERO));
             
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                merchantAreaVO.setFranchiseeName(franchisee.getName());
+            }
             return merchantAreaVO;
             
         }).collect(Collectors.toList());

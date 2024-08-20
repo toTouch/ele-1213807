@@ -74,7 +74,10 @@ public class ShareMoneyActivityRecordVO {
      * 总金额
      */
     private BigDecimal totalMoney;
+    
+    private Long franchiseeId;
 
+    private String franchiseeName;
 
     //初始化
     public static Integer STATUS_INIT = 1;

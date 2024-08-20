@@ -105,4 +105,15 @@ public class MerchantWithdrawApplicationVO {
      */
     private String transactionDetailId;
     
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+    
+    /**
+     * 加盟商ID
+     */
+    
+    private Long franchiseeId;
+    
 }

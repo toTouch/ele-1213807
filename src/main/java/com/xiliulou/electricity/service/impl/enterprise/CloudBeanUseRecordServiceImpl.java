@@ -338,7 +338,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             // 套餐回收的总的消耗天数大于订单的有效天数则按照有效天数进行云豆回收
             if (totalUseDay > electricityMemberCardOrder.getValidDays()) {
                 totalUseDay = electricityMemberCardOrder.getValidDays();
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!cloud bean use day is error, uid={}, orderId={}", userInfo.getUid(), orderId);
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!cloud bean use day is fault, uid={}, orderId={}", userInfo.getUid(), orderId);
             }
         
             // 订单每天的单价
@@ -561,7 +561,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 String errorMsg = "";
                 
                 if (Objects.isNull(userInfo)) {
-                    log.error("RECYCLE TASK WARN! user Info is null,uid={}", item.getUid());
+                    log.warn("RECYCLE TASK WARN! user Info is null,uid={}", item.getUid());
                     errorMsg = "RECYCLE TASK WARN! user Info is null";
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
@@ -569,7 +569,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 
                 EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
                 if (Objects.isNull(enterpriseChannelUser)) {
-                    log.error("RECYCLE TASK WARN! channel user Info is null,uid={}", item.getUid());
+                    log.warn("RECYCLE TASK WARN! channel user Info is null,uid={}", item.getUid());
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
@@ -621,8 +621,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
                 if (Objects.isNull(enterpriseInfo)) {
-                    log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
-                    errorMsg = "RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo";
+                    log.warn("RECYCLE CLOUD BEAN TASK WARN! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    errorMsg = "RECYCLE CLOUD BEAN TASK WARN! not found enterpriseInfo";
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
@@ -994,13 +994,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
+            log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100315", "企业配置不存在!");
         }
     
         List<CloudBeanUseRecord> list = cloudBeanUseRecordMapper.selectByTime(beginTime, endTime, enterpriseInfo.getId());
         if (CollectionUtils.isEmpty(list)) {
-            log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! list is empty,uid={}", SecurityUtils.getUid());
+            log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! list is empty,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100316", "所选时间段内无可用账单数据，无法下载");
         }
     
@@ -1179,7 +1179,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
                 
                 if (Objects.isNull(enterpriseInfo)) {
-                    log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    log.warn("RECYCLE CLOUD BEAN TASK WARN! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
                     return;
                 }
                 

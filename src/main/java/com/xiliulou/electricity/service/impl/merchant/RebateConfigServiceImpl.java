@@ -16,7 +16,9 @@ import com.xiliulou.electricity.service.merchant.MerchantLevelService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SpinLockRedisService;
 import com.xiliulou.electricity.vo.merchant.RebateConfigVO;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -56,6 +58,9 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Autowired
     private RedisService redisService;
     
+    @Resource
+    private SpinLockRedisService spinLockRedisService;
+    
     @Slave
     @Override
     public RebateConfig queryById(Long id) {
@@ -81,7 +86,7 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     @Slave
     @Override
     public List<RebateConfigVO> listByPage(RebateConfigRequest rebateConfigRequest) {
-        List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(TenantContextHolder.getTenantId());
+        List<MerchantLevel> merchantLevels = merchantLevelService.listByFranchiseeId(TenantContextHolder.getTenantId(),rebateConfigRequest.getFranchiseeId());
         
         List<RebateConfig> rebateConfigs = this.rebateConfigMapper.selectByPage(rebateConfigRequest);
         if (CollectionUtils.isEmpty(rebateConfigs) || CollectionUtils.isEmpty(merchantLevels)) {
@@ -94,7 +99,6 @@ public class RebateConfigServiceImpl implements RebateConfigService {
             RebateConfigVO rebateConfigVO = new RebateConfigVO();
             BeanUtils.copyProperties(item, rebateConfigVO);
             
-            //            MerchantLevel merchantLevel = merchantLevelService.queryByMerchantLevelAndTenantId(item.getLevel(), item.getTenantId());
             rebateConfigVO.setLevelName(merchantLevelMap.getOrDefault(item.getLevel(), ""));
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
@@ -121,25 +125,38 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     }
     
     @Override
+    @SneakyThrows
     public Integer update(RebateConfig rebateConfig) {
-        int update = this.rebateConfigMapper.updateById(rebateConfig);
+        if (!spinLockRedisService.tryLockWithSpin(CacheConstant.CACHE_REBATE_CONFIG_UPDATE_LOCK + rebateConfig.getId())) {
+            return null;
+        }
         
-        DbUtils.dbOperateSuccessThenHandleCache(update, i -> redisService.delete(CacheConstant.CACHE_REBATE_CONFIG + rebateConfig.getId()));
-        
-        return update;
+        try {
+            int update = this.rebateConfigMapper.updateById(rebateConfig);
+            DbUtils.dbOperateSuccessThenHandleCache(update, i -> redisService.delete(CacheConstant.CACHE_REBATE_CONFIG + rebateConfig.getId()));
+            
+            return update;
+        } finally {
+            spinLockRedisService.delete(CacheConstant.CACHE_REBATE_CONFIG_UPDATE_LOCK + rebateConfig.getId());
+        }
     }
     
     @Override
     public Triple<Boolean, String, Object> save(RebateConfigRequest request) {
+        if (!redisService.setNx(CacheConstant.CACHE_REBATE_CONFIG_SAVE_LOCK + request.getMid() + request.getLevel(), "1", 5 * 1000L, false)) {
+            return Triple.of(true, null, null);
+        }
+        
         //判断套餐是否存在
         Integer result = this.existsRebateConfigByMidAndLevel(request.getMid(), request.getLevel());
         if (Objects.nonNull(result)) {
             return Triple.of(false, "100318", "套餐返利配置已存在");
         }
-    
+        
         RebateConfig rebateConfig = new RebateConfig();
         BeanUtils.copyProperties(request, rebateConfig);
         rebateConfig.setDelFlag(CommonConstant.DEL_N);
+        rebateConfig.setFranchiseeId(request.getFranchiseeId());
         rebateConfig.setTenantId(TenantContextHolder.getTenantId());
         rebateConfig.setCreateTime(System.currentTimeMillis());
         rebateConfig.setUpdateTime(System.currentTimeMillis());
@@ -149,17 +166,25 @@ public class RebateConfigServiceImpl implements RebateConfigService {
     
     @Override
     public Triple<Boolean, String, Object> modify(RebateConfigRequest request) {
-        RebateConfig rebateConfig = this.queryByIdFromCache(request.getId());
-        if (Objects.isNull(rebateConfig) || !Objects.equals(rebateConfig.getTenantId(), TenantContextHolder.getTenantId())) {
-            return Triple.of(false, "100319", "返利配置不存在");
+        if (!spinLockRedisService.tryLockWithSpin(CacheConstant.CACHE_REBATE_CONFIG_MODIFY_LOCK + request.getMid() + request.getLevel())) {
+            return Triple.of(true, null, null);
         }
         
-        RebateConfig rebateConfigUpdate = new RebateConfig();
-        BeanUtils.copyProperties(request, rebateConfigUpdate);
-        rebateConfigUpdate.setUpdateTime(System.currentTimeMillis());
-        this.update(rebateConfigUpdate);
-        
-        return Triple.of(true, null, null);
+        try {
+            RebateConfig rebateConfig = this.queryByIdFromCache(request.getId());
+            if (Objects.isNull(rebateConfig) || !Objects.equals(rebateConfig.getTenantId(), TenantContextHolder.getTenantId())) {
+                return Triple.of(false, "100319", "返利配置不存在");
+            }
+            
+            RebateConfig rebateConfigUpdate = new RebateConfig();
+            BeanUtils.copyProperties(request, rebateConfigUpdate);
+            rebateConfigUpdate.setUpdateTime(System.currentTimeMillis());
+            this.update(rebateConfigUpdate);
+            
+            return Triple.of(true, null, null);
+        } finally {
+            spinLockRedisService.delete(CacheConstant.CACHE_REBATE_CONFIG_MODIFY_LOCK + request.getMid() + request.getLevel());
+        }
     }
     
     @Slave

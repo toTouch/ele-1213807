@@ -44,6 +44,10 @@ public class ShareActivityOperateRecordVO {
      * 修改时间
      */
     private Long updateTime;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 
 
 }

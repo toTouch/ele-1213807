@@ -30,5 +30,7 @@ public class ShareMoneyActivityQuery {
 
     
     private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 
 }

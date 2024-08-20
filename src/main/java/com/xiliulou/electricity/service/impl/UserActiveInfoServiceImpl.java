@@ -4,11 +4,13 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserActiveInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserActiveInfoMapper;
 import com.xiliulou.electricity.query.UserActiveInfoQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -52,6 +54,9 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     
     @Autowired
     UserInfoService userInfoService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -182,6 +187,9 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
         userActiveInfoList.parallelStream().forEach(item -> {
             EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(item.getUid());
             item.setBatteryServiceFee(Objects.nonNull(eleBatteryServiceFeeVO) ? eleBatteryServiceFeeVO.getUserBatteryServiceFee() : BigDecimal.ZERO);
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
         });
         return R.ok(userActiveInfoList);
     }

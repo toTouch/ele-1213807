@@ -32,4 +32,6 @@ public class ShareActivityRecordQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+    
+    private Long franchiseeId;
 }

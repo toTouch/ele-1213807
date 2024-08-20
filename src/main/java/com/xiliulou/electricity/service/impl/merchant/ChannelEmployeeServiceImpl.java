@@ -33,7 +33,7 @@ import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -96,11 +96,17 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Slave
     @Override
-    public ChannelEmployeeVO queryById(Long id) {
+    public ChannelEmployeeVO queryById(Long id, List<Long> bindFranchiseeIdList) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
         if (Objects.isNull(channelEmployee)) {
             return null;
         }
+        
+        if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(channelEmployee.getFranchiseeId())) {
+            log.warn("channel employee query by id warn, franchisee is different, id={}, bindFranchiseeId={}", id, bindFranchiseeIdList);
+            return null;
+        }
+        
         ChannelEmployeeVO channelEmployeeVO = new ChannelEmployeeVO();
         BeanUtils.copyProperties(channelEmployee, channelEmployeeVO);
         if (Objects.nonNull(channelEmployeeVO.getUid())) {
@@ -207,6 +213,12 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         if (!redisService.setNx(CacheConstant.CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK + channelEmployeeRequest.getPhone(), "1", 3000L, false)) {
             return Triple.of(false, "000000", "操作频繁,请稍后再试");
         }
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (ObjectUtils.isNotEmpty(channelEmployeeRequest.getBindFranchiseeIdList()) && !channelEmployeeRequest.getBindFranchiseeIdList().contains(channelEmployeeRequest.getFranchiseeId())) {
+            log.warn("channel employee save error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", channelEmployeeRequest.getId(), channelEmployeeRequest.getFranchiseeId(), channelEmployeeRequest.getBindFranchiseeIdList());
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -214,13 +226,13 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         // 检测手机号
         User userPhone = userService.checkPhoneExist(null, channelEmployeeRequest.getPhone(), User.TYPE_USER_CHANNEL, tenantId, null);
         if (Objects.nonNull(userPhone)) {
-            log.error("current phone has been used by other one, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
+            log.warn("current phone has been used by other one, phone = {}, tenant id = {}", channelEmployeeRequest.getPhone(), tenantId);
             return Triple.of(false, "120001", "当前手机号已注册");
         }
         
         User existUser = userService.queryByUserName(channelEmployeeRequest.getName());
         if (Objects.nonNull(existUser)) {
-            log.error("The user name has been used by other one, name = {}, tenant id = {}", channelEmployeeRequest.getName(), tenantId);
+            log.warn("The user name has been used by other one, name = {}, tenant id = {}", channelEmployeeRequest.getName(), tenantId);
             return Triple.of(false, "120009", "用户姓名已存在");
         }
         
@@ -286,6 +298,18 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
         if (Objects.isNull(channelEmployee)) {
             log.error("not found channel employee by id, id = {}", channelEmployeeRequest.getId());
             return Triple.of(false, "120008", "当前渠道员工不存在");
+        }
+    
+        // 判断修改的加盟商是否有改变
+        if (!Objects.equals(channelEmployeeRequest.getFranchiseeId(), channelEmployee.getFranchiseeId())) {
+            log.error("channel employee update error, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", channelEmployeeRequest.getId(), channelEmployee.getFranchiseeId(), channelEmployeeRequest.getFranchiseeId());
+            return Triple.of(false, "120239", "渠道员加盟商不允许修改");
+        }
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (ObjectUtils.isNotEmpty(channelEmployeeRequest.getBindFranchiseeIdList()) && !channelEmployeeRequest.getBindFranchiseeIdList().contains(channelEmployeeRequest.getFranchiseeId())) {
+            log.error("channel update error, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", channelEmployeeRequest.getId(), channelEmployeeRequest.getFranchiseeId(), channelEmployeeRequest.getBindFranchiseeIdList());
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         User user = userService.queryByUidFromCache(channelEmployee.getUid());
@@ -361,11 +385,16 @@ public class ChannelEmployeeServiceImpl implements ChannelEmployeeService {
     
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Integer removeById(Long id) {
+    public Integer removeById(Long id, List<Long> bindFranchiseeIdList) {
         ChannelEmployee channelEmployee = channelEmployeeMapper.selectById(id);
         
         if (Objects.isNull(channelEmployee)) {
             log.error("not found channel employee by id, id = {}", id);
+            throw new BizException("120008", "渠道员工不存在");
+        }
+    
+        if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(channelEmployee.getFranchiseeId())) {
+            log.error("channel employee remove error, franchisee is different, id = {}, bindFranchiseeId={}", id, bindFranchiseeIdList);
             throw new BizException("120008", "渠道员工不存在");
         }
         

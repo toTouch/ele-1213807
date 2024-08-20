@@ -80,6 +80,8 @@ public class UserCouponVO {
      * 加盟商id
      */
     private Integer franchiseeId;
+    
+    private String franchiseeName;
 
     /**
      * 创建时间

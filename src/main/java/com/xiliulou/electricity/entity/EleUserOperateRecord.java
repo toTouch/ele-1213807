@@ -214,6 +214,10 @@ public class EleUserOperateRecord {
     public static final Integer BIND_CAR_CONTENT = 11;
     
     public static final Integer UN_BIND_CAR_CONTENT = 12;
+    
+    public static final Integer PURCHASE_PACKAGE = 0;
+    
+    public static final Integer RENEWAL_PACKAGE = 1;
 }
 
 
