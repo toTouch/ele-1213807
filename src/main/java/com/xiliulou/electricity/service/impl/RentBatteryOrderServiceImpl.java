@@ -1456,7 +1456,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         for (int i = 0; i < exchangeableList.size(); i++) {
             // 20240614修改：过滤掉电池不符合标准的电池
-            fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee);
+            fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee, electricityCabinet.getFullyCharged());
             if (StringUtils.isBlank(fullBatteryCell)) {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
@@ -1471,7 +1471,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee) {
+    public String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee, Double fullyCharged) {
         electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
@@ -1514,7 +1514,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         // 舒适换电
-        Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes);
+        Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes, fullyCharged);
         if (satisfyComfortExchange.getLeft()) {
             return satisfyComfortExchange.getRight().getCellNo();
         }

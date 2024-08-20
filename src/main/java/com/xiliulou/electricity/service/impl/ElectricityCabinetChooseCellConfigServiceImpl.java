@@ -89,17 +89,21 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
     }
     
     @Override
-    public Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes) {
+    public Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes, Double fullyCharged) {
         log.info("COMFORT EXCHANGE GET FULL INFO! comfort exchange get full cell");
         try {
-            return getComfortExchangeGetFullCell(uid, usableBoxes);
+            if (Objects.isNull(fullyCharged)) {
+                log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.fullyCharged is null");
+                return Pair.of(false, null);
+            }
+            return getComfortExchangeGetFullCell(uid, usableBoxes, fullyCharged);
         } catch (Exception e) {
             log.error("comfortExchangeGetFullCell.error, continue norm getFullCell, uid is {}", uid, e);
             return Pair.of(false, null);
         }
     }
     
-    private Pair<Boolean, ElectricityCabinetBox> getComfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes) {
+    private Pair<Boolean, ElectricityCabinetBox> getComfortExchangeGetFullCell(Long uid, List<ElectricityCabinetBox> usableBoxes, Double fullyCharged) {
         if (Objects.isNull(uid)) {
             log.warn("COMFORT EXCHANGE GET FULL WARN! comfortExchangeGetFullCell.uid is null");
             return Pair.of(false, null);
@@ -122,13 +126,20 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return Pair.of(false, null);
         }
         
+        // 优先换电标准 <= 可换电标准，走常规换电
+        if (Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(electricityConfig.getPriorityExchangeNorm(), fullyCharged) <= 0) {
+            log.warn("COMFORT EXCHANGE GET FULL WARN! priorityExchangeNorm less fullyCharged，priorityExchangeNorm is {}，fullyCharged is {}",
+                    electricityConfig.getPriorityExchangeNorm(), fullyCharged);
+            return Pair.of(false, null);
+        }
+        
         log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}, usableBoxes is {}",
                 electricityConfig.getIsComfortExchange(), electricityConfig.getPriorityExchangeNorm(),
                 JsonUtil.toJson(usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList())));
         
         // 是否可以满足优先换电标准的电池列表
         List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
-                .filter(e -> Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(e.getPower(), electricityConfig.getPriorityExchangeNorm()) > 0)
+                .filter(e -> Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(e.getPower(), electricityConfig.getPriorityExchangeNorm()) >= 0)
                 .collect(Collectors.toList());
         
         if (CollUtil.isEmpty(comfortExchangeBox)) {
