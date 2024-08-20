@@ -12,7 +12,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -55,29 +54,40 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
     }
     
     private void insertOrUpdateCabinetCoreData(ElectricityCabinet electricityCabinet, EleCabinetCoreDataVO eleCabinetCoreDataVO) {
-        EleCabinetCoreData cabinetCoreData = EleCabinetCoreData.builder().electricityCabinetId(electricityCabinet.getId().longValue()).
-                lockOpen(eleCabinetCoreDataVO.isLockOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                smokeSensorOpen(eleCabinetCoreDataVO.isSmokeSensorOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                lightOpen(eleCabinetCoreDataVO.isLightOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                fanOpen(eleCabinetCoreDataVO.isFanOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                extinguisherOpen(eleCabinetCoreDataVO.isExtinguisherOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                v(eleCabinetCoreDataVO.getV()).
-                a(eleCabinetCoreDataVO.getA()).
-                power(eleCabinetCoreDataVO.getPower()).
-                powerFactor(eleCabinetCoreDataVO.getPowerFactor()).
-                activeElectricalEnergy(eleCabinetCoreDataVO.getActiveElectricalEnergy()).
-                waterPumpOpen(eleCabinetCoreDataVO.isWaterPumpOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                waterLevelWarning(eleCabinetCoreDataVO.isWaterLevelWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                heatOpen(eleCabinetCoreDataVO.isHeatOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                temp(eleCabinetCoreDataVO.getTemp()).
-                humidity(eleCabinetCoreDataVO.getHumidity()).
-                waterLeachingWarning(eleCabinetCoreDataVO.isWaterLeachingWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
-                coreVersion(Objects.isNull(eleCabinetCoreDataVO.getCoreVersion()) ? "0" : String.valueOf(eleCabinetCoreDataVO.getCoreVersion()))
+        Integer eid = electricityCabinet.getId();
+        EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEid(eid);
+        EleCabinetCoreData cabinetCoreData = EleCabinetCoreData.builder()
+                .electricityCabinetId(eid.longValue())
+                .lockOpen(eleCabinetCoreDataVO.isLockOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .smokeSensorOpen(eleCabinetCoreDataVO.isSmokeSensorOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .lightOpen(eleCabinetCoreDataVO.isLightOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .fanOpen(eleCabinetCoreDataVO.isFanOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .extinguisherOpen(eleCabinetCoreDataVO.isExtinguisherOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .v(eleCabinetCoreDataVO.getV())
+                .a(eleCabinetCoreDataVO.getA())
+                .power(eleCabinetCoreDataVO.getPower())
+                .powerFactor(eleCabinetCoreDataVO.getPowerFactor())
+                .activeElectricalEnergy(eleCabinetCoreDataVO.getActiveElectricalEnergy())
+                .waterPumpOpen(eleCabinetCoreDataVO.isWaterPumpOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .waterLevelWarning(eleCabinetCoreDataVO.isWaterLevelWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .heatOpen(eleCabinetCoreDataVO.isHeatOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .temp(eleCabinetCoreDataVO.getTemp())
+                .humidity(eleCabinetCoreDataVO.getHumidity())
+                .waterLeachingWarning(eleCabinetCoreDataVO.isWaterLeachingWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO)
+                .coreVersion(Objects.isNull(eleCabinetCoreDataVO.getCoreVersion()) ? "0" : String.valueOf(eleCabinetCoreDataVO.getCoreVersion()))
                 .backupPower(eleCabinetCoreDataVO.isBackupPower() ? EleCabinetConstant.POWER_TYPE_BACKUP : EleCabinetConstant.POWER_TYPE_ORDINARY)
-                .backupPowerReason(eleCabinetCoreDataVO.getBackupPowerReason()).createTime(System.currentTimeMillis()).
-                        updateTime(System.currentTimeMillis()).build();
+                .backupPowerReason(eleCabinetCoreDataVO.getBackupPowerReason()).build();
         
-        eleCabinetCoreDataService.insertOrUpdateCabinetCoreData(cabinetCoreData);
+        if (Objects.nonNull(eleCabinetCoreData)) {
+            cabinetCoreData.setCreateTime(System.currentTimeMillis());
+            cabinetCoreData.setUpdateTime(System.currentTimeMillis());
+            
+            eleCabinetCoreDataService.insert(cabinetCoreData);
+        } else {
+            cabinetCoreData.setUpdateTime(System.currentTimeMillis());
+            
+            eleCabinetCoreDataService.updateByUk(cabinetCoreData);
+        }
     }
     
     @Data
