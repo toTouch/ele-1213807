@@ -144,16 +144,13 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
                 }
             }
             
-            AssetBatchExitWarehouseVO batchExitWarehouseVO = null;
-            
             // 处理数据
+            AssetBatchExitWarehouseVO batchExitWarehouseVO = null;
             if (CollectionUtils.isNotEmpty(dataList)) {
                 // 持久化
                 assetManageService.batchExistWarehouse(dataList);
-                
                 // 清除缓存
                 handleClearCache(dataList);
-                
                 // 返回加盟商不一致及库存状态的sn
                 batchExitWarehouseVO = handleFailureExitWarehouse(dataList);
             }
@@ -307,9 +304,12 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             snList = exitWarehouseCarList.stream().map(ElectricityCarVO::getSn).collect(Collectors.toList());
         }
         
-        // 可退资产未空，则返回
-        if (CollectionUtils.isEmpty(idList)) {
-            return R.ok();
+        // 封装不可退的资产
+        AssetBatchExitWarehouseBO data = AssetBatchExitWarehouseBO.builder().notSameFranchiseeSnList(notSameFranchiseeSnList).stockStatusList(stockSnList).build();
+        
+        // 可退资产为空，则返回
+        if (CollectionUtils.isEmpty(snList)) {
+            return R.ok(data);
         }
         
         Long warehouseId = assetExitWarehouseSaveRequest.getWarehouseId();
@@ -336,10 +336,15 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
         AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = AssetBatchExitWarehouseRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId)
                 .warehouseId(warehouseId).idList(idList).build();
         
-        AssetBatchExitWarehouseBO data = AssetBatchExitWarehouseBO.builder().assetBatchExitWarehouseRequest(assetBatchExitWarehouseRequest)
-                .recordSaveQueryModel(recordSaveQueryModel).detailSaveQueryModelList(detailSaveQueryModelList).snList(snList).type(type).operator(operator)
-                .exitWarehouseCabinetList(exitWarehouseCabinetList).exitWarehouseBatteryList(exitWarehouseBatteryList).exitWarehouseCarList(exitWarehouseCarList)
-                .notSameFranchiseeSnList(notSameFranchiseeSnList).stockStatusList(stockSnList).build();
+        data.setExitWarehouseCabinetList(exitWarehouseCabinetList);
+        data.setExitWarehouseBatteryList(exitWarehouseBatteryList);
+        data.setExitWarehouseCarList(exitWarehouseCarList);
+        data.setAssetBatchExitWarehouseRequest(assetBatchExitWarehouseRequest);
+        data.setRecordSaveQueryModel(recordSaveQueryModel);
+        data.setDetailSaveQueryModelList(detailSaveQueryModelList);
+        data.setSnList(snList);
+        data.setType(type);
+        data.setOperator(operator);
         
         return R.ok(data);
     }
