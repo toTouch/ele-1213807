@@ -1489,21 +1489,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
                     .filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getPower())
-                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed())
-                    .collect(Collectors.toList());
+                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()
+                            .thenComparing(item -> item.getBatteryType().substring(item.getBatteryType().length() - 2), Comparator.reverseOrder())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableBoxes)) {
                 log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!usableBoxes is empty,uid={}", userInfo.getUid());
                 return null;
             }
             
-            //如果存在多个电量满电且相同的电池，取串数最大的
-            Double maxPower = usableBoxes.get(0).getPower();
-            electricityCabinetBoxList = usableBoxes.stream().filter(item -> Objects.equals(item.getPower(), maxPower))
-                    .sorted(Comparator.comparing(item -> item.getBatteryType().substring(item.getBatteryType().length() - 2))).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
-                log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!electricityCabinetBoxList is empty,uid={}", userInfo.getUid());
-                return null;
-            }
+            
         }
         
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
