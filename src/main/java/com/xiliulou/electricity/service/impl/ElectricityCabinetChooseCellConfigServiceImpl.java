@@ -126,22 +126,24 @@ public class ElectricityCabinetChooseCellConfigServiceImpl implements Electricit
             return Pair.of(false, null);
         }
         
+        Double priorityExchangeNorm = electricityConfig.getPriorityExchangeNorm();
+        if (Objects.isNull(priorityExchangeNorm)) {
+            log.warn("COMFORT EXCHANGE GET FULL WARN! priorityExchangeNorm is null,tenantId is {}", userInfo.getTenantId());
+            return Pair.of(false, null);
+        }
+        
         // 优先换电标准 <= 可换电标准，走常规换电
-        if (Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(electricityConfig.getPriorityExchangeNorm(), fullyCharged) <= 0) {
-            log.warn("COMFORT EXCHANGE GET FULL WARN! priorityExchangeNorm less fullyCharged，priorityExchangeNorm is {}，fullyCharged is {}",
-                    electricityConfig.getPriorityExchangeNorm(), fullyCharged);
+        if (Double.compare(priorityExchangeNorm, fullyCharged) <= 0) {
+            log.warn("COMFORT EXCHANGE GET FULL WARN! priorityExchangeNorm less fullyCharged，priorityExchangeNorm is {}，fullyCharged is {}", priorityExchangeNorm, fullyCharged);
             return Pair.of(false, null);
         }
         
         log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.electricityConfig.comfort is {}, priorityExchangeNorm is {}, usableBoxes is {}",
-                Objects.nonNull(electricityConfig.getIsComfortExchange()) ? electricityConfig.getIsComfortExchange() : "null",
-                Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) ? electricityConfig.getPriorityExchangeNorm() : "null",
+                electricityConfig.getIsComfortExchange(), priorityExchangeNorm,
                 JsonUtil.toJson(usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList())));
         
         // 是否可以满足优先换电标准的电池列表
-        List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream()
-                .filter(e -> Objects.nonNull(electricityConfig.getPriorityExchangeNorm()) && Double.compare(e.getPower(), electricityConfig.getPriorityExchangeNorm()) >= 0)
-                .collect(Collectors.toList());
+        List<ElectricityCabinetBox> comfortExchangeBox = usableBoxes.stream().filter(e -> Double.compare(e.getPower(), priorityExchangeNorm) >= 0).collect(Collectors.toList());
         
         if (CollUtil.isEmpty(comfortExchangeBox)) {
             log.info("COMFORT EXCHANGE GET FULL INFO! comfortExchangeGetFullCell.comfortExchangeBox is empty,uid={}", userInfo.getUid());
