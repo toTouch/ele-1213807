@@ -16,18 +16,29 @@
     
     <!--查询单个-->
     <select id="queryById" resultMap="UserActiveInfoMap">
-        select
-          id, active_time, uid, phone, tenant_id, create_time, update_time, user_name
+        select id,
+               active_time,
+               uid,
+               phone,
+               tenant_id,
+               create_time,
+               update_time,
+               user_name
         from t_user_active_info
         where id = #{id}
     </select>
     
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="UserActiveInfoMap">
-        select
-          id, active_time, uid, phone, tenant_id, create_time, update_time, user_name
-        from t_user_active_info
-        limit #{offset}, #{limit}
+        select id,
+               active_time,
+               uid,
+               phone,
+               tenant_id,
+               create_time,
+               update_time,
+               user_name
+        from t_user_active_info limit #{offset}, #{limit}
     </select>
     
     <!--通过实体作为筛选条件查询-->
@@ -100,20 +111,27 @@
     
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_user_active_info where id = #{id}
+        delete
+        from t_user_active_info
+        where id = #{id}
     </delete>
     
     
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_active_info(active_time, uid, phone, tenant_id, create_time, update_time, user_name)
-        values (#{activeTime}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName})
-        on duplicate key
+        values (#{activeTime}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName}) on duplicate key
         update active_time=#{activeTime}, uid=#{uid},phone=#{phone}, update_time=#{updateTime}, user_name = #{userName}
     </insert>
     
     <select id="queryByUId" resultMap="UserActiveInfoMap">
-        select
-          id, active_time,  uid, phone, tenant_id, create_time, update_time , user_name
+        select id,
+               active_time,
+               uid,
+               phone,
+               tenant_id,
+               create_time,
+               update_time,
+               user_name
         from t_user_active_info
         where uid = #{uid}
     </select>
@@ -121,7 +139,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserActiveInfoVo">
         select
         uai.id, uai.uid, uai.active_time, uai.phone, uai.user_name,
-        eb.sn as battery_sn, ubmc.card_pay_count as pay_count, ui.franchisee_id
+        eb.sn as battery_sn, ubmc.card_pay_count as pay_count, ui.franchisee_id, ubmc.member_card_expire_time as memberCardExpireTime
         from t_user_info ui
         left join t_user_active_info uai on ui.uid = uai.uid
         left join t_electricity_battery eb on ui.uid = eb.uid
@@ -140,6 +158,14 @@
             <if test="batterySn != null and batterySn != ''">
                 and eb.sn = #{batterySn}
             </if>
+            <choose>
+                <when test="isBoundBattery == 0">
+                    and eb.uid is null
+                </when>
+                <when test="isBoundBattery == 1">
+                    and eb.uid is not null
+                </when>
+            </choose>
             <if test="payCount != null">
                 and ubmc.card_pay_count = #{payCount}
             </if>
@@ -187,6 +213,14 @@
             <if test="batterySn != null and batterySn != ''">
                 and eb.sn = #{batterySn}
             </if>
+            <choose>
+                <when test="isBoundBattery == 0">
+                    and eb.uid is null
+                </when>
+                <when test="isBoundBattery == 1">
+                    and eb.uid is not null
+                </when>
+            </choose>
             <if test="payCount != null">
                 and ubmc.card_pay_count = #{payCount}
             </if>
@@ -212,6 +246,9 @@
     </select>
     
     <update id="updatePhoneByUid">
-        update t_user_active_info set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
+        update t_user_active_info
+        set phone=#{newPhone}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
     </update>
 </mapper>

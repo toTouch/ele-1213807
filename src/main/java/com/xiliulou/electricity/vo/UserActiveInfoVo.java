@@ -31,4 +31,13 @@ public class UserActiveInfoVo {
     private Long franchiseeId;
     
     private String franchiseeName;
+    
+    /**
+     * 套餐总到期时间
+     */
+    private Long memberCardExpireTime;
+    
+    private Long storeId;
+    
+    private Double soc;
 }
