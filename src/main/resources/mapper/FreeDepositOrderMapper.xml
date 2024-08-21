@@ -20,6 +20,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="channel" column="channel" jdbcType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->
@@ -221,7 +222,28 @@
             </if>
         </where>
     </select>
-
+    <select id="queryByOrderId" resultMap="FreeDepositOrderMap">
+        select id,
+               uid,
+               order_id,
+               auth_no,
+               phone,
+               id_card,
+               real_name,
+               trans_amt,
+               pay_trans_amt,
+               auth_status,
+               pay_status,
+               tenant_id,
+               type,
+               deposit_type,
+               create_time,
+               update_time,
+               channel
+        from t_free_deposit_order
+        where order_id = #{orderId}
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_free_deposit_order

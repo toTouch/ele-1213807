@@ -61,4 +61,6 @@ public interface FreeDepositOrderMapper extends BaseMapper<FreeDepositOrder> {
     List<FreeDepositOrder> selectEnterpriseRefundingOrder(@Param("offset") int offset, @Param("size") Integer size);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    FreeDepositOrder queryByOrderId(String orderId);
 }
