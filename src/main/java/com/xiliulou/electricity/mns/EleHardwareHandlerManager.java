@@ -39,7 +39,6 @@ import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -316,7 +315,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         CabinetCommandRequest request = new CabinetCommandRequest();
         request.setProductKey(query.getProductKey());
         request.setDeviceName(query.getDeviceName());
-        request.setTxnNo(query.getSessionId());
+        request.setSessionId(query.getSessionId());
         //        request.setContent(Objects.isNull(params) ? null : JsonUtil.toJson(params));
         request.setContent(params);
         

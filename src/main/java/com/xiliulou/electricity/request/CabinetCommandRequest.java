@@ -20,7 +20,7 @@ public class CabinetCommandRequest {
     
     private String deviceName;
     
-    private String txnNo;
+    private String sessionId;
     
     private Map<String, Object> content;
 }
