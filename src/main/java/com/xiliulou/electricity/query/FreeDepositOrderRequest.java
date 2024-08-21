@@ -45,4 +45,6 @@ public class FreeDepositOrderRequest {
      * 免押金额
      */
     private BigDecimal payAmount;
+    
+    private Long uid;
 }

@@ -1,19 +1,25 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
+import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryFreezeStatusRequest;
+import com.xiliulou.pay.deposit.fengyun.service.FyDepositService;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
@@ -27,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -52,6 +59,12 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Resource
     PxzDepositService pxzDepositService;
     
+    @Resource
+    FreeDepositDataService freeDepositDataService;
+    
+    @Resource
+    private FyDepositService fyDepositService;
+    
     @Override
     public Triple<Boolean, String, Object> checkExistSuccessFreeDepositOrder(Long uid, FreeDepositUserDTO freeDepositUserDTO) {
         // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
@@ -74,14 +87,15 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         // 获取上次免押的渠道，查询上次的免押状态
         if (Objects.equals(freeDepositOrder.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
+            
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
                 return Triple.of(true, "100400", "免押功能未配置相关信息！请联系客服处理");
             }
-            
             // 拍小租进行过免押操作，且已免押成功
             return checkFreeDepositStatusFromPxzV2(batteryDeposit.getOrderId(), pxzConfig);
         }
+        
         if (Objects.equals(freeDepositOrder.getChannel(), FreeDepositChannelEnum.FY.getChannel())) {
             // todo 蜂云免押
             return checkFreeDepositStatusFromFY(batteryDeposit.getOrderId());
@@ -91,11 +105,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     
     private Triple<Boolean, String, Object> checkFreeDepositStatusFromFY(String orderId) {
-        
         log.info("checkFreeDepositStatusFromFY. orderId = {}, ", orderId);
         
         FyCommonQuery<FyQueryFreezeStatusRequest> query = new FyCommonQuery<>();
-        
         FyQueryFreezeStatusRequest request = new FyQueryFreezeStatusRequest();
         request.setThirdOrderNo(orderId);
         query.setFyRequest(request);
@@ -138,13 +150,26 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     /**
      * 免押接口，根据次数区分使用拍小租还是蜂云
-     *
-     * @param orderId
-     * @return
      */
     @Override
-    public Triple<Boolean, String, Object> freeDepositOrder(String orderId) {
-        return null;
+    public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
+        if (Objects.isNull(request)) {
+            return Triple.of(false, "100419", "系统异常，稍后再试");
+        }
+        // 获取租户免押次数
+        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(request.getTenantId());
+        if (Objects.isNull(freeDepositData)) {
+            log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", request.getUid());
+            return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
+        }
+        
+        if (freeDepositData.getFreeDepositCapacity() > NumberConstant.ZERO) {
+            // 拍小租
+            return freeDepositOrderPXZ(request);
+        } else {
+            // todo 蜂云
+            return freeDepositOrderFY(request);
+        }
     }
     
     
@@ -187,6 +212,28 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         if (!callPxzRsp.isSuccess()) {
             return Triple.of(false, "100401", callPxzRsp.getRespDesc());
         }
+        return Triple.of(true, null, null);
+    }
+    
+    
+    private Triple<Boolean, String, Object> freeDepositOrderFY(FreeDepositOrderRequest freeDepositOrderRequest) {
+        FyCommonQuery<FyAuthPayRequest> query = new FyCommonQuery<>();
+        FyAuthPayRequest fyAuthPayRequest = new FyAuthPayRequest();
+        query.setFyRequest(fyAuthPayRequest);
+        
+        try {
+            Map<String, Object> map = fyDepositService.authPay(query);
+            if (CollUtil.isEmpty(map)) {
+                return Triple.of(false, "100401", "免押调用失败");
+            }
+            // todo 解析
+            Object o = map.get("bizContent");
+            
+        } catch (Exception e) {
+            log.error("FY ERROR! freeDepositOrderFY fail!  orderId={}", freeDepositOrderRequest.getFreeDepositOrderId(), e);
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
         return Triple.of(true, null, null);
     }
 }
