@@ -78,7 +78,8 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
         
         Integer exists = this.existsByUk(electricityCabinetId, cellNo);
         if (Objects.nonNull(exists)) {
-            BoxOtherProperties updateBoxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinetId).cellNo(cellNo).build();
+            BoxOtherProperties updateBoxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinetId).cellNo(cellNo)
+                    .updateTime(System.currentTimeMillis()).build();
             if (Objects.nonNull(boxOtherProperties.getDelFlag())) {
                 updateBoxOtherProperties.setDelFlag(boxOtherProperties.getDelFlag());
             }
