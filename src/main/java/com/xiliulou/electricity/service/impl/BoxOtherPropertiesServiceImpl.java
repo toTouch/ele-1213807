@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.mapper.BoxOtherPropertiesMapper;
 import com.xiliulou.electricity.service.BoxOtherPropertiesService;
@@ -68,15 +69,39 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
      */
     @Override
     public BoxOtherProperties insertOrUpdate(BoxOtherProperties boxOtherProperties) {
-        Integer exists = this.existsByUk(boxOtherProperties.getElectricityCabinetId(), boxOtherProperties.getCellNo());
+        Integer electricityCabinetId = boxOtherProperties.getElectricityCabinetId();
+        String cellNo = boxOtherProperties.getCellNo();
+        if (Objects.isNull(electricityCabinetId) || Objects.isNull(cellNo)) {
+            log.error("BoxOtherProperties insertOrUpdate error! electricityCabinetId={}, cellNo={}", electricityCabinetId, cellNo);
+            return null;
+        }
+        
+        Integer exists = this.existsByUk(electricityCabinetId, cellNo);
         if (Objects.nonNull(exists)) {
-            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
-            this.boxOtherPropertiesMapper.updateByUk(boxOtherProperties);
+            BoxOtherProperties updateBoxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinetId).cellNo(cellNo).build();
+            if (Objects.nonNull(boxOtherProperties.getDelFlag())) {
+                updateBoxOtherProperties.setDelFlag(boxOtherProperties.getDelFlag());
+            }
+            if (Objects.nonNull(boxOtherProperties.getLockReason())) {
+                updateBoxOtherProperties.setLockReason(boxOtherProperties.getLockReason());
+            }
+            if (Objects.nonNull(boxOtherProperties.getLockStatusChangeTime())) {
+                updateBoxOtherProperties.setLockStatusChangeTime(boxOtherProperties.getLockStatusChangeTime());
+            }
+            if (Objects.nonNull(boxOtherProperties.getRemark())) {
+                updateBoxOtherProperties.setRemark(boxOtherProperties.getRemark());
+            }
+            
+            this.boxOtherPropertiesMapper.updateByUk(updateBoxOtherProperties);
         } else {
-            boxOtherProperties.setCreateTime(System.currentTimeMillis());
-            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
-            boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
-            this.boxOtherPropertiesMapper.insertOne(boxOtherProperties);
+            BoxOtherProperties insertBoxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinetId).cellNo(cellNo)
+                    .delFlag(Objects.isNull(boxOtherProperties.getDelFlag()) ? BoxOtherProperties.DEL_NORMAL : boxOtherProperties.getDelFlag())
+                    .remark(Objects.isNull(boxOtherProperties.getRemark()) ? "" : boxOtherProperties.getRemark())
+                    .lockReason(Objects.isNull(boxOtherProperties.getLockReason()) ? NumberConstant.ZERO : boxOtherProperties.getLockReason())
+                    .lockStatusChangeTime(Objects.isNull(boxOtherProperties.getLockStatusChangeTime()) ? System.currentTimeMillis() : boxOtherProperties.getLockStatusChangeTime())
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            
+            this.boxOtherPropertiesMapper.insertOne(insertBoxOtherProperties);
         }
         
         return boxOtherProperties;
