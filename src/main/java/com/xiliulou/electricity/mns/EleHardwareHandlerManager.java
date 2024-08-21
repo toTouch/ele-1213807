@@ -51,6 +51,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -306,17 +307,16 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         }
         
         Map params = null;
-        Object data = query.getData();
-        if (Objects.nonNull(data) && data instanceof Map) {
-            params = (Map) data;
+        if (Objects.nonNull(query.getData()) && query.getData() instanceof Map) {
+            params = (Map) query.getData();
             params.put("type", query.getCommand());
+            params.put("sessionId", query.getSessionId());
         }
         
         CabinetCommandRequest request = new CabinetCommandRequest();
         request.setProductKey(query.getProductKey());
         request.setDeviceName(query.getDeviceName());
         request.setSessionId(query.getSessionId());
-        //        request.setContent(Objects.isNull(params) ? null : JsonUtil.toJson(params));
         request.setContent(params);
         
         HttpHeaders headers = new HttpHeaders();
