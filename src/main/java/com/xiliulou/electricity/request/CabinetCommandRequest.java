@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -13,11 +15,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CabinetCommandRequest {
+    
     private String productKey;
     
     private String deviceName;
     
     private String txnNo;
     
-    private String content;
+    private Map<String, Object> content;
 }
