@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,21 +12,37 @@ import java.math.BigDecimal;
  * @create: 2024-08-21 19:17
  */
 @Data
+@Builder
 public class FreeDepositOrderRequest {
     
     private Long franchiseeId;
     
+    /**
+     * 手机号
+     */
     private String phoneNumber;
     
+    /**
+     * 身份证
+     */
     private String idCard;
     
+    /**
+     * 名
+     */
     private String realName;
     
     private Integer model;
     
     private Integer tenantId;
     
+    /**
+     * 免押订单号
+     */
     private String freeDepositOrderId;
     
+    /**
+     * 免押金额
+     */
     private BigDecimal payAmount;
 }
