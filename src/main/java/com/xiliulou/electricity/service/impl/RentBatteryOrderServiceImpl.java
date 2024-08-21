@@ -1496,7 +1496,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return null;
             }
             
-            
+            electricityCabinetBoxList = usableBoxes;
         }
         
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
