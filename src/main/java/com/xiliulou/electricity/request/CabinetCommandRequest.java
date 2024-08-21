@@ -22,5 +22,7 @@ public class CabinetCommandRequest {
     
     private String sessionId;
     
+    private String type;
+    
     private Map<String, Object> content;
 }

@@ -309,14 +309,13 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         Map params = null;
         if (Objects.nonNull(query.getData()) && query.getData() instanceof Map) {
             params = (Map) query.getData();
-            params.put("type", query.getCommand());
-            params.put("sessionId", query.getSessionId());
         }
         
         CabinetCommandRequest request = new CabinetCommandRequest();
         request.setProductKey(query.getProductKey());
         request.setDeviceName(query.getDeviceName());
         request.setSessionId(query.getSessionId());
+        request.setType(query.getCommand());
         request.setContent(params);
         
         HttpHeaders headers = new HttpHeaders();
