@@ -156,7 +156,7 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            <if test="remark != null and remark != ''">
+            <if test="remark != null">
                 remark = #{remark},
             </if>
             <if test="lockReason != null">
