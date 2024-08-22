@@ -6,11 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.TenantConfig;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.DeviceReportConstant;
-import com.xiliulou.electricity.constant.EleCabinetConstant;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
@@ -41,17 +37,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -161,8 +152,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 log.warn("ELE WARN! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
                 return;
             }
-            
-            if (redisService.hasKey(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId())) {
+
+            if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId(), "1", 30000L, false)) {
                 log.warn("ELE WARN! device is repeat report status! p={},d={},status={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(),
                         receiverMessage.getStatus());
                 return;
@@ -195,7 +186,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
-                redisService.set(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId(), "1", 30L, TimeUnit.SECONDS);
             }
             
             //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
