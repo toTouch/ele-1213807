@@ -61,6 +61,8 @@ public class ShareMoneyActivityRecord {
     * 租户id
     */
     private Integer tenantId;
+    
+    private Long franchiseeId;
 
 
     //初始化

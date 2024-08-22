@@ -50,4 +50,9 @@ public class MerchantPlaceVO {
      * 区域id
      */
     private Long merchantAreaId;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 }

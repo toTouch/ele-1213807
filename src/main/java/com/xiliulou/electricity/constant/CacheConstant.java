@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.constant;
 
+import org.apache.kafka.common.protocol.types.Field;
+
 public interface CacheConstant {
     
     Long CACHE_EXPIRE_MONTH = 30 * 24 * 3600000L;
@@ -565,10 +567,17 @@ public interface CacheConstant {
      * 商户扩展属性缓存
      */
     String CACHE_MERCHANT_ATTR = "merchantAttr:";
+    String CACHE_MERCHANT_ATTR_CONFIG = "merchantAttrConfig:";
     /**
      * 返利配置
      */
     String CACHE_REBATE_CONFIG = "rebateConfig:";
+    String CACHE_REBATE_CONFIG_SAVE_LOCK = "cache_rebate_config_save_lock:";
+    String CACHE_REBATE_CONFIG_UPDATE_LOCK = "cache_rebate_config_update_lock:";
+    String CACHE_REBATE_CONFIG_MODIFY_LOCK = "cache_rebate_config_modify_lock:";
+    String CACHE_UPGRADE_CONDITION_UPDATE_LOCK = "cache_upgrade_condition_update_lock:";
+    String CACHE_CHANNEL_SWITCH_STATE_UPDATE_LOCK = "cache_channel_switch_state_update_lock:";
+    String CACHE_INVITATION_CONDITION_UPDATE_LOCK = "cache_invitation_condition_update_lock:";
 
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
@@ -583,6 +592,8 @@ public interface CacheConstant {
     String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
 
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
+    
+    String CACHE_MERCHANT_LEVEL_UPDATE_LOCK = "cache_merchant_level_update_lock:";
 
     String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
     String CACHE_MERCHANT = "cache_merchant:";
@@ -669,6 +680,10 @@ public interface CacheConstant {
     
     
     String ALLOW_SELF_OPEN_CELL_START_TIME = "allow_self_open_cell_start_time:";
+    
+    String VEHICLE_BINDING_IDEMPOTENT_LOCK = "vehicle_binding_idempotent_lock:%s";
+    
+    String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     
     
     /**

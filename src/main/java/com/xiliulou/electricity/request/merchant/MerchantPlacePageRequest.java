@@ -60,4 +60,11 @@ public class MerchantPlacePageRequest {
      * 商户id
      */
     private Long merchantId;
+    
+    /**
+     * 登录用户绑定的加盟商
+     */
+    private List<Long> bindFranchiseeIdList;
+    
+    private List<Long> franchiseeIdList;
 }

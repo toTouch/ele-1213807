@@ -61,6 +61,11 @@ public class ExchangeUserSelectVo {
     private Integer isTheSameCabinet = 1;
     
     /**
+     * 是否进入取电
+     */
+    private Integer isEnterTakeBattery ;
+    
+    /**
      * 是否进入多次换电
      */
     public static final Integer ENTER_MORE_EXCHANGE = 1;
@@ -92,6 +97,8 @@ public class ExchangeUserSelectVo {
      * 不是同一个柜机
      */
     public static final Integer NOT_SAME_CABINET = 0;
+    
+    public static final Integer ENTER_TAKE_BATTERY = 1;
     
     
 }

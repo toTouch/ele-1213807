@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * <p>
@@ -45,4 +46,6 @@ public class MerchantUnbindReq implements Serializable {
     
     @NotNull(message = "解绑原因不能为空")
     private String unbindReason;
+    
+    private List<Long> bindFranchiseeIdList;
 }

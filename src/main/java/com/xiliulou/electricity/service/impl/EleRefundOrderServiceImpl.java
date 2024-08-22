@@ -1177,7 +1177,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 插入修改记录
             EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
-            eleRefundOrderHistory.setRefundOrderNo(generateOrderId(uid));
+            eleRefundOrderHistory.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid));
             eleRefundOrderHistory.setRefundAmount(refundAmount);
             eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
             eleRefundOrderHistory.setTenantId(userInfo.getTenantId());

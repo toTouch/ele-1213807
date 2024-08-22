@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -37,4 +38,12 @@ public class MerchantAreaSaveOrUpdateRequest {
      */
     @Size(max = 50, message = "备注内容超出最大限制50字", groups = {CreateGroup.class, UpdateGroup.class})
     private String remark;
+    
+    @NotNull(message = "加盟商id不能为空", groups = {CreateGroup.class})
+    private Long franchiseeId;
+    
+    /**
+     * 绑定加盟商id
+     */
+    private List<Long> bindFranchiseeIdList;
 }

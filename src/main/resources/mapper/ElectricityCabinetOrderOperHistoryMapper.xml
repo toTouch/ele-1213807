@@ -7,7 +7,10 @@
         select
         id ,order_id ,type , msg , create_time,seq,result,tenant_id
         from t_electricity_cabinet_order_oper_history
-        where order_id = #{query.orderId} and tenant_id=#{query.tenantId}
+		where order_id = #{query.orderId}
+        <if test="query.tenantId != null">
+            and tenant_id=#{query.tenantId}
+        </if>
         AND type =#{query.type}
         order by id asc
         <if test="query.offset != null and query.size != null">

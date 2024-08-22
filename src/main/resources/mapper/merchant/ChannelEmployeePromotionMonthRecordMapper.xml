@@ -21,6 +21,12 @@
             <if test="monthDate != null and monthDate != ''">
                 and month_date = #{monthDate}
             </if>
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </sql>
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.ChannelEmployeePromotionVO">
@@ -61,5 +67,11 @@
         where
             tenant_id = #{tenantId}
              and month_date = #{monthDate}
+             <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
     </select>
 </mapper>

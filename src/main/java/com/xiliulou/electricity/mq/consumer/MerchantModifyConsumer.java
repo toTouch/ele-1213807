@@ -141,7 +141,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                         return;
                     }
                     
-                    MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(userInfo.getTenantId());
+                    MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(item.getFranchiseeId());
                     if (Objects.isNull(merchantAttr)) {
                         log.warn("MERCHANT MODIFY CONSUMER WARN! merchantAttr is null, tenantId={}", userInfo.getTenantId());
                         return;
@@ -250,7 +250,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     }
     
                     //若渠道员与商户的返利差额都为0  则不生成返利差额记录
-                    if (BigDecimal.ZERO.compareTo(channelerRebate) == 0 && BigDecimal.ZERO.compareTo(merchantRebate) == 0) {
+                    if (BigDecimal.ZERO.compareTo(rebateRecord.getChannelerRebate()) == 0 && BigDecimal.ZERO.compareTo(rebateRecord.getMerchantRebate()) == 0) {
                         log.info("MERCHANT MODIFY CONSUMER INFO!balance is zero,uid={}", item.getUid());
                         return;
                     }

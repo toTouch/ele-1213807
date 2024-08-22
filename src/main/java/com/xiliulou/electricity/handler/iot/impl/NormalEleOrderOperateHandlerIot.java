@@ -33,22 +33,25 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     
     @Autowired
     RedisService redisService;
+    
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+    
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
-
+    
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-
+        
         EleOrderOperateVO eleOrderOperateVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderOperateVO.class);
         if (Objects.isNull(eleOrderOperateVO)) {
             log.error("ELE ERROR! eleOrderOperateVO is null,sessionId={}", receiverMessage.getSessionId());
             return;
         }
-
+        
         if (receiverMessage.getType().equalsIgnoreCase(ElectricityIotConstant.API_ORDER_OPER_HISTORY)) {
         } else {
             Integer type = eleOrderOperateVO.getOrderType();
@@ -63,33 +66,33 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                     seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
                 }
             }
-
-            //加入操作记录表
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                    .createTime(eleOrderOperateVO.createTime)
-                    .orderId(eleOrderOperateVO.getOrderId())
-                    .type(type)
-                    .tenantId(electricityCabinet.getTenantId())
-                    .msg(eleOrderOperateVO.getMsg())
-                    .seq(seq)
-                    .result(eleOrderOperateVO.getResult()).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
-    
-            //若柜机正在使用中
+            
             if (StringUtils.isNotBlank(eleOrderOperateVO.getOrderId()) && StringUtils.isNotBlank(eleOrderOperateVO.getMsg()) && eleOrderOperateVO.getMsg()
                     .contains(INIT_DEVICE_USING_MSG)) {
-                electricityCabinetOrderOperHistoryService.updateTenantIdByOrderId(eleOrderOperateVO.getOrderId(), Tenant.SUPER_ADMIN_TENANT_ID);
+                return;
             }
+            
+            //加入操作记录表
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(eleOrderOperateVO.createTime)
+                    .orderId(eleOrderOperateVO.getOrderId()).type(type).tenantId(electricityCabinet.getTenantId()).msg(eleOrderOperateVO.getMsg()).seq(seq)
+                    .result(eleOrderOperateVO.getResult()).build();
+            electricityCabinetOrderOperHistoryService.insert(history);
+            
+          
+            
         }
     }
-
-
+    
+    
     @Data
     class EleOrderOperateVO {
+        
         //订单Id
         private String orderId;
+        
         //
         private Long createTime;
+        
         //
         private Integer orderType;
         
@@ -97,12 +100,15 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
          * 订单状态阶段
          */
         private String title;
+        
         //msg
         private String msg;
+        
         /**
          * 操作步骤序号
          */
         private Integer seq;
+        
         /**
          * 操作结果 0：成功，1：失败
          */

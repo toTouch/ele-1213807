@@ -381,7 +381,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
             log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
-            return R.ok();
+            return R.fail("100460", "您已参与渠道活动，请勿重复扫码");
         }
     
         // 是否渠道人，

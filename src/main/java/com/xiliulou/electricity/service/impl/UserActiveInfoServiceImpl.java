@@ -4,11 +4,15 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserActiveInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserActiveInfoMapper;
 import com.xiliulou.electricity.query.UserActiveInfoQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryDataService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -16,15 +20,17 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.UserActiveInfoVo;
+import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,6 +59,12 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     @Autowired
     UserInfoService userInfoService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
+    @Resource
+    private ElectricityBatteryDataService electricityBatteryDataService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -74,8 +86,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
      */
     @Override
     public UserActiveInfo queryByUIdFromCache(Long uid) {
-        UserActiveInfo userActiveInfo = redisService
-                .getWithHash(CacheConstant.USER_ACTIVE_INFO_CACHE + uid, UserActiveInfo.class);
+        UserActiveInfo userActiveInfo = redisService.getWithHash(CacheConstant.USER_ACTIVE_INFO_CACHE + uid, UserActiveInfo.class);
         redisService.expire(CacheConstant.USER_ACTIVE_INFO_CACHE + uid, CacheConstant.CACHE_EXPIRE_MONTH, true);
         
         if (Objects.nonNull(userActiveInfo)) {
@@ -176,13 +187,27 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
         
         List<UserActiveInfoVo> userActiveInfoList = userActiveInfoMapper.queryList(query);
         if (CollectionUtils.isEmpty(userActiveInfoList)) {
-            return R.ok(new ArrayList<>());
+            return R.ok(Collections.EMPTY_LIST);
         }
-    
-        userActiveInfoList.parallelStream().forEach(item -> {
+        
+        userActiveInfoList.forEach(item -> {
             EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(item.getUid());
             item.setBatteryServiceFee(Objects.nonNull(eleBatteryServiceFeeVO) ? eleBatteryServiceFeeVO.getUserBatteryServiceFee() : BigDecimal.ZERO);
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            
+            String batterySn = item.getBatterySn();
+            if (StringUtils.isNotBlank(batterySn)) {
+                BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
+                batteryInfoQuery.setSn(batterySn);
+                BatteryInfoDto batteryInfoDto = electricityBatteryDataService.callBatteryServiceQueryBatteryInfo(batteryInfoQuery, query.getTenant());
+                if (Objects.nonNull(batteryInfoDto)) {
+                    item.setSoc(batteryInfoDto.getSoc());
+                }
+            }
         });
+        
         return R.ok(userActiveInfoList);
     }
     

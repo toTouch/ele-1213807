@@ -14,36 +14,37 @@ import java.util.List;
  * @since 2024-02-04 14:35:06
  */
 public interface MerchantLevelService {
-
+    
     MerchantLevel queryById(Long id);
-
-    List<MerchantLevel> listByTenantId(Integer tenantId);
-
+    
+    List<MerchantLevel> listByFranchiseeId(Integer tenantId, Long franchiseeId);
+    
     MerchantLevel insert(MerchantLevel merchantLevel);
-
+    
     Integer updateById(MerchantLevel merchantLevel);
     
-    Integer deleteById(Long id);
+    Integer deleteByFranchiseeId(Long franchiseeId);
     
-    Integer initMerchantLevel(Integer tenantId);
+    Integer initMerchantLevel(Long franchiseeId, Integer tenantId);
     
     Triple<Boolean, String, Object> modify(MerchantLevelRequest request);
     
-    List<MerchantLevelVO> list(Integer tenantId);
+    List<MerchantLevelVO> list(Integer tenantId, Long franchiseeId);
     
-    MerchantLevel queryByMerchantLevelAndTenantId(String level, Integer tenantId);
+    MerchantLevel queryByMerchantLevelAndFranchiseeId(String level, Long franchiseeId);
     
     /**
      * 获取下一级商户等级
-     * @param level
-     * @param tenantId
+     *
      * @return
      */
-    MerchantLevel queryNextByMerchantLevel(String level, Integer tenantId);
+    MerchantLevel queryNextByMerchantLevel(String level, Long franchiseeId);
     
-    MerchantLevel queryLastByMerchantLevel(String level, Integer tenantId);
+    MerchantLevel queryLastByMerchantLevel(String level, Long franchiseeId);
     
     List<MerchantLevel> queryListByIdList(List<Long> levelIdList);
     
-    Integer existsLevelName(String name, Integer tenantId);
+    Integer existsLevelName(String name, Long franchiseeId);
+    
+    List<MerchantLevel> listByTenantId(Integer tenantId);
 }

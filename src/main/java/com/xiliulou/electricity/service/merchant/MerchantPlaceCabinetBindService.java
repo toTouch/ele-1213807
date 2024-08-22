@@ -29,7 +29,7 @@ public interface MerchantPlaceCabinetBindService {
     
     Triple<Boolean, String, Object> unBind(MerchantPlaceCabinetBindSaveRequest placeCabinetBindSaveRequest);
     
-    Triple<Boolean, String, Object> remove(Long id);
+    Triple<Boolean, String, Object> remove(Long id, List<Long> franchiseeId);
     
     Integer countTotal(MerchantPlaceCabinetPageRequest placeCabinetPageRequest);
     

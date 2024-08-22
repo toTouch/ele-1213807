@@ -85,7 +85,14 @@ public class DateUtils {
     }
     
     public static long getTimeAgoEndTime(int day) {
-        return LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8")) * 1000;
+        // 获取当前日期减去day天的日期和时间
+        LocalDateTime localDateTime = LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MAX);
+    
+        // 转换为Instant，并指定时区为东八区
+        Instant instant = localDateTime.atZone(ZoneOffset.of("+8")).toInstant();
+    
+        // 返回毫秒数
+        return instant.toEpochMilli();
     }
     
     /**
@@ -287,7 +294,7 @@ public class DateUtils {
     public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {
         LocalDate lastMonthFirstDay = LocalDate.now().minusMonths(minusMonth).withDayOfMonth(1);
         LocalDate lastMonthLastDay = lastMonthFirstDay.with(TemporalAdjusters.lastDayOfMonth());
-        return lastMonthLastDay.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        return lastMonthLastDay.atTime(23, 59, 59, 999999999).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
     
     public static boolean isSameDay(long time1, long time2) {
