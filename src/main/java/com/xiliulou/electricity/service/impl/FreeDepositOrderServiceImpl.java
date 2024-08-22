@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -583,7 +584,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             }
             
             // 三方接口免押查询
-            FreeDepositOrderStatusDTO dto = FreeDepositOrderStatusDTO.builder().pxzConfig(pxzConfig).channel(freeDepositOrder.getChannel()).orderId(orderId).uid(userInfo.getUid())
+            FreeDepositOrderStatusQuery dto = FreeDepositOrderStatusQuery.builder().tenantId(userInfo.getTenantId()).channel(freeDepositOrder.getChannel()).orderId(orderId).uid(userInfo.getUid())
                     .build();
             FreeDepositOrderStatusBO bo = freeDepositService.getFreeDepositOrderStatus(dto);
             if (Objects.isNull(bo)) {
@@ -1152,7 +1153,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 //        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
 //            return useFreeDepositStatusResult;
 //        }
-        Triple<Boolean, String, Object> triple = freeDepositService.checkExistSuccessFreeDepositOrder(userInfo.getUid(), freeDepositUserDTO);
+        Triple<Boolean, String, Object> triple = freeDepositService.checkExistSuccessFreeDepositOrder(freeDepositUserDTO);
         if (triple.getLeft()){
             return triple;
         }

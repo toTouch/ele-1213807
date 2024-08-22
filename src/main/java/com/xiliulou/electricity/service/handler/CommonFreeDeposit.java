@@ -2,10 +2,13 @@ package com.xiliulou.electricity.service.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +51,25 @@ public abstract class CommonFreeDeposit {
         request.setTransAmt(freeDepositOrderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
         query.setData(request);
         
+        return query;
+    }
+    
+    
+    public PxzCommonRequest<PxzFreeDepositOrderQueryRequest> buildQueryFreeDepositOrderStatusPxzRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(orderStatusQuery.getTenantId());
+        if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
+            throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
+        }
+        
+        PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(orderStatusQuery.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+        request.setTransId(orderStatusQuery.getOrderId());
+        query.setData(request);
         return query;
     }
 }

@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -890,7 +891,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         // 三方接口免押查询
-        FreeDepositOrderStatusDTO dto = FreeDepositOrderStatusDTO.builder().pxzConfig(pxzConfig).channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
+        FreeDepositOrderStatusQuery dto = FreeDepositOrderStatusQuery.builder().tenantId(userInfo.getTenantId()).channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
                 .uid(userInfo.getUid()).build();
         FreeDepositOrderStatusBO bo = freeDepositService.getFreeDepositOrderStatus(dto);
         if (Objects.isNull(bo)) {
@@ -1095,7 +1096,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()).build();
         
         //检查用户是否已经进行过免押操作，且已免押成功
-        Triple<Boolean, String, Object> triple = freeDepositService.checkExistSuccessFreeDepositOrder(userInfo.getUid(), freeDepositUserDTO);
+        Triple<Boolean, String, Object> triple = freeDepositService.checkExistSuccessFreeDepositOrder(freeDepositUserDTO);
         if (triple.getLeft()) {
             return triple;
         }

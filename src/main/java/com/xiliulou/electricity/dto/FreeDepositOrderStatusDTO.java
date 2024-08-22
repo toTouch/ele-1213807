@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.dto;
 
-import com.xiliulou.electricity.entity.PxzConfig;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,10 +20,10 @@ public class FreeDepositOrderStatusDTO {
     
     private Long uid;
     
-    private PxzConfig pxzConfig;
-    
     /**
      * 免押渠道
      */
     private Integer channel;
+    
+    private Integer tenantId;
 }

@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.handler.impl;
 
+import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.electricity.service.handler.CommonFreeDeposit;
-import com.xiliulou.electricity.service.handler.FreeDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("fyFreeDepositOrderServiceImpl")
 @Slf4j
-public class FyFreeDepositOrderServiceImpl extends CommonFreeDeposit implements FreeDepositService {
+public class FyBaseFreeDepositOrderServiceImpl extends CommonFreeDeposit implements BaseFreeDepositService {
     
     
     @Override
@@ -23,4 +25,11 @@ public class FyFreeDepositOrderServiceImpl extends CommonFreeDeposit implements 
         
         return Triple.of(true, null, null);
     }
+    
+    @Override
+    public FreeDepositOrderStatusBO queryFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
+        return null;
+    }
+    
+    
 }

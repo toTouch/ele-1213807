@@ -32,7 +32,7 @@ public enum FreeDepositServiceWayEnums {
     /**
      * code
      */
-    private final Integer code;
+    private final Integer channel;
     
     
     /**
@@ -41,8 +41,8 @@ public enum FreeDepositServiceWayEnums {
     private final String implService;
     
     
-    public static String getClassStrByCode(Integer code) {
-        return Arrays.stream(FreeDepositServiceWayEnums.values()).filter(e -> Objects.equals(code, e.getCode())).findFirst().orElse(null).getImplService();
+    public static String getClassStrByChannel(Integer channel) {
+        return Arrays.stream(FreeDepositServiceWayEnums.values()).filter(e -> Objects.equals(channel, e.getChannel())).findFirst().orElse(null).getImplService();
     }
     
     
