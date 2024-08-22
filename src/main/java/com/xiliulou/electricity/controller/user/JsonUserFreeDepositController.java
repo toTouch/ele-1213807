@@ -55,6 +55,14 @@ public class JsonUserFreeDepositController extends BaseController {
     }
     
     /**
+     * 电池免押订单V4（支持拍下租和蜂云）
+     */
+    @PostMapping("/user/free/batteryDeposit/v4")
+    public R freeBatteryDepositOrderV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
+        return returnTripleResult(freeDepositOrderService.freeBatteryDepositOrderV4(query));
+    }
+    
+    /**
      * 电池免押混合支付V3
      */
     @PostMapping("/user/freeBatteryDeposit/hybridOrderV3")

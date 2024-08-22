@@ -40,6 +40,8 @@ public interface EnterpriseBatteryPackageService {
     public Triple<Boolean, String, Object> checkUserFreeBatteryDepositStatus(Long uid);
     
     public Triple<Boolean, String, Object> freeBatteryDeposit(EnterpriseFreeDepositQuery enterpriseFreeDepositQuery);
+    
+    public Triple<Boolean, String, Object> freeBatteryDepositV2(EnterpriseFreeDepositQuery enterpriseFreeDepositQuery);
 
     /**
      * 企业站长为用户购买套餐

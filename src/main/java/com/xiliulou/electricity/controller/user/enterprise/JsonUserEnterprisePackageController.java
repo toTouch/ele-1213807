@@ -128,6 +128,23 @@ public class JsonUserEnterprisePackageController extends BaseController {
         return returnTripleResult(enterpriseBatteryPackageService.freeBatteryDeposit(freeQuery));
     }
     
+    
+    /**
+     * 生成骑手免押二维码信息v2，经前端(罗军)确认user/enterprise/freeBatteryDeposit不使用
+     *
+     * @param uid
+     * @return
+     */
+    @GetMapping( "/merchant/enterprise/freeBatteryDeposit/v2")
+    public R freeBatteryDepositV2(@RequestParam(value = "uid", required = true) Long uid, @RequestParam(value = "realName", required = true) String realName,
+            @RequestParam(value = "idCard", required = true) String idCard, @RequestParam(value = "phone", required = true) String phone,
+            @RequestParam(value = "packageId", required = true) Long packageId) {
+        
+        EnterpriseFreeDepositQuery freeQuery = EnterpriseFreeDepositQuery.builder().uid(uid).realName(realName).idCard(idCard).phoneNumber(phone).membercardId(packageId).build();
+        
+        return returnTripleResult(enterpriseBatteryPackageService.freeBatteryDepositV2(freeQuery));
+    }
+    
     /**
      * 查询电池免押是否成功
      *

@@ -83,6 +83,9 @@ public class FreeDepositOrder {
     
     private Long updateTime;
     
+    /**
+     * 默认是拍小租
+     */
     private Integer channel;
     
     public static final Integer DEL_NORMAL = 0;

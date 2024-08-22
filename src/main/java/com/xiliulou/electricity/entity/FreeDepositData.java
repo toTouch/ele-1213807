@@ -30,6 +30,11 @@ public class FreeDepositData {
      * 免押次数
      */
     private Integer freeDepositCapacity;
+    
+    /**
+     * 蜂云免押次数
+     */
+    private Integer fyFreeDepositCapacity;
     /**
      * 充值时间
      */

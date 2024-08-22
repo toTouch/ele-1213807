@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -97,7 +98,6 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         
         if (Objects.equals(freeDepositOrder.getChannel(), FreeDepositChannelEnum.FY.getChannel())) {
-            // todo 蜂云免押
             return checkFreeDepositStatusFromFY(batteryDeposit.getOrderId());
         }
         return Triple.of(false, null, null);
@@ -166,10 +166,12 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         if (freeDepositData.getFreeDepositCapacity() > NumberConstant.ZERO) {
             // 拍小租
             return freeDepositOrderPXZ(request);
-        } else {
+        }
+        if (freeDepositData.getFyFreeDepositCapacity() > NumberConstant.ZERO) {
             // todo 蜂云
             return freeDepositOrderFY(request);
         }
+        return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
     }
     
     
@@ -189,11 +191,11 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         PxzFreeDepositOrderRequest request = new PxzFreeDepositOrderRequest();
         request.setPhone(freeDepositOrderRequest.getPhoneNumber());
-        request.setSubject("电池免押");
+        request.setSubject(freeDepositOrderRequest.getSubject());
         request.setRealName(freeDepositOrderRequest.getRealName());
         request.setIdNumber(freeDepositOrderRequest.getIdCard());
         request.setTransId(orderId);
-        request.setTransAmt(BigDecimal.valueOf(freeDepositOrderRequest.getPayAmount().doubleValue()).multiply(BigDecimal.valueOf(100)).intValue());
+        request.setTransAmt(freeDepositOrderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
         query.setData(request);
         
         PxzCommonRsp<String> callPxzRsp = null;
@@ -212,7 +214,8 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         if (!callPxzRsp.isSuccess()) {
             return Triple.of(false, "100401", callPxzRsp.getRespDesc());
         }
-        return Triple.of(true, null, null);
+        FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.PXZ.getChannel()).data(callPxzRsp.getData()).build();
+        return Triple.of(true, null, dto);
     }
     
     
@@ -221,20 +224,20 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         FyAuthPayRequest fyAuthPayRequest = new FyAuthPayRequest();
         query.setFyRequest(fyAuthPayRequest);
         
+        Map<String, Object> map;
         try {
-            Map<String, Object> map = fyDepositService.authPay(query);
+            map = fyDepositService.authPay(query);
             if (CollUtil.isEmpty(map)) {
                 return Triple.of(false, "100401", "免押调用失败");
             }
             // todo 解析
-            Object o = map.get("bizContent");
-            
+            String data = (String) map.get("bizContent");
+            FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.FY.getChannel()).data(data).build();
+            return Triple.of(true, null, dto);
         } catch (Exception e) {
             log.error("FY ERROR! freeDepositOrderFY fail!  orderId={}", freeDepositOrderRequest.getFreeDepositOrderId(), e);
             return Triple.of(false, "100401", "免押调用失败！");
         }
-        
-        return Triple.of(true, null, null);
     }
 }
 
