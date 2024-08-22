@@ -21,7 +21,7 @@ public interface FreeDepositService {
      * @param depositOrderStatusDTO
      * @return
      */
-    FreeDepositOrderStatusBO checkExistSuccessFreeDepositOrder(FreeDepositOrderStatusDTO depositOrderStatusDTO);
+    FreeDepositOrderStatusBO getFreeDepositOrderStatus(FreeDepositOrderStatusDTO depositOrderStatusDTO);
     
     
     Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request);

@@ -582,11 +582,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(true, "", "");
             }
             
-            // 免押查询
-            FreeDepositOrderStatusDTO dto = FreeDepositOrderStatusDTO.builder().pxzConfig(pxzConfig).channel(freeDepositOrder.getChannel()).orderId(orderId)
-                    .uid(userInfo.getUid()).build();
-            FreeDepositOrderStatusBO bo = freeDepositService.checkExistSuccessFreeDepositOrder(dto);
-            if (Objects.isNull(bo)){
+            // 三方接口免押查询
+            FreeDepositOrderStatusDTO dto = FreeDepositOrderStatusDTO.builder().pxzConfig(pxzConfig).channel(freeDepositOrder.getChannel()).orderId(orderId).uid(userInfo.getUid())
+                    .build();
+            FreeDepositOrderStatusBO bo = freeDepositService.getFreeDepositOrderStatus(dto);
+            if (Objects.isNull(bo)) {
                 return Triple.of(false, "100402", "免押查询失败！");
             }
             

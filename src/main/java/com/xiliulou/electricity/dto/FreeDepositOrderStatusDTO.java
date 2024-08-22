@@ -14,11 +14,17 @@ import lombok.Data;
 @Builder
 public class FreeDepositOrderStatusDTO {
     
+    /**
+     * 免押订单号
+     */
     private String orderId;
     
     private Long uid;
     
     private PxzConfig pxzConfig;
     
+    /**
+     * 免押渠道
+     */
     private Integer channel;
 }

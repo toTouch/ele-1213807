@@ -72,12 +72,16 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     
     @Override
-    public FreeDepositOrderStatusBO checkExistSuccessFreeDepositOrder(FreeDepositOrderStatusDTO dto) {
+    public FreeDepositOrderStatusBO getFreeDepositOrderStatus(FreeDepositOrderStatusDTO dto) {
+        if (Objects.isNull(dto)) {
+            log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.params is null");
+            return null;
+        }
         PxzConfig pxzConfig = dto.getPxzConfig();
         if (Objects.isNull(pxzConfig)) {
             return null;
         }
-        
+        log.info("FreeDeposit INFO! getFreeDepositOrderStatus.params is {}", JsonUtil.toJson(dto));
         // 获取上次免押的渠道，查询上次的免押状态
         if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
             PxzCommonRsp<PxzQueryOrderRsp> orderRspPxzCommonRsp = requestFreeDepositStatusFromPxz(dto.getOrderId(), pxzConfig);
