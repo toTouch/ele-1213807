@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -11,8 +10,7 @@ import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;

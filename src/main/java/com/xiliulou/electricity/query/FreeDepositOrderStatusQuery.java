@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.dto;
+package com.xiliulou.electricity.query;
 
 import lombok.Builder;
 import lombok.Data;
@@ -30,5 +30,7 @@ public class FreeDepositOrderStatusQuery {
     
     
     private Long uid;
+    
+    private String subject;
     
 }

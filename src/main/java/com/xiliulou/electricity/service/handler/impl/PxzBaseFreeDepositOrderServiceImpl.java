@@ -3,14 +3,16 @@ package com.xiliulou.electricity.service.handler.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
+import com.xiliulou.electricity.bo.UnFreeDepositOrderBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.electricity.service.handler.CommonFreeDeposit;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import lombok.extern.slf4j.Slf4j;
@@ -85,5 +87,30 @@ public class PxzBaseFreeDepositOrderServiceImpl extends CommonFreeDeposit implem
         
         PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
         return BeanUtil.copyProperties(queryOrderRspData, FreeDepositOrderStatusBO.class);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
+        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzUnfreezeDepositCommonRsp = null;
+        Long uid = query.getUid();
+        String orderId = query.getOrderId();
+        try {
+            pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(buildUnFreeDepositOrderPxzRequest(query));
+        } catch (Exception e) {
+            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", uid, orderId, e);
+            return Triple.of(false, "100401", "免押解冻调用失败！");
+        }
+        
+        if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
+            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", uid, orderId);
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
+        if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
+            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", uid, orderId);
+            return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
+        }
+        
+        return Triple.of(true, null, BeanUtil.copyProperties(pxzUnfreezeDepositCommonRsp.getData(), UnFreeDepositOrderBO.class));
     }
 }

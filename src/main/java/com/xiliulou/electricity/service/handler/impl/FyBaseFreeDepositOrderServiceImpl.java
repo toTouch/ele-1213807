@@ -1,10 +1,11 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.electricity.service.handler.CommonFreeDeposit;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,11 @@ public class FyBaseFreeDepositOrderServiceImpl extends CommonFreeDeposit impleme
     
     @Override
     public FreeDepositOrderStatusBO queryFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
+        return null;
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
         return null;
     }
     

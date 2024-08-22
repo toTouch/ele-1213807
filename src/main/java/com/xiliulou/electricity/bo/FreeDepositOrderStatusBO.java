@@ -6,7 +6,7 @@ import lombok.Data;
  * @ClassName: FreeDepositOrderStatusBO
  * @description:
  * @author: renhang
- * @create: 2024-08-22 11:15
+ * @create: 2024-08-22 17:48
  */
 @Data
 public class FreeDepositOrderStatusBO {

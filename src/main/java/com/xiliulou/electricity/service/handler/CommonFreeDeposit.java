@@ -2,14 +2,14 @@ package com.xiliulou.electricity.service.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
-import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
@@ -70,6 +70,26 @@ public abstract class CommonFreeDeposit {
         PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
         request.setTransId(orderStatusQuery.getOrderId());
         query.setData(request);
+        return query;
+    }
+    
+    public PxzCommonRequest<PxzFreeDepositUnfreezeRequest> buildUnFreeDepositOrderPxzRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(orderStatusQuery.getTenantId());
+        if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
+            throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
+        }
+        
+        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(orderStatusQuery.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+        queryRequest.setRemark(orderStatusQuery.getSubject());
+        queryRequest.setTransId(orderStatusQuery.getOrderId());
+        
+        query.setData(queryRequest);
         return query;
     }
 }
