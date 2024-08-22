@@ -9,7 +9,7 @@ import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
-import com.xiliulou.electricity.service.handler.CommonFreeDeposit;
+import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 @Service("pxzFreeDepositOrderServiceImpl")
 @Slf4j
-public class PxzBaseFreeDepositOrderServiceImpl extends CommonFreeDeposit implements BaseFreeDepositService {
+public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit implements BaseFreeDepositService {
     
     @Resource
     PxzDepositService pxzDepositService;

@@ -32,7 +32,6 @@ public class FreeDepositOrderRequest {
      */
     private String realName;
     
-    private Integer model;
     
     private Integer tenantId;
     
