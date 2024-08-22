@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
@@ -91,5 +93,15 @@ public abstract class CommonFreeDeposit {
         
         query.setData(queryRequest);
         return query;
+    }
+    
+    
+    public FyCommonQuery<FyAuthPayRequest> buildFyAuthPayRequest(FreeDepositOrderRequest orderRequest) {
+        FyCommonQuery<FyAuthPayRequest> query = new FyCommonQuery<>();
+        FyAuthPayRequest request = new FyAuthPayRequest();
+        request.setThirdOrderNo(orderRequest.getFreeDepositOrderId());
+        //request.setMerNo(orderRequest.getModel());
+        request.setAmount(orderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
+        request.setSubject(orderRequest.getSubject());
     }
 }
