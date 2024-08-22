@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 分账订单明细表(TRofitSharingOrderDetail)表服务实现类
@@ -16,6 +18,5 @@ import javax.annotation.Resource;
 public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDetailService {
     @Resource
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
-
     
 }

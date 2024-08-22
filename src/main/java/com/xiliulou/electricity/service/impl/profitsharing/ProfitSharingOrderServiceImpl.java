@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,5 @@ import javax.annotation.Resource;
 public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService {
     @Resource
     private ProfitSharingOrderMapper profitSharingOrderMapper;
-
-   
+  
 }

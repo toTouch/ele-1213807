@@ -7,6 +7,14 @@
             status, type, tenant_id, franchisee_id, third_merchant_id, del_flag, create_time,update_time
     </sql>
     
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO t_profit_sharing_order (third_trade_order_no, order_no, third_order_no, amount, business_type, profit_sharing_out_account,
+            status, type, tenant_id, franchisee_id, third_merchant_id, create_time,update_time)
+        VALUES (#{thirdTradeOrderNo}, #{orderNo}, #{thirdOrderNo}, #{amount}, #{businessType}, #{profitSharingOutAccount},
+            #{status}, #{type}, #{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{createTime},#{updateTime}
+        )
+    </insert>
+
 </mapper>
 
 
