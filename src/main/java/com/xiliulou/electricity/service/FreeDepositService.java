@@ -10,6 +10,7 @@ public interface FreeDepositService {
     
     /**
      * 查询是否进行过免押
+     *
      * @param uid
      * @param freeDepositUserDTO
      * @return
@@ -18,11 +19,25 @@ public interface FreeDepositService {
     
     /**
      * 查询免押具体状态
+     *
      * @param depositOrderStatusDTO
      * @return
      */
     FreeDepositOrderStatusBO getFreeDepositOrderStatus(FreeDepositOrderStatusDTO depositOrderStatusDTO);
     
-    
+    /**
+     * 冻结免押
+     *
+     * @param request
+     * @return
+     */
     Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request);
+    
+    /**
+     * 解冻免押
+     *
+     * @param depositOrderStatusDTO
+     * @return
+     */
+    FreeDepositOrderStatusBO unFreezeDeposit(FreeDepositOrderStatusDTO depositOrderStatusDTO);
 }

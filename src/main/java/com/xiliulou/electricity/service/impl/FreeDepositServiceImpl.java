@@ -14,12 +14,13 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
+import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.service.FreeDepositDataService;
-import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.handler.FreeDepositService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
@@ -28,16 +29,15 @@ import com.xiliulou.pay.deposit.fengyun.service.FyDepositService;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
 
@@ -50,7 +50,7 @@ import java.util.Objects;
 
 @Service
 @Slf4j
-public class FreeDepositServiceImpl implements FreeDepositService {
+public class FreeDepositServiceImpl implements com.xiliulou.electricity.service.FreeDepositService {
     
     @Resource
     UserBatteryDepositService userBatteryDepositService;
@@ -69,6 +69,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     @Resource
     private FyDepositService fyDepositService;
+    
+    @Resource
+    private ApplicationContext applicationContext;
     
     
     @Override
@@ -217,57 +220,13 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         if (freeDepositData.getFreeDepositCapacity() > NumberConstant.ZERO) {
             // 拍小租
-            return freeDepositOrderPXZ(request);
+            return applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByCode(FreeDepositServiceWayEnums.FREE_ORDER.getCode()), FreeDepositService.class).freeDepositOrder(request);
         }
         if (freeDepositData.getFyFreeDepositCapacity() > NumberConstant.ZERO) {
             // todo 蜂云
             return freeDepositOrderFY(request);
         }
         return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
-    }
-    
-    
-    private Triple<Boolean, String, Object> freeDepositOrderPXZ(FreeDepositOrderRequest freeDepositOrderRequest) {
-        
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrderRequest.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
-            return Triple.of(true, "100400", "免押功能未配置相关信息！请联系客服处理");
-        }
-        
-        String orderId = freeDepositOrderRequest.getFreeDepositOrderId();
-        PxzCommonRequest<PxzFreeDepositOrderRequest> query = new PxzCommonRequest<>();
-        query.setAesSecret(pxzConfig.getAesKey());
-        query.setDateTime(System.currentTimeMillis());
-        query.setSessionId(orderId);
-        query.setMerchantCode(pxzConfig.getMerchantCode());
-        
-        PxzFreeDepositOrderRequest request = new PxzFreeDepositOrderRequest();
-        request.setPhone(freeDepositOrderRequest.getPhoneNumber());
-        request.setSubject(freeDepositOrderRequest.getSubject());
-        request.setRealName(freeDepositOrderRequest.getRealName());
-        request.setIdNumber(freeDepositOrderRequest.getIdCard());
-        request.setTransId(orderId);
-        request.setTransAmt(freeDepositOrderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
-        query.setData(request);
-        
-        PxzCommonRsp<String> callPxzRsp = null;
-        try {
-            callPxzRsp = pxzDepositService.freeDepositOrder(query);
-        } catch (Exception e) {
-            log.error("Pxz ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
-            return Triple.of(false, "100401", "免押调用失败！");
-        }
-        
-        if (Objects.isNull(callPxzRsp)) {
-            log.error("Pxz ERROR! freeDepositOrder fail! rsp is null!  orderId={}", orderId);
-            return Triple.of(false, "100401", "免押调用失败！");
-        }
-        
-        if (!callPxzRsp.isSuccess()) {
-            return Triple.of(false, "100401", callPxzRsp.getRespDesc());
-        }
-        FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.PXZ.getChannel()).data(callPxzRsp.getData()).build();
-        return Triple.of(true, null, dto);
     }
     
     
@@ -290,6 +249,36 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.error("FY ERROR! freeDepositOrderFY fail!  orderId={}", freeDepositOrderRequest.getFreeDepositOrderId(), e);
             return Triple.of(false, "100401", "免押调用失败！");
         }
+    }
+    
+    
+    @Override
+    public FreeDepositOrderStatusBO unFreezeDeposit(FreeDepositOrderStatusDTO dto) {
+        if (Objects.isNull(dto)) {
+            log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.params is null");
+            return null;
+        }
+        PxzConfig pxzConfig = dto.getPxzConfig();
+        if (Objects.isNull(pxzConfig)) {
+            log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.pxzConfig is null");
+            return null;
+        }
+        log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", dto.getChannel(), dto.getOrderId());
+        // 获取上次免押的渠道，查询上次的免押状态
+        if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
+            PxzCommonRsp<PxzQueryOrderRsp> orderRspPxzCommonRsp = requestFreeDepositStatusFromPxz(dto.getOrderId(), pxzConfig);
+            if (Objects.isNull(orderRspPxzCommonRsp)) {
+                return null;
+            }
+            PxzQueryOrderRsp queryOrderRspData = orderRspPxzCommonRsp.getData();
+            return BeanUtil.copyProperties(queryOrderRspData, FreeDepositOrderStatusBO.class);
+        }
+        
+        if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.FY.getChannel())) {
+            // todo 蜂云的返回
+            return new FreeDepositOrderStatusBO();
+        }
+        return null;
     }
 }
 
