@@ -687,10 +687,6 @@ public interface CacheConstant {
     String CACHE_OFFLINE_KEY = "cache_offline_key:";
     
     /**
-     * TCP模式柜机列表
-     */
-    String CACHE_TCP_CABINET_LIST = "cache_tcp_cabinet_list:";
-    /**
      * TCP设备session缓存
      */
     String CACHE_CABINET_SN_ONLINE = "device_report:cabinet_online:";

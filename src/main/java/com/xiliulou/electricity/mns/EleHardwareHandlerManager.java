@@ -188,9 +188,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             //柜机模式修改
             if (CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus())) {
                 newElectricityCabinet.setPattern(EleCabinetConstant.IOT_PATTERN);
-                //从TCP列表中移除
-                redisService.deleteInList(CacheConstant.CACHE_TCP_CABINET_LIST, 0, String.class,
-                        DeviceTextUtil.assembleSn(receiverMessage.getProductKey(), receiverMessage.getDeviceName()));
             }
             
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {

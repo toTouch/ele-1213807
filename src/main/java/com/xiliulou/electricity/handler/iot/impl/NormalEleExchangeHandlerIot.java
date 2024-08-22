@@ -57,9 +57,6 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 
                 //柜机模式修改
                 newElectricityCabinet.setPattern(EleCabinetConstant.IOT_PATTERN);
-                //从TCP列表中移除
-                redisService.deleteInList(CacheConstant.CACHE_TCP_CABINET_LIST, 0, String.class,
-                        DeviceTextUtil.assembleSn(receiverMessage.getProductKey(), receiverMessage.getDeviceName()));
                 
                 if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
