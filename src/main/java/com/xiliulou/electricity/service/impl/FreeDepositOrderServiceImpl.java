@@ -9,6 +9,7 @@ import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
@@ -2073,5 +2074,140 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .batteryType(null).build();
         
         return Triple.of(true, null, eleDepositOrder);
+    }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> freeDepositTrilateralPay(String orderId, BigDecimal payTransAmt, String remark) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("FREE DEPOSIT ERROR! not found user!");
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(uid)) {
+            log.warn("FREE DEPOSIT WARN! not found user! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        if (!redisService.setNx(CacheConstant.FREE_DEPOSIT_PAY_LOCK + uid , "1", 5 * 1000L, false)) {
+            return Triple.of(false, "100002", "操作频繁，请稍后再试");
+        }
+        
+        
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        if (System.currentTimeMillis() - freeDepositOrder.getCreateTime() > FreeDepositOrder.YEAR) {
+            log.warn("FREE DEPOSIT WARN! order over one year,orderId={}", orderId);
+            return Triple.of(false, "100424", "免押订单已超过1年，无法代扣");
+        }
+        
+        if (Objects.isNull(payTransAmt) || payTransAmt.compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("FREE DEPOSIT WARN! freeDepositOrder already AuthToPay,orderId={}", orderId);
+            return Triple.of(false, "100425", "代扣金额不能为0");
+        }
+        
+        if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_INIT)) {
+            log.warn("FREE DEPOSIT WARN! freeDepositOrder already AuthToPay,orderId={}", orderId);
+            return Triple.of(false, "100412", "免押订单已进行代扣，请勿重复操作");
+        }
+        
+        
+        if (payTransAmt.compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! payTransAmt is illegal,orderId={}", orderId);
+            return Triple.of(false, "ELECTRICITY.0007", "扣款金额不能大于支付金额!");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(freeDepositOrder.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("FREE DEPOSIT WARN! not found user info! uid={}", freeDepositOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("FREE DEPOSIT WARN! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("FREE DEPOSIT WARN! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+        
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarDepositStatus(),
+                UserInfo.CAR_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+            log.warn("FREE DEPOSIT WARN! user not pay deposit,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+        
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
+        }
+        
+        PxzCommonRequest<PxzFreeDepositAuthToPayRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(freeDepositOrder.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositAuthToPayRequest request = new PxzFreeDepositAuthToPayRequest();
+        request.setPayNo(freeDepositOrder.getOrderId());
+        request.setTransId(freeDepositOrder.getOrderId());
+        request.setAuthNo(freeDepositOrder.getAuthNo());
+        request.setTransAmt(payTransAmt.multiply(BigDecimal.valueOf(100)).longValue());
+        query.setData(request);
+        
+        PxzCommonRsp<PxzAuthToPayRsp> pxzAuthToPayRspPxzCommonRsp = null;
+        try {
+            pxzAuthToPayRspPxzCommonRsp = pxzDepositService.authToPay(query);
+        } catch (Exception e) {
+            log.error("Pxz ERROR! freeDepositOrder authToPay fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
+            return Triple.of(false, "100411", "授权支付调用失败！");
+        }
+        
+        if (Objects.isNull(pxzAuthToPayRspPxzCommonRsp)) {
+            log.error("Pxz ERROR! freeDepositOrder authToPay fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
+            return Triple.of(false, "100411", "授权支付调用失败！");
+        }
+        
+        if (!pxzAuthToPayRspPxzCommonRsp.isSuccess()) {
+            return Triple.of(false, "100411", pxzAuthToPayRspPxzCommonRsp.getRespDesc());
+        }
+        
+        // 更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEALING);
+        freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getTransAmt() - payTransAmt.doubleValue());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(freeDepositOrderUpdate);
+        
+        // 代扣记录
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setUid(freeDepositOrder.getUid());
+        freeDepositAlipayHistory.setName(freeDepositOrder.getRealName());
+        freeDepositAlipayHistory.setPhone(freeDepositOrder.getPhone());
+        freeDepositAlipayHistory.setIdCard(freeDepositOrder.getIdCard());
+        freeDepositAlipayHistory.setOperateName(user.getName());
+        freeDepositAlipayHistory.setOperateUid(user.getUid());
+        freeDepositAlipayHistory.setPayAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()));
+        freeDepositAlipayHistory.setAlipayAmount(payTransAmt);
+        freeDepositAlipayHistory.setType(freeDepositOrder.getDepositType());
+        freeDepositAlipayHistory.setPayStatus(FreeDepositAlipayHistory.PAY_STATUS_DEALING);
+        freeDepositAlipayHistory.setRemark(remark);
+        freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setStoreId(freeDepositOrder.getStoreId());
+        freeDepositAlipayHistory.setFranchiseeId(freeDepositOrder.getFranchiseeId());
+        freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
+        freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
+        return Triple.of(true, "", "授权转支付交易处理中！");
     }
 }

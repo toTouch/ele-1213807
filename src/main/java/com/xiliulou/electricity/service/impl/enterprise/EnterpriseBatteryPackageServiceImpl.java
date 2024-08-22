@@ -10,8 +10,6 @@ import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
-import com.xiliulou.electricity.dto.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -51,6 +49,7 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseFreeDepositQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;

@@ -227,5 +227,23 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
         
         return Triple.of(true, "", null);
     }
+    
+    
+    
+    /**
+     * 代扣
+     */
+    @PutMapping("/admin/freeDepositOrder/trilateralPay")
+    public R freeDepositTrilateralPay(@RequestParam(value = "orderId") String orderId,
+            @RequestParam(value = "payTransAmt") BigDecimal payTransAmt,
+            @RequestParam(value = "remark", required = false) String remark) {
+        
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+        
+        return returnTripleResult(this.freeDepositOrderService.freeDepositTrilateralPay(orderId, payTransAmt, remark));
+    }
 
 }

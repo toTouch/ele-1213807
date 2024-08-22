@@ -98,4 +98,6 @@ public interface FreeDepositOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    Triple<Boolean, String, Object> freeDepositTrilateralPay(String orderId, BigDecimal payTransAmt, String remark);
 }
