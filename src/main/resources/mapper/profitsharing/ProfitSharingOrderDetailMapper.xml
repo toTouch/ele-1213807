@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id, profit_sharing_order_id, profit_sharing_receive_config_id, third_trade_order_no, order_detail_no, third_order_detail_no,
+            profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
+            del_flag, create_time, update_time
+    </sql>
+    
+    
+</mapper>
+
+
+
+
