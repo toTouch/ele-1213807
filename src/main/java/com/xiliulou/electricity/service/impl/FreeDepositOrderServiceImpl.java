@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -580,49 +582,25 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(true, "", "");
             }
             
-            PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
-            query.setAesSecret(pxzConfig.getAesKey());
-            query.setDateTime(System.currentTimeMillis());
-            query.setSessionId(userBatteryDeposit.getOrderId());
-            query.setMerchantCode(pxzConfig.getMerchantCode());
-            
-            PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
-            request.setTransId(freeDepositOrder.getOrderId());
-            query.setData(request);
-            
-            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
-            try {
-                pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
-            } catch (PxzFreeDepositException e) {
-                log.error("Pxz ERROR! freeDepositOrderQuery fail! uid={},orderId={}", userInfo.getUid(), userBatteryDeposit.getOrderId(), e);
+            // 免押查询
+            FreeDepositOrderStatusDTO dto = FreeDepositOrderStatusDTO.builder().pxzConfig(pxzConfig).channel(freeDepositOrder.getChannel()).orderId(orderId)
+                    .uid(userInfo.getUid()).build();
+            FreeDepositOrderStatusBO bo = freeDepositService.checkExistSuccessFreeDepositOrder(dto);
+            if (Objects.isNull(bo)){
                 return Triple.of(false, "100402", "免押查询失败！");
             }
             
-            if (Objects.isNull(pxzQueryOrderRsp)) {
-                log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", userInfo.getUid(), userBatteryDeposit.getOrderId());
-                return Triple.of(false, "100402", "免押查询失败！");
-            }
-            
-            if (!pxzQueryOrderRsp.isSuccess()) {
-                return Triple.of(false, "100402", pxzQueryOrderRsp.getRespDesc());
-            }
-            
-            PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
-            if (Objects.isNull(queryOrderRspData)) {
-                log.error("Pxz ERROR! freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", userInfo.getUid(), userBatteryDeposit.getOrderId());
-                return Triple.of(false, "100402", "免押查询失败！");
-            }
             
             // 更新免押订单状态
             FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
             freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthNo(queryOrderRspData.getAuthNo());
-            freeDepositOrderUpdate.setAuthStatus(queryOrderRspData.getAuthStatus());
+            freeDepositOrderUpdate.setAuthNo(bo.getAuthNo());
+            freeDepositOrderUpdate.setAuthStatus(bo.getAuthStatus());
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
             
             // 冻结成功
-            if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            if (Objects.equals(bo.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
                 // 扣减免押次数
                 freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
                 
@@ -1201,7 +1179,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
         if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
-            return Triple.of(false, "100401", freeDepositOrderTriple.getRight());
+            return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
         }
         
         FreeDepositOrderDTO depositOrderDTO =(FreeDepositOrderDTO) freeDepositOrderTriple.getRight();

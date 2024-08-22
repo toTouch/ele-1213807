@@ -1,9 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -66,6 +70,33 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Resource
     private FyDepositService fyDepositService;
     
+    
+    @Override
+    public FreeDepositOrderStatusBO checkExistSuccessFreeDepositOrder(FreeDepositOrderStatusDTO dto) {
+        PxzConfig pxzConfig = dto.getPxzConfig();
+        if (Objects.isNull(pxzConfig)) {
+            return null;
+        }
+        
+        // 获取上次免押的渠道，查询上次的免押状态
+        if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
+            PxzCommonRsp<PxzQueryOrderRsp> orderRspPxzCommonRsp = requestFreeDepositStatusFromPxz(dto.getOrderId(), pxzConfig);
+            if (Objects.isNull(orderRspPxzCommonRsp)) {
+                return null;
+            }
+            PxzQueryOrderRsp queryOrderRspData = orderRspPxzCommonRsp.getData();
+            FreeDepositOrderStatusBO bo = BeanUtil.copyProperties(queryOrderRspData, FreeDepositOrderStatusBO.class);
+            return bo;
+        }
+        
+        if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.FY.getChannel())) {
+            // todo 蜂云的返回
+            return new FreeDepositOrderStatusBO();
+        }
+        return null;
+    }
+    
+    
     @Override
     public Triple<Boolean, String, Object> checkExistSuccessFreeDepositOrder(Long uid, FreeDepositUserDTO freeDepositUserDTO) {
         // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
@@ -88,13 +119,21 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         // 获取上次免押的渠道，查询上次的免押状态
         if (Objects.equals(freeDepositOrder.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
-            
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
                 return Triple.of(true, "100400", "免押功能未配置相关信息！请联系客服处理");
             }
+            String orderId = batteryDeposit.getOrderId();
             // 拍小租进行过免押操作，且已免押成功
-            return checkFreeDepositStatusFromPxzV2(batteryDeposit.getOrderId(), pxzConfig);
+            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = requestFreeDepositStatusFromPxz(orderId, pxzConfig);
+            if (Objects.nonNull(pxzQueryOrderRsp) && Objects.nonNull(pxzQueryOrderRsp.getData())) {
+                PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+                if (PxzQueryOrderRsp.AUTH_FROZEN.equals(queryOrderRspData.getAuthStatus())) {
+                    log.info("query free deposit status from pxz success!  orderId = {}", orderId);
+                    return Triple.of(true, "100400", "免押已成功，请勿重复操作");
+                }
+            }
+            return Triple.of(false, null, null);
         }
         
         if (Objects.equals(freeDepositOrder.getChannel(), FreeDepositChannelEnum.FY.getChannel())) {
@@ -118,8 +157,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     }
     
     
-    private Triple<Boolean, String, Object> checkFreeDepositStatusFromPxzV2(String orderId, PxzConfig pxzConfig) {
-        
+    private PxzCommonRsp<PxzQueryOrderRsp> requestFreeDepositStatusFromPxz(String orderId, PxzConfig pxzConfig) {
         PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
@@ -134,22 +172,26 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         try {
             pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
         } catch (PxzFreeDepositException e) {
-            log.error("query free deposit status from pxz error!  orderId = {}", orderId, e);
+            log.error("Pxz ERROR! freeDepositOrderQuery fail!  orderId={}", orderId, e);
+            return null;
         }
         
-        if (Objects.nonNull(pxzQueryOrderRsp) && Objects.nonNull(pxzQueryOrderRsp.getData())) {
-            PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
-            if (PxzQueryOrderRsp.AUTH_FROZEN.equals(queryOrderRspData.getAuthStatus())) {
-                log.info("query free deposit status from pxz success!  orderId = {}", orderId);
-                return Triple.of(true, "100400", "免押已成功，请勿重复操作");
-            }
+        if (Objects.isNull(pxzQueryOrderRsp)) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}", orderId);
+            return null;
         }
-        return Triple.of(false, null, null);
+        
+        if (!pxzQueryOrderRsp.isSuccess()) {
+            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(pxzQueryOrderRsp));
+            return null;
+        }
+        
+        return pxzQueryOrderRsp;
     }
     
     
     /**
-     * 免押接口，根据次数区分使用拍小租还是蜂云
+     * 免押确认接口，根据次数区分使用拍小租还是蜂云
      */
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
