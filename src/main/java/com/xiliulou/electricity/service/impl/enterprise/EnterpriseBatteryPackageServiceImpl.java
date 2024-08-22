@@ -5,10 +5,12 @@ import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.batteryPackage.UserBatteryMemberCardPackageBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
+import com.xiliulou.electricity.dto.FreeDepositOrderStatusDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -840,6 +842,95 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
         freeDepositUserInfoVo.setBatteryDepositAuthStatus(queryOrderRspData.getAuthStatus());
+        
+        return Triple.of(true, null, freeDepositUserInfoVo);
+        
+    }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> checkUserFreeBatteryDepositStatusV2(Long uid) {
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("check user deposit status error, not found user info,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.error("check user deposit status error, not found userBatteryDeposit,uid={}", uid);
+            return Triple.of(true, "", "");
+        }
+        
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            log.error("check user deposit status error, not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        //如果已冻结  直接返回
+        FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
+            freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
+            return Triple.of(true, null, freeDepositUserInfoVo);
+        }
+        
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+            log.error("check user deposit status error, not found pxzConfig,uid={}", uid);
+            return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
+        }
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("check user deposit status error, not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        // 三方接口免押查询
+        FreeDepositOrderStatusDTO dto = FreeDepositOrderStatusDTO.builder().pxzConfig(pxzConfig).channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
+                .uid(userInfo.getUid()).build();
+        FreeDepositOrderStatusBO bo = freeDepositService.getFreeDepositOrderStatus(dto);
+        if (Objects.isNull(bo)) {
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+        
+        
+        //更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthNo(bo.getAuthNo());
+        freeDepositOrderUpdate.setAuthStatus(bo.getAuthStatus());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+        
+        //冻结成功
+        if (Objects.equals(bo.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            
+            //扣减免押次数
+            freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
+            
+            //更新押金订单状态
+            EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
+            eleDepositOrderUpdate.setId(eleDepositOrder.getId());
+            eleDepositOrderUpdate.setStatus(EleDepositOrder.STATUS_SUCCESS);
+            eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleDepositOrderService.update(eleDepositOrderUpdate);
+            
+            //绑定加盟商、更新押金状态
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(uid);
+            userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+            userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
+            userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfoUpdate);
+        }
+        
+        freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
+        freeDepositUserInfoVo.setBatteryDepositAuthStatus(bo.getAuthStatus());
         
         return Triple.of(true, null, freeDepositUserInfoVo);
         

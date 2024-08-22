@@ -157,6 +157,17 @@ public class JsonUserEnterprisePackageController extends BaseController {
     }
     
     /**
+     * 查询电池免押是否成功v2
+     *
+     * @return
+     */
+    @GetMapping( "/merchant/enterprise/freeDeposit/status/v2")
+    public R freeBatteryDepositOrderStatusV2(@RequestParam(value = "uid", required = true) Long uid) {
+        
+        return returnTripleResult(enterpriseBatteryPackageService.checkUserFreeBatteryDepositStatusV2(uid));
+    }
+    
+    /**
      * 根据企业ID查询加盟商信息
      *
      * @param enterpriseId

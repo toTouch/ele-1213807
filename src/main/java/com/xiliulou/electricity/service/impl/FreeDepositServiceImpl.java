@@ -79,9 +79,10 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         PxzConfig pxzConfig = dto.getPxzConfig();
         if (Objects.isNull(pxzConfig)) {
+            log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.pxzConfig is null");
             return null;
         }
-        log.info("FreeDeposit INFO! getFreeDepositOrderStatus.params is {}", JsonUtil.toJson(dto));
+        log.info("FreeDeposit INFO! getFreeDepositOrderStatus.channel is {}, orderId is {}", dto.getChannel(), dto.getOrderId());
         // 获取上次免押的渠道，查询上次的免押状态
         if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
             PxzCommonRsp<PxzQueryOrderRsp> orderRspPxzCommonRsp = requestFreeDepositStatusFromPxz(dto.getOrderId(), pxzConfig);
@@ -89,8 +90,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
                 return null;
             }
             PxzQueryOrderRsp queryOrderRspData = orderRspPxzCommonRsp.getData();
-            FreeDepositOrderStatusBO bo = BeanUtil.copyProperties(queryOrderRspData, FreeDepositOrderStatusBO.class);
-            return bo;
+            return BeanUtil.copyProperties(queryOrderRspData, FreeDepositOrderStatusBO.class);
         }
         
         if (Objects.equals(dto.getChannel(), FreeDepositChannelEnum.FY.getChannel())) {
@@ -106,23 +106,29 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
         UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.isNull(batteryDeposit) || UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT.equals(batteryDeposit.getDepositType())) {
+            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.batteryDeposit is null, uid is {}", uid);
             return Triple.of(false, null, null);
         }
         
         // 获取押金订单记录
         FreeDepositOrder freeDepositOrder = freeDepositOrderMapper.queryByOrderId(batteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
+            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositOrder is null, orderId is {}", batteryDeposit.getOrderId());
             return Triple.of(false, null, null);
         }
         
         // 检查传入的用户信息是否和前一次传入的内容一致，一致返回false,不生成新的
         if (Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) && Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
                 && Objects.equals(batteryDeposit.getDid(), freeDepositUserDTO.getPackageId())) {
+            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo equal, uid is {}", uid);
             return Triple.of(true, null, freeDepositOrder);
         }
         
+        log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.channel is {}, orderId is {}", freeDepositOrder.getChannel(), batteryDeposit.getOrderId());
+        
         // 获取上次免押的渠道，查询上次的免押状态
         if (Objects.equals(freeDepositOrder.getChannel(), FreeDepositChannelEnum.PXZ.getChannel())) {
+            
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
                 return Triple.of(true, "100400", "免押功能未配置相关信息！请联系客服处理");
