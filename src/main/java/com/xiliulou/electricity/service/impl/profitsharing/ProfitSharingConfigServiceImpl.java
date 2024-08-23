@@ -6,10 +6,12 @@ import java.math.BigDecimal;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.converter.profitsharing.ProfitSharingConfigConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigCycleTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigProfitSharingTypeEnum;
@@ -19,8 +21,11 @@ import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequ
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigUpdateStatusOptRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingReceiverConfigService;
+import com.xiliulou.electricity.tx.profitsharing.ProfitSharingConfigTxService;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +33,7 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -48,6 +54,11 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
     @Resource
     private RedisService redisService;
     
+    @Resource
+    private ProfitSharingReceiverConfigService profitSharingReceiverConfigService;
+    
+    @Resource
+    private ProfitSharingConfigTxService profitSharingConfigTxService;
     
     /**
      * 初始化默认订单类型
@@ -140,24 +151,76 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         if (Objects.isNull(exist)) {
             throw new BizException("数据不存在");
         }
+        // 校验分账限制
+        this.checkScaleLimit(request, exist);
         
-        Integer profitSharingType = request.getProfitSharingType();
-        BigDecimal scaleLimit = request.getScaleLimit();
-        
-        if (Objects.nonNull(scaleLimit) && scaleLimit.compareTo(exist.getScaleLimit()) < 0) {
-            // 分账比例小于原比例
-            if (Objects.isNull(profitSharingType)) {
-                profitSharingType = exist.getProfitSharingType();
-            }
-            
-            if (ProfitSharingConfigProfitSharingTypeEnum.ORDER_SCALE.getCode().equals(exist.getProfitSharingType())) {
-            
-            }
-        }
-        
+        //更新
         ProfitSharingConfig profitSharingConfig = ProfitSharingConfigConverter.optRequestToEntity(request);
         profitSharingConfig.setUpdateTime(System.currentTimeMillis());
         profitSharingConfigMapper.update(profitSharingConfig);
+        // 清空缓存
+        this.deleteCache(request.getTenantId(), exist.getPayParamId());
+    }
+    
+    @Override
+    public void removeByPayParamId(Integer tenantId, Integer payParamsId) {
+        ProfitSharingConfig profitSharingConfig = queryByPayParamsIdFromCache(tenantId, payParamsId);
+        if (Objects.isNull(profitSharingConfig)) {
+            return;
+        }
+        Long removeId = profitSharingConfig.getId();
+        
+        List<ProfitSharingReceiverConfig> receiverConfigs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(tenantId, removeId);
+        List<Long> receiverIds = null;
+        if (CollectionUtils.isNotEmpty(receiverConfigs)) {
+            receiverIds = receiverConfigs.stream().map(ProfitSharingReceiverConfig::getId).collect(Collectors.toList());
+        }
+        profitSharingConfigTxService.remove(tenantId, removeId, receiverIds);
+        
+        this.deleteCache(tenantId, profitSharingConfig.getPayParamId());
+    }
+    
+    @Slave
+    @Override
+    public ProfitSharingConfig queryById(Integer tenantId, Long id) {
+        return profitSharingConfigMapper.selectByTenantIdAndId(tenantId, id);
+    }
+    
+    /**
+     * 校验分账比例限制总金额
+     *
+     * @param request
+     * @param exist
+     * @author caobotao.cbt
+     * @date 2024/8/23 15:01
+     */
+    private void checkScaleLimit(ProfitSharingConfigOptRequest request, ProfitSharingConfig exist) {
+        
+        BigDecimal scaleLimit = request.getScaleLimit();
+        
+        if (Objects.isNull(scaleLimit) || scaleLimit.compareTo(exist.getScaleLimit()) >= 0) {
+            return;
+        }
+        
+        // 分账比例小于原比例
+        if (!ProfitSharingConfigProfitSharingTypeEnum.ORDER_SCALE.getCode().equals(exist.getProfitSharingType())) {
+            return;
+        }
+        List<ProfitSharingReceiverConfig> configs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(exist.getTenantId(), exist.getId());
+        
+        // 计算累计总比例
+        BigDecimal sum = BigDecimal.ZERO;
+        sum = sum.add(scaleLimit);
+        if (CollectionUtils.isNotEmpty(configs)) {
+            for (ProfitSharingReceiverConfig config : configs) {
+                sum = sum.add(config.getScale());
+            }
+        }
+        
+        if (sum.compareTo(exist.getScaleLimit()) > 0) {
+            throw new BizException("分账接收方分账比例之和 必须小于等于 允许比例上限");
+        }
+        
     }
     
     

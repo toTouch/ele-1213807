@@ -7,7 +7,9 @@ package com.xiliulou.electricity.controller.admin.profitsharing;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequest;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigUpdateStatusOptRequest;
+import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverOptConfigRequest;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingReceiverConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import org.springframework.validation.annotation.Validated;
@@ -27,45 +29,23 @@ import javax.annotation.Resource;
  * @date 2024/8/22 16:45
  */
 @RestController
-public class JsonAdminProfitSharingConfigController {
+public class JsonAdminProfitSharingReceiverConfigController {
     
     
     @Resource
-    private ProfitSharingConfigService profitSharingConfigService;
+    private ProfitSharingReceiverConfigService profitSharingReceiverConfigService;
     
-    @PutMapping(value = "/admin/profitSharingConfig")
-    public R update(@Validated @RequestBody ProfitSharingConfigOptRequest request) {
+    
+    
+    @PostMapping(value = "/admin/profitSharingReceiverConfig")
+    public R insert(@Validated @RequestBody ProfitSharingReceiverOptConfigRequest request) {
         request.setTenantId(TenantContextHolder.getTenantId());
-        profitSharingConfigService.update(request);
+        profitSharingReceiverConfigService.insert(request);
         return R.ok();
     }
     
-    /**
-     * 根据加盟商查询分账方配置
-     *
-     * @param franchiseeId
-     * @author caobotao.cbt
-     * @date 2024/8/22 19:07
-     */
-    @GetMapping(value = "/admin/profitSharingConfig/{franchiseeId}")
-    public R getByFranchiseeId(@PathVariable("franchiseeId") Long franchiseeId) {
-        ProfitSharingConfigVO profitSharingConfigVO = profitSharingConfigService.queryByTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(), franchiseeId);
-        return R.ok(profitSharingConfigVO);
-    }
     
-    /**
-     * 开关状态更新
-     *
-     * @param request
-     * @author caobotao.cbt
-     * @date 2024/8/23 15:35
-     */
-    @PutMapping(value = "/admin/profitSharingConfig/updateStatus")
-    public R updateStatus(@Validated @RequestBody ProfitSharingConfigUpdateStatusOptRequest request) {
-        request.setTenantId(TenantContextHolder.getTenantId());
-        profitSharingConfigService.updateStatus(request);
-        return R.ok();
-    }
+    
     
     
 }

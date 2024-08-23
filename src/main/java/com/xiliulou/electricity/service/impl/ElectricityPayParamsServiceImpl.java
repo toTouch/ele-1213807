@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -39,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +87,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Autowired
     private ElectricityPayParamsTxService electricityPayParamsTxService;
     
+    
+    @Resource
+    private ProfitSharingConfigService profitSharingConfigService;
     
     @Override
     public R insert(ElectricityPayParamsRequest request) {
@@ -204,6 +209,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return R.failMsg("默认配置不可删除");
         }
         
+        // 逻辑删除分账配置：
+        profitSharingConfigService.removeByPayParamId(tenantId, payParams.getId());
+        
         // 逻辑删除
         electricityPayParamsTxService.delete(id, tenantId);
         
@@ -247,7 +255,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return franchiseeVO;
         }).collect(Collectors.toList());
     }
- 
+    
     
     @Override
     public R getTenantId(String appId) {
