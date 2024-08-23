@@ -18,12 +18,12 @@ import org.springframework.context.annotation.Configuration;
 public class FreeDepositConfig {
     
     /**
-     * 拍小组
+     * 拍小组冻结，结果通知回调
      */
-    private String pxzUrl;
+    private String pxzFreeUrl;
     
     /**
-     * 蜂云冻结 回调地址
+     * 蜂云冻结 结果通知回调地址
      */
     private String fyFreeUrl;
     

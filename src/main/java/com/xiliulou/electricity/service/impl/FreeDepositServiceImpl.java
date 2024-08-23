@@ -71,6 +71,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositUserDTO is null");
             return Triple.of(false, null, null);
         }
+        
         Long uid = freeDepositUserDTO.getUid();
         // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
         UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
@@ -99,6 +100,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().orderId(batteryDeposit.getOrderId()).tenantId(freeDepositUserDTO.getTenantId()).uid(uid).build();
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(freeDepositOrder.getChannel()), BaseFreeDepositService.class);
         FreeDepositOrderStatusBO bo = service.queryFreeDepositOrderStatus(query);
+        
         if (Objects.nonNull(bo) && PxzQueryOrderRsp.AUTH_FROZEN.equals(bo.getAuthStatus())) {
             log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), batteryDeposit.getOrderId());
             return Triple.of(true, "100400", "免押已成功，请勿重复操作");

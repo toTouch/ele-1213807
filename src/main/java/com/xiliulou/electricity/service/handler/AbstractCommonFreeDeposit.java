@@ -77,6 +77,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setIdNumber(freeDepositOrderRequest.getIdCard());
         request.setTransId(orderId);
         request.setTransAmt(freeDepositOrderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
+        request.setCallbackUrl(freeDepositConfig.getPxzFreeUrl());
         query.setData(request);
         
         return query;
