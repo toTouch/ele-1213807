@@ -161,6 +161,17 @@ public class JsonAdminEleRefundOrderController extends BaseController {
         return returnTripleResult(eleRefundOrderService.batteryFreeDepostRefundAudit(refundOrderNo, errMsg, status, refundAmount, uid));
     }
     
+    /**
+     * 电池免押后台退款审核处理V2
+     */
+    @PostMapping("/admin/battery/free/refund/audit/v2")
+    @Log(title = "电池免押退款审核")
+    public R batteryFreeDepostRefundAuditV2(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,
+            @RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+            @RequestParam("uid") Long uid) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepostRefundAuditV2(refundOrderNo, errMsg, status, refundAmount, uid));
+    }
+    
     
     // 用户电池押金缴纳方式
     @GetMapping("/admin/queryUserDepositPayType")

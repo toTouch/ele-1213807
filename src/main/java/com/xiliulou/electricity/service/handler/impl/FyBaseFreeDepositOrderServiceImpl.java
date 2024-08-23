@@ -92,7 +92,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return resultCheck;
         }
         
-        return Triple.of(true, null, null);
+        return Triple.of(true, null, "解冻中，请稍后");
     }
     
     

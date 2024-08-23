@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.handler.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.bo.UnFreeDepositOrderBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
@@ -91,6 +90,6 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return triple;
         }
         
-        return Triple.of(true, null, BeanUtil.copyProperties(pxzUnfreezeDepositCommonRsp.getData(), UnFreeDepositOrderBO.class));
+        return Triple.of(true, null, "解冻中，请稍后");
     }
 }

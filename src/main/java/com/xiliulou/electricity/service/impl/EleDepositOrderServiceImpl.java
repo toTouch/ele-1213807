@@ -471,10 +471,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleRefundOrderService.insert(eleRefundOrder);
         
-        if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
-                Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
-            freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
-        }
+        // if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
+        //        Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
+        //     freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
+        // }
         
         // 等到后台同意退款
         return R.ok(packageOwe);
