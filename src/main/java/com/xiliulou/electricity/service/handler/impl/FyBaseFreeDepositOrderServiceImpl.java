@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
+import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
+import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
@@ -44,9 +46,9 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
-        // todo 蜂云结果返回
         
-        return Triple.of(true, null, null);
+        FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.FY.getChannel()).data(result.getFyResponse().getOutOrderNo()).build();
+        return Triple.of(true, null, dto);
     }
     
     @Override

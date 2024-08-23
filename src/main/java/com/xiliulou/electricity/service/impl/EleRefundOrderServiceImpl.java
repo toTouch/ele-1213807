@@ -585,18 +585,39 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
             return Triple.of(false, "100253", "用户已绑定车辆");
         }
-       
-        // 三方接口解冻
-        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getTransAmt().toString()).orderId(freeDepositOrder.getOrderId())
-                .tenantId(userInfo.getTenantId()).uid(uid).subject("电池押金解冻").build();
-        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
-        if (!triple.getLeft()) {
-            return triple;
+        
+        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> testQuery = new PxzCommonRequest<>();
+        testQuery.setAesSecret(pxzConfig.getAesKey());
+        testQuery.setDateTime(System.currentTimeMillis());
+        testQuery.setSessionId(eleRefundOrder.getOrderId());
+        testQuery.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+        queryRequest.setRemark("电池押金解冻");
+        queryRequest.setTransId(freeDepositOrder.getOrderId());
+        testQuery.setData(queryRequest);
+        
+        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzUnfreezeDepositCommonRsp = null;
+        
+        try {
+            pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
+        } catch (Exception e) {
+            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
+            return Triple.of(false, "100401", "免押解冻调用失败！");
         }
-        UnFreeDepositOrderBO depositOrderBO = (UnFreeDepositOrderBO) triple.getRight();
+        
+        if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
+            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
+        if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
+            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
+            return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
+        }
         
         // 如果解冻成功
-        if (Objects.equals(depositOrderBO.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
+        if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
             // 更新免押订单状态
             FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
             freeDepositOrderUpdate.setId(freeDepositOrder.getId());
