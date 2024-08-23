@@ -5,13 +5,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.electricity.vo.FranchiseeVO;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
-    
     
     
     R getTenantId(String appId);
@@ -95,4 +95,15 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @date 2024/6/12 18:09
      */
     List<ElectricityPayParamsVO> queryByTenantId(Integer tenantId);
+    
+    /**
+     * 聚合租户加盟商
+     *
+     * @param tenantId
+     * @return
+     * @author caobotao.cbt
+     * @date 2024/8/22 17:52
+     */
+    List<FranchiseeVO> queryFranchisee(Integer tenantId);
+    
 }

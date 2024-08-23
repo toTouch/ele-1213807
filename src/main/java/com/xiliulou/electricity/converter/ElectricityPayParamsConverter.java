@@ -11,9 +11,9 @@ import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import org.springframework.beans.BeanUtils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
  * @date 2024/6/12 16:51
  */
 public class ElectricityPayParamsConverter {
+    
     
     /**
      * 操作参数转换

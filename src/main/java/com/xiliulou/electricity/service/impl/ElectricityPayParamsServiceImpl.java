@@ -14,7 +14,6 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
@@ -30,18 +29,18 @@ import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxServic
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.electricity.vo.FranchiseeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -227,6 +226,28 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return voList;
     }
     
+    @Override
+    public List<FranchiseeVO> queryFranchisee(Integer tenantId) {
+        List<Long> franchiseeIds = baseMapper.selectFranchiseeIdsByTenantId(tenantId);
+        // 过滤掉默认加盟商
+        franchiseeIds = Optional.ofNullable(franchiseeIds).orElse(Collections.emptyList()).stream().filter(v -> !MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(v)).distinct()
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return Collections.emptyList();
+        }
+        
+        List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, tenantId);
+        if (CollectionUtils.isEmpty(franchisees)) {
+            return Collections.emptyList();
+        }
+        
+        return franchisees.stream().map(franchisee -> {
+            FranchiseeVO franchiseeVO = new FranchiseeVO();
+            BeanUtils.copyProperties(franchisee, franchiseeVO);
+            return franchiseeVO;
+        }).collect(Collectors.toList());
+    }
+ 
     
     @Override
     public R getTenantId(String appId) {
