@@ -188,10 +188,9 @@ public abstract class AbstractCommonFreeDeposit {
         FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(orderStatusQuery.getOrderId());
         request.setThirdOrderNo(orderStatusQuery.getOrderId());
-        request.setAmount();
-        
-        
-        
+        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.valueOf(orderStatusQuery.getAmount()) : 0);
+        request.setSubject(orderStatusQuery.getSubject());
+        request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_UNFREEZE);
         
         query.setFlowNo(orderStatusQuery.getOrderId());
         query.setFyRequest(request);

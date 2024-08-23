@@ -587,7 +587,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
        
         // 三方接口解冻
-        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().amount(freeDepositOrder.getTransAmt().toString()).orderId(freeDepositOrder.getOrderId())
+        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getTransAmt().toString()).orderId(freeDepositOrder.getOrderId())
                 .tenantId(userInfo.getTenantId()).uid(uid).subject("电池押金解冻").build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
         if (!triple.getLeft()) {
