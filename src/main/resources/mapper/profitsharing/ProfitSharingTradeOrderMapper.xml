@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder" id="TProfitSharingTradeOrderMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="thirdMerchantId" column="third_merchant_id" jdbcType="VARCHAR"/>
+        <result property="orderNo" column="order_no" jdbcType="VARCHAR"/>
+        <result property="thirdOrderNo" column="third_order_no" jdbcType="VARCHAR"/>
+        <result property="orderType" column="order_type" jdbcType="INTEGER"/>
+        <result property="amount" column="amount" jdbcType="VARCHAR"/>
+        <result property="processState" column="process_state" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="channel" column="channel" jdbcType="VARCHAR"/>
+        <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER"/>
+        <result property="payTime" column="pay_time" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="base_column">
+        id, tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time    </sql>
+    
+    <sql id="table_name">
+       t_profit_sharing_trade_order
+    </sql>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="TProfitSharingTradeOrderMap">
+        select
+          id, tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time
+        from t_profit_sharing_trade_order
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="TProfitSharingTradeOrderMap">
+        select
+          id, tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time
+        from t_profit_sharing_trade_order
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="thirdMerchantId != null and thirdMerchantId != ''">
+                and third_merchant_id = #{thirdMerchantId}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = #{orderNo}
+            </if>
+            <if test="thirdOrderNo != null and thirdOrderNo != ''">
+                and third_order_no = #{thirdOrderNo}
+            </if>
+            <if test="orderType != null">
+                and order_type = #{orderType}
+            </if>
+            <if test="amount != null">
+                and amount = #{amount}
+            </if>
+            <if test="processState != null">
+                and process_state = #{processState}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+            <if test="channel != null and channel != ''">
+                and channel = #{channel}
+            </if>
+            <if test="rentRebate != null">
+                and rent_rebate = #{rentRebate}
+            </if>
+            <if test="payTime != null">
+                and pay_time = #{payTime}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from t_profit_sharing_trade_order
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="thirdMerchantId != null and thirdMerchantId != ''">
+                and third_merchant_id = #{thirdMerchantId}
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                and order_no = #{orderNo}
+            </if>
+            <if test="thirdOrderNo != null and thirdOrderNo != ''">
+                and third_order_no = #{thirdOrderNo}
+            </if>
+            <if test="orderType != null">
+                and order_type = #{orderType}
+            </if>
+            <if test="amount != null">
+                and amount = #{amount}
+            </if>
+            <if test="processState != null">
+                and process_state = #{processState}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+            <if test="channel != null and channel != ''">
+                and channel = #{channel}
+            </if>
+            <if test="rentRebate != null">
+                and rent_rebate = #{rentRebate}
+            </if>
+            <if test="payTime != null">
+                and pay_time = #{payTime}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time)
+        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{orderNo}, #{thirdOrderNo}, #{orderType}, #{amount}, #{processState}, #{remark}, #{channel}, #{rentRebate}, #{payTime}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.tenantId}, #{entity.franchiseeId}, #{entity.thirdMerchantId}, #{entity.orderNo}, #{entity.thirdOrderNo}, #{entity.orderType}, #{entity.amount}, #{entity.processState}, #{entity.remark}, #{entity.channel}, #{entity.rentRebate}, #{entity.payTime}, #{entity.delFlag}, #{entity.createTime}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.tenantId}, #{entity.franchiseeId}, #{entity.thirdMerchantId}, #{entity.orderNo}, #{entity.thirdOrderNo}, #{entity.orderType}, #{entity.amount}, #{entity.processState}, #{entity.remark}, #{entity.channel}, #{entity.rentRebate}, #{entity.payTime}, #{entity.delFlag}, #{entity.createTime}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        tenant_id = values(tenant_id),
+        franchisee_id = values(franchisee_id),
+        third_merchant_id = values(third_merchant_id),
+        order_no = values(order_no),
+        third_order_no = values(third_order_no),
+        order_type = values(order_type),
+        amount = values(amount),
+        process_state = values(process_state),
+        remark = values(remark),
+        channel = values(channel),
+        rent_rebate = values(rent_rebate),
+        pay_time = values(pay_time),
+        del_flag = values(del_flag),
+        create_time = values(create_time),
+        update_time = values(update_time)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_profit_sharing_trade_order
+        <set>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="thirdMerchantId != null and thirdMerchantId != ''">
+                third_merchant_id = #{thirdMerchantId},
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                order_no = #{orderNo},
+            </if>
+            <if test="thirdOrderNo != null and thirdOrderNo != ''">
+                third_order_no = #{thirdOrderNo},
+            </if>
+            <if test="orderType != null">
+                order_type = #{orderType},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="processState != null">
+                process_state = #{processState},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="channel != null and channel != ''">
+                channel = #{channel},
+            </if>
+            <if test="rentRebate != null">
+                rent_rebate = #{rentRebate},
+            </if>
+            <if test="payTime != null">
+                pay_time = #{payTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_profit_sharing_trade_order where id = #{id}
+    </delete>
+
+</mapper>
+

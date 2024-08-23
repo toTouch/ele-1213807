@@ -23,7 +23,8 @@
     </resultMap>
     
     <sql id="base_column">
-        id, office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
+        id
+        , office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
     </sql>
     
     <sql id="table_name">
@@ -193,6 +194,13 @@
         and tenant_id=#{tenantId}
         and wechat_merchant_id=#{wechatMerchantId}
         limit 1
+    </select>
+    <select id="selectFranchiseeIdsByTenantId" resultType="java.lang.Long">
+        select franchisee_id
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
     </select>
     
     <!--新增所有列-->

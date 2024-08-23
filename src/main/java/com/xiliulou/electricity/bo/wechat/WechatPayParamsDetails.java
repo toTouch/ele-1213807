@@ -1,6 +1,3 @@
-/**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/14
- */
 
 package com.xiliulou.electricity.bo.wechat;
 
