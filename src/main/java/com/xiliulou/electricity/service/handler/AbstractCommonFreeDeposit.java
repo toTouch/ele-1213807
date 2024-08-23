@@ -190,6 +190,8 @@ public abstract class AbstractCommonFreeDeposit {
         request.setThirdOrderNo(orderStatusQuery.getOrderId());
         request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.valueOf(orderStatusQuery.getAmount()) : 0);
         request.setSubject(orderStatusQuery.getSubject());
+        // todo 解冻回调地址
+        request.setNotifyUrl(orderStatusQuery.getNotifyUrl());
         request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_UNFREEZE);
         
         query.setFlowNo(orderStatusQuery.getOrderId());

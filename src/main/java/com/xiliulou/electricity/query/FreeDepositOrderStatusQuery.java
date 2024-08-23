@@ -42,4 +42,5 @@ public class FreeDepositOrderStatusQuery {
      * 押金金额
      */
     private String amount;
+    
 }
