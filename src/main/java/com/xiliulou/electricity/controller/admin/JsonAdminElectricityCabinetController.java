@@ -1053,7 +1053,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         }
         
         Map<String, Object> params = Maps.newHashMap();
-        params.put("pattern", query.getPattern());
+        params.put("iotConnectMode", query.getPattern());
         
         EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
         commandQuery.setProductKey(query.getProductKey());
