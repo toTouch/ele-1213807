@@ -628,7 +628,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 }
                 
                 //回收押金
-                Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
+                Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDepositV2(userInfo, enterpriseInfo);
                 if (!batteryDepositTriple.getLeft()) {
                     errorMsg = (String) batteryDepositTriple.getRight();
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
@@ -1184,7 +1184,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 }
                 
                 //回收押金
-                Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDeposit(userInfo, enterpriseInfo);
+                Triple<Boolean, String, Object> batteryDepositTriple = enterpriseInfoService.recycleBatteryDepositV2(userInfo, enterpriseInfo);
                 if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
                     return;
                 }

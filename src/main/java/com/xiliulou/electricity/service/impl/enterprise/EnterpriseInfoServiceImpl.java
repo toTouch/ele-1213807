@@ -54,6 +54,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanRechargeQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseInfoQuery;
@@ -68,6 +69,7 @@ import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.PxzConfigService;
@@ -264,6 +266,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
     
+    @Resource
+    private FreeDepositService freeDepositService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -1207,7 +1211,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         }
         
         //回收押金
-        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDeposit(userInfo, enterpriseInfo);
+        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo);
         if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
             return batteryDepositTriple;
         }
@@ -1745,6 +1749,95 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 // 修改退押订单为退款成功
                 updateEleRefundOrder(eleRefundOrder.getId(), EleRefundOrder.STATUS_SUCCESS);
             }
+        });
+        
+        return Triple.of(true, null, batteryDeposit);
+    }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("RECYCLE BATTERY DEPOSIT WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+            return Triple.of(false, "100247", "用户信息不存在");
+        }
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if(Objects.isNull(eleDepositOrder)){
+            log.warn("RECYCLE BATTERY DEPOSIT WARN!not found eleDepositOrder,uid={}", userInfo.getUid());
+            return Triple.of(false, "100221", "未找到订单");
+        }
+        
+        if(!Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())){
+            return Triple.of(true, null, BigDecimal.ZERO);
+        }
+        
+        // 免押回收默认为零
+        BigDecimal batteryDeposit = userBatteryDeposit.getBatteryDeposit();
+        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
+            batteryDeposit = BigDecimal.ZERO;
+        }
+        
+        enterpriseInfo.setTotalBeanAmount(enterpriseInfo.getTotalBeanAmount().add(batteryDeposit));
+        
+        //保存回收记录
+        CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
+        cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
+        cloudBeanUseRecord.setUid(userInfo.getUid());
+        cloudBeanUseRecord.setType(CloudBeanUseRecord.TYPE_RECYCLE);
+        cloudBeanUseRecord.setOrderType(CloudBeanUseRecord.ORDER_TYPE_BATTERY_DEPOSIT);
+        cloudBeanUseRecord.setBeanAmount(batteryDeposit);
+        cloudBeanUseRecord.setRemainingBeanAmount(enterpriseInfo.getTotalBeanAmount());
+        cloudBeanUseRecord.setPackageId(userBatteryDeposit.getDid());
+        cloudBeanUseRecord.setFranchiseeId(enterpriseInfo.getFranchiseeId());
+        cloudBeanUseRecord.setRef(userBatteryDeposit.getOrderId());
+        cloudBeanUseRecord.setTenantId(enterpriseInfo.getTenantId());
+        cloudBeanUseRecord.setCreateTime(System.currentTimeMillis());
+        cloudBeanUseRecord.setUpdateTime(System.currentTimeMillis());
+        cloudBeanUseRecordService.insert(cloudBeanUseRecord);
+        
+        Integer status = EleRefundOrder.STATUS_SUCCESS;
+        // 如果是免押则改为退款中
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            status = EleRefundOrder.STATUS_REFUND;
+        }
+        //生成退押订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
+                .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).payType(eleDepositOrder.getPayType()).build();
+        eleRefundOrderService.insert(eleRefundOrder);
+        
+        //记录企业用户退押记录
+        enterpriseUserCostRecordService.asyncSaveUserCostRecordForRefundDeposit(userInfo.getUid(), UserCostTypeEnum.COST_TYPE_REFUND_DEPOSIT.getCode(), eleRefundOrder);
+        
+        if(!Objects.equals( eleDepositOrder.getPayType(),EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+            return Triple.of(true, null, userBatteryDeposit.getBatteryDeposit());
+        }
+        
+        threadPool.execute(() -> {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+            if (Objects.isNull(freeDepositOrder)) {
+                log.error("RECYCLE BATTERY DEPOSIT ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+                return;
+            }
+            
+            //更新免押订单状态
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositOrderService.update(freeDepositOrderUpdate);
+            
+            FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
+                    .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
+            Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
+            if (!triple.getLeft()) {
+                log.error("REFUND ORDER ERROR! reason is {}, orderId is {}", triple.getRight(), freeDepositOrder.getOrderId());
+                return;
+            }
+            
         });
         
         return Triple.of(true, null, batteryDeposit);

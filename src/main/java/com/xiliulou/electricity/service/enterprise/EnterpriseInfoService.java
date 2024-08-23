@@ -91,6 +91,8 @@ public interface EnterpriseInfoService {
     
     Triple<Boolean, String, Object> recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
+    Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
+    
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
     Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
