@@ -1,12 +1,14 @@
-
 package com.xiliulou.electricity.bo.wechat;
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import lombok.Data;
 
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * description: 微信支付参数详情
@@ -109,5 +111,11 @@ public class WechatPayParamsDetails {
      * 微信证书
      */
     private HashMap<BigInteger, X509Certificate> wechatPlatformCertificateMap;
+    
+    
+    /**
+     * 分账方配置
+     */
+    private ProfitSharingConfig profitSharingConfig;
     
 }

@@ -81,5 +81,15 @@ public interface ProfitSharingConfigMapper {
      */
     int updateConfigStatusById(@Param("id") Long id, @Param("configStatus") Integer configStatus, @Param("updateTime") Long updateTime);
     
+    /**
+     * 逻辑删除
+     *
+     * @param tenantId
+     * @param id
+     * @author caobotao.cbt
+     * @date 2024/8/23 15:25
+     */
+    int removeById(@Param("tenantId") Integer tenantId, @Param("id") Long id,@Param("updateTime") Long updateTime);
+    
 }
 

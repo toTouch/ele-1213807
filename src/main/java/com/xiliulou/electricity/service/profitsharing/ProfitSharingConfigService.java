@@ -67,4 +67,24 @@ public interface ProfitSharingConfigService {
      */
     void update(ProfitSharingConfigOptRequest request);
     
+    
+    /**
+     * 逻辑删除
+     *
+     * @param tenantId
+     * @param payParamsId
+     * @author caobotao.cbt
+     * @date 2024/8/23 15:11
+     */
+    void removeByPayParamId(Integer tenantId, Integer payParamsId);
+    
+    /**
+     * 根据id查询
+     *
+     * @param tenantId
+     * @param id
+     * @author caobotao.cbt
+     * @date 2024/8/23 16:37
+     */
+    ProfitSharingConfig queryById(Integer tenantId, Long id);
 }

@@ -96,6 +96,14 @@
         where id =#{id}
     </update>
     
+    <update id="removeById">
+        update
+        <include refid="table_name"/>
+        set update_time=#{updateTime},
+        del_flag=1
+        where id=#{id} and tenant_id=#{tenantId}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
         delete

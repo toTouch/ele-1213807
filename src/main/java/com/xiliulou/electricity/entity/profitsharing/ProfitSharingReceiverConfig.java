@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.profitsharing;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 分账接收方配置表(TProfitSharingReceiverConfig)实体类
@@ -43,7 +44,7 @@ public class ProfitSharingReceiverConfig implements Serializable {
     /**
      * 比例
      */
-    private Double scale;
+    private BigDecimal scale;
     /**
      * 删除标识：0-未删除 1-已删除
      */
@@ -122,11 +123,11 @@ public class ProfitSharingReceiverConfig implements Serializable {
         this.receiverStatus = receiverStatus;
     }
 
-    public Double getScale() {
+    public BigDecimal getScale() {
         return scale;
     }
 
-    public void setScale(Double scale) {
+    public void setScale(BigDecimal scale) {
         this.scale = scale;
     }
 
