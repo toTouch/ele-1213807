@@ -92,6 +92,8 @@ public interface EleRefundOrderService {
     
     Triple<Boolean, String, Object> batteryFreeDepositRefund(String errMsg, Long uid);
     
+    Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid);
+    
     List<EleRefundOrder> selectBatteryFreeDepositRefundingOrder(Integer offset, Integer size);
     
     List<EleRefundOrder> selectCarFreeDepositRefundingOrder(int offset, Integer refundOrderLimit);

@@ -1025,6 +1025,130 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return Triple.of(true, "100413", "免押押金解冻中");
     }
     
+    
+    
+    /**
+     * 电池免押退押金
+     *
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("REFUND ORDER WARN!userInfo is null,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 设置企业信息
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
+        if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            log.warn("ELE DEPOSIT WARN! battery free deposit refund channel user is disable! uid={}", userInfo.getUid());
+            return Triple.of(false, "120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("REFUND ORDER WARN! user is disable! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.warn("REFUND ORDER WARN! user is not rent deposit,uid={}", uid);
+            return Triple.of(false, "100238", "未缴纳押金");
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("REFUND ORDER WARN! user membercard is disable,uid={}", uid);
+            return Triple.of(false, "100211", "用户套餐已暂停！");
+        }
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.warn("REFUND ORDER WARN! disable member card is reviewing,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.100003", "套餐暂停正在审核中");
+        }
+        
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("REFUND ORDER WARN! not return battery,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
+        }
+        
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("REFUND ORDER WARN！userBatteryDeposit is null,uid={}", uid);
+            return Triple.of(false, "100247", "用户电池押金信息不存在");
+        }
+        
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            log.warn("REFUND ORDER WARN! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
+            return Triple.of(false, "", "免押退款中，请稍后！");
+        }
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.warn("REFUND ORDER WARN! not found eleDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        // 企业渠道订单暂不支持退押
+        if (PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode().equals(eleDepositOrder.getOrderType())) {
+            log.warn("REFUND ORDER WARN! deposit order is enterprise channel, can't refund deposit, uid={}, orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100032", "企业渠道订单暂不支持退押,请联系企业负责人");
+        }
+        
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
+        if (refundCount > 0) {
+            return Triple.of(false, "100018", "押金退款审核中");
+        }
+        
+        List<EleRefundOrder> refundOrders = eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userBatteryDeposit.getOrderId())
+                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId()).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT)
+                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
+        
+        if (!CollectionUtils.isEmpty(refundOrders)) {
+            log.warn("REFUND ORDER WARN! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100031", "不能重复退押金");
+        }
+        
+        // 获取订单代扣信息计算返还金额
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.nonNull(freeDepositAlipayHistory)) {
+            refundAmount = eleDepositOrder.getPayAmount().subtract(freeDepositAlipayHistory.getAlipayAmount());
+            
+        }
+        
+        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
+        
+        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
+                .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
+        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
+        if (!triple.getLeft()) {
+            return Triple.of(false, "100406", triple.getRight());
+        }
+        
+        // 更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+        
+        // 生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
+                .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+        eleRefundOrderService.insert(eleRefundOrder);
+        
+        return Triple.of(true, "100413", "免押押金解冻中");
+    }
+    
     /**
      * 处理电池押金0元
      */
