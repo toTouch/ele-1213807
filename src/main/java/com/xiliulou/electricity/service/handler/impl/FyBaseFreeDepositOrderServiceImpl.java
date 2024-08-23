@@ -37,7 +37,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = FyResultCheck(map, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(map, orderId);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -57,14 +57,14 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return null;
         }
         
-        Triple<Boolean, String, Object> resultCheck = FyResultCheck(map, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(map, orderId);
         if (!resultCheck.getLeft()) {
             return null;
         }
         
         String authNo = (String) map.get("authNo");
         
-        Integer authStatus = FyAuthStatusToPxzStatus((String) map.get("status"));
+        Integer authStatus = fyAuthStatusToPxzStatus((String) map.get("status"));
         
         return FreeDepositOrderStatusBO.builder().authNo(authNo).authStatus(authStatus).build();
     }
@@ -77,9 +77,15 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             map = fyDepositService.handleFund(buildFyUnFreeRequest(query));
         } catch (Exception e) {
             log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
-            return null;
+            return Triple.of(false, "100401", "免押调用失败！");
         }
         
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(map, orderId);
+        if (!resultCheck.getLeft()) {
+            return resultCheck;
+        }
+        
+        return Triple.of(false, "100401", "免押调用失败！");
     }
     
     

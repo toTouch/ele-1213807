@@ -132,7 +132,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
         if (Objects.isNull(query)) {
             log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.params is null");
-            return null;
+            return Triple.of(false, "100419", "系统异常，稍后再试");
         }
         log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         // 免押解冻

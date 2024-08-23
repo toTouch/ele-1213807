@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
@@ -44,6 +45,9 @@ public abstract class AbstractCommonFreeDeposit {
     
     @Resource
     private FyConfigService fyConfigService;
+    
+    @Resource
+    private FreeDepositConfig freeDepositConfig;
     
     public static final String SUCCESS_CODE = "WZF00000";
     
@@ -118,7 +122,7 @@ public abstract class AbstractCommonFreeDeposit {
     }
     
     
-    public Triple<Boolean, String, Object> PxzResultCheck(PxzCommonRsp rsp, String orderId) {
+    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp rsp, String orderId) {
         if (Objects.isNull(rsp)) {
             log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
@@ -169,7 +173,7 @@ public abstract class AbstractCommonFreeDeposit {
     
     
     public FyCommonQuery<FyQueryFreezeStatusRequest> buildFyFreeDepositStatusRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
-        FyConfig fyConfig = getFyConfig(orderStatusQuery.getTenantId());
+        getFyConfig(orderStatusQuery.getTenantId());
         
         FyCommonQuery<FyQueryFreezeStatusRequest> query = new FyCommonQuery<>();
         FyQueryFreezeStatusRequest request = new FyQueryFreezeStatusRequest();
@@ -182,7 +186,7 @@ public abstract class AbstractCommonFreeDeposit {
     
     
     public FyCommonQuery<FyHandleFundRequest> buildFyUnFreeRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
-        FyConfig fyConfig = getFyConfig(orderStatusQuery.getTenantId());
+        getFyConfig(orderStatusQuery.getTenantId());
         
         FyCommonQuery<FyHandleFundRequest> query = new FyCommonQuery<>();
         FyHandleFundRequest request = new FyHandleFundRequest();
@@ -190,8 +194,8 @@ public abstract class AbstractCommonFreeDeposit {
         request.setThirdOrderNo(orderStatusQuery.getOrderId());
         request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.valueOf(orderStatusQuery.getAmount()) : 0);
         request.setSubject(orderStatusQuery.getSubject());
-        // todo 解冻回调地址
-        request.setNotifyUrl(orderStatusQuery.getNotifyUrl());
+        //  解冻回调地址配置
+        request.setNotifyUrl(freeDepositConfig.getFyUnFreeUrl());
         request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_UNFREEZE);
         
         query.setFlowNo(orderStatusQuery.getOrderId());
@@ -208,7 +212,7 @@ public abstract class AbstractCommonFreeDeposit {
         return fyConfig;
     }
     
-    public Triple<Boolean, String, Object> FyResultCheck(Map map, String orderId) {
+    public Triple<Boolean, String, Object> fyResultCheck(Map<String, Object> map, String orderId) {
         if (Objects.isNull(map)) {
             log.error("FY ERROR! freeDepositOrder fail! map is null!  orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
@@ -221,7 +225,7 @@ public abstract class AbstractCommonFreeDeposit {
         return Triple.of(false, "100401", "免押调用失败！");
     }
     
-    public Integer FyAuthStatusToPxzStatus(String authStatus) {
+    public Integer fyAuthStatusToPxzStatus(String authStatus) {
         
         if (Objects.equals(authStatus, FY_INIT)) {
             return FreeDepositOrder.AUTH_INIT;

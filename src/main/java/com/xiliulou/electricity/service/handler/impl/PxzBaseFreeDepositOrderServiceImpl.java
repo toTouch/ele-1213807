@@ -44,7 +44,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        Triple<Boolean, String, Object> triple = PxzResultCheck(callPxzRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(callPxzRsp, orderId);
         if (!triple.getLeft()) {
             return triple;
         }
@@ -65,7 +65,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return null;
         }
         
-        Triple<Boolean, String, Object> triple = PxzResultCheck(pxzQueryOrderRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(pxzQueryOrderRsp, orderId);
         if (!triple.getLeft()) {
             return null;
         }
@@ -86,7 +86,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
-        Triple<Boolean, String, Object> triple = PxzResultCheck(pxzUnfreezeDepositCommonRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(pxzUnfreezeDepositCommonRsp, orderId);
         if (!triple.getLeft()) {
             return triple;
         }
