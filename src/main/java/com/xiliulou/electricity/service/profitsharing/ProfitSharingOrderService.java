@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.profitsharing;
 
 
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
-
 /**
  * 分账订单表(profitSharingOrder)表服务接口
  *

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.profitsharing;
 
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderDetailQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -15,5 +16,9 @@ import java.util.List;
 public interface ProfitSharingOrderDetailMapper {
     
     int batchInsert(@Param("list") List<ProfitSharingOrderDetail> profitSharingOrderDetailList);
+    
+    Integer countTotal(ProfitSharingOrderDetailQueryModel queryModel);
+    
+    List<ProfitSharingOrderDetail> selectListByPage(ProfitSharingOrderDetailQueryModel queryModel);
 }
 

@@ -3,17 +3,30 @@
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, third_trade_order_no, order_no, third_order_no, amount, business_type, profit_sharing_out_account,
+        id, third_trade_order_no, order_no, third_order_no, amount, business_type,
             status, type, tenant_id, franchisee_id, third_merchant_id, del_flag, create_time,update_time
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        INSERT INTO t_profit_sharing_order (third_trade_order_no, order_no, third_order_no, amount, business_type, profit_sharing_out_account,
-            status, type, tenant_id, franchisee_id, third_merchant_id, create_time,update_time)
-        VALUES (#{thirdTradeOrderNo}, #{orderNo}, #{thirdOrderNo}, #{amount}, #{businessType}, #{profitSharingOutAccount},
-            #{status}, #{type}, #{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{createTime},#{updateTime}
+        INSERT INTO t_profit_sharing_order (third_trade_order_no, order_no, third_order_no, amount, business_type,
+            status, type, tenant_id, franchisee_id, third_merchant_id, create_time,update_time, out_account_type)
+        VALUES (#{thirdTradeOrderNo}, #{orderNo}, #{thirdOrderNo}, #{amount}, #{businessType},
+            #{status}, #{type}, #{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{createTime},#{updateTime}, #{outAccountType}
         )
     </insert>
+    
+    <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">
+        select
+        <include refid="basic_field"/>
+        from t_profit_sharing_order
+        where
+        del_flag = 0
+        and id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
 
 </mapper>
 

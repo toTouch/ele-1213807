@@ -1,17 +1,35 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
+import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderDetailQueryModel;
+import com.xiliulou.electricity.request.profitsharing.ProfitSharingOrderDetailPageRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingOrderDetailVO;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * 分账订单明细表(TRofitSharingOrderDetail)表服务实现类
+ * 分账订单明细表(ProfitSharingOrderDetail)表服务实现类
  *
- * @author makejava
+ * @author maxiaodong
  * @since 2024-08-22 17:00:36
  */
 @Service
@@ -19,4 +37,63 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
     @Resource
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
     
+    @Resource
+    private ProfitSharingOrderMapper profitSharingOrderMapper;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
+    
+    @Override
+    @Slave
+    public Integer countTotal(ProfitSharingOrderDetailPageRequest profitSharingOrderPageRequest) {
+        ProfitSharingOrderDetailQueryModel queryModel = new ProfitSharingOrderDetailQueryModel();
+        BeanUtils.copyProperties(profitSharingOrderPageRequest, queryModel);
+        
+        return profitSharingOrderDetailMapper.countTotal(queryModel);
+    }
+    
+    @Override
+    @Slave
+    public List<ProfitSharingOrderDetailVO> listByPage(ProfitSharingOrderDetailPageRequest profitSharingOrderPageRequest) {
+        List<ProfitSharingOrderDetailVO> resList = new ArrayList<>();
+        ProfitSharingOrderDetailQueryModel queryModel = new ProfitSharingOrderDetailQueryModel();
+        BeanUtils.copyProperties(profitSharingOrderPageRequest, queryModel);
+        
+        List<ProfitSharingOrderDetail> profitSharingOrderDetailList = this.profitSharingOrderDetailMapper.selectListByPage(queryModel);
+        if (ObjectUtils.isEmpty(profitSharingOrderDetailList)) {
+            return resList;
+        }
+    
+        // 查询分账订单主表的信息
+        List<Long> profitSharingOrderIdList = profitSharingOrderDetailList.parallelStream().map(ProfitSharingOrderDetail::getProfitSharingOrderId).collect(Collectors.toList());
+        List<ProfitSharingOrder> profitSharingOrderList = profitSharingOrderMapper.selectListByIds(profitSharingOrderIdList);
+        Map<Long, ProfitSharingOrder> profitSharingOrderMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(profitSharingOrderList)) {
+            profitSharingOrderMap = profitSharingOrderList.stream().collect(Collectors.toMap(ProfitSharingOrder::getId, Function.identity(), (v1, v2) -> v1));
+        }
+        
+        for (ProfitSharingOrderDetail profitSharingOrderDetail : profitSharingOrderDetailList) {
+            ProfitSharingOrderDetailVO profitSharingOrderDetailVO = new ProfitSharingOrderDetailVO();
+            BeanUtils.copyProperties(profitSharingOrderDetail, profitSharingOrderDetailVO);
+            
+            // 订单号，订单金额
+            ProfitSharingOrder profitSharingOrder = profitSharingOrderMap.get(profitSharingOrderDetail.getProfitSharingOrderId());
+            if (Objects.nonNull(profitSharingOrder)) {
+                profitSharingOrderDetailVO.setOrderNo(profitSharingOrder.getOrderNo());
+                profitSharingOrderDetailVO.setAmount(profitSharingOrder.getAmount());
+            }
+            
+            // 分账接收方
+            if (Objects.equals(profitSharingOrderDetail.getFranchiseeId(), NumberConstant.ZERO_L)) {
+                profitSharingOrderDetailVO.setProfitSharingOutAccount(ProfitSharingOrderDetailConstant.PROFIT_SHARING_OUT_ACCOUNT_DEFAULT);
+            } else {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(profitSharingOrderDetail.getFranchiseeId());
+                profitSharingOrderDetailVO.setProfitSharingOutAccount(Objects.nonNull(franchisee) ? franchisee.getName() : null);
+            }
+            
+            resList.add(profitSharingOrderDetailVO);
+        }
+        
+        return resList;
+    }
 }

@@ -5,22 +5,86 @@
     <sql id="basic_field">
         id, profit_sharing_order_id, profit_sharing_receive_config_id, third_trade_order_no, order_detail_no, third_order_detail_no,
             profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
-            del_flag, create_time, update_time
+            del_flag, create_time, update_time, out_account_type, business_type
     </sql>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_profit_sharing_order_detail( profit_sharing_order_id, profit_sharing_receive_config_id, third_trade_order_no, order_detail_no, third_order_detail_no,
         profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
-        create_time, update_time)
+        create_time, update_time, out_account_type, business_type)
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.profitSharingOrderId}, #{item.profitSharingReceiveConfigId}, #{item.thirdTradeOrderNo}, #{item.orderDetailNo}, #{item.thirdOrderDetailNo}
             , #{item.profitSharingReceiveAccount}, #{item.scale}, #{item.profitSharingAmount}, #{item.status}, #{item.failReason}, #{item.finishTime}, #{item.unfreezeStatus}, #{item.tenantId}
-            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime})
+            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime}, #{item.outAccountType}, #{item.businessType})
         </foreach>
     </insert>
-
-
+    
+    <sql id="pageFilter">
+        <where>
+                del_flag = 0
+                
+                <if test="tenantId != null">
+                    and tenant_id = #{tenantId}
+                </if>
+                
+                <if test="startTime != null">
+                    and create_time <![CDATA[>=]]> #{startTime}
+                </if>
+                
+                <if test="endTime != null">
+                    and create_time <![CDATA[<=]]> #{endTime}
+                </if>
+    
+                <if test="outAccountType != null">
+                    and out_account_type = #{outAccountType}
+                </if>
+    
+                <if test="franchiseeIdList != null">
+                    and franchisee_id in
+                    <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                        #{franchiseeId}
+                    </foreach>
+                </if>
+                
+                <if test="profitSharingReceiveAccount != null and profitSharingReceiveAccount != ''">
+                    and profit_sharing_receive_account like concat('%',#{profitSharingReceiveAccount},'%')
+                </if>
+                
+                <if test="status != null">
+                    and status = #{status}
+                </if>
+                
+                <if test="businessType != null">
+                    and business_type = #{businessType}
+                </if>
+            
+                <if test="thirdTradeOrderNo != null">
+                    and third_trade_order_no like concat('%',#{thirdTradeOrderNo},'%')
+                </if>
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_profit_sharing_order_detail
+        <include refid="pageFilter"/>
+    </select>
+    
+    <select id="selectListByPage"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
+        SELECT
+            <include refid="basic_field"/>
+        FROM
+        t_profit_sharing_order_detail
+        <include refid="pageFilter"/>
+        order by create_time desc
+        <if test="offset != null and size != null">
+             limit #{offset}, #{size}
+        </if>
+    </select>
 </mapper>
 
 

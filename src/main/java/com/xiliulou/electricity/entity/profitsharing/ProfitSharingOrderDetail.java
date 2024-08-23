@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 分账订单明细表(ProfitSharingOrderDetail)实体类
@@ -50,11 +51,11 @@ public class ProfitSharingOrderDetail implements Serializable {
     /**
      * 分账比例
      */
-    private Double scale;
+    private BigDecimal scale;
     /**
      * 分账金额
      */
-    private Double profitSharingAmount;
+    private BigDecimal profitSharingAmount;
     /**
      * 状态：0：已受理、1：处理中、2：分账完成，3：分账失败
      */
@@ -91,5 +92,15 @@ public class ProfitSharingOrderDetail implements Serializable {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 分账方类型 0:默认，1：加盟商
+     */
+    private Integer outAccountType;
+    
+    /**
+     * 业务类型：0：换电-套餐购买、1：换电-保险购买、2：换电-滞纳金缴纳、3：换电-押金缴纳, 98: 解冻，99：系统级别
+     */
+    private Integer businessType;
 }
 
