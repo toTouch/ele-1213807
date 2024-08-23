@@ -83,7 +83,10 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
                 chargeConfigType = dto.getType();
             }
         }
-
+        
+        ElePower elePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue());
+        double sumPower = elePower.getSumPower() + cabinetPowerReport.getPowerConsumption();
+        
         ElePower power = new ElePower();
         power.setSn(electricityCabinet.getSn());
         power.setEName(electricityCabinet.getName());
@@ -94,10 +97,12 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setReportTime(cabinetPowerReport.getCreateTime());
         power.setCreateTime(System.currentTimeMillis());
         power.setType(chargeConfigType);
-        power.setSumPower(cabinetPowerReport.getSumConsumption());
+        power.setSumPower(sumPower);
         power.setHourPower(cabinetPowerReport.getPowerConsumption());
         power.setUnitPrice(unitPrice);
         power.setElectricCharge(BigDecimal.valueOf(unitPrice).multiply(BigDecimal.valueOf(power.getHourPower())).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        power.setMeterReading(cabinetPowerReport.getSumConsumption());
+        
         elePowerService.insertOrUpdate(power);
 
 
