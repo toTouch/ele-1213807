@@ -4,6 +4,7 @@ import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -39,5 +40,7 @@ public interface FreeDepositService {
      * @param
      * @return
      */
-    Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query);
+    Triple<Boolean, String, Object> unFreezeDeposit(UnFreeDepositOrderQuery query);
+    
+//    Triple<Boolean, String, Object> authToPay(FreeDepositOrderStatusQuery query);
 }

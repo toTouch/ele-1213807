@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.handler;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**
@@ -36,5 +37,5 @@ public interface BaseFreeDepositService {
      * @param query
      * @return
      */
-    Triple<Boolean, String, Object>  unFreezeDeposit(FreeDepositOrderStatusQuery query);
+    Triple<Boolean, String, Object>  unFreezeDeposit(UnFreeDepositOrderQuery query);
 }

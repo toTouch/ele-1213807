@@ -5,6 +5,7 @@ import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAuthPayRsp;
@@ -77,7 +78,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     }
     
     @Override
-    public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
+    public Triple<Boolean, String, Object> unFreezeDeposit(UnFreeDepositOrderQuery query) {
         FyResult<FyHandleFundRsp> result = null;
         String orderId = query.getOrderId();
         try {

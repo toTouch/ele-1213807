@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
@@ -106,17 +107,17 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
-    public PxzCommonRequest<PxzFreeDepositUnfreezeRequest> buildUnFreeDepositOrderPxzRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
-        PxzConfig pxzConfig = getPxzConfig(orderStatusQuery.getTenantId());
+    public PxzCommonRequest<PxzFreeDepositUnfreezeRequest> buildUnFreeDepositOrderPxzRequest(UnFreeDepositOrderQuery unFreeDepositOrderQuery) {
+        PxzConfig pxzConfig = getPxzConfig(unFreeDepositOrderQuery.getTenantId());
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
-        query.setSessionId(orderStatusQuery.getOrderId());
+        query.setSessionId(unFreeDepositOrderQuery.getOrderId());
         query.setMerchantCode(pxzConfig.getMerchantCode());
         
         PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
-        queryRequest.setRemark(orderStatusQuery.getSubject());
-        queryRequest.setTransId(orderStatusQuery.getOrderId());
+        queryRequest.setRemark(unFreeDepositOrderQuery.getSubject());
+        queryRequest.setTransId(unFreeDepositOrderQuery.getOrderId());
         
         query.setData(queryRequest);
         return query;
@@ -187,7 +188,7 @@ public abstract class AbstractCommonFreeDeposit {
     }
     
     
-    public FyCommonQuery<FyHandleFundRequest> buildFyUnFreeRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
+    public FyCommonQuery<FyHandleFundRequest> buildFyUnFreeRequest(UnFreeDepositOrderQuery orderStatusQuery) {
         getFyConfig(orderStatusQuery.getTenantId());
         
         FyCommonQuery<FyHandleFundRequest> query = new FyCommonQuery<>();

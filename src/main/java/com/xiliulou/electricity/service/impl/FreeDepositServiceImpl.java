@@ -9,6 +9,7 @@ import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -131,7 +132,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     
     @Override
-    public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
+    public Triple<Boolean, String, Object> unFreezeDeposit(UnFreeDepositOrderQuery query) {
         if (Objects.isNull(query)) {
             log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.params is null");
             return Triple.of(false, "100419", "系统异常，稍后再试");
