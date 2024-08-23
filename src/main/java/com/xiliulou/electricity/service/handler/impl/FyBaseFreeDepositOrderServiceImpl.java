@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.handler.impl;
 
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
@@ -29,12 +28,20 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
-        
+        Map<String, Object> map = null;
+        String orderId = request.getFreeDepositOrderId();
         try {
-            Map<String, Object> map = fyDepositService.authPay(buildFyAuthPayRequest(request));
+            map = fyDepositService.authPay(buildFyAuthPayRequest(request));
         } catch (Exception e) {
-            throw new CustomBusinessException("");
+            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            return Triple.of(false, "100401", "免押调用失败！");
         }
+        
+        Triple<Boolean, String, Object> resultCheck = FyResultCheck(map, orderId);
+        if (!resultCheck.getLeft()) {
+            return resultCheck;
+        }
+        // todo 蜂云结果返回
         
         return Triple.of(true, null, null);
     }

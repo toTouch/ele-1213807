@@ -17,10 +17,13 @@ import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -39,12 +42,10 @@ public abstract class AbstractCommonFreeDeposit {
     @Resource
     private FyConfigService fyConfigService;
     
+    public static final String SUCCESS_CODE = "WZF00000";
+    
     public PxzCommonRequest<PxzFreeDepositOrderRequest> buildFreeDepositOrderPxzRequest(FreeDepositOrderRequest freeDepositOrderRequest) {
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrderRequest.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
-            throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
-        }
-        
+        PxzConfig pxzConfig = getPxzConfig(freeDepositOrderRequest.getTenantId());
         String orderId = freeDepositOrderRequest.getFreeDepositOrderId();
         PxzCommonRequest<PxzFreeDepositOrderRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
@@ -64,13 +65,17 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
-    
-    public PxzCommonRequest<PxzFreeDepositOrderQueryRequest> buildQueryFreeDepositOrderStatusPxzRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(orderStatusQuery.getTenantId());
+    private PxzConfig getPxzConfig(Integer tenantId) {
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
             throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
         }
-        
+        return pxzConfig;
+    }
+    
+    
+    public PxzCommonRequest<PxzFreeDepositOrderQueryRequest> buildQueryFreeDepositOrderStatusPxzRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
+        PxzConfig pxzConfig = getPxzConfig(orderStatusQuery.getTenantId());
         PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
@@ -84,11 +89,7 @@ public abstract class AbstractCommonFreeDeposit {
     }
     
     public PxzCommonRequest<PxzFreeDepositUnfreezeRequest> buildUnFreeDepositOrderPxzRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(orderStatusQuery.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
-            throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
-        }
-        
+        PxzConfig pxzConfig = getPxzConfig(orderStatusQuery.getTenantId());
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
@@ -101,6 +102,25 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setData(queryRequest);
         return query;
+    }
+    
+    
+    public Triple<Boolean, String, Object> PxzResultCheck(PxzCommonRsp rsp, String orderId) {
+        if (Objects.isNull(rsp)) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}", orderId);
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
+        if (!rsp.isSuccess()) {
+            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
+            return Triple.of(false, "100401", rsp.getRespDesc());
+        }
+        
+        if (Objects.isNull(rsp.getData())) {
+            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp.data is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
+            return Triple.of(false, "100401", rsp.getRespDesc());
+        }
+        return Triple.of(false, "100401", "免押调用失败！");
     }
     
     
@@ -134,5 +154,18 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(orderRequest.getFreeDepositOrderId());
         query.setFyRequest(request);
         return query;
+    }
+    
+    public Triple<Boolean, String, Object> FyResultCheck(Map map, String orderId) {
+        if (Objects.isNull(map)) {
+            log.error("FY ERROR! freeDepositOrder fail! map is null!  orderId={}", orderId);
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
+        String code = (String) map.get("code");
+        if (!Objects.equals(code, SUCCESS_CODE)) {
+            return Triple.of(false, "100401", map.get("message"));
+        }
+        return Triple.of(false, "100401", "免押调用失败！");
     }
 }

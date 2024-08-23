@@ -1,15 +1,14 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.UnFreeDepositOrderBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
-import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
+import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
@@ -20,7 +19,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * @ClassName: PxzBaseFreeDepositOrderServiceImpl
@@ -46,14 +44,11 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        if (Objects.isNull(callPxzRsp)) {
-            log.error("Pxz ERROR! freeDepositOrder fail! rsp is null!  orderId={}", orderId);
-            return Triple.of(false, "100401", "免押调用失败！");
+        Triple<Boolean, String, Object> triple = PxzResultCheck(callPxzRsp, orderId);
+        if (!triple.getLeft()) {
+            return triple;
         }
         
-        if (!callPxzRsp.isSuccess()) {
-            return Triple.of(false, "100401", callPxzRsp.getRespDesc());
-        }
         FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.PXZ.getChannel()).data(callPxzRsp.getData()).build();
         return Triple.of(true, null, dto);
     }
@@ -70,18 +65,8 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return null;
         }
         
-        if (Objects.isNull(pxzQueryOrderRsp)) {
-            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}", orderId);
-            return null;
-        }
-        
-        if (!pxzQueryOrderRsp.isSuccess()) {
-            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(pxzQueryOrderRsp));
-            return null;
-        }
-        
-        if (Objects.isNull(pxzQueryOrderRsp.getData())) {
-            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp.data is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(pxzQueryOrderRsp));
+        Triple<Boolean, String, Object> triple = PxzResultCheck(pxzQueryOrderRsp, orderId);
+        if (!triple.getLeft()) {
             return null;
         }
         
@@ -101,14 +86,9 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
-        if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", uid, orderId);
-            return Triple.of(false, "100401", "免押调用失败！");
-        }
-        
-        if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", uid, orderId);
-            return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
+        Triple<Boolean, String, Object> triple = PxzResultCheck(pxzUnfreezeDepositCommonRsp, orderId);
+        if (!triple.getLeft()) {
+            return triple;
         }
         
         return Triple.of(true, null, BeanUtil.copyProperties(pxzUnfreezeDepositCommonRsp.getData(), UnFreeDepositOrderBO.class));
