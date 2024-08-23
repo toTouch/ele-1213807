@@ -17,6 +17,7 @@ import com.xiliulou.pay.deposit.fengyun.pojo.request.AuthPayVars;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyHandleFundRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryFreezeStatusRequest;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
@@ -27,7 +28,6 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -125,17 +125,17 @@ public abstract class AbstractCommonFreeDeposit {
     
     public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp rsp, String orderId) {
         if (Objects.isNull(rsp)) {
-            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}", orderId);
+            log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp is null! orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
         if (!rsp.isSuccess()) {
-            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
+            log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp is fail! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
             return Triple.of(false, "100401", rsp.getRespDesc());
         }
         
         if (Objects.isNull(rsp.getData())) {
-            log.warn("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp.data is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
+            log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp.data is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
             return Triple.of(false, "100401", rsp.getRespDesc());
         }
         return Triple.of(false, "100401", "免押调用失败！");
@@ -162,9 +162,10 @@ public abstract class AbstractCommonFreeDeposit {
         authPayVars.setFqFlag("0");
         authPayVars.setUserName(orderRequest.getRealName());
         authPayVars.setMobile(orderRequest.getPhoneNumber());
+        // 产品定义写为西安
         authPayVars.setProvinceName("陕西省");
         authPayVars.setCityName("西安市");
-        authPayVars.setDistrictName("灞桥区");
+        authPayVars.setDistrictName("未央区");
         request.setVars(JsonUtil.toJson(authPayVars));
         
         query.setFlowNo(orderRequest.getFreeDepositOrderId());
@@ -193,7 +194,7 @@ public abstract class AbstractCommonFreeDeposit {
         FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(orderStatusQuery.getOrderId());
         request.setThirdOrderNo(orderStatusQuery.getOrderId());
-        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.valueOf(orderStatusQuery.getAmount()) : 0);
+        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.parseInt(orderStatusQuery.getAmount()) : 0);
         request.setSubject(orderStatusQuery.getSubject());
         //  解冻回调地址配置
         request.setNotifyUrl(freeDepositConfig.getFyUnFreeUrl());
@@ -213,16 +214,23 @@ public abstract class AbstractCommonFreeDeposit {
         return fyConfig;
     }
     
-    public Triple<Boolean, String, Object> fyResultCheck(Map<String, Object> map, String orderId) {
-        if (Objects.isNull(map)) {
-            log.error("FY ERROR! freeDepositOrder fail! map is null!  orderId={}", orderId);
+    public Triple<Boolean, String, Object> fyResultCheck(FyResult result, String orderId) {
+        if (Objects.isNull(result)) {
+            log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        String code = (String) map.get("code");
+        String code = result.getCode();
         if (!Objects.equals(code, SUCCESS_CODE)) {
-            return Triple.of(false, "100401", map.get("message"));
+            log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);
+            return Triple.of(false, "100401", result.getMessage());
         }
+        
+        if (Objects.isNull(result.getFyResponse())) {
+            log.warn("FY ERROR! fyResultCheck fail! fyResponse is null!  orderId={}", orderId);
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
         return Triple.of(false, "100401", "免押调用失败！");
     }
     

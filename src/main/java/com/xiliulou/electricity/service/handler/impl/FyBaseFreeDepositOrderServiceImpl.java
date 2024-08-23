@@ -5,13 +5,16 @@ import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAuthPayRsp;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHandleFundRsp;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryFreezeRsp;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.fengyun.service.FyDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Map;
 
 /**
  * @ClassName: fyFreeDepositOrderServiceImpl
@@ -28,16 +31,16 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
-        Map<String, Object> map = null;
+        FyResult<FyAuthPayRsp> result = null;
         String orderId = request.getFreeDepositOrderId();
         try {
-            map = fyDepositService.authPay(buildFyAuthPayRequest(request));
+            result = fyDepositService.authPay(buildFyAuthPayRequest(request));
         } catch (Exception e) {
             log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(map, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -48,44 +51,46 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public FreeDepositOrderStatusBO queryFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
-        Map<String, Object> map = null;
+        FyResult<FyQueryFreezeRsp> result = null;
         String orderId = query.getOrderId();
         try {
-            map = fyDepositService.queryFreezeStatus(buildFyFreeDepositStatusRequest(query));
+            result = fyDepositService.queryFreezeStatus(buildFyFreeDepositStatusRequest(query));
         } catch (Exception e) {
-            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            log.error("FY ERROR! queryFreeDepositOrderStatus fail! orderId={}", orderId, e);
             return null;
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(map, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
         if (!resultCheck.getLeft()) {
             return null;
         }
         
-        String authNo = (String) map.get("authNo");
+        FyQueryFreezeRsp response = result.getFyResponse();
+        Integer authNo = response.getAuthNo();
+        String status = response.getStatus();
         
-        Integer authStatus = fyAuthStatusToPxzStatus((String) map.get("status"));
+        Integer authStatus = fyAuthStatusToPxzStatus(status);
         
-        return FreeDepositOrderStatusBO.builder().authNo(authNo).authStatus(authStatus).build();
+        return FreeDepositOrderStatusBO.builder().authNo(String.valueOf(authNo)).authStatus(authStatus).build();
     }
     
     @Override
     public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
-        Map<String, Object> map = null;
+        FyResult<FyHandleFundRsp> result = null;
         String orderId = query.getOrderId();
         try {
-            map = fyDepositService.handleFund(buildFyUnFreeRequest(query));
+            result = fyDepositService.handleFund(buildFyUnFreeRequest(query));
         } catch (Exception e) {
             log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
-            return Triple.of(false, "100401", "免押调用失败！");
+            return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(map, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
         
-        return Triple.of(false, "100401", "免押调用失败！");
+        return Triple.of(true, null, null);
     }
     
     
