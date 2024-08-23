@@ -1,5 +1,11 @@
 package com.xiliulou.electricity.entity.profitsharing;
 
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.io.Serializable;
 
@@ -9,6 +15,11 @@ import java.io.Serializable;
  * @author makejava
  * @since 2024-08-22 17:32:59
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@TableName("t_profit_sharing_trade_order")
 public class ProfitSharingTradeOrder implements Serializable {
     private static final long serialVersionUID = 583343404538702651L;
     
@@ -73,135 +84,5 @@ public class ProfitSharingTradeOrder implements Serializable {
      * 更新时间
      */
     private Long updateTime;
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(Integer tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public Long getFranchiseeId() {
-        return franchiseeId;
-    }
-
-    public void setFranchiseeId(Long franchiseeId) {
-        this.franchiseeId = franchiseeId;
-    }
-
-    public String getThirdMerchantId() {
-        return thirdMerchantId;
-    }
-
-    public void setThirdMerchantId(String thirdMerchantId) {
-        this.thirdMerchantId = thirdMerchantId;
-    }
-
-    public String getOrderNo() {
-        return orderNo;
-    }
-
-    public void setOrderNo(String orderNo) {
-        this.orderNo = orderNo;
-    }
-
-    public String getThirdOrderNo() {
-        return thirdOrderNo;
-    }
-
-    public void setThirdOrderNo(String thirdOrderNo) {
-        this.thirdOrderNo = thirdOrderNo;
-    }
-
-    public Integer getOrderType() {
-        return orderType;
-    }
-
-    public void setOrderType(Integer orderType) {
-        this.orderType = orderType;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public Integer getProcessState() {
-        return processState;
-    }
-
-    public void setProcessState(Integer processState) {
-        this.processState = processState;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public String getChannel() {
-        return channel;
-    }
-
-    public void setChannel(String channel) {
-        this.channel = channel;
-    }
-
-    public Integer getRentRebate() {
-        return rentRebate;
-    }
-
-    public void setRentRebate(Integer rentRebate) {
-        this.rentRebate = rentRebate;
-    }
-
-    public Long getPayTime() {
-        return payTime;
-    }
-
-    public void setPayTime(Long payTime) {
-        this.payTime = payTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-
-    public Long getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
-
-    public Long getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Long updateTime) {
-        this.updateTime = updateTime;
-    }
-
 }
 
