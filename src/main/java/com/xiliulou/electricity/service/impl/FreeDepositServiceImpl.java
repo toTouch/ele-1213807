@@ -60,7 +60,6 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         log.info("FreeDeposit INFO! getFreeDepositOrderStatus.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
         // 免押查询
-        
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.queryFreeDepositOrderStatus(query);
     }
@@ -136,9 +135,8 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             return null;
         }
         log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
-        
+        // todo 渠道
         // 免押解冻
-        
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.unFreezeDeposit(query);
     }

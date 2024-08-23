@@ -28,9 +28,18 @@ public class FreeDepositOrderStatusQuery {
      */
     private String orderId;
     
-    
+    /**
+     * uid
+     */
     private Long uid;
     
+    /**
+     * 主题
+     */
     private String subject;
     
+    /**
+     * 押金金额
+     */
+    private String amount;
 }

@@ -48,12 +48,38 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public FreeDepositOrderStatusBO queryFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
-        return null;
+        Map<String, Object> map = null;
+        String orderId = query.getOrderId();
+        try {
+            map = fyDepositService.queryFreezeStatus(buildFyFreeDepositStatusRequest(query));
+        } catch (Exception e) {
+            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            return null;
+        }
+        
+        Triple<Boolean, String, Object> resultCheck = FyResultCheck(map, orderId);
+        if (!resultCheck.getLeft()) {
+            return null;
+        }
+        
+        String authNo = (String) map.get("authNo");
+        
+        Integer authStatus = FyAuthStatusToPxzStatus((String) map.get("status"));
+        
+        return FreeDepositOrderStatusBO.builder().authNo(authNo).authStatus(authStatus).build();
     }
     
     @Override
     public Triple<Boolean, String, Object> unFreezeDeposit(FreeDepositOrderStatusQuery query) {
-        return null;
+        Map<String, Object> map = null;
+        String orderId = query.getOrderId();
+        try {
+            map = fyDepositService.handleFund(buildFyUnFreeRequest(query));
+        } catch (Exception e) {
+            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            return null;
+        }
+        
     }
     
     

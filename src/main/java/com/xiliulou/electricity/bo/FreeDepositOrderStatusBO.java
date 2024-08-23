@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.bo;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Data;
  * @create: 2024-08-22 17:48
  */
 @Data
+@Builder
 public class FreeDepositOrderStatusBO {
     
     /**
