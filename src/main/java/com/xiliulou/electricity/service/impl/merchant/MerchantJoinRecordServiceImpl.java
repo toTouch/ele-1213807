@@ -143,24 +143,24 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         try {
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
-                log.error("MERCHANT JOIN ERROR! not found tenant, tenantId={}", TenantContextHolder.getTenantId());
+                log.warn("MERCHANT JOIN WARN! not found tenant, tenantId={}", TenantContextHolder.getTenantId());
                 return R.fail("ELECTRICITY.00101", "找不到租户");
             }
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(joinUid);
             if (Objects.isNull(userInfo)) {
-                log.error("MERCHANT JOIN ERROR! not found userInfo, joinUid={}", joinUid);
+                log.warn("MERCHANT JOIN WARN! not found userInfo, joinUid={}", joinUid);
                 return R.fail(false, "ELECTRICITY.0019", "未找到用户");
             }
             
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.error("MERCHANT JOIN ERROR! user usable, joinUid={}", joinUid);
+                log.warn("MERCHANT JOIN WARN! user usable, joinUid={}", joinUid);
                 return R.fail(false, "120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(joinUid);
             if (Objects.isNull(userInfoExtra)) {
-                log.error("MERCHANT JOIN ERROR! Not found userInfoExtra, joinUid={}", joinUid);
+                log.warn("MERCHANT JOIN WARN! Not found userInfoExtra, joinUid={}", joinUid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             
@@ -184,7 +184,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                     } else {
                         //未过保护期
                         if (protectionTime >= System.currentTimeMillis()) {
-                            log.error("MERCHANT JOIN ERROR! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
+                            log.warn("MERCHANT JOIN WARN! in protectionTime, merchantId={}, inviterUid={}, joinUid={}", joinRecord.getMerchantId(), joinRecord.getInviterUid(),
                                     joinUid);
                             
                             return R.fail(false, "120104", "商户保护期内，请稍后再试");
@@ -206,7 +206,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             }
             
             if (StringUtils.isBlank(decrypt)) {
-                log.error("MERCHANT JOIN ERROR! merchant code decrypt error,code={}, joinUid={}", code, joinUid);
+                log.warn("MERCHANT JOIN WARN! merchant code decrypt error,code={}, joinUid={}", code, joinUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
@@ -214,7 +214,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             String[] split = decrypt.split(String.valueOf(StrUtil.C_COLON));
             if (ArrayUtils.isEmpty(split) || split.length != NumberConstant.THREE) {
-                log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
+                log.warn("MERCHANT JOIN WARN! illegal code! code={}, joinUid={}", code, joinUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
@@ -222,7 +222,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             String inviterUidStr = split[NumberConstant.ONE];
             String inviterTypeStr = split[NumberConstant.TWO];
             if (StringUtils.isBlank(merchantIdStr) || StringUtils.isBlank(inviterUidStr) || StringUtils.isBlank(inviterTypeStr)) {
-                log.error("MERCHANT JOIN ERROR! illegal code! code={}, joinUid={}", code, joinUid);
+                log.warn("MERCHANT JOIN WARN! illegal code! code={}, joinUid={}", code, joinUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
@@ -242,24 +242,24 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 判断商户是否存在或被禁用
             Merchant merchant = merchantService.queryByIdFromCache(merchantId);
             if (Objects.isNull(merchant)) {
-                log.error("MERCHANT JOIN ERROR! not found merchant, merchantId={}", merchantId);
+                log.warn("MERCHANT JOIN WARN! not found merchant, merchantId={}", merchantId);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             if (Objects.equals(merchant.getStatus(), MerchantConstant.DISABLE)) {
-                log.error("MERCHANT JOIN ERROR! merchant disable, merchantId={}", merchantId);
+                log.warn("MERCHANT JOIN WARN! merchant disable, merchantId={}", merchantId);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 判断邀请人是否存在或被禁用
             User inviterUser = userService.queryByUidFromDB(inviterUid);
             if (Objects.isNull(inviterUser)) {
-                log.error("MERCHANT JOIN ERROR! not found inviterUser, inviterUid={}", inviterUid);
+                log.warn("MERCHANT JOIN WARN! not found inviterUser, inviterUid={}", inviterUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             if (inviterUser.isLock()) {
-                log.error("MERCHANT JOIN ERROR! inviterUser locked, inviterUid={}", inviterUid);
+                log.warn("MERCHANT JOIN WARN! inviterUser locked, inviterUid={}", inviterUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
@@ -279,7 +279,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             // 获取商户保护期和有效期
             MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
             if (Objects.isNull(merchantAttr)) {
-                log.error("MERCHANT JOIN ERROR! not found merchantAttr, merchantId={}", merchantId);
+                log.warn("MERCHANT JOIN WARN! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
