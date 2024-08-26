@@ -794,6 +794,14 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
+        
+        <if test="query.Sns != null and query.Sns.size()>0">
+            and teb.sn in
+            <foreach collection="query.Sns" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        
         <if test="query.physicsStatus != null">
             and teb.physics_status =#{query.physicsStatus}
         </if>
@@ -841,6 +849,14 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
+        
+        <if test="query.Sns != null and query.Sns.size()>0">
+            and teb.sn in
+            <foreach collection="query.Sns" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        
         <if test="query.physicsStatus != null">
             and teb.physics_status =#{query.physicsStatus}
         </if>

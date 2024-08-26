@@ -4,7 +4,6 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
@@ -16,10 +15,11 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,18 +42,16 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     
     /**
      * 获取全部电池的分页数据
+     * todo 改post 请求 参数改sns list
      */
-    @GetMapping(value = "/admin/batteryData/allBattery/page")
-    public R getAllBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
-        if (size < 0 || size > 50) {
-            size = 10;
+    @PostMapping(value = "/admin/batteryData/allBattery/page")
+    public R getAllBatteryPageData(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
+        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
+            electricityBatteryRequest.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0;
+        if (electricityBatteryRequest.getOffset() < 0) {
+            electricityBatteryRequest.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -79,9 +77,16 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId).uid(uid).size(size).offset(offset).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() > 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
+                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectAllBatteryPageData(electricityBatteryQuery);
     }
     
@@ -89,9 +94,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
      * 获取全部电池的数据总数
      */
     @GetMapping(value = "/admin/batteryData/allBattery/count")
-    public R getAllBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+    public R getAllBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -109,14 +112,21 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId).uid(uid).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() > 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectAllBatteryDataCount(electricityBatteryQuery);
     }
     
     /**
      * 清除异常交换电池用户
+     *
      * @param id
      * @return
      */
@@ -133,7 +143,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getInCabinetBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -177,7 +188,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/inCabinetBattery/count")
     public R getInCabinetBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -209,7 +221,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getPendingRentalBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -253,7 +266,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/pendingRentalBattery/count")
     public R getPendingRentalBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -284,7 +298,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getLeasedBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -328,7 +343,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/leasedBattery/count")
     public R getLeasedBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -359,7 +375,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     public R getStrayBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -403,7 +420,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/strayBattery/count")
     public R getStrayBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -436,8 +454,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
-            @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort
-    ) {
+            @RequestParam(value = "sort", required = false, defaultValue = "0") Integer sort) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -481,7 +498,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/overdueBattery/count")
     public R getOverdueBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -513,7 +531,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
-            @RequestParam(value = "sort", required = false , defaultValue = "0") Integer sort) {
+            @RequestParam(value = "sort", required = false, defaultValue = "0") Integer sort) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -557,7 +575,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     @GetMapping(value = "/admin/batteryData/overdueCarBattery/count")
     public R getOverdueCarBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -625,10 +644,10 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-    
+        
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
-                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId).businessStatus(businessStatus).physicsStatus(physicsStatus)
+                .build();
         return electricityBatteryDataService.queryStockBatteryPageData(electricityBatteryQuery);
     }
     
@@ -658,8 +677,8 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             return R.ok(0);
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).businessStatus(businessStatus).physicsStatus(physicsStatus)
+                .build();
         return electricityBatteryDataService.queryStockBatteryPageDataCount(electricityBatteryQuery);
     }
     
