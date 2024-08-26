@@ -473,6 +473,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
         // 处理换电套餐
         boolean batteryPackageOrderPermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
+        if (!batteryPackageOrderPermission) {
+            log.info("pay battery memberCard profit sharing config battery package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        }
+        
         if (batteryPackageOrderPermission && Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
             ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
             if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
@@ -489,6 +493,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
         // 处理保险
         boolean insuranceOrderPermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode()) == ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode();
+        if (!insuranceOrderPermission) {
+            log.info("pay battery memberCard profit sharing config insurance package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        }
+        
         if (insuranceOrderPermission && Boolean.TRUE.equals(generateInsuranceOrderResult.getLeft()) && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
             InsuranceOrder insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
             if (insuranceOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
@@ -852,6 +860,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE).description("滞纳金")
                     .uid(user.getUid()).build();
     
+            // 处理分账交易订单
+            dealServiceFeeProfitSharingTradeOrder(orderList, orderTypeList, wechatPayParamsDetails, unionPayOrder, userInfo);
+            
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
@@ -865,6 +876,77 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+    }
+    
+    private void dealServiceFeeProfitSharingTradeOrder(List<String> orderList, List<Integer> orderTypeList, WechatPayParamsDetails wechatPayParamsDetails,
+            UnionPayOrder unionPayOrder, UserInfo userInfo) {
+        // 服务费订单为空
+        if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
+            return;
+        }
+        
+        // 判断分账配置是否存在
+        ProfitSharingConfig profitSharingConfig = wechatPayParamsDetails.getProfitSharingConfig();
+        if (Objects.isNull(profitSharingConfig)) {
+            log.info("pay service free profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(),
+                    wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+        
+        if (Objects.equals(profitSharingConfig.getConfigStatus(), ProfitSharingConfigStatusEnum.CLOSE.getCode())) {
+            log.info("pay service free profit sharing config status is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(),
+                    wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+        
+        boolean batteryServiceFeePermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode())
+                == ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode();
+        if (!batteryServiceFeePermission) {
+            log.info("pay service free profit sharing config battery service fee permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        }
+        
+        List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
+        for (int i = 0; i < orderList.size(); i++) {
+            // 过滤掉车的服务费
+            if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR_SLIPPAGE.getCode())) {
+                continue;
+            }
+            
+            // 电池套餐过期服务费 或 电池套餐冻结服务费
+            if (batteryServiceFeePermission && (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode()) || Objects.equals(orderTypeList.get(i),
+                    ServiceFeeEnum.BATTERY_PAUSE.getCode()))) {
+                // 电池套餐服务费订单号
+                String orderId = orderList.get(i);
+                EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(orderId);
+                if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+                    log.info("pay service free profit sharing battery service fee order not find, orderId = {}", orderId);
+                    continue;
+                }
+    
+                // 支付金额大于0元，需要分账, 支付时间为系统当前时间
+                if (eleBatteryServiceFeeOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                    ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                            .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
+                            .orderNo(eleBatteryServiceFeeOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode())
+                            .amount(eleBatteryServiceFeeOrder.getPayAmount()).processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT)
+                            .channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).rentRebate(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
+                            .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                    
+                    profitSharingTradeOrderList.add(profitSharingTradeOrder);
+                }
+            }
+        }
+    
+        // 如果存在符合条件的分账订单，则设置分账标识
+        if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
+            // 设置分账标识  开启分账
+            unionPayOrder.setProfitSharing(true);
+        
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+        }
+        
+        
     }
     
     /**

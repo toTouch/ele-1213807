@@ -15,9 +15,8 @@ public enum ProfitSharingBusinessTypeEnum {
     
     BATTERY_PACKAGE(0, "换电-套餐购买"),
     INSURANCE(1, "换电-保险购买"),
-    DEPOSIT(2, "换电-滞纳金缴纳"),
-    BATTERY_SERVICE_FEE_FREEZE(3, "换电-滞纳金缴纳"),
-    BATTERY_SERVICE_FEE_OVERDUE(4, "换电-滞纳金缴纳"),
+    BATTERY_SERVICE_FEE(2, "换电-滞纳金缴纳"),
+    DEPOSIT(3, "换电-押金缴纳"),
     UNFREEZE(98, "解冻"),
     SYSTEM(99, "系统级别"),
     ;
