@@ -61,6 +61,8 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatus();
     
+    Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusV2();
+    
     Integer selectByPageCount(FreeDepositOrderQuery query);
     
     Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt, String remark);

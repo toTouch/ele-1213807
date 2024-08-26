@@ -98,7 +98,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
     private UserBatteryTypeService userBatteryTypeService;
     
     @Override
-    public String authPayNotified(Integer channel, Map<String, Object> params) {
+    public Object authPayNotified(Integer channel, Map<String, Object> params) {
         
         if (Objects.equals(channel, FreeDepositChannelEnum.PXZ.getChannel())) {
             String orderId = (String) params.get("orderId");
@@ -109,16 +109,16 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
             if (Objects.isNull(freeDepositOrder)) {
                 log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
                 map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-                return JsonUtil.toJson(map);
+                return map;
             }
             Integer orderStatus = (Integer) params.get("orderStatus");
             if (Objects.equals(orderStatus, FreeDepositConstant.AUTH_PXZ_SUCCESS_RECEIVE)) {
                 handlerAuthPaySuccess(freeDepositOrder);
                 map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-                return JsonUtil.toJson(map);
+                return map;
             }
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_FAIL_RSP);
-            return JsonUtil.toJson(map);
+            return map;
         }
         
         if (Objects.equals(channel, FreeDepositChannelEnum.FY.getChannel())) {
@@ -163,7 +163,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
      * @return String
      */
     @Override
-    public String unFreeNotified(Integer channel, Map<String, Object> params) {
+    public Object unFreeNotified(Integer channel, Map<String, Object> params) {
         
         // pxz 免押和解冻使用的同一个回调，所以要根据之前的状态区分
         if (Objects.equals(channel, FreeDepositChannelEnum.PXZ.getChannel())) {
@@ -175,7 +175,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
             if (Objects.isNull(freeDepositOrder)) {
                 log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
                 map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-                return JsonUtil.toJson(map);
+                return map;
             }
             Integer orderStatus = (Integer) params.get("authStatus");
             
@@ -184,7 +184,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
                 // 免押成功 修改状态逻辑
                 handlerUnfree(freeDepositOrder);
                 map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-                return JsonUtil.toJson(map);
+                return map;
             }
             
             
@@ -267,7 +267,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
     
     
     @Override
-    public String freeNotified(Integer channel, Map<String, Object> params) {
+    public Object freeNotified(Integer channel, Map<String, Object> params) {
         
         // pxz 免押和解冻使用的同一个回调，所以要根据之前的状态区分
         if (Objects.equals(channel, FreeDepositChannelEnum.PXZ.getChannel())) {
@@ -279,7 +279,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
             if (Objects.isNull(freeDepositOrder)) {
                 log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
                 map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-                return JsonUtil.toJson(map);
+                return map;
             }
             
             Integer orderStatus = (Integer) params.get("authStatus");
@@ -288,7 +288,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
                 // 解冻成功 修改状态逻辑
                 handlerFreeDepositSuccess(channel, freeDepositOrder);
                 map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-                return JsonUtil.toJson(map);
+                return map;
             }
             
         }

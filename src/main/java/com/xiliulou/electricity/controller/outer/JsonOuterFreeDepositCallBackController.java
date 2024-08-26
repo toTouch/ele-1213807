@@ -26,10 +26,10 @@ public class JsonOuterFreeDepositCallBackController {
      * todo 免押回调通知
      *
      * @param channel
-     * @return String
+     * @return Object
      */
     @PostMapping("/outer/free/notified/{channel}")
-    public String freeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
+    public Object freeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
         return freeDepositCallBackSerivce.freeNotified(channel, params);
     }
     
@@ -38,10 +38,10 @@ public class JsonOuterFreeDepositCallBackController {
      * todo 解冻回调通知
      *
      * @param
-     * @return String
+     * @return Object
      */
     @PostMapping("/outer/unFree/notified/{channel}")
-    public String unFreeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
+    public Object unFreeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
         
         return freeDepositCallBackSerivce.unFreeNotified(channel, params);
     }
@@ -51,10 +51,10 @@ public class JsonOuterFreeDepositCallBackController {
      * 代扣回调通知
      *
      * @param
-     * @return String
+     * @return Object
      */
     @PostMapping("/outer/authPay/notified/{channel}")
-    public String authPayNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
+    public Object authPayNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
         
         return freeDepositCallBackSerivce.authPayNotified(channel, params);
     }

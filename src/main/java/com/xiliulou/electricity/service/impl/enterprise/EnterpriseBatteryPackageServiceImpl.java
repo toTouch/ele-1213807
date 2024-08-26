@@ -1075,10 +1075,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
-//        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-//        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-//            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
-//        }
+
         
         Triple<Boolean, String, Object> checkUserCanFreeDepositResult = checkUserCanFreeBatteryDeposit(freeQuery.getUid(), userInfo);
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {

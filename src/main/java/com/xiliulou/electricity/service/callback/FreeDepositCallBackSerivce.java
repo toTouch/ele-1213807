@@ -4,9 +4,9 @@ import java.util.Map;
 
 public interface FreeDepositCallBackSerivce {
     
-    String authPayNotified(Integer channel, Map<String, Object> params);
+    Object authPayNotified(Integer channel, Map<String, Object> params);
     
-    String unFreeNotified(Integer channel, Map<String, Object> params);
+    Object unFreeNotified(Integer channel, Map<String, Object> params);
     
-    String freeNotified(Integer channel, Map<String, Object> params);
+    Object freeNotified(Integer channel, Map<String, Object> params);
 }
