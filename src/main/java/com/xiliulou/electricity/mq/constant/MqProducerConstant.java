@@ -99,10 +99,15 @@ public interface MqProducerConstant {
     /**
      * 站内信所在新项目主题
      */
-    String AUX_MQ_TOPIC_NAME="XILIULOU_SAAS_AUX_TOPIC";
+    String AUX_MQ_TOPIC_NAME = "XILIULOU_SAAS_AUX_TOPIC";
     
     /**
      * 站内信所在新项目主题TAG
      */
-    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME = "SITE_MESSAGE";
+    
+    /**
+     * 拍小组解冻topic
+     */
+    String PXZ_UN_FREE_DEPOSIT_TOPIC_NAME = "PXZ_UNFREE_DEPOSIT";
 }

@@ -760,6 +760,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100253", "用户已绑定车辆");
         }
         
+        // 三方解冻
         UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
                 .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);

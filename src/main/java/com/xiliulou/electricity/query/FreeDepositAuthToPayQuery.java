@@ -3,15 +3,17 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
- * @ClassName: FreeDepositOrderStatusQuery
- * @description:
+ * @ClassName: FreeDepositAuthToPayQuery
+ * @description: 免押代扣
  * @author: renhang
  * @create: 2024-08-22 17:24
  */
 @Data
 @Builder
-public class FreeDepositOrderStatusQuery {
+public class FreeDepositAuthToPayQuery {
     
     
     private Integer tenantId;
@@ -32,13 +34,27 @@ public class FreeDepositOrderStatusQuery {
     private Long uid;
     
     /**
-     * 主题
+     * 订单标题
      */
     private String subject;
     
     /**
-     * 押金金额
+     * 代扣金额
      */
-    private String amount;
+    private BigDecimal payTransAmt;
     
+    /**
+     * 授权码
+     */
+    private String authNo;
+    
+    /**
+     * 代扣回调地址
+     */
+    private String notifyUrl;
+    
+    
+    private String userName;
+    
+    private String mobile;
 }

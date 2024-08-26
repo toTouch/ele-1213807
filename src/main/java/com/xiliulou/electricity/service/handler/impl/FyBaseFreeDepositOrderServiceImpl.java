@@ -3,15 +3,18 @@ package com.xiliulou.electricity.service.handler.impl;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAgreementPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAuthPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHandleFundRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryFreezeRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
+import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
 import com.xiliulou.pay.deposit.fengyun.service.FyDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -31,6 +34,9 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Resource
     private FyDepositService fyDepositService;
+    
+    @Resource
+    private FyAgreementService fyAgreementService;
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
@@ -94,6 +100,25 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         }
         
         return Triple.of(true, null, "解冻中，请稍后");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
+        FyResult<FyAgreementPayRsp> result = null;
+        String orderId = query.getOrderId();
+        try {
+            result = fyAgreementService.agreementPay(buildFyAgreementPayRequest(query));
+        } catch (Exception e) {
+            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            return Triple.of(false, "100401", "免押代扣调用失败！");
+        }
+        
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        if (!resultCheck.getLeft()) {
+            return resultCheck;
+        }
+        
+        return Triple.of(true, null, "免押代扣中，请稍后");
     }
     
     

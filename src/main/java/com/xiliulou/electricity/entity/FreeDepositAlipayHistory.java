@@ -23,6 +23,14 @@ public class FreeDepositAlipayHistory {
     
     private Long id;
     
+    /**
+     * 代扣记录订单号
+     */
+    private String authPayOrderId;
+    
+    /**
+     * 免押订单号
+     */
     private String orderId;
     
     private Long uid;

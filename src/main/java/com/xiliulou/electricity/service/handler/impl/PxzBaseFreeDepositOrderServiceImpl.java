@@ -1,15 +1,21 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
+import com.xiliulou.electricity.dto.PxzUnFreeDepositDTO;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzAuthToPayRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
@@ -32,6 +38,9 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
     
     @Resource
     PxzDepositService pxzDepositService;
+    
+    @Resource
+    private RocketMqService rocketMqService;
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
@@ -82,7 +91,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         try {
             pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(buildUnFreeDepositOrderPxzRequest(query));
         } catch (Exception e) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", uid, orderId, e);
+            log.error("Pxz ERROR! unfreeDepositOrder fail! uid={},orderId={}", uid, orderId, e);
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
@@ -91,6 +100,30 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return triple;
         }
         
+        // todo 同步转异步，和蜂云走同一个回调
+        PxzUnFreeDepositDTO unFreeDepositDTO = PxzUnFreeDepositDTO.builder().orderId(orderId).authStatus(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus()).build();
+        rocketMqService.sendAsyncMsg(MqProducerConstant.PXZ_UN_FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(unFreeDepositDTO));
+        
         return Triple.of(true, null, "解冻中，请稍后");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
+        PxzCommonRsp<PxzAuthToPayRsp> authToPayRsp = null;
+        Long uid = query.getUid();
+        String orderId = query.getOrderId();
+        try {
+            authToPayRsp = pxzDepositService.authToPay(buildAuthPxzRequest(query));
+        } catch (Exception e) {
+            log.error("Pxz ERROR! authToPay fail! uid={},orderId={}", uid, orderId, e);
+            return Triple.of(false, "100401", "免押代扣调用失败！");
+        }
+        
+        Triple<Boolean, String, Object> triple = pxzResultCheck(authToPayRsp, orderId);
+        if (!triple.getLeft()) {
+            return triple;
+        }
+        
+        return Triple.of(true, null, "免押代扣中，请稍后");
     }
 }

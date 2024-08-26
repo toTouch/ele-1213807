@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -43,7 +44,6 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     @Resource
     FreeDepositDataService freeDepositDataService;
-    
     
     @Resource
     private FreeDepositFactory freeDepositFactory;
@@ -141,6 +141,18 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         // 免押解冻
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.unFreezeDeposit(query);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
+        if (Objects.isNull(query)) {
+            log.warn("FreeDeposit WARN! authToPay.query is null");
+            return Triple.of(false, "100419", "系统异常，稍后再试");
+        }
+        log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
+        // 代扣
+        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
+        return service.authToPay(query);
     }
 }
 

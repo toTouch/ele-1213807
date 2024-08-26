@@ -1,11 +1,12 @@
 package com.xiliulou.electricity.controller.outer;
 
-import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
-import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderCallBackRequest;
+import com.xiliulou.electricity.service.callback.FreeDepositCallBackSerivce;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.Map;
 
 
 /**
@@ -17,15 +18,44 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class JsonOuterFreeDepositCallBackController {
     
+    
+    @Resource
+    private FreeDepositCallBackSerivce freeDepositCallBackSerivce;
+    
+    /**
+     * todo 免押回调通知
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/outer/free/notified/{channel}")
+    public void freeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
+        //return freeDepositCallBackSerivce.freeNotified(channel, params);
+    }
+    
+    
     /**
      * todo 解冻回调通知
      *
-     * @param wechatV3OrderCallBackQuery
+     * @param
      * @return
      */
-    @PostMapping("/outer/unFree/notified/{orderId}")
-    public WechatV3CallBackResult payNotified(@PathVariable("tenantId") String orderId, @RequestBody WechatV3OrderCallBackRequest wechatV3OrderCallBackQuery) {
+    @PostMapping("/outer/unFree/notified/{channel}")
+    public void payNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
         
-        return WechatV3CallBackResult.success();
+        return;
+    }
+    
+    
+    /**
+     * 代扣回调通知
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/outer/authPay/notified/{channel}")
+    public String authPayNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
+        
+        return freeDepositCallBackSerivce.authPayNotified(channel, params);
     }
 }

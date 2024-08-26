@@ -4,9 +4,11 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.FreeDepositConfig;
+import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -15,11 +17,13 @@ import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.AuthPayVars;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAgreementPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyHandleFundRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryFreezeStatusRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositAuthToPayRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
@@ -49,17 +53,6 @@ public abstract class AbstractCommonFreeDeposit {
     
     @Resource
     private FreeDepositConfig freeDepositConfig;
-    
-    public static final String SUCCESS_CODE = "WZF00000";
-    
-    /**
-     * 授权状态免押状态
-     */
-    public static final String FY_INIT = "INIT";
-    
-    public static final String FY_SUCCESS = "SUCCESS";
-    
-    public static final String FY_CLOSE = "CLOSED";
     
     
     public PxzCommonRequest<PxzFreeDepositOrderRequest> buildFreeDepositOrderPxzRequest(FreeDepositOrderRequest freeDepositOrderRequest) {
@@ -123,6 +116,24 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
+    public PxzCommonRequest<PxzFreeDepositAuthToPayRequest> buildAuthPxzRequest(FreeDepositAuthToPayQuery authToPayQuery) {
+        PxzConfig pxzConfig = getPxzConfig(authToPayQuery.getTenantId());
+        
+        PxzCommonRequest<PxzFreeDepositAuthToPayRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(authToPayQuery.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositAuthToPayRequest request = new PxzFreeDepositAuthToPayRequest();
+        request.setPayNo(authToPayQuery.getOrderId());
+        request.setTransId(authToPayQuery.getOrderId());
+        request.setAuthNo(authToPayQuery.getAuthNo());
+        request.setTransAmt(authToPayQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).longValue());
+        query.setData(request);
+        return query;
+    }
+    
     
     public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp rsp, String orderId) {
         if (Objects.isNull(rsp)) {
@@ -139,7 +150,8 @@ public abstract class AbstractCommonFreeDeposit {
             log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp.data is null! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
             return Triple.of(false, "100401", rsp.getRespDesc());
         }
-        return Triple.of(false, "100401", "免押调用失败！");
+        log.info("Pxz Result INFO! pxzResultCheck.result is {}", JsonUtil.toJson(rsp.getData()));
+        return Triple.of(true, null, null);
     }
     
     
@@ -206,6 +218,29 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
+    public FyCommonQuery<FyAgreementPayRequest> buildFyAgreementPayRequest(FreeDepositAuthToPayQuery payQuery) {
+        getFyConfig(payQuery.getTenantId());
+        
+        FyCommonQuery<FyAgreementPayRequest> query = new FyCommonQuery<>();
+        FyAgreementPayRequest request = new FyAgreementPayRequest();
+        request.setPayNo(payQuery.getOrderId());
+        // todo 协议号
+        request.setAgreementNo("");
+        request.setTotalAmount(payQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).toString());
+        request.setSubject(payQuery.getSubject());
+        //  解冻回调地址配置
+        request.setNotifyUrl(freeDepositConfig.getFyUnFreeUrl());
+        
+        request.setUserName(payQuery.getUserName());
+        request.setMobile(payQuery.getMobile());
+        request.setProvinceName("陕西省");
+        request.setCityName("西安市");
+        
+        query.setFlowNo(payQuery.getOrderId());
+        query.setFyRequest(request);
+        return query;
+    }
+    
     
     private FyConfig getFyConfig(Integer tenantId) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenantId);
@@ -222,7 +257,7 @@ public abstract class AbstractCommonFreeDeposit {
         }
         
         String code = result.getCode();
-        if (!Objects.equals(code, SUCCESS_CODE)) {
+        if (!Objects.equals(code, FreeDepositConstant.SUCCESS_CODE)) {
             log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);
             return Triple.of(false, "100401", result.getMessage());
         }
@@ -232,20 +267,21 @@ public abstract class AbstractCommonFreeDeposit {
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        return Triple.of(false, "100401", "免押调用失败！");
+        log.info("FY Result INFO! fyResultCheck.result is {} ", JsonUtil.toJson(result.getFyResponse()));
+        return Triple.of(true, null, null);
     }
     
     public Integer fyAuthStatusToPxzStatus(String authStatus) {
         
-        if (Objects.equals(authStatus, FY_INIT)) {
+        if (Objects.equals(authStatus, FreeDepositConstant.FY_INIT)) {
             return FreeDepositOrder.AUTH_INIT;
         }
         
-        if (Objects.equals(authStatus, FY_SUCCESS)) {
+        if (Objects.equals(authStatus, FreeDepositConstant.FY_SUCCESS)) {
             return FreeDepositOrder.AUTH_FROZEN;
         }
         
-        if (Objects.equals(authStatus, FY_CLOSE)) {
+        if (Objects.equals(authStatus, FreeDepositConstant.FY_CLOSE)) {
             return FreeDepositOrder.AUTH_TIMEOUT;
         }
         throw new CustomBusinessException("蜂云免押查询状态异常");
