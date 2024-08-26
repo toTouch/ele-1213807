@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -77,7 +78,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() > 1) {
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
             electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
             electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
         }
@@ -93,7 +94,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     /**
      * 获取全部电池的数据总数
      */
-    @GetMapping(value = "/admin/batteryData/allBattery/count")
+    @PostMapping(value = "/admin/batteryData/allBattery/count")
     public R getAllBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -112,7 +113,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() > 1) {
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
             electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
             electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
         }
@@ -139,18 +140,14 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     /**
      * 获取在柜电池的分页数据
      */
-    @GetMapping(value = "/admin/batteryData/inCabinetBattery/page")
-    public R getInCabinetBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
-        if (size < 0 || size > 50) {
-            size = 10;
+    @PostMapping(value = "/admin/batteryData/inCabinetBattery/page")
+    public R getInCabinetBatteryPageData(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
+        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
+            electricityBatteryRequest.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0;
+        if (electricityBatteryRequest.getOffset() < 0) {
+            electricityBatteryRequest.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -176,20 +173,25 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
-                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
+                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectInCabinetBatteryPageData(electricityBatteryQuery);
     }
     
     /**
      * 获取在柜电池的数据总数
      */
-    @GetMapping(value = "/admin/batteryData/inCabinetBattery/count")
-    public R getInCabinetBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+    @PostMapping(value = "/admin/batteryData/inCabinetBattery/count")
+    public R getInCabinetBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -207,9 +209,15 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
-                .franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).electricityCabinetId(electricityCabinetId).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectInCabinetBatteryDataCount(electricityBatteryQuery);
     }
     
@@ -217,18 +225,14 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     /**
      * 获取待租电池的分页数据
      */
-    @GetMapping(value = "/admin/batteryData/pendingRentalBattery/page")
-    public R getPendingRentalBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
-        if (size < 0 || size > 50) {
-            size = 10;
+    @PostMapping(value = "/admin/batteryData/pendingRentalBattery/page")
+    public R getPendingRentalBatteryPageData(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
+        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
+            electricityBatteryRequest.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0;
+        if (electricityBatteryRequest.getOffset() < 0) {
+            electricityBatteryRequest.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -254,20 +258,25 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectPendingRentalBatteryPageData(electricityBatteryQuery);
     }
     
     /**
      * 获取待租电池的数据总数
      */
-    @GetMapping(value = "/admin/batteryData/pendingRentalBattery/count")
-    public R getPendingRentalBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+    @PostMapping(value = "/admin/batteryData/pendingRentalBattery/count")
+    public R getPendingRentalBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -285,27 +294,29 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectPendingRentalBatteryDataCount(electricityBatteryQuery);
     }
     
     /**
      * 获取已租电池的分页数据
      */
-    @GetMapping(value = "/admin/batteryData/leasedBattery/page")
-    public R getLeasedBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
-        if (size < 0 || size > 50) {
-            size = 10;
+    @PostMapping(value = "/admin/batteryData/leasedBattery/page")
+    public R getLeasedBatteryPageData(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
+        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
+            electricityBatteryRequest.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0;
+        if (electricityBatteryRequest.getOffset() < 0) {
+            electricityBatteryRequest.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -331,20 +342,25 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
+                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectLeasedBatteryPageData(electricityBatteryQuery);
     }
     
     /**
      * 获取已租电池的数据总数
      */
-    @GetMapping(value = "/admin/batteryData/leasedBattery/count")
-    public R getLeasedBatteryDataCount(@RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+    @PostMapping(value = "/admin/batteryData/leasedBattery/count")
+    public R getLeasedBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -362,27 +378,31 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
+        
         return electricityBatteryDataService.selectLeasedBatteryDataCount(electricityBatteryQuery);
     }
     
     /**
      * 获取游离电池的分页数据
      */
-    @GetMapping(value = "/admin/batteryData/strayBattery/page")
-    public R getStrayBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
-        if (size < 0 || size > 50) {
-            size = 10;
+    @PostMapping(value = "/admin/batteryData/strayBattery/page")
+    public R getStrayBatteryPageData(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
+        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
+            electricityBatteryRequest.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0;
+        if (electricityBatteryRequest.getOffset() < 0) {
+            electricityBatteryRequest.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -408,20 +428,25 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
+                .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectStrayBatteryPageData(electricityBatteryQuery);
     }
     
     /**
      * 获取游离电池的数据总数
      */
-    @GetMapping(value = "/admin/batteryData/strayBattery/count")
-    public R getStrayBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+    @PostMapping(value = "/admin/batteryData/strayBattery/count")
+    public R getStrayBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -439,9 +464,16 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY)
-                .businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
+                .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectStrayBatteryDataCount(electricityBatteryQuery);
     }
     
@@ -449,18 +481,14 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
     /**
      * 获取逾期电池的分页数据
      */
-    @GetMapping(value = "/admin/batteryData/overdueBattery/page")
-    public R getOverdueBatteryPageData(@RequestParam("offset") long offset, @RequestParam("size") long size, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus, @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus,
-            @RequestParam(value = "sort", required = false, defaultValue = "0") Integer sort) {
-        if (size < 0 || size > 50) {
-            size = 10;
+    @PostMapping(value = "/admin/batteryData/overdueBattery/page")
+    public R getOverdueBatteryPageData(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
+        if (electricityBatteryRequest.getSize() < 0 || electricityBatteryRequest.getSize() > 50) {
+            electricityBatteryRequest.setSize(10L);
         }
         
-        if (offset < 0) {
-            offset = 0;
+        if (electricityBatteryRequest.getOffset() < 0) {
+            electricityBatteryRequest.setOffset(0L);
         }
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -486,20 +514,25 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
             return R.ok(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant).sn(sn).uid(uid).size(size).offset(offset)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).businessStatus(businessStatus).physicsStatus(physicsStatus).sort(sort).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
+                .currentTimeMillis(System.currentTimeMillis()).sort(electricityBatteryRequest.getSort()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL)
+                .businessStatus(electricityBatteryRequest.getBusinessStatus()).physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectOverdueBatteryPageData(electricityBatteryQuery);
     }
     
     /**
      * 获取逾期电池的数据总数
      */
-    @GetMapping(value = "/admin/batteryData/overdueBattery/count")
-    public R getOverdueBatteryDataCount(@RequestParam(value = "sn", required = false) String sn, @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "businessStatus", required = false) List<Integer> businessStatus) {
+    @PostMapping(value = "/admin/batteryData/overdueBattery/count")
+    public R getOverdueBatteryDataCount(@RequestBody ElectricityBatteryDataQuery electricityBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -517,9 +550,16 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(0);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId()).sn(sn).uid(uid)
-                .electricityCabinetId(electricityCabinetId).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
-                .currentTimeMillis(System.currentTimeMillis()).businessStatus(businessStatus).physicsStatus(physicsStatus).build();
+        
+        if (CollectionUtils.isNotEmpty(electricityBatteryRequest.getSns()) && electricityBatteryRequest.getSns().size() == 1) {
+            electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
+            electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
+        }
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
+                .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
+                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .currentTimeMillis(System.currentTimeMillis()).uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL)
+                .businessStatus(electricityBatteryRequest.getBusinessStatus()).physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectOverdueBatteryDataCount(electricityBatteryQuery);
     }
     
