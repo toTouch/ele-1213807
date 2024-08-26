@@ -30,6 +30,7 @@ public class JsonAdminFreeDepositRechargeRecordController extends BaseController
     @GetMapping("/admin/freeDepositRechargeRecord/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
                   @RequestParam("tenantId") Integer tenantId,
+                  @RequestParam("freeType") Integer freeType,
                   @RequestParam(value = "startTime", required = false) Long startTime,
                   @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -46,6 +47,7 @@ public class JsonAdminFreeDepositRechargeRecordController extends BaseController
                 .tenantId(tenantId)
                 .startTime(startTime)
                 .endTime(endTime)
+                .freeType(freeType)
                 .build();
 
         return R.ok(this.freeDepositRechargeRecordService.selectByPage(query));
@@ -56,12 +58,14 @@ public class JsonAdminFreeDepositRechargeRecordController extends BaseController
      */
     @GetMapping("/admin/freeDepositRechargeRecord/queryCount")
     public R pageCount(@RequestParam("tenantId") Integer tenantId,
+                        @RequestParam("freeType") Integer freeType,
                        @RequestParam(value = "startTime", required = false) Long startTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
         FreeDepositRechargeRecordQuery query = FreeDepositRechargeRecordQuery.builder()
                 .tenantId(tenantId)
                 .startTime(startTime)
                 .endTime(endTime)
+                .freeType(freeType)
                 .build();
 
         return R.ok(this.freeDepositRechargeRecordService.selectByPageCount(query));

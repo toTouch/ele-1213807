@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.query.FreeDepositDataQuery;
+import com.xiliulou.electricity.query.FreeDepositFyRequest;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -73,4 +75,11 @@ public interface FreeDepositDataService {
      * @return
      */
     Integer deductionFreeDepositCapacity(Integer tenantId, Integer count);
+    
+    /**
+     * <p>
+     *    Description: 充值峰云免押，分期签约次数
+     * </p>
+    */
+    Pair<Boolean, String> rechargeFY(FreeDepositFyRequest params);
 }

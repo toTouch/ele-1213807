@@ -5,6 +5,8 @@
     <resultMap type="com.xiliulou.electricity.entity.FreeDepositData" id="FreeDepositDataMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="freeDepositCapacity" column="free_deposit_capacity" jdbcType="INTEGER"/>
+        <result property="fyFreeDepositCapacity" column="fy_free_deposit_capacity" javaType="INTEGER" />
+        <result property="byStagesCapacity" column="by_stages_capacity" javaType="INTEGER" />
         <result property="rechargeTime" column="recharge_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
@@ -14,7 +16,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectFreeDepositData">
-       	select   id, free_deposit_capacity, recharge_time, tenant_id, del_flag, create_time, update_time        from t_free_deposit_data
+       	select   id, free_deposit_capacity,fy_free_deposit_capacity,by_stages_capacity, recharge_time, tenant_id, del_flag, create_time, update_time        from t_free_deposit_data
     </sql>
 
     <!--查询单个-->
@@ -39,6 +41,9 @@
             <if test="freeDepositCapacity != null">
                 and free_deposit_capacity = #{freeDepositCapacity}
             </if>
+            <if test="byStagesCapacity != null">
+                and by_stages_capacity = #{byStagesCapacity}
+            </if>
             <if test="rechargeTime != null">
                 and recharge_time = #{rechargeTime}
             </if>
@@ -59,8 +64,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_free_deposit_data(free_deposit_capacity, recharge_time, tenant_id, del_flag, create_time, update_time)
-        values (#{freeDepositCapacity}, #{rechargeTime}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_free_deposit_data(free_deposit_capacity,fy_free_deposit_capacity,by_stages_capacity, recharge_time, tenant_id, del_flag, create_time, update_time)
+        values (#{freeDepositCapacity},#{fyFreeDepositCapacity},#{byStagesCapacity}, #{rechargeTime}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -69,6 +74,12 @@
         <set>
             <if test="freeDepositCapacity != null">
                 free_deposit_capacity = #{freeDepositCapacity},
+            </if>
+            <if test="fyFreeDepositCapacity != null">
+                fy_free_deposit_capacity = #{fyFreeDepositCapacity},
+            </if>
+            <if test="byStagesCapacity != null">
+                and by_stages_capacity = #{byStagesCapacity}
             </if>
             <if test="rechargeTime != null">
                 recharge_time = #{rechargeTime},

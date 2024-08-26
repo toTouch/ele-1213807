@@ -6,6 +6,8 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="freeRecognizeCapacity" column="free_recognize_capacity" jdbcType="INTEGER"/>
         <result property="operator" column="operator" jdbcType="INTEGER"/>
+        <result property="freeType" column="free_type" jdbcType="INTEGER" />
+        <result property="byStagesCount" column="by_stages_count" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -14,7 +16,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectFreeDepositRechargeRecord">
-       	select   id, free_recognize_capacity, operator, tenant_id, del_flag, create_time, update_time        from t_free_deposit_recharge_record
+       	select   id, free_recognize_capacity, free_type, by_stages_count, operator, tenant_id, del_flag, create_time, update_time        from t_free_deposit_recharge_record
     </sql>
 
     <!--查询单个-->
@@ -30,6 +32,9 @@
         <if test="startTime != null">
             and create_time &gt;= #{startTime}
         </if>
+        <if test="freeType != null">
+            and free_type = #{freeType}
+        </if>
         <if test="endTime != null">
             and create_time &lt;= #{endTime}
         </if>
@@ -44,6 +49,9 @@
         where del_flag=0 and tenant_id=#{tenantId}
         <if test="startTime != null">
             and create_time &gt;= #{startTime}
+        </if>
+        <if test="freeType != null">
+            and free_type = #{freeType}
         </if>
         <if test="endTime != null">
             and create_time &lt;= #{endTime}
@@ -80,8 +88,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_free_deposit_recharge_record(free_recognize_capacity, operator, tenant_id, del_flag, create_time, update_time)
-        values (#{freeRecognizeCapacity}, #{operator}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_free_deposit_recharge_record(free_recognize_capacity, free_type, by_stages_count, operator, tenant_id, del_flag, create_time, update_time)
+        values (#{freeRecognizeCapacity},#{freeType},#{byStagesCount} #{operator}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->

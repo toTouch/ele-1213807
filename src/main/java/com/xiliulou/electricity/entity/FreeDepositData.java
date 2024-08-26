@@ -35,6 +35,11 @@ public class FreeDepositData {
      * 蜂云免押次数
      */
     private Integer fyFreeDepositCapacity;
+    
+    /**
+     * 分期签约次数
+     */
+    private Integer byStagesCapacity;
     /**
      * 充值时间
      */
@@ -53,4 +58,6 @@ public class FreeDepositData {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    public static final Integer FREE_TYPE_PXZ = 0;
+    public static final Integer FREE_TYPE_FY = 1;
 }
