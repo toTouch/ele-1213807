@@ -5,4 +5,6 @@ import java.util.Map;
 public interface FreeDepositCallBackSerivce {
     
     String authPayNotified(Integer channel, Map<String, Object> params);
+    
+    String unFreeNotified(Integer channel, Map<String, Object> params);
 }

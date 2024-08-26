@@ -41,9 +41,9 @@ public class JsonOuterFreeDepositCallBackController {
      * @return
      */
     @PostMapping("/outer/unFree/notified/{channel}")
-    public void payNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
+    public String unFreeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
         
-        return;
+        return freeDepositCallBackSerivce.unFreeNotified(channel, params);
     }
     
     
