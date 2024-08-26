@@ -7,6 +7,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
+import com.xiliulou.electricity.dto.FyFreeDepositDelayDTO;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
@@ -64,13 +65,14 @@ public abstract class AbstractCommonFreeDeposit {
     /**
      * 蜂云只有成功才会回调，所以这里修改为5分钟后将免押订单状态修改为最终态
      *
-     * @param msg
+     * @param orderId
      * @param tag
      */
-    public void sendQueryStatusDelayQueue(String msg, String tag) {
+    public void sendQueryStatusDelayQueue(String orderId, String tag) {
         // 延迟队列,默认延迟5分钟
+        FyFreeDepositDelayDTO dto = FyFreeDepositDelayDTO.builder().orderId(orderId).build();
         String key = "fy" + DateUtil.format(DateUtil.date(), "yyMMddHHmmss") + RandomUtil.randomInt(1000, 9999);
-        rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, msg, tag, key, 9);
+        rocketMqService.sendSyncMsg(MqProducerConstant.FY_FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
     }
     
     

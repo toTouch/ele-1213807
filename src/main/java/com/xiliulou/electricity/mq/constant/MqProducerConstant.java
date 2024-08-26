@@ -107,7 +107,24 @@ public interface MqProducerConstant {
     String MQ_TOPIC_SITE_MESSAGE_TAG_NAME = "SITE_MESSAGE";
     
     /**
-     * 免押topic
+     * Fy免押topic
      */
-    String FREE_DEPOSIT_TOPIC_NAME = "FREE_DEPOSIT";
+    String FY_FREE_DEPOSIT_TOPIC_NAME = "FY_FREE_DEPOSIT_TOPIC";
+    
+    
+    /**
+     * 蜂云免押tag
+     */
+    String FY_FREE_DEPOSIT_TAG_NAME = "FY_FREE_DEPOSIT_TAG";
+    
+    
+    /**
+     * 蜂云解冻tag
+     */
+    String FY_UN_FREE_DEPOSIT_TAG_NAME = "FY_UN_FREE_DEPOSIT_TAG";
+    
+    /**
+     * 蜂云代扣tag
+     */
+    String FY_AUTH_APY_TAG_NAME = "FY_AUTH_PAY_TAG";
 }
