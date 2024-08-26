@@ -1104,14 +1104,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetSimpleVO> resultVo;
         // 若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
         if (eleCommonConfig.isEnableGeo()) {
-            RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeDistance().includeCoordinates()
-                    .sortAscending();
-            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(
-                    CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(),
-                    new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()),
-                            new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
-            if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
-                log.info("GEO results is null, query info = {}", electricityCabinetQuery);
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
+            if (geoRadius == null) {
                 return null;
             }
             
@@ -1163,6 +1157,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
+    }
+    
+    private GeoResults<RedisGeoCommands.GeoLocation<String>> getGeoLocationGeoResults(ElectricityCabinetQuery electricityCabinetQuery) {
+        RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeDistance().includeCoordinates()
+                .sortAscending();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(),
+                new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()),
+                        new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
+        if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
+            log.info("GEO results is null, query info = {}", electricityCabinetQuery);
+            return null;
+        }
+        return geoRadius;
     }
     
     /**
@@ -4003,7 +4010,44 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
-        List<ElectricityCabinetMapBO> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        List<ElectricityCabinetMapBO> electricityCabinets;
+        
+        // 根据id查询
+        if (Objects.nonNull(cabinetQuery.getId())) {
+            ElectricityCabinet electricityCabinet = this.queryByIdFromCache(cabinetQuery.getId());
+            
+            ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(electricityCabinet.getName())
+                    .distance(Objects.isNull(cabinetQuery.getDistance()) ? 1000D : cabinetQuery.getDistance()).lon(electricityCabinet.getLongitude())
+                    .lat(electricityCabinet.getLatitude()).franchiseeId(electricityCabinet.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).usableStatus(0).build();
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
+            if (geoRadius == null) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+            
+            electricityCabinets = geoRadius.getContent().parallelStream().map(e -> {
+                ElectricityCabinetMapBO electricityCabinetMapBO = new ElectricityCabinetMapBO();
+                Integer eid = Integer.valueOf(e.getContent().getName());
+                ElectricityCabinet electricityCabinetTemp = queryByIdFromCache(eid);
+                if (Objects.isNull(electricityCabinetTemp) || !Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, electricityCabinet.getUsableStatus())) {
+                    return null;
+                }
+                
+                electricityCabinetMapBO.setId(electricityCabinetTemp.getId());
+                electricityCabinetMapBO.setName(electricityCabinetTemp.getName());
+                electricityCabinetMapBO.setAddress(electricityCabinetTemp.getAddress());
+                electricityCabinetMapBO.setLongitude(electricityCabinetTemp.getLongitude());
+                electricityCabinetMapBO.setLatitude(electricityCabinetTemp.getLatitude());
+                electricityCabinetMapBO.setOnlineStatus(electricityCabinetTemp.getOnlineStatus());
+                electricityCabinetMapBO.setUsableStatus(electricityCabinetTemp.getUsableStatus());
+                
+                return electricityCabinetMapBO;
+                
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+            
+        } else {
+            electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        }
+        
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -4012,6 +4056,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 分批次查询柜机格挡
         List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
+        
         List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.TWO_HUNDRED);
         partitions.forEach(item -> {
             List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
@@ -4071,9 +4116,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 设置统计值
         Integer totalCount = assembleCabinetList.size();
+        
         Integer lowChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
+        
         Integer fullChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
+        
         Integer unusableCount = (int) assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).count();
+        
         Integer offLineCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
         
         // 0-全部、1-少电、2-多电、3-锁仓、4-离线

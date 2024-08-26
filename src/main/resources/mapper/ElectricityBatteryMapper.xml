@@ -1108,6 +1108,12 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
+        <if test="query.Sns != null and query.Sns.size()>0">
+            and teb.sn in
+            <foreach collection="query.Sns" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
@@ -1153,6 +1159,12 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
+        <if test="query.Sns != null and query.Sns.size()>0">
+            and teb.sn in
+            <foreach collection="query.Sns" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
@@ -1195,6 +1207,12 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
+        <if test="query.Sns != null and query.Sns.size()>0">
+            and teb.sn in
+            <foreach collection="query.Sns" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
@@ -1226,6 +1244,12 @@
         <if test="query.businessStatus != null and query.businessStatus.size()>0">
             and teb.business_status in
             <foreach collection="query.businessStatus" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.Sns != null and query.Sns.size()>0">
+            and teb.sn in
+            <foreach collection="query.Sns" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
         </if>
