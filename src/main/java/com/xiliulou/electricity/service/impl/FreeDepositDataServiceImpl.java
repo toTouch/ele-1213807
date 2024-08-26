@@ -139,6 +139,11 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     }
     
     @Override
+    public Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count) {
+        return this.freeDepositDataMapper.deductionFyFreeDepositCapacity(tenantId, count);
+    }
+    
+    @Override
     public Triple<Boolean, String, Object> recharge(FreeDepositDataQuery freeDepositDataQuery) {
         FreeDepositData freeDepositData = this.selectByTenantId(freeDepositDataQuery.getTenantId());
         if (Objects.isNull(freeDepositData)) {

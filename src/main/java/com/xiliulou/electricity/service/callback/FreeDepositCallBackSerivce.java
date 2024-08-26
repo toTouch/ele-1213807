@@ -7,4 +7,6 @@ public interface FreeDepositCallBackSerivce {
     String authPayNotified(Integer channel, Map<String, Object> params);
     
     String unFreeNotified(Integer channel, Map<String, Object> params);
+    
+    String freeNotified(Integer channel, Map<String, Object> params);
 }

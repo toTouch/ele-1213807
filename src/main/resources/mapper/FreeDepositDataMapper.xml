@@ -105,5 +105,8 @@
     <update id="deductionFreeDepositCapacity">
         update t_free_deposit_data set free_deposit_capacity = free_deposit_capacity -#{count}   where tenant_id = #{tenantId}
     </update>
-
+    
+    <update id="deductionFyFreeDepositCapacity">
+        update t_free_deposit_data set fy_free_deposit_capacity = fy_free_deposit_capacity -#{count}   where tenant_id = #{tenantId}
+    </update>
 </mapper>

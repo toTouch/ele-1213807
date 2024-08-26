@@ -62,8 +62,9 @@ public class FyUnFreeDepositConsumer implements RocketMQListener<String> {
         freeDepositOrderService.update(freeDepositOrderUpdate);
         
         // 更新退款订单为失败
+        EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(freeDepositOrder.getOrderId());
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
-        eleRefundOrderUpdate.setOrderId(freeDepositOrder.getOrderId());
+        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);

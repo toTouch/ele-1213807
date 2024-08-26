@@ -73,4 +73,6 @@ public interface FreeDepositDataService {
      * @return
      */
     Integer deductionFreeDepositCapacity(Integer tenantId, Integer count);
+    
+    Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count);
 }
