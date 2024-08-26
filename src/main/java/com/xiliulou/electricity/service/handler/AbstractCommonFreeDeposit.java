@@ -61,17 +61,18 @@ public abstract class AbstractCommonFreeDeposit {
     @Resource
     private RocketMqService rocketMqService;
     
+    public static final String ORDER_DATE_FORMAT = "yyyyMMddHHmmss";
     
     /**
      * 蜂云只有成功才会回调，所以这里修改为5分钟后将免押订单状态修改为最终态
      *
-     * @param orderId
-     * @param tag
+     * @param orderId orderId
+     * @param tag tag
      */
     public void sendQueryStatusDelayQueue(String orderId, String tag) {
         // 延迟队列,默认延迟5分钟
         FyFreeDepositDelayDTO dto = FyFreeDepositDelayDTO.builder().orderId(orderId).build();
-        String key = "fy" + DateUtil.format(DateUtil.date(), "yyMMddHHmmss") + RandomUtil.randomInt(1000, 9999);
+        String key = "fy" + DateUtil.format(DateUtil.date(), ORDER_DATE_FORMAT) + RandomUtil.randomInt(1000, 9999);
         rocketMqService.sendSyncMsg(MqProducerConstant.FY_FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
     }
     
@@ -92,7 +93,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setIdNumber(freeDepositOrderRequest.getIdCard());
         request.setTransId(orderId);
         request.setTransAmt(freeDepositOrderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
-        request.setCallbackUrl(freeDepositConfig.getPxzFreeUrl());
+        request.setCallbackUrl(freeDepositConfig.getUrl());
         query.setData(request);
         
         return query;
@@ -188,7 +189,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setAmount(orderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
         request.setSubject(orderRequest.getSubject());
         
-        request.setNotifyUrl(orderRequest.getCallbackUrl());
+        request.setNotifyUrl(freeDepositConfig.getUrl());
         request.setEnablePayChannels(FyConstants.PAY_CHANNEL_ZHIMA);
         request.setPayTypes(FyConstants.PAY_TYPES);
         
@@ -231,7 +232,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.parseInt(orderStatusQuery.getAmount()) : 0);
         request.setSubject(orderStatusQuery.getSubject());
         //  解冻回调地址配置
-        request.setNotifyUrl(freeDepositConfig.getFyUnFreeUrl());
+        request.setNotifyUrl(freeDepositConfig.getUrl());
         request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_UNFREEZE);
         
         query.setFlowNo(orderStatusQuery.getOrderId());
@@ -249,7 +250,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setAmount(payQuery.getPayTransAmt().intValue());
         request.setSubject(payQuery.getSubject());
         //  解冻回调地址配置
-        request.setNotifyUrl(freeDepositConfig.getFyAuthPayUrl());
+        request.setNotifyUrl(freeDepositConfig.getUrl());
         request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_PAY);
         
         query.setFlowNo(payQuery.getOrderId());

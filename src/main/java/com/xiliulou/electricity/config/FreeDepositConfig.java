@@ -18,23 +18,9 @@ import org.springframework.context.annotation.Configuration;
 public class FreeDepositConfig {
     
     /**
-     * 拍小组冻结，结果通知回调
+     * 免押代扣回调
      */
-    private String pxzFreeUrl;
+    private String url;
     
-    /**
-     * 蜂云冻结 结果通知回调地址
-     */
-    private String fyFreeUrl;
-    
-    /**
-     * 蜂云解冻 回调地址
-     */
-    private String fyUnFreeUrl;
-    
-    /**
-     * 蜂云代扣 回调地址
-     */
-    private String fyAuthPayUrl;
 }
 

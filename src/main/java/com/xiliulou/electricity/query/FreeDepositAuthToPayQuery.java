@@ -48,9 +48,5 @@ public class FreeDepositAuthToPayQuery {
      */
     private String authNo;
     
-    /**
-     * 代扣回调地址
-     */
-    private String notifyUrl;
     
 }

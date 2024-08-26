@@ -10,7 +10,6 @@ import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
-import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzAuthToPayRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -35,9 +34,6 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
     
     @Resource
     PxzDepositService pxzDepositService;
-    
-    @Resource
-    private RocketMqService rocketMqService;
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {

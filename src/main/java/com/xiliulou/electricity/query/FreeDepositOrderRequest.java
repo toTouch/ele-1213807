@@ -53,8 +53,4 @@ public class FreeDepositOrderRequest {
      */
     private String subject;
     
-    /**
-     * 回调地址，免押成功通知
-     */
-    private String callbackUrl;
 }

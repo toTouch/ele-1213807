@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.outer;
 import com.xiliulou.electricity.service.callback.FreeDepositCallBackSerivce;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -23,39 +24,15 @@ public class JsonOuterFreeDepositCallBackController {
     private FreeDepositCallBackSerivce freeDepositCallBackSerivce;
     
     /**
-     * todo 免押回调通知
+     * 免押代扣回调
      *
      * @param channel
      * @return Object
      */
-    @PostMapping("/outer/free/notified/{channel}")
-    public Object freeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
-        return freeDepositCallBackSerivce.freeNotified(channel, params);
+    @PostMapping("/outer/free/notified/{channel}/{business}")
+    public Object freeDepositNotified(@PathVariable("channel") Integer channel, @PathVariable("business") Integer business, @RequestBody Map<String, Object> params) {
+        return freeDepositCallBackSerivce.freeDepositNotified(channel, business, params);
     }
     
     
-    /**
-     * todo 解冻回调通知
-     *
-     * @param
-     * @return Object
-     */
-    @PostMapping("/outer/unFree/notified/{channel}")
-    public Object unFreeNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
-        
-        return freeDepositCallBackSerivce.unFreeNotified(channel, params);
-    }
-    
-    
-    /**
-     * 代扣回调通知
-     *
-     * @param
-     * @return Object
-     */
-    @PostMapping("/outer/authPay/notified/{channel}")
-    public Object authPayNotified(@PathVariable("channel") Integer channel, Map<String, Object> params) {
-        
-        return freeDepositCallBackSerivce.authPayNotified(channel, params);
-    }
 }

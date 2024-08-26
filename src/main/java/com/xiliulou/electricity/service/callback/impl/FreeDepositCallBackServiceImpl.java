@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.callback.impl;
 
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
@@ -13,6 +12,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -97,7 +97,26 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
     @Resource
     private UserBatteryTypeService userBatteryTypeService;
     
+    
     @Override
+    public Object freeDepositNotified(Integer channel, Integer business, Map<String, Object> params) {
+        // 免押
+        if (Objects.equals(business, FreeBusinessTypeEnum.FREE.getCode())) {
+            return freeNotified(channel, params);
+        }
+        // 解冻
+        if (Objects.equals(business, FreeBusinessTypeEnum.UNFREE.getCode())) {
+            return unFreeNotified(channel, params);
+        }
+        // 代扣
+        if (Objects.equals(business, FreeBusinessTypeEnum.AUTH_PAY.getCode())) {
+            return authPayNotified(channel, params);
+        }
+        
+        throw new CustomBusinessException("免押代扣回调异常");
+    }
+    
+    
     public Object authPayNotified(Integer channel, Map<String, Object> params) {
         
         if (Objects.equals(channel, FreeDepositChannelEnum.PXZ.getChannel())) {
@@ -162,7 +181,6 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
      * @param params  String
      * @return String
      */
-    @Override
     public Object unFreeNotified(Integer channel, Map<String, Object> params) {
         
         // pxz 免押和解冻使用的同一个回调，所以要根据之前的状态区分
@@ -266,7 +284,6 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
     }
     
     
-    @Override
     public Object freeNotified(Integer channel, Map<String, Object> params) {
         
         // pxz 免押和解冻使用的同一个回调，所以要根据之前的状态区分
@@ -313,6 +330,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
         throw new CustomBusinessException("免押回调异常");
     }
     
+    
     private void handlerFreeDepositSuccess(Integer channel, FreeDepositOrder freeDepositOrder) {
         
         Long uid = freeDepositOrder.getUid();
@@ -321,8 +339,7 @@ public class FreeDepositCallBackServiceImpl implements FreeDepositCallBackSerivc
             log.warn("handlerFreeDepositSuccess warn! userInfo is null, uid is {}", uid);
             return;
         }
-        
-        // todo 区分渠道扣减免押次数
+        //  区分渠道扣减免押次数
         if (Objects.equals(channel, FreeDepositChannelEnum.PXZ.getChannel())) {
             freeDepositDataService.deductionFreeDepositCapacity(userInfo.getTenantId(), 1);
         }
