@@ -152,6 +152,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setTransId(authToPayQuery.getOrderId());
         request.setAuthNo(authToPayQuery.getAuthNo());
         request.setTransAmt(authToPayQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).longValue());
+        request.setCallBackUrl(freeDepositConfig.getUrl());
         query.setData(request);
         return query;
     }
