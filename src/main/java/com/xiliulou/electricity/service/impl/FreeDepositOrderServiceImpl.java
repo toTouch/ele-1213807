@@ -1183,7 +1183,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         log.info("generate free deposit data from pxz for battery package, data = {}", depositOrderDTO);
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid,
-                UriUtils.encode((String) freeDepositOrderTriple.getRight(), StandardCharsets.UTF_8), 300 * 1000L, false);
+                UriUtils.encode(JsonUtil.toJson(depositOrderDTO.getData()), StandardCharsets.UTF_8), 300 * 1000L, false);
         
         return Triple.of(true, null, depositOrderDTO.getData());
     }
