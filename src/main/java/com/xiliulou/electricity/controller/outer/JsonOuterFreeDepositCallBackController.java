@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.controller.outer;
 
-import com.xiliulou.electricity.service.callback.FreeDepositCallBackSerivce;
+import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
+import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +23,7 @@ public class JsonOuterFreeDepositCallBackController {
     
     
     @Resource
-    private FreeDepositCallBackSerivce freeDepositCallBackSerivce;
+    private ApplicationContext applicationContext;
     
     /**
      * 免押代扣回调
@@ -31,7 +33,9 @@ public class JsonOuterFreeDepositCallBackController {
      */
     @PostMapping("/outer/free/notified/{channel}/{business}")
     public Object freeDepositNotified(@PathVariable("channel") Integer channel, @PathVariable("business") Integer business, @RequestBody Map<String, Object> params) {
-        return freeDepositCallBackSerivce.freeDepositNotified(channel, business, params);
+        
+        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(channel), BaseFreeDepositService.class);
+        return service.freeDepositNotified(business, params);
     }
     
     

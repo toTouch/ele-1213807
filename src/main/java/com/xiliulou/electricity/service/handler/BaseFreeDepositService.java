@@ -7,6 +7,8 @@ import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.Map;
+
 /**
  * @ClassName: BaseFreeDepositService
  * @description:
@@ -47,4 +49,14 @@ public interface BaseFreeDepositService {
      * @return Triple
      */
     Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query);
+    
+    
+    /**
+     * 免押代扣回调
+     *
+     * @param business business
+     * @param params map
+     * @return
+     */
+    Object freeDepositNotified(Integer business, Map<String, Object> params);
 }
