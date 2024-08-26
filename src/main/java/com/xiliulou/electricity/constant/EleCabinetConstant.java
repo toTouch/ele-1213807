@@ -22,9 +22,9 @@ public interface EleCabinetConstant {
     int BATTERY_COUNT_TYPE_MORE = 2;
     
     /**
-     * 柜机模式：0--iot,1-tcp
+     * iot连接模式  0:阿里云 1：华为云 2:自建TCP
      */
-    int IOT_PATTERN = 0;
+    int ALI_IOT_PATTERN = 0;
     int TCP_PATTERN = 1;
     
 }

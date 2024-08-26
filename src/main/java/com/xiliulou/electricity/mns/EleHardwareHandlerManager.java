@@ -17,7 +17,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.Ipv4Util;
 import com.xiliulou.feishu.config.FeishuConfig;
 import com.xiliulou.feishu.entity.query.FeishuBotSendMsgQuery;
@@ -178,7 +177,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             
             //柜机模式修改
             if (CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus())) {
-                newElectricityCabinet.setPattern(EleCabinetConstant.IOT_PATTERN);
+                newElectricityCabinet.setPattern(EleCabinetConstant.ALI_IOT_PATTERN);
             }
             
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {

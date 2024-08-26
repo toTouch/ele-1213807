@@ -129,7 +129,7 @@ public class ElectricityCabinet {
     private Integer exchangeType;
     
     /**
-     * 柜机模式：0--iot,1-tcp
+     * iot连接模式  0:阿里云 1：华为云 2:自建TCP
      */
     private Integer pattern;
     
