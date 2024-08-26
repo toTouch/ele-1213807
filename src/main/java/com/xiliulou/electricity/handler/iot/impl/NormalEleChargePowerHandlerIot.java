@@ -110,7 +110,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.CALC_ELE_POWER_REPORT_ACK).build();
 
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("NORMAL POWER ERROR! send command error! sessionid:{}", receiverMessage.getSessionId());
         }

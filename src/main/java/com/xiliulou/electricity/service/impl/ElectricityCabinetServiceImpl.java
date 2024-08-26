@@ -1504,6 +1504,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return deviceIsOnlineForIot(productKey, deviceName);
     }
     
+    /**
+     * TODO zhaohzilong 2024年08月26日 15:09:09 判断设备是否在线改为调用网关接口，从返回值中获取设备连接的网关IP
+     * @param productKey
+     * @param deviceName
+     * @return
+     */
     @Override
     public boolean deviceIsOnlineForTcp(String productKey, String deviceName) {
         return redisService.hasKey(CacheConstant.CACHE_CABINET_SN_ONLINE + DeviceTextUtil.assembleSn(productKey, deviceName));
@@ -1869,7 +1875,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
         
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         // 发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
@@ -1927,7 +1933,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
         
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         // 发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
@@ -3867,7 +3873,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(data).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OTA_OPERATE).build();
         
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         // 发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");

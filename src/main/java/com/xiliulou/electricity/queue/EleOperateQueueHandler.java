@@ -389,7 +389,7 @@ public class EleOperateQueueHandler {
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
         
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("ELE LOCK CELL ERROR! send command error! orderId:{}", eleOpenDTO.getOrderId());
         }
@@ -578,7 +578,7 @@ public class EleOperateQueueHandler {
                                 CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getUid() + "_"
                                         + electricityCabinetOrder.getOrderId()).data(dataMap).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                         .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
-                eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+                eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             } catch (Exception e) {
                 log.error("e", e);
             } finally {
@@ -994,7 +994,7 @@ public class EleOperateQueueHandler {
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + finalOpenDTO.getOrderId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_ORDER_RSP_ACK)
                 .build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(sendResult.getLeft())) {
             log.error("RENT ORDER HANDLER WARN! send ack command error,orderId={}", finalOpenDTO.getOrderId());
         }
@@ -1015,7 +1015,7 @@ public class EleOperateQueueHandler {
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + finalOpenDTO.getOrderId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_ORDER_RSP_ACK)
                 .build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(sendResult.getLeft())) {
             log.error("RETURN ORDER HANDLER WARN! send ack command error,orderId={}", finalOpenDTO.getOrderId());
         }

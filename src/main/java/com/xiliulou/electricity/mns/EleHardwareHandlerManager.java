@@ -97,14 +97,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
     
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(hardwareCommandQuery.getProductKey(),
-                hardwareCommandQuery.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("ELE ERROR! not found electricityCabinet,p={},d={}", hardwareCommandQuery.getProductKey(), hardwareCommandQuery.getDeviceName());
-            return Pair.of(false, "未找到换电柜！");
-        }
-        
-        if (Objects.equals(electricityCabinet.getPattern(), EleCabinetConstant.TCP_PATTERN)) {
+        return this.chooseCommandHandlerProcessSend(hardwareCommandQuery, null);
+    }
+    
+    public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery, ElectricityCabinet electricityCabinet) {
+        if (Objects.nonNull(electricityCabinet) && Objects.equals(electricityCabinet.getPattern(), EleCabinetConstant.TCP_PATTERN)) {
             return sendCommandToEleForTcp(hardwareCommandQuery);
         }
         
@@ -311,15 +308,18 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 "http://" + serverIp + ":" + DeviceReportConstant.REPORT_SERVER_PORT + DeviceReportConstant.REPORT_SERVER_CONTEXT_PATH
                         + DeviceReportConstant.REPORT_SERVER_SEND_COMMAND_URL, httpEntity, R.class);
         if (!rResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
-            log.warn("ELE WARN! call device server error! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
+            log.warn("ELE SEND TCP COMMAND WARN! call device server error! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp,
+                    rResponseEntity.getBody());
             return Pair.of(false, "设备消息发送失败");
         }
         
         R result = rResponseEntity.getBody();
         if (Objects.isNull(result) || !result.isSuccess()) {
-            log.warn("ELE SEND COMMAND WARN! call device rsp fail! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
+            log.warn("ELE SEND TCP COMMAND WARN! call device rsp fail! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
             return Pair.of(false, "设备消息发送失败");
         }
+        
+        log.info("ELE SEND TCP COMMAND INFO!send command success!p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
         
         return Pair.of(true, null);
     }
