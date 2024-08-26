@@ -378,6 +378,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         wechatV3OrderQuery.setCurrency("CNY");
         wechatV3OrderQuery.setOpenId(openId);
         wechatV3OrderQuery.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+        
         // 如果分账标识不为空且为true则分账
         if (Objects.nonNull(unionPayOrder.getProfitSharing()) && unionPayOrder.getProfitSharing()) {
             wechatV3OrderQuery.setProfitSharing(true);

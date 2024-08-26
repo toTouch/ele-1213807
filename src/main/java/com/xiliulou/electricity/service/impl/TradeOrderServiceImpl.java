@@ -460,18 +460,18 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         // 判断分账配置是否存在
         ProfitSharingConfig profitSharingConfig = wechatPayParamsDetails.getProfitSharingConfig();
         if (Objects.isNull(profitSharingConfig)) {
-            log.info("integrated payment profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+            log.info("pay battery memberCard profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
             return;
         }
     
-        if (Objects.equals(profitSharingConfig.getConfigStatus(), ProfitSharingConfigStatusEnum.CLOSE)) {
-            log.info("integrated payment profit sharing config status is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        if (Objects.equals(profitSharingConfig.getConfigStatus(), ProfitSharingConfigStatusEnum.CLOSE.getCode())) {
+            log.info("pay battery memberCard profit sharing config status is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
             return;
         }
         
         List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
     
-            // 处理换电套餐
+        // 处理换电套餐
         boolean batteryPackageOrderPermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
         if (batteryPackageOrderPermission && Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
             ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
@@ -698,6 +698,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("租电套餐").uid(userInfo.getUid()).build();
+    
+            // 处理分账交易订单
+            dealProfitSharingTradeOrder(generateMemberCardOrderResult, generateInsuranceOrderResult, wechatPayParamsDetails, batteryMemberCard, unionPayOrder, userInfo);
+            
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
@@ -711,6 +715,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
+    
     
     /**
      * 处理混合支付总金额为0的场景
@@ -846,6 +851,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE).description("滞纳金")
                     .uid(user.getUid()).build();
+    
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
