@@ -32,7 +32,6 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
     @Transactional
     @Override
     public Integer addAmount(BigDecimal amount, Long uid, Long tenantId) {
-        log.info("add amount for channel employee, amount = {}, uid = {}", amount, uid);
         User user = userService.queryByUidFromCache(uid);
         
         if (Objects.isNull(user)) {
@@ -48,7 +47,6 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
     @Transactional
     @Override
     public Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId) {
-        log.info("reduce amount for channel employee, amount = {}, uid = {}", amount, uid);
         User user = userService.queryByUidFromCache(uid);
         
         if (Objects.isNull(user)) {
