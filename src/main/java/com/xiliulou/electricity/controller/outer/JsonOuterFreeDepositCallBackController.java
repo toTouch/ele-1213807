@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import org.springframework.context.ApplicationContext;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Objects;
 
 
 /**
@@ -33,7 +35,9 @@ public class JsonOuterFreeDepositCallBackController {
      */
     @PostMapping("/outer/free/notified/{channel}/{business}")
     public Object freeDepositNotified(@PathVariable("channel") Integer channel, @PathVariable("business") Integer business, @RequestBody Map<String, Object> params) {
-        
+        if (Objects.isNull(channel)) {
+            throw new CustomBusinessException("免押回调异常");
+        }
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(channel), BaseFreeDepositService.class);
         return service.freeDepositNotified(business, params);
     }

@@ -166,7 +166,8 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
                 log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
                 return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
             }
-            // handlerAuthPaySuccess(freeDepositOrder);
+            handlerAuthPaySuccess(freeDepositOrder);
+            
             return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
         }
         return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;

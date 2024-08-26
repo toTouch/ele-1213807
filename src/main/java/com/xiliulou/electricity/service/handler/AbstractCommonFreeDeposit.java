@@ -8,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.dto.FyFreeDepositDelayDTO;
+import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
@@ -16,6 +17,8 @@ import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
+import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.mq.service.RocketMqService;
@@ -61,13 +64,19 @@ public abstract class AbstractCommonFreeDeposit {
     @Resource
     private RocketMqService rocketMqService;
     
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
+    
+    @Resource
+    private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+    
     public static final String ORDER_DATE_FORMAT = "yyyyMMddHHmmss";
     
     /**
      * 蜂云只有成功才会回调，所以这里修改为5分钟后将免押订单状态修改为最终态
      *
      * @param orderId orderId
-     * @param tag tag
+     * @param tag     tag
      */
     public void sendQueryStatusDelayQueue(String orderId, String tag) {
         // 延迟队列,默认延迟5分钟
@@ -304,4 +313,21 @@ public abstract class AbstractCommonFreeDeposit {
         }
         throw new CustomBusinessException("蜂云免押查询状态异常");
     }
+    
+    
+    public void handlerAuthPaySuccess(FreeDepositOrder freeDepositOrder) {
+        // 更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+        
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setPayStatus(freeDepositOrderUpdate.getPayStatus());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
+    }
+    
 }

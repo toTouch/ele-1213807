@@ -156,9 +156,11 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
             return map;
         }
+        
         Integer orderStatus = (Integer) params.get("orderStatus");
         if (Objects.equals(orderStatus, FreeDepositConstant.AUTH_PXZ_SUCCESS_RECEIVE)) {
-            // handlerAuthPaySuccess(freeDepositOrder);
+            // 成功更新状态
+            handlerAuthPaySuccess(freeDepositOrder);
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
             return map;
         }
