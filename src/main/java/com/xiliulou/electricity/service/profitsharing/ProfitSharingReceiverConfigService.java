@@ -4,9 +4,12 @@
 
 package com.xiliulou.electricity.service.profitsharing;
 
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
-import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverOptConfigRequest;
+import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverConfigOptRequest;
+import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverConfigQryRequest;
+import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverConfigStatusOptRequest;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigDetailsVO;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigVO;
 
 import java.util.List;
 
@@ -36,5 +39,72 @@ public interface ProfitSharingReceiverConfigService {
      * @author caobotao.cbt
      * @date 2024/8/23 16:28
      */
-    void insert(ProfitSharingReceiverOptConfigRequest request);
+    void insert(ProfitSharingReceiverConfigOptRequest request);
+    
+    /**
+     * 获取骑手小程序openid
+     *
+     * @param phone
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/8/26 11:03
+     */
+    String queryWxMiniOpenIdByPhone(String phone, Integer tenantId);
+    
+    /**
+     * 配置更新
+     *
+     * @param request
+     * @author caobotao.cbt
+     * @date 2024/8/26 11:16
+     */
+    void update(ProfitSharingReceiverConfigOptRequest request);
+    
+    /**
+     * 状态更新
+     *
+     * @param request
+     * @author caobotao.cbt
+     * @date 2024/8/26 13:51
+     */
+    void updateStatus(ProfitSharingReceiverConfigStatusOptRequest request);
+    
+    /**
+     * 逻辑删除
+     *
+     * @param tenantId
+     * @param id
+     * @author caobotao.cbt
+     * @date 2024/8/26 13:59
+     */
+    void removeById(Integer tenantId, Long id);
+    
+    
+    /**
+     * 详情查询
+     *
+     * @param tenantId
+     * @param id
+     * @author caobotao.cbt
+     * @date 2024/8/26 14:16
+     */
+    ProfitSharingReceiverConfigDetailsVO queryDetailsById(Integer tenantId, Long id);
+    
+    /**
+     * 分页
+     *
+     * @param request
+     * @author caobotao.cbt
+     * @date 2024/8/26 14:35
+     */
+    List<ProfitSharingReceiverConfigVO> pageList(ProfitSharingReceiverConfigQryRequest request);
+    
+    /**
+     * 分页统计
+     *
+     * @param request
+     * @author caobotao.cbt
+     * @date 2024/8/26 15:34
+     */
+    Integer count(ProfitSharingReceiverConfigQryRequest request);
 }

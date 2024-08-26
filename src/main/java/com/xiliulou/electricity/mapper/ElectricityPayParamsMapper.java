@@ -83,4 +83,5 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
      * @date 2024/8/22 17:54
      */
     List<Long> selectFranchiseeIdsByTenantId(@Param("tenantId") Integer tenantId);
+    
 }

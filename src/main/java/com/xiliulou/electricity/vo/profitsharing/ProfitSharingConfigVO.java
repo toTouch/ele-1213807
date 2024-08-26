@@ -13,9 +13,8 @@ import java.math.BigDecimal;
  * @since 2024-08-22 17:14:08
  */
 @Data
-public class ProfitSharingConfigVO implements Serializable {
+public class ProfitSharingConfigVO {
     
-    private static final long serialVersionUID = 514513200105352426L;
     
     private Long id;
     
@@ -38,6 +37,7 @@ public class ProfitSharingConfigVO implements Serializable {
      * 微信商户号
      */
     private String wechatMerchantId;
+    
     /**
      * 配置类型
      *

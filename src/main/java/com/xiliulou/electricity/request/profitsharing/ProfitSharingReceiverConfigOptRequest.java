@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  * @since 2024-08-22 17:27:48
  */
 @Data
-public class ProfitSharingReceiverOptConfigRequest implements Serializable {
+public class ProfitSharingReceiverConfigOptRequest implements Serializable {
     
     
     @NotNull(groups = UpdateGroup.class, message = "id不可为空")
@@ -57,6 +57,18 @@ public class ProfitSharingReceiverOptConfigRequest implements Serializable {
     @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "scale不可为空")
     private BigDecimal scale;
     
+    /**
+     * 与分账方关系
+     */
+    @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "relationType不可为空")
+    private String relationType;
+    
+    
+    /**
+     * 备注
+     */
+    @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "remark不可为空")
+    private String remark;
     
 }
 

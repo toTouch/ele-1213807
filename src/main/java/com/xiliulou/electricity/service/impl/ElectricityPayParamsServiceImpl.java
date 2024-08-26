@@ -234,6 +234,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return voList;
     }
     
+    @Slave
     @Override
     public List<FranchiseeVO> queryFranchisee(Integer tenantId) {
         List<Long> franchiseeIds = baseMapper.selectFranchiseeIdsByTenantId(tenantId);
@@ -254,6 +255,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             BeanUtils.copyProperties(franchisee, franchiseeVO);
             return franchiseeVO;
         }).collect(Collectors.toList());
+    }
+    
+    @Slave
+    @Override
+    public ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId) {
+        return baseMapper.selectByTenantIdAndWechatMerchantId(tenantId, wechatMerchantId);
     }
     
     
