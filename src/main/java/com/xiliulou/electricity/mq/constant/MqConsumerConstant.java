@@ -45,5 +45,5 @@ public interface MqConsumerConstant {
      */
     String BATTERY_CHARGE_ATTR_CHANGE_GROUP = "battery_charge_attr_change_group";
     
-    String PXZ_UN_FREE_DEPOSIT_CONSUMER_GROUP = "pxz_un_free_deposit_group";
+    String FY_FREE_DEPOSIT_CONSUMER_GROUP = "fy_free_deposit_group";
 }

@@ -82,4 +82,6 @@ public interface FreeDepositDataService {
      * </p>
     */
     Pair<Boolean, String> rechargeFY(FreeDepositFyRequest params);
+    
+    Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count);
 }

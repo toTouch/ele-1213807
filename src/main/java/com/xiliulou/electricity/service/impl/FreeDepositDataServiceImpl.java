@@ -145,6 +145,11 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     }
     
     @Override
+    public Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count) {
+        return this.freeDepositDataMapper.deductionFyFreeDepositCapacity(tenantId, count);
+    }
+    
+    @Override
     public Pair<Boolean, String> rechargeFY(FreeDepositFyRequest params) {
         
         if (Objects.isNull(params.getFreeDepositCapacity()) && Objects.isNull(params.getByStagesCapacity())){

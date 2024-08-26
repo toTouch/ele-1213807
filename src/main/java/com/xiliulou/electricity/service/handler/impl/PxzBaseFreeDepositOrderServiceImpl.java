@@ -1,12 +1,9 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
-import com.xiliulou.electricity.dto.PxzUnFreeDepositDTO;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
@@ -99,10 +96,6 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         if (!triple.getLeft()) {
             return triple;
         }
-        
-        // todo 同步转异步，和蜂云走同一个回调
-        PxzUnFreeDepositDTO unFreeDepositDTO = PxzUnFreeDepositDTO.builder().orderId(orderId).authStatus(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus()).build();
-        rocketMqService.sendAsyncMsg(MqProducerConstant.PXZ_UN_FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(unFreeDepositDTO));
         
         return Triple.of(true, null, "解冻中，请稍后");
     }
