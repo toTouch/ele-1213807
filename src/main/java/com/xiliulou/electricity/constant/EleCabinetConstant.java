@@ -25,6 +25,7 @@ public interface EleCabinetConstant {
      * iot连接模式  0:阿里云 1：华为云 2:自建TCP
      */
     int ALI_IOT_PATTERN = 0;
-    int TCP_PATTERN = 1;
+    int HW_IOT_PATTERN = 1;
+    int TCP_PATTERN = 2;
     
 }
