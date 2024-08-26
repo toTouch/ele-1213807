@@ -106,4 +106,13 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      */
     List<FranchiseeVO> queryFranchisee(Integer tenantId);
     
+    /**
+     * 根据租户id+商户号查询
+     *
+     * @param tenantId
+     * @param wechatMerchantId
+     * @author caobotao.cbt
+     * @date 2024/8/26 10:10
+     */
+    ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId);
 }

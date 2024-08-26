@@ -13,17 +13,18 @@ import lombok.Getter;
  * @date 2024/8/23 16:58
  */
 @Getter
-public enum ProfitSharingConfigReceiverTypeEnum {
+public enum ProfitSharingConfigReceiverStatusEnum {
     
-    MERCHANT(1, "商户"),
-    PERSONAGE(2, "个人");
-    
-    ProfitSharingConfigReceiverTypeEnum(Integer code, String desc) {
-        this.code = code;
-        this.desc = desc;
-    }
+    ENABLE(0, "启用"),
+    DISABLED(1, "不可用");
     
     private Integer code;
     
     private String desc;
+    
+    
+    ProfitSharingConfigReceiverStatusEnum(Integer code, String desc) {
+        this.code = code;
+        this.desc = desc;
+    }
 }
