@@ -79,6 +79,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -217,6 +218,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     private FreeDepositService freeDepositService;
+    
+    @Resource
+    private RocketMqService rocketMqService;
     
     /**
      * 新增数据
@@ -1138,6 +1142,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
         
+        // 三方解冻
         UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
                 .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);

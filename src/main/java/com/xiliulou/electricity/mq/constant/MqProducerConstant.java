@@ -107,7 +107,7 @@ public interface MqProducerConstant {
     String MQ_TOPIC_SITE_MESSAGE_TAG_NAME = "SITE_MESSAGE";
     
     /**
-     * 拍小组解冻topic
+     * 免押topic
      */
-    String PXZ_UN_FREE_DEPOSIT_TOPIC_NAME = "PXZ_UNFREE_DEPOSIT";
+    String FREE_DEPOSIT_TOPIC_NAME = "FREE_DEPOSIT";
 }

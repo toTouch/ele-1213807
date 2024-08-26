@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.handler;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -8,12 +10,14 @@ import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.AuthPayVars;
@@ -52,6 +56,22 @@ public abstract class AbstractCommonFreeDeposit {
     
     @Resource
     private FreeDepositConfig freeDepositConfig;
+    
+    @Resource
+    private RocketMqService rocketMqService;
+    
+    
+    /**
+     * 蜂云只有成功才会回调，所以这里修改为5分钟后将免押订单状态修改为最终态
+     *
+     * @param msg
+     * @param tag
+     */
+    public void sendQueryStatusDelayQueue(String msg, String tag) {
+        // 延迟队列,默认延迟5分钟
+        String key = "fy" + DateUtil.format(DateUtil.date(), "yyMMddHHmmss") + RandomUtil.randomInt(1000, 9999);
+        rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, msg, tag, key, 9);
+    }
     
     
     public PxzCommonRequest<PxzFreeDepositOrderRequest> buildFreeDepositOrderPxzRequest(FreeDepositOrderRequest freeDepositOrderRequest) {
