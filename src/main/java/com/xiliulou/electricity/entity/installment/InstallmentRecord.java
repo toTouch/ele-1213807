@@ -3,8 +3,10 @@ package com.xiliulou.electricity.entity.installment;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Description 签约记录表实体类
@@ -12,7 +14,6 @@ import lombok.Data;
  * @Date: 2024/8/26 11:13
  */
 @Data
-@Builder
 @TableName("t_installment_record")
 public class InstallmentRecord {
     

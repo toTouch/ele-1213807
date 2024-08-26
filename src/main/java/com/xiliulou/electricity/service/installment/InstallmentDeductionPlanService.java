@@ -1,10 +1,38 @@
 package com.xiliulou.electricity.service.installment;
 
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
+import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
+
+import java.util.List;
+
 /**
  * @Description ...
  * @Author: SongJP
  * @Date: 2024/8/26 10:52
  */
 public interface InstallmentDeductionPlanService {
-
+    
+    /**
+     * 新增单条数据
+     *
+     * @param installmentDeductionPlan 数据库表实体类对象
+     * @return 保存的数据条数
+     */
+    Integer insert(InstallmentDeductionPlan installmentDeductionPlan);
+    
+    /**
+     * 更新单条数据
+     *
+     * @param installmentDeductionPlan 数据库表实体类对象
+     * @return 更新操作影响的数据行数
+     */
+    Integer update(InstallmentDeductionPlan installmentDeductionPlan);
+    
+    /**
+     * 根据分期套餐签约记录查询代扣计划
+     * @param installmentRecordQuery 请求签约号
+     * @return 代扣计划集合
+     */
+    R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentRecordQuery installmentRecordQuery);
 }

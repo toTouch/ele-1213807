@@ -1,6 +1,11 @@
 package com.xiliulou.electricity.mapper.installment;
 
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @Description ...
@@ -9,5 +14,12 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface InstallmentDeductionRecordMapper {
-
+    
+    Integer insert(InstallmentDeductionRecord installmentDeductionRecord);
+    
+    Integer update(InstallmentDeductionRecord installmentDeductionRecord);
+    
+    List<InstallmentDeductionRecord> selectPage(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
+    
+    Integer count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
 }

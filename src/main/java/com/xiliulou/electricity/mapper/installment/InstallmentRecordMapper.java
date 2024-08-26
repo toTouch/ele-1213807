@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.mapper.installment;
 
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @Description ...
@@ -11,7 +14,11 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface InstallmentRecordMapper {
     
-    int insert(InstallmentRecord installmentRecord);
+    Integer insert(InstallmentRecord installmentRecord);
     
-    int update(InstallmentRecord installmentRecord);
+    Integer update(InstallmentRecord installmentRecord);
+    
+    List<InstallmentRecord> selectPage(InstallmentRecordQuery installmentRecordQuery);
+    
+    Integer count(InstallmentRecordQuery installmentRecordQuery);
 }

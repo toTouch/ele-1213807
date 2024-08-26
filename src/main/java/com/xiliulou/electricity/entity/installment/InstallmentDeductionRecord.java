@@ -14,7 +14,6 @@ import java.math.BigDecimal;
  * @Date: 2024/8/26 11:18
  */
 @Data
-@Builder
 @TableName("t_installment_deduction_record")
 public class InstallmentDeductionRecord {
     
