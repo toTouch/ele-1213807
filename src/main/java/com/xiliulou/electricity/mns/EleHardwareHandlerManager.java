@@ -151,12 +151,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 log.warn("ELE WARN! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
                 return;
             }
-
-            if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId(), "1", 30000L, false)) {
-                log.warn("ELE WARN! device is repeat report status! p={},d={},status={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(),
-                        receiverMessage.getStatus());
-                return;
-            }
             
             //在线状态修改
             ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
@@ -165,6 +159,20 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             newElectricityCabinet.setId(electricityCabinet.getId());
             newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
             newElectricityCabinet.setUpdateTime(DateUtils.parseMillsDateStrToTimestampV2(receiverMessage.getTime()));
+            //柜机模式修改
+            if (CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus())) {
+                newElectricityCabinet.setPattern(EleCabinetConstant.ALI_IOT_PATTERN);
+            }
+            
+            if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
+                electricityCabinetService.update(newElectricityCabinet);
+            }
+            
+            if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId(), "1", 30000L, false)) {
+                log.warn("ELE WARN! device is repeat report status! p={},d={},status={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(),
+                        receiverMessage.getStatus());
+                return;
+            }
             
             EleOnlineLog eleOnlineLog = new EleOnlineLog();
             eleOnlineLog.setElectricityId(electricityCabinet.getId());
@@ -174,15 +182,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             eleOnlineLog.setCreateTime(System.currentTimeMillis());
             eleOnlineLog.setMsg(receiverMessage.getStatus());
             eleOnlineLogService.insert(eleOnlineLog);
-            
-            //柜机模式修改
-            if (CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus())) {
-                newElectricityCabinet.setPattern(EleCabinetConstant.ALI_IOT_PATTERN);
-            }
-            
-            if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
-                electricityCabinetService.update(newElectricityCabinet);
-            }
             
             //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
             
