@@ -55,6 +55,9 @@ public class FreeDepositAlipayHistory {
      */
     private BigDecimal alipayAmount;
     
+    /**
+     * 押金类型 1：电池，2：租车
+     */
     private Integer type;
     
     private Long createTime;
@@ -73,6 +76,9 @@ public class FreeDepositAlipayHistory {
     
     private Integer tenantId;
     
+    /**
+     * 代扣的状态
+     */
     private Integer payStatus;
     
     private String remark;

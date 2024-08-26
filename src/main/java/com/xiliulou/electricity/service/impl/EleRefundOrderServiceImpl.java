@@ -719,6 +719,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
+        // 如果存在代扣的免押订单，则不允许退押
+        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+            return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+        }
+        
+        
         EleRefundOrder carRefundOrder = null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             carRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
@@ -1089,6 +1095,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
             return Triple.of(false, "", "免押退款中，请稍后！");
+        }
+        
+        // 如果存在代扣的免押订单，则不允许退押
+        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+            return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
         }
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());

@@ -17,7 +17,6 @@ import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.AuthPayVars;
-import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAgreementPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyHandleFundRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryFreezeStatusRequest;
@@ -218,23 +217,18 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
-    public FyCommonQuery<FyAgreementPayRequest> buildFyAgreementPayRequest(FreeDepositAuthToPayQuery payQuery) {
+    public FyCommonQuery<FyHandleFundRequest> buildFyAuthPayRequest(FreeDepositAuthToPayQuery payQuery) {
         getFyConfig(payQuery.getTenantId());
         
-        FyCommonQuery<FyAgreementPayRequest> query = new FyCommonQuery<>();
-        FyAgreementPayRequest request = new FyAgreementPayRequest();
+        FyCommonQuery<FyHandleFundRequest> query = new FyCommonQuery<>();
+        FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(payQuery.getOrderId());
-        // todo 协议号
-        request.setAgreementNo("");
-        request.setTotalAmount(payQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).toString());
+        request.setThirdOrderNo(payQuery.getOrderId());
+        request.setAmount(payQuery.getPayTransAmt().intValue());
         request.setSubject(payQuery.getSubject());
         //  解冻回调地址配置
-        request.setNotifyUrl(freeDepositConfig.getFyUnFreeUrl());
-        
-        request.setUserName(payQuery.getUserName());
-        request.setMobile(payQuery.getMobile());
-        request.setProvinceName("陕西省");
-        request.setCityName("西安市");
+        request.setNotifyUrl(freeDepositConfig.getFyAuthPayUrl());
+        request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_PAY);
         
         query.setFlowNo(payQuery.getOrderId());
         query.setFyRequest(request);

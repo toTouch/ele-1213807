@@ -53,8 +53,4 @@ public class FreeDepositAuthToPayQuery {
      */
     private String notifyUrl;
     
-    
-    private String userName;
-    
-    private String mobile;
 }

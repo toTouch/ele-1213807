@@ -38,10 +38,12 @@ public class JsonAdminFreeDepositAlipayHistoryController {
     @GetMapping("/admin/freeDepositAlipayHistory/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "authPayOrderId", required = false) String authPayOrderId,
             @RequestParam(value = "name", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size) || size > 50 || size < 0) {
@@ -77,6 +79,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setSize(size);
         query.setOffset(offset);
         query.setOrderId(orderId);
+        query.setAuthPayOrderId(authPayOrderId);
         query.setUserName(userName);
         query.setPhone(phone);
         query.setIdCard(idCard);
@@ -85,6 +88,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setEndTime(endTime);
         query.setTenantId(TenantContextHolder.getTenantId());
         query.setStoreIds(storeIds);
+        query.setFranchiseeId(franchiseeId);
         query.setFranchiseeIds(franchiseeIds);
         
         return freeDepositAlipayHistoryService.queryList(query);
@@ -92,10 +96,12 @@ public class JsonAdminFreeDepositAlipayHistoryController {
     
     @GetMapping("/admin/freeDepositAlipayHistory/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "authPayOrderId", required = false) String authPayOrderId,
             @RequestParam(value = "name", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -122,6 +128,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         
         FreeDepositAlipayHistoryQuery query = new FreeDepositAlipayHistoryQuery();
         query.setOrderId(orderId);
+        query.setAuthPayOrderId(authPayOrderId);
         query.setUserName(userName);
         query.setPhone(phone);
         query.setIdCard(idCard);
@@ -130,6 +137,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setEndTime(endTime);
         query.setTenantId(TenantContextHolder.getTenantId());
         query.setStoreIds(storeIds);
+        query.setFranchiseeId(franchiseeId);
         query.setFranchiseeIds(franchiseeIds);
         
         return freeDepositAlipayHistoryService.queryCount(query);

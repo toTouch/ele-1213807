@@ -9,12 +9,10 @@ import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
-import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAgreementPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAuthPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHandleFundRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryFreezeRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
-import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
 import com.xiliulou.pay.deposit.fengyun.service.FyDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -35,8 +33,6 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     @Resource
     private FyDepositService fyDepositService;
     
-    @Resource
-    private FyAgreementService fyAgreementService;
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {
@@ -104,10 +100,10 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
-        FyResult<FyAgreementPayRsp> result = null;
+        FyResult<FyHandleFundRsp> result = null;
         String orderId = query.getOrderId();
         try {
-            result = fyAgreementService.agreementPay(buildFyAgreementPayRequest(query));
+            result = fyDepositService.handleFund(buildFyAuthPayRequest(query));
         } catch (Exception e) {
             log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
             return Triple.of(false, "100401", "免押代扣调用失败！");

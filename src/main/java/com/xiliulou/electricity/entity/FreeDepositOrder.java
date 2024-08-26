@@ -57,12 +57,12 @@ public class FreeDepositOrder {
     private Double payTransAmt;
     
     /**
-     * 支付状态
+     * 支付状态（免押）
      */
     private Integer authStatus;
     
     /**
-     * 授权免押的状态
+     * 授权免押的状态(代扣)
      */
     private Integer payStatus;
     

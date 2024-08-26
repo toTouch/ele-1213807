@@ -31,5 +31,10 @@ public class FreeDepositConfig {
      * 蜂云解冻 回调地址
      */
     private String fyUnFreeUrl;
+    
+    /**
+     * 蜂云代扣 回调地址
+     */
+    private String fyAuthPayUrl;
 }
 
