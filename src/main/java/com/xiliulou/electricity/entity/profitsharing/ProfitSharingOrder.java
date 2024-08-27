@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 @Builder
 @TableName("t_profit_sharing_order")
 public class ProfitSharingOrder implements Serializable {
+    
     private static final long serialVersionUID = 156185949640543751L;
     
     private Long id;

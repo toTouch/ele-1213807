@@ -4,7 +4,7 @@ package com.xiliulou.electricity.enums;
  * 业务类型枚举  业务类型定义 参考换电柜3.0需求文档 @王银
  */
 public enum BusinessType {
-
+    
     //换电订单
     EXCHANGE_BATTERY(10),
     //租电订单
@@ -21,8 +21,8 @@ public enum BusinessType {
     BATTERY_DEPOSIT_REFUND(16),
     //企业渠道换电套餐订单
     ENTERPRISE_BATTERY_PACKAGE(17),
-
-
+    
+    
     //租车套餐订单
     CAR_MEMBERCARD(20),
     //租车退租金
@@ -35,8 +35,8 @@ public enum BusinessType {
     RETURN_CAR(24),
     //租车订单
     RENT_CAR(25),
-
-
+    
+    
     //电池暂停套餐
     BATTERY_SUSPEND(30),
     //电池滞纳金订单
@@ -45,25 +45,25 @@ public enum BusinessType {
     CAR_SUSPEND(32),
     //车辆滞纳金订单
     CAR_STAGNATE(33),
-
-
+    
+    
     //电池保险订单
     BATTERY_INSURANCE(40),
     //车辆保险订单
     CAR_INSURANCE(41),
-
-
+    
+    
     //免押订单
     FREE_DEPOSIT(50),
     //代扣订单
     WITHHOLD(51),
-
-
+    
+    
     //分帐订单
     DIVIDE_ACCOUNT(60),
     //提现订单
     WITHDRAW(61),
-
+    
     CLOUD_BEAN(62),
     
     // 资产盘点
@@ -87,15 +87,23 @@ public enum BusinessType {
     //商户申请提现批次单号下明细项唯一标识号
     MERCHANT_WITHDRAW_BATCH_DETAIL(83),
     
+    //分账交易订单
+    PROFIT_SHARING_ORDER(90),
+    //分账交易明细
+    PROFIT_SHARING_ORDER_DETAIL(91),
+    
     // 分账解冻订单：分账单号
-    PROFIT_SHARING_ORDER_UNFREEZE(100);
-
+    PROFIT_SHARING_ORDER_UNFREEZE(92),
+    // 分账解冻订单：分账单号
+    PROFIT_SHARING_ORDER_DETAIL_UNFREEZE(93),
+    ;
+    
     private final Integer business;
-
+    
     private BusinessType(Integer business) {
         this.business = business;
     }
-
+    
     public Integer getBusiness() {
         return business;
     }

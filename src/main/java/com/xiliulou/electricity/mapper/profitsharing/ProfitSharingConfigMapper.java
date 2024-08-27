@@ -89,7 +89,17 @@ public interface ProfitSharingConfigMapper {
      * @author caobotao.cbt
      * @date 2024/8/23 15:25
      */
-    int removeById(@Param("tenantId") Integer tenantId, @Param("id") Long id,@Param("updateTime") Long updateTime);
+    int removeById(@Param("tenantId") Integer tenantId, @Param("id") Long id, @Param("updateTime") Long updateTime);
+    
+    /**
+     * 根据支付配置id批量查询
+     *
+     * @param tenantId
+     * @param payParamsIds
+     * @author caobotao.cbt
+     * @date 2024/8/27 14:49
+     */
+    List<ProfitSharingConfig> selectListByPayParamsIdsAndTenantId(@Param("tenantId")Integer tenantId, @Param("payParamsIds")List<Integer> payParamsIds);
     
 }
 

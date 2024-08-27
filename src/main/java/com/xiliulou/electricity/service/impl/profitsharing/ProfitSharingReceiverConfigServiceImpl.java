@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +81,12 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     @Override
     public List<ProfitSharingReceiverConfig> queryListByProfitSharingConfigId(Integer tenantId, Long profitSharingConfigId) {
         return profitSharingReceiverConfigMapper.selectListByTenantIdAndProfitSharingConfigId(tenantId, profitSharingConfigId);
+    }
+    
+    @Slave
+    @Override
+    public List<ProfitSharingReceiverConfig> queryListByProfitSharingConfigIds(Integer tenantId, List<Long> profitSharingConfigIds) {
+        return profitSharingReceiverConfigMapper.selectListByTenantIdAndProfitSharingConfigIds(tenantId, profitSharingConfigIds);
     }
     
     @Override
@@ -215,16 +222,27 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         if (CollectionUtils.isEmpty(voList)) {
             return null;
         }
-        List<Long> franchiseeIds = voList.stream().map(ProfitSharingReceiverConfigVO::getFranchiseeId).distinct().filter(f -> !MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(f))
-                .collect(Collectors.toList());
+        
+        List<Long> franchiseeIds = voList.stream().map(ProfitSharingReceiverConfigVO::getFranchiseeId).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(franchiseeIds)) {
             return voList;
         }
         
+        List<ProfitSharingConfigVO> profitSharingConfigVOS = profitSharingConfigService.queryListByTenantIdAndFranchiseeIds(configModel.getTenantId(), franchiseeIds);
+        
+        Map<Long, ProfitSharingConfigVO> sharingConfigVOMap = Optional.ofNullable(profitSharingConfigVOS).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(ProfitSharingConfigVO::getId, Function.identity()));
+        
+        franchiseeIds.remove(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, request.getTenantId());
         Map<Long, String> franchiseeMap = Optional.ofNullable(franchisees).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Franchisee::getId, v -> v.getName()));
-        voList.stream().filter(v -> !MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(v.getFranchiseeId())).forEach(v -> {
+        voList.forEach(v -> {
             v.setFranchiseeName(franchiseeMap.get(v.getFranchiseeId()));
+            ProfitSharingConfigVO profitSharingConfigVO = sharingConfigVOMap.get(v.getProfitSharingConfigId());
+            if (Objects.nonNull(profitSharingConfigVO)) {
+                v.setConfigType(profitSharingConfigVO.getConfigType());
+                v.setWechatMerchantId(profitSharingConfigVO.getWechatMerchantId());
+            }
         });
         return voList;
     }

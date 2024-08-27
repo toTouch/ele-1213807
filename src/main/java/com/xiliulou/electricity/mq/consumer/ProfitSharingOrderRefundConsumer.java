@@ -129,7 +129,7 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
             try {
                 WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
                 unfreezeRequest.setCommonParam(new WechatProfitSharingCommonRequest());
-                unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeOrder.getUid()));
+                unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeOrder.getUid()));
                 unfreezeRequest.setTransactionId(profitSharingTradeOrder.getThirdOrderNo());
                 unfreezeRequest.setDescription("换电-解冻");
                 profitSharingServiceAdapter.unfreeze(unfreezeRequest);

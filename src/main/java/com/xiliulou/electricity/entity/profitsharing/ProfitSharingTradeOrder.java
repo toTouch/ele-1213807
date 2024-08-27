@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.entity.profitsharing;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +34,11 @@ public class ProfitSharingTradeOrder implements Serializable {
     private Integer tenantId;
     
     /**
+     * 用户id
+     */
+    private Long uid;
+    
+    /**
      * 加盟商id
      */
     private Long franchiseeId;
@@ -52,7 +59,9 @@ public class ProfitSharingTradeOrder implements Serializable {
     private String thirdOrderNo;
     
     /**
-     * 订单类型：1-电池滞纳金，2-保险支付，3-换电套餐
+     * 订单类型
+     *
+     * @see ProfitSharingBusinessTypeEnum
      */
     private Integer orderType;
     
@@ -62,7 +71,9 @@ public class ProfitSharingTradeOrder implements Serializable {
     private BigDecimal amount;
     
     /**
-     * 处理状态：0-初始化，1-待发起分账，2-分账发起成功，3-分账发起失败，4-已失效
+     * 处理状态
+     *
+     * @see ProfitSharingTradeOderProcessStateEnum
      */
     private Integer processState;
     
@@ -101,9 +112,5 @@ public class ProfitSharingTradeOrder implements Serializable {
      */
     private Long updateTime;
     
-    /**
-     * 用户uid
-     */
-    private Long uid;
 }
 

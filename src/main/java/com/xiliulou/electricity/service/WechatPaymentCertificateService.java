@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * @author wangchen
  * @date 2023年5月17日 desc: 微信支付证书服务接口
@@ -38,6 +40,17 @@ public interface WechatPaymentCertificateService {
      */
     WechatPaymentCertificate queryByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
     
+    
+    /**
+     * 根据租户id+加盟商id集合查询
+     *
+     * @param tenantId
+     * @param franchiseeIds
+     * @author caobotao.cbt
+     * @date 2024/8/27 14:19
+     * @return
+     */
+    List<WechatPaymentCertificate> queryListByTenantIdAndFranchiseeIds(Integer tenantId, List<Long> franchiseeIds);
     
     /**
      * 缓存删除
