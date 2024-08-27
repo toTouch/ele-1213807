@@ -19,9 +19,12 @@ public class EleCabinetPatternQuery {
     @NotNull(message = "柜机模式不能为空")
     private Integer pattern;
     
-    @NotBlank(message = "柜机不能为空")
+    @NotBlank(message = "柜机productKey不能为空")
     private String productKey;
     
-    @NotBlank(message = "柜机不能为空")
+    @NotBlank(message = "柜机deviceName不能为空")
     private String deviceName;
+    
+    @NotBlank(message = "柜机id不能为空")
+    private Integer id;
 }

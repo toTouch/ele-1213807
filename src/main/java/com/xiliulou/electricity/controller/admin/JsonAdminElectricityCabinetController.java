@@ -46,6 +46,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -1052,7 +1053,13 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
+        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
+        if (Objects.isNull(otherSetting) || StringUtils.isBlank(otherSetting.getApiAddress())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
         Map<String, Object> params = Maps.newHashMap();
+        params.put("apiAddress", otherSetting.getApiAddress());
         params.put("iotConnectMode", query.getPattern());
         
         EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
