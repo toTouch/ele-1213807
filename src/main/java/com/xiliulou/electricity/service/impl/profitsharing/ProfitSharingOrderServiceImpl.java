@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
@@ -20,5 +21,5 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     @Resource
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
     
-    
+  
 }

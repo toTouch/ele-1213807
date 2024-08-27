@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.profitsharing;
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 
 import java.util.List;
@@ -12,4 +13,8 @@ import java.util.List;
 public interface ProfitSharingTradeOrderService {
     
     int batchInsert(List<ProfitSharingTradeOrder> profitSharingTradeOrderList);
+    
+    ProfitSharingTradeOrder queryByOrderNo(String orderNo);
+    
+    int updateById(ProfitSharingTradeOrder profitSharingUpdate);
 }

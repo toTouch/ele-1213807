@@ -22,6 +22,17 @@
              #{item.channel}, #{item.rentRebate}, #{item.payTime}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
         </foreach>
     </insert>
+    
+    <update id="updateById">
+        update t_profit_sharing_trade_order set  process_state = #{processState}, third_order_no = #{thirdOrderNo}, update_time = #{updateTime} where id = #{id}
+    </update>
+    
+    <select id="selectByOrderNo" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder">
+        select
+            <include refid="base_column"/>
+        from t_profit_sharing_trade_order
+        where order_no = #{orderNo}
+    </select>
 
 
 </mapper>

@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
@@ -23,5 +25,16 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     @Override
     public int batchInsert(List<ProfitSharingTradeOrder> profitSharingTradeOrderList) {
         return profitSharingTradeOrderMapper.batchInsert(profitSharingTradeOrderList);
+    }
+    
+    @Override
+    @Slave
+    public ProfitSharingTradeOrder queryByOrderNo(String orderNo) {
+        return profitSharingTradeOrderMapper.selectByOrderNo(orderNo);
+    }
+    
+    @Override
+    public int updateById(ProfitSharingTradeOrder profitSharingUpdate) {
+        return profitSharingTradeOrderMapper.updateById(profitSharingUpdate);
     }
 }

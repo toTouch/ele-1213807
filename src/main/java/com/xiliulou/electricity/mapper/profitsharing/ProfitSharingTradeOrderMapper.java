@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
@@ -21,5 +22,9 @@ public interface ProfitSharingTradeOrderMapper {
     int insert(ProfitSharingTradeOrder profitSharingTradeOrder);
     
     int batchInsert(@Param("list") List<ProfitSharingTradeOrder> profitSharingTradeOrderList);
+    
+    ProfitSharingTradeOrder selectByOrderNo(@Param("orderNo") String orderNo);
+    
+    int updateById(ProfitSharingTradeOrder profitSharingUpdate);
 }
 
