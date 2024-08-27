@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -304,22 +305,28 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         MediaType type = MediaType.APPLICATION_JSON;
         headers.setContentType(type);
         HttpEntity<String> httpEntity = new HttpEntity<>(JsonUtil.toJson(request), headers);
-        ResponseEntity<R> rResponseEntity = restTemplate.postForEntity(
-                "http://" + serverIp + ":" + DeviceReportConstant.REPORT_SERVER_PORT + DeviceReportConstant.REPORT_SERVER_CONTEXT_PATH
-                        + DeviceReportConstant.REPORT_SERVER_SEND_COMMAND_URL, httpEntity, R.class);
-        if (!rResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
-            log.warn("ELE SEND TCP COMMAND WARN! call device server error! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp,
-                    rResponseEntity.getBody());
+        ResponseEntity<R> rResponseEntity = null;
+        try {
+            rResponseEntity = restTemplate.postForEntity("http://" + serverIp + ":" + DeviceReportConstant.REPORT_SERVER_PORT + DeviceReportConstant.REPORT_SERVER_CONTEXT_PATH
+                    + DeviceReportConstant.REPORT_SERVER_SEND_COMMAND_URL, httpEntity, R.class);
+            if (!rResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
+                log.warn("ELE SEND TCP COMMAND WARN! call device server error! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp,
+                        rResponseEntity.getBody());
+                return Pair.of(false, "设备消息发送失败");
+            }
+            
+            R result = rResponseEntity.getBody();
+            if (Objects.isNull(result) || !result.isSuccess()) {
+                log.warn("ELE SEND TCP COMMAND WARN! call device rsp fail! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp,
+                        rResponseEntity.getBody());
+                return Pair.of(false, "设备消息发送失败");
+            }
+            
+            log.info("ELE SEND TCP COMMAND INFO!send command success!p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
+        } catch (RestClientException e) {
+            log.error("ELE SEND TCP COMMAND ERROR! send command fail! p={},d={},ip={}", query.getProductKey(), query.getDeviceName(), serverIp, e);
             return Pair.of(false, "设备消息发送失败");
         }
-        
-        R result = rResponseEntity.getBody();
-        if (Objects.isNull(result) || !result.isSuccess()) {
-            log.warn("ELE SEND TCP COMMAND WARN! call device rsp fail! p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
-            return Pair.of(false, "设备消息发送失败");
-        }
-        
-        log.info("ELE SEND TCP COMMAND INFO!send command success!p={},d={},ip={} msg={}", query.getProductKey(), query.getDeviceName(), serverIp, rResponseEntity.getBody());
         
         return Pair.of(true, null);
     }
