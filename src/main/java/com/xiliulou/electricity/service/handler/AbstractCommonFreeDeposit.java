@@ -259,8 +259,8 @@ public abstract class AbstractCommonFreeDeposit {
         request.setThirdOrderNo(payQuery.getOrderId());
         request.setAmount(payQuery.getPayTransAmt().intValue());
         request.setSubject(payQuery.getSubject());
-        //  解冻回调地址配置
-        request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 3));
+        //  免押回调地址配置
+        request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 2));
         request.setTradeType(FyConstants.HANDLE_FUND_TRADE_TYPE_PAY);
         
         query.setFlowNo(payQuery.getOrderId());

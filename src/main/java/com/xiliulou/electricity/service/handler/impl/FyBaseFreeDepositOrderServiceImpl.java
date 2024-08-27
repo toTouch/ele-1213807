@@ -143,12 +143,9 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         if (Objects.equals(business, FreeBusinessTypeEnum.FREE.getCode())) {
             return freeDepositHandler(params);
         }
-        // 解冻
+        
+        // 解冻和代扣走同一个回调
         if (Objects.equals(business, FreeBusinessTypeEnum.UNFREE.getCode())) {
-            return unFreeDepositHandler(params);
-        }
-        // 代扣
-        if (Objects.equals(business, FreeBusinessTypeEnum.AUTH_PAY.getCode())) {
             return authPayHandler(params);
         }
         
@@ -157,24 +154,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     private String authPayHandler(Map<String, Object> params) {
         String tradeType = (String) params.get("tradeType");
-        // 蜂云代扣
-        if (Objects.equals(tradeType, FyConstants.HANDLE_FUND_TRADE_TYPE_PAY)) {
-            // 蜂云只要有回调就一定是成功
-            String orderId = (String) params.get("payNo");
-            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
-            if (Objects.isNull(freeDepositOrder)) {
-                log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
-                return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
-            }
-            handlerAuthPaySuccess(freeDepositOrder);
-            
-            return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
-        }
-        return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
-    }
-    
-    private String unFreeDepositHandler(Map<String, Object> params) {
-        String tradeType = (String) params.get("tradeType");
+        
         // 解冻
         if (Objects.equals(tradeType, FyConstants.HANDLE_FUND_TRADE_TYPE_UNFREEZE)) {
             // 蜂云只要有回调就一定是成功
@@ -188,11 +168,23 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             
             // 修改状态逻辑
             // handlerUnfree(freeDepositOrder);
-            
             return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
+        }
+        
+        // 蜂云代扣
+        if (Objects.equals(tradeType, FyConstants.HANDLE_FUND_TRADE_TYPE_PAY)) {
+            // 蜂云只要有回调就一定是成功
+            String orderId = (String) params.get("payNo");
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
+            if (Objects.isNull(freeDepositOrder)) {
+                log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
+                return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
+            }
+            handlerAuthPaySuccess(freeDepositOrder);
         }
         return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
     }
+    
     
     private String freeDepositHandler(Map<String, Object> params) {
         String orderId = (String) params.get("thirdOrderNo");

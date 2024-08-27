@@ -170,6 +170,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
     
     private Map<String, Object> freeOrUnFreeHandler(Map<String, Object> params, Map<String, Object> map) {
         String orderId = (String) params.get("transId");
+        
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
         // 如果没有订单则确认成功
         if (Objects.isNull(freeDepositOrder)) {
@@ -195,7 +196,6 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return map;
         }
         map.put("respCode", FreeDepositConstant.AUTH_PXZ_FAIL_RSP);
-        // todo 更新为返回的状态
         return map;
     }
 }
