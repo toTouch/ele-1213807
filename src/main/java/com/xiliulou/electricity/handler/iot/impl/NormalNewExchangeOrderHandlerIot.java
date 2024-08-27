@@ -194,6 +194,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityCabinetOrder.setNewElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
             newElectricityCabinetOrder.setOldCellNo(exchangeOrderRsp.getPlaceCellNo());
             newElectricityCabinetOrder.setNewCellNo(exchangeOrderRsp.getTakeCellNo());
+            newElectricityCabinetOrder.setOrderStatus(exchangeOrderRsp.getOrderStatus());
             if (exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
                 newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
             }
@@ -582,7 +583,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         // 更新上报的仓门(可能会发生切仓)
         newElectricityCabinetOrder.setOldCellNo(exchangeOrderRsp.getPlaceCellNo());
         newElectricityCabinetOrder.setNewCellNo(exchangeOrderRsp.getTakeCellNo());
-    
+        newElectricityCabinetOrder.setOrderStatus(exchangeOrderRsp.getOrderStatus());
         //若柜机正在使用中
         if (ElectricityCabinetOrder.INIT_DEVICE_USING.equals(exchangeOrderRsp.getOrderStatus())) {
             newElectricityCabinetOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);

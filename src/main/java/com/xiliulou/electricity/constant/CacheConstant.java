@@ -690,4 +690,10 @@ public interface CacheConstant {
      * TCP设备session缓存
      */
     String CACHE_CABINET_SN_ONLINE = "device_report:cabinet_online:";
+    
+    
+    /**
+     * 柜机仓门配置key
+     */
+    String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
 }

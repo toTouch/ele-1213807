@@ -101,6 +101,20 @@ public class DesensitizationUtil {
 		}
 		return StringUtils.left(carId, 1).concat(StringUtils.removeStart(StringUtils.leftPad(StringUtils.right(carId, 1), StringUtils.length(carId), "*"), "******"));
 	}
+	
+	/**
+	 * [身份证号] 前六位，后四位，其他用星号隐藏每位1个星号<例子:451002********1647>
+	 *
+	 * @param carId
+	 * @return
+	 */
+	public static String idCard(String carId, Integer leftLength, Integer rightLength) {
+		if (StringUtils.isBlank(carId)) {
+			return "";
+		}
+		return StringUtils.left(carId, leftLength)
+				.concat(StringUtils.removeStart(StringUtils.leftPad(StringUtils.right(carId, rightLength), StringUtils.length(carId), "*"), "******"));
+	}
 
 	/**
 	 * [银行卡号] 前六位，后四位，其他用星号隐藏每位1个星号<例子:6222600**********1234>

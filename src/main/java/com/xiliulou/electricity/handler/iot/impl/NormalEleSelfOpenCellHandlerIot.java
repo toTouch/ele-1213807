@@ -7,30 +7,19 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.queue.EleOperateQueueHandler;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +45,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     @Resource
     RedisService redisService;
     
-    @Resource
-    EleOperateQueueHandler eleOperateQueueHandler;
     
     @Resource
     ElectricityCabinetOrderService electricityCabinetOrderService;
@@ -126,13 +113,13 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             userBatteryMemberCardService.deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
             
-            
             // 修改订单最终状态为成功
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
             newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
             newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS);
             newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
+            newElectricityCabinetOrder.setOrderStatus(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
             newElectricityCabinetOrder.setNewElectricityBatterySn(eleSelfOPenCellOrderVo.getTakeBatteryName());
             newElectricityCabinetOrder.setSwitchEndTime(eleSelfOPenCellOrderVo.getReportTime());
             newElectricityCabinetOrder.setRemark("新仓门自助开仓");

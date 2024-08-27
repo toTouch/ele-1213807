@@ -1,18 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.mapper.BoxOtherPropertiesMapper;
-import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 import com.xiliulou.electricity.service.BoxOtherPropertiesService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.Objects;
 
 /**
  * 换电柜仓门其它属性(BoxOtherProperties)表服务实现类
@@ -69,12 +68,43 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public BoxOtherProperties insertOrUpdate(BoxOtherProperties boxOtherProperties) {
-        boxOtherProperties.setCreateTime(System.currentTimeMillis());
-        boxOtherProperties.setUpdateTime(System.currentTimeMillis());
-        boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
-        this.boxOtherPropertiesMapper.insertBoxOtherProperties(boxOtherProperties);
+        Integer electricityCabinetId = boxOtherProperties.getElectricityCabinetId();
+        String cellNo = boxOtherProperties.getCellNo();
+        if (Objects.isNull(electricityCabinetId) || Objects.isNull(cellNo)) {
+            log.error("BoxOtherProperties insertOrUpdate error! electricityCabinetId={}, cellNo={}", electricityCabinetId, cellNo);
+            return null;
+        }
+        
+        Integer exists = this.existsByUk(electricityCabinetId, cellNo);
+        if (Objects.nonNull(exists)) {
+            BoxOtherProperties updateBoxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinetId).cellNo(cellNo)
+                    .updateTime(System.currentTimeMillis()).build();
+            if (Objects.nonNull(boxOtherProperties.getDelFlag())) {
+                updateBoxOtherProperties.setDelFlag(boxOtherProperties.getDelFlag());
+            }
+            if (Objects.nonNull(boxOtherProperties.getLockReason())) {
+                updateBoxOtherProperties.setLockReason(boxOtherProperties.getLockReason());
+            }
+            if (Objects.nonNull(boxOtherProperties.getLockStatusChangeTime())) {
+                updateBoxOtherProperties.setLockStatusChangeTime(boxOtherProperties.getLockStatusChangeTime());
+            }
+            if (Objects.nonNull(boxOtherProperties.getRemark())) {
+                updateBoxOtherProperties.setRemark(boxOtherProperties.getRemark());
+            }
+            
+            this.boxOtherPropertiesMapper.updateByUk(updateBoxOtherProperties);
+        } else {
+            BoxOtherProperties insertBoxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinetId).cellNo(cellNo)
+                    .delFlag(Objects.isNull(boxOtherProperties.getDelFlag()) ? BoxOtherProperties.DEL_NORMAL : boxOtherProperties.getDelFlag())
+                    .remark(Objects.isNull(boxOtherProperties.getRemark()) ? "" : boxOtherProperties.getRemark())
+                    .lockReason(Objects.isNull(boxOtherProperties.getLockReason()) ? NumberConstant.ZERO : boxOtherProperties.getLockReason())
+                    .lockStatusChangeTime(Objects.isNull(boxOtherProperties.getLockStatusChangeTime()) ? System.currentTimeMillis() : boxOtherProperties.getLockStatusChangeTime())
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            
+            this.boxOtherPropertiesMapper.insertOne(insertBoxOtherProperties);
+        }
+        
         return boxOtherProperties;
     }
     
@@ -101,5 +131,11 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.boxOtherPropertiesMapper.deleteById(id) > 0;
+    }
+    
+    @Slave
+    @Override
+    public Integer existsByUk(Integer electricityCabinetId, String cellNo) {
+        return boxOtherPropertiesMapper.existsByUk(electricityCabinetId, cellNo);
     }
 }
