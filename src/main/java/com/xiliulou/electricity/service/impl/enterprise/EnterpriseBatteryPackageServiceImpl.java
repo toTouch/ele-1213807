@@ -1070,7 +1070,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
         
-        if (freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
+        if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO && freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
             log.error("Free battery deposit error, freeDepositCapacity already run out,uid={}", freeQuery.getUid());
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }

@@ -1102,15 +1102,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         // 修改免押次数判断，蜂云
-        if (freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
+        if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO && freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
             log.warn("FREE DEPOSIT WARN! fyFreeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
-        //        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        //        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-        //            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
-        //        }
+    
         
         Triple<Boolean, String, Object> checkUserCanFreeDepositResult = checkUserCanFreeBatteryDeposit(uid, userInfo);
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
@@ -1127,11 +1124,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return triple;
         }
         
-        // 检查用户是否已经进行过免押操作，且已免押成功
-        //        Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
-        //        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
-        //            return useFreeDepositStatusResult;
-        //        }
         
         // 查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
