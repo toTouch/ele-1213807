@@ -23,7 +23,7 @@
         <result property="carModelId" column="car_model_id" jdbcType="INTEGER"/>
         <result property="batteryVoltage" column="battery_voltage" jdbcType="VARCHAR"/>
         <result property="applicableType" column="applicable_type" jdbcType="INTEGER"/>
-        <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER"/>
+        <result property="supportRefund" column="support_refund" jdbcType="INTEGER"/>
         <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER"/>
         <result property="freeDeposit" column="free_deposit" jdbcType="INTEGER"/>
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL"/>
@@ -52,7 +52,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `name`
-        , `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_voltage`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `free_deposit`,
+        , `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_voltage`, `applicable_type`, `support_refund`, `rent_rebate_term`, `free_deposit`,
         `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`,`coupon_arrays`, `status`, `remark`, `sort_param`,`user_group_ids`,`is_user_group`
     </sql>
     
@@ -73,7 +73,7 @@
         <if test=" status != null ">AND `status` = #{status}</if>
         <if test=" carModelId != null ">AND `car_model_id` = #{carModelId}</if>
         <if test=" applicableType != null ">AND `applicable_type` = #{applicableType}</if>
-        <if test=" rentRebate != null ">AND `rent_rebate` = #{rentRebate}</if>
+        <if test=" supportRefund != null ">AND `support_refund` = #{supportRefund}</if>
         <if test=" deposit != null ">AND `deposit` = #{deposit}</if>
         <if test=" freeDeposit != null ">AND `free_deposit` = #{freeDeposit}</if>
         <if test=" confine != null ">AND `confine` = #{confine}</if>
@@ -132,7 +132,7 @@
             <if test=" carModelId != null ">`car_model_id`,</if>
             <if test=" batteryVoltage != null ">`battery_voltage`,</if>
             <if test=" applicableType != null ">`applicable_type`,</if>
-            <if test=" rentRebate != null ">`rent_rebate`,</if>
+            <if test=" supportRefund != null ">`support_refund`,</if>
             <if test=" rentRebateTerm != null ">`rent_rebate_term`,</if>
             <if test=" freeDeposit != null ">`free_deposit`,</if>
             <if test=" rentUnitPrice != null ">`rent_unit_price`,</if>
@@ -169,7 +169,7 @@
             <if test=" carModelId != null ">#{carModelId},</if>
             <if test=" batteryVoltage != null ">#{batteryVoltage},</if>
             <if test=" applicableType != null ">#{applicableType},</if>
-            <if test=" rentRebate != null ">#{rentRebate},</if>
+            <if test=" supportRefund != null ">#{supportRefund},</if>
             <if test=" rentRebateTerm != null ">#{rentRebateTerm},</if>
             <if test=" freeDeposit != null ">#{freeDeposit},</if>
             <if test=" rentUnitPrice != null ">#{rentUnitPrice},</if>
@@ -294,7 +294,7 @@
             <if test=" rent != null ">, `rent` = #{rent}</if>
             <if test=" deposit != null ">, `deposit` = #{deposit}</if>
             <if test=" applicableType != null ">, `applicable_type` = #{applicableType}</if>
-            <if test=" rentRebate != null ">, `rent_rebate` = #{rentRebate}</if>
+            <if test=" supportRefund != null ">, `support_refund` = #{supportRefund}</if>
             <if test=" rentRebateTerm != null ">, `rent_rebate_term` = #{rentRebateTerm}</if>
             <if test=" freeDeposit != null ">, `free_deposit` = #{freeDeposit}</if>
             <if test=" rentUnitPrice != null ">, `rent_unit_price` = #{rentUnitPrice}</if>

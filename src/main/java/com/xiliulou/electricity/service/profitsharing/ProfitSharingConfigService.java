@@ -7,6 +7,8 @@ import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequ
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigUpdateStatusOptRequest;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 
+import java.util.List;
+
 /**
  * description:
  *
@@ -28,6 +30,18 @@ public interface ProfitSharingConfigService {
     
     
     /**
+     * 根据租户id+加盟商id查询
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/8/22 18:24
+     */
+    List<ProfitSharingConfigVO> queryListByTenantIdAndFranchiseeIds(Integer tenantId, List<Long> franchiseeIds);
+    
+    
+    
+    /**
      * 根据支付配置id查询
      *
      * @param tenantId
@@ -37,6 +51,18 @@ public interface ProfitSharingConfigService {
      * @date 2024/8/22 18:29
      */
     ProfitSharingConfig queryByPayParamsIdFromCache(Integer tenantId, Integer payParamsId);
+    
+    
+    /**
+     * 根据支付配置id批量查询
+     *
+     * @param tenantId
+     * @param payParamsId
+     * @return
+     * @author caobotao.cbt
+     * @date 2024/8/22 18:29
+     */
+    List<ProfitSharingConfig> queryListByPayParamsIdsFromCache(Integer tenantId, List<Integer> payParamsId);
     
     
     /**

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
     
@@ -59,6 +60,19 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      */
     ElectricityPayParams queryPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
     
+    
+    /**
+     * 根据租户id + 加盟商id集合查询缓存<br/>
+     * <p>
+     * 精确查询配置,传入的franchiseeId是什么，就查询franchiseeId对应的配置。
+     * </p>
+     *
+     * @param tenantId
+     * @param franchiseeIds
+     * @author caobotao.cbt
+     * @date 2024/6/18 09:19
+     */
+    List<ElectricityPayParams> queryListPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Set<Long> franchiseeIds);
     
     /**
      * 新增

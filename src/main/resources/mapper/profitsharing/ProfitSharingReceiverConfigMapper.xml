@@ -83,6 +83,20 @@
         <include refid="table_name"/>
         <include refid="page_where"/>
     </select>
+    <select id="selectListByTenantIdAndProfitSharingConfigIds"
+        resultMap="ProfitSharingReceiverConfigMap">
+        SELECT
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where
+        del_flag=0
+        and tenant_id=#{tenantId}
+        and profit_sharing_config_id in
+        <foreach collection="profitSharingConfigIds" open="(" close=")" separator="," item="profitSharingConfigId">
+            #{profitSharingConfigId}
+        </foreach>
+    </select>
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">

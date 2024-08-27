@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeMixedOrderMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder" id="TProfitSharingTradeMixedOrderMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="thirdMerchantId" column="third_merchant_id" jdbcType="VARCHAR"/>
+        <result property="thirdOrderNo" column="third_order_no" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <sql id="base_column">
+        id
+        , tenant_id, franchisee_id, third_merchant_id, third_order_no, amount, del_flag, create_time, update_time    </sql>
+    
+    <sql id="table_name">
+        t_profit_sharing_trade_mixed_order
+    </sql>
+    
+    
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, create_time, update_time)
+        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount}, #{createTime}, #{updateTime})
+    </insert>
+
+
+</mapper>
+

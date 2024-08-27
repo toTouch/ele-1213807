@@ -2,26 +2,62 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper">
     <sql id="base_column">
-        id, tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time    </sql>
+        id
+        , tenant_id, uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time    </sql>
     
     <sql id="table_name">
-       t_profit_sharing_trade_order
+        t_profit_sharing_trade_order
     </sql>
-
+    
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time)
-        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{orderNo}, #{thirdOrderNo}, #{orderType}, #{amount}, #{processState}, #{remark}, #{channel}, #{rentRebate}, #{payTime}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, uid, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel,
+                                                 rent_rebate, pay_time, del_flag, create_time, update_time)
+        values (#{tenantId}, #{franchiseeId}, #{uid}, #{thirdMerchantId}, #{orderNo}, #{thirdOrderNo}, #{orderType}, #{amount}, #{processState}, #{remark}, #{channel},
+                #{rentRebate},
+                #{payTime}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time)
+        insert into t_profit_sharing_trade_order(tenant_id,uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel,
+        rent_rebate, pay_time, del_flag, create_time, update_time)
         values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.tenantId}, #{item.franchiseeId}, #{item.thirdMerchantId}, #{item.orderNo}, #{item.thirdOrderNo}, #{item.orderType}, #{item.amount}, #{item.processState}, #{item.remark},
-             #{item.channel}, #{item.rentRebate}, #{item.payTime}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
+            (#{item.tenantId}, #{item.uid}, #{item.franchiseeId}, #{item.thirdMerchantId}, #{item.orderNo}, #{item.thirdOrderNo}, #{item.orderType}, #{item.amount},
+            #{item.processState},
+            #{item.remark},
+            #{item.channel}, #{item.rentRebate}, #{item.payTime}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
         </foreach>
     </insert>
+    
+    <select id="selectThirdOrderNoListByParam"
+        resultType="com.xiliulou.electricity.domain.profitsharing.ProfitSharingTradeOrderThirdOrderNoDO">
+        select
+        id,third_order_no
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and process_state=#{processState}
+        and id > #{startId}
+        order by id asc
+        limit #{size}
+    </select>
+    
+    <select id="selectListByThirdOrderNos"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and third_order_no in
+        <foreach collection="thirdOrderNos" open="(" close=")" item="thirdOrderNo" separator=",">
+            #{thirdOrderNo}
+        </foreach>
+    
+    </select>
 
 
 </mapper>

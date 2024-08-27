@@ -24,6 +24,18 @@ public class ProfitSharingReceiverConfigVO implements Serializable {
     private Long franchiseeId;
     
     
+    
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    
+    
+    /**
+     * 配置类型
+     */
+    private Integer configType;
+    
     /**
      * 加盟商名称
      */

@@ -2,13 +2,19 @@ package com.xiliulou.electricity.bo.wechat;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
 import lombok.Data;
 
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * description: 微信支付参数详情
@@ -118,4 +124,27 @@ public class WechatPayParamsDetails {
      */
     private ProfitSharingConfig profitSharingConfig;
     
+    /**
+     * 分账接收方配置
+     */
+    private List<ProfitSharingReceiverConfig> profitSharingReceiverConfigs;
+    
+    
+    /**
+     * 获取可用的分账接收方支付配置
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/27 10:39
+     */
+    public List<ProfitSharingReceiverConfig> getEnableProfitSharingReceiverConfigs() {
+        // 分账主配置必须可用
+        if (Objects.isNull(this.profitSharingConfig) || !ProfitSharingConfigStatusEnum.OPEN.getCode().equals(this.profitSharingConfig.getConfigStatus())) {
+            return Collections.emptyList();
+        }
+        
+        // 分账接收方配置为启用的
+        return Optional.ofNullable(this.profitSharingReceiverConfigs).orElse(Collections.emptyList()).stream()
+                .filter(c -> ProfitSharingConfigReceiverStatusEnum.ENABLE.getCode().equals(c.getReceiverStatus())).collect(Collectors.toList());
+        
+    }
 }
