@@ -9,5 +9,6 @@ package com.xiliulou.electricity.service.profitsharing;
  * @since 2024-08-22 16:58:56
  */
 public interface ProfitSharingOrderService {
-
+    
+    boolean existsUnfreezeByThirdOrderNo(String thirdOrderNo);
 }

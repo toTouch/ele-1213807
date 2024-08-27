@@ -26,7 +26,11 @@
             #{item}
         </foreach>
     </select>
-
+    
+    <select id="existsUnfreezeByThirdOrderNo" resultType="java.lang.Integer">
+        select 1 from t_profit_sharing_order where third_order_no = #{thirdOrderNo} and business_type = 98 limit 1
+    </select>
+    
 
 </mapper>
 

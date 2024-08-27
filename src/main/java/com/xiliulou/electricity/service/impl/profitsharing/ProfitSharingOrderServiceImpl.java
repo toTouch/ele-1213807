@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * 分账订单表(profitSharingOrder)表服务实现类
@@ -21,5 +23,15 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     @Resource
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
     
-  
+    
+    @Override
+    @Slave
+    public boolean existsUnfreezeByThirdOrderNo(String thirdOrderNo) {
+        Integer count = profitSharingOrderMapper.existsUnfreezeByThirdOrderNo(thirdOrderNo);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
+    }
 }

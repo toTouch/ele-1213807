@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author maxiaodong
@@ -36,5 +36,16 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     @Override
     public int updateById(ProfitSharingTradeOrder profitSharingUpdate) {
         return profitSharingTradeOrderMapper.updateById(profitSharingUpdate);
+    }
+    
+    @Override
+    @Slave
+    public boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo) {
+        Integer count  =  profitSharingTradeOrderMapper.existsNotRefundByThirdOrderNo(thirdOrderNo, orderNo);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
     }
 }

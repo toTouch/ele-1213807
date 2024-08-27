@@ -510,7 +510,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         profitSharingTradeOrderUpdate.setOrderType(orderType);
         profitSharingTradeOrderUpdate.setTradeStatus(tradeStatus);
         
-        rocketMqService.sendAsyncMsg(MqProducerConstant.PROFIT_SHARING_ORDER_TOPIC, JsonUtil.toJson(profitSharingTradeOrderUpdate), "");
+        rocketMqService.sendAsyncMsg(MqProducerConstant.PROFIT_SHARING_ORDER_TOPIC, JsonUtil.toJson(profitSharingTradeOrderUpdate));
     }
     
     /**

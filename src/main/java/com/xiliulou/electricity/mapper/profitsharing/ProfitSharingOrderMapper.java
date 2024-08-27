@@ -16,5 +16,7 @@ public interface ProfitSharingOrderMapper {
     int insert(ProfitSharingOrder profitSharingOrder);
     
     List<ProfitSharingOrder> selectListByIds(@Param("idList") List<Long> profitSharingOrderIdList);
+    
+    Integer existsUnfreezeByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
 }
 

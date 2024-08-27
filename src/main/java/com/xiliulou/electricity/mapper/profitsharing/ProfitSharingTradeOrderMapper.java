@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 /**
@@ -26,5 +25,7 @@ public interface ProfitSharingTradeOrderMapper {
     ProfitSharingTradeOrder selectByOrderNo(@Param("orderNo") String orderNo);
     
     int updateById(ProfitSharingTradeOrder profitSharingUpdate);
+    
+    Integer existsNotRefundByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("orderNo") String orderNo);
 }
 
