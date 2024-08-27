@@ -52,7 +52,7 @@ public class FreeDepositOrder {
     private Double transAmt;
     
     /**
-     * 实际支付金额
+     * 实际支付金额(剩余的可代扣金额)
      */
     private Double payTransAmt;
     
