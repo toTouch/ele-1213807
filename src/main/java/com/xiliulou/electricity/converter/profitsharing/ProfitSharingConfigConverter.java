@@ -2,11 +2,16 @@
 
 package com.xiliulou.electricity.converter.profitsharing;
 
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequest;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -44,8 +49,6 @@ public class ProfitSharingConfigConverter {
     }
     
     /**
-     *
-     *
      * @param request
      * @author caobotao.cbt
      * @date 2024/8/23 11:31
@@ -60,5 +63,9 @@ public class ProfitSharingConfigConverter {
         profitSharingConfig.setScaleLimit(request.getScaleLimit());
         profitSharingConfig.setCycleType(request.getCycleType());
         return profitSharingConfig;
+    }
+    
+    public static List<ProfitSharingConfigVO> qryEntityToVo(List<ProfitSharingConfig> sharingConfigs) {
+        return Optional.ofNullable(sharingConfigs).orElse(Collections.emptyList()).stream().map(ProfitSharingConfigConverter::qryEntityToVo).collect(Collectors.toList());
     }
 }

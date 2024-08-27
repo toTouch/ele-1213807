@@ -2,8 +2,11 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.domain.profitsharing.ProfitSharingTradeOrderThirdOrderNoDO;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeOrderQueryModel;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,5 +39,17 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     @Override
     public int updateById(ProfitSharingTradeOrder profitSharingUpdate) {
         return profitSharingTradeOrderMapper.updateById(profitSharingUpdate);
+    }
+    
+    @Slave
+    @Override
+    public List<ProfitSharingTradeOrderThirdOrderNoDO> queryThirdOrderNoListByParam(ProfitSharingTradeOrderQueryModel queryModel) {
+        return profitSharingTradeOrderMapper.selectThirdOrderNoListByParam(queryModel);
+    }
+    
+    @Slave
+    @Override
+    public List<ProfitSharingTradeOrder> queryListByThirdOrderNos(Integer tenantId, List<String> thirdOrderNos) {
+        return profitSharingTradeOrderMapper.selectListByThirdOrderNos(tenantId,thirdOrderNos);
     }
 }

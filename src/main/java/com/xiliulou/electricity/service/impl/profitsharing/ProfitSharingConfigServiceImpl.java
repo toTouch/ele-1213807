@@ -4,12 +4,14 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 
 import java.math.BigDecimal;
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.converter.profitsharing.ProfitSharingConfigConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigCycleTypeEnum;
@@ -30,9 +32,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +108,30 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
     }
     
     @Override
+    public List<ProfitSharingConfigVO> queryListByTenantIdAndFranchiseeIds(Integer tenantId, List<Long> franchiseeIds) {
+        // 支付主配置查询
+        List<ElectricityPayParams> electricityPayParams = electricityPayParamsService.queryListPreciseCacheByTenantIdAndFranchiseeId(tenantId, new HashSet<>(franchiseeIds));
+        if (CollectionUtils.isEmpty(electricityPayParams)) {
+            return null;
+        }
+        List<Integer> payParamIds = electricityPayParams.stream().map(ElectricityPayParams::getId).collect(Collectors.toList());
+        
+        List<ProfitSharingConfig> sharingConfigs = this.queryListByPayParamsIdsFromCache(tenantId, payParamIds);
+        
+        List<ProfitSharingConfigVO> profitSharingConfigVOS = ProfitSharingConfigConverter.qryEntityToVo(sharingConfigs);
+        if (CollectionUtils.isEmpty(profitSharingConfigVOS)) {
+            return null;
+        }
+        Map<Integer, ElectricityPayParams> payParamsMap = electricityPayParams.stream().collect(Collectors.toMap(ElectricityPayParams::getId, Function.identity()));
+        profitSharingConfigVOS.stream().filter(profitSharingConfigVO -> payParamsMap.containsKey(profitSharingConfigVO.getPayParamId())).forEach(profitSharingConfigVO -> {
+            ElectricityPayParams payParams = payParamsMap.get(profitSharingConfigVO.getPayParamId());
+            profitSharingConfigVO.setWechatMerchantId(payParams.getWechatMerchantId());
+            profitSharingConfigVO.setConfigType(payParams.getConfigType());
+        });
+        return profitSharingConfigVOS;
+    }
+    
+    @Override
     public ProfitSharingConfig queryByPayParamsIdFromCache(Integer tenantId, Integer payParamsId) {
         String key = buildCacheKey(tenantId, payParamsId);
         String value = redisService.get(key);
@@ -114,6 +146,47 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         }
         redisService.set(key, JsonUtil.toJson(profitSharingConfig));
         return profitSharingConfig;
+    }
+    
+    
+    @Override
+    public List<ProfitSharingConfig> queryListByPayParamsIdsFromCache(Integer tenantId, List<Integer> payParamsIds) {
+        List<String> cacheKeys = payParamsIds.stream().map(payParamsId -> buildCacheKey(tenantId, payParamsId)).collect(Collectors.toList());
+        List<ProfitSharingConfig> sharingConfigs = redisService.multiJsonGet(cacheKeys, ProfitSharingConfig.class);
+        
+        Map<Integer, ProfitSharingConfig> existCacheMap = Optional.ofNullable(sharingConfigs).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(ProfitSharingConfig::getPayParamId, Function.identity(), (k1, k2) -> k1));
+        
+        List<ProfitSharingConfig> resultList = new ArrayList<>();
+        List<Integer> needQueryPayParamsIds = new ArrayList<>();
+        
+        payParamsIds.forEach(payParamsId -> {
+            ProfitSharingConfig sharingConfig = existCacheMap.get(payParamsId);
+            if (Objects.isNull(sharingConfig)) {
+                needQueryPayParamsIds.add(payParamsId);
+            } else {
+                resultList.add(sharingConfig);
+            }
+        });
+        
+        if (CollectionUtils.isEmpty(needQueryPayParamsIds)) {
+            return resultList;
+        }
+        
+        List<ProfitSharingConfig> dbList = profitSharingConfigMapper.selectListByPayParamsIdsAndTenantId(tenantId, needQueryPayParamsIds);
+        if (CollectionUtils.isEmpty(dbList)) {
+            return resultList;
+        }
+        
+        Map<String, String> cacheSaveMap = Maps.newHashMap();
+        dbList.forEach(sharingConfig -> {
+            cacheSaveMap.put(buildCacheKey(tenantId, sharingConfig.getPayParamId()), JsonUtil.toJson(sharingConfig));
+            resultList.add(sharingConfig);
+        });
+        
+        redisService.multiSet(cacheSaveMap);
+        
+        return resultList;
     }
     
     

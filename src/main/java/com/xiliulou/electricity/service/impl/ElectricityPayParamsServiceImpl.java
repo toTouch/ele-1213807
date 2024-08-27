@@ -63,8 +63,6 @@ import static com.xiliulou.electricity.constant.MultiFranchiseeConstant.DEFAULT_
 @Slf4j
 public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayParamsMapper, ElectricityPayParams> implements ElectricityPayParamsService {
     
-    @Autowired
-    private TenantService tenantService;
     
     @Autowired
     private FranchiseeService franchiseeService;
@@ -402,6 +400,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return null;
         }
         return electricityPayParamsList.get(0);
+    }
+    
+    @Override
+    public List<ElectricityPayParams> queryListPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Set<Long> franchiseeIds) {
+        return this.queryFromCacheList(tenantId,franchiseeIds);
     }
     
     /**

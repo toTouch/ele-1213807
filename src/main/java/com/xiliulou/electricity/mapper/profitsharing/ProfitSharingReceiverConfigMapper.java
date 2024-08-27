@@ -104,5 +104,16 @@ public interface ProfitSharingReceiverConfigMapper {
      * @date 2024/8/26 14:38
      */
     Integer count(ProfitSharingReceiverConfigModel configModel);
+    
+    /**
+     * 根据租户id+主表id集合
+     *
+     * @param tenantId
+     * @param profitSharingConfigIds
+     * @author caobotao.cbt
+     * @date 2024/8/23 14:43
+     */
+    List<ProfitSharingReceiverConfig> selectListByTenantIdAndProfitSharingConfigIds(@Param("tenantId") Integer tenantId,
+            @Param("profitSharingConfigIds") List<Long> profitSharingConfigIds);
 }
 

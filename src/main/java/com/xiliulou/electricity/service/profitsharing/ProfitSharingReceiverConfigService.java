@@ -32,6 +32,17 @@ public interface ProfitSharingReceiverConfigService {
      */
     List<ProfitSharingReceiverConfig> queryListByProfitSharingConfigId(Integer tenantId, Long profitSharingConfigId);
     
+    
+    /**
+     * 租户id+分账主表配置id集合
+     *
+     * @param tenantId
+     * @param profitSharingConfigIds
+     * @author caobotao.cbt
+     * @date 2024/8/23 14:40
+     */
+    List<ProfitSharingReceiverConfig> queryListByProfitSharingConfigIds(Integer tenantId, List<Long> profitSharingConfigIds);
+    
     /**
      * insert
      *
