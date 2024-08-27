@@ -135,24 +135,24 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         
         // 免押 和 解冻，拍小租根据返回状态区分
         if (Objects.equals(business, FreeBusinessTypeEnum.FREE.getCode())) {
-            return freeOrUnFreeHandler(params, map);
+            return freeOrUnFreeCallBackHandler(params, map);
         }
         
         // 代扣
         if (Objects.equals(business, FreeBusinessTypeEnum.AUTH_PAY.getCode())) {
-            return authPayHandler(params, map);
+            return authPayCallBackHandler(params, map);
         }
         
         throw new CustomBusinessException("拍小组回调异常");
     }
     
-    private Map<String, Object> authPayHandler(Map<String, Object> params, Map<String, Object> map) {
+    private Map<String, Object> authPayCallBackHandler(Map<String, Object> params, Map<String, Object> map) {
         String orderId = (String) params.get("orderId");
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
         
         // 如果没有订单则确认成功
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
+            log.error("PXZ AuthPayCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
             return map;
         }
@@ -164,17 +164,18 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
             return map;
         }
+        
         map.put("respCode", FreeDepositConstant.AUTH_PXZ_FAIL_RSP);
         return map;
     }
     
-    private Map<String, Object> freeOrUnFreeHandler(Map<String, Object> params, Map<String, Object> map) {
+    private Map<String, Object> freeOrUnFreeCallBackHandler(Map<String, Object> params, Map<String, Object> map) {
         String orderId = (String) params.get("transId");
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
         // 如果没有订单则确认成功
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
+            log.error("PXZ FreeOrUnFreeCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
             return map;
         }
@@ -195,6 +196,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
             return map;
         }
+        
         map.put("respCode", FreeDepositConstant.AUTH_PXZ_FAIL_RSP);
         return map;
     }

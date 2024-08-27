@@ -141,18 +141,18 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     public Object freeDepositNotified(Integer business, Map<String, Object> params) {
         // 免押,蜂云只要有回调就一定是成功
         if (Objects.equals(business, FreeBusinessTypeEnum.FREE.getCode())) {
-            return freeDepositHandler(params);
+            return freeDepositCallBackHandler(params);
         }
         
         // 解冻和代扣走同一个回调
         if (Objects.equals(business, FreeBusinessTypeEnum.UNFREE.getCode())) {
-            return authPayHandler(params);
+            return authPayCallBackHandler(params);
         }
         
         throw new CustomBusinessException("蜂云回调异常");
     }
     
-    private String authPayHandler(Map<String, Object> params) {
+    private String authPayCallBackHandler(Map<String, Object> params) {
         String tradeType = (String) params.get("tradeType");
         
         // 解冻
@@ -162,7 +162,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
             if (Objects.isNull(freeDepositOrder)) {
-                log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
+                log.error("FY authPayCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
                 return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
             }
             
@@ -177,7 +177,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             String orderId = (String) params.get("payNo");
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
             if (Objects.isNull(freeDepositOrder)) {
-                log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
+                log.error("FY authPayCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
                 return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
             }
             handlerAuthPaySuccess(freeDepositOrder);
@@ -186,12 +186,12 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     }
     
     
-    private String freeDepositHandler(Map<String, Object> params) {
+    private String freeDepositCallBackHandler(Map<String, Object> params) {
         String orderId = (String) params.get("thirdOrderNo");
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("authPayNotified Error! freeDepositOrder is null, orderId is{}", orderId);
+            log.error("Fy freeDepositCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
             return FreeDepositConstant.AUTH_FY_SUCCESS_RSP;
         }
         
