@@ -50,7 +50,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         FyResult<FyAuthPayRsp> result = null;
         String orderId = request.getFreeDepositOrderId();
         try {
-            result = fyDepositService.authPay(buildFyAuthPayRequest(request));
+            result = fyDepositService.authPay(buildFyFreeDepositRequest(request));
         } catch (Exception e) {
             log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
             return Triple.of(false, "100401", "免押调用失败！");

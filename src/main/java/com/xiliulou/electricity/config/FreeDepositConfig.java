@@ -19,6 +19,9 @@ public class FreeDepositConfig {
     
     /**
      * 免押代扣回调
+     * /outer/free/notified/%d/%d
+     * 第一个参数为 免押渠道 FreeDepositServiceWayEnums
+     * 第一个参数为 业务类型 FreeBusinessTypeEnum
      */
     private String url;
     
