@@ -3,8 +3,10 @@ package com.xiliulou.electricity.controller.outer;
 import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,11 +27,11 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
+@AllArgsConstructor
 public class JsonOuterFreeDepositCallBackController {
     
     
-    @Resource
-    private ApplicationContext applicationContext;
+    private final FreeDepositNotifyService freeDepositNotifyService;
     
     /**
      * 免押代扣回调
@@ -37,16 +39,10 @@ public class JsonOuterFreeDepositCallBackController {
      * @param channel
      * @return Object
      */
-    @PostMapping("/outer/free/notified/{channel}/{business}")
-    public Object freeDepositNotified(@PathVariable("channel") Integer channel, @PathVariable("business") Integer business, @RequestBody Map<String, Object> params) {
-        if (Objects.isNull(channel) || Objects.isNull(business) || CollUtil.isEmpty(params)) {
-            throw new CustomBusinessException("免押回调异常");
-        }
-        
-        log.info("Free CallBack INFO! channel is {}, business is {}, params is {}", channel, business, JsonUtil.toJson(params));
-        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(channel), BaseFreeDepositService.class);
-        return service.freeDepositNotified(business, params);
+    @PostMapping("/outer/free/notified/{channel}/{business}/{tenantId}")
+    public Object freeDepositNotified(@PathVariable("channel") Integer channel, @PathVariable("business") Integer business,@PathVariable("tenantId") Integer tenantId, @RequestBody Map<String, Object> params) {
+        return freeDepositNotifyService.notify(channel, business,tenantId, params);
     }
-    
+
     
 }
