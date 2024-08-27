@@ -1,0 +1,39 @@
+package com.xiliulou.electricity.dto.callback;
+
+
+import lombok.Data;
+
+import java.util.Map;
+
+/**
+ * <p>
+ * Description: This class is PxzParams!
+ * </p>
+ * <p>Project: saas-electricity</p>
+ * <p>Copyright: Copyright (c) 2024</p>
+ * <p>Company: xiliulou</p>
+ *
+ * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+ * @since V1.0 2024/8/27
+ **/
+public class PxzParams {
+    @Data
+    public static class FreeOfCharge{
+        
+        private String transId;
+        
+        private String authNo;
+        
+        private Integer authStatus;
+    }
+    
+    @Data
+    public static class Withhold{
+        
+        private String payNo;
+        
+        private String orderId;
+        
+        private Integer orderStatus;
+    }
+}
