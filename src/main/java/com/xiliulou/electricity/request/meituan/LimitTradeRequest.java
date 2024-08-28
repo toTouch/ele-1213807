@@ -7,11 +7,11 @@ import javax.validation.constraints.NotNull;
 
 /**
  * @author HeYafeng
- * @description 美团限制提单请求
+ * @description 限制下单请求
  * @date 2024/8/28 13:10:13
  */
 @Data
-public class MeiTuanTradAbleRequest {
+public class LimitTradeRequest {
     
     @NotBlank(message = "appId不能为空")
     private String appId;

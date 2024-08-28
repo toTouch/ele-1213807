@@ -20,13 +20,13 @@
     <update id="update">
         update t_meituan_rider_mall_config
         <set>
-            <if test="appId != null and appId != ''">
+            <if test="appId != null">
                 app_id = #{appId},
             </if>
-            <if test="appKey != null and appKey != ''">
+            <if test="appKey != null">
                 app_key = #{appKey},
             </if>
-            <if test="secret != null and secret != ''">
+            <if test="secret != null">
                 secret = #{secret},
             </if>
             <if test="updateTime != null">
@@ -46,5 +46,32 @@
         where tenant_id = #{tenantId} and del_flag = 0
         order by id desc
         limit 1
+    </select>
+    
+    <select id="selectByConfig" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+        select
+        <include refid="basic_field"/>
+        from t_meituan_rider_mall_config
+        where app_id = #{appId} and app_key = #{appKey} and del_flag = 0
+        order by id desc
+        limit 1
+    </select>
+    
+    <select id="selectListEnableMeiTuanRiderMall"
+        resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+        select t1.id,
+               t1.app_id,
+               t1.app_key,
+               t1.secret,
+               t1.tenant_id,
+               t1.del_flag,
+               t1.create_time,
+               t1.update_time
+        from t_meituan_rider_mall_config t1
+                 left join t_electricity_config t2 on t1.tenant_id = t2.tenant_id
+        where t2.is_enable_meituan_rider_mall = 0
+          and t1.del_flag = 0
+        order by t1.id
+            limit #{offset}, #{size}
     </select>
 </mapper>

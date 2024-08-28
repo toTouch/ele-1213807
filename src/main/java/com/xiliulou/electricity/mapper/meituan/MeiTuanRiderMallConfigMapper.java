@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 美团骑手商城配置信息
@@ -14,4 +16,8 @@ public interface MeiTuanRiderMallConfigMapper {
     Integer insert(MeiTuanRiderMallConfig meiTuanRiderMallConfig);
     
     Integer update(MeiTuanRiderMallConfig meiTuanRiderMallConfig);
+    
+    MeiTuanRiderMallConfig selectByConfig(MeiTuanRiderMallConfig config);
+    
+    List<MeiTuanRiderMallConfig> selectListEnableMeiTuanRiderMall(Integer offset, Integer size);
 }

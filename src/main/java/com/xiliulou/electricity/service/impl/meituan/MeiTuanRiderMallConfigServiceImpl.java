@@ -10,9 +10,12 @@ import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -80,6 +83,36 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
     @Override
     public MeiTuanRiderMallConfig queryByTenantId(Integer tenantId) {
         return meiTuanRiderMallConfigMapper.selectByTenantId(tenantId);
+    }
+    
+    @Slave
+    @Override
+    public MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config) {
+        return meiTuanRiderMallConfigMapper.selectByConfig(config);
+    }
+    
+    @Slave
+    @Override
+    public List<MeiTuanRiderMallConfig> listEnableMeiTuanRiderMall(Integer offset, Integer size) {
+        return meiTuanRiderMallConfigMapper.selectListEnableMeiTuanRiderMall(offset, size);
+    }
+    
+    @Override
+    public List<MeiTuanRiderMallConfig> listAll() {
+        List<MeiTuanRiderMallConfig> list = new ArrayList<>();
+        int offset = 0;
+        int size = 50;
+        
+        while (true) {
+            List<MeiTuanRiderMallConfig> configs = listEnableMeiTuanRiderMall(offset, size);
+            if (CollectionUtils.isEmpty(configs)) {
+                break;
+            }
+            
+            list.addAll(configs);
+            offset += size;
+        }
+        return list;
     }
     
 }

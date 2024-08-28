@@ -1,15 +1,16 @@
 package com.xiliulou.electricity.vo.meituan;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
  * @author HeYafeng
- * @description 换电套餐限制提单VO
+ * @description 限制提单VO
  * @date 2024/8/28 13:02:16
  */
-
+@Builder
 @Data
-public class TradAbleVO {
+public class LimitTradeVO {
     
     /**
      * 是否限制购买：true-限制 false-不限制
@@ -17,12 +18,8 @@ public class TradAbleVO {
     private Boolean limitResult;
     
     /**
-     * 限制原因
+     * 限制原因:1-老客限制
      */
     private Integer limitType;
     
-    /**
-     * 限制原因
-     */
-    private String limitReason;
 }

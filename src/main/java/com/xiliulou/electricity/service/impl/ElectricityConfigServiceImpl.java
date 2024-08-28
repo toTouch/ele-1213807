@@ -188,7 +188,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
             EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
             if (Objects.isNull(eleEsignConfig) || StringUtils.isBlank(eleEsignConfig.getAppId()) || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
-                return R.fail("120130", "美团骑手商城功能未配置相关信息,请检查");
+                return R.fail("100500", "电子签名功能未配置相关信息,请检查");
             }
         }
         
@@ -197,7 +197,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(meiTuanRiderMallConfig) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppId()) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppKey())
                     || StringUtils.isBlank(meiTuanRiderMallConfig.getSecret())) {
-                return R.fail("100500", "电子签名功能未配置相关信息,请检查");
+                return R.fail("120130", "美团骑手商城功能未配置相关信息,请检查");
             }
         }
         
