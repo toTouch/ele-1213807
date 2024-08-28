@@ -4,7 +4,7 @@
 
 package com.xiliulou.electricity.query.profitsharing;
 
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import lombok.Data;
 
 /**
@@ -14,14 +14,14 @@ import lombok.Data;
  * @date 2024/8/26 16:53
  */
 @Data
-public class ProfitSharingTradeOrderQueryModel {
+public class ProfitSharingTradeMixedOrderQueryModel {
     
     /**
      * 处理状态
      *
-     * @see ProfitSharingTradeOderProcessStateEnum
+     * @see ProfitSharingTradeMixedOrderStateEnum
      */
-    private Integer processState;
+    private Integer state;
     
     
     /**
@@ -33,6 +33,11 @@ public class ProfitSharingTradeOrderQueryModel {
      * 开始id
      */
     private Long startId;
+    
+    /**
+     * 渠道 WECHAT-微信
+     */
+    private String channel;
     
     /**
      * 数量

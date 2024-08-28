@@ -4,7 +4,6 @@
 
 package com.xiliulou.electricity.tx.profitsharing;
 
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingConfigMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingReceiverConfigMapper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -33,9 +32,9 @@ public class ProfitSharingConfigTxService {
     
     public void remove(Integer tenantId, Long profitSharingConfigId, List<Long> receiverConfigIds) {
         long time = System.currentTimeMillis();
-        profitSharingConfigMapper.removeById(tenantId, profitSharingConfigId,time);
+        profitSharingConfigMapper.removeById(tenantId, profitSharingConfigId, time);
         if (CollectionUtils.isNotEmpty(receiverConfigIds)) {
-            profitSharingReceiverConfigMapper.removeByIds(tenantId, receiverConfigIds,time);
+            profitSharingReceiverConfigMapper.removeByIds(tenantId, receiverConfigIds, time);
         }
     }
     

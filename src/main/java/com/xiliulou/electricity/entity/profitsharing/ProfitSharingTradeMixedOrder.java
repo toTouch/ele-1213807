@@ -46,6 +46,11 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
     private BigDecimal amount;
     
     /**
+     * WECHAT-微信
+     */
+    private String channel;
+    
+    /**
      * 删除标识：0-未删除 1-已删除
      */
     private Integer delFlag;
@@ -59,6 +64,7 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
      * 更新时间
      */
     private Long updateTime;
+    
     
     
     public Long getId() {
@@ -107,6 +113,14 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
     
     public void setThirdOrderNo(String thirdOrderNo) {
         this.thirdOrderNo = thirdOrderNo;
+    }
+    
+    public String getChannel() {
+        return channel;
+    }
+    
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
     
     public BigDecimal getAmount() {
