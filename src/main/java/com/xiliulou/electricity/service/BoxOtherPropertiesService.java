@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BoxOtherProperties;
-import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 
 import java.util.List;
 
@@ -61,5 +60,10 @@ public interface BoxOtherPropertiesService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
+    
+    /**
+     * 根据唯一键查询是否存在
+     */
+    Integer existsByUk(Integer electricityCabinetId, String cellNo);
     
 }

@@ -41,7 +41,7 @@
         is_enable_return_box_check,is_open_insurance,is_move_franchisee,franchisee_move_info,free_deposit_type,
         is_open_car_battery_bind,is_open_car_control,is_zero_deposit_audit_enabled,is_enable_esign,
         allow_rent_ele,allow_return_ele,allow_freeze_with_assets,is_selection_exchange,low_charge_rate,
-        full_charge_rate,channel_time_limit,wx_customer,charge_rate_type
+        full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,is_comfort_exchange,priority_exchange_norm
     </sql>
     <!--通过主键修改数据-->
     <update id="update">
@@ -127,8 +127,15 @@
             </if>
             <if test="channelTimeLimit != null">
                 channel_time_limit = #{channelTimeLimit},
-            </if><if test="chargeRateType != null">
+            </if>
+            <if test="chargeRateType != null">
                 charge_rate_type = #{chargeRateType},
+            </if>
+            <if test="isComfortExchange != null">
+                is_comfort_exchange = #{isComfortExchange},
+            </if>
+            <if test="priorityExchangeNorm != null">
+                priority_exchange_norm = #{priorityExchangeNorm},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>

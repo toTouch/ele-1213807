@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -1621,8 +1620,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             ElectricityCabinet electricityCabinet, WechatPayParamsDetails wechatPayParamsDetails) {
         
         // 多加盟商版本增加：加盟商一致性校验
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(),
-                CollectionUtils.isEmpty(query.getUserCouponIds()) ? null : new HashSet<>(query.getUserCouponIds()), batteryMemberCard.getFranchiseeId());
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard,
+                CollectionUtils.isEmpty(query.getUserCouponIds()) ? null : new HashSet<>(query.getUserCouponIds()));
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }

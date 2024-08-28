@@ -11,6 +11,6 @@ import java.util.List;
  */
 public interface AssetManageService {
     
-    void batchExistWarehouseTx(List<AssetBatchExitWarehouseBO> dataList);
+    void batchExistWarehouse(List<AssetBatchExitWarehouseBO> dataList);
     
 }
