@@ -7,4 +7,8 @@ public interface FyConfigServiceMapper {
     
     
     FyConfig selectByTenantId(@Param("tenantId") Integer tenantId);
+    
+    int insert(FyConfig config);
+    
+    int updateByTenantId(FyConfig config);
 }
