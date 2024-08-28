@@ -344,7 +344,6 @@ public abstract class AbstractCommonFreeDeposit {
         if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_SUCCESS)) {
             return FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS;
         }
-        // todo
         if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_FAIL)) {
             return FreeDepositOrder.PAY_STATUS_DEAL_FAIL;
         }
