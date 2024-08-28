@@ -958,7 +958,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                             .orderNo(eleBatteryServiceFeeOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode())
                             .amount(eleBatteryServiceFeeOrder.getPayAmount()).processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT)
                             .channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
-                            .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                            .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                            .uid(userInfo.getUid()).build();
                     
                     profitSharingTradeOrderList.add(profitSharingTradeOrder);
                 }
@@ -971,6 +972,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             unionPayOrder.setProfitSharing(true);
         
             profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+    
+            // 保存分账主表
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                    .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
+                    .state(ProfitSharingTradeMixedStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+    
+            if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
+                // 支付订单数量大于1 设置为混合支付
+                profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
+            }
+    
+            profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
         }
         
         
