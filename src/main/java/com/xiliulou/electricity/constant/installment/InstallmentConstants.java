@@ -12,4 +12,6 @@ public interface InstallmentConstants {
     Integer PACKAGE_TYPE_CAR = 1;
     
     Integer PACKAGE_TYPE_CAR_BATTERY = 2;
+    
+    String PROCESS_PARAMETER_TYPE_PAGE = "page";
 }

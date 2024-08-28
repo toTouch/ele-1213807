@@ -9,8 +9,6 @@ import com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
@@ -36,13 +34,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private InstallmentRecordMapper installmentRecordMapper;
     
     @Autowired
-    private TenantService tenantService;
-    
-    @Autowired
     FranchiseeService franchiseeService;
-    
-    @Autowired
-    private UserDataScopeService userDataScopeService;
     
     @Autowired
     private BatteryMemberCardService batteryMemberCardService;

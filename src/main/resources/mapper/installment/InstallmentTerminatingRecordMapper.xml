@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentDeductionRecordMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentTerminatingRecordMapper">
     
     <sql id="columnsWithoutId">
-        uid, external_agreement_no, pay_no, repayment_plan_no, user_name, mobile, amount, `status`, issue, `subject`,
-        tenant_id, franchisee_id, create_time, update_time
+        uid, external_agreement_no, user_name, mobile, package_id, package_type, amount, paid_amount, unpaid_amount, `status`, reason, opinion,
+        auditor_id, tenant_id, franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
-        #{uid}, #{externalAgreementNo}, #{payNo}, #{repaymentPlanNo}, #{userName}, #{mobile}, #{amount}, #{status}, #{issue}, #{subject},
-        #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
+        #{uid}, #{externalAgreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{amount}, #{paidAmount}, #{unpaidAmount}, #{status}, #{reason}, #{opinion},
+        #{auditorId}, #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
     <sql id="ifLabelsForWhere">
@@ -19,26 +19,38 @@
         <if test="externalAgreementNo != null and externalAgreementNo != ''">
             and external_agreement_no = #{externalAgreementNo},
         </if>
-        <if test="payNo != null and payNo != ''">
-            and pay_no = #{payNo},
-        </if>
-        <if test="repaymentPlanNo != null and repaymentPlanNo != ''">
-            and repayment_plan_no = #{repaymentPlanNo},
-        </if>
         <if test="userName != null and userName != ''">
             and user_name = #{userName},
         </if>
         <if test="mobile != null and mobile != ''">
             and mobile = #{mobile},
         </if>
+        <if test="packageId != null">
+            and package_id = #{packageId},
+        </if>
+        <if test="packageType != null">
+            and package_type = #{packageType},
+        </if>
         <if test="amount != null">
             and amount = #{amount},
+        </if>
+        <if test="paidAmount != null">
+            and paid_amount = #{paidAmount},
+        </if>
+        <if test="unpaidAmount != null">
+            and unpaid_amount = #{unpaidAmount},
         </if>
         <if test="status != null">
             and `status` = #{status},
         </if>
-        <if test="issue != null">
-            and issue = #{issue},
+        <if test="reason != null and reason != ''">
+            and reason = #{reason},
+        </if>
+        <if test="opinion != null and opinion != ''">
+            and opinion = #{opinion},
+        </if>
+        <if test="auditorId != null">
+            and auditor_id = #{auditorId},
         </if>
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId},
@@ -57,41 +69,29 @@
         </if>
     </sql>
     
-    <resultMap id="installmentDeductionRecordMap" type="com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord">
+    <resultMap id="installmentTerminatingRecordMap" type="com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="uid" column="uid" jdbcType="BIGINT"/>
         <result property="externalAgreementNo" column="external_agreement_no" jdbcType="VARCHAR"/>
-        <result property="payNo" column="pay_no" jdbcType="VARCHAR"/>
-        <result property="repaymentPlanNo" column="repayment_plan_no" jdbcType="VARCHAR"/>
         <result property="userName" column="user_name" jdbcType="VARCHAR"/>
         <result property="mobile" column="mobile" jdbcType="VARCHAR"/>
+        <result property="packageId" column="package_id" jdbcType="BIGINT"/>
+        <result property="packageType" column="package_type" jdbcType="TINYINT"/>
         <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="paidAmount" column="paid_amount" jdbcType="DECIMAL"/>
+        <result property="unpaidAmount" column="unpaid_amount" jdbcType="DECIMAL"/>
         <result property="status" column="status" jdbcType="TINYINT"/>
-        <result property="issue" column="issue" jdbcType="TINYINT"/>
-        <result property="subject" column="subject" jdbcType="VARCHAR"/>
+        <result property="reason" column="reason" jdbcType="TINYINT"/>
+        <result property="opinion" column="opinion" jdbcType="VARCHAR"/>
+        <result property="auditorId" column="auditor_id" jdbcType="BIGINT"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
         <result property="createTime" column="create_time" jdbcType="BIGINT"/>
         <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
     </resultMap>
     
-    <select id="selectPage" resultMap="installmentDeductionRecordMap">
-        select id, <include refid="columnsWithoutId"/>
-        from t_installment_deduction_record
-        where tenant_id = #{tenantId}
-            <include refid="ifLabelsForWhere"/>
-        limit #{offset}, #{size}
-    </select>
-    
-    <select id="count" resultType="java.lang.Integer">
-        select count(1)
-        from t_installment_deduction_record
-        where tenant_id = #{tenantId}
-            <include refid="ifLabelsForWhere"/>
-    </select>
-    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_installment_deduction_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
+        insert into t_installment_terminating_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>
     
     <update id="update">
@@ -103,29 +103,38 @@
             <if test="externalAgreementNo != null and externalAgreementNo != ''">
                 external_agreement_no = #{externalAgreementNo},
             </if>
-            <if test="payNo != null and payNo != ''">
-                pay_no = #{payNo},
-            </if>
-            <if test="repaymentPlanNo != null and repaymentPlanNo != ''">
-                repayment_plan_no = #{repaymentPlanNo},
-            </if>
             <if test="userName != null and userName != ''">
                 user_name = #{userName},
             </if>
             <if test="mobile != null and mobile != ''">
                 mobile = #{mobile},
             </if>
+            <if test="packageId != null">
+                package_id = #{packageId},
+            </if>
+            <if test="packageType != null">
+                package_type = #{packageType},
+            </if>
             <if test="amount != null">
                 amount = #{amount},
+            </if>
+            <if test="paidAmount != null">
+                paid_amount = #{paidAmount},
+            </if>
+            <if test="unpaidAmount != null">
+                unpaid_amount = #{unpaidAmount},
             </if>
             <if test="status != null">
                 `status` = #{status},
             </if>
-            <if test="issue != null">
-                issue = #{issue},
+            <if test="reason != null and reason != ''">
+                reason = #{reason},
             </if>
-            <if test="subject != null and subject != ''">
-                `subject` = #{subject},
+            <if test="opinion != null and opinion != ''">
+                opinion = #{opinion},
+            </if>
+            <if test="auditorId != null">
+                auditor_id = #{auditorId},
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
@@ -142,4 +151,19 @@
         </set>
         where id = #{id}
     </update>
+    
+    <select id="selectPage" resultMap="installmentTerminatingRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_terminating_record
+        where tenant_id = #{tenantId}
+            <include refid="fieldsWithoutId"/>
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="count" resultType="java.lang.Integer">
+        select count(1)
+        from t_installment_terminating_record
+        where tenant_id = #{tenantId}
+            <include refid="fieldsWithoutId"/>
+    </select>
 </mapper>

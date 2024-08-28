@@ -25,7 +25,6 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 更新单条数据
-     *
      * @param installmentDeductionRecord 数据库表实体类对象
      * @return 更新操作影响的数据行数
      */
@@ -33,7 +32,6 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 分页查询数据
-     *
      * @param installmentDeductionRecordQuery 分页查询请求参数
      * @return 分页数据VO结果
      */

@@ -14,34 +14,34 @@
     
     <sql id="ifLabelsForWhere">
         <if test="externalAgreementNo != null and externalAgreementNo != ''">
-            external_agreement_no = #{externalAgreementNo},
+            and external_agreement_no = #{externalAgreementNo},
         </if>
         <if test="issue != null">
-            issue = #{issue},
+            and issue = #{issue},
         </if>
         <if test="amount != null">
-            amount = #{amount},
+            and amount = #{amount},
         </if>
         <if test="packageId != null">
-            package_id = #{packageId},
+            and package_id = #{packageId},
         </if>
         <if test="packageType != null">
-            package_type = #{packageType},
+            and package_type = #{packageType},
         </if>
         <if test="rentTime != null">
-            rent_time = #{rentTime},
+            and rent_time = #{rentTime},
         </if>
         <if test="deductTime != null">
-            deduct_time = #{deductTime},
+            and deduct_time = #{deductTime},
         </if>
         <if test="paymentTime != null">
-            payment_time = #{paymentTime},
+            and payment_time = #{paymentTime},
         </if>
         <if test="status != null">
-            `status` = #{status},
+            and `status` = #{status},
         </if>
         <if test="franchiseeId != null">
-            franchisee_id = #{franchiseeId},
+            and franchisee_id = #{franchiseeId},
         </if>
         <if test="franchiseeIds != null">
             and franchisee_id in
@@ -50,10 +50,10 @@
             </foreach>
         </if>
         <if test="createTime != null">
-            create_time = #{createTime},
+            and create_time = #{createTime},
         </if>
         <if test="updateTime != null">
-            update_time = #{updateTime},
+            and update_time = #{updateTime},
         </if>
     </sql>
     

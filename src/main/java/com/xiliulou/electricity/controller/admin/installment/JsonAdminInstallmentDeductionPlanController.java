@@ -56,12 +56,8 @@ public class JsonAdminInstallmentDeductionPlanController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
-                return R.ok();
-            }
+            return R.ok();
         }
         
         List<Long> franchiseeIds = null;
@@ -72,7 +68,7 @@ public class JsonAdminInstallmentDeductionPlanController {
             }
         }
         
-        InstallmentRecordQuery installmentRecordQuery = InstallmentRecordQuery.builder().tenantId(tenantId).franchiseeIds(franchiseeIds).storeIds(storeIds)
+        InstallmentRecordQuery installmentRecordQuery = InstallmentRecordQuery.builder().tenantId(tenantId).franchiseeIds(franchiseeIds)
                 .externalAgreementNo(externalAgreementNo).build();
         
         return installmentDeductionPlanService.listDeductionPlanByAgreementNo(installmentRecordQuery);

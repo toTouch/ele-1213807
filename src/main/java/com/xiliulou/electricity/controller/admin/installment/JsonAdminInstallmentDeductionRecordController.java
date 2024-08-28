@@ -56,12 +56,8 @@ public class JsonAdminInstallmentDeductionRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
-                return R.ok();
-            }
+            return R.ok();
         }
         
         List<Long> franchiseeIds = null;
@@ -85,7 +81,6 @@ public class JsonAdminInstallmentDeductionRecordController {
         
         installmentDeductionRecordQuery.setTenantId(tenantId);
         installmentDeductionRecordQuery.setFranchiseeIds(franchiseeIds);
-        installmentDeductionRecordQuery.setStoreIds(storeIds);
         
         return installmentDeductionRecordService.listForPage(installmentDeductionRecordQuery);
     }
@@ -105,12 +100,8 @@ public class JsonAdminInstallmentDeductionRecordController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(storeIds)) {
-                return R.ok();
-            }
+            return R.ok();
         }
         
         List<Long> franchiseeIds = null;
@@ -122,7 +113,6 @@ public class JsonAdminInstallmentDeductionRecordController {
         }
         installmentDeductionRecordQuery.setTenantId(tenantId);
         installmentDeductionRecordQuery.setFranchiseeIds(franchiseeIds);
-        installmentDeductionRecordQuery.setStoreIds(storeIds);
         
         return installmentDeductionRecordService.count(installmentDeductionRecordQuery);
     }
