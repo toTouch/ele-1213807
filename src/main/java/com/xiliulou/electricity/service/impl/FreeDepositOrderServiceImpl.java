@@ -2212,4 +2212,34 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         return Triple.of(true, "", "授权转支付交易处理中！");
     }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> syncAuthPayStatus(String orderId) {
+        
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
+                .orderId(freeDepositOrder.getOrderId()).channel(freeDepositOrder.getChannel()).build();
+        FreeDepositOrderStatusBO orderStatusBO = freeDepositService.getFreeDepositOrderStatus(query);
+        
+        // 更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setPayStatus(orderStatusBO.getAuthStatus());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(freeDepositOrderUpdate);
+        
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setPayStatus(freeDepositOrderUpdate.getPayStatus());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
+        
+        return Triple.of(true, null, null);
+    }
 }

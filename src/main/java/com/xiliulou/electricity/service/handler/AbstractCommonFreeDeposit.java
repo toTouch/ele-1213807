@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
@@ -93,7 +94,7 @@ public abstract class AbstractCommonFreeDeposit {
     private PxzConfig getPxzConfig(Integer tenantId) {
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
-            throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
+            throw new BizException("100427", "免押功能未配置相关信息！请联系客服处理");
         }
         return pxzConfig;
     }
@@ -181,6 +182,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setFqNum(FyConfig.FREE_ORDER_DATE);
         request.setAmount(orderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
         request.setSubject(orderRequest.getSubject());
+        request.setTimeoutExpress("5m");
         
         request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 1));
         request.setEnablePayChannels(FyConstants.PAY_CHANNEL_ZHIMA);
@@ -255,7 +257,7 @@ public abstract class AbstractCommonFreeDeposit {
     private FyConfig getFyConfig(Integer tenantId) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(fyConfig)) {
-            throw new CustomBusinessException("蜂云免押功能未配置相关信息！请联系客服处理");
+            throw new BizException("100428", "免押功能未配置相关信息！请联系客服处理");
         }
         return fyConfig;
     }

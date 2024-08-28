@@ -22,8 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -129,12 +127,12 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         if (Objects.isNull(freeDepositData)) {
             return null;
         }
-        final Integer total = ObjectUtils.defaultIfNull(freeDepositData.getFreeDepositCapacity(), CommonConstant.ZERO) + ObjectUtils.defaultIfNull(freeDepositData.getFyFreeDepositCapacity(), CommonConstant.ZERO);
-        Optional.ofNullable(tenantId).ifPresent(
-                id -> siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                        .tenantId(id.longValue()).addContext("type", RechargeAlarm.SESAME_CREDIT)
-                        .addContext("count", total).build())
-        );
+        final Integer total =
+                ObjectUtils.defaultIfNull(freeDepositData.getFreeDepositCapacity(), CommonConstant.ZERO) + ObjectUtils.defaultIfNull(freeDepositData.getFyFreeDepositCapacity(),
+                        CommonConstant.ZERO);
+        Optional.ofNullable(tenantId).ifPresent(id -> siteMessagePublish.publish(
+                SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis()).tenantId(id.longValue())
+                        .addContext("type", RechargeAlarm.SESAME_CREDIT).addContext("count", total).build()));
         
         return freeDepositData;
     }
@@ -152,7 +150,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     @Override
     public Pair<Boolean, String> rechargeFY(FreeDepositFyRequest params) {
         
-        if (Objects.isNull(params.getFreeDepositCapacity()) && Objects.isNull(params.getByStagesCapacity())){
+        if (Objects.isNull(params.getFreeDepositCapacity()) && Objects.isNull(params.getByStagesCapacity())) {
             return Pair.of(false, "充值次数不能为空");
         }
         
@@ -166,12 +164,16 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
             freeDepositData.setTenantId(params.getTenantId());
         }
         
-        freeDepositData.setFyFreeDepositCapacity(ObjectUtils.defaultIfNull(freeDepositData.getFyFreeDepositCapacity(), CommonConstant.ZERO) + ObjectUtils.defaultIfNull(params.getFreeDepositCapacity(),CommonConstant.ZERO));
+        freeDepositData.setFyFreeDepositCapacity(
+                ObjectUtils.defaultIfNull(freeDepositData.getFyFreeDepositCapacity(), CommonConstant.ZERO) + ObjectUtils.defaultIfNull(params.getFreeDepositCapacity(),
+                        CommonConstant.ZERO));
         freeDepositData.setRechargeTime(System.currentTimeMillis());
-        freeDepositData.setByStagesCapacity(ObjectUtils.defaultIfNull(freeDepositData.getByStagesCapacity(),CommonConstant.ZERO) + ObjectUtils.defaultIfNull(params.getByStagesCapacity(),CommonConstant.ZERO));
+        freeDepositData.setByStagesCapacity(
+                ObjectUtils.defaultIfNull(freeDepositData.getByStagesCapacity(), CommonConstant.ZERO) + ObjectUtils.defaultIfNull(params.getByStagesCapacity(),
+                        CommonConstant.ZERO));
         FreeDepositRechargeRecord rechargeRecord = buildFreeDepositRechargeRecord(freeDepositData, FreeDepositData.FREE_TYPE_FY);
         
-        if (hasData){
+        if (hasData) {
             if (freeDepositDataMapper.update(freeDepositData) > 0) {
                 freeDepositRechargeRecordService.insert(rechargeRecord);
             }
@@ -198,7 +200,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
             this.freeDepositDataMapper.insertOne(freeDepositDataInsert);
             
             //保存充值记录
-            freeDepositRechargeRecordService.insert(buildFreeDepositRechargeRecord(freeDepositDataInsert,FreeDepositData.FREE_TYPE_PXZ));
+            freeDepositRechargeRecordService.insert(buildFreeDepositRechargeRecord(freeDepositDataInsert, FreeDepositData.FREE_TYPE_PXZ));
             return Triple.of(true, "", null);
         }
         
@@ -216,9 +218,10 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         return Triple.of(true, "", null);
     }
     
-    private FreeDepositRechargeRecord buildFreeDepositRechargeRecord(FreeDepositData freeDepositData,Integer freeType) {
+    private FreeDepositRechargeRecord buildFreeDepositRechargeRecord(FreeDepositData freeDepositData, Integer freeType) {
         FreeDepositRechargeRecord freeDepositRechargeRecord = new FreeDepositRechargeRecord();
-        freeDepositRechargeRecord.setFreeRecognizeCapacity(Objects.equals(FreeDepositData.FREE_TYPE_PXZ, freeType)?freeDepositData.getFreeDepositCapacity():freeDepositData.getFyFreeDepositCapacity());
+        freeDepositRechargeRecord.setFreeRecognizeCapacity(
+                Objects.equals(FreeDepositData.FREE_TYPE_PXZ, freeType) ? freeDepositData.getFreeDepositCapacity() : freeDepositData.getFyFreeDepositCapacity());
         freeDepositRechargeRecord.setOperator(SecurityUtils.getUid());
         freeDepositRechargeRecord.setTenantId(freeDepositData.getTenantId());
         freeDepositRechargeRecord.setDelFlag(FreeDepositRechargeRecord.DEL_NORMAL);
@@ -229,4 +232,5 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         
         return freeDepositRechargeRecord;
     }
+    
 }
