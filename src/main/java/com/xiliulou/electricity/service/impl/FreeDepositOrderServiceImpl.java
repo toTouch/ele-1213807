@@ -1567,7 +1567,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder()
                         .tenantId(wechatPayParamsDetails.getTenantId()).franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
                         .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode()).amount(electricityMemberCardOrder.getPayAmount())
-                        .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).rentRebate(batteryMemberCard.getIsRefund())
+                        .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(batteryMemberCard.getIsRefund())
                         .payTime(electricityMemberCardOrder.getCreateTime()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
                 
                 profitSharingTradeOrderList.add(profitSharingTradeOrder);
@@ -1583,7 +1583,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder()
                         .tenantId(wechatPayParamsDetails.getTenantId()).franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
                         .orderNo(insuranceOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
-                        .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).rentRebate(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
+                        .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
                         .payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
                 
                 profitSharingTradeOrderList.add(profitSharingTradeOrder);

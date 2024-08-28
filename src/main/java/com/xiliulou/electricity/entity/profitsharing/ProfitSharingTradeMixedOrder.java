@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.entity.profitsharing;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -12,6 +15,9 @@ import java.io.Serializable;
  * @since 2024-08-27 19:19:18
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProfitSharingTradeMixedOrder implements Serializable {
     
     private static final long serialVersionUID = -80537955302595275L;

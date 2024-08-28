@@ -24,10 +24,6 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     
     @Override
     public void insert(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) {
-        long time = System.currentTimeMillis();
-        profitSharingTradeMixedOrder.setCreateTime(time);
-        profitSharingTradeMixedOrder.setUpdateTime(time);
-        profitSharingTradeMixedOrder.setState(ProfitSharingTradeMixedStateEnum.COMPLETE.getCode());
         profitSharingTradeMixedOrderMapper.insert(profitSharingTradeMixedOrder);
     }
     
