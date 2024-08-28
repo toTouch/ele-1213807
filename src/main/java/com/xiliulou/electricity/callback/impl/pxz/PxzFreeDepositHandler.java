@@ -17,7 +17,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * <p>
@@ -32,13 +31,13 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service
-public class PxzFreeOfChargeHandler extends AbstractBusiness<PxzParams.FreeOfCharge> implements PxzSupport<PxzParams.FreeOfCharge> {
+public class PxzFreeDepositHandler extends AbstractBusiness<PxzParams.FreeDepositOrUnfree> implements PxzSupport<PxzParams.FreeDepositOrUnfree> {
     
-    private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.FREE.getCode(),4,10};
+    private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.FREE.getCode(),4,10,13};
     
     private final FreeDepositDataService freeDepositDataService;
     
-    protected PxzFreeOfChargeHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+    protected PxzFreeDepositHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext, FreeDepositDataService freeDepositDataService) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
         this.freeDepositDataService = freeDepositDataService;
@@ -51,39 +50,42 @@ public class PxzFreeOfChargeHandler extends AbstractBusiness<PxzParams.FreeOfCha
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        boolean isFailed = false;
+    public boolean process(BusinessHandler handler,FreeDepositOrder order,PxzParams.FreeDepositOrUnfree params) {
         
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.freeDeposit(order)) {
-                    isFailed = true;
-                }
-            }
+        if ( FreeDepositOrder.AUTH_FROZEN.equals(params.getAuthStatus()) && FreeDepositOrder.AUTH_FROZEN.equals(order.getAuthStatus())){
+            return true;
         }
-        if (!isFailed){
+        
+        if (FreeDepositOrder.AUTH_TIMEOUT.equals(params.getAuthStatus())){
+            handler.timeout(order);
+            return true;
+        }
+        
+        boolean b = handler.freeDeposit(order);
+        
+        if (b){
             freeDepositDataService.deductionFreeDepositCapacity(order.getTenantId(),1);
         }
-        return buildContext(isFailed);
+        return b;
     }
     
     @Override
-    public String orderId(CallbackContext<PxzParams.FreeOfCharge> callbackContext) {
+    public String orderId(CallbackContext<PxzParams.FreeDepositOrUnfree> callbackContext) {
         return callbackContext.getParams().getTransId();
     }
     
     @Override
-    public Integer successCode(PxzParams.FreeOfCharge params) {
+    public Integer successCode(PxzParams.FreeDepositOrUnfree params) {
         return params.getAuthStatus();
     }
     
     @Override
-    public String authNo(PxzParams.FreeOfCharge params) {
+    public String authNo(PxzParams.FreeDepositOrUnfree params) {
         return params.getAuthNo();
     }
     
     @Override
-    public Integer payStatus(PxzParams.FreeOfCharge params) {
+    public Integer payStatus(PxzParams.FreeDepositOrUnfree params) {
         return null;
     }
 }

@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 
 /**
  * <p>
@@ -29,11 +30,11 @@ import org.springframework.stereotype.Service;
  **/
 @Slf4j
 @Service
-public class FyFreeOfChargeHandler extends AbstractBusiness<FyParams.FreeOfCharge> implements FySupport<FyParams.FreeOfCharge> {
+public class FyFreeDepositHandler extends AbstractBusiness<FyParams.FreeDeposit> implements FySupport<FyParams.FreeDeposit> {
     
     private final FreeDepositDataService freeDepositDataService;
     
-    protected FyFreeOfChargeHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+    protected FyFreeDepositHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext, FreeDepositDataService freeDepositDataService) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
         this.freeDepositDataService = freeDepositDataService;
@@ -46,40 +47,31 @@ public class FyFreeOfChargeHandler extends AbstractBusiness<FyParams.FreeOfCharg
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        
-        boolean isFailed = false;
-        
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.freeDeposit(order)) {
-                    isFailed = true;
-                }
-            }
-        }
-        if (!isFailed){
+    public boolean process(BusinessHandler handler, FreeDepositOrder order, FyParams.FreeDeposit params) {
+        boolean b = handler.freeDeposit(order);
+        if (b){
             freeDepositDataService.deductionFyFreeDepositCapacity(order.getTenantId(), 1);
         }
-        return buildContext(isFailed);
+        return b;
     }
     
     @Override
-    public String orderId(CallbackContext<FyParams.FreeOfCharge> callbackContext) {
+    public String orderId(CallbackContext<FyParams.FreeDeposit> callbackContext) {
         return callbackContext.getParams().getThirdOrderNo();
     }
     
     @Override
-    public Integer successCode(FyParams.FreeOfCharge params) {
+    public Integer successCode(FyParams.FreeDeposit params) {
         return FreeDepositOrder.AUTH_FROZEN;
     }
     
     @Override
-    public String authNo(FyParams.FreeOfCharge params) {
+    public String authNo(FyParams.FreeDeposit params) {
         return params.getAuthNo();
     }
     
     @Override
-    public Integer payStatus(FyParams.FreeOfCharge params) {
+    public Integer payStatus(FyParams.FreeDeposit params) {
         return null;
     }
     

@@ -16,9 +16,13 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
  **/
 public interface BusinessHandler {
     
+    boolean support(Integer type);
+    
     boolean freeDeposit(FreeDepositOrder order);
     
-    boolean unfreeDeposit(FreeDepositOrder order);
+    boolean unfree(FreeDepositOrder order);
     
-    boolean withholdDeposit(FreeDepositOrder order);
+    boolean authPay(FreeDepositOrder order);
+    
+    default void timeout(FreeDepositOrder order){};
 }

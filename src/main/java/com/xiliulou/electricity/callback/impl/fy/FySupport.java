@@ -4,6 +4,7 @@ package com.xiliulou.electricity.callback.impl.fy;
 import com.xiliulou.electricity.callback.CallbackHandler;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 
 /**
@@ -21,12 +22,17 @@ public interface FySupport<T> extends CallbackHandler<T> {
     default boolean support(Integer channel) {
         return FreeDepositServiceWayEnums.FY.getChannel().equals(channel);
     }
-    
-    default CallbackContext<?> buildContext(boolean isFailed){
+    default CallbackContext<?> success(){
         return CallbackContext.builder()
-                .params(isFailed ? FreeDepositConstant.AUTH_FY_SUCCESS_RSP : FreeDepositConstant.FY_SUCCESS)
+                .params(FreeDepositConstant.FY_SUCCESS)
                 .next(Boolean.FALSE)
-                .success(!isFailed)
+                .build();
+    }
+    
+    default CallbackContext<?> failed(){
+        return CallbackContext.builder()
+                .params(FreeDepositConstant.FY_FAILED)
+                .next(Boolean.FALSE)
                 .build();
     }
 }

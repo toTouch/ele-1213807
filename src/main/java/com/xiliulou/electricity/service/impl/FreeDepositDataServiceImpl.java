@@ -143,6 +143,15 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     }
     
     @Override
+    public Integer deductionFreeDepositCapacity(Integer tenantId, Integer count , Integer channel) {
+        if (channel.equals(FreeDepositData.FREE_TYPE_PXZ)){
+            return this.freeDepositDataMapper.deductionFreeDepositCapacity(tenantId, count);
+        }else {
+            return this.freeDepositDataMapper.deductionFyFreeDepositCapacity(tenantId, count);
+        }
+    }
+    
+    @Override
     public Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count) {
         return this.freeDepositDataMapper.deductionFyFreeDepositCapacity(tenantId, count);
     }

@@ -18,7 +18,7 @@ import lombok.Data;
 public class FyParams {
     
     @Data
-    public static class FreeOfCharge{
+    public static class FreeDeposit {
         private String thirdOrderNo; //	String(100)	Y	订单号
         private String platformOrderNo; //	String(100)	Y	服务平台订单号
         private String outOrderNo; //	String(100)	N	外部平台订单号，如支付宝
@@ -30,7 +30,7 @@ public class FyParams {
     }
     
     @Data
-    public static class Withhold{
+    public static class AuthPayOrUnfree {
         private String payNo; //	String(100)	Y	资金处理订单号
         private String thirdOrderNo; //	String(100)	Y	预授权订单号
         private String platformOrderNo; //	String(100)	Y	资金处理服务平台订单号

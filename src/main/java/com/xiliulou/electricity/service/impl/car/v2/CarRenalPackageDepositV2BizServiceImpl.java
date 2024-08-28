@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.car.v2;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -45,6 +46,8 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
+import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
@@ -131,10 +134,219 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
     
     @Resource
+    private UserBatteryDepositService userBatteryDepositService;
+    
+    @Resource
+    private FreeDepositDataService freeDepositDataService;
+    
+    @Resource
     private RedisService redisService;
     
     @Resource
     private FreeDepositService freeDepositService;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    private SiteMessagePublish siteMessagePublish;
+    
+    @Resource
+    private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
+    
+    @Resource
+    private CarRentalPackageOrderService carRentalPackageOrderService;
+    
+    @Resource
+    private InsuranceUserInfoService insuranceUserInfoService;
+    
+    @Resource
+    private InsuranceOrderService insuranceOrderService;
+    
+    @Resource
+    private UserBizService userBizService;
+    
+    @Resource
+    private UserBatteryTypeService userBatteryTypeService;
+    
+    @Resource
+    private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Resource
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+    
+    @Resource
+    private ElectricityCarService carService;
+    
+    @Resource
+    private ElectricityBatteryService electricityBatteryService;
+    
+    @Resource
+    private ElectricityTradeOrderService electricityTradeOrderService;
+    
+    @Resource
+    private WechatConfig wechatConfig;
+    
+    @Resource
+    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Override
+    public FreeDepositUserInfoVo queryFreeDepositStatus(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 定义返回信息
+        FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
+        
+        // 检测用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (ObjectUtils.isEmpty(userInfo)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_user_info. uid is {}", uid);
+            return null;
+        }
+        
+        // 查询会员期限信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_car_rental_package_member_term. uid is {}", uid);
+            return null;
+        }
+        
+        // 查询免押记录信息
+        String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(freeDepositOrder)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_free_deposit_order. depositPayOrderNo is {}", depositPayOrderNo);
+            return null;
+        }
+        
+        // 成功返回判定，前端按照时间比对轮询
+        Integer authStatus = freeDepositOrder.getAuthStatus();
+        Long createTime = freeDepositOrder.getCreateTime();
+        Integer depositType = freeDepositOrder.getDepositType();
+        if (Objects.equals(authStatus, FreeDepositOrder.AUTH_FROZEN)) {
+            if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(depositType)) {
+                freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+                freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+            }
+            if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
+                freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+                freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+            }
+            return freeDepositUserInfoVo;
+        }
+        
+        // 查询押金缴纳信息
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_car_rental_package_deposit_pay. depositPayOrderNo is {}", depositPayOrderNo);
+            return null;
+        }
+        
+        if (!PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType())) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. t_car_rental_package_deposit_pay payType is wrong. depositPayOrderNo is {}",
+                    depositPayOrderNo);
+            return null;
+        }
+        
+        FreeDepositOrderStatusBO depositOrderStatus = freeDepositService.getFreeDepositOrderStatus(
+                FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
+                        .orderId(freeDepositOrder.getOrderId()).build());
+
+        // 返回值判定
+        if (ObjectUtils.isEmpty(depositOrderStatus)) {
+            log.warn("CarRenalPackageDepositBizService queryFreeDepositStatus, pxzDepositService.queryFreeDepositOrder failed. depositPayOrderNo is {}", depositPayOrderNo);
+            return null;
+        }
+        
+        // 免押成功
+        if (Objects.equals(depositOrderStatus.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            saveFreeDepositSuccessTx(depositPayEntity, freeDepositOrder, depositOrderStatus);
+        }
+        
+        // 查询结果没有免押成功
+        if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(depositType)) {
+            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+        }
+        if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
+            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+        }
+        return freeDepositUserInfoVo;
+    }
+    
+    /**
+     * 免押成功查询，成功之后的事务操作
+     *
+     * @param depositPayEntity  押金缴纳订单数据
+     * @param freeDepositOrder  免押记录数据
+     * @param depositOrderStatus 请求三方查询数据
+     */
+    public void saveFreeDepositSuccessTx(CarRentalPackageDepositPayPo depositPayEntity, FreeDepositOrder freeDepositOrder, FreeDepositOrderStatusBO depositOrderStatus) {
+        Integer tenantId = depositPayEntity.getTenantId();
+        Integer franchiseeId = depositPayEntity.getFranchiseeId();
+        Integer storeId = depositPayEntity.getStoreId();
+        Long uid = depositPayEntity.getUid();
+        Integer rentalPackageType = depositPayEntity.getRentalPackageType();
+        String depositPayOrderNo = depositPayEntity.getOrderNo();
+        
+        // 1. 更新免押记录的状态
+        FreeDepositOrder freeDepositOrderModify = new FreeDepositOrder();
+        freeDepositOrderModify.setId(freeDepositOrder.getId());
+        freeDepositOrderModify.setAuthNo(depositOrderStatus.getAuthNo());
+        freeDepositOrderModify.setAuthStatus(depositOrderStatus.getAuthStatus());
+        freeDepositOrderModify.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderModify);
+        // 2. 成功之后更新各种状态
+        if (FreeDepositOrder.AUTH_FROZEN.equals(depositOrderStatus.getAuthStatus())) {
+            // 1. 扣减免押次数
+            freeDepositDataService.deductionFreeDepositCapacity(tenantId, 1 , freeDepositOrder.getChannel());
+            // 2. 更新押金缴纳订单数据
+            carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.SUCCESS.getCode());
+            // 3. 更新租车会员信息状态
+            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), uid);
+            // 4. 更新用户表押金状态
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setUid(uid);
+            
+            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            Long boundFranchiseeId = userInfo.getFranchiseeId();
+            if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
+                userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
+            }
+            
+            Long boundStoreId = userInfo.getStoreId();
+            if (Objects.isNull(boundStoreId) || Objects.equals(boundStoreId, NumberConstant.ZERO_L) || Objects.equals(boundFranchiseeId, Long.valueOf(franchiseeId))) {
+                userInfoUpdate.setStoreId(Long.valueOf(storeId));
+            }
+            
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            if (RentalPackageTypeEnum.CAR.getCode().equals(rentalPackageType)) {
+                userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+            }
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+                userInfoUpdate.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
+            }
+            userInfoService.updateByUid(userInfoUpdate);
+            // 车电一体，同步押金
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+                log.info("saveFreeDepositSuccessTx, userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
+                userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
+            }
+        }
+        // 3. 超时关闭之后更新状态
+        if (FreeDepositOrder.AUTH_TIMEOUT.equals(depositOrderStatus.getAuthStatus())) {
+            // 1. 更新押金缴纳订单数据
+            carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.FAILED.getCode());
+            // 2. 删除会员期限表数据
+            carRentalPackageMemberTermService.delByUidAndTenantId(tenantId, uid, uid);
+        }
+    }
     
     /**
      * 创建免押订单，生成二维码<br /> 创建押金缴纳订单、生成免押记录
@@ -250,6 +462,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             throw new BizException(triple.getMiddle(), triple.getRight().toString());
         }
         FreeDepositOrderDTO freeDepositOrderDTO = (FreeDepositOrderDTO) triple.getRight();
+        freeDepositOrder.setChannel(freeDepositOrderDTO.getChannel());
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
         
@@ -268,7 +481,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
      * @param freeDepositOrder           免押记录
      * @param memberTermEntity           新增的会员期限信息
      */
-    //@Transactional(rollbackFor = Exception.class)
     public void saveFreeDepositTx(CarRentalPackageDepositPayPo carRentalPackageDepositPay, FreeDepositOrder freeDepositOrder, CarRentalPackageMemberTermPo memberTermEntity) {
         carRentalPackageDepositPayService.insert(carRentalPackageDepositPay);
         freeDepositOrderService.insert(freeDepositOrder);
@@ -365,6 +577,788 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         carRentalPackageDepositPay.setCreateUid(uid);
         carRentalPackageDepositPay.setRentalPackageDeposit(carRentalPackage.getDeposit());
         return carRentalPackageDepositPay;
+    }
+    
+    
+    
+    /**
+     * C端退押申请
+     *
+     * @param tenantId          租户ID
+     * @param uid               用户ID
+     * @param depositPayOrderNo 押金缴纳支付订单编码
+     * @return
+     */
+    @Override
+    public boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, depositPayOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        if (Objects.isNull(userInfo)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        // 获取加锁 KEY
+        String buyLockKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_REFUND_DEPOSIT_ORDER_UID_KEY, uid);
+        
+        // 加锁
+        if (!redisService.setNx(buyLockKey, uid.toString(), 5 * 1000L, false)) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        // 查询会员期限信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+        }
+        
+        // 检测押金缴纳订单数据
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+            log.warn("CarRenalPackageDepositBizService.refundDeposit failed. car_rental_package_deposit_pay not found or status is error. uid is {}, depositPayOrderNo is {}", uid,
+                    depositPayOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+        
+        Integer payType = depositPayEntity.getPayType();
+        if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+            log.warn("CarRenalPackageDepositBizService.refundDeposit failed. t_car_rental_package_deposit_pay pay type is {}, depositPayOrderNo is {}", payType, depositPayOrderNo);
+            throw new BizException("300045", "请前往门店退押金");
+        }
+        
+        // 退押检测
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        
+        // 判定是否退押审核
+        boolean depositAuditFlag = true;
+        if (BigDecimal.ZERO.compareTo(memberTermEntity.getDeposit()) == 0) {
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            Integer zeroDepositAuditEnabled = electricityConfig.getIsZeroDepositAuditEnabled();
+            depositAuditFlag = ElectricityConfig.ENABLE_ZERO_DEPOSIT_AUDIT.equals(zeroDepositAuditEnabled);
+        }
+        
+        // 生成退押申请单
+        CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.WX_APPLET,
+                depositAuditFlag, payType, null, uid, null);
+        
+        // 待审核
+        if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
+            // 发送站内信
+            siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_REFUND)
+                    .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                    .addContext("orderNo", refundDepositInsertEntity.getOrderNo()).addContext("amount", refundDepositInsertEntity.getApplyAmount().toString()).build());
+        } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 退押申请事务处理
+     *
+     * @param refundDepositInsertEntity 退押申请单数据
+     * @param memberTermEntity          会员期限实体数据
+     * @param optId                     操作人ID
+     * @param delFlag                   删除标识
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveRefundDepositInfoTx(CarRentalPackageDepositRefundPo refundDepositInsertEntity, CarRentalPackageMemberTermPo memberTermEntity, Long optId, boolean delFlag) {
+        carRentalPackageDepositRefundService.insert(refundDepositInsertEntity);
+        if (!delFlag) {
+            // 处理状态
+            carRentalPackageMemberTermService.updateStatusById(memberTermEntity.getId(), MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode(), optId);
+        } else {
+            // 作废所有的套餐购买订单（未使用、使用中）
+            carRentalPackageOrderService.refundDepositByUid(memberTermEntity.getTenantId(), memberTermEntity.getUid(), optId);
+            // 查询用户保险
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
+            // 按照人+类型，作废用户保险
+            insuranceUserInfoService.deleteByUidAndType(memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
+            // 作废保险订单
+            if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
+                insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+            }
+            // 删除会员期限表信息
+            carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), optId);
+            // 清理user信息/解绑车辆/解绑电池
+            userBizService.depositRefundUnbind(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getRentalPackageType());
+            // 车电一体押金，同步删除电池那边的数据
+            if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+                log.info("saveRefundDepositInfoTx, delete from battery member info. depositPayOrderNo is {}", memberTermEntity.getDepositPayOrderNo());
+                userBatteryTypeService.deleteByUid(memberTermEntity.getUid());
+                userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
+            }
+            
+            // 删除用户分组
+            userInfoGroupDetailService.handleAfterRefundDeposit(memberTermEntity.getUid());
+        }
+    }
+    
+    /**
+     * 构建退押申请单数据
+     *
+     * @param memberTermEntity  会员期限信息
+     * @param depositPayOrderNo 押金缴纳订单编码
+     * @param systemDefinition  操作系统
+     * @param depositAuditFlag  退押审批标识
+     * @param payType           支付方式
+     * @param refundAmount      实际退款金额(可为空，后端操作不能为空)
+     * @param optUid            操作用户UID
+     * @param compelOffLine     是否强制线下退款
+     * @return
+     */
+    private CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo,
+            SystemDefinitionEnum systemDefinition, boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid, Integer compelOffLine) {
+        CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
+        refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
+        refundDepositInsertEntity.setUid(memberTermEntity.getUid());
+        refundDepositInsertEntity.setDepositPayOrderNo(depositPayOrderNo);
+        refundDepositInsertEntity.setApplyAmount(memberTermEntity.getDeposit());
+        refundDepositInsertEntity.setTenantId(memberTermEntity.getTenantId());
+        refundDepositInsertEntity.setFranchiseeId(memberTermEntity.getFranchiseeId());
+        refundDepositInsertEntity.setStoreId(memberTermEntity.getStoreId());
+        refundDepositInsertEntity.setCreateUid(memberTermEntity.getUid());
+        refundDepositInsertEntity.setPayType(payType);
+        refundDepositInsertEntity.setRentalPackageType(memberTermEntity.getRentalPackageType());
+        // 默认状态，待审核
+        refundDepositInsertEntity.setRefundState(RefundStateEnum.PENDING_APPROVAL.getCode());
+        
+        // 设置退款状态
+        if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {
+            refundDepositInsertEntity.setRealAmount(refundAmount);
+            refundDepositInsertEntity.setCreateUid(optUid);
+            
+            // 若为强制线下退款，则默认退款成功，并未将线上的退款方式，更改为线下，免押不影响，非强制线下退款不影响
+            if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine)) {
+                refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setPayType(PayTypeEnum.OFF_LINE.getCode());
+                    refundDepositInsertEntity.setCompelOffLine(YesNoEnum.YES.getCode());
+                }
+            } else {
+                // 0元退
+                if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
+                    // 线上、线下，退款成功
+                    if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                        refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    }
+                } else {
+                    // 线下，退款成功
+                    if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                        refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    }
+                    // 线上、免押，退款中
+                    if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                        refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                    }
+                }
+            }
+        }
+        
+        if (SystemDefinitionEnum.WX_APPLET.getCode().equals(systemDefinition.getCode())) {
+            // 不需要审核，必定是0元退押，所以直接退款成功即可
+            if (!depositAuditFlag) {
+                // 线上、线下 退款成功
+                refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                refundDepositInsertEntity.setRealAmount(BigDecimal.ZERO);
+                // 免押，退款中
+                if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    refundDepositInsertEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                }
+            }
+        }
+        
+        return refundDepositInsertEntity;
+    }
+    
+    
+    /**
+     * 调用微信支付
+     *
+     * @param refundOrder
+     * @return
+     * @throws WechatPayException
+     */
+    private WechatJsapiRefundResultDTO wxRefund(RefundOrder refundOrder) throws WechatPayException {
+        //第三方订单号
+        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
+        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
+            log.warn("CarRenalPackageDepositBizService.wxRefund failed, not found t_electricity_trade_order. orderId is {}", refundOrder.getOrderId());
+            throw new BizException("300000", "数据有误");
+        }
+        
+        //调用退款
+        WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
+        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
+        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId());
+        
+        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
+        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
+        wechatV3RefundRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        wechatV3RefundRequest.setReason("押金退款");
+        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
+        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+        wechatV3RefundRequest.setTotal(electricityTradeOrder.getTotalFee().intValue());
+        wechatV3RefundRequest.setCurrency("CNY");
+        
+        // 调用支付配置参数
+        WechatPayParamsDetails wechatPayParamsDetails = null;
+        try {
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
+                    electricityTradeOrder.getPayFranchiseeId());
+        } catch (Exception e) {
+            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
+            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
+        }
+        
+        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+        
+        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
+    }
+    
+    
+    /**
+     * 退押检测
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     */
+    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType, String depositPayOrderNo) {
+        
+        // 是否存在正常的退押申请单
+        CarRentalPackageDepositRefundPo depositRefundPo = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isNotEmpty(depositRefundPo) && !RefundStateEnum.getRefundStateList().contains(depositRefundPo.getRefundState())) {
+            throw new BizException("100031", "不能重复退押金");
+        }
+        
+        // 检测是否存在滞纳金
+        if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
+        }
+        
+        // 查询设备(车辆)
+        ElectricityCar userCar = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(userCar) && StringUtils.isNotBlank(userCar.getSn())) {
+            throw new BizException("300041", "需先退还资产再退押金");
+        }
+        
+        // 车电一体，查询设备(电池)
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(uid);
+            if (ObjectUtils.isNotEmpty(battery)) {
+                throw new BizException("300041", "需先退还资产再退押金");
+            }
+        }
+    }
+    
+    
+    /**
+     * 运营商端创建退押，特殊退押(2.0过度数据)
+     *
+     * @param optModel 操作数据模型
+     * @param optUid   操作用户UID
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean refundDepositCreateSpecial(CarRentalPackageDepositRefundOptModel optModel, Long optUid) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getTenantId(), optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        Integer tenantId = optModel.getTenantId();
+        Long uid = optModel.getUid();
+        String depositPayOrderNo = optModel.getDepositPayOrderNo();
+        BigDecimal realAmount = optModel.getRealAmount();
+        
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        if (Objects.isNull(userInfo)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        // 查询会员期限信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)/* || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())*/) {
+            log.warn("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_member_term not found. uid is {}", uid);
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 检测是否存在滞纳金
+        if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
+        }
+        
+        // 查询设备(车辆)
+        ElectricityCar userCar = carService.selectByUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(userCar) && StringUtils.isNotBlank(userCar.getSn())) {
+            throw new BizException("300041", "需先退还资产再退押金");
+        }
+        
+        // 车电一体，查询设备(电池)
+        if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(uid);
+            if (ObjectUtils.isNotEmpty(battery)) {
+                throw new BizException("300041", "需先退还资产再退押金");
+            }
+        }
+        
+        // 检测押金缴纳订单数据
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState()) || 0L != depositPayEntity.getCreateUid()) {
+            log.warn(
+                    "CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_deposit_pay not found or status or createUserId is error. uid is {}, depositPayOrderNo is {}",
+                    uid, depositPayOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 退押检测
+        // checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        
+        // 否则提前申请
+        CarRentalPackageDepositRefundPo carRentalPackageDepositRefundPo = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isNotEmpty(carRentalPackageDepositRefundPo) && RefundStateEnum.PENDING_APPROVAL.getCode().equals(carRentalPackageDepositRefundPo.getRefundState())) {
+            carRentalPackageDepositRefundService.delById(carRentalPackageDepositRefundPo.getId());
+        }
+        
+        if (ObjectUtils.isNotEmpty(carRentalPackageDepositRefundPo) && (RefundStateEnum.REFUNDING.getCode().equals(carRentalPackageDepositRefundPo.getRefundState())
+                || RefundStateEnum.SUCCESS.getCode().equals(carRentalPackageDepositRefundPo.getRefundState()))) {
+            log.warn("CarRenalPackageDepositBizService.refundDepositCreateSpecial failed. t_car_rental_package_deposit_refund status is error. uid is {}, depositPayOrderNo is {}",
+                    uid, depositPayOrderNo);
+            throw new BizException("300000", "请勿重复操作此订单");
+        }
+        
+        // 默认线下
+        Integer payType = PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType()) ? PayTypeEnum.EXEMPT.getCode() : PayTypeEnum.OFF_LINE.getCode();
+        
+        // 生成退押申请单
+        CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.BACKGROUND,
+                false, payType, realAmount, optUid, optModel.getCompelOffLine());
+        
+        // 退款中（只能是免押）
+        if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
+            // 退款中，先落库
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
+            
+            // 免押
+            if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                String freeDepositOrderNo = depositPayEntity.getOrderNo();
+                FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                if (ObjectUtils.isEmpty(freeDepositOrder)) {
+                    log.warn("refundDepositCreateSpecial failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
+                    throw new BizException("300000", "数据有误");
+                }
+                
+                FreeDepositOrderStatusBO depositOrderStatus = freeDepositService.getFreeDepositOrderStatus(
+                        FreeDepositOrderStatusQuery.builder().tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).orderId(freeDepositOrder.getOrderId())
+                                .channel(freeDepositOrder.getChannel()).build());
+                
+                if (ObjectUtils.isEmpty(depositOrderStatus) && !FreeDepositOrder.AUTH_UN_FREEZING.equals(depositOrderStatus.getAuthStatus())) {
+                    throw new BizException("100406", "免押解冻失败");
+                }
+                
+                FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+                freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+                freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+                freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositOrderService.update(freeDepositOrderUpdate);
+            }
+        } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
+        }
+        return true;
+    }
+    
+    /**
+     * 运营商端创建退押
+     *
+     * @param optModel 租户ID
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel, Long optUid) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getTenantId(), optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        Integer tenantId = optModel.getTenantId();
+        Long uid = optModel.getUid();
+        String depositPayOrderNo = optModel.getDepositPayOrderNo();
+        BigDecimal realAmount = optModel.getRealAmount();
+        
+        // 判定用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        if (Objects.isNull(userInfo)) {
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        // 查询会员期限信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            throw new BizException("300057", "您有正在审核中/已冻结流程，不支持该操作");
+        }
+        
+        // 检测押金缴纳订单数据
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+            log.warn("CarRenalPackageDepositBizService.refundDepositCreate failed. car_rental_package_deposit_pay not found or status is error. uid is {}, depositPayOrderNo is {}",
+                    uid, depositPayOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 退押检测
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        
+        Integer payType = depositPayEntity.getPayType();
+        
+        // 生成退押申请单
+        CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.BACKGROUND,
+                false, payType, realAmount, optUid, optModel.getCompelOffLine());
+        
+        // 待审核
+        if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
+            // 实际退款0元，则直接成功，不调用退款接口
+            if (BigDecimal.ZERO.compareTo(realAmount) == 0) {
+                // 退款中，先落库
+                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
+            } else {
+                // 退款中，先落库，在调用退款接口
+                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
+                
+                // 线上，调用微信
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                    try {
+                        // 根据购买订单编码获取当初的支付流水
+                        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(depositPayEntity.getRentalPackageOrderNo());
+                        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
+                            log.warn("refundDepositCreate faild. not find t_electricity_trade_order. orderNo is {}", depositPayEntity.getRentalPackageOrderNo());
+                            throw new BizException("300000", "数据有误");
+                        }
+                        Integer status = electricityTradeOrder.getStatus();
+                        if (ElectricityTradeOrder.STATUS_INIT.equals(status) || ElectricityTradeOrder.STATUS_FAIL.equals(status)) {
+                            log.warn("refundDepositCreate faild. t_electricity_trade_order status is wrong. orderNo is {}", depositPayEntity.getRentalPackageOrderNo());
+                            throw new BizException("300000", "数据有误");
+                        }
+                        
+                        // 调用微信支付，进行退款
+                        RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
+                                .refundOrderNo(refundDepositInsertEntity.getOrderNo()).refundAmount(refundDepositInsertEntity.getRealAmount()).build();
+                        log.info("refundDepositCreate, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
+                        WechatJsapiRefundResultDTO wxRefundDto = wxRefund(refundOrder);
+                        log.info("refundDepositCreate, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
+                        
+                    } catch (WechatPayException e) {
+                        log.error("refundDepositCreate failed.", e);
+                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                        carRentalPackageMemberTermService.deleteCache(memberTermEntity.getTenantId(), memberTermEntity.getUid());
+                        throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
+                    }
+                }
+                
+                // 免押
+                if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    String freeDepositOrderNo = depositPayEntity.getOrderNo();
+                    FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                    if (ObjectUtils.isEmpty(freeDepositOrder)) {
+                        log.warn("refundDepositCreate failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
+                        throw new BizException("300000", "数据有误");
+                    }
+                    
+                    Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
+                            UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getTransAmt().toString()).build());
+                    if (!triple.getLeft()){
+                        throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
+                    }
+                    
+                    FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+                    freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+                    freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+                    freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    freeDepositOrderService.update(freeDepositOrderUpdate);
+                }
+            }
+        } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
+            saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
+        }
+        
+        return true;
+    }
+    
+    
+    
+    /**
+     * 审批退还押金申请单
+     *
+     * @param refundDepositOrderNo 退押申请单
+     * @param approveFlag          审批状态
+     * @param apploveDesc          审批意见
+     * @param apploveUid           审批人
+     * @param refundAmount         退款金额
+     * @param compelOffLine        强制线下退款
+     * @return
+     */
+    @Override
+    public boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount,
+            Integer compelOffLine) {
+        if (!ObjectUtils.allNotNull(refundDepositOrderNo, approveFlag, apploveUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        // 退押订单
+        CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(refundDepositOrderNo);
+        if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(depositRefundEntity.getRefundState())) {
+            log.warn("approveRefundDepositOrder faild. not find car_rental_package_deposit_refund or status error. refundDepositOrderNo is {}", refundDepositOrderNo);
+            throw new BizException("300000", "数据有误");
+        }
+        
+        Integer payType = depositRefundEntity.getPayType();
+        if ((PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) && approveFlag && ObjectUtils.isEmpty(refundAmount)) {
+            throw new BizException("300029", "退押金额不能为空");
+        }
+        
+        // 租车会员信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
+        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode().equals(memberTermEntity.getStatus())) {
+            log.warn("approveRefundRentOrder faild. not find t_car_rental_package_member_term or status error. uid is {}", depositRefundEntity.getUid());
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // 押金缴纳编码
+        String orderNo = memberTermEntity.getDepositPayOrderNo();
+        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(orderNo);
+        if (ObjectUtils.isEmpty(depositPayEntity) || !PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
+            log.warn("approveRefundRentOrder faild. not find t_car_rental_package_deposit_pay or payState error. orderNo is {}", orderNo);
+            throw new BizException("300000", "数据有误");
+        }
+        
+        // TX 事务落库
+        saveApproveRefundDepositOrderTx(refundDepositOrderNo, approveFlag, apploveDesc, apploveUid, depositRefundEntity, refundAmount, depositPayEntity, compelOffLine);
+        
+        return true;
+    }
+    
+    /**
+     * 退押审批，TX事务处理
+     *
+     * @param refundDepositOrderNo 退押申请订单号
+     * @param approveFlag          审批状态
+     * @param apploveDesc          审批意见
+     * @param apploveUid           审批人
+     * @param refundAmount         退款金额
+     * @param depositRefundEntity  退押申请单信息
+     * @param depositPayEntity     押金缴纳信息
+     * @param compelOffLine        强制线下退押
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
+            CarRentalPackageDepositRefundPo depositRefundEntity, BigDecimal refundAmount, CarRentalPackageDepositPayPo depositPayEntity, Integer compelOffLine) {
+        
+        CarRentalPackageDepositRefundPo depositRefundUpdateEntity = new CarRentalPackageDepositRefundPo();
+        depositRefundUpdateEntity.setOrderNo(refundDepositOrderNo);
+        depositRefundUpdateEntity.setAuditTime(System.currentTimeMillis());
+        depositRefundUpdateEntity.setRemark(apploveDesc);
+        depositRefundUpdateEntity.setUpdateUid(apploveUid);
+        depositRefundUpdateEntity.setRealAmount(refundAmount);
+        
+        // 审核通过
+        if (approveFlag) {
+            // 交易方式
+            Integer payType = depositRefundEntity.getPayType();
+            
+            // 强制线下退款
+            if (ObjectUtils.isNotEmpty(compelOffLine) && YesNoEnum.YES.getCode().equals(compelOffLine) && PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                payType = PayTypeEnum.OFF_LINE.getCode();
+                depositRefundUpdateEntity.setPayType(payType);
+                depositRefundUpdateEntity.setCompelOffLine(compelOffLine);
+            }
+            
+            // 非零元退押
+            if (BigDecimal.ZERO.compareTo(refundAmount) < 0) {
+                // 赋值退款单状态：审核通过
+                depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
+                
+                // 线下
+                if (PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    // 赋值退款单状态：退款成功
+                    depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                    // 作废所有的套餐购买订单（未使用、使用中）、
+                    carRentalPackageOrderService.refundDepositByUid(depositPayEntity.getTenantId(), depositPayEntity.getUid(), apploveUid);
+                    // 查询用户保险
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                    // 按照人+类型，作废保险
+                    insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositRefundEntity.getRentalPackageType());
+                    // 作废保险订单
+                    if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
+                        insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                    }
+                    // 删除会员期限表信息
+                    carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), apploveUid);
+                    // 清理user信息/解绑车辆/解绑电池
+                    userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                    // 车电一体押金，同步删除电池那边的数据
+                    if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
+                        log.info("saveApproveRefundDepositOrderTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
+                        userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
+                        userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
+                    }
+                    
+                    // 删除用户分组
+                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
+                }
+                
+                // 线上，调用微信退款
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
+                    String rentalPackageOrderNo = depositPayEntity.getRentalPackageOrderNo();
+                    if (StringUtils.isBlank(rentalPackageOrderNo)) {
+                        log.warn("saveApproveRefundDepositOrderTx faild. not find t_electricity_trade_order. orderNo is {}", rentalPackageOrderNo);
+                        throw new BizException("300000", "数据有误");
+                    }
+                    try {
+                        // 根据购买订单编码获取当初的支付流水
+                        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(rentalPackageOrderNo);
+                        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
+                            log.warn("saveApproveRefundDepositOrderTx faild. not find t_electricity_trade_order. orderNo is {}", rentalPackageOrderNo);
+                            throw new BizException("300000", "数据有误");
+                        }
+                        Integer status = electricityTradeOrder.getStatus();
+                        if (ElectricityTradeOrder.STATUS_INIT.equals(status) || ElectricityTradeOrder.STATUS_FAIL.equals(status)) {
+                            log.warn("saveApproveRefundDepositOrderTx faild. t_electricity_trade_order status is wrong. orderNo is {}", rentalPackageOrderNo);
+                            throw new BizException("300000", "数据有误");
+                        }
+                        
+                        // 调用微信支付，进行退款
+                        RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
+                                .refundOrderNo(refundDepositOrderNo).refundAmount(refundAmount).build();
+                        log.info("saveApproveRefundDepositOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
+                        WechatJsapiRefundResultDTO wxRefundDto = wxRefund(refundOrder);
+                        log.info("saveApproveRefundDepositOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
+                        
+                        // 赋值退款单状态：退款中
+                        depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                        
+                    } catch (WechatPayException e) {
+                        log.error("saveApproveRefundDepositOrderTx failed.", e);
+                        // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
+                        carRentalPackageMemberTermService.deleteCache(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
+                        throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
+                    }
+                }
+                
+                // 免押
+                if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    // 赋值退款单状态：退款中
+                    depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                    
+                    String freeDepositOrderNo = depositPayEntity.getOrderNo();
+                    FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                    if (ObjectUtils.isEmpty(freeDepositOrder)) {
+                        log.warn("saveApproveRefundDepositOrderTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
+                        throw new BizException("300000", "数据有误");
+                    }
+                    
+                    Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
+                            UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getTransAmt().toString()).build());
+                    if (!triple.getLeft()){
+                        throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
+                    }
+                    
+                    FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+                    freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+                    freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+                    freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    freeDepositOrderService.update(freeDepositOrderUpdate);
+                }
+                
+            } else {
+                // 零元退押
+                depositRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+                
+                // 线下、线上
+                if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
+                    // 作废所有的套餐购买订单（未使用、使用中）、
+                    carRentalPackageOrderService.refundDepositByUid(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
+                    // 查询用户保险
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                    // 按照人+类型，作废保险
+                    insuranceUserInfoService.deleteByUidAndType(depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                    // 作废保险订单
+                    if (ObjectUtils.isNotEmpty(insuranceUserInfo)) {
+                        insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+                    }
+                    // 删除会员期限表信息
+                    carRentalPackageMemberTermService.delByUidAndTenantId(depositPayEntity.getTenantId(), depositPayEntity.getUid(), null);
+                    // 清理user信息/解绑车辆/解绑电池
+                    userBizService.depositRefundUnbind(depositPayEntity.getTenantId(), depositPayEntity.getUid(), depositPayEntity.getRentalPackageType());
+                    // 车电一体押金，同步删除电池那边的数据
+                    if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(depositPayEntity.getRentalPackageType())) {
+                        log.info("saveApproveRefundDepositOrderTx, delete from battery member info. depositPayOrderNo is {}", depositRefundEntity.getOrderNo());
+                        userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
+                        userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
+                    }
+                    
+                    // 删除用户分组
+                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
+                }
+                
+                // 免押
+                if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
+                    // 赋值退款单状态：退款中
+                    depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+                    
+                    String freeDepositOrderNo = depositPayEntity.getOrderNo();
+                    FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                    if (ObjectUtils.isEmpty(freeDepositOrder)) {
+                        log.warn("saveApproveRefundDepositOrderTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
+                        throw new BizException("300000", "数据有误");
+                    }
+                    
+                    Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
+                            UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getTransAmt().toString()).build());
+                    if (!triple.getLeft()){
+                        throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
+                    }
+                    
+                    FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+                    freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+                    freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+                    freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    freeDepositOrderService.update(freeDepositOrderUpdate);
+                }
+            }
+            
+            carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+        } else {
+            
+            // 1. 更新退押申请单状态
+            depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+            carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+            
+            // 2. 更新会员期限
+            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(),
+                    apploveUid);
+        }
     }
     
 }
