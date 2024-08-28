@@ -1,11 +1,10 @@
-package com.xiliulou.electricity.callback.impl.pxz;
+package com.xiliulou.electricity.callback.impl.fy;
 
 
 import com.xiliulou.electricity.callback.AbstractBusiness;
 import com.xiliulou.electricity.callback.BusinessHandler;
-import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
-import com.xiliulou.electricity.dto.callback.PxzParams;
+import com.xiliulou.electricity.dto.callback.FyParams;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
@@ -15,9 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * <p>
@@ -32,13 +28,11 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service
-public class PxzFreeOfChargeHandler extends AbstractBusiness<PxzParams.FreeOfCharge> implements PxzSupport<PxzParams.FreeOfCharge> {
-    
-    private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.FREE.getCode(),4,10};
+public class FyFreeDepositHandler extends AbstractBusiness<FyParams.FreeDeposit> implements FySupport<FyParams.FreeDeposit> {
     
     private final FreeDepositDataService freeDepositDataService;
     
-    protected PxzFreeOfChargeHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+    protected FyFreeDepositHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext, FreeDepositDataService freeDepositDataService) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
         this.freeDepositDataService = freeDepositDataService;
@@ -47,43 +41,36 @@ public class PxzFreeOfChargeHandler extends AbstractBusiness<PxzParams.FreeOfCha
     
     @Override
     public boolean business(Integer business) {
-        return Arrays.stream(BUSINESS_ARRAY).anyMatch(item -> item == business);
+        return FreeBusinessTypeEnum.FREE.getCode().equals(business);
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        boolean isFailed = false;
-        
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.freeDeposit(order)) {
-                    isFailed = true;
-                }
-            }
+    public boolean process(BusinessHandler handler, FreeDepositOrder order, FyParams.FreeDeposit params) {
+        boolean b = handler.freeDeposit(order);
+        if (b){
+            freeDepositDataService.deductionFyFreeDepositCapacity(order.getTenantId(), 1);
         }
-        if (!isFailed){
-            freeDepositDataService.deductionFreeDepositCapacity(order.getTenantId(),1);
-        }
-        return buildContext(isFailed);
+        return b;
     }
     
     @Override
-    public String orderId(CallbackContext<PxzParams.FreeOfCharge> callbackContext) {
-        return callbackContext.getParams().getTransId();
+    public String orderId(CallbackContext<FyParams.FreeDeposit> callbackContext) {
+        return callbackContext.getParams().getThirdOrderNo();
     }
     
     @Override
-    public Integer successCode(PxzParams.FreeOfCharge params) {
-        return params.getAuthStatus();
+    public Integer successCode(FyParams.FreeDeposit params) {
+        return FreeDepositOrder.AUTH_FROZEN;
     }
     
     @Override
-    public String authNo(PxzParams.FreeOfCharge params) {
+    public String authNo(FyParams.FreeDeposit params) {
         return params.getAuthNo();
     }
     
     @Override
-    public Integer payStatus(PxzParams.FreeOfCharge params) {
+    public Integer payStatus(FyParams.FreeDeposit params) {
         return null;
     }
+    
 }

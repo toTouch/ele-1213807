@@ -24,6 +24,10 @@ public interface CallbackHandler<T> {
     
     CallbackContext<?> handler(CallbackContext<T> callbackContext);
     
+    CallbackContext<?> success();
+    
+    CallbackContext<?> failed();
+    
     Map<String,Object> PXZ_SUCCESS= Map.of("respCode", "000000");
     
     Map<String,Object> PXZ_FAILED= Map.of("respCode", "000001");

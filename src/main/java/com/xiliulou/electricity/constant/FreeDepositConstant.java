@@ -17,6 +17,8 @@ public class FreeDepositConstant {
     
     public static final String FY_SUCCESS = "SUCCESS";
     
+    public static final String FY_FAILED = "FAILED";
+    
     public static final String FY_CLOSE = "CLOSED";
     
     /**

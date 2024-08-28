@@ -21,11 +21,17 @@ public interface PxzSupport<T> extends CallbackHandler<T> {
         return FreeDepositServiceWayEnums.PXZ.getChannel().equals(channel);
     }
     
-    default CallbackContext<?> buildContext(boolean isFailed){
+    default CallbackContext<?> success(){
         return CallbackContext.builder()
-                .params(isFailed?PXZ_FAILED:PXZ_SUCCESS)
+                .params(PXZ_SUCCESS)
                 .next(Boolean.FALSE)
-                .success(!isFailed)
+                .build();
+    }
+    
+    default CallbackContext<?> failed(){
+        return CallbackContext.builder()
+                .params(PXZ_FAILED)
+                .next(Boolean.FALSE)
                 .build();
     }
 }

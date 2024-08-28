@@ -75,10 +75,12 @@ public class BatteryBusinessHandler implements BusinessHandler {
     private final UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Override
+    public boolean support(Integer type) {
+        return Objects.equals(type, FreeDepositOrder.DEPOSIT_TYPE_BATTERY);
+    }
+    
+    @Override
     public boolean freeDeposit(FreeDepositOrder order) {
-        if (!order.getDepositType().equals(FreeDepositOrder.DEPOSIT_TYPE_BATTERY)){
-            return true;
-        }
         
         Long uid = order.getUid();
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -122,10 +124,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
     }
     
     @Override
-    public boolean unfreeDeposit(FreeDepositOrder order) {
-        if (!order.getDepositType().equals(FreeDepositOrder.DEPOSIT_TYPE_BATTERY)){
-            return true;
-        }
+    public boolean unfree(FreeDepositOrder order) {
         // 更新退款订单
         EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(order.getOrderId());
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -171,7 +170,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
     }
     
     @Override
-    public boolean withholdDeposit(FreeDepositOrder order) {
+    public boolean authPay(FreeDepositOrder order) {
         return true;
     }
 }

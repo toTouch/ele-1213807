@@ -3,8 +3,6 @@ package com.xiliulou.electricity.dto.callback;
 
 import lombok.Data;
 
-import java.util.Map;
-
 /**
  * <p>
  * Description: This class is PxzParams!
@@ -18,7 +16,7 @@ import java.util.Map;
  **/
 public class PxzParams {
     @Data
-    public static class FreeOfCharge{
+    public static class FreeDepositOrUnfree {
         
         private String transId;
         
@@ -28,7 +26,7 @@ public class PxzParams {
     }
     
     @Data
-    public static class Withhold{
+    public static class AuthPay {
         
         private String payNo;
         

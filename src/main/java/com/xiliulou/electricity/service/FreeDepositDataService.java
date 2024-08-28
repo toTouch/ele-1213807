@@ -84,4 +84,12 @@ public interface FreeDepositDataService {
     Pair<Boolean, String> rechargeFY(FreeDepositFyRequest params);
     
     Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count);
+    
+    
+    /**
+     * 扣减次数
+     *
+     * @return
+     */
+    Integer deductionFreeDepositCapacity(Integer tenantId, Integer count , Integer channel);
 }

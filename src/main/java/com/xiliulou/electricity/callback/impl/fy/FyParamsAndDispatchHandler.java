@@ -51,7 +51,7 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
         try {
             String decrypt = FyAesUtil.decrypt(o, aesKey);
             if (FreeBusinessTypeEnum.FREE.getCode().equals(callbackContext.getBusiness())){
-                FyParams.FreeOfCharge fyParams = JsonUtil.fromJson(decrypt, FyParams.FreeOfCharge.class);
+                FyParams.FreeDeposit fyParams = JsonUtil.fromJson(decrypt, FyParams.FreeDeposit.class);
                 return CallbackContext.builder()
                         .business(callbackContext.getBusiness())
                         .channel(callbackContext.getChannel())
@@ -61,7 +61,7 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
                         .type(callbackContext.getType())
                         .build();
             }
-            FyParams.Withhold fyParams = JsonUtil.fromJson(decrypt, FyParams.Withhold.class);
+            FyParams.AuthPayOrUnfree fyParams = JsonUtil.fromJson(decrypt, FyParams.AuthPayOrUnfree.class);
             return CallbackContext.builder()
                     .business(BUSINESS_MAP.get(fyParams.getTradeType()))
                     .channel(callbackContext.getChannel())

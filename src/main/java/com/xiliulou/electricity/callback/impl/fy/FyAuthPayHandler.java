@@ -5,7 +5,6 @@ import com.xiliulou.electricity.callback.AbstractBusiness;
 import com.xiliulou.electricity.callback.BusinessHandler;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
 import com.xiliulou.electricity.dto.callback.FyParams;
-import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
@@ -28,10 +27,10 @@ import org.springframework.stereotype.Service;
  **/
 @Slf4j
 @Service
-public class FyWithholdHandler extends AbstractBusiness<FyParams.Withhold> implements FySupport<FyParams.Withhold> {
+public class FyAuthPayHandler extends AbstractBusiness<FyParams.AuthPayOrUnfree> implements FySupport<FyParams.AuthPayOrUnfree> {
     
     
-    protected FyWithholdHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+    protected FyAuthPayHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
     }
@@ -42,38 +41,27 @@ public class FyWithholdHandler extends AbstractBusiness<FyParams.Withhold> imple
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        
-        boolean isFailed = false;
-        
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.withholdDeposit(order)) {
-                    isFailed = true;
-                }
-            }
-        }
-        
-        return buildContext(isFailed);
+    public boolean process(BusinessHandler handler,FreeDepositOrder order, FyParams.AuthPayOrUnfree params) {
+        return handler.authPay(order);
     }
     
     @Override
-    public String orderId(CallbackContext<FyParams.Withhold> callbackContext) {
+    public String orderId(CallbackContext<FyParams.AuthPayOrUnfree> callbackContext) {
         return callbackContext.getParams().getThirdOrderNo();
     }
     
     @Override
-    public Integer successCode(FyParams.Withhold params) {
+    public Integer successCode(FyParams.AuthPayOrUnfree params) {
         return null;
     }
     
     @Override
-    public String authNo(FyParams.Withhold params) {
+    public String authNo(FyParams.AuthPayOrUnfree params) {
         return null;
     }
     
     @Override
-    public Integer payStatus(FyParams.Withhold params) {
+    public Integer payStatus(FyParams.AuthPayOrUnfree params) {
         return FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS;
     }
     

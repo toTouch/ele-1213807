@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * <p>
@@ -30,7 +29,7 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service
-public class PxzUnfreeHandler extends AbstractBusiness<PxzParams.FreeOfCharge> implements PxzSupport<PxzParams.FreeOfCharge> {
+public class PxzUnfreeHandler extends AbstractBusiness<PxzParams.FreeDepositOrUnfree> implements PxzSupport<PxzParams.FreeDepositOrUnfree> {
     
     private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.UNFREE.getCode(),11,12};
     
@@ -46,37 +45,30 @@ public class PxzUnfreeHandler extends AbstractBusiness<PxzParams.FreeOfCharge> i
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        boolean isFailed = false;
-        
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.unfreeDeposit(order)) {
-                    isFailed = true;
-                }
-            }
+    public boolean process(BusinessHandler handler,FreeDepositOrder order , PxzParams.FreeDepositOrUnfree params) {
+        if (FreeDepositOrder.AUTH_UN_FROZEN.equals(params.getAuthStatus()) && FreeDepositOrder.AUTH_UN_FROZEN.equals(order.getAuthStatus())){
+            return true;
         }
-        
-        return buildContext(isFailed);
+        return handler.unfree(order);
     }
     
     @Override
-    public String orderId(CallbackContext<PxzParams.FreeOfCharge> callbackContext) {
+    public String orderId(CallbackContext<PxzParams.FreeDepositOrUnfree> callbackContext) {
         return callbackContext.getParams().getTransId();
     }
     
     @Override
-    public Integer successCode(PxzParams.FreeOfCharge params) {
+    public Integer successCode(PxzParams.FreeDepositOrUnfree params) {
         return params.getAuthStatus();
     }
     
     @Override
-    public String authNo(PxzParams.FreeOfCharge params) {
+    public String authNo(PxzParams.FreeDepositOrUnfree params) {
         return null;
     }
     
     @Override
-    public Integer payStatus(PxzParams.FreeOfCharge params) {
+    public Integer payStatus(PxzParams.FreeDepositOrUnfree params) {
         return null;
     }
 }

@@ -1,15 +1,13 @@
-package com.xiliulou.electricity.callback.impl.fy;
+package com.xiliulou.electricity.callback.impl.pxz;
 
 
 import com.xiliulou.electricity.callback.AbstractBusiness;
 import com.xiliulou.electricity.callback.BusinessHandler;
-import com.xiliulou.electricity.callback.impl.pxz.PxzSupport;
+import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
-import com.xiliulou.electricity.dto.callback.FyParams;
 import com.xiliulou.electricity.dto.callback.PxzParams;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
-import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
@@ -18,7 +16,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.Arrays;
 
 /**
  * <p>
@@ -33,11 +31,13 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service
-public class FyFreeOfChargeHandler extends AbstractBusiness<FyParams.FreeOfCharge> implements FySupport<FyParams.FreeOfCharge> {
+public class PxzFreeDepositHandler extends AbstractBusiness<PxzParams.FreeDepositOrUnfree> implements PxzSupport<PxzParams.FreeDepositOrUnfree> {
+    
+    private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.FREE.getCode(),4,10,13};
     
     private final FreeDepositDataService freeDepositDataService;
     
-    protected FyFreeOfChargeHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+    protected PxzFreeDepositHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext, FreeDepositDataService freeDepositDataService) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
         this.freeDepositDataService = freeDepositDataService;
@@ -46,45 +46,46 @@ public class FyFreeOfChargeHandler extends AbstractBusiness<FyParams.FreeOfCharg
     
     @Override
     public boolean business(Integer business) {
-        return FreeBusinessTypeEnum.FREE.getCode().equals(business);
+        return Arrays.stream(BUSINESS_ARRAY).anyMatch(item -> item == business);
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
+    public boolean process(BusinessHandler handler,FreeDepositOrder order,PxzParams.FreeDepositOrUnfree params) {
         
-        boolean isFailed = false;
+        if ( FreeDepositOrder.AUTH_FROZEN.equals(params.getAuthStatus()) && FreeDepositOrder.AUTH_FROZEN.equals(order.getAuthStatus())){
+            return true;
+        }
         
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.freeDeposit(order)) {
-                    isFailed = true;
-                }
-            }
+        if (FreeDepositOrder.AUTH_TIMEOUT.equals(params.getAuthStatus())){
+            handler.timeout(order);
+            return true;
         }
-        if (!isFailed){
-            freeDepositDataService.deductionFyFreeDepositCapacity(order.getTenantId(), 1);
+        
+        boolean b = handler.freeDeposit(order);
+        
+        if (b){
+            freeDepositDataService.deductionFreeDepositCapacity(order.getTenantId(),1);
         }
-        return buildContext(isFailed);
+        return b;
     }
     
     @Override
-    public String orderId(CallbackContext<FyParams.FreeOfCharge> callbackContext) {
-        return callbackContext.getParams().getThirdOrderNo();
+    public String orderId(CallbackContext<PxzParams.FreeDepositOrUnfree> callbackContext) {
+        return callbackContext.getParams().getTransId();
     }
     
     @Override
-    public Integer successCode(FyParams.FreeOfCharge params) {
-        return FreeDepositOrder.AUTH_FROZEN;
+    public Integer successCode(PxzParams.FreeDepositOrUnfree params) {
+        return params.getAuthStatus();
     }
     
     @Override
-    public String authNo(FyParams.FreeOfCharge params) {
+    public String authNo(PxzParams.FreeDepositOrUnfree params) {
         return params.getAuthNo();
     }
     
     @Override
-    public Integer payStatus(FyParams.FreeOfCharge params) {
+    public Integer payStatus(PxzParams.FreeDepositOrUnfree params) {
         return null;
     }
-    
 }

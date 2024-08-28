@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
  **/
 @Slf4j
 @Service
-public class FyUnfreeHandler extends AbstractBusiness<FyParams.Withhold> implements FySupport<FyParams.Withhold> {
+public class FyUnfreeHandler extends AbstractBusiness<FyParams.AuthPayOrUnfree> implements FySupport<FyParams.AuthPayOrUnfree> {
     
     
     protected FyUnfreeHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
@@ -41,38 +41,27 @@ public class FyUnfreeHandler extends AbstractBusiness<FyParams.Withhold> impleme
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        
-        boolean isFailed = false;
-        
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.unfreeDeposit(order)) {
-                    isFailed = true;
-                }
-            }
-        }
-        
-        return buildContext(isFailed);
+    public boolean process(BusinessHandler handler, FreeDepositOrder order, FyParams.AuthPayOrUnfree params) {
+        return handler.unfree(order);
     }
     
     @Override
-    public String orderId(CallbackContext<FyParams.Withhold> callbackContext) {
+    public String orderId(CallbackContext<FyParams.AuthPayOrUnfree> callbackContext) {
         return callbackContext.getParams().getThirdOrderNo();
     }
     
     @Override
-    public Integer successCode(FyParams.Withhold params) {
+    public Integer successCode(FyParams.AuthPayOrUnfree params) {
         return FreeDepositOrder.AUTH_UN_FROZEN;
     }
     
     @Override
-    public String authNo(FyParams.Withhold params) {
+    public String authNo(FyParams.AuthPayOrUnfree params) {
         return null;
     }
     
     @Override
-    public Integer payStatus(FyParams.Withhold params) {
+    public Integer payStatus(FyParams.AuthPayOrUnfree params) {
         return null;
     }
     

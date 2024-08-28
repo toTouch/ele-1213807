@@ -46,7 +46,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
     
     public abstract boolean business(Integer business);
     
-    public abstract CallbackContext<?> process(FreeDepositOrder order);
+    public abstract boolean process(BusinessHandler handler,FreeDepositOrder order,T params);
     
     public abstract String orderId(CallbackContext<T> callbackContext);
     
@@ -67,17 +67,24 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         String orderId = orderId(callbackContext);
         FreeDepositOrder freeDepositOrder = getFreeDepositOrder(orderId);
         if (Objects.isNull(freeDepositOrder)) {
-            log.warn("PxzFreeOfChargeHandler on freeDepositOrder is null, orderId is{}", orderId);
-            return CallbackContext.builder()
-                    .params(PXZ_SUCCESS)
-                    .next(Boolean.FALSE)
-                    .build();
+            log.warn("freeDepositOrder is null, orderId is{}", orderId);
+            return success();
         }
-        CallbackContext<?> process = process(freeDepositOrder);
-        if (process.isSuccess()){
-            updateFreeDepositOrder(freeDepositOrder, callbackContext.getParams());
+        boolean isSuccess = true;
+        if (CollectionUtils.isNotEmpty(businessHandlerList)){
+            for (BusinessHandler businessHandler : businessHandlerList) {
+                if (!businessHandler.support(freeDepositOrder.getDepositType())){
+                    continue;
+                }
+                boolean processed = process(businessHandler,freeDepositOrder, callbackContext.getParams());
+                if (processed){
+                    updateFreeDepositOrder(freeDepositOrder, callbackContext.getParams());
+                    continue;
+                }
+                isSuccess = false;
+            }
         }
-        return process(freeDepositOrder);
+        return isSuccess?success():failed();
     }
     
     public void init() {

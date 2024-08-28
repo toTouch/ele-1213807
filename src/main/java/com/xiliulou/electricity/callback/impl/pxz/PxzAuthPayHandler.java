@@ -5,7 +5,6 @@ import com.xiliulou.electricity.callback.AbstractBusiness;
 import com.xiliulou.electricity.callback.BusinessHandler;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
 import com.xiliulou.electricity.dto.callback.PxzParams;
-import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
@@ -14,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * <p>
@@ -30,10 +27,10 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service
-public class PxzWithholdHandler extends AbstractBusiness<PxzParams.Withhold> implements PxzSupport<PxzParams.Withhold> {
+public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> implements PxzSupport<PxzParams.AuthPay> {
     
     
-    protected PxzWithholdHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+    protected PxzAuthPayHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
     }
@@ -44,37 +41,31 @@ public class PxzWithholdHandler extends AbstractBusiness<PxzParams.Withhold> imp
     }
     
     @Override
-    public CallbackContext<?> process(FreeDepositOrder order) {
-        boolean isFailed = false;
-        
-        if (CollectionUtils.isNotEmpty(businessHandlerList)){
-            for (BusinessHandler businessHandler : businessHandlerList) {
-                if (!businessHandler.withholdDeposit(order)) {
-                    isFailed = true;
-                }
-            }
+    public boolean process(BusinessHandler handler,FreeDepositOrder order , PxzParams.AuthPay params) {
+        if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getOrderStatus())){
+            //todo  取消代扣订单
+            return true;
         }
-        
-        return buildContext(isFailed);
+        return handler.authPay(order);
     }
     
     @Override
-    public String orderId(CallbackContext<PxzParams.Withhold> callbackContext) {
+    public String orderId(CallbackContext<PxzParams.AuthPay> callbackContext) {
         return callbackContext.getParams().getOrderId();
     }
     
     @Override
-    public Integer successCode(PxzParams.Withhold params) {
+    public Integer successCode(PxzParams.AuthPay params) {
         return null;
     }
     
     @Override
-    public String authNo(PxzParams.Withhold params) {
+    public String authNo(PxzParams.AuthPay params) {
         return null;
     }
     
     @Override
-    public Integer payStatus(PxzParams.Withhold params) {
+    public Integer payStatus(PxzParams.AuthPay params) {
         return params.getOrderStatus();
     }
     
