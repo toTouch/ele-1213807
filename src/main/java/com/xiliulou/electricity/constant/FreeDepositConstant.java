@@ -24,7 +24,16 @@ public class FreeDepositConstant {
      */
     public static final Integer AUTH_PXZ_SUCCESS_RECEIVE = 0;
     
-    public static final String AUTH_PXZ_SUCCESS_RSP = "000000";
-    public static final String AUTH_PXZ_FAIL_RSP = "000001";
     public static final String AUTH_FY_SUCCESS_RSP = "SUCCESS";
+    
+    
+    /**
+     * 代扣状态：
+     * 状态【0：待处理；1：成功；2：退款】
+     */
+    public static final Integer FY_AUTH_STATUS_INIT = 0;
+    
+    public static final Integer FY_AUTH_STATUS_SUCCESS =1;
+    
+    public static final Integer FY_AUTH_STATUS_FAIL = 2;
 }

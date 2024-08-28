@@ -3,7 +3,6 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 
 /**
  * @ClassName: FreeDepositAuthToPayQuery
@@ -13,7 +12,7 @@ import java.math.BigDecimal;
  */
 @Data
 @Builder
-public class FreeDepositAuthToPayQuery {
+public class FreeDepositAuthToPayStatusQuery {
     
     
     private Integer tenantId;
@@ -29,7 +28,7 @@ public class FreeDepositAuthToPayQuery {
     private String orderId;
     
     /**
-     * 授权转支付订单号（唯一）
+     * 代扣订单号(代扣记录表中的)
      */
     private String authPayOrderId;
     
@@ -38,15 +37,6 @@ public class FreeDepositAuthToPayQuery {
      */
     private Long uid;
     
-    /**
-     * 订单标题
-     */
-    private String subject;
-    
-    /**
-     * 代扣金额
-     */
-    private BigDecimal payTransAmt;
     
     /**
      * 授权码

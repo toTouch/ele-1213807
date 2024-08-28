@@ -256,12 +256,10 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
      */
     @PutMapping("/admin/freeDepositOrder/sync/authPay/status")
     public R syncAuthPayStatus(@RequestParam(value = "orderId") String orderId) {
-        
         Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
         if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
             return returnTripleResult(verifyPermissionResult);
         }
-        
         return returnTripleResult(this.freeDepositOrderService.syncAuthPayStatus(orderId));
     }
 

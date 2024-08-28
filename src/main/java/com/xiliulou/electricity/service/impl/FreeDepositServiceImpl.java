@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.FreeDepositData;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -134,7 +136,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Override
     public Triple<Boolean, String, Object> unFreezeDeposit(UnFreeDepositOrderQuery query) {
         if (Objects.isNull(query)) {
-            log.warn("FreeDeposit WARN! getFreeDepositOrderStatus.params is null");
+            log.warn("unFreezeDeposit WARN! getFreeDepositOrderStatus.params is null");
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
         log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
@@ -146,13 +148,25 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Override
     public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
         if (Objects.isNull(query)) {
-            log.warn("FreeDeposit WARN! authToPay.query is null");
+            log.warn("authToPay WARN! authToPay.query is null");
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
         log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         // 代扣
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.authToPay(query);
+    }
+    
+    @Override
+    public AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query) {
+        if (Objects.isNull(query)) {
+            log.warn("queryAuthToPayStatus WARN! authToPay.query is null");
+            return null;
+        }
+        log.info("QueryAuthToPayStatus INFO! queryAuthToPayStatus.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
+        // 代扣状态
+        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
+        return service.queryAuthToPayStatus(query);
     }
 }
 

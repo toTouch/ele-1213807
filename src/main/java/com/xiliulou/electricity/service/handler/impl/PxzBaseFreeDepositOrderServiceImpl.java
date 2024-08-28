@@ -1,21 +1,20 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
-import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzAuthToPayOrderQueryRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzAuthToPayRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
@@ -26,9 +25,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @ClassName: PxzBaseFreeDepositOrderServiceImpl
@@ -42,9 +38,6 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
     
     @Resource
     PxzDepositService pxzDepositService;
-    
-    @Resource
-    private FreeDepositOrderService freeDepositOrderService;
     
     
     @Override
@@ -129,75 +122,42 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
     }
     
     @Override
-    public Object freeDepositNotified(Integer business, Map<String, Object> params) {
-        
-        Map<String, Object> map = new HashMap<>(1);
-        
-        // 免押 和 解冻，拍小租根据返回状态区分
-        if (Objects.equals(business, FreeBusinessTypeEnum.FREE.getCode())) {
-            return freeOrUnFreeCallBackHandler(params, map);
+    public AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query) {
+        PxzCommonRsp<PxzAuthToPayOrderQueryRsp> result = null;
+        Long uid = query.getUid();
+        String orderId = query.getOrderId();
+        try {
+            result = pxzDepositService.authToPayOrderQuery(buildAuthPxzStatusRequest(query));
+        } catch (Exception e) {
+            log.error("Pxz ERROR! authToPay fail! uid={},orderId={}", uid, orderId, e);
+            return null;
         }
         
-        // 代扣
-        if (Objects.equals(business, FreeBusinessTypeEnum.AUTH_PAY.getCode())) {
-            return authPayCallBackHandler(params, map);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId);
+        if (!triple.getLeft()) {
+            return null;
         }
         
-        throw new CustomBusinessException("拍小组回调异常");
+        return AuthPayStatusBO.builder().orderId(result.getData().getOrderId()).orderStatus(result.getData().getOrderStatus()).build();
     }
     
-    private Map<String, Object> authPayCallBackHandler(Map<String, Object> params, Map<String, Object> map) {
-        String orderId = (String) params.get("orderId");
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
-        
-        // 如果没有订单则确认成功
-        if (Objects.isNull(freeDepositOrder)) {
-            log.error("PXZ AuthPayCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
-            map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-            return map;
+    @Override
+    public Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query) {
+        PxzCommonRsp<Boolean> result = null;
+        Long uid = query.getUid();
+        String orderId = query.getAuthPayOrderId();
+        try {
+            result = pxzDepositService.cancelAuthToPay(buildCancelAuthPayPxzRequest(query));
+        } catch (Exception e) {
+            log.error("Pxz ERROR! unfreeDepositOrder fail! uid={},orderId={}", uid, orderId, e);
+            return false;
+        }
+        Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId);
+        if (!triple.getLeft()) {
+            return false;
         }
         
-        Integer orderStatus = (Integer) params.get("orderStatus");
-        if (Objects.equals(orderStatus, FreeDepositConstant.AUTH_PXZ_SUCCESS_RECEIVE)) {
-            // 成功更新状态
-            handlerAuthPaySuccess(freeDepositOrder);
-            map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-            return map;
-        }
-        
-        map.put("respCode", FreeDepositConstant.AUTH_PXZ_FAIL_RSP);
-        return map;
+        return result.getData();
     }
     
-    private Map<String, Object> freeOrUnFreeCallBackHandler(Map<String, Object> params, Map<String, Object> map) {
-        String orderId = (String) params.get("transId");
-        
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
-        // 如果没有订单则确认成功
-        if (Objects.isNull(freeDepositOrder)) {
-            log.error("PXZ FreeOrUnFreeCallBackHandler Error! freeDepositOrder is null, orderId is{}", orderId);
-            map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-            return map;
-        }
-        
-        Integer orderStatus = (Integer) params.get("authStatus");
-        // 上一个状态是待冻结，本次状态是已冻结==免押
-        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE) && Objects.equals(orderStatus, FreeDepositOrder.AUTH_FROZEN)) {
-            // 免押成功 修改状态逻辑
-            // handlerUnfree(freeDepositOrder);
-            map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-            return map;
-        }
-        
-        // 上一个状态是冻结，本次是解冻==解冻
-        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(orderStatus, FreeDepositOrder.AUTH_UN_FROZEN)) {
-            // 解冻成功 修改状态逻辑
-            // handlerFreeDepositSuccess(channel, freeDepositOrder);
-            map.put("respCode", FreeDepositConstant.AUTH_PXZ_SUCCESS_RSP);
-            return map;
-        }
-        
-        map.put("respCode", FreeDepositConstant.AUTH_PXZ_FAIL_RSP);
-        return map;
-    }
 }

@@ -1,13 +1,14 @@
 package com.xiliulou.electricity.service.handler;
 
+import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
-
-import java.util.Map;
 
 /**
  * @ClassName: BaseFreeDepositService
@@ -52,11 +53,18 @@ public interface BaseFreeDepositService {
     
     
     /**
-     * 免押代扣回调
+     * 代扣状态
      *
-     * @param business business
-     * @param params map
-     * @return
+     * @param query query
+     * @return AuthPayStatusBO
      */
-    Object freeDepositNotified(Integer business, Map<String, Object> params);
+    AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query);
+    
+    /**
+     * 取消代扣，目前只有拍小组有
+     *
+     * @param query query
+     * @return Boolean
+     */
+    Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query);
 }

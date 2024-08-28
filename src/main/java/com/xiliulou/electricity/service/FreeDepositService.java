@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -53,4 +55,13 @@ public interface FreeDepositService {
      * @return Triple
      */
     Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query);
+    
+    
+    /**
+     * 代扣状态
+     *
+     * @param query 查询入参
+     * @return AuthPayStatusBO
+     */
+    AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query);
 }
