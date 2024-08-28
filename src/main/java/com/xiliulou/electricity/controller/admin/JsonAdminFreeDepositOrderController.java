@@ -50,6 +50,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "realName", required = false) String realName,
                   @RequestParam(value = "uid", required = false) Long uid,
+                  @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                   @RequestParam(value = "startTime", required = false) Long startTime,
                   @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -92,6 +93,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                 .realName(realName)
                 .uid(uid)
                 .storeIds(storeIds)
+                .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .startTime(startTime)
@@ -112,6 +114,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "realName", required = false) String realName,
                        @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "startTime", required = false) Long startTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -145,6 +148,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                 .realName(realName)
                 .uid(uid)
                 .storeIds(storeIds)
+                .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .startTime(startTime)
@@ -244,6 +248,19 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
         }
         
         return returnTripleResult(this.freeDepositOrderService.freeDepositTrilateralPay(orderId, payTransAmt, remark));
+    }
+    
+    
+    /**
+     * 代扣同步状态
+     */
+    @PutMapping("/admin/freeDepositOrder/sync/authPay/status")
+    public R syncAuthPayStatus(@RequestParam(value = "orderId") String orderId) {
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+        return returnTripleResult(this.freeDepositOrderService.syncAuthPayStatus(orderId));
     }
 
 }

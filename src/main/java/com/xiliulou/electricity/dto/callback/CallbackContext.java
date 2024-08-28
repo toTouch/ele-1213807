@@ -2,7 +2,6 @@ package com.xiliulou.electricity.dto.callback;
 
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 /**

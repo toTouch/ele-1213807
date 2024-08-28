@@ -86,6 +86,8 @@ public interface FreeDepositDataService {
     Integer deductionFyFreeDepositCapacity(Integer tenantId, Integer count);
     
     
+    
+    
     /**
      * 扣减次数
      *

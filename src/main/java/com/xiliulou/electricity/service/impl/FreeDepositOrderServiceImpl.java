@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -43,10 +44,13 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.FreeBatteryDepositHybridOrderQuery;
 import com.xiliulou.electricity.query.FreeBatteryDepositQuery;
 import com.xiliulou.electricity.query.FreeBatteryDepositQueryV3;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
@@ -268,6 +272,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Resource
     private FreeDepositService freeDepositService;
+    
+    @Resource
+    private DelayFreeProducer delayFreeProducer;
     
     /**
      * 通过ID查询单条数据从DB
@@ -1102,15 +1109,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         // 修改免押次数判断，蜂云
-        if (freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
+        if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO && freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
             log.warn("FREE DEPOSIT WARN! fyFreeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
-        //        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        //        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-        //            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
-        //        }
         
         Triple<Boolean, String, Object> checkUserCanFreeDepositResult = checkUserCanFreeBatteryDeposit(uid, userInfo);
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
@@ -1127,11 +1130,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return triple;
         }
         
-        // 检查用户是否已经进行过免押操作，且已免押成功
-        //        Triple<Boolean, String, Object> useFreeDepositStatusResult = checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
-        //        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
-        //            return useFreeDepositStatusResult;
-        //        }
         
         // 查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
@@ -1158,6 +1156,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrderDTO depositOrderDTO = (FreeDepositOrderDTO) freeDepositOrderTriple.getRight();
         
+        // 待冻结
         FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder().uid(uid).authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE).idCard(freeQuery.getIdCard())
                 .orderId(eleDepositOrder.getOrderId()).phone(freeQuery.getPhoneNumber()).realName(freeQuery.getRealName()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).storeId(eleDepositOrder.getStoreId())
@@ -1184,6 +1183,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid,
                 UriUtils.encode(JsonUtil.toJson(depositOrderDTO.getData()), StandardCharsets.UTF_8), 300 * 1000L, false);
+        
+        // 发送延迟队列延迟更新免押状态为最终态
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
         
         return Triple.of(true, null, depositOrderDTO.getData());
     }
@@ -2169,7 +2171,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
         
-        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().authNo(freeDepositOrder.getAuthNo()).uid(uid).tenantId(userInfo.getTenantId()).orderId(orderId)
+        String authPayOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.WITHHOLD, userInfo.getUid());
+        
+        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo()).uid(uid).tenantId(userInfo.getTenantId()).orderId(orderId)
                 .channel(freeDepositOrder.getChannel()).build();
         Triple<Boolean, String, Object> authedToPayTriple = freeDepositService.authToPay(payQuery);
         // 代扣调用失败则返回，否则生成代扣记录，状态为初始化
@@ -2187,7 +2191,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 代扣记录
         FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
-        String authPayOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.WITHHOLD, userInfo.getUid());
+        
         freeDepositAlipayHistory.setAuthPayOrderId(authPayOrderId);
         freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
         freeDepositAlipayHistory.setUid(freeDepositOrder.getUid());
@@ -2207,6 +2211,45 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setFranchiseeId(freeDepositOrder.getFranchiseeId());
         freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
         freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
+        
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(),MqProducerConstant.AUTH_APY_TAG_NAME);
+        
         return Triple.of(true, "", "授权转支付交易处理中！");
+    }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> syncAuthPayStatus(String orderId) {
+        
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByOrderId(orderId);
+        if (Objects.isNull(alipayHistory)) {
+            log.warn("FREE DEPOSIT WARN! not found alipayHistory,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        // 查询代扣状态
+        FreeDepositAuthToPayStatusQuery query = FreeDepositAuthToPayStatusQuery.builder().uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
+                .orderId(freeDepositOrder.getOrderId()).authPayOrderId(alipayHistory.getAuthPayOrderId()).channel(freeDepositOrder.getChannel()).build();
+        AuthPayStatusBO authPayStatusBO = freeDepositService.queryAuthToPayStatus(query);
+        
+        // 更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setPayStatus(authPayStatusBO.getOrderStatus());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(freeDepositOrderUpdate);
+        
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setPayStatus(authPayStatusBO.getOrderStatus());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
+        
+        return Triple.of(true, null, null);
     }
 }

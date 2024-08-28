@@ -2,7 +2,7 @@ package com.xiliulou.electricity.mq.consumer;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.dto.FyFreeDepositDelayDTO;
+import com.xiliulou.electricity.dto.FreeDepositDelayDTO;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
- * @ClassName: FyFreeDepositConsumer
+ * @ClassName: FreeDepositConsumer
  * @description:
  * @author: renhang
  * @create: 2024-08-26 11:07
@@ -24,8 +24,8 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-@RocketMQMessageListener(topic = MqProducerConstant.FY_FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.FY_FREE_DEPOSIT_TAG_NAME, consumerGroup = MqConsumerConstant.FY_FREE_DEPOSIT_CONSUMER_GROUP)
-public class FyFreeDepositConsumer implements RocketMQListener<String> {
+@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.FREE_DEPOSIT_TAG_NAME, consumerGroup = MqConsumerConstant.FREE_DEPOSIT_CONSUMER_GROUP)
+public class FreeDepositConsumer implements RocketMQListener<String> {
     
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
@@ -36,18 +36,20 @@ public class FyFreeDepositConsumer implements RocketMQListener<String> {
             return;
         }
         
-        FyFreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FyFreeDepositDelayDTO.class);
+        FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.warn("FyFreeDepositConsumer WARN! freeDepositOrder is null, orderId is{}", dto.getOrderId());
+            log.warn("FreeDepositConsumer WARN! freeDepositOrder is null, orderId is{}", dto.getOrderId());
             return;
         }
         
-        if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
-            log.info("FyFreeDepositConsumer INFO! freeDepositOrder.authStatus not is AUTH_PENDING_FREEZE, orderId is{}", dto.getOrderId());
+        // 如果是已冻结/超时，则不更新
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_TIMEOUT)) {
+            log.info("FreeDepositConsumer INFO! freeDepositOrder.freeStatus is {}, orderId is{}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
             return;
         }
+        
         
         // 更新免押订单状态为最终态=失败
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();

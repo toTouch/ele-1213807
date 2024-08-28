@@ -135,10 +135,9 @@ public class JsonUserEnterprisePackageController extends BaseController {
      * @param uid
      * @return
      */
-    @GetMapping( "/merchant/enterprise/freeBatteryDeposit/v2")
-    public R freeBatteryDepositV2(@RequestParam(value = "uid", required = true) Long uid, @RequestParam(value = "realName", required = true) String realName,
-            @RequestParam(value = "idCard", required = true) String idCard, @RequestParam(value = "phone", required = true) String phone,
-            @RequestParam(value = "packageId", required = true) Long packageId) {
+    @GetMapping("/merchant/enterprise/freeBatteryDeposit/v2")
+    public R freeBatteryDepositV2(@RequestParam(value = "uid") Long uid, @RequestParam(value = "realName") String realName, @RequestParam(value = "idCard") String idCard,
+            @RequestParam(value = "phone") String phone, @RequestParam(value = "packageId") Long packageId) {
         
         EnterpriseFreeDepositQuery freeQuery = EnterpriseFreeDepositQuery.builder().uid(uid).realName(realName).idCard(idCard).phoneNumber(phone).membercardId(packageId).build();
         

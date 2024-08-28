@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * @ClassName: FyFreeDepositDelayDTO
+ * @ClassName: FreeDepositDelayDTO
  * @description:
  * @author: renhang
  * @create: 2024-08-26 11:00
@@ -17,7 +17,15 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FyFreeDepositDelayDTO implements Serializable {
+public class FreeDepositDelayDTO implements Serializable {
     
+    /**
+     * 免押渠道
+     */
+    private Integer channel;
+    
+    /**
+     * 免押订单号
+     */
     private String orderId;
 }

@@ -1,36 +1,34 @@
 package com.xiliulou.electricity.service.handler;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
-import com.xiliulou.electricity.dto.FyFreeDepositDelayDTO;
-import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
+import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
-import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.AuthPayVars;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyHandleFundRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryFreezeStatusRequest;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryHandleFundStatusRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositAuthToPayOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositAuthToPayRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositCancelPayRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
@@ -61,30 +59,6 @@ public abstract class AbstractCommonFreeDeposit {
     @Resource
     private FreeDepositConfig freeDepositConfig;
     
-    @Resource
-    private RocketMqService rocketMqService;
-    
-    @Resource
-    private FreeDepositOrderService freeDepositOrderService;
-    
-    @Resource
-    private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
-    
-    public static final String ORDER_DATE_FORMAT = "yyyyMMddHHmmss";
-    
-    /**
-     * 蜂云只有成功才会回调，所以这里修改为5分钟后将免押订单状态修改为最终态
-     *
-     * @param orderId orderId
-     * @param tag     tag
-     */
-    public void sendQueryStatusDelayQueue(String orderId, String tag) {
-        // 延迟队列,默认延迟5分钟
-        FyFreeDepositDelayDTO dto = FyFreeDepositDelayDTO.builder().orderId(orderId).build();
-        String key = "fy" + DateUtil.format(DateUtil.date(), ORDER_DATE_FORMAT) + RandomUtil.randomInt(1000, 9999);
-        rocketMqService.sendSyncMsg(MqProducerConstant.FY_FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
-    }
-    
     
     public PxzCommonRequest<PxzFreeDepositOrderRequest> buildFreeDepositOrderPxzRequest(FreeDepositOrderRequest freeDepositOrderRequest) {
         PxzConfig pxzConfig = getPxzConfig(freeDepositOrderRequest.getTenantId());
@@ -111,7 +85,7 @@ public abstract class AbstractCommonFreeDeposit {
     private PxzConfig getPxzConfig(Integer tenantId) {
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(pxzConfig) || StrUtil.isBlank(pxzConfig.getAesKey()) || StrUtil.isBlank(pxzConfig.getMerchantCode())) {
-            throw new CustomBusinessException("免押功能未配置相关信息！请联系客服处理");
+            throw new BizException("100427", "免押功能未配置相关信息！请联系客服处理");
         }
         return pxzConfig;
     }
@@ -157,7 +131,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setMerchantCode(pxzConfig.getMerchantCode());
         
         PxzFreeDepositAuthToPayRequest request = new PxzFreeDepositAuthToPayRequest();
-        request.setPayNo(authToPayQuery.getOrderId());
+        // todo保证唯一
+        request.setPayNo(authToPayQuery.getAuthPayOrderId());
         request.setTransId(authToPayQuery.getOrderId());
         request.setAuthNo(authToPayQuery.getAuthNo());
         request.setTransAmt(authToPayQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).longValue());
@@ -166,8 +141,40 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
+    public PxzCommonRequest<PxzFreeDepositAuthToPayOrderQueryRequest> buildAuthPxzStatusRequest(FreeDepositAuthToPayStatusQuery authToPayStatusQuery) {
+        PxzConfig pxzConfig = getPxzConfig(authToPayStatusQuery.getTenantId());
+        
+        PxzCommonRequest<PxzFreeDepositAuthToPayOrderQueryRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(authToPayStatusQuery.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositAuthToPayOrderQueryRequest request = new PxzFreeDepositAuthToPayOrderQueryRequest();
+        request.setAuthNo(authToPayStatusQuery.getAuthNo());
+        // todo保证唯一
+        request.setPayNo(authToPayStatusQuery.getAuthPayOrderId());
+        return query;
+    }
     
-    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp rsp, String orderId) {
+    
+    public PxzCommonRequest<PxzFreeDepositCancelPayRequest> buildCancelAuthPayPxzRequest(FreeDepositCancelAuthToPayQuery cancelAuthToPayQuery) {
+        PxzConfig pxzConfig = getPxzConfig(cancelAuthToPayQuery.getTenantId());
+        
+        PxzCommonRequest<PxzFreeDepositCancelPayRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(cancelAuthToPayQuery.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositCancelPayRequest queryRequest = new PxzFreeDepositCancelPayRequest();
+        queryRequest.setPayNo(cancelAuthToPayQuery.getAuthPayOrderId());
+        
+        query.setData(queryRequest);
+        return query;
+    }
+    
+    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp<?> rsp, String orderId) {
         if (Objects.isNull(rsp)) {
             log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp is null! orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
@@ -198,6 +205,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setFqNum(FyConfig.FREE_ORDER_DATE);
         request.setAmount(orderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
         request.setSubject(orderRequest.getSubject());
+        request.setTimeoutExpress("5m");
         
         request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 1));
         request.setEnablePayChannels(FyConstants.PAY_CHANNEL_ZHIMA);
@@ -239,7 +247,7 @@ public abstract class AbstractCommonFreeDeposit {
         FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(orderStatusQuery.getOrderId());
         request.setThirdOrderNo(orderStatusQuery.getOrderId());
-        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.parseInt(orderStatusQuery.getAmount()) : 0);
+        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? new BigDecimal(orderStatusQuery.getAmount()).multiply(BigDecimal.valueOf(100)).intValue() : 0);
         request.setSubject(orderStatusQuery.getSubject());
         //  解冻回调地址配置
         request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 2));
@@ -255,7 +263,7 @@ public abstract class AbstractCommonFreeDeposit {
         
         FyCommonQuery<FyHandleFundRequest> query = new FyCommonQuery<>();
         FyHandleFundRequest request = new FyHandleFundRequest();
-        request.setPayNo(payQuery.getOrderId());
+        request.setPayNo(payQuery.getAuthPayOrderId());
         request.setThirdOrderNo(payQuery.getOrderId());
         request.setAmount(payQuery.getPayTransAmt().intValue());
         request.setSubject(payQuery.getSubject());
@@ -268,11 +276,23 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
+    public FyCommonQuery<FyQueryHandleFundStatusRequest> buildFyAuthPayStatusRequest(FreeDepositAuthToPayStatusQuery payQuery) {
+        getFyConfig(payQuery.getTenantId());
+        
+        FyCommonQuery<FyQueryHandleFundStatusRequest> query = new FyCommonQuery<>();
+        FyQueryHandleFundStatusRequest request = new FyQueryHandleFundStatusRequest();
+        request.setPayNo(payQuery.getAuthPayOrderId());
+        
+        query.setFlowNo(payQuery.getOrderId());
+        query.setFyRequest(request);
+        return query;
+    }
+    
     
     private FyConfig getFyConfig(Integer tenantId) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenantId);
         if (Objects.isNull(fyConfig)) {
-            throw new CustomBusinessException("蜂云免押功能未配置相关信息！请联系客服处理");
+            throw new BizException("100428", "免押功能未配置相关信息！请联系客服处理");
         }
         return fyConfig;
     }
@@ -285,7 +305,7 @@ public abstract class AbstractCommonFreeDeposit {
         
         String code = result.getCode();
         if (!Objects.equals(code, FreeDepositConstant.SUCCESS_CODE)) {
-            log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);
+            log.warn("FY ERROR! fyResultCheck fail! code is fail!  orderId={}", orderId);
             return Triple.of(false, "100401", result.getMessage());
         }
         
@@ -315,19 +335,21 @@ public abstract class AbstractCommonFreeDeposit {
     }
     
     
-    public void handlerAuthPaySuccess(FreeDepositOrder freeDepositOrder) {
-        // 更新免押订单状态
-        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS);
-        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        freeDepositOrderService.update(freeDepositOrderUpdate);
+    public Integer fyAuthPayStatusToPxzStatus(Integer status) {
         
-        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
-        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
-        freeDepositAlipayHistory.setPayStatus(freeDepositOrderUpdate.getPayStatus());
-        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
-        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
+        if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_INIT)) {
+            return FreeDepositOrder.PAY_STATUS_DEALING;
+        }
+        
+        if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_SUCCESS)) {
+            return FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS;
+        }
+        
+        if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_FAIL)) {
+            return FreeDepositOrder.PAY_STATUS_DEAL_FAIL;
+        }
+        throw new CustomBusinessException("蜂云代扣查询状态异常");
     }
+    
     
 }

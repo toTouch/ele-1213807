@@ -47,6 +47,8 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
@@ -159,13 +161,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     EnterpriseBatteryPackageMapper enterpriseBatteryPackageMapper;
     
     @Resource
-    ElectricityPayParamsService electricityPayParamsService;
-    
-    @Resource
     UserOauthBindService userOauthBindService;
     
-    @Resource
-    ElectricityTradeOrderService electricityTradeOrderService;
     
     @Resource
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
@@ -201,9 +198,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     EleRefundOrderService eleRefundOrderService;
     
     @Resource
-    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-    
-    @Resource
     CloudBeanUseRecordService cloudBeanUseRecordService;
     
     @Resource
@@ -214,9 +208,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     ElectricityBatteryService electricityBatteryService;
-    
-    @Resource
-    EnterpriseUserCostRecordProducer enterpriseUserCostRecordProducer;
     
     @Resource
     private BatteryMemberCardMapper batteryMemberCardMapper;
@@ -242,14 +233,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Resource
     private FranchiseeService franchiseeService;
     
-    @Resource
-    private CouponService couponService;
-    
-    @Resource
-    private CarRentalPackageService carRentalPackageService;
-    
-    @Resource
-    private BatteryModelService batteryModelService;
     
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
@@ -272,9 +255,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
     
-    @Resource
-    private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
-    
+ 
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
     
@@ -286,6 +267,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private FreeDepositService freeDepositService;
+    
+    @Resource
+    private DelayFreeProducer delayFreeProducer;
     
     @Deprecated
     @Override
@@ -1070,7 +1054,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
         
-        if (freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
+        if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO && freeDepositData.getFyFreeDepositCapacity() <= NumberConstant.ZERO) {
             log.error("Free battery deposit error, freeDepositCapacity already run out,uid={}", freeQuery.getUid());
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
@@ -1143,10 +1127,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
         
+        
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", depositOrderDTO);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(),
                 UriUtils.encode(depositOrderDTO.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
+        
+        // 发送延迟队列延迟更新免押状态为最终态
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
+        
         
         return Triple.of(true, null, depositOrderDTO.getData());
         
