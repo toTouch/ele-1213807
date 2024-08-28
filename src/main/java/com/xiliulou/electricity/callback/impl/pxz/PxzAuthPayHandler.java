@@ -7,8 +7,13 @@ import com.xiliulou.electricity.dto.callback.CallbackContext;
 import com.xiliulou.electricity.dto.callback.PxzParams;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
+import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.FreeDepositService;
+import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import com.xiliulou.electricity.service.handler.impl.PxzBaseFreeDepositOrderServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
@@ -29,10 +34,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> implements PxzSupport<PxzParams.AuthPay> {
     
+    private final PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService;
     
     protected PxzAuthPayHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
-            ApplicationContext applicationContext) {
+            ApplicationContext applicationContext, PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
+        
+        this.pxzBaseFreeDepositOrderService = pxzBaseFreeDepositOrderService;
     }
     
     @Override
@@ -43,8 +51,9 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     @Override
     public boolean process(BusinessHandler handler,FreeDepositOrder order , PxzParams.AuthPay params) {
         if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getOrderStatus())){
-            //todo  取消代扣订单
-            return true;
+            return pxzBaseFreeDepositOrderService.cancelAuthPay(
+                    FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
+                            .channel(order.getChannel()).channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
         }
         return handler.authPay(order);
     }
