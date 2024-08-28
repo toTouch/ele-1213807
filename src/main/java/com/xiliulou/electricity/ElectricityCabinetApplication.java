@@ -48,6 +48,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableFaceid
 @EnableMq
 @EnableFreeDeposit
+@EnableFengYun
 @EnableEsign
 @Slf4j
 public class ElectricityCabinetApplication implements CommandLineRunner {
