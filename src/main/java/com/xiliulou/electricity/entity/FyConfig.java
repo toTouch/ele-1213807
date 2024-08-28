@@ -22,6 +22,8 @@ public class FyConfig {
     
     private String storeCode;
     
+    private String channelCode;
+    
     private Integer delFlag;
     
     private Long createTime;
