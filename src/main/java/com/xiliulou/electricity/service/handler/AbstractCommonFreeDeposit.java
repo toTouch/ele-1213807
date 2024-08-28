@@ -223,12 +223,13 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setFlowNo(orderRequest.getFreeDepositOrderId());
         query.setFyRequest(request);
+        query.setChannelCode(fyConfig.getChannelCode());
         return query;
     }
     
     
     public FyCommonQuery<FyQueryFreezeStatusRequest> buildFyFreeDepositStatusRequest(FreeDepositOrderStatusQuery orderStatusQuery) {
-        getFyConfig(orderStatusQuery.getTenantId());
+        FyConfig fyConfig = getFyConfig(orderStatusQuery.getTenantId());
         
         FyCommonQuery<FyQueryFreezeStatusRequest> query = new FyCommonQuery<>();
         FyQueryFreezeStatusRequest request = new FyQueryFreezeStatusRequest();
@@ -236,12 +237,13 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setFlowNo(orderStatusQuery.getOrderId());
         query.setFyRequest(request);
+        query.setChannelCode(fyConfig.getChannelCode());
         return query;
     }
     
     
     public FyCommonQuery<FyHandleFundRequest> buildFyUnFreeRequest(UnFreeDepositOrderQuery orderStatusQuery) {
-        getFyConfig(orderStatusQuery.getTenantId());
+        FyConfig fyConfig = getFyConfig(orderStatusQuery.getTenantId());
         
         FyCommonQuery<FyHandleFundRequest> query = new FyCommonQuery<>();
         FyHandleFundRequest request = new FyHandleFundRequest();
@@ -255,11 +257,12 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setFlowNo(orderStatusQuery.getOrderId());
         query.setFyRequest(request);
+        query.setChannelCode(fyConfig.getChannelCode());
         return query;
     }
     
     public FyCommonQuery<FyHandleFundRequest> buildFyAuthPayRequest(FreeDepositAuthToPayQuery payQuery) {
-        getFyConfig(payQuery.getTenantId());
+        FyConfig fyConfig = getFyConfig(payQuery.getTenantId());
         
         FyCommonQuery<FyHandleFundRequest> query = new FyCommonQuery<>();
         FyHandleFundRequest request = new FyHandleFundRequest();
@@ -273,11 +276,12 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setFlowNo(payQuery.getOrderId());
         query.setFyRequest(request);
+        query.setChannelCode(fyConfig.getChannelCode());
         return query;
     }
     
     public FyCommonQuery<FyQueryHandleFundStatusRequest> buildFyAuthPayStatusRequest(FreeDepositAuthToPayStatusQuery payQuery) {
-        getFyConfig(payQuery.getTenantId());
+        FyConfig fyConfig = getFyConfig(payQuery.getTenantId());
         
         FyCommonQuery<FyQueryHandleFundStatusRequest> query = new FyCommonQuery<>();
         FyQueryHandleFundStatusRequest request = new FyQueryHandleFundStatusRequest();
@@ -285,13 +289,14 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setFlowNo(payQuery.getOrderId());
         query.setFyRequest(request);
+        query.setChannelCode(fyConfig.getChannelCode());
         return query;
     }
     
     
     private FyConfig getFyConfig(Integer tenantId) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenantId);
-        if (Objects.isNull(fyConfig)) {
+        if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
             throw new BizException("100428", "免押功能未配置相关信息！请联系客服处理");
         }
         return fyConfig;
