@@ -10,7 +10,6 @@ import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
-import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.handler.AbstractCommonFreeDeposit;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
@@ -39,9 +38,6 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Resource
     private FyDepositService fyDepositService;
-    
-    @Resource
-    private FreeDepositOrderService freeDepositOrderService;
     
     @Override
     public Triple<Boolean, String, Object> freeDepositOrder(FreeDepositOrderRequest request) {

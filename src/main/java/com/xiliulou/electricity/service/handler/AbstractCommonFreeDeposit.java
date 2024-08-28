@@ -174,7 +174,7 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
-    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp rsp, String orderId) {
+    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp<?> rsp, String orderId) {
         if (Objects.isNull(rsp)) {
             log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp is null! orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
@@ -247,7 +247,7 @@ public abstract class AbstractCommonFreeDeposit {
         FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(orderStatusQuery.getOrderId());
         request.setThirdOrderNo(orderStatusQuery.getOrderId());
-        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? Integer.parseInt(orderStatusQuery.getAmount()) : 0);
+        request.setAmount(StrUtil.isNotEmpty(orderStatusQuery.getAmount()) ? new BigDecimal(orderStatusQuery.getAmount()).multiply(BigDecimal.valueOf(100)).intValue() : 0);
         request.setSubject(orderStatusQuery.getSubject());
         //  解冻回调地址配置
         request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 2));
@@ -305,7 +305,7 @@ public abstract class AbstractCommonFreeDeposit {
         
         String code = result.getCode();
         if (!Objects.equals(code, FreeDepositConstant.SUCCESS_CODE)) {
-            log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);
+            log.warn("FY ERROR! fyResultCheck fail! code is fail!  orderId={}", orderId);
             return Triple.of(false, "100401", result.getMessage());
         }
         
@@ -344,6 +344,7 @@ public abstract class AbstractCommonFreeDeposit {
         if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_SUCCESS)) {
             return FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS;
         }
+        
         if (Objects.equals(status, FreeDepositConstant.FY_AUTH_STATUS_FAIL)) {
             return FreeDepositOrder.PAY_STATUS_DEAL_FAIL;
         }
