@@ -163,7 +163,7 @@ public class FaceidServiceImpl implements FaceidService {
         }
         //发送站内信
         siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.FACIAL_VERIFICATION)
+                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.FACIAL_VERIFICATION.getCode())
                 .addContext("count", faceRecognizeData.getFaceRecognizeCapacity()).build());
         
         if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {

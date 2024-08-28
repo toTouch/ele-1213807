@@ -132,7 +132,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
                         CommonConstant.ZERO);
         Optional.ofNullable(tenantId).ifPresent(id -> siteMessagePublish.publish(
                 SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis()).tenantId(id.longValue())
-                        .addContext("type", RechargeAlarm.SESAME_CREDIT).addContext("count", total).build()));
+                        .addContext("type", RechargeAlarm.SESAME_CREDIT.getCode()).addContext("count", total).build()));
         
         return freeDepositData;
     }
