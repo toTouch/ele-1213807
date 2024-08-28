@@ -4,7 +4,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.mapper.FyConfigServiceMapper;
+import com.xiliulou.electricity.request.fy.FyConfigRequest;
 import com.xiliulou.electricity.service.FyConfigService;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,5 +53,38 @@ public class FyConfigServiceImpl implements FyConfigService {
         redisService.saveWithHash(CacheConstant.CACHE_PXZ_CONFIG + tenantId, fyConfig);
         redisService.expire(CacheConstant.CACHE_FY_CONFIG + tenantId, TimeUnit.HOURS.toMillis(24 * 30), true);
         return fyConfig;
+    }
+    
+    @Override
+    public Pair<Boolean, String> saveOrUpdate(Integer tenantId, FyConfigRequest params) {
+        if (Objects.isNull(params) || (StringUtils.isEmpty(params.getMerchantCode()) && StringUtils.isEmpty(params.getStoreCode()))){
+            return Pair.of(false, "参数错误");
+        }
+        try {
+            boolean insert = false;
+            FyConfig config = queryByTenantIdFromCache(tenantId);
+            if (Objects.isNull(config)){
+                config = new FyConfig();
+                config.setCreateTime(System.currentTimeMillis());
+                config.setDelFlag(FyConfig.DEL_NORMAL);
+                config.setTenantId(tenantId);
+                insert  = true;
+            }
+            config.setUpdateTime(System.currentTimeMillis());
+            if (StringUtils.isNotEmpty(params.getMerchantCode())){
+                config.setMerchantCode(params.getMerchantCode());
+            }
+            if (StringUtils.isNotEmpty(params.getStoreCode())){
+                config.setStoreCode(params.getStoreCode());
+            }
+            if (insert){
+                fyConfigServiceMapper.insert(config);
+                return Pair.of(true, "");
+            }
+            fyConfigServiceMapper.updateByTenantId(config);
+            return Pair.of(true, "");
+        }finally {
+            redisService.delete(CacheConstant.CACHE_PXZ_CONFIG + tenantId);
+        }
     }
 }
