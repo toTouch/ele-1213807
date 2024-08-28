@@ -13,9 +13,20 @@ import java.util.List;
  * @since 2024-08-22 16:58:53
  */
 public interface ProfitSharingOrderMapper {
+    
     int insert(ProfitSharingOrder profitSharingOrder);
     
     List<ProfitSharingOrder> selectListByIds(@Param("idList") List<Long> profitSharingOrderIdList);
+    
+    /**
+     * 批量新增
+     *
+     * @param insertProfitSharingOrderList
+     * @author caobotao.cbt
+     * @date 2024/8/28 11:15
+     */
+    void batchInsert(List<ProfitSharingOrder> insertProfitSharingOrderList);
+    
     
     Integer existsUnfreezeByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
 }

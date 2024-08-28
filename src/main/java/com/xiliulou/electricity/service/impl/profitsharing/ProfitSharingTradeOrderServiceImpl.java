@@ -3,10 +3,8 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.domain.profitsharing.ProfitSharingTradeOrderThirdOrderNoDO;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
-import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeOrderQueryModel;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +21,7 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrderService {
+    
     @Resource
     private ProfitSharingTradeOrderMapper profitSharingTradeOrderMapper;
     
@@ -55,13 +54,7 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     
     @Slave
     @Override
-    public List<ProfitSharingTradeOrderThirdOrderNoDO> queryThirdOrderNoListByParam(ProfitSharingTradeOrderQueryModel queryModel) {
-        return profitSharingTradeOrderMapper.selectThirdOrderNoListByParam(queryModel);
-    }
-    
-    @Slave
-    @Override
-    public List<ProfitSharingTradeOrder> queryListByThirdOrderNos(Integer tenantId, List<String> thirdOrderNos) {
-        return profitSharingTradeOrderMapper.selectListByThirdOrderNos(tenantId,thirdOrderNos);
+    public List<ProfitSharingTradeOrder> queryListByThirdOrderNosAndChannelAndProcessState(Integer tenantId, Integer processState, String channel, List<String> thirdOrderNos) {
+        return profitSharingTradeOrderMapper.selectListByThirdOrderNosAndChannelAndProcessState(tenantId, processState, channel, thirdOrderNos);
     }
 }

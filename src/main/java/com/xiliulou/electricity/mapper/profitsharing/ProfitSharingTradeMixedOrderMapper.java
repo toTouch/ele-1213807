@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeMixedOrderQueryModel;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 /**
@@ -13,7 +15,7 @@ import java.util.List;
  */
 public interface ProfitSharingTradeMixedOrderMapper {
     
-
+    
     /**
      * 新增数据
      *
@@ -22,6 +24,24 @@ public interface ProfitSharingTradeMixedOrderMapper {
      */
     int insert(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder);
     
+    
+    /**
+     * 列表查询
+     *
+     * @param queryModel
+     * @author caobotao.cbt
+     * @date 2024/8/28 08:56
+     */
+    List<ProfitSharingTradeMixedOrder> selectListByParam(ProfitSharingTradeMixedOrderQueryModel queryModel);
+    
+    /**
+     * 状态更新
+     *
+     * @param mixedOrder
+     * @author caobotao.cbt
+     * @date 2024/8/28 09:58
+     */
+    int updateStatusById(ProfitSharingTradeMixedOrder mixedOrder);
     
     ProfitSharingTradeMixedOrder selectByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
 }

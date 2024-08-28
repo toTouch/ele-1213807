@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
-import com.xiliulou.electricity.domain.profitsharing.ProfitSharingTradeOrderThirdOrderNoDO;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeOrderQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 
@@ -33,23 +31,28 @@ public interface ProfitSharingTradeOrderMapper {
     int updateById(ProfitSharingTradeOrder profitSharingUpdate);
     
     /**
-     * 条件查询
-     *
-     * @param queryModel
-     * @author caobotao.cbt
-     * @date 2024/8/26 17:12
-     */
-    List<ProfitSharingTradeOrderThirdOrderNoDO> selectThirdOrderNoListByParam(ProfitSharingTradeOrderQueryModel queryModel);
-    
-    /**
-     * 根据租户id+第三方订单号查询
-     *
      * @param tenantId
+     * @param channel
      * @param thirdOrderNos
      * @author caobotao.cbt
-     * @date 2024/8/26 18:02
+     * @date 2024/8/28 09:25
      */
-    List<ProfitSharingTradeOrder> selectListByThirdOrderNos(@Param("tenantId") Integer tenantId, @Param("thirdOrderNos") List<String> thirdOrderNos);
+    List<ProfitSharingTradeOrder> selectListByThirdOrderNosAndChannelAndProcessState(@Param("tenantId") Integer tenantId, @Param("processState") Integer processState,
+            @Param("channel") String channel, @Param("thirdOrderNos") List<String> thirdOrderNos);
+    
+    
+    /**
+     * 批量更新状态
+     *
+     * @param ids
+     * @param processState
+     * @param updateTime
+     * @param remark
+     * @author caobotao.cbt
+     * @date 2024/8/28 10:53
+     */
+    int batchUpdateStateByIds(@Param("ids") List<Long> ids, @Param("processState") Integer processState, @Param("updateTime") Long updateTime, @Param("remark")String remark);
+    
     
     Integer existsNotRefundByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("orderNo") String orderNo);
 }

@@ -92,6 +92,12 @@ public class ProfitSharingTradeOrder implements Serializable {
      */
     private Integer supportRefund;
     
+    
+    /**
+     * 退租金天数限制
+     */
+    private Integer refundLimit;
+    
     /**
      * 支付时间
      */

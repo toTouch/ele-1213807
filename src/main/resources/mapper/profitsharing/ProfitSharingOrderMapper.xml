@@ -3,16 +3,27 @@
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, third_trade_order_no, order_no, third_order_no, amount, business_type,
+        id
+        , third_trade_order_no, order_no, third_order_no, amount, business_type,
             status, type, tenant_id, franchisee_id, third_merchant_id, del_flag, create_time,update_time
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         INSERT INTO t_profit_sharing_order (third_trade_order_no, order_no, third_order_no, amount, business_type,
-            status, type, tenant_id, franchisee_id, third_merchant_id, create_time,update_time, out_account_type)
+                                            status, type, tenant_id, franchisee_id, third_merchant_id, create_time, update_time, out_account_type)
         VALUES (#{thirdTradeOrderNo}, #{orderNo}, #{thirdOrderNo}, #{amount}, #{businessType},
-            #{status}, #{type}, #{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{createTime},#{updateTime}, #{outAccountType}
-        )
+                #{status}, #{type}, #{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{createTime}, #{updateTime}, #{outAccountType})
+    </insert>
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_order(third_trade_order_no, order_no, third_order_no, amount, business_type,
+        status, type, tenant_id, franchisee_id, third_merchant_id, create_time, update_time, out_account_type)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.thirdTradeOrderNo}, #{item.orderNo}, #{item.thirdOrderNo}, #{item.amount}, #{item.businessType},
+            #{item.status}, #{item.type}, #{item.tenantId}, #{item.franchiseeId}, #{item.thirdMerchantId}, #{item.createTime}, #{item.updateTime},
+            #{item.outAccountType})
+        </foreach>
+    
     </insert>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">

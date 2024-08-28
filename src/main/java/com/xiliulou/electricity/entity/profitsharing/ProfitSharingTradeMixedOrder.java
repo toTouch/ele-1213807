@@ -55,6 +55,11 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
     private BigDecimal amount;
     
     /**
+     * WECHAT-微信
+     */
+    private String channel;
+    
+    /**
      * 删除标识：0-未删除 1-已删除
      */
     private Integer delFlag;
@@ -73,5 +78,7 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
      * 是否混合支付：0-是，1-否
      */
     private Integer whetherMixedPay;
+    
+    
 }
 

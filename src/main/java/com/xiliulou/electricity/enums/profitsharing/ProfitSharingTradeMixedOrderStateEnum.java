@@ -13,7 +13,7 @@ import lombok.Getter;
  * @date 2024/8/27 20:05
  */
 @Getter
-public enum ProfitSharingTradeMixedStateEnum {
+public enum ProfitSharingTradeMixedOrderStateEnum {
     
     INIT(0, "初始化"),
     COMPLETE(1,"已完成")
@@ -24,7 +24,7 @@ public enum ProfitSharingTradeMixedStateEnum {
     
     private String desc;
     
-    ProfitSharingTradeMixedStateEnum(Integer code, String desc) {
+    ProfitSharingTradeMixedOrderStateEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }

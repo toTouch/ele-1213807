@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service.profitsharing;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
-import com.xiliulou.electricity.domain.profitsharing.ProfitSharingTradeOrderThirdOrderNoDO;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeOrderQueryModel;
 
 import java.util.List;
 
@@ -22,25 +20,15 @@ public interface ProfitSharingTradeOrderService {
     
     
     /**
-     * 条件查询
-     *
-     * @param queryModel
-     * @return
-     * @author caobotao.cbt
-     * @date 2024/8/26 17:11
-     */
-    List<ProfitSharingTradeOrderThirdOrderNoDO> queryThirdOrderNoListByParam(ProfitSharingTradeOrderQueryModel queryModel);
-    
-    
-    /**
-     * 根据第三方订单号查询
+     * 根据第三方订单号查询 + 渠道查询 + 处理状态
      *
      * @param tenantId
+     * @param channel
      * @param thirdOrderNos
      * @author caobotao.cbt
      * @date 2024/8/26 18:01
      */
-    List<ProfitSharingTradeOrder> queryListByThirdOrderNos(Integer tenantId, List<String> thirdOrderNos);
+    List<ProfitSharingTradeOrder> queryListByThirdOrderNosAndChannelAndProcessState(Integer tenantId, Integer processState, String channel, List<String> thirdOrderNos);
     
     
     boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo);
