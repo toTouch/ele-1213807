@@ -29,4 +29,7 @@ public interface ProfitSharingTradeOrderService {
      * @date 2024/8/26 18:01
      */
     List<ProfitSharingTradeOrder> queryListByThirdOrderNosAndChannelAndProcessState(Integer tenantId, Integer processState, String channel, List<String> thirdOrderNos);
+    
+    
+    boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo);
 }

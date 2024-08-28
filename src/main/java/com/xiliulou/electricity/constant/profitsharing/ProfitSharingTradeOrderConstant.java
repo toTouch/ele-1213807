@@ -27,4 +27,17 @@ public class ProfitSharingTradeOrderConstant {
     
     public static final Integer IS_REFUND_NO = 1;
     
+    /**
+     * 是否混合支付：0-是，1-否
+     */
+    public static final Integer WHETHER_MIXED_PAY_YES = 0;
+    
+    public static final Integer WHETHER_MIXED_PAY_NO = 1;
+    
+    /**
+     * 解冻描述
+     */
+    public static final String UNFREEZE_DESC = "解冻全部剩余资金";
+    
+    
 }

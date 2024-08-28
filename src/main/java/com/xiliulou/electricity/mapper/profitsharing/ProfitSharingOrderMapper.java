@@ -27,5 +27,7 @@ public interface ProfitSharingOrderMapper {
      */
     void batchInsert(List<ProfitSharingOrder> insertProfitSharingOrderList);
     
+    
+    Integer existsUnfreezeByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
 }
 

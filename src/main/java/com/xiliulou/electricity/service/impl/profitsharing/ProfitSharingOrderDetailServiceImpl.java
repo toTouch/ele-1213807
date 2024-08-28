@@ -96,4 +96,15 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
         
         return resList;
     }
+    
+    @Override
+    public int batchInsert(List<ProfitSharingOrderDetail> profitSharingOrderDetailList) {
+        return profitSharingOrderDetailMapper.batchInsert(profitSharingOrderDetailList);
+    }
+    
+    @Override
+    public int insert(ProfitSharingOrderDetail profitSharingOrderDetail) {
+        return profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
+    }
+    
 }

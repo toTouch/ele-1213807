@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author maxiaodong
@@ -38,6 +39,17 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     @Override
     public int updateById(ProfitSharingTradeOrder profitSharingUpdate) {
         return profitSharingTradeOrderMapper.updateById(profitSharingUpdate);
+    }
+    
+    @Override
+    @Slave
+    public boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo) {
+        Integer count  =  profitSharingTradeOrderMapper.existsNotRefundByThirdOrderNo(thirdOrderNo, orderNo);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Slave

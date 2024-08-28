@@ -8,6 +8,15 @@
             del_flag, create_time, update_time, out_account_type, business_type
     </sql>
     
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_order_detail( profit_sharing_order_id, profit_sharing_receive_config_id, third_trade_order_no, order_detail_no, third_order_detail_no,
+        profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
+        create_time, update_time, out_account_type, business_type)
+       values (#{profitSharingOrderId}, #{profitSharingReceiveConfigId}, #{thirdTradeOrderNo}, #{orderDetailNo}, #{thirdOrderDetailNo},
+               #{profitSharingReceiveAccount}, #{scale}, #{profitSharingAmount}, #{status}, #{failReason}, #{finishTime}, #{unfreezeStatus}, #{tenantId},#franchiseeId,
+               #{createTime}, #{updateTime}, #{outAccountType}, #{businessType})
+    </insert>
+    
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_profit_sharing_order_detail( profit_sharing_order_id, profit_sharing_receive_config_id, third_trade_order_no, order_detail_no, third_order_detail_no,
         profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,

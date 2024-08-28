@@ -90,6 +90,11 @@ public interface MqProducerConstant {
     String PROFIT_SHARING_ORDER_TOPIC = "PROFIT_SHARING_ORDER_TOPIC";
     
     /**
+     * 分账交易订单退款处理
+     */
+    String PROFIT_SHARING_ORDER_REFUND_TOPIC = "PROFIT_SHARING_ORDER_REFUND_TOPIC";
+    
+    /**
      * <p>
      * Description:
      * </p>

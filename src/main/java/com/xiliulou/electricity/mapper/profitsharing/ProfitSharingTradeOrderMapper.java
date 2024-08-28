@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import org.apache.ibatis.annotations.Param;
 
 
+
 import java.util.List;
 
 /**
@@ -51,5 +52,8 @@ public interface ProfitSharingTradeOrderMapper {
      * @date 2024/8/28 10:53
      */
     int batchUpdateStateByIds(@Param("ids") List<Long> ids, @Param("processState") Integer processState, @Param("updateTime") Long updateTime, @Param("remark")String remark);
+    
+    
+    Integer existsNotRefundByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("orderNo") String orderNo);
 }
 

@@ -42,5 +42,7 @@ public interface ProfitSharingTradeMixedOrderMapper {
      * @date 2024/8/28 09:58
      */
     int updateStatusById(ProfitSharingTradeMixedOrder mixedOrder);
+    
+    ProfitSharingTradeMixedOrder selectByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
 }
 

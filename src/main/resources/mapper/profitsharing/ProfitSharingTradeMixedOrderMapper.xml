@@ -49,6 +49,11 @@
         order by id asc
         limit #{size}
     </select>
+    
+    <select id="selectByThirdOrderNo"
+            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select <include refid="base_column"/> from t_profit_sharing_trade_mixed_order where thrid_order_no = #{thirdOrderNo} limit 1
+    </select>
 
 
 </mapper>

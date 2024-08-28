@@ -91,6 +91,11 @@ public enum BusinessType {
     PROFIT_SHARING_ORDER(90),
     //分账交易明细
     PROFIT_SHARING_ORDER_DETAIL(91),
+    
+    // 分账解冻订单：分账单号
+    PROFIT_SHARING_ORDER_UNFREEZE(92),
+    // 分账解冻订单：分账单号
+    PROFIT_SHARING_ORDER_DETAIL_UNFREEZE(93),
     ;
     
     private final Integer business;

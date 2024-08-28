@@ -26,10 +26,6 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     
     @Override
     public void insert(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) {
-        long time = System.currentTimeMillis();
-        profitSharingTradeMixedOrder.setCreateTime(time);
-        profitSharingTradeMixedOrder.setUpdateTime(time);
-        profitSharingTradeMixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
         profitSharingTradeMixedOrderMapper.insert(profitSharingTradeMixedOrder);
     }
     
@@ -42,5 +38,11 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     @Override
     public void updateStatusById(ProfitSharingTradeMixedOrder mixedOrder) {
         profitSharingTradeMixedOrderMapper.updateStatusById(mixedOrder);
+    }
+    
+    @Override
+    @Slave
+    public ProfitSharingTradeMixedOrder queryByThirdOrderNo(String thirdOrderNo) {
+        return profitSharingTradeMixedOrderMapper.selectByThirdOrderNo(thirdOrderNo);
     }
 }

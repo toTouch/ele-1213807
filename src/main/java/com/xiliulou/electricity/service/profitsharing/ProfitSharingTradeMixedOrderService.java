@@ -39,4 +39,7 @@ public interface ProfitSharingTradeMixedOrderService {
      * @date 2024/8/28 09:58
      */
     void updateStatusById(ProfitSharingTradeMixedOrder mixedOrder);
+    
+    
+    ProfitSharingTradeMixedOrder queryByThirdOrderNo(String thirdOrderNo);
 }

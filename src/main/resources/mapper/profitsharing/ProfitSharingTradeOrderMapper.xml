@@ -31,12 +31,18 @@
     </insert>
     
     <update id="updateById">
-        update t_profit_sharing_trade_order set  process_state = #{processState}, third_order_no = #{thirdOrderNo}, update_time = #{updateTime} where id = #{id}
+        update t_profit_sharing_trade_order
+        set process_state = #{processState},
+            <if test="thirdOrderNo != null and thirdOrderNo != ''">
+                third_order_no = #{thirdOrderNo},
+            </if>
+            update_time = #{updateTime}
+        where id = #{id}
     </update>
     
     <select id="selectByOrderNo" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder">
         select
-            <include refid="base_column"/>
+        <include refid="base_column"/>
         from t_profit_sharing_trade_order
         where order_no = #{orderNo}
     </select>
@@ -73,6 +79,12 @@
             #{thirdOrderNo}
         </foreach>
         and channel=#{channel}
+    
+    </select>
+    
+    <select id="existsNotRefundByThirdOrderNo" resultType="java.lang.Integer">
+        select 1 from t_profit_sharing_trade_order where third_order_no = #{thirdOrderNo}  and support_refund = 1
+                                                     and order_no != #{orderNo} limit 1
     </select>
 
 
