@@ -30,6 +30,8 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
@@ -74,8 +76,9 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void doUnFreeze(ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingTradeOrderRefund profitSharingTradeOrderRefund,
-            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) {
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException {
         WechatPayParamsDetails wechatPayParamsDetails = null;
         try {
             wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(profitSharingTradeOrder.getTenantId(),
@@ -165,7 +168,8 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
         
         } catch (ProfitSharingException e) {
-            log.error("PROFIT SHARING ORDER REFUND CONSUMER ERROR!", e);
+            log.error("PROFIT SHARING UNFREEZE ERROR!", e);
+            throw new ProfitSharingException(e.getMessage());
         }
         
     }

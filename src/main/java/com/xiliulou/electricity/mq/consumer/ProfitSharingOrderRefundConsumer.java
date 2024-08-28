@@ -122,7 +122,11 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
         // 根据微信支付订单号查询分账交易订单中是否存在除了自己外不可退的订单
         boolean existsNotRefundByThirdOrderNo = profitSharingTradeOrderService.existsNotRefundByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo(), profitSharingTradeOrderRefund.getOrderNo());
         if (!existsNotRefundByThirdOrderNo) {
-            profitSharingOrderService.doUnFreeze(profitSharingTradeOrder, profitSharingTradeOrderRefund, profitSharingTradeMixedOrder);
+            try {
+                profitSharingOrderService.doUnFreeze(profitSharingTradeOrder, profitSharingTradeOrderRefund, profitSharingTradeMixedOrder);
+            } catch (ProfitSharingException e) {
+                log.error("PROFIT SHARING ORDER REFUND CONSUMER ERROR!", e);
+            }
         }
         
         ProfitSharingTradeOrder profitSharingUpdate = new ProfitSharingTradeOrder();

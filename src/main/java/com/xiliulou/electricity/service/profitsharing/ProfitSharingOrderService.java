@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderRefund;
+import com.xiliulou.pay.base.exception.ProfitSharingException;
 
 /**
  * 分账订单表(profitSharingOrder)表服务接口
@@ -19,5 +20,5 @@ public interface ProfitSharingOrderService {
     int insert(ProfitSharingOrder profitSharingOrder);
     
     void doUnFreeze(ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingTradeOrderRefund profitSharingTradeOrderRefund,
-            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder);
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException;
 }
