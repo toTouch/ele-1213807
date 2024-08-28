@@ -181,6 +181,12 @@
             <if test="type != null">
                 and fdah.type = #{type}
             </if>
+            <if test="uid != null">
+                and fdah.uid = #{uid}
+            </if>
+            <if test="payStatus != null">
+                and fdah.pay_status = #{payStatus}
+            </if>
             <if test="beginTime != null">
                 and fdah.create_time &gt; #{beginTime}
             </if>
@@ -233,6 +239,12 @@
             </if>
             <if test="type != null">
                 and fdah.type = #{type}
+            </if>
+            <if test="uid != null">
+                and fdah.uid = #{uid}
+            </if>
+            <if test="payStatus != null">
+                and fdah.pay_status = #{payStatus}
             </if>
             <if test="beginTime != null">
                 and fdah.create_time &gt; #{beginTime}

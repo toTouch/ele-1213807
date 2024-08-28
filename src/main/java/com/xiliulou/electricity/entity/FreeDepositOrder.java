@@ -108,7 +108,7 @@ public class FreeDepositOrder {
     
     
     /**
-     * 支付状态 0:初始化;4:待冻结;7:冻结中;10:已冻结;11:解冻中;12:已解冻;13超时关闭
+     * 免押状态 0:初始化;4:待冻结;7:冻结中;10:已冻结;11:解冻中;12:已解冻;13超时关闭
      */
     public static final Integer AUTH_INIT = 0;
     
@@ -125,7 +125,7 @@ public class FreeDepositOrder {
     public static final Integer AUTH_TIMEOUT = 13;
     
     /**
-     * 授权免押状态 -1:初始化;0:交易成功；1:交易处理中；2:交易失败；4:交易关闭
+     * 代扣状态 -1:初始化;0:交易成功；1:交易处理中；2:交易失败；4:交易关闭
      */
     public static final Integer PAY_STATUS_INIT = -1;
     
@@ -145,6 +145,6 @@ public class FreeDepositOrder {
     public static final Integer DEPOSIT_TYPE_CAR_BATTERY = 3;
     
     
-    public static final Integer YEAR = 365 * 24 * 60 * 60 * 1000;
+    public static final Long YEAR = 365L * 24 * 60 * 60 * 1000;
     
 }

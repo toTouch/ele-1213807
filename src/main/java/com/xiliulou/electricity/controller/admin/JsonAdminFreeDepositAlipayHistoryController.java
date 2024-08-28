@@ -44,6 +44,8 @@ public class JsonAdminFreeDepositAlipayHistoryController {
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "payStatus", required = false) Integer payStatus,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size) || size > 50 || size < 0) {
@@ -88,7 +90,9 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setEndTime(endTime);
         query.setTenantId(TenantContextHolder.getTenantId());
         query.setStoreIds(storeIds);
+        query.setUid(uid);
         query.setFranchiseeId(franchiseeId);
+        query.setPayStatus(payStatus);
         query.setFranchiseeIds(franchiseeIds);
         
         return freeDepositAlipayHistoryService.queryList(query);
@@ -101,6 +105,8 @@ public class JsonAdminFreeDepositAlipayHistoryController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "payStatus", required = false) Integer payStatus,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -137,6 +143,8 @@ public class JsonAdminFreeDepositAlipayHistoryController {
         query.setEndTime(endTime);
         query.setTenantId(TenantContextHolder.getTenantId());
         query.setStoreIds(storeIds);
+        query.setUid(uid);
+        query.setPayStatus(payStatus);
         query.setFranchiseeId(franchiseeId);
         query.setFranchiseeIds(franchiseeIds);
         

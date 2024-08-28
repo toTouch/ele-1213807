@@ -36,7 +36,14 @@ public class FreeDepositAlipayHistoryQuery {
     
     private Long franchiseeId;
     
+    private Long uid;
+    
     private List<Long> franchiseeIds;
     
     private List<Long> storeIds;
+    
+    /**
+     * 代扣状态
+     */
+    private Integer payStatus;
 }

@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.math.BigDecimal;
 
@@ -63,12 +63,12 @@ public class FreeDepositAlipayHistory {
     private Long createTime;
     
     private Long updateTime;
-
+    
     /**
      * 加盟商id
      */
     private Long franchiseeId;
-
+    
     /**
      * 门店Id
      */
@@ -88,7 +88,7 @@ public class FreeDepositAlipayHistory {
     public static final Integer DEL_DEL = 1;
     
     /**
-     * 授权免押状态 -1:初始化;0:交易成功；1:交易处理中；2:交易失败；4:交易关闭
+     * 代扣状态 -1:初始化;0:交易成功；1:交易处理中；2:交易失败；4:交易关闭
      */
     public static final Integer PAY_STATUS_INIT = -1;
     

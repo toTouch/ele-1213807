@@ -42,6 +42,9 @@ public class FreeDepositAlipayHistoryVo {
     
     private Integer type;
     
+    /**
+     * 代扣状态
+     */
     private Integer payStatus;
     
     private String remark;
