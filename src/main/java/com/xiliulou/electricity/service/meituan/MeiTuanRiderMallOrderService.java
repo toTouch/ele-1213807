@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.meituan;
 
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+
 /**
  * @author HeYafeng
  * @description 美团骑手商城订单
@@ -8,4 +10,6 @@ package com.xiliulou.electricity.service.meituan;
 public interface MeiTuanRiderMallOrderService {
     
     void handelFetchOrders(String sessionId);
+    
+    MeiTuanRiderMallOrder queryByOrderIdAndPhone(String orderId, String phone);
 }

@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.enums.meituan.MeiTuanEnum;
 import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
+import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import com.xiliulou.thirdmall.util.meituan.MeiTuanRiderMallUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -39,7 +39,7 @@ public class JsonOuterBatteryMemberCardController {
         
         Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, limitTradeRequest.getSign());
         if (!checkSign) {
-            return R.fail(MeiTuanEnum.CHECK_SIGN_ERROR.getDesc());
+            return R.fail(VirtualTradeStatusEnum.CHECK_SIGN_ERROR.getDesc());
         }
         
         return R.ok(batteryMemberCardService.meiTuanLimitTradeCheck(limitTradeRequest));

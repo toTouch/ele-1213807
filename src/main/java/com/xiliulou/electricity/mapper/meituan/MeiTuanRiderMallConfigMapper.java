@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -19,5 +20,5 @@ public interface MeiTuanRiderMallConfigMapper {
     
     MeiTuanRiderMallConfig selectByConfig(MeiTuanRiderMallConfig config);
     
-    List<MeiTuanRiderMallConfig> selectListEnableMeiTuanRiderMall(Integer offset, Integer size);
+    List<MeiTuanRiderMallConfig> selectListEnableMeiTuanRiderMall(@Param("offset") Integer offset, @Param("size") Integer size);
 }

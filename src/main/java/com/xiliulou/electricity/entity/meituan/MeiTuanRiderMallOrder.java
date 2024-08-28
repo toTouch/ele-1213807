@@ -51,19 +51,14 @@ public class MeiTuanRiderMallOrder {
     private Integer meiTuanVirtualRechargeType;
     
     /**
-     * 券码
-     */
-    private String meiTuanCoupon;
-    
-    /**
-     * 同步对账订单状态: 1-已处理, 2-未处理
-     */
-    private Integer meiTuanOrderHandleReasonStatus;
-    
-    /**
      * 手机号
      */
     private String meiTuanAccount;
+    
+    /**
+     * 券码
+     */
+    private String coupon;
     
     /**
      * 套餐订单ID
@@ -71,9 +66,14 @@ public class MeiTuanRiderMallOrder {
     private String orderId;
     
     /**
+     * 同步对账状态: 1-已处理, 2-未处理
+     */
+    private Integer orderHandleReasonStatus;
+    
+    /**
      * 订单使用状态: 0-未使用, 1-已使用
      */
-    private Integer orderUserStatus;
+    private Integer orderUseStatus;
     
     /**
      * 套餐ID(也就是美团skuId)
