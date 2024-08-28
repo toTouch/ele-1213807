@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.profitsharing;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeMixedOrderQueryModel;
+
+import java.util.List;
 
 /**
  * 分账交易混合订单(TProfitSharingTradeMixedOrder)表服务接口
@@ -19,5 +22,21 @@ public interface ProfitSharingTradeMixedOrderService {
      */
     void insert(ProfitSharingTradeMixedOrder tProfitSharingTradeMixedOrder);
     
+    /**
+     * 列表查询
+     *
+     * @param queryModel
+     * @author caobotao.cbt
+     * @date 2024/8/28 08:56
+     */
+    List<ProfitSharingTradeMixedOrder> queryListByParam(ProfitSharingTradeMixedOrderQueryModel queryModel);
     
+    /**
+     * 状态更新
+     *
+     * @param mixedOrder
+     * @author caobotao.cbt
+     * @date 2024/8/28 09:58
+     */
+    void updateStatusById(ProfitSharingTradeMixedOrder mixedOrder);
 }

@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper">
     <sql id="base_column">
         id
-        , tenant_id, uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, rent_rebate, pay_time, del_flag, create_time, update_time    </sql>
+        , tenant_id, uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, support_refund,refund_limit, pay_time, del_flag, create_time, update_time    </sql>
     
     <sql id="table_name">
         t_profit_sharing_trade_order
@@ -12,21 +12,21 @@
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_profit_sharing_trade_order(tenant_id, franchisee_id, uid, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel,
-                                                 rent_rebate, pay_time, del_flag, create_time, update_time)
+                                                 support_refund, refund_limit, pay_time, del_flag, create_time, update_time)
         values (#{tenantId}, #{franchiseeId}, #{uid}, #{thirdMerchantId}, #{orderNo}, #{thirdOrderNo}, #{orderType}, #{amount}, #{processState}, #{remark}, #{channel},
-                #{rentRebate},
+                #{supportRefund}, #{refundLimit},
                 #{payTime}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_profit_sharing_trade_order(tenant_id,uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel,
-        rent_rebate, pay_time, del_flag, create_time, update_time)
+        support_refund,refund_limit, pay_time, del_flag, create_time, update_time)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.tenantId}, #{item.uid}, #{item.franchiseeId}, #{item.thirdMerchantId}, #{item.orderNo}, #{item.thirdOrderNo}, #{item.orderType}, #{item.amount},
             #{item.processState},
             #{item.remark},
-            #{item.channel}, #{item.rentRebate}, #{item.payTime}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
+            #{item.channel}, #{item.supportRefund},#{item.refundLimit}, #{item.payTime}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
         </foreach>
     </insert>
     
@@ -46,16 +46,20 @@
         select
         id,third_order_no
         from
+    <update id="batchUpdateStateByIds">
+        update
         <include refid="table_name"/>
-        where del_flag=0
-        and tenant_id=#{tenantId}
-        and process_state=#{processState}
-        and id > #{startId}
-        order by id asc
-        limit #{size}
-    </select>
+        set process_state=#{processState},
+        remark=#{remark},
+        update_time=#{updateTime}
+        where id in
+        <foreach collection="ids" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </update>
     
-    <select id="selectListByThirdOrderNos"
+    
+    <select id="selectListByThirdOrderNosAndChannelAndProcessState"
         resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder">
         select
         <include refid="base_column"/>
@@ -63,11 +67,12 @@
         <include refid="table_name"/>
         where del_flag=0
         and tenant_id=#{tenantId}
+        and process_state = #{processState}
         and third_order_no in
         <foreach collection="thirdOrderNos" open="(" close=")" item="thirdOrderNo" separator=",">
             #{thirdOrderNo}
         </foreach>
-    
+        and channel=#{channel}
     </select>
 
 

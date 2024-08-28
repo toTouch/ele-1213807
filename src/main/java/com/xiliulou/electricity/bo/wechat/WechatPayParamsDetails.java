@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.bo.wechat;
 
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.math.BigInteger;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
  * @date 2024/6/14 13:04
  */
 @Data
-public class WechatPayParamsDetails {
+public class WechatPayParamsDetails extends BasePayConfig {
     
     private Integer id;
     
@@ -136,6 +138,7 @@ public class WechatPayParamsDetails {
      * @author caobotao.cbt
      * @date 2024/8/27 10:39
      */
+    @Override
     public List<ProfitSharingReceiverConfig> getEnableProfitSharingReceiverConfigs() {
         // 分账主配置必须可用
         if (Objects.isNull(this.profitSharingConfig) || !ProfitSharingConfigStatusEnum.OPEN.getCode().equals(this.profitSharingConfig.getConfigStatus())) {
@@ -146,5 +149,15 @@ public class WechatPayParamsDetails {
         return Optional.ofNullable(this.profitSharingReceiverConfigs).orElse(Collections.emptyList()).stream()
                 .filter(c -> ProfitSharingConfigReceiverStatusEnum.ENABLE.getCode().equals(c.getReceiverStatus())).collect(Collectors.toList());
         
+    }
+    
+    @Override
+    public String getThirdPartyMerchantId() {
+        return this.wechatMerchantId;
+    }
+    
+    @Override
+    public String getPaymentChannel() {
+        return ChannelEnum.WECHAT.getCode();
     }
 }
