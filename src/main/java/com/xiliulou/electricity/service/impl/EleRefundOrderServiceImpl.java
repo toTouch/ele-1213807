@@ -41,6 +41,8 @@ import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -220,7 +222,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     private FreeDepositService freeDepositService;
     
     @Resource
-    private RocketMqService rocketMqService;
+    private DelayFreeProducer delayFreeProducer;
     
     /**
      * 新增数据
@@ -796,6 +798,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.update(carRefundOrderUpdate);
         }
+        
+        // 解冻
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
+        
+        
         return Triple.of(true, "", "退款中，请稍后");
     }
     /**
@@ -1163,6 +1170,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
+        
+        // 解冻
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
+        
         
         return Triple.of(true, "100413", "免押押金解冻中");
     }

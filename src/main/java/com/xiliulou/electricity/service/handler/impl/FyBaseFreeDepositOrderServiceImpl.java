@@ -7,7 +7,6 @@ import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
@@ -62,8 +61,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         }
         
         FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.FY.getChannel()).data(result.getFyResponse().getOutOrderNo()).build();
-        // 发送延迟队列
-        sendQueryStatusDelayQueue(orderId, MqProducerConstant.FY_FREE_DEPOSIT_TAG_NAME);
+        
         
         return Triple.of(true, null, dto);
     }
@@ -109,8 +107,6 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return resultCheck;
         }
         
-        // 发送延迟队列
-        sendQueryStatusDelayQueue(orderId, MqProducerConstant.FY_UN_FREE_DEPOSIT_TAG_NAME);
         
         return Triple.of(true, null, "解冻中，请稍后");
     }
@@ -131,8 +127,6 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return resultCheck;
         }
         
-        // 发送延迟队列
-        sendQueryStatusDelayQueue(orderId, MqProducerConstant.FY_AUTH_APY_TAG_NAME);
         
         return Triple.of(true, null, "免押代扣中，请稍后");
     }

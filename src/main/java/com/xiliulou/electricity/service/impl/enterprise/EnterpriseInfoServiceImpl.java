@@ -54,6 +54,8 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseInfoMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
@@ -269,6 +271,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     private FreeDepositService freeDepositService;
+    
+    @Resource
+    private DelayFreeProducer delayFreeProducer;
     
     /**
      * 通过ID查询单条数据从DB
@@ -1838,6 +1843,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
                 log.error("REFUND ORDER ERROR! reason is {}, orderId is {}", triple.getRight(), freeDepositOrder.getOrderId());
                 return;
             }
+            // 解冻
+            delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
             
         });
         

@@ -43,6 +43,8 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.FreeBatteryDepositHybridOrderQuery;
 import com.xiliulou.electricity.query.FreeBatteryDepositQuery;
 import com.xiliulou.electricity.query.FreeBatteryDepositQueryV3;
@@ -268,6 +270,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Resource
     private FreeDepositService freeDepositService;
+    
+    @Resource
+    private DelayFreeProducer delayFreeProducer;
     
     /**
      * 通过ID查询单条数据从DB
@@ -1107,7 +1112,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
-    
         
         Triple<Boolean, String, Object> checkUserCanFreeDepositResult = checkUserCanFreeBatteryDeposit(uid, userInfo);
         if (Boolean.FALSE.equals(checkUserCanFreeDepositResult.getLeft())) {
@@ -1150,6 +1154,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         FreeDepositOrderDTO depositOrderDTO = (FreeDepositOrderDTO) freeDepositOrderTriple.getRight();
         
+        // 待冻结
         FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder().uid(uid).authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE).idCard(freeQuery.getIdCard())
                 .orderId(eleDepositOrder.getOrderId()).phone(freeQuery.getPhoneNumber()).realName(freeQuery.getRealName()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).storeId(eleDepositOrder.getStoreId())
@@ -1176,6 +1181,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid,
                 UriUtils.encode(JsonUtil.toJson(depositOrderDTO.getData()), StandardCharsets.UTF_8), 300 * 1000L, false);
+        
+        // 发送延迟队列延迟更新免押状态为最终态
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
         
         return Triple.of(true, null, depositOrderDTO.getData());
     }
@@ -2199,6 +2207,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setFranchiseeId(freeDepositOrder.getFranchiseeId());
         freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
         freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
+        
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(),MqProducerConstant.AUTH_APY_TAG_NAME);
+        
         return Triple.of(true, "", "授权转支付交易处理中！");
     }
 }
