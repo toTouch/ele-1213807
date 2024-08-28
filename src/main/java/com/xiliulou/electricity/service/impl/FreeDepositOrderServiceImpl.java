@@ -46,7 +46,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedStateEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeBatteryDepositHybridOrderQuery;
@@ -1574,7 +1574,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                         .tenantId(wechatPayParamsDetails.getTenantId()).franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
                         .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode()).amount(electricityMemberCardOrder.getPayAmount())
                         .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(batteryMemberCard.getIsRefund())
-                        .payTime(electricityMemberCardOrder.getCreateTime()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+                        .payTime(electricityMemberCardOrder.getCreateTime()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis())
+                        .refundLimit(batteryMemberCard.getRefundLimit()).build();
                 
                 profitSharingTradeOrderList.add(profitSharingTradeOrder);
             }
@@ -1590,7 +1591,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                         .tenantId(wechatPayParamsDetails.getTenantId()).franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
                         .orderNo(insuranceOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
                         .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
-                        .payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).build();
+                        .payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
                 
                 profitSharingTradeOrderList.add(profitSharingTradeOrder);
             }
@@ -1606,8 +1607,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
     
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
                 // 支付订单数量大于1 设置为混合支付

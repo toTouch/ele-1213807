@@ -107,4 +107,41 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
         return profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
     }
     
+    @Override
+    @Slave
+    public boolean existsNotUnfreezeByThirdOrderNo(String thirdOrderNo) {
+        Integer count =  profitSharingOrderDetailMapper.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    @Override
+    @Slave
+    public boolean existsNotCompleteByThirdOrderNo(String thirdOrderNo) {
+        Integer count = profitSharingOrderDetailMapper.existsNotCompleteByThirdOrderNo(thirdOrderNo);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    @Override
+    @Slave
+    public boolean existsFailByThirdOrderNo(String thirdOrderNo) {
+         Integer failCount = profitSharingOrderDetailMapper.existsFailByThirdOrderNo(thirdOrderNo);
+         if (Objects.nonNull(failCount)) {
+             return true;
+         }
+         
+         return false;
+    }
+    
+    @Override
+    public int updateUnfreezeStatusByThirdOrderNo(String thirdOrderNo, Integer status, Integer unfreezeStatus, List<Integer> businessTypeList, long updateTime) {
+        return profitSharingOrderDetailMapper.updateUnfreezeStatusByThirdOrderNo(thirdOrderNo, status, unfreezeStatus, businessTypeList, updateTime);
+    }
 }

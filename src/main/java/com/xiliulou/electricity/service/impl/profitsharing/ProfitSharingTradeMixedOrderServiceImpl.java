@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeMixedOrderMapper;
 import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeMixedOrderQueryModel;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
@@ -44,5 +43,11 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     @Slave
     public ProfitSharingTradeMixedOrder queryByThirdOrderNo(String thirdOrderNo) {
         return profitSharingTradeMixedOrderMapper.selectByThirdOrderNo(thirdOrderNo);
+    }
+    
+    @Override
+    @Slave
+    public List<String> listThirdOrderNoByTenantId(Integer tenantId, long startTime, Integer offset, Integer size) {
+        return profitSharingTradeMixedOrderMapper.selectListThirdOrderNoByTenantId(tenantId, startTime, offset, size);
     }
 }

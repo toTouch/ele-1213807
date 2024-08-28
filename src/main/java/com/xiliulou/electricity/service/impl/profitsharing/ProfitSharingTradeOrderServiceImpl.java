@@ -52,6 +52,12 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
         return false;
     }
     
+    @Override
+    @Slave
+    public String queryOrderNoyByThirdOrderNo(String thirdOrderNo) {
+        return profitSharingTradeOrderMapper.selectOrderNoyByThirdOrderNo(thirdOrderNo);
+    }
+    
     @Slave
     @Override
     public List<ProfitSharingTradeOrder> queryListByThirdOrderNosAndChannelAndProcessState(Integer tenantId, Integer processState, String channel, List<String> thirdOrderNos) {

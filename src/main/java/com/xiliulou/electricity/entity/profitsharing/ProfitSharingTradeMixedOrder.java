@@ -79,6 +79,6 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
      */
     private Integer whetherMixedPay;
     
-    
+    private Long uid;
 }
 

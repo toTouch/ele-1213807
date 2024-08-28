@@ -7,6 +7,8 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderRefund;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
 
+import java.util.List;
+
 /**
  * 分账订单表(profitSharingOrder)表服务接口
  *
@@ -19,6 +21,7 @@ public interface ProfitSharingOrderService {
     
     int insert(ProfitSharingOrder profitSharingOrder);
     
-    void doUnFreeze(ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingTradeOrderRefund profitSharingTradeOrderRefund,
-            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException;
+    void doUnFreeze(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException;
+    
+    List<String> listUnfreezeByThirdOrderNo(List<String> thirdOrderNoList);
 }

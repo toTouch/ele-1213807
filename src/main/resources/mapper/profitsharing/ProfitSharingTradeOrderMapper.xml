@@ -86,6 +86,10 @@
         select 1 from t_profit_sharing_trade_order where third_order_no = #{thirdOrderNo}  and support_refund = 1
                                                      and order_no != #{orderNo} limit 1
     </select>
+    
+    <select id="selectOrderNoyByThirdOrderNo" resultType="java.lang.String">
+        select order_no from t_profit_sharing_trade_order where third_order_no = #{thirdOrderNo} limit 1
+    </select>
 
 
 </mapper>

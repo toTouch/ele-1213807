@@ -29,6 +29,21 @@
         </foreach>
     </insert>
     
+    <update id="updateUnfreezeStatusByThirdOrderNo">
+            update t_profit_sharing_order_detail
+            set
+                unfreeze_status = #{unfreezeStatus},
+                update_time = #{updateTime}
+            where
+                third_trade_order_no = #{thirdOrderNo}
+                and  status = #{status}
+                and business_type in
+                <foreach collection="businessTypeList" item="businessType" open="(" close=")" separator=",">
+                    #{businessType}
+                </foreach>
+                and unfreeze_status = 0
+    </update>
+    
     <sql id="pageFilter">
         <where>
                 del_flag = 0
@@ -94,6 +109,57 @@
              limit #{offset}, #{size}
         </if>
     </select>
+    
+    <select id="selectListUnfreezeByThirdOrderNo" resultType="java.lang.String">
+        SELECT
+            distinct third_trade_order_no
+        FROM
+            t_profit_sharing_order r
+        WHERE
+            r.third_trade_order_no in
+            <foreach collection="list" item="thirdOrderNo" open="(" close=")" separator=",">
+                #{thirdOrderNo}
+            </foreach>
+          AND r.business_type = 98
+    </select>
+    
+    <select id="existsNotUnfreezeByThirdOrderNo" resultType="Integer">
+        SELECT
+            1
+        FROM
+            t_profit_sharing_order_detail d
+        where
+            d.business_type in (0, 1, 2, 99)
+          and d.unfreeze_status = 0
+          and d.third_trade_order_no = #{thirdOrderNo}
+        limit 1
+    </select>
+    
+    <select id="existsNotCompleteByThirdOrderNo" resultType="Integer">
+        SELECT
+            1
+        FROM
+            t_profit_sharing_order_detail d
+        where
+            d.business_type in (0, 1, 2, 99)
+          and d.`status` in (0, 1)
+          and d.third_trade_order_no = #{thirdOrderNo}
+        limit 1
+    </select>
+    
+    <select id="existsFailByThirdOrderNo" resultType="Integer">
+        SELECT
+            1
+        FROM
+            t_profit_sharing_order_detail d
+        where
+            d.business_type in (0, 1, 2, 99)
+          and d.`status` = 3
+          and d.third_trade_order_no = #{thirdOrderNo}
+        limit 1
+    </select>
+
+
 </mapper>
 
 

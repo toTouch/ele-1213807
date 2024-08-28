@@ -123,7 +123,7 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
         boolean existsNotRefundByThirdOrderNo = profitSharingTradeOrderService.existsNotRefundByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo(), profitSharingTradeOrderRefund.getOrderNo());
         if (!existsNotRefundByThirdOrderNo) {
             try {
-                profitSharingOrderService.doUnFreeze(profitSharingTradeOrder, profitSharingTradeOrderRefund, profitSharingTradeMixedOrder);
+                profitSharingOrderService.doUnFreeze(profitSharingTradeMixedOrder);
             } catch (ProfitSharingException e) {
                 log.error("PROFIT SHARING ORDER REFUND CONSUMER ERROR!", e);
             }

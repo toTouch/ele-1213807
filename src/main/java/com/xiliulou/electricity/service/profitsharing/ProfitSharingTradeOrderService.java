@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.profitsharing;
 
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 
 import java.util.List;
@@ -32,4 +31,6 @@ public interface ProfitSharingTradeOrderService {
     
     
     boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo);
+    
+    String queryOrderNoyByThirdOrderNo(String thirdOrderNo);
 }

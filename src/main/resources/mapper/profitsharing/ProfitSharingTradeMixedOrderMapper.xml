@@ -27,8 +27,8 @@
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time)
-        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount},#{channel}, #{createTime}, #{updateTime})
+        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time, uid)
+        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount},#{channel}, #{createTime}, #{updateTime}, #{uid})
     </insert>
     
     <update id="updateStatusById">
@@ -53,6 +53,16 @@
     <select id="selectByThirdOrderNo"
             resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
         select <include refid="base_column"/> from t_profit_sharing_trade_mixed_order where thrid_order_no = #{thirdOrderNo} limit 1
+    </select>
+    
+    <select id="selectListThirdOrderNoByTenantId" resultType="java.lang.String">
+        select third_order_no
+        from t_profit_sharing_trade_mixed_order
+        where tenant_id = #{tenantId}
+          and create_time > #{startTime}
+          and id > #{startId}
+          order by id asc
+          limit #{offset}, #{size}
     </select>
 
 

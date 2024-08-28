@@ -22,5 +22,15 @@ public interface ProfitSharingOrderDetailMapper {
     List<ProfitSharingOrderDetail> selectListByPage(ProfitSharingOrderDetailQueryModel queryModel);
     
     int insert(ProfitSharingOrderDetail profitSharingOrderDetail);
+    
+    List<String> selectListUnfreezeByThirdOrderNo(@Param("list") List<String> thirdOrderNoList);
+    
+    Integer existsNotUnfreezeByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    
+    Integer existsNotCompleteByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    
+    Integer existsFailByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    
+    int updateUnfreezeStatusByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo,@Param("status") Integer status,@Param("unfreezeStatus") Integer unfreezeStatus,@Param("businessTypeList") List<Integer> businessTypeList, long updateTime);
 }
 

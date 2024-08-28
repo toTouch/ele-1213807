@@ -21,4 +21,12 @@ public interface ProfitSharingOrderDetailService {
     int batchInsert(List<ProfitSharingOrderDetail> profitSharingOrderDetailList);
     
     int insert(ProfitSharingOrderDetail profitSharingOrderDetail);
+    
+    boolean existsNotUnfreezeByThirdOrderNo(String thirdOrderNo);
+    
+    boolean existsNotCompleteByThirdOrderNo(String thirdOrderNo);
+    
+    boolean existsFailByThirdOrderNo(String thirdOrderNo);
+    
+    int updateUnfreezeStatusByThirdOrderNo(String thirdOrderNo,Integer status,Integer unfreezeStatus, List<Integer> businessTypeList, long updateTime);
 }
