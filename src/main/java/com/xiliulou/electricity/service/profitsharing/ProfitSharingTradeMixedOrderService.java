@@ -20,4 +20,5 @@ public interface ProfitSharingTradeMixedOrderService {
     void insert(ProfitSharingTradeMixedOrder tProfitSharingTradeMixedOrder);
     
     
+    ProfitSharingTradeMixedOrder queryByThirdOrderNo(String thirdOrderNo);
 }

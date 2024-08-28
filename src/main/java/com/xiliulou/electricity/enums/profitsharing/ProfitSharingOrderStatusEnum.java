@@ -18,7 +18,7 @@ public enum ProfitSharingOrderStatusEnum {
     PROFIT_SHARING_ACCEPT(0, "已受理"),
     PROFIT_SHARING_IN_PROCESS(1, "处理中"),
     PROFIT_SHARING_COMPLETE(2, "分账完成"),
-    
+    PROFIT_SHARING_FAIL(3, "分账失败"),
     ;
     
     

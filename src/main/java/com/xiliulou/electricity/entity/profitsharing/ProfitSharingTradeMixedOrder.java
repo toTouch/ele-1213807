@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.entity.profitsharing;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.io.Serializable;
 
@@ -9,6 +11,7 @@ import java.io.Serializable;
  * @author makejava
  * @since 2024-08-27 19:19:18
  */
+@Data
 public class ProfitSharingTradeMixedOrder implements Serializable {
     
     private static final long serialVersionUID = -80537955302595275L;
@@ -60,86 +63,9 @@ public class ProfitSharingTradeMixedOrder implements Serializable {
      */
     private Long updateTime;
     
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public Integer getState() {
-        return state;
-    }
-    
-    public void setState(Integer state) {
-        this.state = state;
-    }
-    
-    public Integer getTenantId() {
-        return tenantId;
-    }
-    
-    public void setTenantId(Integer tenantId) {
-        this.tenantId = tenantId;
-    }
-    
-    public Long getFranchiseeId() {
-        return franchiseeId;
-    }
-    
-    public void setFranchiseeId(Long franchiseeId) {
-        this.franchiseeId = franchiseeId;
-    }
-    
-    public String getThirdMerchantId() {
-        return thirdMerchantId;
-    }
-    
-    public void setThirdMerchantId(String thirdMerchantId) {
-        this.thirdMerchantId = thirdMerchantId;
-    }
-    
-    public String getThirdOrderNo() {
-        return thirdOrderNo;
-    }
-    
-    public void setThirdOrderNo(String thirdOrderNo) {
-        this.thirdOrderNo = thirdOrderNo;
-    }
-    
-    public BigDecimal getAmount() {
-        return amount;
-    }
-    
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-    
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-    
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-    
-    public Long getCreateTime() {
-        return createTime;
-    }
-    
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
-    
-    public Long getUpdateTime() {
-        return updateTime;
-    }
-    
-    public void setUpdateTime(Long updateTime) {
-        this.updateTime = updateTime;
-    }
-    
+    /**
+     * 是否混合支付：0-是，1-否
+     */
+    private Integer whetherMixedPay;
 }
 

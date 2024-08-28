@@ -20,5 +20,7 @@ public interface ProfitSharingOrderDetailMapper {
     Integer countTotal(ProfitSharingOrderDetailQueryModel queryModel);
     
     List<ProfitSharingOrderDetail> selectListByPage(ProfitSharingOrderDetailQueryModel queryModel);
+    
+    int insert(ProfitSharingOrderDetail profitSharingOrderDetail);
 }
 

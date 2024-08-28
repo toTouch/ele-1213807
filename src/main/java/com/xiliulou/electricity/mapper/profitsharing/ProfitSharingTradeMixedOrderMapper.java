@@ -22,6 +22,7 @@ public interface ProfitSharingTradeMixedOrderMapper {
      */
     int insert(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder);
     
-
+    
+    ProfitSharingTradeMixedOrder selectByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
 }
 

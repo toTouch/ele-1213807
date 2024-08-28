@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.profitsharing;
 
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingOrderDetailPageRequest;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingOrderDetailVO;
 
@@ -16,4 +17,8 @@ public interface ProfitSharingOrderDetailService {
     Integer countTotal(ProfitSharingOrderDetailPageRequest merchantPageRequest);
     
     List<ProfitSharingOrderDetailVO> listByPage(ProfitSharingOrderDetailPageRequest profitSharingOrderPageRequest);
+    
+    int batchInsert(List<ProfitSharingOrderDetail> profitSharingOrderDetailList);
+    
+    int insert(ProfitSharingOrderDetail profitSharingOrderDetail);
 }

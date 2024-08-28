@@ -2,42 +2,47 @@ package com.xiliulou.electricity.mq.consumer;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
-import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderTypeEnum;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderRefund;
-import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderUpdate;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
-import com.xiliulou.pay.profitsharing.request.BaseProfitSharingUnfreezeRequest;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingUnfreezeRequest;
+import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
+import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingUnfreezeResp;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -59,10 +64,8 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
     private ProfitSharingOrderService profitSharingOrderService;
     
     @Resource
-    private ProfitSharingServiceAdapter profitSharingServiceAdapter;
+    private ProfitSharingTradeMixedOrderService profitSharingTradeMixedOrderService;
     
-    @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
     
     public void onMessage(String message) {
         log.info("PROFIT SHARING ORDE REFUND CONSUMER INFO!received msg={}", message);
@@ -109,40 +112,17 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
             log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!exists unfreeze profit order, orderNo = {}, refundOrderNo = {}", profitSharingTradeOrderRefund.getOrderNo(), profitSharingTradeOrderRefund.getRefundOrderNo());
             return;
         }
+    
+        ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = profitSharingTradeMixedOrderService.queryByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo());
+        if (Objects.isNull(profitSharingTradeMixedOrder)) {
+            log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!profit sharing trade mixed order is null, orderNo = {}, refundOrderNo = {}", profitSharingTradeOrderRefund.getOrderNo(), profitSharingTradeOrderRefund.getRefundOrderNo());
+            return;
+        }
         
         // 根据微信支付订单号查询分账交易订单中是否存在除了自己外不可退的订单
         boolean existsNotRefundByThirdOrderNo = profitSharingTradeOrderService.existsNotRefundByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo(), profitSharingTradeOrderRefund.getOrderNo());
         if (!existsNotRefundByThirdOrderNo) {
-            WechatPayParamsDetails wechatPayParamsDetails = null;
-            try {
-                wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(profitSharingTradeOrder.getTenantId(),
-                        profitSharingTradeOrder.getFranchiseeId());
-            } catch (WechatPayException e) {
-                log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!not found pay params,refundOrderNo={}", profitSharingTradeOrderRefund.getRefundOrderNo());
-            }
-            
-            if (Objects.isNull(wechatPayParamsDetails)) {
-                log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!not found pay params,refundOrderNo={}", profitSharingTradeOrderRefund.getRefundOrderNo());
-            }
-    
-            // 调用解冻接口
-            try {
-                WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
-                unfreezeRequest.setCommonParam(new WechatProfitSharingCommonRequest());
-                unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeOrder.getUid()));
-                unfreezeRequest.setTransactionId(profitSharingTradeOrder.getThirdOrderNo());
-                unfreezeRequest.setDescription("换电-解冻");
-                profitSharingServiceAdapter.unfreeze(unfreezeRequest);
-                
-                // 保存解冻分账订单
-                ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
-                // 分账单号
-                profitSharingOrder.setOrderNo(unfreezeRequest.getOutOrderNo());
-                
-                profitSharingOrder.setBusinessType(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE.getBusiness());
-            } catch (ProfitSharingException e) {
-                throw new RuntimeException(e);
-            }
+            profitSharingOrderService.doUnFreeze(profitSharingTradeOrder, profitSharingTradeOrderRefund, profitSharingTradeMixedOrder);
         }
         
         ProfitSharingTradeOrder profitSharingUpdate = new ProfitSharingTradeOrder();

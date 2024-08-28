@@ -28,6 +28,11 @@
         insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, create_time, update_time)
         values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount}, #{createTime}, #{updateTime})
     </insert>
+    
+    <select id="selectByThirdOrderNo"
+            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select <include refid="base_column"/> from t_profit_sharing_trade_mixed_order where thrid_order_no = #{thirdOrderNo} limit 1
+    </select>
 
 
 </mapper>
