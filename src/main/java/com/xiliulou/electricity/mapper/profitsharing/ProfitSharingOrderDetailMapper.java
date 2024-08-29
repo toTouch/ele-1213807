@@ -22,5 +22,15 @@ public interface ProfitSharingOrderDetailMapper {
     List<ProfitSharingOrderDetail> selectListByPage(ProfitSharingOrderDetailQueryModel queryModel);
     
     int insert(ProfitSharingOrderDetail profitSharingOrderDetail);
+    
+    /**
+     * 更新
+     *
+     * @param profitSharingOrderDetail
+     * @author caobotao.cbt
+     * @date 2024/8/29 15:31
+     */
+    int update(ProfitSharingOrderDetail profitSharingOrderDetail);
+    
 }
 

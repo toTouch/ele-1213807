@@ -32,4 +32,15 @@ public interface ProfitSharingTradeOrderService {
     
     
     boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo);
+    
+    /**
+     * 批量更新退款状态
+     *
+     * @param ids
+     * @param processState
+     * @param remark
+     * @author caobotao.cbt
+     * @date 2024/8/29 11:12
+     */
+    void batchUpdateStatus(List<Long> ids, Integer processState, String remark);
 }

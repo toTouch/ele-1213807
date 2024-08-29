@@ -64,8 +64,17 @@ public abstract class BasePayConfig implements Serializable {
     public abstract List<ProfitSharingReceiverConfig> getEnableProfitSharingReceiverConfigs();
     
     /**
+     * 获取可用分账配置
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/28 17:50
+     */
+    public abstract ProfitSharingConfig getEnableProfitSharingConfig();
+    
+    /**
      * 配置类型
      */
     public abstract Integer getConfigType();
+    
     
 }

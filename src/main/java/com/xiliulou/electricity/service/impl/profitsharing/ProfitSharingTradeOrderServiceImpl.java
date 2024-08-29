@@ -44,12 +44,17 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     @Override
     @Slave
     public boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo) {
-        Integer count  =  profitSharingTradeOrderMapper.existsNotRefundByThirdOrderNo(thirdOrderNo, orderNo);
+        Integer count = profitSharingTradeOrderMapper.existsNotRefundByThirdOrderNo(thirdOrderNo, orderNo);
         if (Objects.nonNull(count)) {
             return true;
         }
         
         return false;
+    }
+    
+    @Override
+    public void batchUpdateStatus(List<Long> ids, Integer processState, String remark) {
+        profitSharingTradeOrderMapper.batchUpdateStateByIds(ids, processState, System.currentTimeMillis(), remark);
     }
     
     @Slave

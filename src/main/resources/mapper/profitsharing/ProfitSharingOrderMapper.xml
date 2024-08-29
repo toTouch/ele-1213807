@@ -25,6 +25,18 @@
         </foreach>
     
     </insert>
+    <update id="update">
+        update t_profit_sharing_order
+        set
+        <if test="thirdOrderNo!=null and thirdOrderNo!=''">
+            third_order_no =#{thirdOrderNo},
+        </if>
+        <if test="business_type!=null">
+            business_type =#{businessType},
+        </if>
+        update_time=#{updateTime}
+        where id =#{id}
+    </update>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">
         select
@@ -39,9 +51,12 @@
     </select>
     
     <select id="existsUnfreezeByThirdOrderNo" resultType="java.lang.Integer">
-        select 1 from t_profit_sharing_order where third_order_no = #{thirdOrderNo} and business_type = 98 limit 1
+        select 1
+        from t_profit_sharing_order
+        where third_order_no = #{thirdOrderNo}
+          and business_type = 98 limit 1
     </select>
-    
+
 
 </mapper>
 
