@@ -77,6 +77,30 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return meiTuanRiderMallOrderMapper.selectByUidAndPhone(query);
     }
     
+    @Override
+    public List<MeiTuanRiderMallOrder> listAllUnSyncedOrder(Integer tenantId) {
+        List<MeiTuanRiderMallOrder> list = new ArrayList<>();
+        int offset = 0;
+        int size = 200;
+        
+        while (true) {
+            List<MeiTuanRiderMallOrder> orders = this.listUnSyncedOrder(tenantId, offset, size);
+            if (CollectionUtils.isEmpty(orders)) {
+                break;
+            }
+            
+            list.addAll(orders);
+            offset += size;
+        }
+        return list;
+    }
+    
+    @Slave
+    @Override
+    public List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId, Integer offset, Integer size) {
+        return meiTuanRiderMallOrderMapper.selectListUnSyncedOrder(tenantId, offset, size);
+    }
+    
     /**
      * 1.创建套餐成功 2.通知发货 3.发货失败，回滚步骤1的数据
      */
@@ -183,17 +207,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         log.info("MeiTuanRiderMallSyncOrderStatusTask end! sessionId={}, costTime={}", sessionId, costTime);
     }
     
-    @Slave
-    @Override
-    public List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId) {
-        return meiTuanRiderMallOrderMapper.selectUnSyncedOrder(tenantId);
-    }
-    
     private void handleSyncOrderStatusByTenant(MeiTuanRiderMallConfig config) {
         MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
                 .host(meiTuanRiderMallHostConfig.getHost()).build();
         
-        List<MeiTuanRiderMallOrder> riderMallOrders = this.listUnSyncedOrder(config.getTenantId());
+        List<MeiTuanRiderMallOrder> riderMallOrders = this.listAllUnSyncedOrder(config.getTenantId());
         if (CollectionUtils.isEmpty(riderMallOrders)) {
             return;
         }
@@ -213,7 +231,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         });
         
         if (CollectionUtils.isNotEmpty(updateList)) {
-            meiTuanRiderMallOrderMapper.batchUpdate(updateList);
+            // 对”已处理“的订单，修改状态为”已对账“；”未处理“的不做更改
+            meiTuanRiderMallOrderMapper.batchUpdateSyncOrderStatus(updateList);
         }
     }
     

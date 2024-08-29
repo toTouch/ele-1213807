@@ -48,15 +48,13 @@
         </set>
     </update>
     
-    <update id="batchUpdate">
+    <update id="batchUpdateSyncOrderStatus">
         update t_meituan_rider_mall_order
         set order_sync_status = 3
-        <where>
-            id in
-            <foreach collection="list" item="item" separator=",">
-                #{item.id}
-            </foreach>
-        </where>
+        where order_sync_status = 1 and id in
+        <foreach collection="list" item="item" separator=",">
+            #{item.id}
+        </foreach>
     </update>
     
     <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
@@ -84,11 +82,12 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectUnSyncedOrder" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+    <select id="selectListUnSyncedOrder" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select select
         <include refid="basic_field"/>
         from t_meituan_rider_mall_order
         where tenant_id = #{tenantId} and order_sync_status != 3 and del_flag = 0
         order by id
+        limit #{offset}, #{size}
     </select>
 </mapper>

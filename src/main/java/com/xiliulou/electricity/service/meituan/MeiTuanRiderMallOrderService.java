@@ -25,5 +25,7 @@ public interface MeiTuanRiderMallOrderService {
     
     void createBatteryMemberCardOrder(OrderQuery query);
     
-    List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId);
+    List<MeiTuanRiderMallOrder> listAllUnSyncedOrder(Integer tenantId);
+    
+    List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId, Integer offset, Integer size);
 }
