@@ -169,6 +169,6 @@ public class BatteryBusinessHandler implements BusinessHandler {
     
     @Override
     public boolean authPay(FreeDepositOrder order) {
-        return true;
+        return true; //主要逻辑是处理freeDepositOrder表，已在上层处理，无需处理
     }
 }
