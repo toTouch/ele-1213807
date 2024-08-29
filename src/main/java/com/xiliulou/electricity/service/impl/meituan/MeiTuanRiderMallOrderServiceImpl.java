@@ -71,9 +71,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         // 遍历租户
-        configs.forEach(config -> {
-            handleFetchOrdersByTenant(config, recentDay);
-        });
+        configs.forEach(config -> handleFetchOrdersByTenant(config, recentDay));
         
         Long costTime = System.currentTimeMillis() - startTime;
         log.info("MeiTuanRiderMallFetchOrderTask end! sessionId={}, costTime={}", sessionId, costTime);
