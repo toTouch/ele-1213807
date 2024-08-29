@@ -92,7 +92,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         try {
             result = fyDepositService.handleFund(buildFyUnFreeRequest(query));
         } catch (Exception e) {
-            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            log.error("FY ERROR! unFreezeDeposit fail!  orderId={}", orderId, e);
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
@@ -111,7 +111,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         try {
             result = fyDepositService.handleFund(buildFyAuthPayRequest(query));
         } catch (Exception e) {
-            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            log.error("FY ERROR! authToPay fail!  orderId={}", orderId, e);
             return Triple.of(false, "100401", "免押代扣调用失败！");
         }
         
@@ -130,7 +130,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         try {
             result = fyDepositService.queryHandleFundStatus(buildFyAuthPayStatusRequest(query));
         } catch (Exception e) {
-            log.error("FY ERROR! freeDepositOrder fail!  orderId={}", orderId, e);
+            log.error("FY ERROR! queryAuthToPayStatus fail!  orderId={}", orderId, e);
             return null;
         }
         
