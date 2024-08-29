@@ -1,11 +1,20 @@
 package com.xiliulou.electricity.service.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
+import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description ...
@@ -41,4 +50,20 @@ public interface InstallmentRecordService {
      * @return 分页总数
      */
     R<Integer> count(InstallmentRecordQuery installmentRecordQuery);
+    
+    /**
+     * 用户端购买分期套餐
+     * @param query 购买请求参数
+     * @return 携带二维码连接的返回结果
+     */
+    R<FySignAgreementRsp> pay(InstallmentPayQuery query, HttpServletRequest request);
+    
+    
+    /**
+     * 生成签约记录，
+     * @param query 购买请求对象
+     * @param userInfo 用户信息
+     * @return 生成分期签约记录的结果
+     */
+    Triple<Boolean, String, Object> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo, UserInfo userInfo);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentTerminatingRecordMapper;
@@ -50,6 +51,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecordMapper.update(installmentTerminatingRecord);
     }
     
+    @Slave
     @Override
     public R<List<InstallmentTerminatingRecordVO>> listForPage(InstallmentTerminatingRecordQuery query) {
         List<InstallmentTerminatingRecord> records = installmentTerminatingRecordMapper.selectPage(query);
@@ -74,6 +76,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return R.ok(collect);
     }
     
+    @Slave
     @Override
     public R<Integer> count(InstallmentTerminatingRecordQuery query) {
         return R.ok(installmentTerminatingRecordMapper.count(query));

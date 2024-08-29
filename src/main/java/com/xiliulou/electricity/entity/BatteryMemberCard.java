@@ -114,10 +114,11 @@ public class BatteryMemberCard {
      * 服务费
      */
     private BigDecimal serviceCharge;
+    
     /**
-     *
+     * 分期套餐服务费
      */
-    //    private Integer type;
+    private BigDecimal installmentServiceFee;
     
     /**
      * 备注

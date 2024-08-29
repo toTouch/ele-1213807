@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentDeductionRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
@@ -40,6 +41,7 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         return installmentDeductionRecordMapper.update(installmentDeductionRecord);
     }
     
+    @Slave
     @Override
     public R<List<InstallmentDeductionRecordVO>> listForPage(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordMapper.selectPage(installmentDeductionRecordQuery);
@@ -54,6 +56,7 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         return R.ok(collect);
     }
     
+    @Slave
     @Override
     public R<Integer> count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {
         return R.ok(installmentDeductionRecordMapper.count(installmentDeductionRecordQuery));

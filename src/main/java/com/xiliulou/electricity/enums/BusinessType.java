@@ -85,7 +85,14 @@ public enum BusinessType {
     MERCHANT_WITHDRAW_BATCH(82),
     
     //商户申请提现批次单号下明细项唯一标识号
-    MERCHANT_WITHDRAW_BATCH_DETAIL(83);
+    MERCHANT_WITHDRAW_BATCH_DETAIL(83),
+    
+    
+    // 分期套餐服务费订单
+    INSTALLMENT_SERVICE_FEE(90),
+    
+    // 分期代扣签约
+    INSTALLMENT_SIGN(91);
 
     private final Integer business;
 

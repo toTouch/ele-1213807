@@ -2,7 +2,6 @@ package com.xiliulou.electricity.aspectj;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.ProcessParameter;
-import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.exception.BizException;
@@ -39,51 +38,77 @@ public class ProcessParameterAspect {
     @Autowired
     private UserDataScopeService userDataScopeService;
     
+    /**
+     * 分页参数size最大值
+     */
+    int maxSize = 50;
+    
+    /**
+     * 开启数据权限设置
+     */
+    int processParameterDataPermission = 1;
+    
+    /**
+     * 开始分页参数校验
+     */
+    int processParameterPageParam = 2;
+    
     @Around("@annotation(processParameter)")
     public Object processParameter(ProceedingJoinPoint joinPoint, ProcessParameter processParameter) throws Throwable {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        if (Objects.isNull(tenant)) {
-            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
-            return R.ok();
-        }
-        // 用户区分
+        int type = processParameter.type();
+        
+        // 登录校验
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok();
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
-            }
+        if (type == 0) {
+            return joinPoint.proceed();
         }
         
         Object[] args = joinPoint.getArgs();
         Object requestQuery = args[0];
         Class<?> clazz = requestQuery.getClass();
         
-        // 给请求对象设置数据权限查询条件tenantId、franchiseeIds
-        Field tenantIdField = findField(clazz, "tenantId");
-        Field franchiseeIdsField = findField(clazz, "franchiseeIds");
-        if (Objects.isNull(tenantIdField) || Objects.isNull(franchiseeIdsField)) {
-            throw new BizException("方法请求参数对象属性无tenantId、franchiseeIds");
+        // 设置数据权限
+        if ((type & processParameterDataPermission) == processParameterDataPermission) {
+            Integer tenantId = TenantContextHolder.getTenantId();
+            Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+            if (Objects.isNull(tenant)) {
+                log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+                return R.ok();
+            }
+            
+            List<Long> franchiseeIds = null;
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+                franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if (CollectionUtils.isEmpty(franchiseeIds)) {
+                    return R.ok();
+                }
+            }
+            
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+                return R.ok();
+            }
+            
+            // 给请求对象设置数据权限查询条件tenantId、franchiseeIds
+            Field tenantIdField = findField(clazz, "tenantId");
+            Field franchiseeIdsField = findField(clazz, "franchiseeIds");
+            if (Objects.isNull(tenantIdField) || Objects.isNull(franchiseeIdsField)) {
+                throw new BizException("方法请求参数对象属性无tenantId、franchiseeIds");
+            }
+            tenantIdField.setAccessible(true);
+            tenantIdField.set(clazz, tenantId);
+            franchiseeIdsField.setAccessible(true);
+            franchiseeIdsField.set(clazz, franchiseeIds);
         }
-        tenantIdField.setAccessible(true);
-        tenantIdField.set(clazz, tenantId);
-        franchiseeIdsField.setAccessible(true);
-        franchiseeIdsField.set(clazz, franchiseeIds);
         
-        if (Objects.equals(InstallmentConstants.PROCESS_PARAMETER_TYPE_PAGE, processParameter.type())) {
+        // 校验分页参数
+        if ((type & processParameterPageParam) == processParameterPageParam) {
             handlePageRequest(clazz);
         }
+        
         return joinPoint.proceed(args);
     }
     
@@ -104,7 +129,7 @@ public class ProcessParameterAspect {
             offset = 0;
             offsetField.set(clazz, offset);
         }
-        if (Objects.isNull(size) || size < 0 || size > 50) {
+        if (Objects.isNull(size) || size < 0 || size > maxSize) {
             size = 10;
             sizeField.set(clazz, size);
         }

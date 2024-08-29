@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.constant.installment;
 
+import com.xiliulou.electricity.annotation.ProcessParameter;
+
 /**
  * @Description ...
  * @Author: SongJP
@@ -13,5 +15,17 @@ public interface InstallmentConstants {
     
     Integer PACKAGE_TYPE_CAR_BATTERY = 2;
     
-    String PROCESS_PARAMETER_TYPE_PAGE = "page";
+    /**
+     * 用于设置接口校验注解type，开启登录校验、数据权限设置
+     *
+     * @see ProcessParameter
+     */
+    int PROCESS_PARAMETER_DATA_PERMISSION = 1;
+    
+    /**
+     * 用于设置接口校验注解type，开启登录校验、数据权限设置、分页参数校验
+     *
+     * @see ProcessParameter
+     */
+    int PROCESS_PARAMETER_LOGIN_AND_DATA_AND_PAGE = 3;
 }

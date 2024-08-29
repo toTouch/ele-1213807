@@ -27,7 +27,7 @@ public class JsonAdminInstallmentTerminatingRecordController {
     @Autowired
     private InstallmentTerminatingRecordService installmentTerminatingRecordService;
     
-    @ProcessParameter(type = InstallmentConstants.PROCESS_PARAMETER_TYPE_PAGE)
+    @ProcessParameter(type = InstallmentConstants.PROCESS_PARAMETER_LOGIN_AND_DATA_AND_PAGE)
     @PostMapping("/page")
     public R<List<InstallmentTerminatingRecordVO>> page(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordService.listForPage(query);

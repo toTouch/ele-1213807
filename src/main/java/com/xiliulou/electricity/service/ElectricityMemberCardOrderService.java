@@ -162,4 +162,10 @@ public interface ElectricityMemberCardOrderService {
     R listSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
     
     List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
+    
+    /**
+     * 生成换电套餐订单
+     */
+    Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, IntegratedPaymentAdd integratedPaymentAdd,
+            Set<Integer> userCouponIds, ElectricityCabinet electricityCabinet, ElectricityPayParams electricityPayParams);
 }
