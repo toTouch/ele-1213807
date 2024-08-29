@@ -26,6 +26,16 @@
     
     </insert>
     
+    <update id="updateUnfreezeOrderById">
+        update t_profit_sharing_order
+        set
+            <if test="status != null">
+                status = #{status},
+            </if>
+           update_time = #{updateTime}
+        where id = #{id}
+    </update>
+    
     <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">
         select
         <include refid="basic_field"/>

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -143,5 +144,22 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
     @Override
     public int updateUnfreezeStatusByThirdOrderNo(String thirdOrderNo, Integer status, Integer unfreezeStatus, List<Integer> businessTypeList, long updateTime) {
         return profitSharingOrderDetailMapper.updateUnfreezeStatusByThirdOrderNo(thirdOrderNo, status, unfreezeStatus, businessTypeList, updateTime);
+    }
+    
+    @Override
+    @Slave
+    public List<ProfitSharingOrderTypeUnfreezeBO> listOrderTypeUnfreeze(Integer tenantId, Long startId, Integer size) {
+        return profitSharingOrderDetailMapper.selectListOrderTypeUnfreeze(tenantId, startId, size);
+    }
+    
+    @Override
+    public int updateUnfreezeOrderById(ProfitSharingOrderDetail profitSharingOrderDetailUpdate) {
+        return profitSharingOrderDetailMapper.updateUnfreezeOrderById(profitSharingOrderDetailUpdate);
+    }
+    
+    @Override
+    @Slave
+    public List<ProfitSharingOrderDetail> listFailByThirdOrderNo(String thirdTradeOrderNo) {
+        return profitSharingOrderDetailMapper.selectListFailByThirdOrderNo(thirdTradeOrderNo);
     }
 }

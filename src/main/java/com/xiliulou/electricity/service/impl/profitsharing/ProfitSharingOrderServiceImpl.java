@@ -160,7 +160,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
                 List<ReceiverResp> receivers = unfreeze.getReceivers();
             
                 if (Objects.nonNull(new BigDecimal(receivers.get(0).getAmount()))) {
-                    profitSharingOrderDetail.setProfitSharingAmount(new BigDecimal(receivers.get(0).getAmount()).divide(new BigDecimal(100), 2, BigDecimal.ROUND_DOWN));
+                    profitSharingOrderDetail.setProfitSharingAmount(new BigDecimal(receivers.get(0).getAmount()).divide(new BigDecimal(100)));
                 }
             
                 // 第三方分账明细单号
@@ -180,5 +180,10 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     @Slave
     public List<String> listUnfreezeByThirdOrderNo(List<String> thirdOrderNoList) {
         return profitSharingOrderDetailMapper.selectListUnfreezeByThirdOrderNo(thirdOrderNoList);
+    }
+    
+    @Override
+    public int updateUnfreezeOrderById(ProfitSharingOrder profitSharingOrderUpdate) {
+        return profitSharingOrderMapper.updateUnfreezeOrderById(profitSharingOrderUpdate);
     }
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
 
+import com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderDetailQueryModel;
 import org.apache.ibatis.annotations.Param;
@@ -32,5 +33,11 @@ public interface ProfitSharingOrderDetailMapper {
     Integer existsFailByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
     
     int updateUnfreezeStatusByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo,@Param("status") Integer status,@Param("unfreezeStatus") Integer unfreezeStatus,@Param("businessTypeList") List<Integer> businessTypeList, long updateTime);
+    
+    List<ProfitSharingOrderTypeUnfreezeBO> selectListOrderTypeUnfreeze(@Param("tenantId") Integer tenantId, @Param("startId") Long startId,@Param("size") Integer size);
+    
+    int updateUnfreezeOrderById(ProfitSharingOrderDetail profitSharingOrderDetailUpdate);
+    
+    List<ProfitSharingOrderDetail> selectListFailByThirdOrderNo(@Param("thirdTradeOrderNo") String thirdTradeOrderNo);
 }
 

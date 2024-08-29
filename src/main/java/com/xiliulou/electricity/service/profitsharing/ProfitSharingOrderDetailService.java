@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.profitsharing;
 
 
+import com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingOrderDetailPageRequest;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingOrderDetailVO;
@@ -29,4 +30,10 @@ public interface ProfitSharingOrderDetailService {
     boolean existsFailByThirdOrderNo(String thirdOrderNo);
     
     int updateUnfreezeStatusByThirdOrderNo(String thirdOrderNo,Integer status,Integer unfreezeStatus, List<Integer> businessTypeList, long updateTime);
+    
+    List<ProfitSharingOrderTypeUnfreezeBO> listOrderTypeUnfreeze(Integer tenantId, Long startId, Integer size);
+    
+    int updateUnfreezeOrderById(ProfitSharingOrderDetail profitSharingOrderDetailUpdate);
+    
+    List<ProfitSharingOrderDetail> listFailByThirdOrderNo(String thirdTradeOrderNo);
 }

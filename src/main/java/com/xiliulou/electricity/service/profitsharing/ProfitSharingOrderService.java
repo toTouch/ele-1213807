@@ -24,4 +24,6 @@ public interface ProfitSharingOrderService {
     void doUnFreeze(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException;
     
     List<String> listUnfreezeByThirdOrderNo(List<String> thirdOrderNoList);
+    
+    int updateUnfreezeOrderById(ProfitSharingOrder profitSharingOrderUpdate);
 }

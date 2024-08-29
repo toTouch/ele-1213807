@@ -29,5 +29,7 @@ public interface ProfitSharingOrderMapper {
     
     
     Integer existsUnfreezeByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    
+    int updateUnfreezeOrderById(ProfitSharingOrder profitSharingOrderUpdate);
 }
 

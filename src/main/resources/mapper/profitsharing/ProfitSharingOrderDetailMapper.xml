@@ -43,6 +43,28 @@
                 </foreach>
                 and unfreeze_status = 0
     </update>
+    <update id="updateUnfreezeOrderById">
+        UPDATE t_profit_sharing_order_detail
+        SET
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="finishTime != null">
+                finish_time = #{finishTime},
+            </if>
+            <if test="unfreezeStatus != null">
+                unfreeze_status = #{unfreezeStatus},
+            </if>
+            <if test="failReason != null and failReason != ''">
+                fail_reason = #{failReason},
+            </if>
+            <if test="profitSharingAmount != null">
+                profit_sharing_amount = #{profitSharingAmount},
+            </if>
+            update_time = #{updateTime}
+        WHERE
+            id = #{id}
+    </update>
     
     <sql id="pageFilter">
         <where>
@@ -157,6 +179,37 @@
           and d.`status` = 3
           and d.third_trade_order_no = #{thirdOrderNo}
         limit 1
+    </select>
+    
+    <select id="selectListOrderTypeUnfreeze"
+            resultType="com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO">
+        SELECT
+            d.third_trade_order_no,
+            o.order_no,
+            d.id as detailId,
+            d.franchisee_Id,
+            o.id
+        FROM
+            t_profit_sharing_order_detail d
+                left join t_profit_sharing_order o on o.id = d.profit_sharing_order_id
+        where
+          tenantId = #{tenantId}
+          and d.business_type = 98
+          and d.status in (0, 1)
+          and id > #{startId}
+        order by d.id
+        limit #{size}
+    </select>
+    <select id="selectListFailByThirdOrderNo"
+            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
+        SELECT
+            <include refid="basic_field"/>
+        FROM
+            t_profit_sharing_order_detail d
+        WHERE
+            d.business_type in (0, 1, 2)
+          and d.`status` = 3
+          and d.third_trade_order_no = #{thirdTradeOrderNo}
     </select>
 
 
