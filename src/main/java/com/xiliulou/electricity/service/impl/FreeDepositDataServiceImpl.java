@@ -171,6 +171,8 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
             freeDepositData.setCreateTime(System.currentTimeMillis());
             freeDepositData.setFreeDepositCapacity(CommonConstant.ZERO);
             freeDepositData.setTenantId(params.getTenantId());
+            freeDepositData.setDelFlag(CommonConstant.DEL_N);
+            freeDepositData.setUpdateTime(System.currentTimeMillis());
         }
         
         freeDepositData.setFyFreeDepositCapacity(
