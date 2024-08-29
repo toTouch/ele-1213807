@@ -123,7 +123,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         Integer tenantId = query.getTenantId();
         
         // 判断是否需要从美团拉取订单
-        Boolean needFetchOrders = this.ifNeedFetchOrders(tenantId, query.getOrderId(), uid, query.getSecond());
+        Boolean needFetchOrders = this.ifNeedFetchOrders(tenantId, query.getOrderId(), uid, query.getGapSecond());
         if (needFetchOrders) {
             MeiTuanRiderMallConfig config = meiTuanRiderMallConfigService.queryByTenantIdFromCache(tenantId);
             if (Objects.isNull(config)) {
@@ -133,9 +133,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             
             MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
                     .host(meiTuanRiderMallHostConfig.getHost()).build();
-            // 分页拉取最近5分钟的订单
+            // 分页拉取近N分钟的订单，默认近5分钟
             long endTime = System.currentTimeMillis() / 1000;
-            Long startTime = endTime - 5 * 60;
+            Integer recentMinute = query.getRecentMinute();
+            recentMinute = Objects.isNull(recentMinute) ? 5 : recentMinute;
+            Long startTime = endTime - recentMinute * 60;
             
             // 从美团拉取订单
             List<OrderRsp> orderRspList = this.fetchOrders(apiConfig, startTime, endTime);
@@ -158,7 +160,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }).collect(Collectors.toList());
     }
     
-    private Boolean ifNeedFetchOrders(Integer tenantId, String orderId, Long uid, Integer second) {
+    private Boolean ifNeedFetchOrders(Integer tenantId, String orderId, Long uid, Integer gapSecond) {
         // 数据库中如果没有该订单，则需要拉取
         MeiTuanRiderMallOrder riderMallOrder = this.queryByOrderId(orderId, null, uid);
         if (Objects.isNull(riderMallOrder)) {
@@ -173,8 +175,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         // 判断当前时间与定时任务上次执行时间间隔是否大于指定秒数，默认30秒，如果大于等于则需要拉取
-        second = Objects.isNull(second) ? 30 : second;
-        return (System.currentTimeMillis() - Long.parseLong(lastTaskTime)) / 1000 >= second;
+        gapSecond = Objects.isNull(gapSecond) ? 30 : gapSecond;
+        return (System.currentTimeMillis() - Long.parseLong(lastTaskTime)) / 1000 >= gapSecond;
     }
     
     /**

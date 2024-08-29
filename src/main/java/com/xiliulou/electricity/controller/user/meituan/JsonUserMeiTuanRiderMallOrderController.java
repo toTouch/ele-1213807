@@ -31,11 +31,12 @@ public class JsonUserMeiTuanRiderMallOrderController {
     /**
      * 点击“美团商城”后，获取用户美团订单信息
      *
-     * @param second 用于判断当前时间与上次定时任务执行时间的差值，如果大于这个值，则从美团拉取近5分钟的订单。如果不传，默认为30秒。
+     * @param gapSecond    用于判断当前时间与上次定时任务执行时间的差值，如果大于这个值，则从美团拉取近5分钟的订单。如果不传，默认为30秒。
+     * @param recentMinute 主动拉取最近N分钟的订单。如果不传，默认最近5分钟。
      */
     @GetMapping("/user/meiTuanRiderMall/listOrders")
     public R listOrders(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "second", required = false) Integer second) {
+            @RequestParam(value = "gapSecond", required = false) Integer gapSecond, @RequestParam(value = "recentMinute", required = false) Integer recentMinute) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -49,7 +50,8 @@ public class JsonUserMeiTuanRiderMallOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
         
-        OrderQuery query = OrderQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderId).second(second).build();
+        OrderQuery query = OrderQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderId).gapSecond(gapSecond)
+                .recentMinute(recentMinute).build();
         
         return R.ok(meiTuanRiderMallOrderService.listOrders(query));
     }
