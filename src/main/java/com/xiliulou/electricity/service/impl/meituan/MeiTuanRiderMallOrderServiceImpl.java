@@ -2,13 +2,11 @@ package com.xiliulou.electricity.service.impl.meituan;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallOrderMapper;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
@@ -56,9 +54,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     @Resource
     private UserInfoService userInfoService;
     
-    @Resource
-    private BatteryMemberCardService batteryMemberCardService;
-    
     @Slave
     @Override
     public MeiTuanRiderMallOrder queryByOrderIdAndPhone(String orderId, String phone) {
@@ -80,7 +75,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     private void handleFetchOrdersByTenant(MeiTuanRiderMallConfig config) {
         MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
-                .host(meiTuanRiderMallHostConfig.getHost()).build();
+                .host(meiTuanRiderMallHostConfig.getHost()).tenantId(config.getTenantId()).build();
         
         // 分页拉取最近1天的订单
         List<OrderRsp> orderRspList = this.fetchOrdersByRecentDay(apiConfig);
@@ -88,37 +83,36 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             return;
         }
         
+        List<MeiTuanRiderMallOrder> insertList = new ArrayList<>();
         List<List<OrderRsp>> partition = ListUtils.partition(orderRspList, 100);
-        partition.forEach(orders -> {
-            orders.forEach(order -> {
-                String orderId = order.getOrderId();
-                SkuRsp skuRsp = order.getSkuList().get(0);
-                String phone = skuRsp.getAccount();
-                
-                MeiTuanRiderMallOrder existOrder = this.queryByOrderIdAndPhone(orderId, phone);
-                if (Objects.nonNull(existOrder)) {
-                    return;
-                }
-                
-                Integer tenantId = 0;
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(skuRsp.getSkuId());
-                if (Objects.nonNull(batteryMemberCard)) {
-                    tenantId = batteryMemberCard.getTenantId();
-                }
-                
-                UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
-                
-                MeiTuanRiderMallOrder meiTuanRiderMallOrder = MeiTuanRiderMallOrder.builder().meiTuanOrderId(orderId).meiTuanOrderTime(order.getOrderTime())
-                        .meiTuanOrderStatus(order.getOrderStatus()).meiTuanActuallyPayPrice(new BigDecimal(order.getActuallyPayPrice()))
-                        .meiTuanVirtualRechargeType(skuRsp.getVirtualRechargeType()).meiTuanAccount(phone).orderId(StringUtils.EMPTY)
-                        .orderHandleReasonStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_UNHANDLED.getCode())
-                        .orderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_UNUSED.getCode()).packageId(skuRsp.getSkuId())
-                        .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()).uid(Optional.ofNullable(userInfo.getUid()).orElse(0L)).tenantId(tenantId)
-                        .delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-                
-                meiTuanRiderMallOrderMapper.insert(meiTuanRiderMallOrder);
-            });
-        });
+        partition.forEach(orders -> orders.forEach(order -> {
+            String orderId = order.getOrderId();
+            SkuRsp skuRsp = order.getSkuList().get(0);
+            String phone = skuRsp.getAccount();
+            
+            MeiTuanRiderMallOrder existOrder = this.queryByOrderIdAndPhone(orderId, phone);
+            if (Objects.nonNull(existOrder)) {
+                return;
+            }
+            
+            Integer tenantId = apiConfig.getTenantId();
+            UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
+            
+            MeiTuanRiderMallOrder meiTuanRiderMallOrder = MeiTuanRiderMallOrder.builder().meiTuanOrderId(orderId).meiTuanOrderTime(order.getOrderTime())
+                    .meiTuanOrderStatus(order.getOrderStatus()).meiTuanActuallyPayPrice(new BigDecimal(order.getActuallyPayPrice()))
+                    .meiTuanVirtualRechargeType(skuRsp.getVirtualRechargeType()).meiTuanAccount(phone).orderId(StringUtils.EMPTY)
+                    .orderHandleReasonStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_UNHANDLED.getCode())
+                    .orderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_UNUSED.getCode()).packageId(skuRsp.getSkuId())
+                    .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()).uid(Optional.ofNullable(userInfo.getUid()).orElse(0L)).tenantId(tenantId)
+                    .delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+            
+            insertList.add(meiTuanRiderMallOrder);
+        }));
+        
+        // 批量入库
+        if (CollectionUtils.isNotEmpty(insertList)) {
+            meiTuanRiderMallOrderMapper.batchInsert(insertList);
+        }
     }
     
     private List<OrderRsp> fetchOrdersByRecentDay(MeiTuanRiderMallApiConfig apiConfig) {

@@ -1,8 +1,9 @@
 package com.xiliulou.electricity.mapper.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -14,4 +15,6 @@ public interface MeiTuanRiderMallOrderMapper {
     MeiTuanRiderMallOrder selectByOrderIdAndPhone(@Param("orderId") String orderId, @Param("phone") String phone);
     
     Integer insert(MeiTuanRiderMallOrder order);
+    
+    Integer batchInsert(@Param("list") List<MeiTuanRiderMallOrder> insertList);
 }
