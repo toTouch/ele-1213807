@@ -151,7 +151,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.FreeDepositAlipayHistoryVo">
         select
         fdah.id,
-        fdah.authPayOrderId,
+        fdah.auth_pay_order_id,
         fdah.order_id,
         fdah.name,
         fdah.phone,
@@ -164,7 +164,7 @@
         fdah.tenant_id,
         fdah.remark,
         fdah.pay_status
-        from t_free_deposit_alipay_history
+        from t_free_deposit_alipay_history fdah
         <where>
             <if test="orderId != null and orderId != ''">
                 and fdah.order_id like concat('%', #{orderId}, '%')
