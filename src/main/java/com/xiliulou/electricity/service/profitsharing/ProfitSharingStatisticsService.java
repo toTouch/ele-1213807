@@ -63,4 +63,6 @@ public interface ProfitSharingStatisticsService {
      * @date 2024/8/28 17:21
      */
     ProfitSharingStatistics queryByTenantIdAndFranchiseeIdAndStatisticsTime(Integer tenantId, Long franchiseeId, String statisticsTime);
+    
+    int subtractAmountById(Long id, BigDecimal rollbackAmount);
 }

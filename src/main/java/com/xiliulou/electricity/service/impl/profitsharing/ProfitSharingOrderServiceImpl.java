@@ -5,6 +5,7 @@ import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
@@ -95,7 +96,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
         // 调用解冻接口
         try {
             WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
-            unfreezeRequest.setCommonParam(new WechatProfitSharingCommonRequest());
+            unfreezeRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(wechatPayParamsDetails));
             unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
             unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
             unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);

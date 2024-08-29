@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 import com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.DateFormatConstant;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingStatistics;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
@@ -14,11 +16,11 @@ import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingStatisticsService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
-import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingQueryOrderRequest;
 import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
 import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingQueryOrderResp;
@@ -69,6 +71,9 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     
     @Resource
     private ProfitSharingServiceAdapter profitSharingServiceAdapter;
+    
+    @Resource
+    private ProfitSharingStatisticsService profitSharingStatisticsService;
     
     private DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
@@ -156,9 +161,10 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                 }
     
                 WechatPayParamsDetails wechatPayParamsDetail = wechatPayParamsDetailsMap.get(profitSharingOrderTypeUnfreezeBO.getFranchiseeId());
+                
                 // 调用查询接口
                 WechatProfitSharingQueryOrderRequest unfreezeRequest = new WechatProfitSharingQueryOrderRequest();
-                unfreezeRequest.setCommonParam(new WechatProfitSharingCommonRequest());
+                unfreezeRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(wechatPayParamsDetail));
                 unfreezeRequest.setOutOrderNo(profitSharingOrderTypeUnfreezeBO.getOrderNo());
                 unfreezeRequest.setTransactionId(profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
@@ -236,26 +242,27 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     
                     // 回滚余额
                     if (isRollbackAmount) {
-                        rollbackAmount(profitSharingOrderTypeUnfreezeBO);
+                        rollbackAmount(profitSharingOrderTypeUnfreezeBO, tenantId);
                     }
                     
                 } catch (ProfitSharingException e) {
-                    throw new RuntimeException(e);
+                    log.error("deal unfreeze query info error!orderNo = {}, thirdTradeNo = {}", profitSharingOrderTypeUnfreezeBO.getOrderNo(), profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), e);
                 }
             });
         } catch (WechatPayException e) {
-            throw new RuntimeException(e);
+            log.error("deal unfreeze query info error!", e);
         }
     
     }
     
     /**
      * 将微信支付订单号下的所有分账明细失败的分账金额累加起来回滚至
-     * 支付配置对应的月结分账额度表中
-     * 备注：只回滚业务类型为换电，保险，滞纳金。
+     * 支付配置对应的月结分账额度表中 备注：只回滚业务类型为换电，保险，滞纳金。
+     *
      * @param profitSharingOrderTypeUnfreezeBO
+     * @param tenantId
      */
-    private void rollbackAmount(ProfitSharingOrderTypeUnfreezeBO profitSharingOrderTypeUnfreezeBO) {
+    private void rollbackAmount(ProfitSharingOrderTypeUnfreezeBO profitSharingOrderTypeUnfreezeBO, Integer tenantId) {
         List<ProfitSharingOrderDetail> profitSharingOrderDetailList = profitSharingOrderDetailService.listFailByThirdOrderNo(profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
         if (ObjectUtils.isEmpty(profitSharingOrderDetailList)) {
             log.info("profit sharing rollback amount info,fail detail order is empty, thirdTradeOrderNo = {}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
@@ -268,7 +275,14 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         BigDecimal rollbackAmount = profitSharingOrderDetailList.stream().map(ProfitSharingOrderDetail::getProfitSharingAmount).filter(Objects::nonNull)
                 .collect(Collectors.reducing(BigDecimal.ZERO, BigDecimal::add));
         
-        
+        // 检测分账统计是否存在
+        ProfitSharingStatistics profitSharingStatistics = profitSharingStatisticsService.queryByTenantIdAndFranchiseeIdAndStatisticsTime(tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId(), monthDate);
+        if (Objects.isNull(profitSharingStatistics)) {
+            log.warn("profit sharing rollback amount info,statistics is not exists,tenantId = {}, franchiseeId = {}, statisticsTime = {}", tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId(), monthDate);
+            return;
+        }
+    
+        profitSharingStatisticsService.subtractAmountById(profitSharingStatistics.getId(), rollbackAmount);
     }
     
     private void dealWithTenantIds(List<Integer> tenantIds) {

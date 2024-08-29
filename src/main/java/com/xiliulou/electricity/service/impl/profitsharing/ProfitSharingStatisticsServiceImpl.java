@@ -48,6 +48,11 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
         return profitSharingStatisticsMapper.selectByTenantIdAndFranchiseeId(tenantId, franchiseeId, statisticsTime);
     }
     
+    @Override
+    public int subtractAmountById(Long id, BigDecimal rollbackAmount) {
+        return profitSharingStatisticsMapper.subtractAmountById(id, rollbackAmount, System.currentTimeMillis());
+    }
+    
     
     /**
      * 获取当前月

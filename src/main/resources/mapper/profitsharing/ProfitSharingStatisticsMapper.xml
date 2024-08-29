@@ -38,6 +38,12 @@
         set total_amount=total_amount+#{amount} , update_time=#{updateTime} where id = #{id}
     </update>
     
+    <update id="subtractAmountById">
+        update
+        <include refid="table_name"/>
+        set total_amount = total_amount - #{amount} , update_time=#{updateTime} where id = #{id}
+    </update>
+    
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into<include refid="table_name">(tenant_id, franchisee_id, statistics_type, statistics_time, total_amount, create_time, update_time)

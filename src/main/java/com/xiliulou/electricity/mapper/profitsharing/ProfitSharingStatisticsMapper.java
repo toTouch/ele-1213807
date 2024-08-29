@@ -46,5 +46,6 @@ public interface ProfitSharingStatisticsMapper {
     int insert(ProfitSharingStatistics profitSharingStatistics);
     
     
+    int subtractAmountById(Long id, BigDecimal rollbackAmount, long currentTimeMillis);
 }
 
