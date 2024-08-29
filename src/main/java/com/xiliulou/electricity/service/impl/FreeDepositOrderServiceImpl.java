@@ -46,6 +46,7 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
@@ -133,6 +134,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -1418,7 +1420,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         WechatPayParamsDetails wechatPayParamsDetails = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId(), queryProfitSharingConfig);
         } catch (WechatPayException e) {
             log.warn("FREE DEPOSIT HYBRID WARN!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");

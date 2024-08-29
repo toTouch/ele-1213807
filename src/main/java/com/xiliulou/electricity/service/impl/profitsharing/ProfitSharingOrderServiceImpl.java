@@ -82,8 +82,8 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     public void doUnFreeze(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException {
         WechatPayParamsDetails wechatPayParamsDetails = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(profitSharingTradeMixedOrder.getTenantId(),
-                    profitSharingTradeMixedOrder.getFranchiseeId());
+            wechatPayParamsDetails = wechatPayParamsBizService.getPreciseCacheByTenantIdAndFranchiseeId(profitSharingTradeMixedOrder.getTenantId(),
+                    profitSharingTradeMixedOrder.getFranchiseeId(), null);
         } catch (WechatPayException e) {
             log.warn("PROFIT SHARING UNFREEZE WARN!not found pay params, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo());
         }

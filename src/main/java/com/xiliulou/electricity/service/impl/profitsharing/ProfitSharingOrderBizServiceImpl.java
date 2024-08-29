@@ -59,6 +59,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         }
     }
     
+    @Override
+    public void doUnfreezeQueryTask() {
+    
+    }
+    
     private void dealWithTenantIds(List<Integer> tenantIds) {
         // 两个月前的第一天
         long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);

@@ -38,6 +38,7 @@ import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
@@ -437,7 +438,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId(), queryProfitSharingConfig);
             
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
@@ -727,7 +730,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId(), queryProfitSharingConfig);
             
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
@@ -844,8 +849,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("SERVICE FEE WARN! user not auth,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
-            
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+    
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId(), queryProfitSharingConfig);
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");

@@ -8,4 +8,6 @@ package com.xiliulou.electricity.service.profitsharing;
 public interface ProfitSharingOrderBizService {
     
     void doUnfreezeTask();
+    
+    void doUnfreezeQueryTask();
 }
