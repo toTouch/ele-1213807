@@ -159,12 +159,11 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
             //批量构建分账配置
             this.batchBuildProfitSharing(queryProfitSharingConfig, tenantId, wechatPayParamsDetailsList);
             
-            
+            return wechatPayParamsDetailsList;
         } catch (Exception e) {
             log.warn("WechatPayParamsBizServiceImpl.queryListPreciseCacheByTenantIdAndFranchiseeIds :", e);
             throw new WechatPayException("支付配置获取失败!");
         }
-        return null;
     }
     
     

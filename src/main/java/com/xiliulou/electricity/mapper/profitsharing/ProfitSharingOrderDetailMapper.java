@@ -32,5 +32,15 @@ public interface ProfitSharingOrderDetailMapper {
     Integer existsFailByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
     
     int updateUnfreezeStatusByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo,@Param("status") Integer status,@Param("unfreezeStatus") Integer unfreezeStatus,@Param("businessTypeList") List<Integer> businessTypeList, long updateTime);
+    
+    /**
+     * 更新
+     *
+     * @param profitSharingOrderDetail
+     * @author caobotao.cbt
+     * @date 2024/8/29 15:31
+     */
+    int update(ProfitSharingOrderDetail profitSharingOrderDetail);
+    
 }
 

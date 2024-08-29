@@ -695,11 +695,18 @@ public interface CacheConstant {
     /**
      * 分账配置幂等
      */
-    String PROFIT_SHARING_IDEMPOTENT_KEY = "saas_ele:profit_sharing:idempotent%d";
+    String PROFIT_SHARING_IDEMPOTENT_KEY = "saas_ele:profit_sharing:idempotent:%d";
     
     /**
      * 分账配置幂等
      */
-    String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent%d";
+    String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent:%d";
+    
+    
+    
+    /**
+     * 分账统计分布式锁
+     */
+    String PROFIT_SHARING_STATISTICS_LOCK_KEY = "saas_ele:profit_sharing_statistics:lock:%d:%d";
 }
 

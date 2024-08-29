@@ -8,6 +8,7 @@ import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import org.springframework.beans.BeanUtils;
 
@@ -25,6 +26,17 @@ import java.util.stream.Collectors;
  */
 public class ElectricityPayParamsConverter {
     
+    
+    public static WechatProfitSharingCommonRequest optWechatProfitSharingCommonRequest(WechatPayParamsDetails wechatPayParamsDetails){
+        WechatProfitSharingCommonRequest wechatProfitSharingCommonRequest = new WechatProfitSharingCommonRequest();
+        wechatProfitSharingCommonRequest.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
+        wechatProfitSharingCommonRequest.setMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+        wechatProfitSharingCommonRequest.setCertificateSerialNo(wechatPayParamsDetails.getWechatMerchantCertificateSno());
+        wechatProfitSharingCommonRequest.setPrivateKey(wechatPayParamsDetails.getPrivateKey());
+        wechatProfitSharingCommonRequest.setX509CertificateHashMap(wechatPayParamsDetails.getWechatPlatformCertificateMap());
+        return wechatProfitSharingCommonRequest;
+        
+    }
     
     /**
      * 操作参数转换

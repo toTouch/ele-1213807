@@ -1,0 +1,185 @@
+/**
+ * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/8/26
+ */
+
+package com.xiliulou.electricity.task.profitsharing;
+
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
+
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
+import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCreateOrderRequest;
+import com.xiliulou.pay.profitsharing.response.BaseProfitSharingCreateOrderResp;
+import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
+import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingCreateOrderResp;
+import com.xxl.job.core.handler.annotation.JobHandler;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+/**
+ * description:
+ *
+ * @author caobotao.cbt
+ * @date 2024/8/26 16:33
+ */
+@Slf4j
+@Component
+@JobHandler(value = "wechatProfitSharingTradeOrderTask")
+public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTradeOrderTask<WechatPayParamsDetails> {
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    
+    @Override
+    protected String getChannel() {
+        return ChannelEnum.WECHAT.getCode();
+    }
+    
+    
+    @Override
+    protected void order(WechatPayParamsDetails payConfig, List<ProfitSharingCheckModel> profitSharingModels) {
+        
+        for (int i = 0; i < profitSharingModels.size(); i++) {
+            ProfitSharingCheckModel profitSharingCheckModel = profitSharingModels.get(i);
+            ProfitSharingOrder profitSharingOrder = profitSharingCheckModel.getProfitSharingOrder();
+            
+            List<WechatProfitSharingCreateOrderRequest.Receiver> receivers = this.buildReceivers(profitSharingCheckModel.getProfitSharingDetailsCheckModels());
+            //
+            WechatProfitSharingCreateOrderRequest orderRequest = new WechatProfitSharingCreateOrderRequest();
+            orderRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payConfig));
+            orderRequest.setTransactionId(profitSharingOrder.getThirdOrderNo());
+            orderRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
+            orderRequest.setUnfreezeUnsplit(i == (profitSharingModels.size() - 1));
+            orderRequest.setReceivers(receivers);
+            orderRequest.setChannel(ChannelEnum.WECHAT);
+            
+            try {
+                BaseProfitSharingCreateOrderResp order = profitSharingServiceAdapter.order(orderRequest);
+                if (Objects.isNull(order)) {
+                    throw new BizException("分账返回异常");
+                }
+                
+                // 成功处理
+                WechatProfitSharingCreateOrderResp createOrderResp = (WechatProfitSharingCreateOrderResp) order;
+                profitSharingOrder.setThirdOrderNo(createOrderResp.getTransactionId());
+                // 接收方返回数据
+                Map<String, ReceiverResp> accountReceiverMap = Optional.ofNullable(createOrderResp.getReceivers()).orElse(Collections.emptyList()).stream()
+                        .collect(Collectors.toMap(ReceiverResp::getAccount, Function.identity(), (k1, k2) -> k1));
+                
+                profitSharingCheckModel.getProfitSharingDetailsCheckModels().stream()
+                        .filter(v -> accountReceiverMap.containsKey(v.getProfitSharingOrderDetail().getProfitSharingReceiveAccount())).forEach(v -> {
+                    // 赋值详情订单号
+                    ProfitSharingOrderDetail profitSharingOrderDetail = v.getProfitSharingOrderDetail();
+                    profitSharingOrderDetail.setOrderDetailNo(accountReceiverMap.get(profitSharingOrderDetail.getProfitSharingReceiveAccount()).getDetailId());
+                });
+                
+            } catch (Exception e) {
+                log.warn("WechatProfitSharingTradeOrderTask.order Exception:", e);
+                profitSharingModels.forEach(check -> {
+                    check.setIsSuccess(false);
+                    check.getProfitSharingOrder().setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
+                    check.getProfitSharingDetailsCheckModels().forEach(details -> {
+                        details.setErrorMsg("微信接口调用异常");
+                        ProfitSharingOrderDetail profitSharingOrderDetail = details.getProfitSharingOrderDetail();
+                        profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
+                        profitSharingOrderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
+                        profitSharingOrderDetail.setFailReason(details.getErrorMsg());
+                    });
+                });
+            }
+            
+        }
+        
+        
+    }
+    
+    
+    /**
+     * 查询构建支付配置
+     *
+     * @param tenantFranchiseePayParamMap
+     * @param tenantId
+     * @param franchiseeIds
+     * @author caobotao.cbt
+     * @date 2024/8/27 11:06
+     */
+    @Override
+    protected void queryBuildTenantFranchiseePayParamMap(Map<String, WechatPayParamsDetails> tenantFranchiseePayParamMap, Integer tenantId, Set<Long> franchiseeIds) {
+        try {
+            Set<Long> needQueryFranchiseeIds = new HashSet<>();
+            franchiseeIds.forEach(franchiseeId -> {
+                String payParamMapKey = getPayParamMapKey(tenantId, franchiseeId);
+                if (!tenantFranchiseePayParamMap.containsKey(payParamMapKey)) {
+                    needQueryFranchiseeIds.add(franchiseeId);
+                }
+            });
+            
+            if (CollectionUtils.isEmpty(needQueryFranchiseeIds)) {
+                return;
+            }
+            
+            List<WechatPayParamsDetails> wechatPayParamsDetailsList = wechatPayParamsBizService.queryListPreciseCacheByTenantIdAndFranchiseeIds(tenantId, needQueryFranchiseeIds,
+                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG_AND_RECEIVER_CONFIG));
+            
+            Map<Long, WechatPayParamsDetails> franchiseePayParamsMap = Optional.ofNullable(wechatPayParamsDetailsList).orElse(Collections.emptyList()).stream()
+                    .collect(Collectors.toMap(WechatPayParamsDetails::getFranchiseeId, Function.identity(), (k1, k2) -> k1));
+            
+            needQueryFranchiseeIds.forEach(franchiseeId -> tenantFranchiseePayParamMap.put(getPayParamMapKey(tenantId, franchiseeId), franchiseePayParamsMap.get(franchiseeId)));
+            
+        } catch (Exception e) {
+            log.info("WechatProfitSharingTradeOrderTask.queryBuildTenantFranchiseePayParamMap Exception:", e);
+        }
+        
+    }
+    
+    
+    /**
+     * 接收方数据
+     *
+     * @param profitSharingDetailsCheckModels
+     * @author caobotao.cbt
+     * @date 2024/8/29 14:07
+     */
+    private List<WechatProfitSharingCreateOrderRequest.Receiver> buildReceivers(List<ProfitSharingDetailsCheckModel> profitSharingDetailsCheckModels) {
+        return profitSharingDetailsCheckModels.stream().map(detailsCheckModels -> {
+            ProfitSharingReceiverConfig receiverConfig = detailsCheckModels.getProfitSharingReceiverConfig();
+            ProfitSharingOrderDetail orderDetail = detailsCheckModels.getProfitSharingOrderDetail();
+            WechatProfitSharingCreateOrderRequest.Receiver receiver = new WechatProfitSharingCreateOrderRequest.Receiver();
+            Integer receiverType = receiverConfig.getReceiverType();
+            receiver.setType(ProfitSharingConfigReceiverTypeEnum.CODE_MAP.get(receiverType));
+            receiver.setAccount(receiverConfig.getAccount());
+            receiver.setName(receiverConfig.getReceiverName());
+            receiver.setDescription(receiverConfig.getRemark());
+            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).toString());
+            return receiver;
+        }).collect(Collectors.toList());
+    }
+}
