@@ -13,7 +13,9 @@ import java.util.List;
  */
 public interface MeiTuanRiderMallOrderService {
     
-    void handelFetchOrders(String sessionId, Long startTime, Integer recentDay);
+    void handelFetchOrderTask(String sessionId, Long startTime, Integer recentDay);
+    
+    void handelSyncOrderStatusTask(String sessionId, long startTime);
     
     MeiTuanRiderMallOrder queryByOrderId(String orderId, String phone, Long uid);
     
@@ -22,4 +24,6 @@ public interface MeiTuanRiderMallOrderService {
     List<MeiTuanRiderMallOrder> listOrdersByUidAndPhone(OrderQuery query);
     
     void createBatteryMemberCardOrder(OrderQuery query);
+    
+    List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId);
 }

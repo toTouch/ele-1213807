@@ -20,4 +20,8 @@ public interface MeiTuanRiderMallOrderMapper {
     Integer batchInsert(@Param("list") List<MeiTuanRiderMallOrder> insertList);
     
     List<MeiTuanRiderMallOrder> selectByUidAndPhone(OrderQuery query);
+    
+    List<MeiTuanRiderMallOrder> selectUnSyncedOrder(Integer tenantId);
+    
+    Integer batchUpdate(@Param("list") List<MeiTuanRiderMallOrder> updateList);
 }

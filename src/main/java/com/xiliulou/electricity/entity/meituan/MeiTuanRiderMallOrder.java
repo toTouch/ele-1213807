@@ -66,9 +66,9 @@ public class MeiTuanRiderMallOrder {
     private String orderId;
     
     /**
-     * 同步对账状态: 1-已处理, 2-未处理
+     * 同步对账状态: 1-已处理, 2-未处理, 3-已对账
      */
-    private Integer orderHandleReasonStatus;
+    private Integer orderSyncStatus;
     
     /**
      * 订单使用状态: 0-未使用, 1-已使用

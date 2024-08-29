@@ -6,20 +6,19 @@ import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
 /**
  * @author HeYafeng
- * @description 定时从美团骑手商城拉取订单
+ * @description 定时与美团同步订单状态
  * @date 2024/8/29 09:34:25
  */
 @Component
 @Slf4j
-@JobHandler(value = "meiTuanRiderMallFetchOrderTask")
-public class MeiTuanRiderMallFetchOrderTask extends IJobHandler {
+@JobHandler(value = "meiTuanRiderMallSyncOrderStatusTask")
+public class MeiTuanRiderMallSyncOrderStatusTask extends IJobHandler {
     
     @Resource
     MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
@@ -28,17 +27,11 @@ public class MeiTuanRiderMallFetchOrderTask extends IJobHandler {
     public ReturnT<String> execute(String s) {
         String sessionId = UuidUtils.generateUuid();
         long startTime = System.currentTimeMillis();
-        // 默认最近1天
-        int recentDay = StringUtils.isNotBlank(s) ? 1 : Integer.parseInt(s);
-        // 美团只支持时间跨度不超过3天订单数据的拉取
-        int limitDay = 3;
-        recentDay = Math.min(recentDay, limitDay);
-        
-        log.info("MeiTuanRiderMallFetchOrderTask start! sessionId={}, startTime={}", sessionId, startTime);
+        log.info("MeiTuanRiderMallSyncOrderStatusTask start! sessionId={}, startTime={}", sessionId, startTime);
         try {
-            meiTuanRiderMallOrderService.handelFetchOrderTask(sessionId, startTime, recentDay);
+            meiTuanRiderMallOrderService.handelSyncOrderStatusTask(sessionId, startTime);
         } catch (Exception e) {
-            log.error("MeiTuanRiderMallFetchOrderTask error! sessionId={}", sessionId, e);
+            log.error("MeiTuanRiderMallSyncOrderStatusTask error! sessionId={}", sessionId, e);
         }
         return IJobHandler.SUCCESS;
     }

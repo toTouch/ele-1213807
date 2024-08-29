@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
 import com.xiliulou.thirdmall.config.meituan.MeiTuanRiderMallHostConfig;
 import com.xiliulou.thirdmall.entity.meituan.MeiTuanRiderMallApiConfig;
+import com.xiliulou.thirdmall.entity.meituan.request.virtualtrade.SyncOrderReq;
 import com.xiliulou.thirdmall.entity.meituan.response.virtualtrade.OrderRsp;
 import com.xiliulou.thirdmall.entity.meituan.response.virtualtrade.OrdersDataRsp;
 import com.xiliulou.thirdmall.entity.meituan.response.virtualtrade.SkuRsp;
@@ -76,8 +77,18 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return meiTuanRiderMallOrderMapper.selectByUidAndPhone(query);
     }
     
+    /**
+     * 1.创建套餐成功 2.通知发货 3.发货失败，回滚步骤1的数据
+     */
     @Override
     public void createBatteryMemberCardOrder(OrderQuery query) {
+    
+    }
+    
+    /**
+     * 发货失败执行回滚
+     */
+    private void handleRollback() {
     
     }
     
@@ -145,7 +156,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
      * 定时任务：从美团拉取订单
      */
     @Override
-    public void handelFetchOrders(String sessionId, Long startTime, Integer recentDay) {
+    public void handelFetchOrderTask(String sessionId, Long startTime, Integer recentDay) {
         List<MeiTuanRiderMallConfig> configs = meiTuanRiderMallConfigService.listAll();
         if (CollectionUtils.isEmpty(configs)) {
             return;
@@ -156,6 +167,54 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         Long costTime = System.currentTimeMillis() - startTime;
         log.info("MeiTuanRiderMallFetchOrderTask end! sessionId={}, costTime={}", sessionId, costTime);
+    }
+    
+    @Override
+    public void handelSyncOrderStatusTask(String sessionId, long startTime) {
+        List<MeiTuanRiderMallConfig> configs = meiTuanRiderMallConfigService.listAll();
+        if (CollectionUtils.isEmpty(configs)) {
+            return;
+        }
+        
+        // 遍历租户
+        configs.forEach(this::handleSyncOrderStatusByTenant);
+        
+        Long costTime = System.currentTimeMillis() - startTime;
+        log.info("MeiTuanRiderMallSyncOrderStatusTask end! sessionId={}, costTime={}", sessionId, costTime);
+    }
+    
+    @Slave
+    @Override
+    public List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId) {
+        return meiTuanRiderMallOrderMapper.selectUnSyncedOrder(tenantId);
+    }
+    
+    private void handleSyncOrderStatusByTenant(MeiTuanRiderMallConfig config) {
+        MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
+                .host(meiTuanRiderMallHostConfig.getHost()).build();
+        
+        List<MeiTuanRiderMallOrder> riderMallOrders = this.listUnSyncedOrder(config.getTenantId());
+        if (CollectionUtils.isEmpty(riderMallOrders)) {
+            return;
+        }
+        
+        List<MeiTuanRiderMallOrder> updateList = new ArrayList<>();
+        List<List<MeiTuanRiderMallOrder>> partition = ListUtils.partition(riderMallOrders, 20);
+        partition.forEach(orders -> {
+            List<SyncOrderReq> syncOrderReqOrderList = orders.stream()
+                    .map(order -> SyncOrderReq.builder().orderId(order.getMeiTuanOrderId()).orderHandleResonStatus(order.getOrderSyncStatus()).build())
+                    .collect(Collectors.toList());
+            
+            // 调用美团接口
+            Boolean result = virtualTradeService.syncOrderResult(apiConfig, syncOrderReqOrderList, false);
+            if (result) {
+                updateList.addAll(orders);
+            }
+        });
+        
+        if (CollectionUtils.isNotEmpty(updateList)) {
+            meiTuanRiderMallOrderMapper.batchUpdate(updateList);
+        }
     }
     
     private void handleFetchOrdersByTenant(MeiTuanRiderMallConfig config, Integer recentDay) {
@@ -221,10 +280,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             MeiTuanRiderMallOrder meiTuanRiderMallOrder = MeiTuanRiderMallOrder.builder().meiTuanOrderId(orderId).meiTuanOrderTime(order.getOrderTime() * 1000)
                     .meiTuanOrderStatus(order.getOrderStatus()).meiTuanActuallyPayPrice(new BigDecimal(order.getActuallyPayPrice()))
                     .meiTuanVirtualRechargeType(skuRsp.getVirtualRechargeType()).meiTuanAccount(phone).orderId(StringUtils.EMPTY)
-                    .orderHandleReasonStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_UNHANDLED.getCode())
-                    .orderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_UNUSED.getCode()).packageId(skuRsp.getSkuId())
-                    .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()).uid(Optional.ofNullable(userInfo.getUid()).orElse(0L)).tenantId(tenantId)
-                    .delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                    .orderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_UNHANDLED.getCode()).orderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_UNUSED.getCode())
+                    .packageId(skuRsp.getSkuId()).packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()).uid(Optional.ofNullable(userInfo.getUid()).orElse(0L))
+                    .tenantId(tenantId).delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
             
             insertList.add(meiTuanRiderMallOrder);
         }));
