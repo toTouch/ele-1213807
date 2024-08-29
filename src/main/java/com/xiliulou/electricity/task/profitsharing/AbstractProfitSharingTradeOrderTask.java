@@ -41,6 +41,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -70,10 +71,8 @@ import static com.xiliulou.electricity.constant.CacheConstant.PROFIT_SHARING_STA
  * @date 2024/8/28 09:40
  */
 @Slf4j
-public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfig> extends IJobHandler {
+public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfig> extends AbstractProfitSharingTask<T> {
     
-    @Resource
-    private TenantService tenantService;
     
     @Resource
     private ProfitSharingTradeOrderService profitSharingTradeOrderService;
@@ -108,42 +107,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             .asList(BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUND, BatteryMembercardRefundOrder.STATUS_AUDIT);
     
     
-    @Override
-    public ReturnT<String> execute(String param) throws Exception {
-        TtlTraceIdSupport.set();
-        try {
-            WechatProfitSharingTradeOrderTask.TaskParam taskParam = new WechatProfitSharingTradeOrderTask.TaskParam();
-            if (StringUtils.isNotBlank(param)) {
-                taskParam = JsonUtil.fromJson(param, WechatProfitSharingTradeOrderTask.TaskParam.class);
-            }
-            
-            if (CollectionUtils.isNotEmpty(taskParam.getTenantIds())) {
-                // 指定租户
-                taskParam.getTenantIds().forEach(tid -> this.executeByTenantId(tid));
-                return ReturnT.SUCCESS;
-            }
-            
-            Integer startTenantId = 0;
-            
-            while (true) {
-                // 查询租户
-                List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, SIZE);
-                
-                if (CollectionUtils.isEmpty(tenantIds)) {
-                    break;
-                }
-                startTenantId = tenantIds.get(tenantIds.size() - 1);
-                // 处理租户分账
-                tenantIds.forEach(tid -> this.executeByTenantId(tid));
-            }
-            
-            return ReturnT.SUCCESS;
-        } finally {
-            TtlTraceIdSupport.clear();
-        }
-    }
-    
-    
     /**
      * 根据租户处理
      *
@@ -151,7 +114,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @author caobotao.cbt
      * @date 2024/8/26 16:44
      */
-    private void executeByTenantId(Integer tenantId) {
+    @Override
+    protected void executeByTenantId(Integer tenantId) {
         Long startId = 0L;
         ProfitSharingTradeMixedOrderQueryModel queryModel = new ProfitSharingTradeMixedOrderQueryModel();
         queryModel.setState(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode());
@@ -249,8 +213,14 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         if (CollectionUtils.isNotEmpty(supportRefundOrderList)) {
             // 当前订单组存在支持退款的订单
+            
             this.disposeByRefund(payConfig, mixedOrder, notSupportRefundOrderList, supportRefundOrderList);
-            return;
+        } else {
+            // 无退款，执行分账
+            this.executeProfitSharing(payConfig, notSupportRefundOrderList);
+            mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
+            List<Long> successIds = notSupportRefundOrderList.stream().map(ProfitSharingTradeOrder::getId).collect(Collectors.toList());
+            profitSharingTradeOrderTxService.updateStatus(mixedOrder, successIds, null, null);
         }
         
         
@@ -346,23 +316,21 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         try {
             // 校验分账信息
-            List<ProfitSharingCheckModel> checkModels = this.checkProfitSharing(payConfig, allowProfitSharingTradeOrders);
+            ProfitSharingChecksModel profitSharingChecksModel = this.checkProfitSharing(payConfig, allowProfitSharingTradeOrders);
             
-            List<ProfitSharingCheckModel> successList = checkModels.stream().filter(ProfitSharingCheckModel::getIsSuccess).collect(Collectors.toList());
+            List<ProfitSharingCheckModel> checkModels = profitSharingChecksModel.getProfitSharingCheckModels();
+            
+            Map<Boolean, List<ProfitSharingCheckModel>> isSuccessMap = checkModels.stream().collect(Collectors.groupingBy(ProfitSharingCheckModel::getIsSuccess));
+            
+            // 成功的
+            List<ProfitSharingCheckModel> successList = isSuccessMap.get(Boolean.TRUE);
+            
+            // 失败的
+            List<ProfitSharingCheckModel> failList = isSuccessMap.get(Boolean.FALSE);
             
             if (CollectionUtils.isEmpty(successList)) {
                 // 无成功的，全部失败，则需要解冻
-                checkModels.forEach(checkModel -> {
-                    ProfitSharingTradeOrder profitSharingTradeOrder = checkModel.getProfitSharingTradeOrder();
-                    ProfitSharingOrder profitSharingOrder = this.buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
-                    checkModel.setProfitSharingOrder(profitSharingOrder);
-                    checkModel.getProfitSharingDetailsCheckModels().forEach(detail -> {
-                        ProfitSharingOrderDetail profitSharingOrderDetail = this
-                                .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, detail.getProfitSharingReceiverConfig(), detail.getErrorMsg(),
-                                        ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
-                        detail.setProfitSharingOrderDetail(profitSharingOrderDetail);
-                    });
-                });
+                checkModels.forEach(checkModel -> this.buildFailProfitSharingCheckModel(checkModel, payConfig));
                 profitSharingOrderTxService.insert(checkModels);
                 return checkModels;
             }
@@ -379,11 +347,15 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 });
             });
             
-            profitSharingOrderTxService.insert(successList);
+            List<ProfitSharingCheckModel> insertList = new ArrayList<>(successList);
             
-            this.order(payConfig, successList);
+            if (CollectionUtils.isNotEmpty(failList)) {
+                failList.forEach(checkModel -> this.buildFailProfitSharingCheckModel(checkModel, payConfig));
+                insertList.addAll(failList);
+            }
+            profitSharingOrderTxService.insert(insertList);
             
-            this.orderPostProcessing(successList);
+            this.executeOrder(payConfig, successList, profitSharingChecksModel);
             
             return checkModels;
             
@@ -392,15 +364,70 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         }
     }
     
+    
+    /**
+     * 构建失败
+     *
+     * @param checkModel
+     * @param payConfig
+     * @author caobotao.cbt
+     * @date 2024/8/29 17:43
+     */
+    private void buildFailProfitSharingCheckModel(ProfitSharingCheckModel checkModel, T payConfig) {
+        ProfitSharingTradeOrder profitSharingTradeOrder = checkModel.getProfitSharingTradeOrder();
+        // 构建分账失败订单
+        ProfitSharingOrder profitSharingOrder = this.buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
+        checkModel.setProfitSharingOrder(profitSharingOrder);
+        checkModel.getProfitSharingDetailsCheckModels().forEach(detail -> {
+            // 构建分账失败明细订单
+            ProfitSharingOrderDetail profitSharingOrderDetail = this
+                    .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, detail.getProfitSharingReceiverConfig(), detail.getErrorMsg(),
+                            ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
+            detail.setProfitSharingOrderDetail(profitSharingOrderDetail);
+        });
+    }
+    
+    /**
+     * 执行订单分账
+     *
+     * @param payConfig
+     * @param successList
+     * @param profitSharingChecksModel
+     * @author caobotao.cbt
+     * @date 2024/8/29 16:57
+     */
+    private void executeOrder(T payConfig, List<ProfitSharingCheckModel> successList, ProfitSharingChecksModel profitSharingChecksModel) {
+        
+        // 调用分账
+        this.order(payConfig, successList);
+        
+        // 分账后处理
+        this.orderPostProcessing(successList, profitSharingChecksModel);
+    }
+    
     /**
      * name: <br/> description:
      *
-     * @param successList
      * @author caobotao.cbt
      * @date 2024/8/29 14:57
      */
-    protected void orderPostProcessing(List<ProfitSharingCheckModel> successList) {
-        profitSharingOrderTxService.update(successList);
+    protected void orderPostProcessing(List<ProfitSharingCheckModel> checkModels, ProfitSharingChecksModel profitSharingChecksModel) {
+        
+        // 计算成功分账总金额
+        BigDecimal totalProfitSharingAmount = BigDecimal.ZERO;
+        for (ProfitSharingCheckModel profitSharingCheckModel : checkModels) {
+            if (!profitSharingCheckModel.getIsSuccess()) {
+                continue;
+            }
+            List<ProfitSharingDetailsCheckModel> profitSharingDetailsCheckModels = profitSharingCheckModel.getProfitSharingDetailsCheckModels();
+            for (ProfitSharingDetailsCheckModel profitSharingDetailsCheckModel : profitSharingDetailsCheckModels) {
+                BigDecimal profitSharingAmount = profitSharingDetailsCheckModel.getProfitSharingOrderDetail().getProfitSharingAmount();
+                totalProfitSharingAmount = totalProfitSharingAmount.add(profitSharingAmount);
+            }
+            
+        }
+        
+        profitSharingOrderTxService.update(checkModels, totalProfitSharingAmount, profitSharingChecksModel.getProfitSharingStatistics().getId());
     }
     
     private ProfitSharingOrderDetail initProfitSharingDetailsCheckModel(T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingReceiverConfig receiverConfig,
@@ -450,24 +477,27 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @author caobotao.cbt
      * @date 2024/8/28 15:46
      */
-    private List<ProfitSharingCheckModel> checkProfitSharing(T payConfig, List<ProfitSharingTradeOrder> profitSharingTradeOrderList) {
+    private ProfitSharingChecksModel checkProfitSharing(T payConfig, List<ProfitSharingTradeOrder> profitSharingTradeOrderList) {
         
         // 当前分账月份
         String currentMonth = profitSharingStatisticsService.getCurrentMonth();
         
-        
+        // 分账方配置
         ProfitSharingConfig profitSharingConfig = payConfig.getEnableProfitSharingConfig();
         
+        // 分账接收方配置
         List<ProfitSharingReceiverConfig> receiverConfigs = payConfig.getEnableProfitSharingReceiverConfigs();
         
+        // 获取当前月分账统计记录
         ProfitSharingStatistics profitSharingStatistics = this.getAndInitProfitSharingStatistics(payConfig.getTenantId(), payConfig.getFranchiseeId(), currentMonth);
         
-        // 月分账总额
+        // 当前月分账总额
         BigDecimal totalAmount = profitSharingStatistics.getTotalAmount();
         
-        // 月限额
+        // 月分账限额
         BigDecimal amountLimit = profitSharingConfig.getAmountLimit();
         
+        // 校验对象
         List<ProfitSharingCheckModel> checkModels = Lists.newArrayList();
         
         for (ProfitSharingTradeOrder profitSharingTradeOrder : profitSharingTradeOrderList) {
@@ -511,7 +541,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
         }
         
-        return checkModels;
+        return new ProfitSharingChecksModel(profitSharingStatistics, checkModels);
     }
     
     
@@ -651,10 +681,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         orders.forEach(profitSharingTradeOrder -> {
             tradeOrderIds.add(profitSharingTradeOrder.getId());
             
-            ProfitSharingOrder profitSharingOrder = this.buildReceiverErrorProfitSharingOrder(mixedOrder.getThirdOrderNo(), profitSharingTradeOrder, payConfig);
-            ProfitSharingOrderDetail profitSharingOrderDetail = this.buildReceiverErrorProfitSharingOrderDetail(profitSharingOrder, profitSharingTradeOrder);
+            ProfitSharingOrder profitSharingOrder = this.buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
+            ProfitSharingOrderDetail profitSharingOrderDetail = this
+                    .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, null, "分账接收方不存在", ProfitSharingBusinessTypeEnum.SYSTEM.getCode(),
+                            ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
-            
         });
         
         profitSharingTradeOrderTxService.insert(tradeOrderIds, ProfitSharingTradeOderProcessStateEnum.SUCCESS.getCode(), "分账接收方未配置", insertMap);
@@ -684,65 +715,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         profitSharingTradeOrderTxService.updateStatus(mixedOrder, null, tradeOrderIds, "支付配置不存在");
         
         return false;
-    }
-    
-    /**
-     * 无分账接收方明细构建
-     *
-     * @param profitSharingOrder
-     * @param profitSharingTradeOrder
-     * @author caobotao.cbt
-     * @date 2024/8/29 16:07
-     */
-    private ProfitSharingOrderDetail buildReceiverErrorProfitSharingOrderDetail(ProfitSharingOrder profitSharingOrder, ProfitSharingTradeOrder profitSharingTradeOrder) {
-        long time = System.currentTimeMillis();
-        ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
-        
-        profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingOrder.getThirdTradeOrderNo());
-        profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeOrder.getUid()));
-        profitSharingOrderDetail.setScale(BigDecimal.ZERO);
-        profitSharingOrderDetail.setProfitSharingAmount(BigDecimal.ZERO);
-        profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
-        profitSharingOrderDetail.setFailReason("分账接收方未配置");
-        profitSharingOrderDetail.setFinishTime(time);
-        profitSharingOrderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
-        profitSharingOrderDetail.setTenantId(profitSharingOrder.getTenantId());
-        profitSharingOrderDetail.setFranchiseeId(profitSharingOrder.getFranchiseeId());
-        profitSharingOrderDetail.setCreateTime(time);
-        profitSharingOrderDetail.setUpdateTime(time);
-        profitSharingOrderDetail.setOutAccountType(profitSharingOrder.getOutAccountType());
-        profitSharingOrderDetail.setBusinessType(ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
-        
-        return profitSharingOrderDetail;
-    }
-    
-    
-    /**
-     * 无接收方配置失败订单构建
-     *
-     * @param thirdOrderNo
-     * @param profitSharingTradeOrder
-     * @param basePayConfig
-     * @author caobotao.cbt
-     * @date 2024/8/27 17:20
-     */
-    private ProfitSharingOrder buildReceiverErrorProfitSharingOrder(String thirdOrderNo, ProfitSharingTradeOrder profitSharingTradeOrder, T basePayConfig) {
-        long time = System.currentTimeMillis();
-        ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
-        profitSharingOrder.setThirdTradeOrderNo(thirdOrderNo);
-        profitSharingOrder.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER, profitSharingTradeOrder.getUid()));
-        profitSharingOrder.setBusinessOrderNo(profitSharingTradeOrder.getOrderNo());
-        profitSharingOrder.setAmount(profitSharingTradeOrder.getAmount());
-        profitSharingOrder.setBusinessType(ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
-        profitSharingOrder.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_COMPLETE.getCode());
-        profitSharingOrder.setType(ProfitSharingOrderTypeEnum.PROFIT_SHARING.getCode());
-        profitSharingOrder.setTenantId(profitSharingTradeOrder.getTenantId());
-        profitSharingOrder.setFranchiseeId(profitSharingTradeOrder.getFranchiseeId());
-        profitSharingOrder.setOutAccountType(basePayConfig.getConfigType());
-        profitSharingOrder.setThirdMerchantId(basePayConfig.getThirdPartyMerchantId());
-        profitSharingOrder.setCreateTime(time);
-        profitSharingOrder.setUpdateTime(time);
-        return profitSharingOrder;
     }
     
     
@@ -791,6 +763,17 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         
         private String traceId;
+        
+    }
+    
+    
+    @Data
+    @AllArgsConstructor
+    public static class ProfitSharingChecksModel {
+        
+        private ProfitSharingStatistics profitSharingStatistics;
+        
+        private List<ProfitSharingCheckModel> profitSharingCheckModels = new ArrayList<>();
         
     }
     
