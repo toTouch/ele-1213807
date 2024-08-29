@@ -16,9 +16,8 @@ import lombok.Getter;
 public enum ProfitSharingTradeOderProcessStateEnum {
     INIT(0, "初始化"),
     AWAIT(1, "待发起分账"),
-    SUCCESS(2, "分账发起成功"),
-    FAIL(3, "分账发起失败"),
-    LAPSED(4, "已失效"),
+    SUCCESS(2, "分账已处理"),
+    LAPSED(3, "已失效"),
     ;
     
     private Integer code;

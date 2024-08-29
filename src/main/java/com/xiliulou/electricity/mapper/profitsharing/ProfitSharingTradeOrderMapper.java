@@ -57,5 +57,6 @@ public interface ProfitSharingTradeOrderMapper {
     Integer existsNotRefundByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("orderNo") String orderNo);
     
     String selectOrderNoyByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    
 }
 

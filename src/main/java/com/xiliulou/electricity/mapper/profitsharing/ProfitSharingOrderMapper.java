@@ -25,10 +25,19 @@ public interface ProfitSharingOrderMapper {
      * @author caobotao.cbt
      * @date 2024/8/28 11:15
      */
-    void batchInsert(List<ProfitSharingOrder> insertProfitSharingOrderList);
+    int batchInsert(List<ProfitSharingOrder> insertProfitSharingOrderList);
     
     
     Integer existsUnfreezeByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    
+    /**
+     * 更新
+     *
+     * @param profitSharingOrder
+     * @author caobotao.cbt
+     * @date 2024/8/29 15:14
+     */
+    int update(ProfitSharingOrder profitSharingOrder);
     
     int updateUnfreezeOrderById(ProfitSharingOrder profitSharingOrderUpdate);
 }

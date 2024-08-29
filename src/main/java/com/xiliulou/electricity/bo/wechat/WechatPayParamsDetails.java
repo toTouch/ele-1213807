@@ -141,7 +141,7 @@ public class WechatPayParamsDetails extends BasePayConfig {
     @Override
     public List<ProfitSharingReceiverConfig> getEnableProfitSharingReceiverConfigs() {
         // 分账主配置必须可用
-        if (Objects.isNull(this.profitSharingConfig) || !ProfitSharingConfigStatusEnum.OPEN.getCode().equals(this.profitSharingConfig.getConfigStatus())) {
+        if (Objects.isNull(getEnableProfitSharingConfig())) {
             return Collections.emptyList();
         }
         
@@ -149,6 +149,14 @@ public class WechatPayParamsDetails extends BasePayConfig {
         return Optional.ofNullable(this.profitSharingReceiverConfigs).orElse(Collections.emptyList()).stream()
                 .filter(c -> ProfitSharingConfigReceiverStatusEnum.ENABLE.getCode().equals(c.getReceiverStatus())).collect(Collectors.toList());
         
+    }
+    
+    @Override
+    public ProfitSharingConfig getEnableProfitSharingConfig() {
+        if (Objects.nonNull(this.profitSharingConfig) && ProfitSharingConfigStatusEnum.OPEN.getCode().equals(this.profitSharingConfig.getConfigStatus())) {
+            return profitSharingConfig;
+        }
+        return null;
     }
     
     @Override

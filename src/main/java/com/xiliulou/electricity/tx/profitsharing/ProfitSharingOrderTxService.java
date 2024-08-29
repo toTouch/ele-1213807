@@ -7,13 +7,11 @@ package com.xiliulou.electricity.tx.profitsharing;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeMixedOrderMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
-import org.apache.commons.collections4.CollectionUtils;
+import com.xiliulou.electricity.task.profitsharing.AbstractProfitSharingTradeOrderTask;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +19,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * description:
@@ -30,7 +29,7 @@ import java.util.Map;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class ProfitSharingTradeOrderTxService {
+public class ProfitSharingOrderTxService {
     
     
     @Resource
@@ -48,22 +47,7 @@ public class ProfitSharingTradeOrderTxService {
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
     
     
-    public void updateStatus(ProfitSharingTradeMixedOrder mixedOrder, List<Long> successList, List<Long> lapsedTradeOrderIds, String remark) {
-        long time = System.currentTimeMillis();
-        mixedOrder.setUpdateTime(time);
-        profitSharingTradeMixedOrderMapper.updateStatusById(mixedOrder);
-        
-        if (CollectionUtils.isNotEmpty(lapsedTradeOrderIds)) {
-            profitSharingTradeOrderMapper.batchUpdateStateByIds(lapsedTradeOrderIds, ProfitSharingTradeOderProcessStateEnum.LAPSED.getCode(), time, remark);
-        }
-        
-        if (CollectionUtils.isNotEmpty(successList)) {
-            profitSharingTradeOrderMapper.batchUpdateStateByIds(successList, ProfitSharingTradeOderProcessStateEnum.SUCCESS.getCode(), time, remark);
-        }
-    }
-    
-    
-    public void insert(List<Long> tradeOrderIds, Integer tradeOrderState, String remark, Map<ProfitSharingOrder, ProfitSharingOrderDetail> insertProfitSharingOrderMap) {
+    public void save(List<Long> tradeOrderIds, Integer tradeOrderState, String remark, Map<ProfitSharingOrder, ProfitSharingOrderDetail> insertProfitSharingOrderMap) {
         long time = System.currentTimeMillis();
         profitSharingTradeOrderMapper.batchUpdateStateByIds(tradeOrderIds, tradeOrderState, time, remark);
         profitSharingOrderMapper.batchInsert(new ArrayList<>(insertProfitSharingOrderMap.keySet()));
@@ -71,4 +55,30 @@ public class ProfitSharingTradeOrderTxService {
         profitSharingOrderDetailMapper.batchInsert(new ArrayList<>(insertProfitSharingOrderMap.values()));
     }
     
+    public void insert(List<AbstractProfitSharingTradeOrderTask.ProfitSharingCheckModel> checkModels) {
+        
+        List<ProfitSharingOrder> profitSharingOrders = checkModels.stream().map(v -> v.getProfitSharingOrder()).collect(Collectors.toList());
+        profitSharingOrderMapper.batchInsert(profitSharingOrders);
+        List<ProfitSharingOrderDetail> details = new ArrayList<>();
+        checkModels.forEach(profitSharingCheckModel -> {
+            ProfitSharingOrder profitSharingOrder = profitSharingCheckModel.getProfitSharingOrder();
+            profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(detailsCheckModel -> {
+                ProfitSharingOrderDetail profitSharingOrderDetail = detailsCheckModel.getProfitSharingOrderDetail();
+                profitSharingOrderDetail.setProfitSharingOrderId(profitSharingOrder.getId());
+                details.add(profitSharingOrderDetail);
+            });
+        });
+        profitSharingOrderDetailMapper.batchInsert(details);
+    }
+    
+    
+    public void update(List<AbstractProfitSharingTradeOrderTask.ProfitSharingCheckModel> successList) {
+        successList.forEach(profitSharingCheckModel -> {
+            profitSharingOrderMapper.update(profitSharingCheckModel.getProfitSharingOrder());
+            profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(details -> {
+                profitSharingOrderDetailMapper.update(details.getProfitSharingOrderDetail());
+            });
+            
+        });
+    }
 }
