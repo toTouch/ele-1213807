@@ -65,8 +65,6 @@ public class JsonUserMeiTuanRiderMallOrderController {
         }
         
         OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderId).build();
-        meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query);
-        
-        return R.ok();
+        return R.ok(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
     }
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.meituan;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -102,10 +103,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     /**
-     * 1.创建套餐成功 2.通知发货 3.发货失败，回滚步骤1的数据
+     * 1.创建套餐成功 2.通知美团发货 3.发货失败，回滚步骤1的数据
      */
     @Override
-    public void createBatteryMemberCardOrder(OrderQuery query) {
+    public R createBatteryMemberCardOrder(OrderQuery query) {
     
     }
     

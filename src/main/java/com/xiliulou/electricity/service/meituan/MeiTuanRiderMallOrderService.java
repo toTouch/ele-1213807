@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.meituan;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
@@ -23,7 +24,7 @@ public interface MeiTuanRiderMallOrderService {
     
     List<MeiTuanRiderMallOrder> listOrdersByUidAndPhone(OrderQuery query);
     
-    void createBatteryMemberCardOrder(OrderQuery query);
+    R createBatteryMemberCardOrder(OrderQuery query);
     
     List<MeiTuanRiderMallOrder> listAllUnSyncedOrder(Integer tenantId);
     
