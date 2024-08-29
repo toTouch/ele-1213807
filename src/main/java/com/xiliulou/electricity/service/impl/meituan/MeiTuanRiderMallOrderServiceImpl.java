@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl.meituan;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
@@ -54,6 +56,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     @Resource
     private UserInfoService userInfoService;
     
+    @Resource
+    private RedisService redisService;
+    
     @Slave
     @Override
     public MeiTuanRiderMallOrder queryByOrderIdAndPhone(String orderId, String phone) {
@@ -79,15 +84,17 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     private void handleFetchOrdersByTenant(MeiTuanRiderMallConfig config, Integer recentDay) {
         MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
-                .host(meiTuanRiderMallHostConfig.getHost()).tenantId(config.getTenantId()).build();
+                .host(meiTuanRiderMallHostConfig.getHost()).build();
         
         // 分页拉取最近N天的订单
         List<OrderRsp> orderRspList = this.fetchOrdersByRecentDay(apiConfig, recentDay);
         if (CollectionUtils.isEmpty(orderRspList)) {
             return;
         }
-        
+    
+        Integer tenantId = config.getTenantId();
         List<MeiTuanRiderMallOrder> insertList = new ArrayList<>();
+        
         List<List<OrderRsp>> partition = ListUtils.partition(orderRspList, 100);
         partition.forEach(orders -> orders.forEach(order -> {
             String orderId = order.getOrderId();
@@ -99,7 +106,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return;
             }
             
-            Integer tenantId = apiConfig.getTenantId();
             UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
             
             MeiTuanRiderMallOrder meiTuanRiderMallOrder = MeiTuanRiderMallOrder.builder().meiTuanOrderId(orderId).meiTuanOrderTime(order.getOrderTime())
@@ -117,6 +123,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (CollectionUtils.isNotEmpty(insertList)) {
             meiTuanRiderMallOrderMapper.batchInsert(insertList);
         }
+        
+        // redis记录租户本次定时任务执行时间
+        redisService.saveWithString(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_ORDER_FETCH_TIME + tenantId, System.currentTimeMillis());
     }
     
     private List<OrderRsp> fetchOrdersByRecentDay(MeiTuanRiderMallApiConfig apiConfig, Integer recentDay) {
