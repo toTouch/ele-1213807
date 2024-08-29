@@ -79,7 +79,7 @@
                 fy_free_deposit_capacity = #{fyFreeDepositCapacity},
             </if>
             <if test="byStagesCapacity != null">
-                and by_stages_capacity = #{byStagesCapacity}
+                by_stages_capacity = #{byStagesCapacity},
             </if>
             <if test="rechargeTime != null">
                 recharge_time = #{rechargeTime},
