@@ -68,7 +68,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         try {
             pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(buildQueryFreeDepositOrderStatusPxzRequest(query));
         } catch (PxzFreeDepositException e) {
-            log.error("Pxz ERROR! freeDepositOrderQuery fail!  orderId={}", orderId, e);
+            log.error("Pxz ERROR! queryFreeDepositOrderStatus fail!  orderId={}", orderId, e);
             return null;
         }
         
@@ -89,7 +89,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         try {
             pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(buildUnFreeDepositOrderPxzRequest(query));
         } catch (Exception e) {
-            log.error("Pxz ERROR! unfreeDepositOrder fail! uid={},orderId={}", uid, orderId, e);
+            log.error("Pxz ERROR! unFreezeDeposit fail! uid={},orderId={}", uid, orderId, e);
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
@@ -129,7 +129,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         try {
             result = pxzDepositService.authToPayOrderQuery(buildAuthPxzStatusRequest(query));
         } catch (Exception e) {
-            log.error("Pxz ERROR! authToPay fail! uid={},orderId={}", uid, orderId, e);
+            log.error("Pxz ERROR! queryAuthToPayStatus fail! uid={},orderId={}", uid, orderId, e);
             return null;
         }
         
@@ -149,7 +149,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         try {
             result = pxzDepositService.cancelAuthToPay(buildCancelAuthPayPxzRequest(query));
         } catch (Exception e) {
-            log.error("Pxz ERROR! unfreeDepositOrder fail! uid={},orderId={}", uid, orderId, e);
+            log.error("Pxz ERROR! cancelAuthPay fail! uid={},orderId={}", uid, orderId, e);
             return false;
         }
         Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId);
