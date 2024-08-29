@@ -71,7 +71,7 @@ public class JsonAdminFreeDepositDataController extends BaseController {
     
     
     
-    @PostMapping("fy/recharge")
+    @PostMapping("/fy/recharge")
     public R<?> rechargeFY(@RequestBody @Validated FreeDepositFyRequest params){
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
