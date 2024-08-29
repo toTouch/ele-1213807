@@ -89,7 +89,7 @@
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_free_deposit_recharge_record(free_recognize_capacity, free_type, by_stages_count, operator, tenant_id, del_flag, create_time, update_time)
-        values (#{freeRecognizeCapacity},#{freeType},#{byStagesCount} #{operator}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        values (#{freeRecognizeCapacity},#{freeType},#{byStagesCount},#{operator}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
