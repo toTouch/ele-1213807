@@ -1094,7 +1094,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
       
         // 免押下单
-        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().phoneNumber(freeQuery.getPhoneNumber()).idCard(freeQuery.getIdCard())
+        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(userInfo.getUid()).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber()).idCard(freeQuery.getIdCard())
                 .payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId()).realName(freeQuery.getRealName()).subject("企业渠道用户电池免押")
                 .build();
         Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);

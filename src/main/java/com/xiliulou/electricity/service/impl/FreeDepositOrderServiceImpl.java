@@ -1147,8 +1147,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
         
         // 免押下单
-        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().phoneNumber(freeQuery.getPhoneNumber()).idCard(freeQuery.getIdCard())
-                .payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId()).realName(freeQuery.getRealName()).subject("电池免押").build();
+        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(uid).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard()).payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId()).realName(freeQuery.getRealName())
+                .subject("电池免押").build();
         Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
         if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
             return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
