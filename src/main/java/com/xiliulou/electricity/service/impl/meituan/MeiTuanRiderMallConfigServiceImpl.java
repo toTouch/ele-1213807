@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallConfigMapper;
 import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -32,6 +33,9 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
     
     @Resource
     private MeiTuanRiderMallConfigMapper meiTuanRiderMallConfigMapper;
+    
+    @Resource
+    private UserInfoService userInfosService;
     
     @Override
     public Integer insertOrUpdate(MeiTuanRiderMallConfigRequest meiTuanRiderMallConfigRequest) {
@@ -113,6 +117,12 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
             offset += size;
         }
         return list;
+    }
+    
+    @Slave
+    @Override
+    public MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId) {
+        return meiTuanRiderMallConfigMapper.checkEnableMeiTuanRiderMall(tenantId);
     }
     
 }

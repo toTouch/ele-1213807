@@ -23,4 +23,6 @@ public interface MeiTuanRiderMallConfigService {
     List<MeiTuanRiderMallConfig> listEnableMeiTuanRiderMall(Integer offset, Integer size);
     
     List<MeiTuanRiderMallConfig> listAll();
+    
+    MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId);
 }

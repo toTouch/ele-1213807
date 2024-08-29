@@ -33,7 +33,7 @@ public class JsonAdminMeiTuanRiderMallConfigController {
     private MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
     
     
-    @PostMapping("/admin/meiTuan/riderMall/config/update")
+    @PostMapping("/admin/meiTuanRiderMall/config/update")
     public R insertOrUpdate(@RequestBody @Validated MeiTuanRiderMallConfigRequest meiTuanRiderMallConfigRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -48,7 +48,7 @@ public class JsonAdminMeiTuanRiderMallConfigController {
         return R.ok(meiTuanRiderMallConfigService.insertOrUpdate(meiTuanRiderMallConfigRequest));
     }
     
-    @GetMapping("/admin/meiTuan/riderMall/config/query")
+    @GetMapping("/admin/meiTuanRiderMall/config/query")
     public R queryByTenantId() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

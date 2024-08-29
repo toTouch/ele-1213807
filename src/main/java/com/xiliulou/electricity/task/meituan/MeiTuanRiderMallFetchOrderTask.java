@@ -29,11 +29,10 @@ public class MeiTuanRiderMallFetchOrderTask extends IJobHandler {
         String sessionId = UuidUtils.generateUuid();
         long startTime = System.currentTimeMillis();
         // 默认最近1天
-        int recentDay = 1;
-        if (StringUtils.isNotBlank(s)) {
-            // 美团只支持时间跨度不超过3天订单数据的拉取
-            recentDay = Integer.parseInt(s);
-        }
+        int recentDay = StringUtils.isNotBlank(s) ? 1 : Integer.parseInt(s);
+        // 美团只支持时间跨度不超过3天订单数据的拉取
+        int limitDay = 3;
+        recentDay = Math.min(recentDay, limitDay);
         
         log.info("MeiTuanRiderMallFetchOrderTask start! sessionId={}, startTime={}", sessionId, startTime);
         try {

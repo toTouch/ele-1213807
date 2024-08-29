@@ -48,10 +48,28 @@
         </set>
     </update>
     
-    <select id="selectByOrderIdAndPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+    <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
         from t_meituan_rider_mall_order
-        where meituan_account = #{phone} and meituan_order_id = #{orderId}
+        where meituan_order_id = #{orderId}
+        <if test="phone != null and phone != ''">
+            and meituan_account = #{phone}
+        </if>
+        <if test="uid != null and uid != 0">
+            and uid = #{uid}
+        </if>
+    </select>
+    
+    <select id="selectByUidAndPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+        select select
+        <include refid="basic_field"/>
+        from t_meituan_rider_mall_order
+        where tenant_id = #{tenantId} and uid = #{uid} and meituan_account = #{phone}
+        <if test="orderId != null and orderId != ''">
+            and order_id = #{orderId}
+        </if>
+        order by order_use_status desc, id desc
+        limit #{offset}, #{size}
     </select>
 </mapper>

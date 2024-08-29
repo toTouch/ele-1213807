@@ -1147,13 +1147,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return noLimit;
         }
         
-        // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                    timestamp, sign);
-            return limit;
-        }
-        
         // 判断套餐用户分组和用户的用户分组是否匹配
         List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
@@ -1177,6 +1170,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 log.warn("MeiTuanLimitTradeCheck warn! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
+                        timestamp, sign);
+                return limit;
+            }
+            
+            // 老用户不可购买新套餐：限制
+            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+                log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
+                        timestamp, sign);
+                return limit;
+            }
+            
+            // 新用户不可购买续费套餐：限制
+            if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
+                log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
                         timestamp, sign);
                 return limit;
             }

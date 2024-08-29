@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+import com.xiliulou.electricity.query.meituan.OrderQuery;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.List;
  */
 public interface MeiTuanRiderMallOrderMapper {
     
-    MeiTuanRiderMallOrder selectByOrderIdAndPhone(@Param("orderId") String orderId, @Param("phone") String phone);
+    MeiTuanRiderMallOrder selectByOrderId(@Param("orderId") String orderId, @Param("phone") String phone, @Param("uid") Long uid);
     
     Integer insert(MeiTuanRiderMallOrder order);
     
     Integer batchInsert(@Param("list") List<MeiTuanRiderMallOrder> insertList);
+    
+    List<MeiTuanRiderMallOrder> selectByUidAndPhone(OrderQuery query);
 }

@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+import com.xiliulou.electricity.query.meituan.OrderQuery;
+import com.xiliulou.electricity.vo.meituan.OrderVO;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -11,5 +15,11 @@ public interface MeiTuanRiderMallOrderService {
     
     void handelFetchOrders(String sessionId, Long startTime, Integer recentDay);
     
-    MeiTuanRiderMallOrder queryByOrderIdAndPhone(String orderId, String phone);
+    MeiTuanRiderMallOrder queryByOrderId(String orderId, String phone, Long uid);
+    
+    List<OrderVO> listOrders(OrderQuery query);
+    
+    List<MeiTuanRiderMallOrder> listOrdersByUidAndPhone(OrderQuery query);
+    
+    void createBatteryMemberCardOrder(OrderQuery query);
 }

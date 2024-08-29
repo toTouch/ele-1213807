@@ -21,4 +21,6 @@ public interface MeiTuanRiderMallConfigMapper {
     MeiTuanRiderMallConfig selectByConfig(MeiTuanRiderMallConfig config);
     
     List<MeiTuanRiderMallConfig> selectListEnableMeiTuanRiderMall(@Param("offset") Integer offset, @Param("size") Integer size);
+    
+    MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId);
 }
