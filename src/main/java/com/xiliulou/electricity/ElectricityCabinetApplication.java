@@ -13,6 +13,7 @@ import com.xiliulou.faceid.EnableFaceid;
 import com.xiliulou.feishu.EnableFeishu;
 import com.xiliulou.iot.EnableIot;
 import com.xiliulou.mq.EnableMq;
+import com.xiliulou.pay.EnableFengYun;
 import com.xiliulou.pay.EnableFreeDeposit;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.storage.EnableStorage;
