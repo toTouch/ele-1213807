@@ -9,7 +9,7 @@ import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
  */
 public interface MeiTuanRiderMallOrderService {
     
-    void handelFetchOrders(String sessionId);
+    void handelFetchOrders(String sessionId, Long startTime, Integer recentDay);
     
     MeiTuanRiderMallOrder queryByOrderIdAndPhone(String orderId, String phone);
 }

@@ -64,21 +64,27 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
      * 定时任务：从美团拉取订单
      */
     @Override
-    public void handelFetchOrders(String sessionId) {
+    public void handelFetchOrders(String sessionId, Long startTime, Integer recentDay) {
         List<MeiTuanRiderMallConfig> configs = meiTuanRiderMallConfigService.listAll();
         if (CollectionUtils.isEmpty(configs)) {
             return;
         }
         
-        configs.forEach(this::handleFetchOrdersByTenant);
+        // 遍历租户
+        configs.forEach(config -> {
+            handleFetchOrdersByTenant(config, recentDay);
+        });
+        
+        Long costTime = System.currentTimeMillis() - startTime;
+        log.info("MeiTuanRiderMallFetchOrderTask end! sessionId={}, costTime={}", sessionId, costTime);
     }
     
-    private void handleFetchOrdersByTenant(MeiTuanRiderMallConfig config) {
+    private void handleFetchOrdersByTenant(MeiTuanRiderMallConfig config, Integer recentDay) {
         MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
                 .host(meiTuanRiderMallHostConfig.getHost()).tenantId(config.getTenantId()).build();
         
-        // 分页拉取最近1天的订单
-        List<OrderRsp> orderRspList = this.fetchOrdersByRecentDay(apiConfig);
+        // 分页拉取最近N天的订单
+        List<OrderRsp> orderRspList = this.fetchOrdersByRecentDay(apiConfig, recentDay);
         if (CollectionUtils.isEmpty(orderRspList)) {
             return;
         }
@@ -115,11 +121,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
     }
     
-    private List<OrderRsp> fetchOrdersByRecentDay(MeiTuanRiderMallApiConfig apiConfig) {
+    private List<OrderRsp> fetchOrdersByRecentDay(MeiTuanRiderMallApiConfig apiConfig, Integer recentDay) {
         Long cursor = null;
         Integer pageSize = 100;
         Long endTime = System.currentTimeMillis() / 1000;
-        Long beginTime = endTime - 24 * 60 * 60;
+        Long beginTime = endTime - recentDay * 24 * 60 * 60;
         List<OrderRsp> list = new ArrayList<>();
         
         while (true) {
