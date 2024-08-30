@@ -32,7 +32,7 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
     private final Map<String,Integer> BUSINESS_MAP = Map.of("PAY", FreeBusinessTypeEnum.AUTH_PAY.getCode(),"UNFREEZE",FreeBusinessTypeEnum.UNFREE.getCode());
     
     
-    @Value("${fy.aes.key:''}")
+    @Value("${fy.aes.key:'RyiQwkaIB2AMvmpJk5RG1g=='}")
     private String aesKey;
     
     @Override
