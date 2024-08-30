@@ -4,6 +4,12 @@
 
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
+import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
+
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -35,6 +41,13 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigDetailsVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigVO;
+import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingReceiversAddRequest;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingReceiversDeleteRequest;
+import com.xiliulou.pay.profitsharing.response.BaseProfitSharingReceiversAddResp;
+import com.xiliulou.pay.profitsharing.response.BaseProfitSharingReceiversDeleteResp;
+import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingReceiversAddResp;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +68,7 @@ import java.util.stream.Collectors;
  * @author caobotao.cbt
  * @date 2024/8/23 14:41
  */
+@Slf4j
 @Service
 public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingReceiverConfigService {
     
@@ -66,6 +80,10 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     
     @Resource
     private ElectricityPayParamsService electricityPayParamsService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
+    
     
     @Resource
     private UserService userService;
@@ -81,6 +99,9 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     
     @Resource
     private OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private ProfitSharingServiceAdapter profitSharingServiceAdapter;
     
     @Slave
     @Override
@@ -110,6 +131,9 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         
         long time = System.currentTimeMillis();
         
+        //调用微信
+        this.addWechatReceivers(request, profitSharingConfig);
+        
         ProfitSharingReceiverConfig receiverConfig = ProfitSharingReceiverConfigConverter.optReqToEntity(request);
         
         receiverConfig.setFranchiseeId(profitSharingConfig.getFranchiseeId());
@@ -117,7 +141,9 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         receiverConfig.setCreateTime(time);
         receiverConfig.setUpdateTime(time);
         profitSharingReceiverConfigMapper.insert(receiverConfig);
+        
     }
+    
     
     @Slave
     @Override
@@ -194,9 +220,15 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         }
         // 校验幂等
         this.checkIdempotent(receiver.getProfitSharingConfigId());
-        profitSharingReceiverConfigMapper.removeById(tenantId, id);
+        
+        //调用微信
+        this.deleteWechatReceivers(receiver);
+        
+        profitSharingReceiverConfigMapper.removeById(tenantId, id, System.currentTimeMillis());
+        
         operateDeleteRecord(receiver);
     }
+    
     
     @Slave
     @Override
@@ -395,4 +427,86 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         record.put("account", newConfig.getAccount() + "/" + newConfig.getReceiverName());
         operateRecordUtil.record(null, record);
     }
+    
+    
+    /**
+     * 添加微信分账接收方
+     *
+     * @param request
+     * @param profitSharingConfig
+     * @author caobotao.cbt
+     * @date 2024/8/30 17:07
+     */
+    private void addWechatReceivers(ProfitSharingReceiverConfigOptRequest request, ProfitSharingConfig profitSharingConfig) {
+        WechatPayParamsDetails payParamsDetails = this.getPayParams(profitSharingConfig.getTenantId(), profitSharingConfig.getFranchiseeId());
+        WechatProfitSharingReceiversAddRequest wechatAddRequest = new WechatProfitSharingReceiversAddRequest();
+        wechatAddRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payParamsDetails));
+        wechatAddRequest.setType(ProfitSharingConfigReceiverTypeEnum.CODE_MAP.get(request.getReceiverType()));
+        wechatAddRequest.setAccount(request.getAccount());
+        wechatAddRequest.setName(request.getReceiverName());
+        wechatAddRequest.setRelationType(request.getRelationType());
+        wechatAddRequest.setChannel(ChannelEnum.WECHAT);
+        try {
+            BaseProfitSharingReceiversAddResp resp = profitSharingServiceAdapter.addReceivers(wechatAddRequest);
+            if (Objects.isNull(resp)) {
+                throw new BizException("分账接收方添加失败，微信返回为空");
+            }
+        } catch (BizException e) {
+            log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers BizException:", e);
+            throw e;
+        } catch (Exception e) {
+            log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers Exception:", e);
+            throw new BizException("分账接收方添加失败");
+        }
+        
+        
+    }
+    
+    /**
+     * 获取支付配置
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/8/30 17:05
+     */
+    private WechatPayParamsDetails getPayParams(Integer tenantId, Long franchiseeId) {
+        try {
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId, null);
+            if (Objects.isNull(wechatPayParamsDetails)) {
+                log.info("ProfitSharingReceiverConfigServiceImpl.getPayParams tenantId:{},franchiseeId:{},wechatPayParamsDetails is null", tenantId, franchiseeId);
+                throw new BizException("支付配置为空");
+            }
+            return wechatPayParamsDetails;
+        } catch (BizException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("ProfitSharingReceiverConfigServiceImpl.insert Exception：", e);
+            throw new BizException("支付配置查询失败");
+        }
+    }
+    
+    
+    /**
+     * 删除接收方
+     *
+     * @param receiver
+     * @author caobotao.cbt
+     * @date 2024/8/30 17:21
+     */
+    private void deleteWechatReceivers(ProfitSharingReceiverConfig receiver) {
+        try {
+            WechatPayParamsDetails payParams = getPayParams(receiver.getTenantId(), receiver.getFranchiseeId());
+            WechatProfitSharingReceiversDeleteRequest deleteRequest = new WechatProfitSharingReceiversDeleteRequest();
+            deleteRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payParams));
+            deleteRequest.setType(ProfitSharingConfigReceiverTypeEnum.CODE_MAP.get(receiver.getReceiverType()));
+            deleteRequest.setAccount(receiver.getAccount());
+            deleteRequest.setChannel(ChannelEnum.WECHAT);
+            profitSharingServiceAdapter.deleteReceivers(deleteRequest);
+        } catch (Exception e) {
+            log.info("ProfitSharingReceiverConfigServiceImpl.insert Exception：", e);
+            throw new BizException("支付配置查询失败");
+        }
+    }
+    
 }

@@ -129,4 +129,7 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @date 2024/8/26 10:10
      */
     ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId);
+    
+    
+    
 }

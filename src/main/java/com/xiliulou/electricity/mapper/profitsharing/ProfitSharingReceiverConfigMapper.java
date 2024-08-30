@@ -83,7 +83,7 @@ public interface ProfitSharingReceiverConfigMapper {
      * @author caobotao.cbt
      * @date 2024/8/26 14:00
      */
-    void removeById(@Param("tenantId") Integer tenantId, @Param("id") Long id);
+    void removeById(@Param("tenantId") Integer tenantId, @Param("id") Long id,@Param("updateTime") Long updateTime);
     
     
     /**
