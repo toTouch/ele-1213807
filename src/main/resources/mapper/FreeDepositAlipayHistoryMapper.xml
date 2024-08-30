@@ -153,7 +153,7 @@
         fdah.id,
         fdah.auth_pay_order_id,
         fdah.order_id,
-        fdah.name,
+        fdah.name as 'realName',
         fdah.phone,
         fdah.id_card,
         fdah.operate_name,
@@ -163,7 +163,8 @@
         fdah.create_time,
         fdah.tenant_id,
         fdah.remark,
-        fdah.pay_status
+        fdah.pay_status,
+        fdah.franchisee_id
         from t_free_deposit_alipay_history fdah
         <where>
             <if test="orderId != null and orderId != ''">
