@@ -38,6 +38,7 @@ public class ProfitSharingReceiverConfigConverter {
         profitSharingReceiverConfig.setReceiverName(request.getReceiverName());
         profitSharingReceiverConfig.setRelationType(request.getRelationType());
         profitSharingReceiverConfig.setScale(request.getScale());
+        profitSharingReceiverConfig.setRemark(request.getRemark());
         return profitSharingReceiverConfig;
         
     }
