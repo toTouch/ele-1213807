@@ -1162,7 +1162,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .orderId(eleDepositOrder.getOrderId()).phone(freeQuery.getPhoneNumber()).realName(freeQuery.getRealName()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).storeId(eleDepositOrder.getStoreId())
                 .franchiseeId(eleDepositOrder.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).transAmt(eleDepositOrder.getPayAmount().doubleValue())
-                .type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY).channel(depositOrderDTO.getChannel()).build();
+                // 生成免押订单的时候，免押金额=剩余可代扣金额
+                .payTransAmt(eleDepositOrder.getPayAmount().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY)
+                .channel(depositOrderDTO.getChannel()).build();
         
         insert(freeDepositOrder);
         eleDepositOrderService.insert(eleDepositOrder);
