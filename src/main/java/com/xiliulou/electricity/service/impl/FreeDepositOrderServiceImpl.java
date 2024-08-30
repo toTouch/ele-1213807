@@ -2242,6 +2242,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .orderId(freeDepositOrder.getOrderId()).authPayOrderId(alipayHistory.getAuthPayOrderId()).channel(freeDepositOrder.getChannel()).build();
         AuthPayStatusBO authPayStatusBO = freeDepositService.queryAuthToPayStatus(query);
         
+        if (Objects.isNull(authPayStatusBO)){
+            return Triple.of(false, "100429", "同步代扣失败，稍后再试");
+        }
+        
         // 更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
