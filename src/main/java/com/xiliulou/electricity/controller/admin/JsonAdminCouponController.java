@@ -255,6 +255,9 @@ public class JsonAdminCouponController extends BaseController {
             return R.fail("000200", "业务类型参数不合法");
         }
         
+        offset = (Objects.isNull(offset) || offset < 0L) ? 0L : offset;
+        size = (Objects.isNull(size) || size > 500L) ? 500L : size;
+        
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(type)) {
             BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().offset(offset).size(size).delFlag(BatteryMemberCard.DEL_NORMAL).status(BatteryMemberCard.STATUS_UP)
                     .tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();

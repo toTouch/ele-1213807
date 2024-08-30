@@ -82,7 +82,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     /**
      * 根据条件查询<br />
-     *
+     * 可带分页
      * @param qryModel 查询条件
      * @return
      */
@@ -167,7 +167,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     /**
      * 条件查询列表<br /> 全表扫描，慎用
-     *
+     * 可带分页
      * @param qryModel 查询模型
      * @return
      */
