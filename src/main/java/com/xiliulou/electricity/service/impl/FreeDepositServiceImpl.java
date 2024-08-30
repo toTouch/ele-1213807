@@ -90,11 +90,11 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             return Triple.of(false, null, null);
         }
         
-        // 检查传入的用户信息是否和前一次传入的内容一致，一致返回false,不生成新的
-        if (Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) && Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
-                && Objects.equals(batteryDeposit.getDid(), freeDepositUserDTO.getPackageId())) {
+        // 如果都一样，查询是否免押过； 只要有一个不一样，继续新的免押
+        if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
+                || !Objects.equals(batteryDeposit.getDid(), freeDepositUserDTO.getPackageId())) {
             log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo equal, uid is {}", uid);
-            return Triple.of(true, null, freeDepositOrder);
+            return Triple.of(false, null, freeDepositOrder);
         }
         
         log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.channel is {}, orderId is {}", freeDepositOrder.getChannel(), batteryDeposit.getOrderId());

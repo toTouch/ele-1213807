@@ -275,6 +275,9 @@
             <if test="transAmt != null">
                 trans_amt = #{transAmt},
             </if>
+            <if test="withheldAmt != null">
+                withheld_amt = #{withheldAmt},
+            </if>
             <if test="payTransAmt != null">
                 pay_trans_amt = #{payTransAmt},
             </if>
