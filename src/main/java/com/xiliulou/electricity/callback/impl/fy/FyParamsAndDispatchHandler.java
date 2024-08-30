@@ -50,6 +50,7 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
         String o = (String) params.get("bizContent");
         try {
             String decrypt = FyAesUtil.decrypt(o, aesKey);
+            log.info("found the free order params from fy. bizContent = {}, params = {}", o, decrypt);
             if (FreeBusinessTypeEnum.FREE.getCode().equals(callbackContext.getBusiness())){
                 FyParams.FreeDeposit fyParams = JsonUtil.fromJson(decrypt, FyParams.FreeDeposit.class);
                 return CallbackContext.builder()

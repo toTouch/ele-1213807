@@ -102,7 +102,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         String authNo = authNo(params);
         Integer payStatus = payStatus(params);
         Integer successCode = successCode(params);
-        
+        log.info("updateFreeDepositOrder, authNo is {}, payStatus is {},code is {}", authNo, payStatus , successCode);
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         if (StringUtils.isNotEmpty(authNo)){

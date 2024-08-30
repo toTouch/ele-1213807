@@ -5,6 +5,7 @@ import com.xiliulou.electricity.callback.AbstractBusiness;
 import com.xiliulou.electricity.callback.CallbackHandler;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.boot.CommandLineRunner;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
  * @since V1.0 2024/8/26
  **/
+@Slf4j
 @Service
 public class FreeDepositNotifyServiceImpl implements FreeDepositNotifyService, CommandLineRunner {
     
@@ -46,6 +48,7 @@ public class FreeDepositNotifyServiceImpl implements FreeDepositNotifyService, C
         if (CollectionUtils.isEmpty(handlers)){
             return "";
         }
+        log.info("free deposit receive notify params:{}", params);
         Iterator<CallbackHandler<?>> iterator = handlers.iterator();
         
         CallbackContext<?> context = CallbackContext.builder()
