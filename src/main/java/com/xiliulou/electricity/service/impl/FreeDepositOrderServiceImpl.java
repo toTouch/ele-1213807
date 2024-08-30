@@ -2176,8 +2176,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         String authPayOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.WITHHOLD, userInfo.getUid());
         
-        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo()).uid(uid).tenantId(userInfo.getTenantId()).orderId(orderId)
-                .channel(freeDepositOrder.getChannel()).build();
+        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().payTransAmt(payTransAmt).authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo())
+                .uid(uid).tenantId(userInfo.getTenantId()).orderId(orderId).channel(freeDepositOrder.getChannel()).build();
         Triple<Boolean, String, Object> authedToPayTriple = freeDepositService.authToPay(payQuery);
         // 代扣调用失败则返回，否则生成代扣记录，状态为初始化
         if (!authedToPayTriple.getLeft()) {
