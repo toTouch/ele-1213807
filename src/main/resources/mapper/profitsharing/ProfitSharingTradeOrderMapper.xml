@@ -47,11 +47,7 @@
         where order_no = #{orderNo}
     </select>
     
-    <select id="selectThirdOrderNoListByParam"
-        resultType="com.xiliulou.electricity.domain.profitsharing.ProfitSharingTradeOrderThirdOrderNoDO">
-        select
-        id,third_order_no
-        from
+   
     <update id="batchUpdateStateByIds">
         update
         <include refid="table_name"/>
