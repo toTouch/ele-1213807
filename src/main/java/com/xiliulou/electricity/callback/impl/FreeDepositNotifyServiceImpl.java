@@ -43,7 +43,7 @@ public class FreeDepositNotifyServiceImpl implements FreeDepositNotifyService, C
     }
     
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("all")
     public Object notify(Integer channel ,Integer business, Integer tenantId , Map<String, Object> params) {
         if (CollectionUtils.isEmpty(handlers)){
             return "";
@@ -72,8 +72,8 @@ public class FreeDepositNotifyServiceImpl implements FreeDepositNotifyService, C
                     if (((AbstractBusiness<?>)next).business(context.getBusiness())){
                         ((AbstractBusiness<?>)next).init();
                         context = next.handler((CallbackContext<Object>) context);
-                        continue;
                     }
+                    continue;
                 }
                 context = next.handler((CallbackContext<Object>) context);
             }

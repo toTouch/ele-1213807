@@ -463,6 +463,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         }
         FreeDepositOrderDTO freeDepositOrderDTO = (FreeDepositOrderDTO) triple.getRight();
         freeDepositOrder.setChannel(freeDepositOrderDTO.getChannel());
+        freeDepositOrder.setPayTransAmt(freeDepositOrder.getTransAmt());
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
         

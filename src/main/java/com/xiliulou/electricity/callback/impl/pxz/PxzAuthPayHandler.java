@@ -19,6 +19,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 /**
  * <p>
  * Description: This class is PxzFreeOfChargeHandler!
@@ -45,7 +47,7 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     @Override
     public boolean business(Integer business) {
-        return FreeBusinessTypeEnum.FREE.getCode().equals(business);
+        return Objects.equals(business,FreeBusinessTypeEnum.AUTH_PAY.getCode());
     }
     
     @Override

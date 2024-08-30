@@ -5,10 +5,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
 import com.xiliulou.electricity.dto.callback.FyParams;
 import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
+import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -26,14 +27,13 @@ import java.util.Map;
  **/
 @Slf4j
 @Service
-@RefreshScope
+@AllArgsConstructor
 public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>> {
     
     private final Map<String,Integer> BUSINESS_MAP = Map.of("PAY", FreeBusinessTypeEnum.AUTH_PAY.getCode(),"UNFREEZE",FreeBusinessTypeEnum.UNFREE.getCode());
     
     
-    @Value("${fy.aes.key:'RyiQwkaIB2AMvmpJk5RG1g=='}")
-    private String aesKey;
+    private final FengYunConfig fengYunConfig;
     
     @Override
     public int order() {
@@ -51,7 +51,8 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
         
         String o = (String) params.get("bizContent");
         try {
-            String decrypt = FyAesUtil.decrypt(o, aesKey);
+            String aesKey = fengYunConfig.getAesKey();
+            String decrypt = FyAesUtil.decrypt(o, ObjectUtils.defaultIfNull(aesKey,"RyiQwkaIB2AMvmpJk5RG1g=="));
             log.info("found the free order params from fy. bizContent = {}, params = {}", o, decrypt);
             if (FreeBusinessTypeEnum.FREE.getCode().equals(callbackContext.getBusiness())){
                 FyParams.FreeDeposit fyParams = JsonUtil.fromJson(decrypt, FyParams.FreeDeposit.class);
