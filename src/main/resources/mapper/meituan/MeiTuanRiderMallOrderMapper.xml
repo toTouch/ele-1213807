@@ -68,10 +68,11 @@
         <if test="uid != null and uid != 0">
             and uid = #{uid}
         </if>
+        limit 1
     </select>
     
     <select id="selectByUidAndPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
-        select select
+        select
         <include refid="basic_field"/>
         from t_meituan_rider_mall_order
         where tenant_id = #{tenantId} and uid = #{uid} and meituan_account = #{phone}
@@ -83,7 +84,7 @@
     </select>
     
     <select id="selectListUnSyncedOrder" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
-        select select
+        select
         <include refid="basic_field"/>
         from t_meituan_rider_mall_order
         where tenant_id = #{tenantId} and order_sync_status != 3 and del_flag = 0

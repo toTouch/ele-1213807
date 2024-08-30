@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.meituan;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
+import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
+import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -24,9 +26,15 @@ public interface MeiTuanRiderMallOrderService {
     
     List<MeiTuanRiderMallOrder> listOrdersByUidAndPhone(OrderQuery query);
     
-    R createBatteryMemberCardOrder(OrderQuery query);
+    Triple<Boolean, String, Object> createBatteryMemberCardOrder(OrderQuery query);
     
     List<MeiTuanRiderMallOrder> listAllUnSyncedOrder(Integer tenantId);
     
     List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId, Integer offset, Integer size);
+    
+    /**
+     * 美团骑手商城限制提单校验
+     */
+    LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request);
+    
 }

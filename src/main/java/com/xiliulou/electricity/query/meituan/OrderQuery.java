@@ -22,6 +22,14 @@ public class OrderQuery {
     
     private String phone;
     
+    /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
+     * 美团订单套餐订单ID
+     */
     private String orderId;
     
     /**

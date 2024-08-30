@@ -15,6 +15,11 @@ public class OrderVO {
     private Long id;
     
     /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
      * 订单ID
      */
     private String meiTuanOrderId;

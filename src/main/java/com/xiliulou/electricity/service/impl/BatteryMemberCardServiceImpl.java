@@ -23,7 +23,6 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
-import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
@@ -32,22 +31,20 @@ import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -59,9 +56,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponSearchVo;
 import com.xiliulou.electricity.vo.SearchVo;
-import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -148,9 +143,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private UserDataScopeServiceImpl userDataScopeService;
-    
-    @Resource
-    private MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
     
     @Resource
     StoreService storeService;
@@ -947,9 +939,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setOriginalBatteryModel(query.getBatteryModel());
             query.setBatteryModel(null);
         }
-        
+    
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectListSuperAdminPage(query);
-        
+    
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
@@ -963,14 +955,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.nonNull(franchisee)) {
                 batteryMemberCardVO.setFranchiseeName(franchisee.getName());
             }
-            
+        
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
-                
+            
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
-            
+        
             // 设置优惠券
             if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
                 List<CouponSearchVo> coupons = new ArrayList<>();
@@ -981,7 +973,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 if (StringUtils.isNotBlank(item.getCouponIds())) {
                     couponIdsSet.addAll(JsonUtil.fromJsonArray(item.getCouponIds(), Integer.class));
                 }
-                
+            
                 if (!CollectionUtils.isEmpty(couponIdsSet)) {
                     couponIdsSet.forEach(couponId -> {
                         CouponSearchVo couponSearchVo = new CouponSearchVo();
@@ -995,12 +987,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
                 batteryMemberCardVO.setCoupons(coupons);
             }
-            
+        
             // 设置用户分组
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
                 List<SearchVo> userInfoGroups = new ArrayList<>();
                 List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
-                
+            
                 if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
                     for (Long userInfoGroupId : userInfoGroupIds) {
                         SearchVo searchVo = new SearchVo();
@@ -1115,80 +1107,5 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
-    }
-    
-    @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request) {
-        Long timestamp = request.getTimestamp();
-        String sign = request.getSign();
-        Long memberCardId = request.getProviderSkuId();
-        String phone = request.getAccount();
-        LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).build();
-        LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TRADE_OLD_USER.getCode()).build();
-        
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfig(
-                MeiTuanRiderMallConfig.builder().appId(request.getAppId()).appKey(request.getAppKey()).build());
-        // 配置不存在：不限制
-        if (Objects.isNull(meiTuanRiderMallConfig)) {
-            return noLimit;
-        }
-        
-        Integer tenantId = meiTuanRiderMallConfig.getTenantId();
-        
-        BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(memberCardId);
-        // 套餐不存在：不限制
-        if (Objects.isNull(batteryMemberCard)) {
-            return noLimit;
-        }
-        
-        // 用户不存在：不限制
-        UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
-        if (Objects.isNull(userInfo)) {
-            return noLimit;
-        }
-        
-        // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-        
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            // 自定义用户分组用户不可购买系统分组套餐：限制
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup cannot purchase systemGroup memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
-                return limit;
-            }
-            
-            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            // 自定义用户分组中没有该用户，不可购买指定套餐：限制
-            if (CollectionUtils.isEmpty(userGroupIds)) {
-                log.warn("MeiTuanLimitTradeCheck warn! SystemGroup not contain the useInfoGroup, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId, timestamp,
-                        sign);
-                return limit;
-            }
-        } else {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                log.warn("MeiTuanLimitTradeCheck warn! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
-                return limit;
-            }
-            
-            // 老用户不可购买新套餐：限制
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-                log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
-                return limit;
-            }
-            
-            // 新用户不可购买续费套餐：限制
-            if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
-                log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
-                return limit;
-            }
-        }
-        
-        return noLimit;
     }
 }

@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import com.xiliulou.thirdmall.util.meituan.MeiTuanRiderMallUtil;
@@ -26,7 +26,7 @@ import java.util.Map;
 public class JsonOuterBatteryMemberCardController {
     
     @Resource
-    private BatteryMemberCardService batteryMemberCardService;
+    private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     @PostMapping("/outer/batteryMemberCard/limitTrade")
     public R meiTuanLimitTradeCheck(@RequestBody @Validated LimitTradeRequest limitTradeRequest) {
@@ -42,6 +42,6 @@ public class JsonOuterBatteryMemberCardController {
             return R.fail(VirtualTradeStatusEnum.CHECK_SIGN_ERROR.getDesc());
         }
         
-        return R.ok(batteryMemberCardService.meiTuanLimitTradeCheck(limitTradeRequest));
+        return R.ok(meiTuanRiderMallOrderService.meiTuanLimitTradeCheck(limitTradeRequest));
     }
 }

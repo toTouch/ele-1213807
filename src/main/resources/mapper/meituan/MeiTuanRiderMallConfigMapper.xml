@@ -76,24 +76,5 @@
         order by t1.id
             limit #{offset}, #{size}
     </select>
-    
-    <select id="checkEnableMeiTuanRiderMall" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
-        select t1.id,
-               t1.app_id,
-               t1.app_key,
-               t1.secret,
-               t1.tenant_id,
-               t1.del_flag,
-               t1.create_time,
-               t1.update_time
-        from t_meituan_rider_mall_config t1
-                 left join t_electricity_config t2 on t1.tenant_id = t2.tenant_id
-        where t1.tenant_id = #{tenantId}
-          and t1.del_flag = 0
-          and t1.app_id is not null
-          and t1.app_key is not null
-          and t1.secret is not null
-          and t2.is_enable_meituan_rider_mall = 0
-        order by t1.id desc limit 1
-    </select>
+
 </mapper>
