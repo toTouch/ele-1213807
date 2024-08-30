@@ -223,6 +223,9 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         
         profitSharingConfigMapper.updateConfigStatusById(profitSharingConfig.getId(), request.getConfigStatus(), System.currentTimeMillis());
         
+        // 清空缓存
+        this.deleteCache(request.getTenantId(), profitSharingConfig.getPayParamId());
+        
         operateStatueRecord(request.getFranchiseeId(), request.getConfigStatus());
         
     }
@@ -332,7 +335,7 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
      */
     private ProfitSharingConfig initProfitSharingConfig(ProfitSharingConfigUpdateStatusOptRequest request, ElectricityPayParams payParams) {
         ProfitSharingConfig profitSharingConfig = profitSharingConfigMapper.selectByTenantIdAndFranchiseeId(request.getTenantId(), request.getFranchiseeId());
-        if (Objects.isNull(profitSharingConfig)) {
+        if (Objects.nonNull(profitSharingConfig)) {
             log.error("ProfitSharingConfigServiceImpl.initProfitSharingConfig WARN! param error id:{},franchiseeId:{},config exist!", profitSharingConfig.getId(),
                     profitSharingConfig.getFranchiseeId());
             throw new BizException("加盟商:" + request.getFranchiseeId() + "配置已存在");
