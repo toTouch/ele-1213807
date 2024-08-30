@@ -3,10 +3,26 @@
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id
-        , profit_sharing_order_id, profit_sharing_receive_config_id, third_trade_order_no, order_detail_no, third_order_detail_no,
-            profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
-            del_flag, create_time, update_time, out_account_type, business_type
+        id,
+        profit_sharing_order_id,
+        profit_sharing_receive_config_id,
+        third_trade_order_no,
+        order_detail_no,
+        third_order_detail_no,
+        profit_sharing_receive_account,
+        scale,
+        profit_sharing_amount,
+        STATUS,
+        fail_reason,
+        finish_time,
+        unfreeze_status,
+        tenant_id,
+        franchisee_id,
+        del_flag,
+        create_time,
+        update_time,
+        out_account_type,
+        business_type
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
@@ -108,7 +124,7 @@
                 and out_account_type = #{outAccountType}
             </if>
             
-            <if test="franchiseeIdList != null">
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
                 and franchisee_id in
                 <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
                     #{franchiseeId}
