@@ -154,6 +154,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setAuthNo(authToPayStatusQuery.getAuthNo());
         // todo保证唯一
         request.setPayNo(authToPayStatusQuery.getAuthPayOrderId());
+        query.setData(request);
         return query;
     }
     

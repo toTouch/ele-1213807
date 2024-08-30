@@ -44,12 +44,13 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
             return;
         }
         
+        log.info("FreeDepositConsumer Access Msg INFO! orderId is {}, authStatus is {}", dto.getOrderId(), freeDepositOrder.getAuthStatus());
+        
         // 如果是已冻结/超时，则不更新
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_TIMEOUT)) {
             log.info("FreeDepositConsumer INFO! freeDepositOrder.freeStatus is {}, orderId is{}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
             return;
         }
-        
         
         // 更新免押订单状态为最终态=失败
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();

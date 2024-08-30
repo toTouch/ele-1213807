@@ -22,7 +22,7 @@ public class FreeDepositAlipayHistoryVo {
      */
     private String orderId;
     
-    private String name;
+    private String realName;
     
     private String phone;
     
@@ -52,4 +52,9 @@ public class FreeDepositAlipayHistoryVo {
     private Long createTime;
     
     private Integer tenantId;
+    
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 }

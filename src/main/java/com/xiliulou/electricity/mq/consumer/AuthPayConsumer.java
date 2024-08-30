@@ -46,12 +46,14 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.warn("UnFreeDepositConsumer WARN! freeDepositOrder is null, orderId is{}", dto.getOrderId());
+            log.warn("AuthPayConsumer WARN! freeDepositOrder is null, orderId is{}", dto.getOrderId());
             return;
         }
         
+        log.info("AuthPayConsumer Access Msg INFO! orderId is {}, payStatus is {}", dto.getOrderId(), freeDepositOrder.getPayStatus());
+        
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            log.info("UnFreeDepositConsumer.status not update! freeDepositOrder.authStatus is {}, orderId is{}", freeDepositOrder.getPayStatus(), dto.getOrderId());
+            log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is{}", freeDepositOrder.getPayStatus(), dto.getOrderId());
             return;
         }
         

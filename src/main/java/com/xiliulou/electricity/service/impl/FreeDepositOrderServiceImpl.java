@@ -1162,7 +1162,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .orderId(eleDepositOrder.getOrderId()).phone(freeQuery.getPhoneNumber()).realName(freeQuery.getRealName()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).storeId(eleDepositOrder.getStoreId())
                 .franchiseeId(eleDepositOrder.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).transAmt(eleDepositOrder.getPayAmount().doubleValue())
-                .type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY).channel(depositOrderDTO.getChannel()).build();
+                // 生成免押订单的时候，免押金额=剩余可代扣金额
+                .payTransAmt(eleDepositOrder.getPayAmount().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY)
+                .channel(depositOrderDTO.getChannel()).build();
         
         insert(freeDepositOrder);
         eleDepositOrderService.insert(eleDepositOrder);
@@ -2174,8 +2176,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         String authPayOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.WITHHOLD, userInfo.getUid());
         
-        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo()).uid(uid).tenantId(userInfo.getTenantId()).orderId(orderId)
-                .channel(freeDepositOrder.getChannel()).build();
+        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().payTransAmt(payTransAmt).authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo())
+                .uid(uid).tenantId(userInfo.getTenantId()).orderId(orderId).channel(freeDepositOrder.getChannel()).build();
         Triple<Boolean, String, Object> authedToPayTriple = freeDepositService.authToPay(payQuery);
         // 代扣调用失败则返回，否则生成代扣记录，状态为初始化
         if (!authedToPayTriple.getLeft()) {
@@ -2186,6 +2188,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEALING);
+        // 累计代扣金额
+        freeDepositOrderUpdate.setWithheldAmt(freeDepositOrder.getWithheldAmt() + payTransAmt.doubleValue());
         freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getTransAmt() - payTransAmt.doubleValue());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
@@ -2237,6 +2241,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         FreeDepositAuthToPayStatusQuery query = FreeDepositAuthToPayStatusQuery.builder().uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
                 .orderId(freeDepositOrder.getOrderId()).authPayOrderId(alipayHistory.getAuthPayOrderId()).channel(freeDepositOrder.getChannel()).build();
         AuthPayStatusBO authPayStatusBO = freeDepositService.queryAuthToPayStatus(query);
+        
+        if (Objects.isNull(authPayStatusBO)){
+            return Triple.of(false, "100429", "同步代扣失败，稍后再试");
+        }
         
         // 更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();

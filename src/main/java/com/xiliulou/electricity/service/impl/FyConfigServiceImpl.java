@@ -50,7 +50,7 @@ public class FyConfigServiceImpl implements FyConfigService {
             return null;
         }
         
-        redisService.saveWithHash(CacheConstant.CACHE_PXZ_CONFIG + tenantId, fyConfig);
+        redisService.saveWithHash(CacheConstant.CACHE_FY_CONFIG + tenantId, fyConfig);
         redisService.expire(CacheConstant.CACHE_FY_CONFIG + tenantId, TimeUnit.HOURS.toMillis(24 * 30), true);
         return fyConfig;
     }
@@ -87,7 +87,7 @@ public class FyConfigServiceImpl implements FyConfigService {
             fyConfigServiceMapper.updateByTenantId(config);
             return Pair.of(true, "");
         }finally {
-            redisService.delete(CacheConstant.CACHE_PXZ_CONFIG + tenantId);
+            redisService.delete(CacheConstant.CACHE_FY_CONFIG + tenantId);
         }
     }
 }
