@@ -1553,7 +1553,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 
                 PxzQueryOrderRsp queryOrderRspData = (PxzQueryOrderRsp) depositOrderStatusResult.getRight();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-                    log.error("FREE DEPOSIT TASK ERROR!batteryFreeDepositOrder not un_frozen,orderId={},uid={}", entity.getOrderId(), entity.getUid());
                     continue;
                 }
                 
@@ -1773,7 +1772,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 
                 PxzQueryOrderRsp queryOrderRspData = (PxzQueryOrderRsp) depositOrderStatusResult.getRight();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-                    log.error("FREE DEPOSIT TASK ERROR!batteryFreeDepositOrder not un_frozen,orderId={},uid={}", eleRefundOrder.getOrderId(), freeDepositOrder.getUid());
                     continue;
                 }
                 
