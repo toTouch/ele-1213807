@@ -110,7 +110,7 @@ public class CarRentalPackagePo extends BasicCarPo {
      *
      * @see YesNoEnum
      */
-    private Integer supportRefund;
+    private Integer rentRebate;
     
     /**
      * 租金退还期限(天)

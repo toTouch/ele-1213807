@@ -27,10 +27,10 @@ public class ProfitSharingReceiverConfigQryRequest implements Serializable {
     @NotNull(message = "profitSharingConfigId不可为空")
     private Long profitSharingConfigId;
     
-    @NotNull(groups = (QueryGroup.class), message = "size不可为空")
+    @NotNull(groups = QueryGroup.class, message = "size不可为空")
     private Integer size;
     
-    @NotNull(groups = (QueryGroup.class), message = "offset不可为空")
+    @NotNull(groups = QueryGroup.class, message = "offset不可为空")
     private Integer offset;
 }
 
