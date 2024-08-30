@@ -9,26 +9,32 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.profitsharing.ProfitSharingConfigConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigCycleTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigProfitSharingTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingConfigMapper;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequest;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigUpdateStatusOptRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingReceiverConfigService;
 import com.xiliulou.electricity.tx.profitsharing.ProfitSharingConfigTxService;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -67,6 +73,13 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
     
     @Resource
     private ProfitSharingConfigTxService profitSharingConfigTxService;
+    
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 初始化默认订单类型
@@ -209,6 +222,9 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         }
         
         profitSharingConfigMapper.updateConfigStatusById(profitSharingConfig.getId(), request.getConfigStatus(), System.currentTimeMillis());
+        
+        operateStatueRecord(request.getFranchiseeId(), request.getConfigStatus());
+        
     }
     
     
@@ -233,6 +249,8 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         profitSharingConfigMapper.update(profitSharingConfig);
         // 清空缓存
         this.deleteCache(request.getTenantId(), exist.getPayParamId());
+        
+        this.operateRecord(exist, profitSharingConfig);
     }
     
     @Override
@@ -361,5 +379,44 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         if (!b) {
             throw new BizException("频繁操作");
         }
+    }
+    
+    
+    private void operateRecord(ProfitSharingConfig old, ProfitSharingConfig newConfig) {
+        
+        Long franchiseeId = newConfig.getFranchiseeId();
+        
+        String franchiseeName = MultiFranchiseeConstant.DEFAULT_FRANCHISEE_NAME;
+        if (!MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(franchiseeId)) {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            franchiseeName = Optional.ofNullable(franchisee).orElse(new Franchisee()).getName();
+        }
+        String oldScaleLimit = old.getScaleLimit().multiply(new BigDecimal(100)) + "%";
+        String newScaleLimit = newConfig.getScaleLimit().multiply(new BigDecimal(100)) + "%";
+        
+        String oldAmountLimit = old.getAmountLimit() + "%";
+        String bewAmountLimit = newConfig.getAmountLimit() + "%";
+        
+        String desc = "%s修改为%s";
+        
+        Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
+        record.put("franchiseeName", franchiseeName);
+        record.put("scaleLimitDesc", String.format(desc, oldScaleLimit, newScaleLimit));
+        record.put("amountLimitDesc", String.format(desc, oldAmountLimit, bewAmountLimit));
+        operateRecordUtil.record(null, record);
+    }
+    
+    private void operateStatueRecord(Long franchiseeId, Integer configStatus) {
+        
+        String franchiseeName = MultiFranchiseeConstant.DEFAULT_FRANCHISEE_NAME;
+        if (!MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(franchiseeId)) {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+            franchiseeName = Optional.ofNullable(franchisee).orElse(new Franchisee()).getName();
+        }
+        
+        Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
+        record.put("franchiseeName", franchiseeName);
+        record.put("statusDesc", ProfitSharingConfigStatusEnum.MAP.get(configStatus).getDesc());
+        operateRecordUtil.record(null, record);
     }
 }

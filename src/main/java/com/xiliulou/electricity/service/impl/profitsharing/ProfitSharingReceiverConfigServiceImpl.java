@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -30,6 +31,7 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingReceiverConfigService;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigDetailsVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigVO;
@@ -76,6 +78,9 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     
     @Resource
     private FranchiseeService franchiseeService;
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
     
     @Slave
     @Override
@@ -159,6 +164,8 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         receiverConfig.setUpdateTime(System.currentTimeMillis());
         
         profitSharingReceiverConfigMapper.update(receiverConfig);
+        
+        operateRecord(receiver, receiverConfig);
     }
     
     @Override
@@ -188,6 +195,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         // 校验幂等
         this.checkIdempotent(receiver.getProfitSharingConfigId());
         profitSharingReceiverConfigMapper.removeById(tenantId, id);
+        operateDeleteRecord(receiver);
     }
     
     @Slave
@@ -363,5 +371,25 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         if (!b) {
             throw new BizException("频繁操作");
         }
+    }
+    
+    private void operateRecord(ProfitSharingReceiverConfig old, ProfitSharingReceiverConfig newConfig) {
+        
+        String oldScale = old.getScale().multiply(new BigDecimal(100)) + "%";
+        String newScale = newConfig.getScale().multiply(new BigDecimal(100)) + "%";
+        
+        String desc = "%s修改为%s";
+        
+        Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
+        record.put("account", newConfig.getAccount() + "/" + newConfig.getReceiverName());
+        record.put("scale", String.format(desc, oldScale, newScale));
+        record.put("remark", String.format(desc, old.getRemark(), newConfig.getRemark()));
+        operateRecordUtil.record(null, record);
+    }
+    
+    private void operateDeleteRecord(ProfitSharingReceiverConfig newConfig) {
+        Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
+        record.put("account", newConfig.getAccount() + "/" + newConfig.getReceiverName());
+        operateRecordUtil.record(null, record);
     }
 }

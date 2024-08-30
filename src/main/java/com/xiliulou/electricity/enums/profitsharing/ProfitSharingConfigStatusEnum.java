@@ -5,6 +5,10 @@ package com.xiliulou.electricity.enums.profitsharing;
 import lombok.Data;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * description:
  *
@@ -26,4 +30,13 @@ public enum ProfitSharingConfigStatusEnum {
         this.code = code;
         this.desc = desc;
     }
+    
+    public static final Map<Integer, ProfitSharingConfigStatusEnum> MAP = new HashMap<>();
+    
+    static {
+        Arrays.stream(values()).forEach(v -> {
+            MAP.put(v.code, v);
+        });
+    }
+    
 }
