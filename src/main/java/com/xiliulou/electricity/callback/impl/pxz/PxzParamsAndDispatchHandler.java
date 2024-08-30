@@ -49,7 +49,7 @@ public class PxzParamsAndDispatchHandler implements PxzSupport<Map<String,Object
         }
         
         String data = (String) callbackContext.getParams().get("body");
-        String encrypt = PxzAesUtils.encrypt(data, pxzConfig.getAesKey());
+        String encrypt = PxzAesUtils.decrypt(data, pxzConfig.getAesKey());
         
         if (FreeBusinessTypeEnum.FREE.getCode().equals(callbackContext.getBusiness())) {
             PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
