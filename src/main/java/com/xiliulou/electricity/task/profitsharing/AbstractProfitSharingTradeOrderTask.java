@@ -7,7 +7,6 @@ package com.xiliulou.electricity.task.profitsharing;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
@@ -30,22 +29,19 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderSuppor
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.profitsharing.ProfitSharingTradeMixedOrderQueryModel;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingStatisticsService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
-import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import com.xiliulou.electricity.task.profitsharing.base.AbstractProfitSharingTask;
+import com.xiliulou.electricity.task.profitsharing.support.PayParamsQuerySupport;
 import com.xiliulou.electricity.tx.profitsharing.ProfitSharingOrderTxService;
 import com.xiliulou.electricity.tx.profitsharing.ProfitSharingTradeOrderTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
-import com.xxl.job.core.biz.model.ReturnT;
-import com.xxl.job.core.handler.IJobHandler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -56,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -98,6 +93,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     @Resource
     private ProfitSharingOrderTxService profitSharingOrderTxService;
     
+    @Resource
+    protected PayParamsQuerySupport payParamsQuerySupport;
+    
     
     public static final Integer SIZE = 200;
     
@@ -116,23 +114,23 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     @Override
     protected void executeByTenantId(Integer tenantId) {
-        Long startId = 0L;
         ProfitSharingTradeMixedOrderQueryModel queryModel = new ProfitSharingTradeMixedOrderQueryModel();
         queryModel.setState(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode());
         queryModel.setTenantId(tenantId);
         queryModel.setSize(SIZE);
+        queryModel.setStartId(0L);
         queryModel.setChannel(this.getChannel());
         
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
         
         while (true) {
-            queryModel.setStartId(startId);
+            
             // 查询聚合分账交易订单
             List<ProfitSharingTradeMixedOrder> mixedOrders = profitSharingTradeMixedOrderService.queryListByParam(queryModel);
             if (CollectionUtils.isEmpty(mixedOrders)) {
                 break;
             }
-            startId = mixedOrders.get(mixedOrders.size() - 1).getId();
+            queryModel.setStartId(mixedOrders.get(mixedOrders.size() - 1).getId());
             
             Map<String, ProfitSharingTradeMixedOrder> thirdOrderNoMixedOrderMap = mixedOrders.stream()
                     .collect(Collectors.toMap(ProfitSharingTradeMixedOrder::getThirdOrderNo, Function.identity()));
@@ -185,7 +183,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     private void executeByThirdOrderNo(ProfitSharingTradeMixedOrder mixedOrder, List<ProfitSharingTradeOrder> orders, Map<String, T> tenantFranchiseePayParamMap) {
         
-        T payConfig = tenantFranchiseePayParamMap.get(getPayParamMapKey(mixedOrder.getTenantId(), mixedOrder.getFranchiseeId()));
+        T payConfig = tenantFranchiseePayParamMap.get(payParamsQuerySupport.getPayParamMapKey(mixedOrder.getTenantId(), mixedOrder.getFranchiseeId()));
         
         // 支付配置校验
         if (!this.checkDisposeByPayConfig(payConfig, mixedOrder, orders)) {
@@ -718,23 +716,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     }
     
     
-    protected String getPayParamMapKey(Integer tenantId, Long franchiseeId) {
-        return tenantId + "_" + franchiseeId;
-    }
-    
-    
-    /**
-     * 构建支付配置
-     *
-     * @param tenantFranchiseePayParamMap
-     * @param tenantId
-     * @param franchiseeIds
-     * @author caobotao.cbt
-     * @date 2024/8/28 10:38
-     */
-    protected abstract void queryBuildTenantFranchiseePayParamMap(Map<String, T> tenantFranchiseePayParamMap, Integer tenantId, Set<Long> franchiseeIds);
-    
-    
     /**
      * 发起订单
      *
@@ -745,13 +726,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     protected abstract void order(T payConfig, List<ProfitSharingCheckModel> profitSharingModels);
     
-    /**
-     * 获取渠道
-     *
-     * @author caobotao.cbt
-     * @date 2024/8/28 09:42
-     */
-    protected abstract String getChannel();
     
     @Data
     public static class TaskParam {

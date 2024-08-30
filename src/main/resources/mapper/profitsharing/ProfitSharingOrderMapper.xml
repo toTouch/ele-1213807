@@ -34,6 +34,9 @@
         <if test="business_type!=null">
             business_type =#{businessType},
         </if>
+        <if test="status!=null">
+            status =#{status},
+        </if>
         update_time=#{updateTime}
         where id =#{id}
     </update>
@@ -55,6 +58,32 @@
         from t_profit_sharing_order
         where third_order_no = #{thirdOrderNo}
           and business_type = 98 limit 1
+    </select>
+    <select id="selectListByThirdOrderNos"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">
+        select
+        <include refid="basic_field"/>
+        from t_profit_sharing_order
+        where del_flag=0 and tenant_id=#{tenantId}
+        and third_order_no in
+        <foreach collection="thirdOrderNos" open="(" close=")" item="thirdOrderNo" separator=",">
+            #{thirdOrderNo}
+        </foreach>
+    </select>
+    <select id="selectByIdGreaterThanAndOtherConditions"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">
+        SELECT
+        <include refid="basic_field"/>
+        from t_profit_sharing_order
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and id>#{startId}
+        and status in
+        <foreach collection="statusList" open="(" close=")" item="status" separator=",">
+            #{status}
+        </foreach>
+        order by id asc
+        limit #{size}
     </select>
 
 

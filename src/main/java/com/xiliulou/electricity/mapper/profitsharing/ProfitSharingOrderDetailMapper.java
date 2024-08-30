@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderDetailQueryModel;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -31,7 +33,8 @@ public interface ProfitSharingOrderDetailMapper {
     
     Integer existsFailByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
     
-    int updateUnfreezeStatusByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo,@Param("status") Integer status,@Param("unfreezeStatus") Integer unfreezeStatus,@Param("businessTypeList") List<Integer> businessTypeList, long updateTime);
+    int updateUnfreezeStatusByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("status") Integer status, @Param("unfreezeStatus") Integer unfreezeStatus,
+            @Param("businessTypeList") List<Integer> businessTypeList, long updateTime);
     
     /**
      * 更新
@@ -42,5 +45,18 @@ public interface ProfitSharingOrderDetailMapper {
      */
     int update(ProfitSharingOrderDetail profitSharingOrderDetail);
     
+    
+   
+    
+    
+    /**
+     * 根据分账主表订单号查询
+     *
+     * @param tenantId
+     * @param profitSharingOrderIds
+     * @author caobotao.cbt
+     * @date 2024/8/29 18:27
+     */
+    List<ProfitSharingOrderDetail> selectListByProfitSharingOrderIds(@Param("tenantId") Integer tenantId, @Param("profitSharingOrderIds") List<Long> profitSharingOrderIds);
 }
 

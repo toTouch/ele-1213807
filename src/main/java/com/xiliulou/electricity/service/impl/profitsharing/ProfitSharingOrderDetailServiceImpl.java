@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDetailService {
+    
     @Resource
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
     
@@ -63,7 +64,7 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
         if (ObjectUtils.isEmpty(profitSharingOrderDetailList)) {
             return resList;
         }
-    
+        
         // 查询分账订单主表的信息
         List<Long> profitSharingOrderIdList = profitSharingOrderDetailList.parallelStream().map(ProfitSharingOrderDetail::getProfitSharingOrderId).collect(Collectors.toList());
         List<ProfitSharingOrder> profitSharingOrderList = profitSharingOrderMapper.selectListByIds(profitSharingOrderIdList);
@@ -110,7 +111,7 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
     @Override
     @Slave
     public boolean existsNotUnfreezeByThirdOrderNo(String thirdOrderNo) {
-        Integer count =  profitSharingOrderDetailMapper.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
+        Integer count = profitSharingOrderDetailMapper.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
         if (Objects.nonNull(count)) {
             return true;
         }
@@ -132,16 +133,23 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
     @Override
     @Slave
     public boolean existsFailByThirdOrderNo(String thirdOrderNo) {
-         Integer failCount = profitSharingOrderDetailMapper.existsFailByThirdOrderNo(thirdOrderNo);
-         if (Objects.nonNull(failCount)) {
-             return true;
-         }
-         
-         return false;
+        Integer failCount = profitSharingOrderDetailMapper.existsFailByThirdOrderNo(thirdOrderNo);
+        if (Objects.nonNull(failCount)) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Override
     public int updateUnfreezeStatusByThirdOrderNo(String thirdOrderNo, Integer status, Integer unfreezeStatus, List<Integer> businessTypeList, long updateTime) {
         return profitSharingOrderDetailMapper.updateUnfreezeStatusByThirdOrderNo(thirdOrderNo, status, unfreezeStatus, businessTypeList, updateTime);
+    }
+    
+    
+    @Slave
+    @Override
+    public List<ProfitSharingOrderDetail> queryListByProfitSharingOrderIds(Integer tenantId, List<Long> ids) {
+        return profitSharingOrderDetailMapper.selectListByProfitSharingOrderIds(tenantId, ids);
     }
 }

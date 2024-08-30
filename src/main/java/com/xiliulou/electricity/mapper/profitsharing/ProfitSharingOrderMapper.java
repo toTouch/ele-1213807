@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper.profitsharing;
 
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderQueryModel;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -38,5 +39,24 @@ public interface ProfitSharingOrderMapper {
      * @date 2024/8/29 15:14
      */
     int update(ProfitSharingOrder profitSharingOrder);
+    
+    /**
+     * 根据租户id+第三方单号查询
+     *
+     * @param tenantId
+     * @param thirdOrderNos
+     * @author caobotao.cbt
+     * @date 2024/8/30 08:46
+     */
+    List<ProfitSharingOrder> selectListByThirdOrderNos(@Param("tenantId") Integer tenantId, @Param("thirdOrderNos") List<String> thirdOrderNos);
+    
+    /**
+     * 多条件
+     *
+     * @param profitSharingOrderQueryModel
+     * @author caobotao.cbt
+     * @date 2024/8/30 09:00
+     */
+    List<ProfitSharingOrder> selectByIdGreaterThanAndOtherConditions(ProfitSharingOrderQueryModel profitSharingOrderQueryModel);
 }
 

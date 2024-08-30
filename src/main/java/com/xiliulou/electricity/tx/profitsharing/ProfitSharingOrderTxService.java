@@ -74,6 +74,14 @@ public class ProfitSharingOrderTxService {
         });
         
         profitSharingStatisticsMapper.addTotalAmount(totalProfitSharingAmount, profitSharingStatisticsId, timeMillis);
-        
+    }
+    
+    
+    
+    public void update(ProfitSharingOrder order, List<ProfitSharingOrderDetail> curOrderDetails) {
+        profitSharingOrderMapper.update(order);
+        for (ProfitSharingOrderDetail curOrderDetail : curOrderDetails) {
+            profitSharingOrderDetailMapper.update(curOrderDetail);
+        }
     }
 }
