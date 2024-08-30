@@ -223,6 +223,9 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         
         profitSharingConfigMapper.updateConfigStatusById(profitSharingConfig.getId(), request.getConfigStatus(), System.currentTimeMillis());
         
+        // 清空缓存
+        this.deleteCache(request.getTenantId(), profitSharingConfig.getPayParamId());
+        
         operateStatueRecord(request.getFranchiseeId(), request.getConfigStatus());
         
     }
