@@ -143,7 +143,7 @@
                 and business_type = #{businessType}
             </if>
             
-            <if test="thirdTradeOrderNo != null">
+            <if test="thirdTradeOrderNo != null and thirdTradeOrderNo != ''">
                 and third_trade_order_no like concat('%',#{thirdTradeOrderNo},'%')
             </if>
         </where>
