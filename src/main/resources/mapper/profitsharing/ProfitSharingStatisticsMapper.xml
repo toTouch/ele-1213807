@@ -40,7 +40,7 @@
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into<include refid="table_name">(tenant_id, franchisee_id, statistics_type, statistics_time, total_amount, create_time, update_time)
+        insert into <include refid="table_name"/>(tenant_id, franchisee_id, statistics_type, statistics_time, total_amount, create_time, update_time)
         values (#{tenantId}, #{franchiseeId}, #{statisticsType}, #{statisticsTime}, #{totalAmount}, #{createTime}, #{updateTime})
     </insert>
 
