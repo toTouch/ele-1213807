@@ -34,6 +34,7 @@ public class DelayFreeProducer {
      * @param tag
      */
     public void sendDelayFreeMessage(String orderId, String tag) {
+        log.info("Free Delay Info! sendDelayFreeMessage.order is {}, tag is {}", orderId, tag);
         FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().orderId(orderId).build();
         String key = "free" + DateUtil.format(DateUtil.date(), ORDER_DATE_FORMAT) + RandomUtil.randomInt(1000, 9999);
         rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
