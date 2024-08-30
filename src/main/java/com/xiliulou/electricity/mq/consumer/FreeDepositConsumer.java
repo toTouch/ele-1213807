@@ -33,6 +33,7 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
     @Override
     public void onMessage(String msg) {
         if (StrUtil.isBlank(msg)) {
+            log.warn("FreeDepositConsumer.accept.msg is null");
             return;
         }
         
