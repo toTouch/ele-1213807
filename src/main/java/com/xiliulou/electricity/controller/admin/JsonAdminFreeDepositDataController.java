@@ -32,13 +32,12 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-@RequestMapping("/admin/freeDepositData")
 public class JsonAdminFreeDepositDataController extends BaseController {
 
     @Autowired
     FreeDepositDataService freeDepositDataService;
 
-    @PutMapping("/recharge")
+    @PutMapping("/admin/freeDepositData/recharge")
     public R recharge(@RequestBody @Validated(UpdateGroup.class) FreeDepositDataQuery freeDepositDataQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -55,7 +54,7 @@ public class JsonAdminFreeDepositDataController extends BaseController {
     }
 
 
-    @GetMapping("/capacity")
+    @GetMapping("/admin/freeDeposit/capacity")
     public R capacity() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -71,7 +70,7 @@ public class JsonAdminFreeDepositDataController extends BaseController {
     
     
     
-    @PostMapping("/fy/recharge")
+    @PostMapping("/admin/freeDepositData/fy/recharge")
     public R<?> rechargeFY(@RequestBody @Validated FreeDepositFyRequest params){
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
