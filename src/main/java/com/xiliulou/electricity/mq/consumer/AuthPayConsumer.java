@@ -39,6 +39,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
     @Override
     public void onMessage(String msg) {
         if (StrUtil.isBlank(msg)) {
+            log.warn("AuthPayConsumer.accept.msg is null");
             return;
         }
         
