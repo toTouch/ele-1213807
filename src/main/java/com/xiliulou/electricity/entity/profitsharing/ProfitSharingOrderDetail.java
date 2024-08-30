@@ -31,10 +31,6 @@ public class ProfitSharingOrderDetail implements Serializable {
      */
     private Long profitSharingOrderId;
     
-    /**
-     * 分账接收方id,或者支付配置id
-     */
-    private Long profitSharingReceiveConfigId;
     
     /**
      * 第三方支付订单号
