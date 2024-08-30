@@ -237,9 +237,9 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setWarehouseId(warehouseId);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
-        if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
+        /*if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
             electricityBatteryQuery.setBindStatus(bindStatus);
-        }
+        }*/
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
     
