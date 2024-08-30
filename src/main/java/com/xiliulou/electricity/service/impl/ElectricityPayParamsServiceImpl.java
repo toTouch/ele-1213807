@@ -262,6 +262,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     }
     
     
+    
     @Override
     public R getTenantId(String appId) {
         // TODO: 2024/6/17 web未找到对应的调用页面,暂时兼容愿逻辑

@@ -202,6 +202,7 @@
         where del_flag=0
         and tenant_id=#{tenantId}
     </select>
+
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
