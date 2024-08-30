@@ -36,7 +36,7 @@ public interface CacheConstant {
     /**
      * 微信支付证书缓存（调用微信接口获取）
      */
-    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:%d:%d";
+    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:V2:%d:%d";
     
     //用户缓存
     String CACHE_USER_UID = "user_uid:";

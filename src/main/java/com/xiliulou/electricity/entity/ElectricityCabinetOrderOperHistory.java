@@ -98,5 +98,5 @@ public class ElectricityCabinetOrderOperHistory {
      */
     public static final String OPEN_CELL_FAIL = "开门失败";
     
-    public static final String THREE_PERIODS_SUCCESS_RATE_VERSION = "2.2.0";
+    public static final String THREE_PERIODS_SUCCESS_RATE_VERSION = "2.1.24";
 }
