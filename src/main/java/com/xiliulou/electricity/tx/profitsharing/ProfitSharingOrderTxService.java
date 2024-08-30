@@ -6,9 +6,11 @@ package com.xiliulou.electricity.tx.profitsharing;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingStatistics;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
+import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingStatisticsMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeMixedOrderMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
 import com.xiliulou.electricity.task.profitsharing.AbstractProfitSharingTradeOrderTask;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,27 +36,14 @@ public class ProfitSharingOrderTxService {
     
     
     @Resource
-    private ProfitSharingTradeOrderMapper profitSharingTradeOrderMapper;
-    
-    
-    @Resource
-    private ProfitSharingTradeMixedOrderMapper profitSharingTradeMixedOrderMapper;
-    
-    
-    @Resource
     private ProfitSharingOrderMapper profitSharingOrderMapper;
     
     @Resource
     private ProfitSharingOrderDetailMapper profitSharingOrderDetailMapper;
     
     
-    public void save(List<Long> tradeOrderIds, Integer tradeOrderState, String remark, Map<ProfitSharingOrder, ProfitSharingOrderDetail> insertProfitSharingOrderMap) {
-        long time = System.currentTimeMillis();
-        profitSharingTradeOrderMapper.batchUpdateStateByIds(tradeOrderIds, tradeOrderState, time, remark);
-        profitSharingOrderMapper.batchInsert(new ArrayList<>(insertProfitSharingOrderMap.keySet()));
-        insertProfitSharingOrderMap.forEach((k, v) -> v.setProfitSharingOrderId(k.getId()));
-        profitSharingOrderDetailMapper.batchInsert(new ArrayList<>(insertProfitSharingOrderMap.values()));
-    }
+    @Resource
+    private ProfitSharingStatisticsMapper profitSharingStatisticsMapper;
     
     public void insert(List<AbstractProfitSharingTradeOrderTask.ProfitSharingCheckModel> checkModels) {
         
@@ -72,13 +62,26 @@ public class ProfitSharingOrderTxService {
     }
     
     
-    public void update(List<AbstractProfitSharingTradeOrderTask.ProfitSharingCheckModel> successList) {
+    public void update(List<AbstractProfitSharingTradeOrderTask.ProfitSharingCheckModel> successList, BigDecimal totalProfitSharingAmount, Long profitSharingStatisticsId) {
+        long timeMillis = System.currentTimeMillis();
         successList.forEach(profitSharingCheckModel -> {
+            profitSharingCheckModel.getProfitSharingOrder().setUpdateTime(timeMillis);
             profitSharingOrderMapper.update(profitSharingCheckModel.getProfitSharingOrder());
             profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(details -> {
+                details.getProfitSharingOrderDetail().setUpdateTime(timeMillis);
                 profitSharingOrderDetailMapper.update(details.getProfitSharingOrderDetail());
             });
-            
         });
+        
+        profitSharingStatisticsMapper.addTotalAmount(totalProfitSharingAmount, profitSharingStatisticsId, timeMillis);
+    }
+    
+    
+    
+    public void update(ProfitSharingOrder order, List<ProfitSharingOrderDetail> curOrderDetails) {
+        profitSharingOrderMapper.update(order);
+        for (ProfitSharingOrderDetail curOrderDetail : curOrderDetails) {
+            profitSharingOrderDetailMapper.update(curOrderDetail);
+        }
     }
 }

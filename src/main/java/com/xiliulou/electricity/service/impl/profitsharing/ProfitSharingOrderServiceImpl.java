@@ -16,6 +16,7 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderTypeEnum;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
+import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderQueryModel;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
@@ -187,4 +188,17 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     public int updateUnfreezeOrderById(ProfitSharingOrder profitSharingOrderUpdate) {
         return profitSharingOrderMapper.updateUnfreezeOrderById(profitSharingOrderUpdate);
     }
+    
+    @Slave
+    @Override
+    public List<ProfitSharingOrder> queryListByThirdOrderNos(Integer tenantId, List<String> thirdOrderNos) {
+        return profitSharingOrderMapper.selectListByThirdOrderNos(tenantId,thirdOrderNos);
+    }
+    
+    @Slave
+    @Override
+    public List<ProfitSharingOrder> queryByIdGreaterThanAndOtherConditions(ProfitSharingOrderQueryModel profitSharingOrderQueryModel) {
+        return profitSharingOrderMapper.selectByIdGreaterThanAndOtherConditions(profitSharingOrderQueryModel);
+    }
+    
 }

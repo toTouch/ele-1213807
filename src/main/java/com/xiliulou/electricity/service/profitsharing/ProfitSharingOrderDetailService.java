@@ -15,6 +15,7 @@ import java.util.List;
  * @since 2024-08-22 17:00:35
  */
 public interface ProfitSharingOrderDetailService {
+    
     Integer countTotal(ProfitSharingOrderDetailPageRequest merchantPageRequest);
     
     List<ProfitSharingOrderDetailVO> listByPage(ProfitSharingOrderDetailPageRequest profitSharingOrderPageRequest);
@@ -36,4 +37,14 @@ public interface ProfitSharingOrderDetailService {
     int updateUnfreezeOrderById(ProfitSharingOrderDetail profitSharingOrderDetailUpdate);
     
     List<ProfitSharingOrderDetail> listFailByThirdOrderNo(String thirdTradeOrderNo);
+    
+    /**
+     * 根据id批量查询
+     *
+     * @param tenantId
+     * @param ids
+     * @author caobotao.cbt
+     * @date 2024/8/29 18:24
+     */
+    List<ProfitSharingOrderDetail> queryListByProfitSharingOrderIds(Integer tenantId, List<Long> ids);
 }

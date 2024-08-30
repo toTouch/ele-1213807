@@ -46,13 +46,18 @@
         <include refid="table_name"/>
         where del_flag = 0 and state = #{state} and id > #{startId}
         and channel=#{channel}
+        <if test="startTime!=null">
+            and create_time > #{startTime}
+        </if>
         order by id asc
         limit #{size}
     </select>
     
     <select id="selectByThirdOrderNo"
-            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
-        select <include refid="base_column"/> from t_profit_sharing_trade_mixed_order where thrid_order_no = #{thirdOrderNo} limit 1
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select
+        <include refid="base_column"/>
+        from t_profit_sharing_trade_mixed_order where thrid_order_no = #{thirdOrderNo} limit 1
     </select>
     
     <select id="selectListThirdOrderNoByTenantId" resultType="java.lang.String">
@@ -61,8 +66,8 @@
         where tenant_id = #{tenantId}
           and create_time > #{startTime}
           and id > #{startId}
-          order by id asc
-          limit #{offset}, #{size}
+        order by id asc
+            limit #{offset}, #{size}
     </select>
 
 

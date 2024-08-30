@@ -10,14 +10,12 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStat
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
+import com.xiliulou.electricity.task.profitsharing.support.PayParamsQuerySupport;
 
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverTypeEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCreateOrderRequest;
 import com.xiliulou.pay.profitsharing.response.BaseProfitSharingCreateOrderResp;
@@ -25,21 +23,16 @@ import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
 import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingCreateOrderResp;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -54,8 +47,6 @@ import java.util.stream.Collectors;
 @JobHandler(value = "wechatProfitSharingTradeOrderTask")
 public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTradeOrderTask<WechatPayParamsDetails> {
     
-    @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
     
     
     @Override
@@ -123,45 +114,6 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
     
     
     /**
-     * 查询构建支付配置
-     *
-     * @param tenantFranchiseePayParamMap
-     * @param tenantId
-     * @param franchiseeIds
-     * @author caobotao.cbt
-     * @date 2024/8/27 11:06
-     */
-    @Override
-    protected void queryBuildTenantFranchiseePayParamMap(Map<String, WechatPayParamsDetails> tenantFranchiseePayParamMap, Integer tenantId, Set<Long> franchiseeIds) {
-        try {
-            Set<Long> needQueryFranchiseeIds = new HashSet<>();
-            franchiseeIds.forEach(franchiseeId -> {
-                String payParamMapKey = getPayParamMapKey(tenantId, franchiseeId);
-                if (!tenantFranchiseePayParamMap.containsKey(payParamMapKey)) {
-                    needQueryFranchiseeIds.add(franchiseeId);
-                }
-            });
-            
-            if (CollectionUtils.isEmpty(needQueryFranchiseeIds)) {
-                return;
-            }
-            
-            List<WechatPayParamsDetails> wechatPayParamsDetailsList = wechatPayParamsBizService.queryListPreciseCacheByTenantIdAndFranchiseeIds(tenantId, needQueryFranchiseeIds,
-                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG_AND_RECEIVER_CONFIG));
-            
-            Map<Long, WechatPayParamsDetails> franchiseePayParamsMap = Optional.ofNullable(wechatPayParamsDetailsList).orElse(Collections.emptyList()).stream()
-                    .collect(Collectors.toMap(WechatPayParamsDetails::getFranchiseeId, Function.identity(), (k1, k2) -> k1));
-            
-            needQueryFranchiseeIds.forEach(franchiseeId -> tenantFranchiseePayParamMap.put(getPayParamMapKey(tenantId, franchiseeId), franchiseePayParamsMap.get(franchiseeId)));
-            
-        } catch (Exception e) {
-            log.info("WechatProfitSharingTradeOrderTask.queryBuildTenantFranchiseePayParamMap Exception:", e);
-        }
-        
-    }
-    
-    
-    /**
      * 接收方数据
      *
      * @param profitSharingDetailsCheckModels
@@ -181,5 +133,21 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).toString());
             return receiver;
         }).collect(Collectors.toList());
+    }
+    
+    
+    /**
+     * 查询构建支付配置
+     *
+     * @param tenantFranchiseePayParamMap
+     * @param tenantId
+     * @param franchiseeIds
+     * @author caobotao.cbt
+     * @date 2024/8/27 11:06
+     */
+    @Override
+    protected void queryBuildTenantFranchiseePayParamMap(Map<String, WechatPayParamsDetails> tenantFranchiseePayParamMap, Integer tenantId, Set<Long> franchiseeIds) {
+        payParamsQuerySupport.queryBuildTenantFranchiseePayParamMap(tenantFranchiseePayParamMap, tenantId, franchiseeIds);
+        
     }
 }
