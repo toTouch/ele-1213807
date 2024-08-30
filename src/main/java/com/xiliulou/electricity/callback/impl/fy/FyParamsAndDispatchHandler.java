@@ -8,6 +8,7 @@ import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Map;
  **/
 @Slf4j
 @Service
+@RefreshScope
 public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>> {
     
     private final Map<String,Integer> BUSINESS_MAP = Map.of("PAY", FreeBusinessTypeEnum.AUTH_PAY.getCode(),"UNFREEZE",FreeBusinessTypeEnum.UNFREE.getCode());
