@@ -52,9 +52,9 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     @Override
     public boolean process(BusinessHandler handler,FreeDepositOrder order , PxzParams.AuthPay params) {
-        if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getOrderStatus())){
+        if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getRequestBody().getOrderStatus())){
             return pxzBaseFreeDepositOrderService.cancelAuthPay(
-                    FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
+                    FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getRequestBody().getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
                             .channel(order.getChannel()).channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
         }
         return handler.authPay(order);
@@ -62,7 +62,7 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     @Override
     public String orderId(CallbackContext<PxzParams.AuthPay> callbackContext) {
-        return callbackContext.getParams().getOrderId();
+        return callbackContext.getParams().getRequestBody().getOrderId();
     }
     
     @Override
@@ -77,7 +77,7 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     @Override
     public Integer payStatus(PxzParams.AuthPay params) {
-        return params.getOrderStatus();
+        return params.getRequestBody().getOrderStatus();
     }
     
 }

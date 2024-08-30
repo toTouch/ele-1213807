@@ -52,11 +52,11 @@ public class PxzFreeDepositHandler extends AbstractBusiness<PxzParams.FreeDeposi
     @Override
     public boolean process(BusinessHandler handler,FreeDepositOrder order,PxzParams.FreeDepositOrUnfree params) {
         
-        if ( FreeDepositOrder.AUTH_FROZEN.equals(params.getAuthStatus()) && FreeDepositOrder.AUTH_FROZEN.equals(order.getAuthStatus())){
+        if ( FreeDepositOrder.AUTH_FROZEN.equals(params.getRequestBody().getAuthStatus()) && FreeDepositOrder.AUTH_FROZEN.equals(order.getAuthStatus())){
             return true;
         }
         
-        if (FreeDepositOrder.AUTH_TIMEOUT.equals(params.getAuthStatus())){
+        if (FreeDepositOrder.AUTH_TIMEOUT.equals(params.getRequestBody().getAuthStatus())){
             handler.timeout(order);
             return true;
         }
@@ -71,17 +71,17 @@ public class PxzFreeDepositHandler extends AbstractBusiness<PxzParams.FreeDeposi
     
     @Override
     public String orderId(CallbackContext<PxzParams.FreeDepositOrUnfree> callbackContext) {
-        return callbackContext.getParams().getTransId();
+        return callbackContext.getParams().getRequestBody().getTransId();
     }
     
     @Override
     public Integer successCode(PxzParams.FreeDepositOrUnfree params) {
-        return params.getAuthStatus();
+        return params.getRequestBody().getAuthStatus();
     }
     
     @Override
     public String authNo(PxzParams.FreeDepositOrUnfree params) {
-        return params.getAuthNo();
+        return params.getRequestBody().getAuthNo();
     }
     
     @Override

@@ -55,7 +55,7 @@ public class PxzParamsAndDispatchHandler implements PxzSupport<Map<String,Object
             PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
             log.info("pxz callback params : {}", params);
             return CallbackContext.builder()
-                    .business(params.getAuthStatus())
+                    .business(params.getRequestBody().getAuthStatus())
                     .channel(callbackContext.getChannel())
                     .params(params)
                     .tenantId(callbackContext.getTenantId())
