@@ -11,6 +11,7 @@
         <result property="idCard" column="id_card" jdbcType="VARCHAR"/>
         <result property="realName" column="real_name" jdbcType="VARCHAR"/>
         <result property="transAmt" column="trans_amt" jdbcType="NUMERIC"/>
+        <result property="withheldAmt" column="withheld_amt" jdbcType="NUMERIC"/>
         <result property="payTransAmt" column="pay_trans_amt" jdbcType="NUMERIC"/>
         <result property="authStatus" column="auth_status" jdbcType="INTEGER"/>
         <result property="payStatus" column="pay_status" jdbcType="INTEGER"/>
@@ -42,6 +43,7 @@
         tfdo.id_card,
         tfdo.real_name,
         tfdo.trans_amt,
+        tfdo.withheld_amt,
         tfdo.pay_trans_amt,
         tfdo.auth_status,
         tfdo.pay_status,
