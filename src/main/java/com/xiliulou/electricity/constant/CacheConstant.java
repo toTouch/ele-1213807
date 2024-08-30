@@ -708,5 +708,11 @@ public interface CacheConstant {
      * 分账统计分布式锁
      */
     String PROFIT_SHARING_STATISTICS_LOCK_KEY = "saas_ele:profit_sharing_statistics:lock:%d:%d";
+    
+    
+    /**
+     * 柜机仓门配置key
+     */
+    String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
 }
 
