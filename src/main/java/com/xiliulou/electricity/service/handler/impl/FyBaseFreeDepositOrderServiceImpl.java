@@ -77,12 +77,12 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         }
         
         FyQueryFreezeRsp response = result.getFyResponse();
-        Integer authNo = response.getAuthNo();
+        String authNo = response.getAuthNo();
         String status = response.getStatus();
         
         Integer authStatus = fyAuthStatusToPxzStatus(status);
         
-        return FreeDepositOrderStatusBO.builder().authNo(String.valueOf(authNo)).authStatus(authStatus).build();
+        return FreeDepositOrderStatusBO.builder().authNo(authNo).authStatus(authStatus).build();
     }
     
     @Override

@@ -2239,7 +2239,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 查询代扣状态
         FreeDepositAuthToPayStatusQuery query = FreeDepositAuthToPayStatusQuery.builder().uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
-                .orderId(freeDepositOrder.getOrderId()).authPayOrderId(alipayHistory.getAuthPayOrderId()).channel(freeDepositOrder.getChannel()).build();
+                .orderId(freeDepositOrder.getOrderId()).authNo(freeDepositOrder.getAuthNo()).authPayOrderId(alipayHistory.getAuthPayOrderId())
+                .channel(freeDepositOrder.getChannel()).build();
         AuthPayStatusBO authPayStatusBO = freeDepositService.queryAuthToPayStatus(query);
         
         if (Objects.isNull(authPayStatusBO)){
