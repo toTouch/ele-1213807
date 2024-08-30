@@ -296,10 +296,13 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
             return;
         }
         
-        // 分账比例小于原比例
+        
         if (!ProfitSharingConfigProfitSharingTypeEnum.ORDER_SCALE.getCode().equals(exist.getProfitSharingType())) {
             return;
         }
+    
+        // 分账比例小于原比例
+        
         List<ProfitSharingReceiverConfig> configs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(exist.getTenantId(), exist.getId());
         
         // 计算累计总比例
@@ -311,7 +314,7 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
             }
         }
         
-        if (sum.compareTo(exist.getScaleLimit()) > 0) {
+        if (sum.compareTo(request.getScaleLimit()) > 0) {
             throw new BizException("分账接收方分账比例之和 必须小于等于 允许比例上限");
         }
         
@@ -394,19 +397,22 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             franchiseeName = Optional.ofNullable(franchisee).orElse(new Franchisee()).getName();
         }
-        String oldScaleLimit = old.getScaleLimit().multiply(new BigDecimal(100)) + "%";
-        String newScaleLimit = newConfig.getScaleLimit().multiply(new BigDecimal(100)) + "%";
+        String oldScaleLimit = old.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros() + "%";
+        String newScaleLimit = newConfig.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros() + "%";
         
-        String oldAmountLimit = old.getAmountLimit() + "%";
-        String bewAmountLimit = newConfig.getAmountLimit() + "%";
+        String oldAmountLimit = old.getAmountLimit().toString();
+        String newAmountLimit = newConfig.getAmountLimit().toString();
         
-        String desc = "%s修改为%s";
         
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
         record.put("franchiseeName", franchiseeName);
-        record.put("scaleLimitDesc", String.format(desc, oldScaleLimit, newScaleLimit));
-        record.put("amountLimitDesc", String.format(desc, oldAmountLimit, bewAmountLimit));
-        operateRecordUtil.record(null, record);
+        record.put("scaleLimit", newScaleLimit);
+        record.put("amountLimitDesc", newAmountLimit);
+        
+        Map<String, String> oldRecord = Maps.newHashMapWithExpectedSize(1);
+        record.put("scaleLimit", oldScaleLimit);
+        record.put("amountLimitDesc", oldAmountLimit);
+        operateRecordUtil.record(oldRecord, record);
     }
     
     private void operateStatueRecord(Long franchiseeId, Integer configStatus) {

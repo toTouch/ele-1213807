@@ -378,13 +378,16 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         String oldScale = old.getScale().multiply(new BigDecimal(100)) + "%";
         String newScale = newConfig.getScale().multiply(new BigDecimal(100)) + "%";
         
-        String desc = "%s修改为%s";
-        
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
         record.put("account", newConfig.getAccount() + "/" + newConfig.getReceiverName());
-        record.put("scale", String.format(desc, oldScale, newScale));
-        record.put("remark", String.format(desc, old.getRemark(), newConfig.getRemark()));
-        operateRecordUtil.record(null, record);
+        record.put("scale", newScale);
+        record.put("remark", newConfig.getRemark());
+    
+        Map<String, String> oldRecord = Maps.newHashMapWithExpectedSize(1);
+        oldRecord.put("scale", oldScale);
+        oldRecord.put("remark", old.getRemark());
+        
+        operateRecordUtil.record(oldRecord, record);
     }
     
     private void operateDeleteRecord(ProfitSharingReceiverConfig newConfig) {
