@@ -90,6 +90,8 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
             if (Objects.nonNull(profitSharingOrder)) {
                 profitSharingOrderDetailVO.setOrderNo(profitSharingOrder.getOrderNo());
                 profitSharingOrderDetailVO.setAmount(profitSharingOrder.getAmount());
+                profitSharingOrderDetailVO.setType(profitSharingOrder.getType());
+                profitSharingOrderDetailVO.setBusinessOrderNo(profitSharingOrder.getBusinessOrderNo());
             }
             
             // 分账接收方
