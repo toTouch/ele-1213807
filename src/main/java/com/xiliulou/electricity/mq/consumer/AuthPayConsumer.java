@@ -26,7 +26,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.AUTH_APY_TAG_NAME, consumerGroup = MqConsumerConstant.FREE_DEPOSIT_CONSUMER_GROUP)
+@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.AUTH_APY_TAG_NAME, consumerGroup = MqConsumerConstant.AUTH_PAY_CONSUMER_GROUP)
 public class AuthPayConsumer implements RocketMQListener<String> {
     
     @Resource
