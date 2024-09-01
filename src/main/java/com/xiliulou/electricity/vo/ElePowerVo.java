@@ -23,4 +23,9 @@ public class ElePowerVo {
      * 每小时电费
      */
     private Double electricCharge;
+    
+    /**
+     * 电表实时读数
+     */
+    private Double meterReading;
 }
