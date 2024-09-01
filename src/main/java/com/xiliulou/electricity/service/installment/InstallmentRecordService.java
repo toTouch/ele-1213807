@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
+import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
@@ -56,7 +57,7 @@ public interface InstallmentRecordService {
      * @param query 购买请求参数
      * @return 携带二维码连接的返回结果
      */
-    R<FySignAgreementRsp> pay(InstallmentPayQuery query, HttpServletRequest request);
+    R<Object> pay(InstallmentPayQuery query, HttpServletRequest request);
     
     
     /**
@@ -65,5 +66,13 @@ public interface InstallmentRecordService {
      * @param userInfo 用户信息
      * @return 生成分期签约记录的结果
      */
-    Triple<Boolean, String, Object> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo, UserInfo userInfo);
+    Triple<Boolean, String, InstallmentRecord> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo, UserInfo userInfo);
+
+    /**
+     * 请求峰云签约接口返回二维码链接
+     */
+    R<Object> sign(InstallmentSignQuery query, HttpServletRequest request);
+
+    // 根据状态查询用户的最近一条签约记录
+    InstallmentRecord selectRecordWithStatusForUser(Long uid, Integer status);
 }

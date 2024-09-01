@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.installment;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
+import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
@@ -26,9 +27,18 @@ public class JsonUserInstallmentRecordController {
     @Autowired
     private InstallmentRecordService installmentRecordService;
 
+    /**
+     * 购买分期套餐
+     */
     @ProcessParameter
     @PostMapping("/pay")
-    public R<FySignAgreementRsp> pay(@RequestBody InstallmentPayQuery query, HttpServletRequest request) {
+    public R<Object> pay(@RequestBody InstallmentPayQuery query, HttpServletRequest request) {
         return installmentRecordService.pay(query, request);
+    }
+
+    @ProcessParameter
+    @PostMapping("/sign")
+    public R<Object> sign(@RequestBody InstallmentSignQuery query, HttpServletRequest request) {
+        return installmentRecordService.sign(query, request);
     }
 }

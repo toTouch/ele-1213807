@@ -28,4 +28,22 @@ public interface InstallmentConstants {
      * @see ProcessParameter
      */
     int PROCESS_PARAMETER_LOGIN_AND_DATA_AND_PAGE = 3;
+
+    // 分期记录状态-初始化
+    Integer INSTALLMENT_RECORD_STATUS_INIT = 0;
+
+    // 分期记录状态-待签约
+    Integer INSTALLMENT_RECORD_STATUS_UN_SIGN = 1;
+
+    // 分期记录状态-签约成功
+    Integer INSTALLMENT_RECORD_STATUS_SIGN = 2;
+
+    // 分期记录状态-解约中
+    Integer INSTALLMENT_RECORD_STATUS_TERMINATE = 3;
+
+    // 分期记录状态-已完成
+    Integer INSTALLMENT_RECORD_STATUS_COMPLETED = 4;
+
+    // 蜂云成功响应码
+    String FY_SUCCESS_CODE = "WZF00000";
 }

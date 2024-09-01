@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.installment;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,4 +22,6 @@ public interface InstallmentRecordMapper {
     List<InstallmentRecord> selectPage(InstallmentRecordQuery installmentRecordQuery);
     
     Integer count(InstallmentRecordQuery installmentRecordQuery);
+
+    InstallmentRecord selectRecordWithStatusForUser(@Param("uid") Long uid, @Param("status") Integer status);
 }

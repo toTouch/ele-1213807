@@ -88,7 +88,15 @@
         where tenant_id = #{tenantId}
             <include refid="ifLabelsForWhere"/>
     </select>
-    
+    <select id="selectRecordWithStatusForUser" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where uid = #{uid}
+            and status = #{status}
+        order by id desc
+        limit 1
+    </select>
+
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>
