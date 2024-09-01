@@ -283,7 +283,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + electricityCabinetOrder.getOrderId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.EXCHANGE_ORDER_MANAGE_SUCCESS)
                 .build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(sendResult.getLeft())) {
             log.error("EXCHANGE ERROR! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
         }
@@ -686,7 +686,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE).build();
         
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("ELE LOCK CELL ERROR! send command error! orderId:{}", exchangeOrderRsp.getOrderId());
         }
