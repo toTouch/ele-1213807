@@ -2143,7 +2143,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         Integer payingAlipayCount = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
-        if (Objects.nonNull(payingAlipayCount)) {
+        if (!Objects.equals(payingAlipayCount, NumberConstant.ZERO)) {
             log.warn("FREE DEPOSIT WARN! freeDepositOrder already AuthToPay,orderId={}", orderId);
             return Triple.of(false, "100412", "当前有一笔代扣正在执行，请等待其完成后再尝试。");
         }
