@@ -1140,12 +1140,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         // 获取订单代扣信息计算返还金额
-        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
-        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(userBatteryDeposit.getOrderId());
-        if (Objects.nonNull(freeDepositAlipayHistory)) {
-            refundAmount = eleDepositOrder.getPayAmount().subtract(freeDepositAlipayHistory.getAlipayAmount());
-            
-        }
+        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+        
         
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
         
