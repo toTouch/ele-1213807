@@ -2142,7 +2142,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100425", "代扣金额不能为0");
         }
         
-        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByOrderId(freeDepositOrder.getOrderId());
+        if (Objects.nonNull(alipayHistory) && Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
             log.warn("FREE DEPOSIT WARN! freeDepositOrder already AuthToPay,orderId={}", orderId);
             return Triple.of(false, "100412", "当前有一笔代扣正在执行，请等待其完成后再尝试。");
         }
@@ -2190,7 +2191,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEALING);
         // 累计代扣金额
         freeDepositOrderUpdate.setWithheldAmt(freeDepositOrder.getWithheldAmt() + payTransAmt.doubleValue());
-        freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getTransAmt() - payTransAmt.doubleValue());
+        // 剩余代扣金额
+        freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getPayTransAmt() - payTransAmt.doubleValue());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
         
