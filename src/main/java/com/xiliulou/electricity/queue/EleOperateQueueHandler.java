@@ -338,7 +338,7 @@ public class EleOperateQueueHandler {
         //上报的订单状态值
         String orderStatus = eleOpenDTO.getOrderStatus();
         if (Objects.isNull(orderStatus)) {
-            log.error("ELE LOCK CELL orderStatus is null! orderId:{}", eleOpenDTO.getOrderId());
+            log.warn("ELE LOCK CELL orderStatus is null! orderId:{}", eleOpenDTO.getOrderId());
             return;
         }
         
@@ -466,19 +466,19 @@ public class EleOperateQueueHandler {
             try {//查找用户
                 UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
                 if (Objects.isNull(userInfo)) {
-                    log.error("userInfo is null!orderId={}", electricityCabinetOrder.getOrderId());
+                    log.warn("userInfo is null!orderId={}", electricityCabinetOrder.getOrderId());
                     return;
                 }
                 
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(userBattery)) {
-                    log.error("ELE ERROR!not found userBattery,uid={},sessionId={}", userInfo.getUid(), finalOpenDTO.getSessionId());
+                    log.warn("ELE ERROR!not found userBattery,uid={},sessionId={}", userInfo.getUid(), finalOpenDTO.getSessionId());
                     return;
                 }
                 
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
-                    log.error("ELE ERROR!not found franchisee,uid={},franchiseeId={},sessionId={}", userInfo.getUid(), userInfo.getFranchiseeId(), finalOpenDTO.getSessionId());
+                    log.warn("ELE ERROR!not found franchisee,uid={},franchiseeId={},sessionId={}", userInfo.getUid(), userInfo.getFranchiseeId(), finalOpenDTO.getSessionId());
                     return;
                 }
                 
@@ -515,7 +515,7 @@ public class EleOperateQueueHandler {
                 
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
                 if (Objects.isNull(electricityCabinet)) {
-                    log.error("handelInitExchangeOrder is error!not found electricityCabinet! electricityCabinetId:{}", electricityCabinetOrder.getElectricityCabinetId());
+                    log.warn("handelInitExchangeOrder is error!not found electricityCabinet! electricityCabinetId:{}", electricityCabinetOrder.getElectricityCabinetId());
                     return;
                 }
                 
@@ -530,31 +530,31 @@ public class EleOperateQueueHandler {
                 }
                 
                 if (Objects.isNull(tripleResult)) {
-                    log.error("check Old Battery not find fully battery1!orderId:{}", electricityCabinetOrder.getOrderId());
+                    log.warn("check Old Battery not find fully battery1!orderId:{}", electricityCabinetOrder.getOrderId());
                     return;
                 }
                 
                 if (!tripleResult.getLeft()) {
-                    log.error("check Old Battery not find fully battery2!orderId:{}", electricityCabinetOrder.getOrderId());
+                    log.warn("check Old Battery not find fully battery2!orderId:{}", electricityCabinetOrder.getOrderId());
                     return;
                 }
                 
                 cellNo = tripleResult.getMiddle();
                 
                 if (Objects.isNull(cellNo)) {
-                    log.error("check Old Battery not find fully battery3!orderId:{}", electricityCabinetOrder.getOrderId());
+                    log.warn("check Old Battery not find fully battery3!orderId:{}", electricityCabinetOrder.getOrderId());
                     return;
                 }
                 
                 //根据换电柜id和仓门查出电池
                 ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), cellNo);
                 if (Objects.isNull(electricityCabinetBox)) {
-                    log.error("check Old Battery not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}", electricityCabinetOrder.getElectricityCabinetId(), cellNo);
+                    log.warn("check Old Battery not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}", electricityCabinetOrder.getElectricityCabinetId(), cellNo);
                     return;
                 }
                 ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(electricityCabinetBox.getSn());
                 if (Objects.isNull(newElectricityBattery)) {
-                    log.error("check Old Battery not find electricityBattery! sn:{}", electricityCabinetBox.getSn());
+                    log.warn("check Old Battery not find electricityBattery! sn:{}", electricityCabinetBox.getSn());
                     return;
                 }
                 
