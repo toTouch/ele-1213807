@@ -1136,7 +1136,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(triple.getRight()) && freeOrderCacheResult) {
             String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
             log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, result);
-            return Triple.of(true, null, result);
+            FreeDepositOrderDTO depositOrderDTO = JsonUtil.fromJson(result, FreeDepositOrderDTO.class);
+            return Triple.of(true, null, depositOrderDTO.getData());
         }
         
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
@@ -1184,7 +1185,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         log.info("generate free deposit data from pxz for battery package, data = {}", JsonUtil.toJson(depositOrderDTO));
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid,
-                UriUtils.encode(depositOrderDTO.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
+                JsonUtil.toJson(depositOrderDTO), 300 * 1000L, false);
         
         // 发送延迟队列延迟更新免押状态为最终态
         delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
