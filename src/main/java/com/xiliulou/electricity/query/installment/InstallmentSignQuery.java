@@ -4,6 +4,9 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * @author 15927
+ */
 @Data
 public class InstallmentSignQuery {
 

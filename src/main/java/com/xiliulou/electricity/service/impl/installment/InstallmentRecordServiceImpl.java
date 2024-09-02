@@ -24,6 +24,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
+import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -49,13 +50,14 @@ import com.xiliulou.pay.deposit.fengyun.pojo.request.Vars;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
+import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +69,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
+
 /**
  * @Description ...
  * @Author: SongJP
@@ -74,57 +78,41 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
-    @Autowired
     private InstallmentRecordMapper installmentRecordMapper;
     
-    @Autowired
-    FranchiseeService franchiseeService;
+    private FranchiseeService franchiseeService;
     
-    @Autowired
     private BatteryMemberCardService batteryMemberCardService;
     
-    @Autowired
     private CarRentalPackageService carRentalPackageService;
     
-    @Autowired
     private RedisService redisService;
     
-    @Autowired
     private UserOauthBindService userOauthBindService;
     
-    @Autowired
     private UserInfoService userInfoService;
     
-    @Autowired
     private EnterpriseChannelUserService enterpriseChannelUserService;
     
-    @Autowired
     private ElectricityCabinetService electricityCabinetService;
     
-    @Autowired
     private ElectricityPayParamsService electricityPayParamsService;
     
-    @Autowired
     private EleDepositOrderService eleDepositOrderService;
     
-    @Autowired
     private InsuranceOrderService insuranceOrderService;
     
-    @Autowired
     private WechatPayParamsBizService wechatPayParamsBizService;
     
-    @Autowired
     private UnionTradeOrderService unionTradeOrderService;
     
-    @Autowired
     private ApplicationContext applicationContext;
-
-    @Autowired
+    
     private FyAgreementService fyAgreementService;
-
-    @Autowired
+    
     private FengYunConfig fengYunConfig;
     
     @Override
@@ -271,20 +259,20 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 }
                 // 生成分期签约记录
                 installmentRecordTriple = generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
-
+                
                 // 保存相关订单并调起支付获取支付结果
                 saveOrderAndPayResult = applicationContext.getBean(InstallmentRecordServiceImpl.class)
                         .saveOrderAndPay(eleDepositOrderTriple, insuranceOrderTriple, installmentRecordTriple, batteryMemberCard, userOauthBind, userInfo, request);
                 
                 
             }// 购买租车、车电一体套餐在此处扩展else代码块
-
+            
             // 根据支付调用结果返回
             if (saveOrderAndPayResult.getLeft()) {
                 return R.ok(saveOrderAndPayResult.getRight());
             }
             return R.fail(saveOrderAndPayResult.getRight());
-
+            
         } catch (Exception e) {
             log.error("INSTALLMENT PAY ERROR! uid={}", uid, e);
             return R.fail("301001", "购买失败，请联系管理员");
@@ -292,11 +280,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     }
     
     @Override
-    public Triple<Boolean, String, InstallmentRecord> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo, UserInfo userInfo) {
+    public Triple<Boolean, String, InstallmentRecord> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard,
+            CarRentalPackagePo carRentalPackagePo, UserInfo userInfo) {
         // 生成分期签约记录订单号
         String externalAgreementNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN, userInfo.getUid());
         InstallmentRecord installmentRecord = InstallmentRecord.builder().uid(userInfo.getUid()).externalAgreementNo(externalAgreementNo).userName(null).mobile(null)
-                .packageType(query.getPackageType()).status(InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT).paidInstallment(0).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .packageType(query.getPackageType()).status(InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT).paidInstallment(0).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
         
         if (InstallmentConstants.PACKAGE_TYPE_BATTERY.equals(query.getPackageType())) {
             if (Objects.isNull(batteryMemberCard)) {
@@ -310,7 +300,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
         return Triple.of(true, null, installmentRecord);
     }
-
+    
     @Override
     public R<Object> sign(InstallmentSignQuery query, HttpServletRequest request) {
         try {
@@ -318,11 +308,11 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             if (Objects.isNull(installmentRecord)) {
                 return R.fail("301002", "无初始化分期订单");
             }
-
+            
             Vars vars = new Vars();
             vars.setUserName(query.getUserName());
             vars.setMobile(query.getMobile());
-
+            
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
             agreementRequest.setChannelFrom("miniapp");
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
@@ -331,13 +321,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             agreementRequest.setServiceDescription("分期签约");
             agreementRequest.setNotifyUrl("/test");
             agreementRequest.setVars(JsonUtil.toJson(vars));
-
+            
             FyCommonQuery<FySignAgreementRequest> commonQuery = new FyCommonQuery<>();
             commonQuery.setChannelCode("test");
             commonQuery.setFlowNo("XLLTEST" + System.currentTimeMillis());
             commonQuery.setFyRequest(agreementRequest);
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);
-
+            
             if (InstallmentConstants.FY_SUCCESS_CODE.equals(fySignResult.getCode())) {
                 return R.ok(fySignResult.getFyResponse());
             }
@@ -347,16 +337,33 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
         return R.fail("购买失败，请联系管理员");
     }
-
+    
     @Override
     public InstallmentRecord selectRecordWithStatusForUser(Long uid, Integer status) {
         return installmentRecordMapper.selectRecordWithStatusForUser(uid, status);
     }
-
+    
+    @Override
+    public String signNotify(String bizContent, Long uid) {
+        try {
+            String decrypt = FyAesUtil.decrypt(bizContent, fengYunConfig.getAesKey());
+            InstallmentSignNotifyQuery signNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentSignNotifyQuery.class);
+            
+            if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
+            
+            }
+            
+            return "";
+        } catch (Exception e) {
+            log.error("INSTALLMENT NOTIFY ERROR! uid={}, bizContent={}", uid, bizContent, e);
+            return null;
+        }
+    }
+    
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> saveOrderAndPay(Triple<Boolean, String, Object> eleDepositOrderTriple, Triple<Boolean, String, Object> insuranceOrderTriple,
-               Triple<Boolean, String, InstallmentRecord> installmentRecordTriple, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo,
-               HttpServletRequest request) throws WechatPayException {
+            Triple<Boolean, String, InstallmentRecord> installmentRecordTriple, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo,
+            HttpServletRequest request) throws WechatPayException {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
@@ -384,7 +391,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             payAmountList.add(insuranceOrder.getPayAmount());
             totalAmount = totalAmount.add(insuranceOrder.getPayAmount());
         }
-
+        
         // 保存签约记录
         if (Objects.nonNull(installmentRecordTriple) && Boolean.TRUE.equals(installmentRecordTriple.getLeft()) && Objects.nonNull(installmentRecordTriple.getRight())) {
             installmentRecordMapper.insert(installmentRecordTriple.getRight());

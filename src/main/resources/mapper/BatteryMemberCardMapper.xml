@@ -335,7 +335,8 @@
         bmc.user_info_group_ids,
         bmc.group_type,
         bmc.installment_service_fee,
-        bmc.down_payment
+        bmc.down_payment,
+        bmc.business_type,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc

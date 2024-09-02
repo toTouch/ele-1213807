@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
-import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,24 +11,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.OUTER_PARAM_BIZ_CONTENT;
+
 /**
  * @Description ...
  * @Author: SongJP
  * @Date: 2024/9/2 15:12
  */
 @RestController
+@AllArgsConstructor
 @Slf4j
 public class JsonOuterInstallmentController {
     
+    private InstallmentRecordService installmentRecordService;
     
     @PostMapping("/outer/installment/sign/notify/{uid}")
     public String signNotify(@PathVariable Long uid, @RequestBody Map<String, Object> params) {
-        if (!params.containsKey("bizContent") || StringUtils.isEmpty((String)params.get("bizContent"))) {
+        if (!params.containsKey(OUTER_PARAM_BIZ_CONTENT) || StringUtils.isEmpty((String) params.get(OUTER_PARAM_BIZ_CONTENT))) {
             log.error("INSTALLMENT SIGN NOTIFY ERROR! no bizContent, uid={}", uid);
         }
-        
-        // TODO
-        return "";
+        return installmentRecordService.signNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
     }
     
 }

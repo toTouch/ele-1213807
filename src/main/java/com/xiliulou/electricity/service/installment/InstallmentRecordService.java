@@ -75,4 +75,11 @@ public interface InstallmentRecordService {
 
     // 根据状态查询用户的最近一条签约记录
     InstallmentRecord selectRecordWithStatusForUser(Long uid, Integer status);
+    
+    /**
+     * 签约回调方法
+     * @param bizContent 业务参数
+     * @return 返回成功响应
+     */
+    String signNotify(String bizContent, Long uid);
 }
