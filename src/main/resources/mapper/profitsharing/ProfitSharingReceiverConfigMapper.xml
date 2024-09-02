@@ -31,10 +31,7 @@
         where
         del_flag = 0
         and tenant_id=#{tenantId}
-        and
-        profit_sharing_config_id
-        =
-        #{profitSharingConfigId}
+        and profit_sharing_config_id=#{profitSharingConfigId}
     </sql>
     
     
