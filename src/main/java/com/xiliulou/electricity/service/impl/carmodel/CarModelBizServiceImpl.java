@@ -144,7 +144,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         // 1. 查询车辆型号是否存在
         ElectricityCarModel carModel = carModelService.queryByIdFromCache(carModelId);
         if (ObjectUtils.isEmpty(carModel) || !tenantId.equals(carModel.getTenantId())) {
-            log.error("CarModelBizService.checkBuyByCarModelId, not found t_electricity_car_model or tenantId mismatch. ");
+            log.warn("CarModelBizService.checkBuyByCarModelId, not found t_electricity_car_model or tenantId mismatch. ");
             throw new BizException("300000", "数据有误");
         }
 
@@ -157,7 +157,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
                 throw new BizException("300043", "无可租车辆");
             }
             if (ObjectUtils.isNotEmpty(electricityCar) && !electricityCar.getModelId().equals(carModelId)) {
-                log.error("CarModelBizService.checkBuyByCarModelId, User vehicle model mismatch. carModelId is {}, user car_model_id is {}", carModelId, electricityCar.getModelId());
+                log.warn("CarModelBizService.checkBuyByCarModelId, User vehicle model mismatch. carModelId is {}, user car_model_id is {}", carModelId, electricityCar.getModelId());
                 throw new BizException("300043", "无可租车辆");
             }
         }
@@ -195,11 +195,11 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             }
             CarRentalPackagePo rentalPackage = carRentalPackageService.selectById(rentalPackageId);
             if (ObjectUtils.isEmpty(rentalPackage)) {
-                log.error("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
+                log.warn("CarModelBizService.checkBuyByCarModelId, not found t_car_rental_package. rentalPackageId is {}", rentalPackageId);
                 throw new BizException("300000", "数据有误");
             }
             if (!carModelId.equals(rentalPackage.getCarModelId())) {
-                log.error("CarModelBizService.checkBuyByCarModelId, Vehicle model mismatch. rentalPackage carModelId is {}, request carModelId is {}", rentalPackage.getCarModelId(), carModelId);
+                log.warn("CarModelBizService.checkBuyByCarModelId, Vehicle model mismatch. rentalPackage carModelId is {}, request carModelId is {}", rentalPackage.getCarModelId(), carModelId);
                 throw new BizException("300056", "车辆型号不匹配");
             }
             confineExit = rentalPackage.getConfine();
