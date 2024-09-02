@@ -1424,6 +1424,48 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         return Pair.of(true, null);
     }
     
+    @Override
+    public Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource) {
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        
+        UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(unionTradeOrder)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found userInfo, TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到用户信息");
+        }
+        
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (Objects.isNull(electricityTradeOrderList)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        
+        String jsonOrderType = unionTradeOrder.getJsonOrderType();
+        List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
+        
+        String jsonOrderId = unionTradeOrder.getJsonOrderId();
+        List<String> orderIdList = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+        
+        List<String> jsonFeeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonSingleFee(), String.class);
+        
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+        return null;
+    }
+    
     /**
      * @param orderNo           逾期订单号
      * @param freeAmount        缴纳金额

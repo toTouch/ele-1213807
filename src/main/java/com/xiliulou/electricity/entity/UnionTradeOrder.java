@@ -118,4 +118,8 @@ public class UnionTradeOrder {
      */
     public static final String ATTACH_SERVUCE_FEE = "serviceFee";
     
+    /**
+     * 购买分期套餐
+     */
+    public static final String ATTACH_INSTALLMENT = "installment";
 }

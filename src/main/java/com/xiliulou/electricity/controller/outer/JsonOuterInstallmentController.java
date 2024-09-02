@@ -25,6 +25,9 @@ public class JsonOuterInstallmentController {
     
     private InstallmentRecordService installmentRecordService;
     
+    /**
+     * 签约及解约回调
+     */
     @PostMapping("/outer/installment/sign/notify/{uid}")
     public String signNotify(@PathVariable Long uid, @RequestBody Map<String, Object> params) {
         if (!params.containsKey(OUTER_PARAM_BIZ_CONTENT) || StringUtils.isEmpty((String) params.get(OUTER_PARAM_BIZ_CONTENT))) {

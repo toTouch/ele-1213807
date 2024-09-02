@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
 
 /**
@@ -304,7 +305,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     @Override
     public R<Object> sign(InstallmentSignQuery query, HttpServletRequest request) {
         try {
-            InstallmentRecord installmentRecord = selectRecordWithStatusForUser(query.getUid(), InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
+            InstallmentRecord installmentRecord = queryRecordWithStatusForUser(query.getUid(), InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
             if (Objects.isNull(installmentRecord)) {
                 return R.fail("301002", "无初始化分期订单");
             }
@@ -339,7 +340,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     }
     
     @Override
-    public InstallmentRecord selectRecordWithStatusForUser(Long uid, Integer status) {
+    public InstallmentRecord queryRecordWithStatusForUser(Long uid, Integer status) {
         return installmentRecordMapper.selectRecordWithStatusForUser(uid, status);
     }
     
@@ -350,7 +351,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             InstallmentSignNotifyQuery signNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentSignNotifyQuery.class);
             
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
-            
+                InstallmentRecord installmentRecord = applicationContext.getBean(InstallmentRecordService.class)
+                        .queryByExternalAgreementNo(signNotifyQuery.getExternalAgreementNo());
+                
+                if (Objects.isNull(installmentRecord) || !INSTALLMENT_RECORD_STATUS_UN_SIGN.equals(installmentRecord.getStatus())) {
+                    log.warn("INSTALLMENT NOTIFY ERROR! sign notify error, no right installmentRecord, uid={}, externalAgreementNo={}", uid,
+                            signNotifyQuery.getExternalAgreementNo());
+                }
             }
             
             return "";
@@ -358,6 +365,11 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             log.error("INSTALLMENT NOTIFY ERROR! uid={}, bizContent={}", uid, bizContent, e);
             return null;
         }
+    }
+    
+    @Override
+    public InstallmentRecord queryByExternalAgreementNo(String externalAgreementNo) {
+        return installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
     }
     
     @Transactional(rollbackFor = Exception.class)
@@ -421,8 +433,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         
         // 调起支付
         UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
-                .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalAmount).tenantId(userInfo.getTenantId()).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                .description("租电押金").uid(userInfo.getUid()).build();
+                .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalAmount).tenantId(userInfo.getTenantId()).attach(UnionTradeOrder.ATTACH_INSTALLMENT)
+                .description("购买分期套餐").uid(userInfo.getUid()).build();
         WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                 request);
         return Triple.of(true, null, resultDTO);

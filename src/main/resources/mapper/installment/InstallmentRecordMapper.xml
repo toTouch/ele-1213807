@@ -96,7 +96,13 @@
         order by id desc
         limit 1
     </select>
-
+    
+    <select id="selectByExternalAgreementNo" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where external_agreement_no = #{externalAgreementNo}
+    </select>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>

@@ -9,13 +9,10 @@ import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
-import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
-import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @Description ...
@@ -72,14 +69,27 @@ public interface InstallmentRecordService {
      * 请求峰云签约接口返回二维码链接
      */
     R<Object> sign(InstallmentSignQuery query, HttpServletRequest request);
-
-    // 根据状态查询用户的最近一条签约记录
-    InstallmentRecord selectRecordWithStatusForUser(Long uid, Integer status);
+    
+    /**
+     * 根据状态查询用户的最近一条签约记录
+     * @param uid 用户
+     * @param status 签约记录状态
+     * @return 签约记录
+     */
+    InstallmentRecord queryRecordWithStatusForUser(Long uid, Integer status);
     
     /**
      * 签约回调方法
      * @param bizContent 业务参数
+     * @param uid 业务请求用户
      * @return 返回成功响应
      */
     String signNotify(String bizContent, Long uid);
+    
+    /**
+     * 根据请求签约号查询签约记录
+     * @param externalAgreementNo 请求签约号
+     * @return 返回签约记录
+     */
+    InstallmentRecord queryByExternalAgreementNo(String externalAgreementNo);
 }

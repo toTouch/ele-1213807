@@ -192,4 +192,14 @@ public class BatteryMemberCardVO {
      * 分期套餐首期费用
      */
     private BigDecimal downPayment;
+    
+    /**
+     * 分期数
+     */
+    private Integer installmentNo;
+    
+    /**
+     * 分期套餐剩余每期费用
+     */
+    private BigDecimal remainingCost;
 }

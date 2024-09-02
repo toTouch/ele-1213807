@@ -70,6 +70,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,6 +80,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.entity.BatteryMemberCard.BUSINESS_TYPE_INSTALLMENT_BATTERY;
 
 /**
  * (BatteryMemberCard)表服务实现类
@@ -365,6 +368,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
             
+            // 设置分期套餐期数、剩余每期费用
+            if (Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
+                Integer installmentNo = batteryMemberCardVO.getValidDays() / 30;
+                batteryMemberCardVO.setInstallmentNo(installmentNo);
+                
+                BigDecimal rentPrice = batteryMemberCardVO.getRentPrice();
+                BigDecimal downPayment = batteryMemberCardVO.getDownPayment();
+                batteryMemberCardVO.setRemainingCost(rentPrice.subtract(downPayment).divide(new BigDecimal((installmentNo).toString()), 2, RoundingMode.DOWN));
+            }
+            
             result.add(batteryMemberCardVO);
         }
         
@@ -621,6 +634,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             // 设置优惠券
             if (Objects.nonNull(item.getCouponId()) || StringUtils.isNotBlank(item.getCouponIds())) {
                 dealCouponSearchVo(item.getCouponId(), item.getCouponIds(), batteryMemberCardVO);
+            }
+            
+            // 设置分期套餐期数、剩余每期费用
+            if (Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
+                Integer installmentNo = batteryMemberCardVO.getValidDays() / 30;
+                batteryMemberCardVO.setInstallmentNo(installmentNo);
+                
+                BigDecimal rentPrice = batteryMemberCardVO.getRentPrice();
+                BigDecimal downPayment = batteryMemberCardVO.getDownPayment();
+                batteryMemberCardVO.setRemainingCost(rentPrice.subtract(downPayment).divide(new BigDecimal((installmentNo).toString()), 2, RoundingMode.DOWN));
             }
             
             result.add(batteryMemberCardVO);
