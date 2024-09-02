@@ -41,9 +41,9 @@ public class JsonAdminProfitSharingOrderController {
      */
     @GetMapping("/pageCount")
     public R pageCount(@RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime
-            , @RequestParam(value = "outAccountType", required = false) Integer outAccountType, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            , @RequestParam(value = "outAccountType", required = false) Integer outAccountType, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "profitSharingReceiveAccount", required = false) String profitSharingReceiveAccount, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "businessType") Integer businessType, @RequestParam(value = "thirdTradeOrderNo") String thirdTradeOrderNo) {
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "thirdTradeOrderNo", required = false) String thirdTradeOrderNo) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -83,9 +83,9 @@ public class JsonAdminProfitSharingOrderController {
      */
     @GetMapping("/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime
-            , @RequestParam(value = "outAccountType", required = false) Integer outAccountType, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            , @RequestParam(value = "outAccountType", required = false) Integer outAccountType, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "profitSharingReceiveAccount", required = false) String profitSharingReceiveAccount, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "businessType") Integer businessType, @RequestParam(value = "thirdTradeOrderNo") String thirdTradeOrderNo) {
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "thirdTradeOrderNo", required = false) String thirdTradeOrderNo) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
