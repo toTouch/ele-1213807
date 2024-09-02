@@ -269,7 +269,7 @@ public abstract class AbstractCommonFreeDeposit {
         FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(payQuery.getAuthPayOrderId());
         request.setThirdOrderNo(payQuery.getOrderId());
-        request.setAmount(payQuery.getPayTransAmt().intValue());
+        request.setAmount(payQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).intValue());
         request.setSubject(payQuery.getSubject());
         //  免押回调地址配置
         request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 3, payQuery.getTenantId()));
