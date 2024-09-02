@@ -538,7 +538,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT)
                     .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
         
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
@@ -983,7 +983,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT)
                     .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
     
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
