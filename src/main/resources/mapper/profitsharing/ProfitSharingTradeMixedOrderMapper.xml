@@ -27,8 +27,8 @@
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time, uid)
-        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount},#{channel}, #{createTime}, #{updateTime}, #{uid})
+        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time, uid, whether_mixed_pay)
+        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount},#{channel}, #{createTime}, #{updateTime}, #{uid}, #{whetherMixedPay})
     </insert>
     
     <update id="updateStatusById">
