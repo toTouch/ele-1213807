@@ -132,7 +132,7 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
     public Triple<Boolean, String, Object> updateStatus(Long id, Integer status) {
         ChannelActivity channelActivity = queryByIdFromDB(id);
         if (Objects.isNull(channelActivity)) {
-            log.error("CHANNEL ACTIVITY ERROR! ont find channelActivity error! id={}", id);
+            log.warn("CHANNEL ACTIVITY WARN! ont find channelActivity error! id={}", id);
             return Triple.of(false, "100450", "渠道活动不存在");
         }
         
@@ -149,7 +149,7 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
         
         ChannelActivity usableActivity = findUsableActivity(tenantId);
         if (Objects.equals(ChannelActivity.STATUS_START_USING, status) && Objects.nonNull(usableActivity)) {
-            log.error("CHANNEL ACTIVITY ERROR! activity exists error! id={}", id);
+            log.warn("CHANNEL ACTIVITY WARN! activity exists error! id={}", id);
             return Triple.of(false, "100451", "已有启用中的渠道活动，请勿重复添加");
         }
         
