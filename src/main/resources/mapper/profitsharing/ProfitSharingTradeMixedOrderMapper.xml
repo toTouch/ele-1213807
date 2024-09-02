@@ -37,6 +37,12 @@
         set state = #{state},update_time=#{updateTime}
         where id =#{id}
     </update>
+    <update id="updateThirdOrderNoById">
+        update
+        <include refid="table_name"/>
+        set third_order_no = #{thirdOrderNo}, update_time=#{updateTime}
+        where id =#{id}
+    </update>
     
     <select id="selectListByParam"
         resultMap="ProfitSharingTradeMixedOrderMap">

@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
@@ -14,11 +17,13 @@ import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderUpdate;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,7 +50,12 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
     @Resource
     private InsuranceOrderService insuranceOrderService;
     
+    @Resource
+    private ProfitSharingTradeMixedOrderService profitSharingTradeMixedOrderService;
+    
     public void onMessage(String message) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+    
         log.info("PROFIT SHARING ORDE CONSUMER INFO!received msg={}", message);
         ProfitSharingTradeOrderUpdate profitSharingTradeOrderUpdate = null;
         
@@ -67,6 +77,8 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
             
         } catch (Exception e) {
             log.error("PROFIT SHARING ORDE CONSUMER ERROR!msg={}", message, e);
+        } finally {
+            MDC.clear();
         }
     }
     
@@ -74,6 +86,12 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
         ProfitSharingTradeOrder profitSharingTradeOrder = profitSharingTradeOrderService.queryByOrderNo(profitSharingTradeOrderUpdate.getOrderNo());
         if (Objects.isNull(profitSharingTradeOrder)) {
             log.warn("PROFIT SHARING ORDE CONSUMER WARN!profit order is null, orderNo = {}", profitSharingTradeOrderUpdate.getOrderNo());
+            return;
+        }
+    
+        ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = profitSharingTradeMixedOrderService.queryByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo());
+        if (Objects.isNull(profitSharingTradeMixedOrder)) {
+            log.warn("PROFIT SHARING ORDE CONSUMER WARN!profit sharing trade mixed order is null, orderNo = {}", profitSharingTradeOrderUpdate.getOrderNo());
             return;
         }
     
@@ -91,6 +109,14 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
         
         // 修改分账交易订单
         profitSharingTradeOrderService.updateById(profitSharingUpdate);
+    
+        // 修改分账交易订单
+        ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate = new ProfitSharingTradeMixedOrder();
+        profitSharingTradeMixedOrderUpdate.setId(profitSharingTradeMixedOrder.getId());
+        profitSharingTradeMixedOrderUpdate.setThirdOrderNo(profitSharingTradeOrderUpdate.getThirdOrderNo());
+        // 待发起分账
+        profitSharingTradeMixedOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        profitSharingTradeMixedOrderService.updateThirdOrderNoById(profitSharingTradeMixedOrderUpdate);
     }
     
     private boolean checkOrder(ProfitSharingTradeOrderUpdate profitSharingTradeOrderUpdate) {

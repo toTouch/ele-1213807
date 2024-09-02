@@ -1,48 +1,30 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderTypeEnum;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderRefund;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
-import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
-import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
-import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
-import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingUnfreezeRequest;
-import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
-import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingUnfreezeResp;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -68,6 +50,8 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
     
     
     public void onMessage(String message) {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+    
         log.info("PROFIT SHARING ORDE REFUND CONSUMER INFO!received msg={}", message);
         ProfitSharingTradeOrderRefund profitSharingTradeOrderRefund = null;
         
@@ -89,6 +73,8 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
             
         } catch (Exception e) {
             log.error("PROFIT SHARING ORDE REFUND CONSUMER ERROR!msg={}", message, e);
+        } finally {
+            MDC.clear();
         }
     }
     

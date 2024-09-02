@@ -50,4 +50,9 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     public List<String> listThirdOrderNoByTenantId(Integer tenantId, long startTime, Integer offset, Integer size) {
         return profitSharingTradeMixedOrderMapper.selectListThirdOrderNoByTenantId(tenantId, startTime, offset, size);
     }
+    
+    @Override
+    public int updateThirdOrderNoById(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate) {
+        return profitSharingTradeMixedOrderMapper.updateThirdOrderNoById(profitSharingTradeMixedOrderUpdate);
+    }
 }

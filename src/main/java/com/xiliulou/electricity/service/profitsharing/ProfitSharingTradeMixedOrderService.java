@@ -45,4 +45,5 @@ public interface ProfitSharingTradeMixedOrderService {
     
     List<String> listThirdOrderNoByTenantId(Integer tenantId, long startTime, Integer offset, Integer size);
     
+    int updateThirdOrderNoById(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate);
 }
