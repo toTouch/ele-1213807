@@ -55,4 +55,10 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     public int updateThirdOrderNoById(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate) {
         return profitSharingTradeMixedOrderMapper.updateThirdOrderNoById(profitSharingTradeMixedOrderUpdate);
     }
+    
+    @Override
+    @Slave
+    public ProfitSharingTradeMixedOrder queryById(Long profitSharingMixedOrderId) {
+        return profitSharingTradeMixedOrderMapper.selectById(profitSharingMixedOrderId);
+    }
 }

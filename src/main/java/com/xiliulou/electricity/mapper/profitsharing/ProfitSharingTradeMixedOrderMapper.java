@@ -48,5 +48,7 @@ public interface ProfitSharingTradeMixedOrderMapper {
     List<String> selectListThirdOrderNoByTenantId(@Param("tenantId") Integer tenantId, @Param("startTime") long startTime, @Param("offset") Integer offset, @Param("size") Integer size);
     
     int updateThirdOrderNoById(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate);
+    
+    ProfitSharingTradeMixedOrder selectById(@Param("profitSharingMixedOrderId") Long profitSharingMixedOrderId);
 }
 

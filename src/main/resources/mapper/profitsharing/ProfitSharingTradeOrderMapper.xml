@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper">
     <sql id="base_column">
         id
-        , tenant_id, uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, support_refund,refund_limit, pay_time, del_flag, create_time, update_time    </sql>
+        , tenant_id, uid, franchisee_id, third_merchant_id, order_no, third_order_no, order_type, amount, process_state, remark, channel, support_refund,refund_limit, pay_time, del_flag, create_time, update_time, profit_sharing_mixed_order_id    </sql>
     
     <sql id="table_name">
         t_profit_sharing_trade_order

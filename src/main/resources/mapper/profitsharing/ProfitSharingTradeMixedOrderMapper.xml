@@ -75,6 +75,14 @@
         order by id asc
             limit #{offset}, #{size}
     </select>
+    <select id="selectById"
+            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where id = #{id}
+    </select>
 
 
 </mapper>

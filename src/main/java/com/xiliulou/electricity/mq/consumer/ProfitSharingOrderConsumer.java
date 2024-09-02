@@ -89,7 +89,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
             return;
         }
     
-        ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = profitSharingTradeMixedOrderService.queryByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo());
+        ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = profitSharingTradeMixedOrderService.queryById(profitSharingTradeOrder.getProfitSharingMixedOrderId());
         if (Objects.isNull(profitSharingTradeMixedOrder)) {
             log.warn("PROFIT SHARING ORDE CONSUMER WARN!profit sharing trade mixed order is null, orderNo = {}", profitSharingTradeOrderUpdate.getOrderNo());
             return;
