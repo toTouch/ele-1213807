@@ -55,6 +55,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -273,16 +274,21 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
                 .collect(Collectors.toMap(ProfitSharingConfigVO::getId, Function.identity()));
         
         franchiseeIds.remove(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
-        List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, request.getTenantId());
-        Map<Long, String> franchiseeMap = Optional.ofNullable(franchisees).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Franchisee::getId, v -> v.getName()));
-        voList.forEach(v -> {
+        
+        Map<Long, String> franchiseeMap = new HashMap<>();
+        if (!franchiseeIds.isEmpty()) {
+            List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, request.getTenantId());
+            franchiseeMap = Optional.ofNullable(franchisees).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Franchisee::getId, v -> v.getName()));
+        }
+    
+        for (ProfitSharingReceiverConfigVO v : voList) {
             v.setFranchiseeName(franchiseeMap.get(v.getFranchiseeId()));
             ProfitSharingConfigVO profitSharingConfigVO = sharingConfigVOMap.get(v.getProfitSharingConfigId());
             if (Objects.nonNull(profitSharingConfigVO)) {
                 v.setConfigType(profitSharingConfigVO.getConfigType());
                 v.setWechatMerchantId(profitSharingConfigVO.getWechatMerchantId());
             }
-        });
+        }
         return voList;
     }
     
@@ -417,7 +423,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         record.put("account", newConfig.getAccount() + "/" + newConfig.getReceiverName());
         record.put("scale", newScale);
         record.put("remark", newConfig.getRemark());
-    
+        
         Map<String, String> oldRecord = Maps.newHashMapWithExpectedSize(1);
         oldRecord.put("scale", oldScale);
         oldRecord.put("remark", old.getRemark());
