@@ -49,6 +49,11 @@ public class ProfitSharingTradeOrder implements Serializable {
     private String thirdMerchantId;
     
     /**
+     * 分账交易混合订单id
+     */
+    private Long profitSharingMixedOrderId;
+    
+    /**
      * 业务支付订单号
      */
     private String orderNo;

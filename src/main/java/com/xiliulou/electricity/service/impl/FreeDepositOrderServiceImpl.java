@@ -1605,21 +1605,27 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
             // 设置分账标识  开启分账
             unionPayOrder.setProfitSharing(true);
-            
-            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
     
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
                     .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT)
                     .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
-    
+            
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
                 // 支付订单数量大于1 设置为混合支付
                 profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
             }
     
             profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
+    
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId()));
+            // 保存分账明细
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+    
+           
+    
+            
         }
     }
     
