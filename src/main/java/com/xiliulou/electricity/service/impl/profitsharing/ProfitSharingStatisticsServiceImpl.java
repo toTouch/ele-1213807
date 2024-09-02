@@ -75,7 +75,7 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
             return profitSharingCheckVO;
         }
         
-        profitSharingCheckVO.setAmountLimit(profitSharingCheckVO.getAmountLimit());
+        profitSharingCheckVO.setAmountLimit(profitSharingConfigVO.getAmountLimit());
         
         ProfitSharingStatistics sharingStatistics = queryByTenantIdAndFranchiseeIdAndStatisticsTime(tenantId, franchiseeId, getCurrentMonth());
         
