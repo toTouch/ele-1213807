@@ -416,7 +416,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         //检查用户是否已经进行过免押操作，且已免押成功
         Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositService.checkExistSuccessFreeDepositOrder(freeDepositUserDTO);
         
-        if (Boolean.FALSE.equals(useFreeDepositStatusResult.getLeft())) {
+        if (Boolean.TRUE.equals(useFreeDepositStatusResult.getLeft())) {
             throw new BizException(useFreeDepositStatusResult.getMiddle(), useFreeDepositStatusResult.getRight().toString());
         }
         
