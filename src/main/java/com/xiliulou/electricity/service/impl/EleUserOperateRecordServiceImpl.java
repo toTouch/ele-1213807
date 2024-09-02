@@ -54,4 +54,9 @@ public class EleUserOperateRecordServiceImpl extends ServiceImpl<EleUserOperateR
             insert(eleUserOperateRecord);
         });
     }
+    
+    @Override
+    public Integer deleteById(Long id) {
+        return eleUserOperateRecordMapper.deleteById(id);
+    }
 }

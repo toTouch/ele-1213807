@@ -24,4 +24,6 @@ public interface MeiTuanRiderMallOrderMapper {
     List<MeiTuanRiderMallOrder> selectListUnSyncedOrder(Integer tenantId, @Param("offset") Integer offset, @Param("size") Integer size);
     
     Integer batchUpdateSyncOrderStatus(@Param("list") List<MeiTuanRiderMallOrder> updateList);
+    
+    Integer update(MeiTuanRiderMallOrder meiTuanRiderMallOrder);
 }

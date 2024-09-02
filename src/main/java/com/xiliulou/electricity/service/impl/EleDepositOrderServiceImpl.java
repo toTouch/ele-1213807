@@ -825,6 +825,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
     
     @Override
+    public Integer deleteById(Long id) {
+        return eleDepositOrderMapper.deleteById(id);
+    }
+    
+    @Override
     public R queryFranchiseeDeposit(String productKey, String deviceName, Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

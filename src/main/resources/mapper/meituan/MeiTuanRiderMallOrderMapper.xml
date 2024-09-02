@@ -29,14 +29,17 @@
     <update id="update">
         update t_meituan_rider_mall_order
         <set>
-            <if test="appId != null">
-                app_id = #{appId},
+            <if test="meiTuanOrderStatus != null">
+                meituan_order_status = #{meiTuanOrderStatus},
             </if>
-            <if test="appKey != null">
-                app_key = #{appKey},
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
             </if>
-            <if test="secret != null">
-                secret = #{secret},
+            <if test="orderSyncStatus != null">
+                order_sync_status = #{orderSyncStatus},
+            </if>
+            <if test="orderUseStatus != null">
+                order_use_status = #{orderUseStatus},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
@@ -75,7 +78,7 @@
         select
         <include refid="basic_field"/>
         from t_meituan_rider_mall_order
-        where tenant_id = #{tenantId} and uid = #{uid} and meituan_account = #{phone}
+        where tenant_id = #{tenantId} and uid = #{uid} and meituan_account = #{phone} and meituan_order_status != 20
         <if test="orderId != null and orderId != ''">
             and order_id = #{orderId}
         </if>

@@ -4329,4 +4329,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime) {
         return baseMapper.selectListByCreateTime(buyStartTime, buyEndTime);
     }
+    
+    @Override
+    public Integer deleteById(Long id) {
+        return baseMapper.deleteById(id);
+    }
 }

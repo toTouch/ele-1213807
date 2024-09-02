@@ -38,4 +38,9 @@ public class OrderVO {
      * 用户uid
      */
     private Long uid;
+    
+    /**
+     * 订单使用状态:0-未使用 1-已使用
+     */
+    private Integer orderUserStatus;
 }
