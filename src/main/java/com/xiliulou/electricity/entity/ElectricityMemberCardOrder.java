@@ -75,7 +75,7 @@ public class ElectricityMemberCardOrder {
     private Integer isBindActivity;
     
     /**
-     * 交易方式： 0-线上， 1-线下， 2-企业代付
+     * 交易方式： 0-线上， 1-线下， 2-企业代付 3-美团支付
      */
     private Integer payType;
     

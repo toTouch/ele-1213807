@@ -916,6 +916,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("DISABLE MEMBER CARD WARN! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
+    
+        String orderId = userBatteryMemberCard.getOrderId();
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("DISABLE MEMBER CARD WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderId);
+            return R.fail("100281", "电池套餐订单不存在");
+        }
+    
+        // 美团订单不允许冻结
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+            log.warn("DISABLE MEMBER CARD WARN! meiTuan order not allowed to be frozen,uid={},orderNo={}", user.getUid(), orderId);
+            return R.fail("120137", "美团订单，不允许冻结");
+        }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
@@ -1317,6 +1330,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 userBatteryMemberCard.getRemainingNumber())) {
             log.warn("admin saveUserMemberCard  WARN! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
+        }
+        
+        String orderId = userBatteryMemberCard.getOrderId();
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("admin saveUserMemberCard  WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderId);
+            return R.fail("100281", "电池套餐订单不存在");
+        }
+        
+        // 美团订单不允许冻结
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+            log.warn("admin saveUserMemberCard  WARN! meiTuan order not allowed to be frozen,uid={},orderNo={}", user.getUid(), orderId);
+            return R.fail("120137", "美团订单，不允许冻结");
         }
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
