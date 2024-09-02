@@ -106,7 +106,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
             
             // 服务费订单未成功
             if (!Objects.equals(eleBatteryServiceFeeOrder.getStatus(), EleBatteryServiceFeeOrder.STATUS_SUCCESS)) {
-                log.warn("PROFIT SHARING ORDE CONSUMER WARN!battery service fee order status illegal,orderId={}", profitSharingTradeOrderUpdate.getOrderNo());
+                log.warn("PROFIT SHARING ORDE CONSUMER WARN!battery service fee order status illegal,orderId={}, eleBatteryServiceFeeOrder= {}", profitSharingTradeOrderUpdate.getOrderNo(), eleBatteryServiceFeeOrder);
                 return false;
             }
         }
