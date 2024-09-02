@@ -1082,9 +1082,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()),
                     StandardCharsets.UTF_8);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
-            FreeDepositOrderDTO depositOrderDTO = JsonUtil.fromJson(result, FreeDepositOrderDTO.class);
-            String decode = UriUtils.decode(depositOrderDTO.getData(), StandardCharsets.UTF_8);
-            return Triple.of(true, null, decode);
+            result = JsonUtil.fromJson(result, String.class);
+            return Triple.of(true, null, result);
         }
         
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrder(userInfo, freeQuery);
@@ -1132,10 +1131,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", depositOrderDTO);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        String encode = UriUtils.encode(depositOrderDTO.getData(), StandardCharsets.UTF_8);
-        FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().data(encode).build();
         redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(),
-                JsonUtil.toJson(dto), 300 * 1000L, false);
+                JsonUtil.toJson(depositOrderDTO.getData()), 300 * 1000L, false);
         
         // 发送延迟队列延迟更新免押状态为最终态
         delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
