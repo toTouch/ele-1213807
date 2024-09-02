@@ -57,7 +57,7 @@
         resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
         select
         <include refid="base_column"/>
-        from t_profit_sharing_trade_mixed_order where thrid_order_no = #{thirdOrderNo} limit 1
+        from t_profit_sharing_trade_mixed_order where third_order_no = #{thirdOrderNo} limit 1
     </select>
     
     <select id="selectListThirdOrderNoByTenantId" resultType="java.lang.String">
