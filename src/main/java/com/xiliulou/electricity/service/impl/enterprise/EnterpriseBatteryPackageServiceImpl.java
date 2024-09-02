@@ -1081,7 +1081,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (Objects.isNull(triple.getRight()) && freeOrderCacheResult) {
             String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()),
                     StandardCharsets.UTF_8);
-            result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
             return Triple.of(true, null, result);
         }
