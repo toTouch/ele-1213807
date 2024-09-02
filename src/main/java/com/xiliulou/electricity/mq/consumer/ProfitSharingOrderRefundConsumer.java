@@ -102,7 +102,7 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
         
         // 状态是否为待分账
         if (!Objects.equals(profitSharingTradeOrder.getProcessState(), ProfitSharingTradeOrderConstant.PROCESS_STATE_PENDING)) {
-            log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!profit order status is not init, orderNo = {}, refundOrderNo = {}", profitSharingTradeOrderRefund.getOrderNo(), profitSharingTradeOrderRefund.getRefundOrderNo());
+            log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!profit order status is not init, orderNo = {}, refundOrderNo = {}, processState = {}", profitSharingTradeOrderRefund.getOrderNo(), profitSharingTradeOrderRefund.getRefundOrderNo(), profitSharingTradeOrder.getProcessState());
             return;
         }
         
