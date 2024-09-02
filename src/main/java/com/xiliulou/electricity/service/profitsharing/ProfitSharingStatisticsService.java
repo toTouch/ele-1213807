@@ -5,7 +5,7 @@
 package com.xiliulou.electricity.service.profitsharing;
 
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingStatistics;
-import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingStatisticsMapper;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingCheckVO;
 
 import java.math.BigDecimal;
 
@@ -63,6 +63,18 @@ public interface ProfitSharingStatisticsService {
      * @date 2024/8/28 17:21
      */
     ProfitSharingStatistics queryByTenantIdAndFranchiseeIdAndStatisticsTime(Integer tenantId, Long franchiseeId, String statisticsTime);
+    
+    
+    /**
+     * 校验是否超出最大限额
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/9/2 17:45
+     * @return
+     */
+    ProfitSharingCheckVO checkMaxProfitSharingLimit(Integer tenantId, Long franchiseeId);
     
     int subtractAmountById(Long id, BigDecimal rollbackAmount);
 }
