@@ -118,10 +118,10 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
                 log.warn("PROFIT SHARING ORDE CONSUMER WARN!not found electricity member card order,orderNo={}", profitSharingTradeOrderUpdate.getOrderNo());
                 return false;
             }
-    
+            
             // 订单未成功
             if (!Objects.equals(electricityMemberCardOrder.getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS)) {
-                log.warn("PROFIT SHARING ORDE CONSUMER WARN!electricity member card order status illegal,orderId={}", profitSharingTradeOrderUpdate.getOrderNo());
+                log.warn("PROFIT SHARING ORDE CONSUMER WARN!electricity member card order status illegal,orderId={}, electricityMemberCardOrder = {}", profitSharingTradeOrderUpdate.getOrderNo(), electricityMemberCardOrder);
                 return false;
             }
         }
@@ -137,7 +137,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
     
             // 订单未成功
             if (!Objects.equals(insuranceOrder.getStatus(), InsuranceOrder.STATUS_SUCCESS)) {
-                log.warn("PROFIT SHARING ORDE CONSUMER WARN!insurance order order status illegal,orderId={}", profitSharingTradeOrderUpdate.getOrderNo());
+                log.warn("PROFIT SHARING ORDE CONSUMER WARN!insurance order order status illegal,orderId={}, insuranceOrder = {}", profitSharingTradeOrderUpdate.getOrderNo(), insuranceOrder);
                 return false;
             }
         }
