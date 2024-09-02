@@ -172,7 +172,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
         
         } catch (ProfitSharingException e) {
-            log.error("PROFIT SHARING UNFREEZE ERROR!", e);
+            log.error("PROFIT SHARING UNFREEZE ERROR!, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo(), e);
             throw new ProfitSharingException(e.getMessage());
         }
         

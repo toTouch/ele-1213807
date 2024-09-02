@@ -78,7 +78,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
         }
     
         if (!Objects.equals(profitSharingTradeOrder.getProcessState(), ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT)) {
-            log.warn("PROFIT SHARING ORDE CONSUMER WARN!profit order status is not init, orderNo = {}", profitSharingTradeOrderUpdate.getOrderNo());
+            log.warn("PROFIT SHARING ORDE CONSUMER WARN!profit order status is not init, orderNo = {}, processState = {}", profitSharingTradeOrderUpdate.getOrderNo(), profitSharingTradeOrder.getProcessState());
             return;
         }
     
@@ -87,10 +87,6 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
         profitSharingUpdate.setThirdOrderNo(profitSharingTradeOrderUpdate.getThirdOrderNo());
         // 待发起分账
         profitSharingUpdate.setProcessState(ProfitSharingTradeOrderConstant.PROCESS_STATE_PENDING);
-        // 交易失败
-        if (Objects.equals(profitSharingTradeOrderUpdate.getTradeStatus(), ElectricityTradeOrder.STATUS_FAIL)) {
-            profitSharingUpdate.setProcessState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INVALID);
-        }
         profitSharingUpdate.setUpdateTime(System.currentTimeMillis());
         
         // 修改分账交易订单
@@ -145,6 +141,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
                 return false;
             }
         }
+        
         return true;
     }
     
@@ -179,9 +176,8 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
         }
         
         // 校验状态是否成功
-        if (!(Objects.equals(profitSharingTradeOrderUpdate.getTradeStatus(), ElectricityTradeOrder.STATUS_SUCCESS) ||
-                Objects.equals(profitSharingTradeOrderUpdate.getTradeStatus(), ElectricityTradeOrder.STATUS_FAIL))) {
-            log.warn("PROFIT SHARING ORDE CONSUMER WARN!trade status is not exists, orderNo = {}", profitSharingTradeOrderUpdate.getOrderNo());
+        if (!Objects.equals(profitSharingTradeOrderUpdate.getTradeStatus(), ElectricityTradeOrder.STATUS_SUCCESS)) {
+            log.warn("PROFIT SHARING ORDE CONSUMER WARN!trade status is not success, orderNo = {}, tradeStatus = {}", profitSharingTradeOrderUpdate.getOrderNo(), profitSharingTradeOrderUpdate.getTradeStatus());
             return false;
         }
         

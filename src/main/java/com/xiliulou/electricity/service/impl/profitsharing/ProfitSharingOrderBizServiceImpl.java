@@ -319,12 +319,14 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             // 不存在解冻待处理的明细
             boolean existsNotUnfreezeByThirdOrderNo = profitSharingOrderDetailService.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
             if (!existsNotUnfreezeByThirdOrderNo) {
+                log.info("profit sharing unfreeze info,thirdOrderNo = {} is not exists unfreeze order detail", thirdOrderNo);
                 return;
             }
             
             // 存在未处理完成的明细
             boolean existsNotCompleteByThirdOrderNo = profitSharingOrderDetailService.existsNotCompleteByThirdOrderNo(thirdOrderNo);
             if (existsNotCompleteByThirdOrderNo) {
+                log.info("profit sharing unfreeze info,thirdOrderNo = {} is exists not complete order detail", thirdOrderNo);
                 return;
             }
             
