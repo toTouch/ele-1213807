@@ -448,16 +448,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     return manageInsuranceOrderResult;
                 }
                 
-                // 处理换电-保险分账
-//                sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
     
-                // 处理换电套餐分账
-//                sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
        
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
@@ -494,6 +490,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
+                log.info("notifyIntegratedPayment orderTypeList = {}", orderTypeList);
                 for (int i = 0; i < orderTypeList.size(); i++) {
                     if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
                         // 处理换电-保险分账
@@ -526,7 +523,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         profitSharingTradeOrderUpdate.setOrderNo(OrderNo);
         profitSharingTradeOrderUpdate.setOrderType(orderType);
         profitSharingTradeOrderUpdate.setTradeStatus(tradeStatus);
-        
+        log.info("send profit sharing order mq, profitSharingTradeOrderUpdate={}", profitSharingTradeOrderUpdate);
         rocketMqService.sendAsyncMsg(MqProducerConstant.PROFIT_SHARING_ORDER_TOPIC, JsonUtil.toJson(profitSharingTradeOrderUpdate));
     }
     
