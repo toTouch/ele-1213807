@@ -67,4 +67,7 @@ public interface FreeDepositAlipayHistoryMapper extends BaseMapper<FreeDepositAl
     Integer updateByOrderId(FreeDepositAlipayHistory freeDepositAlipayHistory);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    Integer selectPayingByOrderId(@Param("orderId") String orderId);
+    
 }

@@ -2142,8 +2142,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100425", "代扣金额不能为0");
         }
         
-        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByOrderId(freeDepositOrder.getOrderId());
-        if (Objects.nonNull(alipayHistory) && Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+        Integer payingAlipayCount = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
+        if (Objects.nonNull(payingAlipayCount)) {
             log.warn("FREE DEPOSIT WARN! freeDepositOrder already AuthToPay,orderId={}", orderId);
             return Triple.of(false, "100412", "当前有一笔代扣正在执行，请等待其完成后再尝试。");
         }

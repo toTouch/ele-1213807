@@ -349,5 +349,12 @@
     <update id="updatePhoneByUid">
         update t_free_deposit_alipay_history set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
-
+    
+    
+    <select id="selectPayingByOrderId" resultType="integer">
+        select count(1)
+        from t_free_deposit_alipay_history
+        where order_id = #{orderId}
+          and pay_status = 1
+    </select>
 </mapper>

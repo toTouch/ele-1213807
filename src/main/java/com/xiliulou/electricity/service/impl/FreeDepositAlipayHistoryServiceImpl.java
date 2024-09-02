@@ -159,4 +159,9 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return freeDepositAlipayHistoryMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
+    
+    @Override
+    public Integer queryPayingByOrderId(String orderId) {
+        return freeDepositAlipayHistoryMapper.selectPayingByOrderId(orderId);
+    }
 }
