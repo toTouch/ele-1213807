@@ -22,7 +22,6 @@ import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
@@ -30,17 +29,17 @@ import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxServic
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
-import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -232,9 +231,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return voList;
     }
     
+    
     @Slave
     @Override
-    public List<FranchiseeVO> queryFranchisee(Integer tenantId) {
+    public List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId) {
         List<Long> franchiseeIds = baseMapper.selectFranchiseeIdsByTenantId(tenantId);
         // 过滤掉默认加盟商
         franchiseeIds = Optional.ofNullable(franchiseeIds).orElse(Collections.emptyList()).stream().filter(v -> !MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(v)).distinct()
@@ -249,8 +249,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         }
         
         return franchisees.stream().map(franchisee -> {
-            FranchiseeVO franchiseeVO = new FranchiseeVO();
-            BeanUtils.copyProperties(franchisee, franchiseeVO);
+            FranchiseeIdNameVO franchiseeVO = new FranchiseeIdNameVO();
+            franchiseeVO.setId(franchisee.getId());
+            franchiseeVO.setName(franchisee.getName());
             return franchiseeVO;
         }).collect(Collectors.toList());
     }
@@ -260,7 +261,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     public ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId) {
         return baseMapper.selectByTenantIdAndWechatMerchantId(tenantId, wechatMerchantId);
     }
-    
     
     
     @Override
@@ -405,7 +405,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Override
     public List<ElectricityPayParams> queryListPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Set<Long> franchiseeIds) {
-        return this.queryFromCacheList(tenantId,franchiseeIds);
+        return this.queryFromCacheList(tenantId, franchiseeIds);
     }
     
     /**

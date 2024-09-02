@@ -5,7 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
-import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -118,7 +118,7 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @author caobotao.cbt
      * @date 2024/8/22 17:52
      */
-    List<FranchiseeVO> queryFranchisee(Integer tenantId);
+    List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId);
     
     /**
      * 根据租户id+商户号查询

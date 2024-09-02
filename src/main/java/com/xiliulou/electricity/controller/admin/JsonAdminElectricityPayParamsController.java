@@ -8,6 +8,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +78,7 @@ public class JsonAdminElectricityPayParamsController {
     
     @GetMapping(value = "/admin/electricityPayParams/queryFranchisee")
     public R queryFranchisee() {
-        List<FranchiseeVO> franchiseeVOS = electricityPayParamsService.queryFranchisee(TenantContextHolder.getTenantId());
+        List<FranchiseeIdNameVO> franchiseeVOS = electricityPayParamsService.queryFranchisee(TenantContextHolder.getTenantId());
         return R.ok(franchiseeVOS);
     }
     
