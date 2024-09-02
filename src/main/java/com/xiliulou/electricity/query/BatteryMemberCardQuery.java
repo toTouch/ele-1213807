@@ -115,7 +115,7 @@ public class BatteryMemberCardQuery {
     private List<Integer> rentTypes;
     
     /**
-     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐；3，分期套餐
      *
      * @see BatteryMemberCardBusinessTypeEnum
      */
@@ -157,4 +157,14 @@ public class BatteryMemberCardQuery {
      * 是否需要查询企业套餐数据，0-否，1-是
      */
     private Integer catchEnterprise;
+    
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
 }

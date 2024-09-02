@@ -121,6 +121,11 @@ public class BatteryMemberCard {
     private BigDecimal installmentServiceFee;
     
     /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
+    
+    /**
      * 备注
      */
     private String remark;

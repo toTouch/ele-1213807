@@ -792,6 +792,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else {
             batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
+        batteryMemberCardUpdate.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
+        batteryMemberCardUpdate.setDownPayment(Objects.nonNull(query.getDownPayment()) ? query.getDownPayment() : null);
         
         this.update(batteryMemberCardUpdate);
         
@@ -874,12 +876,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCard.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
         
-        // 适配企业渠道添加套餐业务
+        // 校验并设置套餐的业务类型，以及相关业务参数
         if (Objects.equals(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(), query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
         } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode());
-        } else {
+        } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_Installment_BATTERY.getCode().equals(query.getBusinessType())) {
+            batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_Installment_BATTERY.getCode());
+            batteryMemberCard.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
+            batteryMemberCard.setDownPayment(Objects.nonNull(query.getDownPayment()) ? query.getDownPayment() : null);
+        }else {
             return Triple.of(false, "100107", "业务类型参数不正确");
         }
         

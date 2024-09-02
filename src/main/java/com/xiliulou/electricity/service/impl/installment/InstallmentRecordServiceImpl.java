@@ -399,14 +399,14 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
         
         // 处理0元问题
-        if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
-            if (Boolean.FALSE.equals(result.getLeft())) {
-                return result;
-            }
-            
-            return Triple.of(true, "", null);
-        }
+        // if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        //     Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+        //     if (Boolean.FALSE.equals(result.getLeft())) {
+        //         return result;
+        //     }
+        //
+        //     return Triple.of(true, "", null);
+        // }
         
         // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(userInfo.getTenantId(),
