@@ -21,7 +21,7 @@
     
     <sql id="base_column">
         id
-        , tenant_id, franchisee_id, profit_sharing_config_id, account, receiver_type, receiver_name, receiver_status, scale,relation_type, del_flag, create_time, update_time    </sql>
+        , tenant_id, franchisee_id, profit_sharing_config_id, account, receiver_type, receiver_name, receiver_status, scale,relation_type,remark,del_flag, create_time, update_time    </sql>
     
     <sql id="table_name">
         t_profit_sharing_receiver_config
