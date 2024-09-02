@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("t_installment_record")
 public class InstallmentRecord {
     

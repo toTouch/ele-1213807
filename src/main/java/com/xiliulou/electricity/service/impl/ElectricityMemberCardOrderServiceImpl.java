@@ -90,6 +90,7 @@ import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
@@ -4328,5 +4329,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Slave
     public List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime) {
         return baseMapper.selectListByCreateTime(buyStartTime, buyEndTime);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, IntegratedPaymentAdd integratedPaymentAdd,
+            Set<Integer> userCouponIds, ElectricityCabinet electricityCabinet, ElectricityPayParams electricityPayParams) {
+        return null;
     }
 }

@@ -89,10 +89,10 @@ public enum BusinessType {
     
     
     // 分期套餐服务费订单
-    INSTALLMENT_SERVICE_FEE(90),
+    INSTALLMENT_SERVICE_FEE(100),
     
     // 分期代扣签约
-    INSTALLMENT_SIGN(91);
+    INSTALLMENT_SIGN(101);
 
     private final Integer business;
 
