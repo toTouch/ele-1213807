@@ -1428,6 +1428,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     public Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource) {
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
@@ -1460,10 +1461,37 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         List<String> jsonFeeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonSingleFee(), String.class);
         
         if (CollectionUtils.isEmpty(orderIdList)) {
-            log.warn("NOTIFY SERVICE FEE UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
-        return null;
+        
+        Integer tradeOrderStatus;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+        } else {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+            log.warn("NOTIFY INSTALLMENT UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);
+        }
+        
+        // 系统订单
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
+        unionTradeOrderUpdate.setId(unionTradeOrder.getId());
+        unionTradeOrderUpdate.setStatus(tradeOrderStatus);
+        unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        unionTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(unionTradeOrderUpdate);
+        
+        // 混合支付的子订单
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(tradeOrderStatus);
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+        
+        return Pair.of(true, null);
     }
     
     /**

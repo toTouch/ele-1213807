@@ -298,6 +298,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecord.setInstallmentNo(installmentNo);
             installmentRecord.setTenantId(batteryMemberCard.getTenantId());
             installmentRecord.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+            installmentRecord.setPackageId(batteryMemberCard.getId());
         }
         return Triple.of(true, null, installmentRecord);
     }
