@@ -216,14 +216,10 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         
         // 从缓存中获取证书
         String cacheStr = redisService.get(key);
-        List<String> cacheList = null;
+        WechatCertificateCacheEntity entity = null;
         if (StringUtils.isNotBlank(cacheStr)) {
-            cacheList = JsonUtil.fromJsonArray(cacheStr, String.class);
-        }
-        
-        if (CollectionUtils.isNotEmpty(cacheList)) {
-            // 缓存中存在，直接构建证书并返回
-            details.setWechatPlatformCertificateMap(buildCertificatesFromStrings(cacheList));
+            entity = JsonUtil.fromJson(cacheStr, WechatCertificateCacheEntity.class);
+            details.setWechatPlatformCertificateMap(buildCertificatesFromStrings(entity.getCertificates()));
             return;
         }
         
@@ -236,7 +232,8 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         details.setWechatPlatformCertificateMap(buildCertificatesFromStrings(wechatPlatformCertificate));
         
         // 将证书添加到缓存
-        redisService.set(key, JsonUtil.toJson(wechatPlatformCertificate), CACHE_TIME_OUT, TimeUnit.MILLISECONDS);
+        redisService.set(key, JsonUtil.toJson(new WechatCertificateCacheEntity(details.getTenantId(), details.getFranchiseeId(), wechatPlatformCertificate)), CACHE_TIME_OUT,
+                TimeUnit.MILLISECONDS);
         
     }
     
