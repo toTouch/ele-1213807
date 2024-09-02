@@ -80,7 +80,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
             electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant)
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
                 .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
@@ -429,7 +429,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
             electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant)
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize())
                 .offset(electricityBatteryRequest.getOffset()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY)
@@ -515,7 +515,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
             electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant)
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize())
                 .offset(electricityBatteryRequest.getOffset()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(franchiseeIds).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
@@ -691,7 +691,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
             electricityBatteryRequest.setSn(electricityBatteryRequest.getSns().get(0));
             electricityBatteryRequest.setSns(Collections.EMPTY_LIST);
         }
-        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(electricityBatteryRequest.getTenant())
+        ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant)
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize())
                 .offset(electricityBatteryRequest.getOffset()).franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(electricityBatteryRequest.getFranchiseeIds())
                 .electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId()).businessStatus(electricityBatteryRequest.getBusinessStatus())
