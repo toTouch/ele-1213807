@@ -82,7 +82,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant)
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
-                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize()).offset(electricityBatteryRequest.getOffset())
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
                 .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
@@ -117,7 +117,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
-                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).businessStatus(electricityBatteryRequest.getBusinessStatus())
                 .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectAllBatteryDataCount(electricityBatteryQuery);
@@ -638,7 +638,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).franchiseeId(electricityBatteryRequest.getFranchiseeId())
-                .franchiseeIds(electricityBatteryRequest.getFranchiseeIds()).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
+                .franchiseeIds(franchiseeIds).electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId())
                 .currentTimeMillis(System.currentTimeMillis()).uid(electricityBatteryRequest.getUid()).queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .businessStatus(electricityBatteryRequest.getBusinessStatus()).physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.selectOverdueCarBatteryDataCount(electricityBatteryQuery);
@@ -693,7 +693,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(tenantId).tenant(tenant)
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).uid(electricityBatteryRequest.getUid()).size(electricityBatteryRequest.getSize())
-                .offset(electricityBatteryRequest.getOffset()).franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(electricityBatteryRequest.getFranchiseeIds())
+                .offset(electricityBatteryRequest.getOffset()).franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(franchiseeIds)
                 .electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId()).businessStatus(electricityBatteryRequest.getBusinessStatus())
                 .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.queryStockBatteryPageData(electricityBatteryQuery);
@@ -723,7 +723,7 @@ public class JsonAdminElectricityBatteryDataController extends BaseController {
         }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder().tenantId(TenantContextHolder.getTenantId())
                 .sn(electricityBatteryRequest.getSn()).sns(electricityBatteryRequest.getSns()).uid(electricityBatteryRequest.getUid())
-                .franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(electricityBatteryRequest.getFranchiseeIds())
+                .franchiseeId(electricityBatteryRequest.getFranchiseeId()).franchiseeIds(franchiseeIds)
                 .electricityCabinetId(electricityBatteryRequest.getElectricityCabinetId()).businessStatus(electricityBatteryRequest.getBusinessStatus())
                 .physicsStatus(electricityBatteryRequest.getPhysicsStatus()).build();
         return electricityBatteryDataService.queryStockBatteryPageDataCount(electricityBatteryQuery);
