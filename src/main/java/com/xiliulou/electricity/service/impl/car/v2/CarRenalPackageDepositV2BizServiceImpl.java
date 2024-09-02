@@ -240,44 +240,44 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             return freeDepositUserInfoVo;
         }
         
-        // 查询押金缴纳信息
-        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
-        if (ObjectUtils.isEmpty(depositPayEntity)) {
-            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_car_rental_package_deposit_pay. depositPayOrderNo is {}", depositPayOrderNo);
-            return null;
-        }
-        
-        if (!PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType())) {
-            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. t_car_rental_package_deposit_pay payType is wrong. depositPayOrderNo is {}",
-                    depositPayOrderNo);
-            return null;
-        }
-        
-        FreeDepositOrderStatusBO depositOrderStatus = freeDepositService.getFreeDepositOrderStatus(
-                FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
-                        .orderId(freeDepositOrder.getOrderId()).build());
-
-        // 返回值判定
-        if (ObjectUtils.isEmpty(depositOrderStatus)) {
-            log.warn("CarRenalPackageDepositBizService queryFreeDepositStatus, pxzDepositService.queryFreeDepositOrder failed. depositPayOrderNo is {}", depositPayOrderNo);
-            return null;
-        }
-        
-        // 免押成功
-        if (Objects.equals(depositOrderStatus.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            saveFreeDepositSuccessTx(depositPayEntity, freeDepositOrder, depositOrderStatus);
-        }
-        
-        // 查询结果没有免押成功
-        if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(depositType)) {
-            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
-            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
-        }
-        if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
-            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
-            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
-        }
-        return freeDepositUserInfoVo;
+//        // 查询押金缴纳信息
+//        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
+//        if (ObjectUtils.isEmpty(depositPayEntity)) {
+//            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_car_rental_package_deposit_pay. depositPayOrderNo is {}", depositPayOrderNo);
+//            return null;
+//        }
+//
+//        if (!PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType())) {
+//            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. t_car_rental_package_deposit_pay payType is wrong. depositPayOrderNo is {}",
+//                    depositPayOrderNo);
+//            return null;
+//        }
+//
+//        FreeDepositOrderStatusBO depositOrderStatus = freeDepositService.getFreeDepositOrderStatus(
+//                FreeDepositOrderStatusQuery.builder().channel(freeDepositOrder.getChannel()).uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
+//                        .orderId(freeDepositOrder.getOrderId()).build());
+//
+//        // 返回值判定
+//        if (ObjectUtils.isEmpty(depositOrderStatus)) {
+//            log.warn("CarRenalPackageDepositBizService queryFreeDepositStatus, pxzDepositService.queryFreeDepositOrder failed. depositPayOrderNo is {}", depositPayOrderNo);
+//            return null;
+//        }
+//
+//        // 免押成功
+//        if (Objects.equals(depositOrderStatus.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+//            saveFreeDepositSuccessTx(depositPayEntity, freeDepositOrder, depositOrderStatus);
+//        }
+//
+//        // 查询结果没有免押成功
+//        if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(depositType)) {
+//            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+//            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+//        }
+//        if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
+//            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+//            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+//        }
+        return null;
     }
     
     /**

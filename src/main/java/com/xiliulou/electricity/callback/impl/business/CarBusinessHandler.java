@@ -80,6 +80,7 @@ public class CarBusinessHandler implements BusinessHandler {
     @Override
     public boolean freeDeposit(FreeDepositOrder order) {
         try {
+            log.info("Enter the process of free deposit callback for car/car electronics, order number: {}",order.getOrderId());
             CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(order.getOrderId());
             Integer tenantId = depositPayEntity.getTenantId();
             Integer franchiseeId = depositPayEntity.getFranchiseeId();
@@ -120,6 +121,7 @@ public class CarBusinessHandler implements BusinessHandler {
                 log.info("userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
                 userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
             }
+            log.info("Car/car electronics order no deposit callback completed, order number: {}",order.getOrderId());
             return true;
         }catch (Exception e){
             log.error("freeDeposit callback failed.", e);

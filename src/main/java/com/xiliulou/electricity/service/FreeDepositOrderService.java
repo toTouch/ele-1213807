@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * (FreeDepositOrder)表服务接口
@@ -104,4 +105,6 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> freeDepositTrilateralPay(String orderId, BigDecimal payTransAmt, String remark);
     
     Triple<Boolean, String, Object> syncAuthPayStatus(String orderId);
+    
+    Map<String,Double> selectPayTransAmtByOrderIdsToMap(List<String> orderId);
 }

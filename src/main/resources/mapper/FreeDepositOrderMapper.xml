@@ -249,6 +249,12 @@
         from t_free_deposit_order
         where order_id = #{orderId}
     </select>
+    <select id="selectPayTransAmtByOrderIds" resultType="com.xiliulou.electricity.entity.FreeDepositOrder">
+        select order_id,pay_trans_amt from t_free_deposit_order where order_id in
+        <foreach collection="orderIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
     
     <!--通过主键修改数据-->
     <update id="update">
