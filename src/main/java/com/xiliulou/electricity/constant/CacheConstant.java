@@ -685,7 +685,8 @@ public interface CacheConstant {
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     String CACHE_OFFLINE_KEY = "cache_offline_key:";
-    
+    String CACHE_OFFLINE_KEY_V2 = "cache_offline_key_v2:";
+
     /**
      * TCP设备session缓存
      */
