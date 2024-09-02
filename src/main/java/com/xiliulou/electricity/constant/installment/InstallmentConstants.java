@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.constant.installment;
 
 import com.xiliulou.electricity.annotation.ProcessParameter;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 
 /**
  * @Description ...

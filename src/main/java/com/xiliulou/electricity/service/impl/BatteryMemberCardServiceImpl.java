@@ -881,8 +881,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
         } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode());
-        } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_Installment_BATTERY.getCode().equals(query.getBusinessType())) {
-            batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_Installment_BATTERY.getCode());
+        } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType())) {
+            batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
             batteryMemberCard.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
             batteryMemberCard.setDownPayment(Objects.nonNull(query.getDownPayment()) ? query.getDownPayment() : null);
         }else {

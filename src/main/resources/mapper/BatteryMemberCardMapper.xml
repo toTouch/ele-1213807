@@ -196,8 +196,11 @@
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
-            <if test="businessType != null">
-                and tbmc.business_type = #{businessType}
+            <if test="businessTypes != null">
+                and tbmc.business_type in
+                <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
             </if>
             
             <if test="franchiseeId != null">
@@ -426,8 +429,11 @@
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
-            <if test="businessType != null">
-                and tbmc.business_type = #{businessType}
+            <if test="businessTypes != null">
+                and tbmc.business_type in
+                <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
             </if>
             <if test="franchiseeId != null">
                 and tbmc.franchisee_id = #{franchiseeId}
@@ -726,8 +732,11 @@
         service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, installment_service_fee, down_payment
         from t_battery_member_card
         <where>
-            <if test="businessType != null">
-                and business_type = #{businessType}
+            <if test="businessTypes != null">
+                and tbmc.business_type in
+                <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}

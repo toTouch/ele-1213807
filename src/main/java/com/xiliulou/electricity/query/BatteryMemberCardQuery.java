@@ -121,6 +121,8 @@ public class BatteryMemberCardQuery {
      */
     private Integer businessType;
     
+    private List<Integer> businessTypes;
+    
     private List<Long> idList;
     
     /**
