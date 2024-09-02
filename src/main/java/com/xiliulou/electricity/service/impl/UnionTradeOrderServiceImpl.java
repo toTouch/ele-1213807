@@ -449,7 +449,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 }
                 
                 // 处理换电-保险分账
-                sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+//                sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!manageMemberCardOrderResult.getLeft()) {
@@ -457,7 +457,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 }
     
                 // 处理换电套餐分账
-                sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+//                sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
        
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
@@ -489,10 +489,27 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             
             return Pair.of(result, null);
         }
+    
+        // 处理分账回调
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                for (int i = 0; i < orderTypeList.size(); i++) {
+                    if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                        // 处理换电-保险分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+                    } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                        // 处理换电套餐分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+                    }
+                }
+            
+            }
+        });
         
         // 小程序虚拟发货
         shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
-        
+    
         return Pair.of(result, null);
     }
     
@@ -570,14 +587,14 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 manageInsuranceOrder(orderIdList.get(i), tradeOrderStatus);
                 
                 // 处理分账回调
-                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+//                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
             }
             
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 manageMemberCardOrderV2(orderIdList.get(i), tradeOrderStatus);
                 
                 // 处理分账回调
-                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+//                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
             }
         }
         
@@ -598,6 +615,23 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+    
+        // 处理分账回调
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                for (int i = 0; i < orderTypeList.size(); i++) {
+                    if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                        // 处理换电-保险分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+                    } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                        // 处理换电套餐分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+                    }
+                }
+            
+            }
         });
         
         // 小程序虚拟发货
@@ -1450,9 +1484,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
         });
-        
-        // 小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
     
         // 处理分账回调
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -1466,6 +1497,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 }
             }
         });
+        
+        // 小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         
         return Pair.of(true, null);
     }
