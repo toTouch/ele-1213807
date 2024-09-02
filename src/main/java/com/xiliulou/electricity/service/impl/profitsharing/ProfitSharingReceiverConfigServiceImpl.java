@@ -165,8 +165,6 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     
     @Override
     public void update(ProfitSharingReceiverConfigOptRequest request) {
-        // 校验幂等
-        this.checkIdempotent(request.getProfitSharingConfigId());
         
         Long id = request.getId();
         ProfitSharingReceiverConfig receiver = profitSharingReceiverConfigMapper.selectById(request.getTenantId(), id);
@@ -174,11 +172,12 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             throw new BizException("数据不存在");
         }
         
-        if (!Objects.equals(request.getProfitSharingConfigId(), receiver.getProfitSharingConfigId())) {
-            throw new BizException("数据不存在");
-        }
+        // 校验幂等
+        this.checkIdempotent(receiver.getProfitSharingConfigId());
         
-        ProfitSharingConfig profitSharingConfig = profitSharingConfigService.queryById(request.getTenantId(), request.getProfitSharingConfigId());
+        request.setProfitSharingConfigId(receiver.getProfitSharingConfigId());
+        
+        ProfitSharingConfig profitSharingConfig = profitSharingConfigService.queryById(request.getTenantId(), receiver.getProfitSharingConfigId());
         if (Objects.isNull(profitSharingConfig)) {
             throw new BizException("分账方配置不存在");
         }
@@ -308,11 +307,6 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
                 .selectListByTenantIdAndProfitSharingConfigId(request.getTenantId(), request.getProfitSharingConfigId());
         existList = Optional.ofNullable(existList).orElse(Collections.emptyList());
         
-        // 个数校验（更新不校验）
-        if (Objects.isNull(originalReceiverConfig) && existList.size() + 1 > ProfitSharingConfigConstant.MAX_RECEIVER_COUNT) {
-            throw new BizException("最多可支持添加" + ProfitSharingConfigConstant.MAX_RECEIVER_COUNT + "个分账接收方");
-        }
-        
         //分账接收方比例
         BigDecimal totalScale = BigDecimal.ZERO;
         //已存在的分账账号
@@ -334,6 +328,15 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         // 接收方比例超出限制
         if (profitSharingConfig.getScaleLimit().compareTo(totalScale.add(request.getScale())) < 0) {
             throw new BizException("分账接收方分账比例之和 必须小于等于 允许比例上限");
+        }
+        
+        // 更新不做以下校验
+        if (Objects.nonNull(originalReceiverConfig)) {
+            return;
+        }
+        
+        if (existList.size() + 1 > ProfitSharingConfigConstant.MAX_RECEIVER_COUNT) {
+            throw new BizException("最多可支持添加" + ProfitSharingConfigConstant.MAX_RECEIVER_COUNT + "个分账接收方");
         }
         
         boolean repeat = existAccount.contains(request.getAccount());

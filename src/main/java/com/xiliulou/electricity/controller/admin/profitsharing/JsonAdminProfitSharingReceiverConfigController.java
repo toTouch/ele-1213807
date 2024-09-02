@@ -126,6 +126,9 @@ public class JsonAdminProfitSharingReceiverConfigController {
     }
     
     
+
+    
+    
     /**
      * 分页
      *

@@ -6,14 +6,19 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingStatistics;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingStatisticsMapper;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingStatisticsService;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingCheckVO;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * description:
@@ -27,6 +32,9 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
     @Resource
     private ProfitSharingStatisticsMapper profitSharingStatisticsMapper;
     
+    @Resource
+    private ProfitSharingConfigService profitSharingConfigService;
+    
     @Override
     public void addTotalAmount(Long id, BigDecimal amount) {
         profitSharingStatisticsMapper.addTotalAmount(amount, id, System.currentTimeMillis());
@@ -34,7 +42,10 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
     
     @Override
     public void insert(ProfitSharingStatistics sharingStatistics) {
-    
+        long timeMillis = System.currentTimeMillis();
+        sharingStatistics.setUpdateTime(timeMillis);
+        sharingStatistics.setCreateTime(timeMillis);
+        profitSharingStatisticsMapper.insert(sharingStatistics);
     }
     
     @Override
@@ -53,6 +64,32 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
         return profitSharingStatisticsMapper.subtractAmountById(id, rollbackAmount, System.currentTimeMillis());
     }
     
+    @Slave
+    @Override
+    public ProfitSharingCheckVO checkMaxProfitSharingLimit(Integer tenantId, Long franchiseeId) {
+        ProfitSharingCheckVO profitSharingCheckVO = new ProfitSharingCheckVO();
+        profitSharingCheckVO.setDate(getCurrentDate());
+        
+        ProfitSharingConfigVO profitSharingConfigVO = profitSharingConfigService.queryByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+        if (Objects.isNull(profitSharingConfigVO)) {
+            return profitSharingCheckVO;
+        }
+        
+        profitSharingCheckVO.setAmountLimit(profitSharingCheckVO.getAmountLimit());
+        
+        ProfitSharingStatistics sharingStatistics = queryByTenantIdAndFranchiseeIdAndStatisticsTime(tenantId, franchiseeId, getCurrentMonth());
+        
+        BigDecimal useAmount = BigDecimal.ZERO;
+        if (Objects.nonNull(sharingStatistics)) {
+            useAmount = sharingStatistics.getTotalAmount();
+        }
+        
+        profitSharingCheckVO.setUseAmount(useAmount);
+        profitSharingCheckVO.setIsExceed(useAmount.compareTo(profitSharingCheckVO.getAmountLimit()) >= 0 ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode());
+        
+        return profitSharingCheckVO;
+    }
+    
     
     /**
      * 获取当前月
@@ -67,6 +104,24 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
         
         // 定义日期格式：年-月
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        
+        // 格式化当前日期，只保留年和月
+        return currentDate.format(formatter);
+    }
+    
+    
+    /**
+     * 获取当前年月日
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/28 17:30
+     */
+    public String getCurrentDate() {
+        // 获取当前日期
+        LocalDate currentDate = LocalDate.now();
+        
+        // 定义日期格式：年-月
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
         // 格式化当前日期，只保留年和月
         return currentDate.format(formatter);

@@ -30,25 +30,25 @@ public class ProfitSharingReceiverConfigOptRequest implements Serializable {
     /**
      * 分账方配置表id
      */
-    @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "profitSharingConfigId不可为空")
+    @NotNull(groups = {CreateGroup.class}, message = "profitSharingConfigId不可为空")
     private Long profitSharingConfigId;
     
     /**
      * 分账接收方账户，接收方类型为商户则为商户id，接收方类型为个人则为openId，
      */
-    @NotBlank(groups = {CreateGroup.class, UpdateGroup.class}, message = "account不可为空")
+    @NotBlank(groups = {CreateGroup.class}, message = "account不可为空")
     private String account;
     
     /**
      * 接收方类型：1-商户，2-个人
      */
-    @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "receiverType不可为空")
+    @NotNull(groups = {CreateGroup.class}, message = "receiverType不可为空")
     private Integer receiverType;
     
     /**
      * 接收方账户名
      */
-    @NotBlank(groups = {CreateGroup.class, UpdateGroup.class}, message = "receiverName不可为空")
+    @NotBlank(groups = {CreateGroup.class}, message = "receiverName不可为空")
     private String receiverName;
     
     /**
@@ -60,7 +60,7 @@ public class ProfitSharingReceiverConfigOptRequest implements Serializable {
     /**
      * 与分账方关系
      */
-    @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "relationType不可为空")
+    @NotNull(groups = {CreateGroup.class}, message = "relationType不可为空")
     private String relationType;
     
     
