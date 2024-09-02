@@ -585,16 +585,10 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
                 manageInsuranceOrder(orderIdList.get(i), tradeOrderStatus);
-                
-                // 处理分账回调
-//                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
             }
             
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 manageMemberCardOrderV2(orderIdList.get(i), tradeOrderStatus);
-                
-                // 处理分账回调
-//                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), tradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
             }
         }
         
@@ -621,6 +615,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
+                log.info("NOTIFY MEMBERCARD INSURANCE ORDER PROFIT SHARING ORDER MQ,tradeOrderNo={}", unionTradeOrder.getTradeOrderNo());
                 for (int i = 0; i < orderTypeList.size(); i++) {
                     if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
                         // 处理换电-保险分账
