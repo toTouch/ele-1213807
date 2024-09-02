@@ -55,19 +55,19 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
-            log.error("no sessionId,{}", receiverMessage.getOriginContent());
+            log.warn("no sessionId,{}", receiverMessage.getOriginContent());
             return;
         }
 
         CabinetPowerReport cabinetPowerReport = JsonUtil.fromJson(receiverMessage.getOriginContent(), CabinetPowerReport.class);
         if (Objects.isNull(cabinetPowerReport)) {
-            log.error("NORMAL POWER ERROR! parse  power error! originContent={}", receiverMessage.getOriginContent());
+            log.warn("NORMAL POWER WARN! parse  power error! originContent={}", receiverMessage.getOriginContent());
             return;
         }
 
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            log.error("NORMAL POWER ERROR! not found store! sessionId={},storeId={}", receiverMessage.getSessionId(), electricityCabinet.getStoreId());
+            log.warn("NORMAL POWER WARN! not found store! sessionId={},storeId={}", receiverMessage.getSessionId(), electricityCabinet.getStoreId());
             return;
         }
 

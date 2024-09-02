@@ -141,7 +141,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         ExchangeOrderRsp exchangeOrderRsp = JsonUtil.fromJson(receiverMessage.getOriginContent(), ExchangeOrderRsp.class);
         if (Objects.isNull(exchangeOrderRsp)) {
-            log.error("EXCHANGE ORDER ERROR! originData is null! requestId={}", receiverMessage.getSessionId());
+            log.warn("EXCHANGE ORDER WARN! originData is null! requestId={}", receiverMessage.getSessionId());
             return;
         }
         
@@ -285,7 +285,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(sendResult.getLeft())) {
-            log.error("EXCHANGE ERROR! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
+            log.warn("EXCHANGE WARN! send orderSuccessAck command error! orderId={}", electricityCabinetOrder.getOrderId());
         }
     }
     
@@ -296,7 +296,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("EXCHANGE ORDER ERROR! userInfo is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
+            log.warn("EXCHANGE ORDER WARN! userInfo is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
                     exchangeOrderRsp.getOrderId());
             return;
         }
@@ -385,7 +385,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handleCallBatteryChangeSoc(electricityBattery);
             
         } else {
-            log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),
+            log.warn("EXCHANGE ORDER WARN! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),
                     exchangeOrderRsp.getOrderId());
         }
         
@@ -535,7 +535,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("EXCHANGE ORDER ERROR! userInfo is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
+            log.warn("EXCHANGE ORDER WARN! userInfo is null!uid={},requestId={},orderId={}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(),
                     exchangeOrderRsp.getOrderId());
             return;
         }
@@ -645,7 +645,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //上报的订单状态值
         String orderStatus = exchangeOrderRsp.getOrderStatus();
         if (Objects.isNull(orderStatus)) {
-            log.error("ELE LOCK CELL orderStatus is null! orderId={}", exchangeOrderRsp.getOrderId());
+            log.warn("ELE LOCK CELL orderStatus is null! orderId={}", exchangeOrderRsp.getOrderId());
             return;
         }
         
