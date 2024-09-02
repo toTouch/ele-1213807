@@ -228,17 +228,15 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         Integer authStatus = freeDepositOrder.getAuthStatus();
         Long createTime = freeDepositOrder.getCreateTime();
         Integer depositType = freeDepositOrder.getDepositType();
-        if (Objects.equals(authStatus, FreeDepositOrder.AUTH_FROZEN)) {
-            if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(depositType)) {
-                freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
-                freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
-            }
-            if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
-                freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
-                freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
-            }
-            return freeDepositUserInfoVo;
+        if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(depositType)) {
+            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
         }
+        if (FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(depositType)) {
+            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
+            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
+        }
+        return freeDepositUserInfoVo;
         
 //        // 查询押金缴纳信息
 //        CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
@@ -277,7 +275,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
 //            freeDepositUserInfoVo.setApplyCarDepositTime(createTime);
 //            freeDepositUserInfoVo.setCarDepositAuthStatus(authStatus);
 //        }
-        return null;
+//        return freeDepositUserInfoVo;
     }
     
     /**
