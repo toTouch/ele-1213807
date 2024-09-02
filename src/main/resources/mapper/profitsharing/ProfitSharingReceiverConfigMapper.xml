@@ -30,8 +30,7 @@
     <sql id="page_where">
         where
         del_flag = 0
-        and tenat_id=
-        #{tenantId}
+        and tenant_id=#{tenantId}
         and
         profit_sharing_config_id
         =
@@ -114,9 +113,6 @@
         update
         <include refid="table_name"/>
         <set>
-            account = #{account},
-            receiver_type = #{receiverType},
-            receiver_name = #{receiverName},
             scale = #{scale},
             remark = #{remark},
             update_time = #{updateTime}
