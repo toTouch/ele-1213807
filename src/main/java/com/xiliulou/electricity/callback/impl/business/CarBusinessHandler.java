@@ -132,7 +132,8 @@ public class CarBusinessHandler implements BusinessHandler {
     @Override
     public boolean unfree(FreeDepositOrder order) {
         try {
-            CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(order.getOrderId());
+            log.info("Enter the process of unfree deposit callback for car/car electronics, order number: {}",order.getOrderId());
+            CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(order.getOrderId());
             // 更改押金状态
             CarRentalPackageDepositRefundPo depositRefundUpdateEntity = new CarRentalPackageDepositRefundPo();
             depositRefundUpdateEntity.setOrderNo(depositRefundEntity.getOrderNo());
@@ -162,7 +163,7 @@ public class CarBusinessHandler implements BusinessHandler {
             
             //删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(depositRefundEntity.getUid());
-            
+            log.info("Car/car electronics order no unfree deposit callback completed, order number: {}",order.getOrderId());
             return true;
         }catch (Exception e){
             log.error("unfree callback failed.", e);
