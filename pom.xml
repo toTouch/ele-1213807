@@ -189,7 +189,7 @@
         <dependency>
             <groupId>com.xiliulou</groupId>
             <artifactId>xiliulou-common-thirdmall</artifactId>
-            <version>2.1.10-snapshot</version>
+            <version>2.1.11</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
