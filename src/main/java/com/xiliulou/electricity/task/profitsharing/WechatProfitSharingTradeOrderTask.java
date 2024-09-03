@@ -67,7 +67,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             //
             WechatProfitSharingCreateOrderRequest orderRequest = new WechatProfitSharingCreateOrderRequest();
             orderRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payConfig));
-            orderRequest.setTransactionId(profitSharingOrder.getThirdOrderNo());
+            orderRequest.setTransactionId(profitSharingOrder.getThirdTradeOrderNo());
             orderRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
             orderRequest.setUnfreezeUnsplit(i == (profitSharingModels.size() - 1));
             orderRequest.setReceivers(receivers);
