@@ -30,7 +30,7 @@
                                                   franchisee_id,
                                                   create_time, update_time, out_account_type, business_type, channel)
         values (#{profitSharingOrderId}, #{thirdTradeOrderNo}, #{orderDetailNo}, #{thirdOrderDetailNo},
-                #{profitSharingReceiveAccount}, #{scale}, #{profitSharingAmount}, #{status}, #{failReason}, #{finishTime}, #{unfreezeStatus}, #{tenantId}, #franchiseeId,
+                #{profitSharingReceiveAccount}, #{scale}, #{profitSharingAmount}, #{status}, #{failReason}, #{finishTime}, #{unfreezeStatus}, #{tenantId}, #{franchiseeId},
                 #{createTime}, #{updateTime}, #{outAccountType}, #{businessType}, #{channel})
     </insert>
     
