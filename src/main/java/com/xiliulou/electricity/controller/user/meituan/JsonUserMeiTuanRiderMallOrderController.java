@@ -63,13 +63,13 @@ public class JsonUserMeiTuanRiderMallOrderController {
      * @param orderId   美团订单号
      */
     @PostMapping("/user/meiTuanRiderMall/createBatteryMemberCardOrder")
-    public R createBatteryMemberCardOrder(@RequestParam Long packageId, @RequestParam String orderId) {
+    public R createBatteryMemberCardOrder(@RequestParam String orderId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
         
-        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).packageId(packageId).orderId(orderId).build();
+        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderId).build();
         return R.ok(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
     }
 }

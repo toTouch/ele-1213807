@@ -199,7 +199,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     public Triple<Boolean, String, Object> createBatteryMemberCardOrder(OrderQuery query) {
         Integer tenantId = query.getTenantId();
         Long uid = query.getUid();
-        Long memberCardId = query.getPackageId();
         String meiTuanOrderId = query.getOrderId();
         
         boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY + uid, "1", 3 * 1000L, false);
@@ -227,6 +226,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("MeiTuan order redeem fail! not found user,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
+    
+    
+            // 套餐ID
+            Long memberCardId = meiTuanRiderMallOrder.getPackageId();
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
             if (Objects.isNull(batteryMemberCard)) {
