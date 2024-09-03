@@ -775,7 +775,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         // 三方解冻
         UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
-                .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
+                .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
         if (!triple.getLeft()) {
             return Triple.of(false, "100406", triple.getRight());
@@ -1148,7 +1148,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         // 三方解冻
         UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
-                .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
+                .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
         if (!triple.getLeft()) {
             return Triple.of(false, "100406", triple.getRight());
