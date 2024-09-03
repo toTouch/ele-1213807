@@ -6,9 +6,9 @@ package com.xiliulou.electricity.constant.profitsharing;
  * @desc
  */
 public class ProfitSharingTradeOrderConstant {
-    public static final String CHANNEL_ALI = "ALIPAY-支付宝";
+    public static final String CHANNEL_ALI = "ALIPAY";
     
-    public static final String CHANNEL_WE_CHAT = "WECHAT-微信";
+    public static final String CHANNEL_WE_CHAT = "WECHAT";
     
     /**
      * 处理状态：0-初始化，1-待发起分账，2-分账发起成功，3-分账发起失败，4-已失效

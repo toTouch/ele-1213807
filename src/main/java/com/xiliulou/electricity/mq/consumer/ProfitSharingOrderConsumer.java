@@ -54,9 +54,10 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
     private ProfitSharingTradeMixedOrderService profitSharingTradeMixedOrderService;
     
     public void onMessage(String message) {
+        log.info("PROFIT SHARING ORDE CONSUMER INFO!received msg={}", message);
+        
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
     
-        log.info("PROFIT SHARING ORDE CONSUMER INFO!received msg={}", message);
         ProfitSharingTradeOrderUpdate profitSharingTradeOrderUpdate = null;
         
         try {
