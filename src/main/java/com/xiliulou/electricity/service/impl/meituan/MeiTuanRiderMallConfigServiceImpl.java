@@ -49,22 +49,19 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
                     .secret(meiTuanRiderMallConfigRequest.getSecret()).tenantId(tenantId).delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             Integer insert = meiTuanRiderMallConfigMapper.insert(meiTuanRiderMallConfig);
-            DbUtils.dbOperateSuccessThen(insert, () -> {
+            DbUtils.dbOperateSuccessThenHandleCache(insert, i -> {
                 redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + tenantId);
-                return null;
             });
             
             return insert;
         }
         
-        meiTuanRiderMallConfig.setAppId(meiTuanRiderMallConfigRequest.getAppId());
-        meiTuanRiderMallConfig.setAppKey(meiTuanRiderMallConfigRequest.getAppKey());
-        meiTuanRiderMallConfig.setSecret(meiTuanRiderMallConfigRequest.getSecret());
+        MeiTuanRiderMallConfig updateMeiTuanRiderMallConfig = MeiTuanRiderMallConfig.builder().appId(meiTuanRiderMallConfigRequest.getAppId())
+                .appKey(meiTuanRiderMallConfigRequest.getAppKey()).secret(meiTuanRiderMallConfigRequest.getSecret()).updateTime(System.currentTimeMillis()).build();
         
-        Integer update = meiTuanRiderMallConfigMapper.update(meiTuanRiderMallConfig);
-        DbUtils.dbOperateSuccessThen(update, () -> {
+        Integer update = meiTuanRiderMallConfigMapper.update(updateMeiTuanRiderMallConfig);
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + tenantId);
-            return null;
         });
         
         return update;
