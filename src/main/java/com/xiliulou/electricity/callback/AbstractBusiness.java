@@ -110,7 +110,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         Integer payStatus = payStatus(params);
         Integer successCode = successCode(params);
         String payNo = payNo(params);
-        log.info("updateFreeDepositOrder, authNo is {}, payStatus is {},code is {}", authNo, payStatus , successCode);
+        log.info("updateFreeDepositOrder, authNo is {}, payStatus is {},code is {},payNo is {}", authNo, payStatus , successCode,payNo);
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         if (StringUtils.isNotEmpty(authNo)){
@@ -122,11 +122,13 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         if (Objects.nonNull(payStatus) ){
             if (StringUtils.isNotEmpty(payNo) && Objects.equals(payStatus, PAY_STATUS_DEAL_SUCCESS)){
                 BigDecimal payTransAmt = freeDepositAlipayHistoryService.queryPayTransAmtByPayNo(payNo);
-                freeDepositOrderUpdate.setPayTransAmt((BigDecimal.valueOf(freeDepositOrderUpdate.getPayTransAmt()).subtract(payTransAmt)).doubleValue());
+                freeDepositOrderUpdate.setWithheldAmt((BigDecimal.valueOf(freeDepositOrder.getWithheldAmt()).add(payTransAmt).doubleValue()));
+                freeDepositOrderUpdate.setPayTransAmt((BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).subtract(payTransAmt)).doubleValue());
             }
             freeDepositOrderUpdate.setPayStatus(payStatus);
         }
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        log.info("updateFreeDepositOrder, freeDepositOrderUpdate is {}", freeDepositOrderUpdate);
         freeDepositOrderService.update(freeDepositOrderUpdate);
         
         if (Objects.nonNull(payStatus)){
@@ -137,6 +139,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
             }
             history.setPayStatus(payStatus);
             history.setUpdateTime(System.currentTimeMillis());
+            log.info("updateFreeDepositOrder, history is {}", history);
             freeDepositAlipayHistoryService.updateByPayNoOrOrderId(history);
         }
         
