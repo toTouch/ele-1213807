@@ -122,13 +122,14 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         if (Objects.nonNull(payStatus) ){
             if (StringUtils.isNotEmpty(payNo) && Objects.equals(payStatus, PAY_STATUS_DEAL_SUCCESS)){
                 BigDecimal payTransAmt = freeDepositAlipayHistoryService.queryPayTransAmtByPayNo(payNo);
+                log.info("payTransAmt is {},payNo is {}", payTransAmt, payNo);
                 freeDepositOrderUpdate.setWithheldAmt((BigDecimal.valueOf(freeDepositOrder.getWithheldAmt()).add(payTransAmt).doubleValue()));
                 freeDepositOrderUpdate.setPayTransAmt((BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).subtract(payTransAmt)).doubleValue());
             }
             freeDepositOrderUpdate.setPayStatus(payStatus);
         }
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-//        log.info("updateFreeDepositOrder, freeDepositOrderUpdate is {}", freeDepositOrderUpdate);
+        log.info("updateFreeDepositOrder, freeDepositOrderUpdate is {}", freeDepositOrderUpdate);
         freeDepositOrderService.update(freeDepositOrderUpdate);
         
         if (Objects.nonNull(payStatus)){
