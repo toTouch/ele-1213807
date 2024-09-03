@@ -80,4 +80,8 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
         return params.getRequestBody().getOrderStatus();
     }
     
+    @Override
+    public String payNo(PxzParams.AuthPay params) {
+        return params.getRequestBody().getPayNo();
+    }
 }

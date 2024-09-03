@@ -67,4 +67,9 @@ public class FyAuthPayHandler extends AbstractBusiness<FyParams.AuthPayOrUnfree>
         return FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS;
     }
     
+    
+    @Override
+    public String payNo(FyParams.AuthPayOrUnfree params) {
+        return params.getPayNo();
+    }
 }
