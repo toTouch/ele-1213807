@@ -27,14 +27,7 @@ public class JsonUserInstallmentRecordController {
     @Autowired
     private InstallmentRecordService installmentRecordService;
 
-    /**
-     * 购买分期套餐
-     */
-    @ProcessParameter
-    @PostMapping("/pay")
-    public R<Object> pay(@RequestBody InstallmentPayQuery query, HttpServletRequest request) {
-        return installmentRecordService.pay(query, request);
-    }
+
 
     @ProcessParameter
     @PostMapping("/sign")

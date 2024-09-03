@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
@@ -91,6 +94,7 @@ public interface BatteryMemberCardService {
     
     /**
      * 批量修改套餐排序参数
+     *
      * @param sortParamQueries 套餐id、排序参数
      * @return 修改行数
      */
@@ -98,10 +102,14 @@ public interface BatteryMemberCardService {
     
     /**
      * 查询套餐以供后台排序
+     *
      * @param tokenUser ContextHolder中保存的用户信息
      * @return 返回id、name、sortParam、createTime
      */
     List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser);
     
     List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
+    
+    Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+            InstallmentRecord installmentRecord);
 }

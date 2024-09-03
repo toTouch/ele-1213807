@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
@@ -23,8 +24,10 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -50,6 +53,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupServ
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
@@ -1036,6 +1040,47 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+            InstallmentRecord installmentRecord) {
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
+        
+        // 计算子订单金额
+        BigDecimal payAmount;
+        if (Objects.equals(installmentRecord.getPaidInstallment(), 0)) {
+            payAmount = batteryMemberCard.getDownPayment();
+        } else if (installmentRecord.getInstallmentNo() - installmentRecord.getPaidInstallment() > 1) {
+        
+        }
+        
+        ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+        electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
+        electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
+        electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        electricityMemberCardOrder.setMemberCardId(batteryMemberCard.getId());
+        electricityMemberCardOrder.setUid(userInfo.getUid());
+        electricityMemberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());
+        electricityMemberCardOrder.setCardName(batteryMemberCard.getName());
+        electricityMemberCardOrder.setPayAmount(payAmount);
+        electricityMemberCardOrder.setUserName(userInfo.getName());
+        electricityMemberCardOrder.setValidDays(batteryMemberCard.getValidDays());
+        electricityMemberCardOrder.setTenantId(batteryMemberCard.getTenantId());
+        electricityMemberCardOrder.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+        electricityMemberCardOrder.setPayCount(payCount);
+        electricityMemberCardOrder.setSendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null);
+        electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
+        electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
+        electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
+        electricityMemberCardOrder.setParamFranchiseeId(null);
+        electricityMemberCardOrder.setWechatMerchantId(null);
+        
+        return Triple.of(true, null, electricityMemberCardOrder);
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

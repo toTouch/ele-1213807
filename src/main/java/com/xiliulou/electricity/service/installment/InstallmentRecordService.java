@@ -50,14 +50,6 @@ public interface InstallmentRecordService {
     R<Integer> count(InstallmentRecordQuery installmentRecordQuery);
     
     /**
-     * 用户端购买分期套餐
-     * @param query 购买请求参数
-     * @return 携带二维码连接的返回结果
-     */
-    R<Object> pay(InstallmentPayQuery query, HttpServletRequest request);
-    
-    
-    /**
      * 生成签约记录，
      * @param query 购买请求对象
      * @param userInfo 用户信息
