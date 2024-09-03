@@ -207,7 +207,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         ProfitSharingReceiverConfig receiverConfig = new ProfitSharingReceiverConfig();
         receiverConfig.setId(request.getId());
         receiverConfig.setUpdateTime(System.currentTimeMillis());
-        receiverConfig.setReceiverStatus(receiver.getReceiverStatus());
+        receiverConfig.setReceiverStatus(request.getReceiverStatus());
         
         profitSharingReceiverConfigMapper.updateStatus(receiverConfig);
     }
