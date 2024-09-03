@@ -50,9 +50,9 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
     
     
     public void onMessage(String message) {
-        log.info("PROFIT SHARING ORDE REFUND CONSUMER INFO!received msg={}", message);
-    
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+        
+        log.info("PROFIT SHARING ORDE REFUND CONSUMER INFO!received msg={}", message);
     
         ProfitSharingTradeOrderRefund profitSharingTradeOrderRefund = null;
         
