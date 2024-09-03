@@ -53,6 +53,7 @@
         <include refid="table_name"/>
         where del_flag = 0 and state = #{state} and id > #{startId}
         and channel=#{channel}
+        and tenant_id=#{tenantId}
         <if test="startTime!=null">
             and create_time > #{startTime}
         </if>

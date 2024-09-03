@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.task.profitsharing;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
@@ -73,6 +74,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             orderRequest.setChannel(ChannelEnum.WECHAT);
             
             try {
+                log.info("WechatProfitSharingTradeOrderTask.order orderRequest:{}", JsonUtil.toJson(orderRequest));
                 BaseProfitSharingCreateOrderResp order = profitSharingServiceAdapter.order(orderRequest);
                 if (Objects.isNull(order)) {
                     throw new BizException("分账返回异常");

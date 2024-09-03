@@ -43,7 +43,7 @@
             (#{item.profitSharingOrderId} , #{item.thirdTradeOrderNo}, #{item.orderDetailNo}, #{item.thirdOrderDetailNo}
             , #{item.profitSharingReceiveAccount}, #{item.scale}, #{item.profitSharingAmount}, #{item.status}, #{item.failReason}, #{item.finishTime}, #{item.unfreezeStatus},
             #{item.tenantId}
-            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime}, #{item.outAccountType}, #{item.businessType}, #{channel})
+            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime}, #{item.outAccountType}, #{item.businessType}, #{item.channel})
         </foreach>
     </insert>
     <update id="update">
