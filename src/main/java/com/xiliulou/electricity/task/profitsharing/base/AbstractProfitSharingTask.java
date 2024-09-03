@@ -11,6 +11,7 @@ import com.xiliulou.electricity.task.profitsharing.AbstractProfitSharingTradeOrd
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,11 +37,17 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
     
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        TtlTraceIdSupport.set();
+        
         try {
-            AbstractProfitSharingTradeOrderTask.TaskParam taskParam = new AbstractProfitSharingTradeOrderTask.TaskParam();
+            TaskParam taskParam = new TaskParam();
             if (StringUtils.isNotBlank(param)) {
                 taskParam = JsonUtil.fromJson(param, AbstractProfitSharingTradeOrderTask.TaskParam.class);
+            }
+            
+            if (StringUtils.isNotBlank(taskParam.getTraceId())) {
+                TtlTraceIdSupport.set(taskParam.getTraceId());
+            } else {
+                TtlTraceIdSupport.set();
             }
             
             if (CollectionUtils.isNotEmpty(taskParam.getTenantIds())) {
@@ -99,4 +106,16 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
     protected abstract String getChannel();
     
     
+    @Data
+    public static class TaskParam {
+        
+        /**
+         * 租户id集合
+         */
+        private List<Integer> tenantIds;
+        
+        
+        private String traceId;
+        
+    }
 }

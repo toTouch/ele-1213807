@@ -72,7 +72,7 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
         profitSharingOrderQueryModel.setStartId(0L);
         profitSharingOrderQueryModel.setStatusList(SUPPORT_STATUS);
         profitSharingOrderQueryModel.setTenantId(tenantId);
-        
+        profitSharingOrderQueryModel.setSize(SIZE);
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
         
         while (true) {

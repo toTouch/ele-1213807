@@ -762,18 +762,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     protected abstract void order(T payConfig, List<ProfitSharingCheckModel> profitSharingModels);
     
     
-    @Data
-    public static class TaskParam {
-        
-        /**
-         * 租户id集合
-         */
-        private List<Integer> tenantIds;
-        
-        
-        private String traceId;
-        
-    }
+  
     
     
     @Data
