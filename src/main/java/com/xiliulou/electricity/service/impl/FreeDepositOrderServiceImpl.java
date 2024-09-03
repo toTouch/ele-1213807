@@ -2182,13 +2182,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         String authPayOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.WITHHOLD, userInfo.getUid());
         
-        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().payTransAmt(payTransAmt).authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo())
-                .uid(uid).tenantId(userInfo.getTenantId()).subject("代扣").orderId(orderId).channel(freeDepositOrder.getChannel()).build();
-        Triple<Boolean, String, Object> authedToPayTriple = freeDepositService.authToPay(payQuery);
-        // 代扣调用失败则返回，否则生成代扣记录，状态为初始化
-        if (!authedToPayTriple.getLeft()) {
-            return authedToPayTriple;
-        }
         
         // 更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
@@ -2224,6 +2217,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setFranchiseeId(freeDepositOrder.getFranchiseeId());
         freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
         freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
+        
+        
+        FreeDepositAuthToPayQuery payQuery = FreeDepositAuthToPayQuery.builder().payTransAmt(payTransAmt).authPayOrderId(authPayOrderId).authNo(freeDepositOrder.getAuthNo())
+                .uid(uid).tenantId(userInfo.getTenantId()).subject("代扣").orderId(orderId).channel(freeDepositOrder.getChannel()).build();
+        Triple<Boolean, String, Object> authedToPayTriple = freeDepositService.authToPay(payQuery);
+        // 代扣调用失败则返回，否则生成代扣记录，状态为初始化
+        if (!authedToPayTriple.getLeft()) {
+            return authedToPayTriple;
+        }
         
         delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(),MqProducerConstant.AUTH_APY_TAG_NAME);
         
