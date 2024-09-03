@@ -2227,7 +2227,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return authedToPayTriple;
         }
         
-        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(),MqProducerConstant.AUTH_APY_TAG_NAME);
+        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), authPayOrderId, MqProducerConstant.AUTH_APY_TAG_NAME);
         
         return Triple.of(true, "", "授权转支付交易处理中！");
     }
