@@ -35,6 +35,11 @@ public class ProfitSharingTradeMixedOrderQueryModel {
     private Long startId;
     
     /**
+     * 开始时间
+     */
+    private Long startTime;
+    
+    /**
      * 渠道 WECHAT-微信
      */
     private String channel;
