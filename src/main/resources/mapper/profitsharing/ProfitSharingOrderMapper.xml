@@ -21,7 +21,7 @@
         <foreach item="item" collection="list" separator=",">
             (#{item.thirdTradeOrderNo}, #{item.orderNo}, #{item.thirdOrderNo}, #{item.amount}, #{item.businessType},
             #{item.status}, #{item.type}, #{item.tenantId}, #{item.franchiseeId}, #{item.thirdMerchantId}, #{item.createTime}, #{item.updateTime},
-            #{item.outAccountType}, #{channel})
+            #{item.outAccountType}, #{item.channel})
         </foreach>
     
     </insert>

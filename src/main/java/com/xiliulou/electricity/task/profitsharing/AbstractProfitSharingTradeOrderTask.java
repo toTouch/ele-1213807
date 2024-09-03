@@ -115,6 +115,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     @Override
     protected void executeByTenantId(Integer tenantId) {
+        
+        log.info("AbstractProfitSharingTradeOrderTask.executeByTenantId tenantId:{} start", tenantId);
+        
         ProfitSharingTradeMixedOrderQueryModel queryModel = new ProfitSharingTradeMixedOrderQueryModel();
         queryModel.setState(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode());
         queryModel.setTenantId(tenantId);
@@ -161,6 +164,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 
                 if (CollectionUtils.isEmpty(curTradeOrders)) {
                     // 将当前聚合订单状态更新为已处理（补偿）
+                    log.info("AbstractProfitSharingTradeOrderTask.executeByTenantId update status is COMPLETE,mixedOrderId:{}", mixedOrder.getId());
                     mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
                     mixedOrder.setUpdateTime(System.currentTimeMillis());
                     profitSharingTradeMixedOrderService.updateStatusById(mixedOrder);
@@ -171,6 +175,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 executeByThirdOrderNo(mixedOrder, curTradeOrders, tenantFranchiseePayParamMap);
             });
         }
+        
+        log.info("AbstractProfitSharingTradeOrderTask.executeByTenantId tenantId:{} end", tenantId);
     }
     
     
@@ -190,6 +196,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         // 支付配置校验
         if (!this.checkDisposeByPayConfig(payConfig, mixedOrder, orders)) {
             // 支付配置不存在
+            log.info("AbstractProfitSharingTradeOrderTask.executeByThirdOrderNo config is null mixedOrderId:{},tenantId:{},franchiseeId:{}", mixedOrder.getId(),
+                    mixedOrder.getTenantId(), mixedOrder.getFranchiseeId());
             return;
         }
         
@@ -237,8 +245,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         // 判定是否到可退期限，获取当前可退订单期限最大的订单可退时间
         Long maxRefundTime = supportRefundOrderList.stream().map(v -> v.getPayTime() + ONE_DAY).max(Long::compare).orElse(0L);
-        if (System.currentTimeMillis() < maxRefundTime) {
+        long timeMillis = System.currentTimeMillis();
+        if (timeMillis < maxRefundTime) {
             // 当前的订单组只要有一条在可退期限内，则全部延期处理
+            log.info("AbstractProfitSharingTradeOrderTask.disposeByRefund The order is not due for refund,thirdOrderNo:{},maxRefundTime:{},currentTime:{}",
+                    mixedOrder.getThirdOrderNo(), maxRefundTime, timeMillis);
             return;
         }
         
@@ -261,10 +272,13 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 
                 if (Objects.isNull(refundOrder)) {
                     // 未发生退款,允许分账（前置已经判断过退款期限）
+                    log.info("AbstractProfitSharingTradeOrderTask.disposeByRefund not exist refundOrder orderNo:{}", profitSharingTradeOrder.getOrderNo());
                     allowProfitSharingTradeOrders.add(profitSharingTradeOrder);
                     continue;
                 }
                 
+                log.info("AbstractProfitSharingTradeOrderTask.disposeByRefund exist refund order refundOrderNo:{},status:{}", refundOrder.getRefundOrderNo(),
+                        refundOrder.getStatus());
                 // 有退款
                 if (BatteryMembercardRefundOrder.STATUS_SUCCESS.equals(refundOrder.getStatus())) {
                     // 退款成功,退款分账单更新状态为已失效
@@ -284,6 +298,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         if (CollectionUtils.isEmpty(allowProfitSharingTradeOrders)) {
             // 将退款更新为已失效
+            log.info("AbstractProfitSharingTradeOrderTask.disposeByRefund allowProfitSharingTradeOrders is null");
             mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
             profitSharingTradeOrderTxService.updateStatus(mixedOrder, null, lapsedTradeOrderIds, "已退款");
             return;
@@ -310,7 +325,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         String clientId = UUID.randomUUID().toString();
         Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
         if (!lock) {
-            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! ");
+            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! lockKey:{}", lockKey);
             throw new BizException("lock get error!");
         }
         
@@ -327,6 +342,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             // 失败的
             List<ProfitSharingCheckModel> failList = isSuccessMap.get(Boolean.FALSE);
+            
+            log.info("AbstractProfitSharingTradeOrderTask.executeProfitSharing successList size:{} , failList size :{}", successList.size(), failList.size());
             
             if (CollectionUtils.isEmpty(successList)) {
                 // 无成功的，全部失败，则需要解冻
@@ -447,6 +464,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         detail.setCreateTime(timeMillis);
         detail.setUpdateTime(timeMillis);
         detail.setOutAccountType(payConfig.getConfigType());
+        detail.setChannel(getChannel());
         return detail;
     }
     
@@ -467,6 +485,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         long timeMillis = System.currentTimeMillis();
         profitSharingOrder.setCreateTime(timeMillis);
         profitSharingOrder.setUpdateTime(timeMillis);
+        profitSharingOrder.setChannel(getChannel());
         return profitSharingOrder;
     }
     
@@ -523,6 +542,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             if (profitSharingTotalAmount.compareTo(maxProfitSharingAmount) > 0) {
                 
                 //分账总额>单笔最大限额
+                log.info("AbstractProfitSharingTradeOrderTask.checkProfitSharing profitSharingTotalAmount:{} > maxProfitSharingAmount:{}", profitSharingTotalAmount.toPlainString(),
+                        maxProfitSharingAmount.toPlainString());
+                
                 this.buildErrorProfitSharingCheckModel(receiverConfigs, profitSharingCheckModel, "分账余额不足", BigDecimal.ZERO);
                 continue;
             }
@@ -531,6 +553,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             if (totalAmount.compareTo(amountLimit) > 0) {
                 // 累计限额>最大限额
+                
+                log.info("AbstractProfitSharingTradeOrderTask.checkProfitSharing totalAmount:{} > amountLimit:{}", totalAmount.toPlainString(), amountLimit.toPlainString());
+                
                 this.buildErrorProfitSharingCheckModel(receiverConfigs, profitSharingCheckModel, "分账余额不足", BigDecimal.ZERO);
                 continue;
             }
@@ -588,6 +613,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         profitSharingOrderDetail.setUpdateTime(time);
         profitSharingOrderDetail.setOutAccountType(payConfig.getConfigType());
         profitSharingOrderDetail.setBusinessType(businessType);
+        profitSharingOrderDetail.setChannel(getChannel());
         return profitSharingOrderDetail;
     }
     
@@ -614,6 +640,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         profitSharingOrder.setThirdMerchantId(profitSharingTradeOrder.getThirdMerchantId());
         profitSharingOrder.setCreateTime(profitSharingTradeOrder.getCreateTime());
         profitSharingOrder.setUpdateTime(profitSharingTradeOrder.getUpdateTime());
+        profitSharingOrder.setChannel(getChannel());
         return profitSharingOrder;
     }
     
@@ -672,6 +699,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         if (CollectionUtils.isNotEmpty(enableProfitSharingReceiverConfigs)) {
             return true;
         }
+        
+        log.info("AbstractProfitSharingTradeOrderTask.checkDisposeByReceiver  Enable Receivers is null,tenantId:{},franchiseeId:{}", payConfig.getTenantId(),
+                payConfig.getFranchiseeId());
         
         // 无可用分账接收方,生成分账订单和分账订单明细（用来解冻）
         List<Long> tradeOrderIds = new ArrayList<>(orders.size());
