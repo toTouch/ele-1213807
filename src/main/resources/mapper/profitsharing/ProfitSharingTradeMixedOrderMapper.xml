@@ -27,7 +27,8 @@
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time, uid, whether_mixed_pay)
+        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time, uid,
+        whether_mixed_pay)
         values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount},#{channel}, #{createTime}, #{updateTime}, #{uid}, #{whetherMixedPay})
     </insert>
     
@@ -55,6 +56,9 @@
         <if test="startTime!=null">
             and create_time > #{startTime}
         </if>
+        <if test="notNullThirdOrderNo != null">
+            and third_order_no is not null
+        </if>
         order by id asc
         limit #{size}
     </select>
@@ -76,7 +80,7 @@
             limit #{offset}, #{size}
     </select>
     <select id="selectById"
-            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
         select
         <include refid="base_column"/>
         from

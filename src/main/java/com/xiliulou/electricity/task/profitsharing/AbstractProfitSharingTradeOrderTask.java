@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingStatistics;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
@@ -120,6 +121,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         queryModel.setSize(SIZE);
         queryModel.setStartId(0L);
         queryModel.setChannel(this.getChannel());
+        queryModel.setNotNullThirdOrderNo(YesNoEnum.YES.getCode());
         
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
         
