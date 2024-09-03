@@ -48,11 +48,13 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -319,16 +321,16 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @date 2024/8/29 11:19
      */
     private List<ProfitSharingCheckModel> executeProfitSharing(T payConfig, List<ProfitSharingTradeOrder> allowProfitSharingTradeOrders) {
-    
+        
         // TODO: 2024/9/3 临时注释
         // 分布式锁
-//        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, payConfig.getTenantId(), payConfig.getFranchiseeId());
-//        String clientId = UUID.randomUUID().toString();
-//        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
-//        if (!lock) {
-//            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! lockKey:{}", lockKey);
-//            throw new BizException("lock get error!");
-//        }
+        //        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, payConfig.getTenantId(), payConfig.getFranchiseeId());
+        //        String clientId = UUID.randomUUID().toString();
+        //        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
+        //        if (!lock) {
+        //            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! lockKey:{}", lockKey);
+        //            throw new BizException("lock get error!");
+        //        }
         
         try {
             // 校验分账信息
@@ -339,10 +341,10 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             Map<Boolean, List<ProfitSharingCheckModel>> isSuccessMap = checkModels.stream().collect(Collectors.groupingBy(ProfitSharingCheckModel::getIsSuccess));
             
             // 成功的
-            List<ProfitSharingCheckModel> successList = isSuccessMap.get(Boolean.TRUE);
+            List<ProfitSharingCheckModel> successList = Optional.ofNullable(isSuccessMap.get(Boolean.TRUE)).orElse(Collections.emptyList());
             
             // 失败的
-            List<ProfitSharingCheckModel> failList = isSuccessMap.get(Boolean.FALSE);
+            List<ProfitSharingCheckModel> failList = Optional.ofNullable(isSuccessMap.get(Boolean.FALSE)).orElse(Collections.emptyList());
             
             log.info("AbstractProfitSharingTradeOrderTask.executeProfitSharing successList size:{} , failList size :{}", successList.size(), failList.size());
             
@@ -378,7 +380,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             return checkModels;
             
         } finally {
-//            redisService.releaseLockLua(lockKey, clientId);
+            //            redisService.releaseLockLua(lockKey, clientId);
         }
     }
     
