@@ -67,7 +67,16 @@ public interface FreeDepositAlipayHistoryService {
     
     R queryCount(FreeDepositAlipayHistoryQuery query);
     
+    /**
+     * 可以代扣多次，所以这里返回可能是多条
+     * @param orderId
+     * @return
+     */
     FreeDepositAlipayHistory queryByOrderId(String orderId);
+    
+    List<FreeDepositAlipayHistory> queryListByOrderId(String orderId);
+    
+    FreeDepositAlipayHistory queryByAuthOrderId(String authPayOrderId);
     
     Integer updateByOrderId(FreeDepositAlipayHistory freeDepositAlipayHistory);
     

@@ -2189,10 +2189,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEALING);
+        // 在回调中更新金额
         // 累计代扣金额
-        freeDepositOrderUpdate.setWithheldAmt(freeDepositOrder.getWithheldAmt() + payTransAmt.doubleValue());
+        //freeDepositOrderUpdate.setWithheldAmt(freeDepositOrder.getWithheldAmt() + payTransAmt.doubleValue());
         // 剩余代扣金额
-        freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getPayTransAmt() - payTransAmt.doubleValue());
+        //freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getPayTransAmt() - payTransAmt.doubleValue());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
         
@@ -2226,17 +2227,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     
     @Override
-    public Triple<Boolean, String, Object> syncAuthPayStatus(String orderId) {
+    public Triple<Boolean, String, Object> syncAuthPayStatus(String orderId, String authPayOrderId) {
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
-        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByOrderId(orderId);
+        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByAuthOrderId(authPayOrderId);
         if (Objects.isNull(alipayHistory)) {
-            log.warn("FREE DEPOSIT WARN! not found alipayHistory,orderId={}", orderId);
-            return Triple.of(false, "100403", "免押订单不存在");
+            log.warn("FREE DEPOSIT WARN! not found alipayHistory,orderId={}", authPayOrderId);
+            return Triple.of(false, "100403", "代扣订单不存在");
         }
         
         // 查询代扣状态

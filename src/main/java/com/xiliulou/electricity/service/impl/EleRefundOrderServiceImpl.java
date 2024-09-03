@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -1615,13 +1616,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(item.getOrderId());
+            item.setPayTransAmt(freeDepositOrder.getPayTransAmt());
+            
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
             
-            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
-            if (Objects.isNull(freeDepositAlipayHistory)) {
+            List<FreeDepositAlipayHistory> freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryListByOrderId(item.getOrderId());
+            if (CollUtil.isEmpty(freeDepositAlipayHistory)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
@@ -1820,8 +1824,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return;
             }
         
-            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
-            if (Objects.isNull(freeDepositAlipayHistory)) {
+            List<FreeDepositAlipayHistory> freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryListByOrderId(item.getOrderId());
+            if (CollUtil.isEmpty(freeDepositAlipayHistory)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }

@@ -103,5 +103,5 @@ public interface FreeDepositOrderService {
     
     Triple<Boolean, String, Object> freeDepositTrilateralPay(String orderId, BigDecimal payTransAmt, String remark);
     
-    Triple<Boolean, String, Object> syncAuthPayStatus(String orderId);
+    Triple<Boolean, String, Object> syncAuthPayStatus(String orderId,String authPayOrderId);
 }
