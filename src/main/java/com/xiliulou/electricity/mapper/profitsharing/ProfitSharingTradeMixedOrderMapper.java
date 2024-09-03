@@ -49,6 +49,6 @@ public interface ProfitSharingTradeMixedOrderMapper {
     
     int updateThirdOrderNoById(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate);
     
-    ProfitSharingTradeMixedOrder selectById(@Param("profitSharingMixedOrderId") Long profitSharingMixedOrderId);
+    ProfitSharingTradeMixedOrder selectById(@Param("id") Long profitSharingMixedOrderId);
 }
 
