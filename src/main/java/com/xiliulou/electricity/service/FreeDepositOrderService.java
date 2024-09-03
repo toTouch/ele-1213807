@@ -61,6 +61,8 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatus();
     
+    Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusV2();
+    
     Integer selectByPageCount(FreeDepositOrderQuery query);
     
     Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt, String remark);
@@ -81,6 +83,8 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> freeBatteryDepositOrderV3(FreeBatteryDepositQueryV3 query);
     
+    Triple<Boolean, String, Object> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 query);
+    
     Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig);
 
     Triple<Boolean, String, Object> freeBatteryDepositHybridOrderV3(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
@@ -96,4 +100,8 @@ public interface FreeDepositOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    Triple<Boolean, String, Object> freeDepositTrilateralPay(String orderId, BigDecimal payTransAmt, String remark);
+    
+    Triple<Boolean, String, Object> syncAuthPayStatus(String orderId,String authPayOrderId);
 }

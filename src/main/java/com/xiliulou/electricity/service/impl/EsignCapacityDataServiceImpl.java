@@ -60,7 +60,7 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
         }
         
         siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                .tenantId(tenantId).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE)
+                .tenantId(tenantId).addContext("type", RechargeAlarm.ELECTRONIC_SIGNATURE.getCode())
                 .addContext("count", esignCapacityData.getEsignCapacity()).build());
         return esignCapacityData;
     }

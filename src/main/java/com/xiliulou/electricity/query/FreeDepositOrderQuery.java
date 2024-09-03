@@ -54,6 +54,8 @@ public class FreeDepositOrderQuery {
      * 押金类型 1：电池，2：租车
      */
     private Integer depositType;
+    
+    private Long franchiseeId;
 
     private List<Long> franchiseeIds;
 

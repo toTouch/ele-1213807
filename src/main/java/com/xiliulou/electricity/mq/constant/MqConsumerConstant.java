@@ -44,4 +44,11 @@ public interface MqConsumerConstant {
      * 电池电压电流变化 consumer group
      */
     String BATTERY_CHARGE_ATTR_CHANGE_GROUP = "battery_charge_attr_change_group";
+    
+    /**
+     * 使用同一topic,不同tag,为保证订阅消息一致性，免押、解冻、代扣使用不同消费者组
+     */
+    String FREE_DEPOSIT_CONSUMER_GROUP = "free_deposit_group";
+    String UN_FREE_DEPOSIT_CONSUMER_GROUP = "un_free_deposit_group";
+    String AUTH_PAY_CONSUMER_GROUP = "auth_pay_group";
 }

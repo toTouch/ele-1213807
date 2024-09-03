@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.mapper.FreeDepositAlipayHistoryMapper;
 import com.xiliulou.electricity.query.FreeDepositAlipayHistoryQuery;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.vo.FreeDepositAlipayHistoryVo;
 import org.springframework.stereotype.Service;
@@ -12,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +33,9 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     
     @Resource
     private FreeDepositAlipayHistoryMapper freeDepositAlipayHistoryMapper;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -106,6 +114,18 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     @Override
     public R queryList(FreeDepositAlipayHistoryQuery query) {
         List<FreeDepositAlipayHistoryVo> voList = freeDepositAlipayHistoryMapper.queryList(query);
+        
+        if (CollUtil.isEmpty(voList)){
+            return R.ok(new ArrayList<>());
+        }
+        
+        voList.forEach(e->{
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+            if (Objects.nonNull(franchisee)){
+                e.setFranchiseeName(franchisee.getName());
+            }
+        });
+        
         return R.ok(voList);
     }
     
@@ -120,6 +140,18 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     @Override
     public FreeDepositAlipayHistory queryByOrderId(String orderId) {
         return freeDepositAlipayHistoryMapper.queryByOrderId(orderId);
+    }
+    
+    @Slave
+    @Override
+    public List<FreeDepositAlipayHistory> queryListByOrderId(String orderId) {
+        return freeDepositAlipayHistoryMapper.queryListByOrderId(orderId);
+    }
+    
+    @Slave
+    @Override
+    public FreeDepositAlipayHistory queryByAuthOrderId(String authPayOrderId) {
+        return freeDepositAlipayHistoryMapper.queryByAuthOrderId(authPayOrderId);
     }
     
     @Override
@@ -138,5 +170,10 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return freeDepositAlipayHistoryMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    @Override
+    public Integer queryPayingByOrderId(String orderId) {
+        return freeDepositAlipayHistoryMapper.selectPayingByOrderId(orderId);
     }
 }

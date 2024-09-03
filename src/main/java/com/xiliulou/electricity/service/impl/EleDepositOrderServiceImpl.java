@@ -396,7 +396,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
-        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+//        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        // 退款金额为1️剩余代扣金额
+        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
         
         UserInfo updateUserInfo = new UserInfo();
@@ -471,10 +473,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleRefundOrderService.insert(eleRefundOrder);
         
-        if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
-                Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
-            freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
-        }
+        // if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
+        //        Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
+        //     freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
+        // }
         
         // 等到后台同意退款
         return R.ok(packageOwe);
@@ -541,6 +543,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
+            // orderId
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrderVO.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)){
+                eleDepositOrderVO.setPayTransAmt(freeDepositOrder.getPayTransAmt());
+            }
             
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中

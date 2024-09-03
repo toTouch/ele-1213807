@@ -12,9 +12,17 @@ public class FreeDepositAlipayHistoryVo {
     
     private Long id;
     
+    /**
+     * 代扣订单号
+     */
+    private String authPayOrderId;
+    
+    /**
+     * 免押订单号
+     */
     private String orderId;
     
-    private String name;
+    private String realName;
     
     private String phone;
     
@@ -34,6 +42,9 @@ public class FreeDepositAlipayHistoryVo {
     
     private Integer type;
     
+    /**
+     * 代扣状态
+     */
     private Integer payStatus;
     
     private String remark;
@@ -41,4 +52,9 @@ public class FreeDepositAlipayHistoryVo {
     private Long createTime;
     
     private Integer tenantId;
+    
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 }

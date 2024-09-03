@@ -1,0 +1,81 @@
+package com.xiliulou.electricity.callback.impl.pxz;
+
+
+import com.xiliulou.electricity.callback.AbstractBusiness;
+import com.xiliulou.electricity.callback.BusinessHandler;
+import com.xiliulou.electricity.dto.callback.CallbackContext;
+import com.xiliulou.electricity.dto.callback.PxzParams;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
+import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
+import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.FreeDepositService;
+import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import com.xiliulou.electricity.service.handler.impl.PxzBaseFreeDepositOrderServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * Description: This class is PxzFreeOfChargeHandler!
+ * </p>
+ * <p>Project: saas-electricity</p>
+ * <p>Copyright: Copyright (c) 2024</p>
+ * <p>Company: xiliulou</p>
+ *
+ * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+ * @since V1.0 2024/8/27
+ **/
+@Slf4j
+@Service
+public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> implements PxzSupport<PxzParams.AuthPay> {
+    
+    private final PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService;
+    
+    protected PxzAuthPayHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
+            ApplicationContext applicationContext, PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService) {
+        super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
+        
+        this.pxzBaseFreeDepositOrderService = pxzBaseFreeDepositOrderService;
+    }
+    
+    @Override
+    public boolean business(Integer business) {
+        return FreeBusinessTypeEnum.FREE.getCode().equals(business);
+    }
+    
+    @Override
+    public boolean process(BusinessHandler handler,FreeDepositOrder order , PxzParams.AuthPay params) {
+        if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getOrderStatus())){
+            return pxzBaseFreeDepositOrderService.cancelAuthPay(
+                    FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
+                            .channel(order.getChannel()).channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
+        }
+        return handler.authPay(order);
+    }
+    
+    @Override
+    public String orderId(CallbackContext<PxzParams.AuthPay> callbackContext) {
+        return callbackContext.getParams().getOrderId();
+    }
+    
+    @Override
+    public Integer successCode(PxzParams.AuthPay params) {
+        return null;
+    }
+    
+    @Override
+    public String authNo(PxzParams.AuthPay params) {
+        return null;
+    }
+    
+    @Override
+    public Integer payStatus(PxzParams.AuthPay params) {
+        return params.getOrderStatus();
+    }
+    
+}

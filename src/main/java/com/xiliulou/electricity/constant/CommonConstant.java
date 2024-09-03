@@ -87,4 +87,6 @@ public interface CommonConstant {
     
     Integer MSG_TYPE = 411;
     
+    Integer ZERO = 0;
+    
 }
