@@ -390,15 +390,15 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
     
     private void operateRecord(ProfitSharingConfig old, ProfitSharingConfig newConfig) {
         
-        Long franchiseeId = newConfig.getFranchiseeId();
+        Long franchiseeId = old.getFranchiseeId();
         
         String franchiseeName = MultiFranchiseeConstant.DEFAULT_FRANCHISEE_NAME;
         if (!MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(franchiseeId)) {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             franchiseeName = Optional.ofNullable(franchisee).orElse(new Franchisee()).getName();
         }
-        String oldScaleLimit = old.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros() + "%";
-        String newScaleLimit = newConfig.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros() + "%";
+        String oldScaleLimit = old.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros().toPlainString() + "%";
+        String newScaleLimit = newConfig.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros().toPlainString() + "%";
         
         String oldAmountLimit = old.getAmountLimit().toString();
         String newAmountLimit = newConfig.getAmountLimit().toString();
