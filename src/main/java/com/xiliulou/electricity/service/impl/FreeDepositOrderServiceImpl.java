@@ -2247,6 +2247,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100403", "代扣订单不存在");
         }
         
+        if (Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS)) {
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100435", "代扣状态已成功，请勿重复同步代扣");
+        }
+        
         // 查询代扣状态
         FreeDepositAuthToPayStatusQuery query = FreeDepositAuthToPayStatusQuery.builder().uid(freeDepositOrder.getUid()).tenantId(freeDepositOrder.getTenantId())
                 .orderId(freeDepositOrder.getOrderId()).authNo(freeDepositOrder.getAuthNo()).authPayOrderId(alipayHistory.getAuthPayOrderId())
@@ -2258,8 +2263,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         // 更新免押订单状态
+        
+        // 更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        if (Objects.equals(authPayStatusBO.getOrderStatus(), FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS)) {
+            // 代扣金额
+            freeDepositOrderUpdate.setWithheldAmt(freeDepositOrder.getWithheldAmt() + alipayHistory.getAlipayAmount().doubleValue());
+            // 剩余代扣金额
+            freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getPayTransAmt() - alipayHistory.getAlipayAmount().doubleValue());
+        }
         freeDepositOrderUpdate.setPayStatus(authPayStatusBO.getOrderStatus());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
