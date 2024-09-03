@@ -221,13 +221,17 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120136", "未能查询到该美团订单号码，请再次确认后操作");
             }
             
+            if (Objects.equals(meiTuanRiderMallOrder.getOrderUseStatus(), VirtualTradeStatusEnum.ORDER_USE_STATUS_USED.getCode())) {
+                log.warn("MeiTuan order redeem fail! meiTuanOrderId used, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
+                return Triple.of(false, "120138", "该订单已兑换，请勿重复兑换");
+            }
+            
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 log.warn("MeiTuan order redeem fail! not found user,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
-    
-    
+            
             // 套餐ID
             Long memberCardId = meiTuanRiderMallOrder.getPackageId();
             
@@ -370,7 +374,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 this.asyncRollback(rollBackBO);
             }
             
-            return null;
+            return Triple.of(true, "", null);
         } finally {
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY + uid);
         }
