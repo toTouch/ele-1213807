@@ -2132,6 +2132,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
+        if (Objects.isNull(freeDepositOrder.getPayTransAmt()) || BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(BigDecimal.valueOf(0.0)) <= 0) {
+            log.warn("FREE DEPOSIT WARN! freeDepositOrder.payTransAmt is 0 ,orderId={}", orderId);
+            return Triple.of(false, "100434", "没有可代扣金额");
+        }
+        
         if (System.currentTimeMillis() - freeDepositOrder.getCreateTime() > FreeDepositOrder.YEAR) {
             log.warn("FREE DEPOSIT WARN! order over one year,orderId={}", orderId);
             return Triple.of(false, "100424", "免押订单已超过1年，无法代扣");
