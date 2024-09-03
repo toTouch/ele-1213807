@@ -34,6 +34,13 @@ public class ProfitSharingTradeMixedOrderQueryModel {
      */
     private Long startId;
     
+    
+    /**
+     * 是否查询非空第三发单号
+     * @see com.xiliulou.electricity.enums.YesNoEnum
+     */
+    private Integer notNullThirdOrderNo;
+    
     /**
      * 开始时间
      */
