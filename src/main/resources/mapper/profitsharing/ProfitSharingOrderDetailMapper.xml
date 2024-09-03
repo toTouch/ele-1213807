@@ -28,22 +28,22 @@
         insert into t_profit_sharing_order_detail(profit_sharing_order_id, third_trade_order_no, order_detail_no, third_order_detail_no,
                                                   profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id,
                                                   franchisee_id,
-                                                  create_time, update_time, out_account_type, business_type)
+                                                  create_time, update_time, out_account_type, business_type, channel)
         values (#{profitSharingOrderId}, #{thirdTradeOrderNo}, #{orderDetailNo}, #{thirdOrderDetailNo},
                 #{profitSharingReceiveAccount}, #{scale}, #{profitSharingAmount}, #{status}, #{failReason}, #{finishTime}, #{unfreezeStatus}, #{tenantId}, #franchiseeId,
-                #{createTime}, #{updateTime}, #{outAccountType}, #{businessType})
+                #{createTime}, #{updateTime}, #{outAccountType}, #{businessType}, #{channel})
     </insert>
     
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_profit_sharing_order_detail( profit_sharing_order_id, third_trade_order_no, order_detail_no, third_order_detail_no,
         profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
-        create_time, update_time, out_account_type, business_type)
+        create_time, update_time, out_account_type, business_type, channel)
         values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.profitSharingOrderId} , #{item.thirdTradeOrderNo}, #{item.orderDetailNo}, #{item.thirdOrderDetailNo}
             , #{item.profitSharingReceiveAccount}, #{item.scale}, #{item.profitSharingAmount}, #{item.status}, #{item.failReason}, #{item.finishTime}, #{item.unfreezeStatus},
             #{item.tenantId}
-            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime}, #{item.outAccountType}, #{item.businessType})
+            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime}, #{item.outAccountType}, #{item.businessType}, #{channel})
         </foreach>
     </insert>
     <update id="update">

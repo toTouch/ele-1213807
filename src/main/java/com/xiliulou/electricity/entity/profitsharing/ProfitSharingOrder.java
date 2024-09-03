@@ -100,5 +100,10 @@ public class ProfitSharingOrder implements Serializable {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 支付渠道：ALIPAY：支付宝，WECHAT：微信
+     */
+    private String channel;
 }
 

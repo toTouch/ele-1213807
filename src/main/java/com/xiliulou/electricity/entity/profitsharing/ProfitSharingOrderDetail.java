@@ -116,5 +116,10 @@ public class ProfitSharingOrderDetail implements Serializable {
      * 业务类型：0：换电-套餐购买、1：换电-保险购买、2：换电-滞纳金缴纳、3：换电-押金缴纳, 98: 解冻，99：系统级别
      */
     private Integer businessType;
+    
+    /**
+     * 支付渠道：ALIPAY：支付宝，WECHAT：微信
+     */
+    private String channel;
 }
 

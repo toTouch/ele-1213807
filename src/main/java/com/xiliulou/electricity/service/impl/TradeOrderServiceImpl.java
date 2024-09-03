@@ -88,6 +88,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -498,7 +499,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
                         .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode())
                         .amount(electricityMemberCardOrder.getPayAmount()).processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT)
-                        .channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime())
+                        .channel(ChannelEnum.WECHAT.getCode()).supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime())
                         .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(batteryMemberCard.getRefundLimit()).build();
             
                 profitSharingTradeOrderList.add(profitSharingTradeOrder);
@@ -520,7 +521,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                         .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).orderNo(insuranceOrder.getOrderId())
                         .orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
-                        .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT)
+                        .processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT).channel(ChannelEnum.WECHAT.getCode())
                         .supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO).payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
             
@@ -535,7 +536,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT)
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
                     .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
             log.info("intermentPayAmount={}", unionPayOrder);
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
@@ -966,7 +967,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                             .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
                             .orderNo(eleBatteryServiceFeeOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode())
                             .amount(eleBatteryServiceFeeOrder.getPayAmount()).processState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT)
-                            .channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
+                            .channel(ChannelEnum.WECHAT.getCode()).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
                             .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                             .uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
                     
@@ -983,7 +984,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ProfitSharingTradeOrderConstant.CHANNEL_WE_CHAT)
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
                     .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
     
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {

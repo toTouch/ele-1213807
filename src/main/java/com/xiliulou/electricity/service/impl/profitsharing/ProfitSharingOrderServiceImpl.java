@@ -115,6 +115,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrder.setBusinessType(ProfitSharingBusinessTypeEnum.UNFREEZE.getCode());
             profitSharingOrder.setAmount(profitSharingTradeMixedOrder.getAmount());
             profitSharingOrder.setThirdTradeOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
+            profitSharingOrder.setChannel(ChannelEnum.WECHAT.getCode());
             // 如果不是混合支付，则业务订单号等于换电支付订单号
             if (Objects.equals(profitSharingTradeMixedOrder.getWhetherMixedPay(), ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)) {
                 String orderNo = profitSharingTradeOrderService.queryOrderNoyByThirdOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
@@ -133,6 +134,8 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrder.setTenantId(profitSharingTradeMixedOrder.getTenantId());
             profitSharingOrder.setFranchiseeId(profitSharingTradeMixedOrder.getFranchiseeId());
             profitSharingOrder.setThirdMerchantId(profitSharingTradeMixedOrder.getThirdMerchantId());
+            profitSharingOrder.setCreateTime(System.currentTimeMillis());
+            profitSharingOrder.setUpdateTime(System.currentTimeMillis());
             // 分账方类型
             if (Objects.equals(profitSharingTradeMixedOrder.getFranchiseeId(), NumberConstant.ZERO_L)) {
                 profitSharingOrder.setOutAccountType(ProfitSharingOrderDetailConstant.OUT_ACCOUNT_TYPE_DEFAULT);
@@ -159,7 +162,8 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetail.setBusinessType(ProfitSharingBusinessTypeEnum.UNFREEZE.getCode());
             profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeMixedOrder.getUid()));
             profitSharingOrderDetail.setProfitSharingOrderId(profitSharingOrder.getId());
-        
+            profitSharingOrder.setChannel(ChannelEnum.WECHAT.getCode());
+    
             if (Objects.nonNull(unfreeze) && ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
                 List<ReceiverResp> receivers = unfreeze.getReceivers();
             
