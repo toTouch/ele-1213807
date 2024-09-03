@@ -132,7 +132,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             receiver.setAccount(receiverConfig.getAccount());
             receiver.setName(receiverConfig.getReceiverName());
             receiver.setDescription(receiverConfig.getRemark());
-            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).toString());
+            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).stripTrailingZeros().toString());
             return receiver;
         }).collect(Collectors.toList());
     }
