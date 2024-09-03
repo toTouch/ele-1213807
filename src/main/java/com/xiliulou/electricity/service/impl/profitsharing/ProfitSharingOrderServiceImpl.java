@@ -21,6 +21,7 @@ import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
@@ -101,6 +102,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
             unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
             unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);
+            unfreezeRequest.setChannel(ChannelEnum.WECHAT);
         
             log.info("PROFIT SHARING UNFREEZE INFO!unfreeze, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
             
