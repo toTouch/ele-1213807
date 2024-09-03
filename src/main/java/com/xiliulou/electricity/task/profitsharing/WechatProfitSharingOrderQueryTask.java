@@ -58,7 +58,7 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
         queryOrderRequest.setCommonParam(wechatProfitSharingCommonRequest);
         queryOrderRequest.setTransactionId(order.getThirdTradeOrderNo());
         queryOrderRequest.setOutOrderNo(order.getOrderNo());
-        queryOrderRequest.setChannel(ChannelEnum.WECHAT);
+//        queryOrderRequest.setChannel(ChannelEnum.WECHAT);
         try {
             BaseProfitSharingQueryOrderResp resp = profitSharingServiceAdapter.query(queryOrderRequest);
             if (Objects.isNull(resp)) {

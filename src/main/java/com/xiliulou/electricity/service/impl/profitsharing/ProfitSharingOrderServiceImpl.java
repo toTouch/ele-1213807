@@ -102,7 +102,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
             unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
             unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);
-            unfreezeRequest.setChannel(ChannelEnum.WECHAT);
+//            unfreezeRequest.setChannel(ChannelEnum.WECHAT);
         
             log.info("PROFIT SHARING UNFREEZE INFO!unfreeze, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
             

@@ -71,7 +71,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             orderRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
             orderRequest.setUnfreezeUnsplit(i == (profitSharingModels.size() - 1));
             orderRequest.setReceivers(receivers);
-            orderRequest.setChannel(ChannelEnum.WECHAT);
+//            orderRequest.setChannel(ChannelEnum.WECHAT);
             
             try {
                 log.info("WechatProfitSharingTradeOrderTask.order orderRequest:{}", JsonUtil.toJson(orderRequest));
@@ -132,7 +132,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             receiver.setAccount(receiverConfig.getAccount());
             receiver.setName(receiverConfig.getReceiverName());
             receiver.setDescription(receiverConfig.getRemark());
-            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).stripTrailingZeros().toString());
+            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).stripTrailingZeros().intValue());
             return receiver;
         }).collect(Collectors.toList());
     }
