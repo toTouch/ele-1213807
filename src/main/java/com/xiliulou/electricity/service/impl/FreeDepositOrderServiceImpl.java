@@ -2265,10 +2265,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         this.update(freeDepositOrderUpdate);
         
         FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
-        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setId(alipayHistory.getId());
         freeDepositAlipayHistory.setPayStatus(authPayStatusBO.getOrderStatus());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
-        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
+        freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
         
         return Triple.of(true, null, null);
     }
