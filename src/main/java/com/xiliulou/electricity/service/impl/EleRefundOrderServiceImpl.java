@@ -1617,8 +1617,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(item.getOrderId());
-            item.setPayTransAmt(freeDepositOrder.getPayTransAmt());
-            
+            if (Objects.nonNull(freeDepositOrder)) {
+                item.setPayTransAmt(freeDepositOrder.getPayTransAmt());
+            }
+           
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
