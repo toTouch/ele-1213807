@@ -2270,6 +2270,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (CollectionUtils.isEmpty(orders)){
             return Map.of();
         }
-        return orders.stream().filter(Objects::nonNull).collect(Collectors.toMap(FreeDepositOrder::getOrderId, FreeDepositOrder::getPayTransAmt));
+        return orders.stream().filter(Objects::nonNull).filter(o->Objects.nonNull(o.getPayTransAmt())).collect(Collectors.toMap(FreeDepositOrder::getOrderId, FreeDepositOrder::getPayTransAmt));
     }
 }

@@ -128,7 +128,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
             freeDepositOrderUpdate.setPayStatus(payStatus);
         }
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        log.info("updateFreeDepositOrder, freeDepositOrderUpdate is {}", freeDepositOrderUpdate);
+//        log.info("updateFreeDepositOrder, freeDepositOrderUpdate is {}", freeDepositOrderUpdate);
         freeDepositOrderService.update(freeDepositOrderUpdate);
         
         if (Objects.nonNull(payStatus)){
@@ -139,7 +139,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
             }
             history.setPayStatus(payStatus);
             history.setUpdateTime(System.currentTimeMillis());
-            log.info("updateFreeDepositOrder, history is {}", history);
+//            log.info("updateFreeDepositOrder, history is {}", history);
             freeDepositAlipayHistoryService.updateByPayNoOrOrderId(history);
         }
         
