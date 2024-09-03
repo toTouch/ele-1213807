@@ -68,6 +68,8 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
     @Override
     protected void executeByTenantId(Integer tenantId) {
         
+        log.info("AbstractProfitSharingOrderQueryTask.executeByTenantId tenantId:{} start", tenantId);
+        
         ProfitSharingOrderQueryModel profitSharingOrderQueryModel = new ProfitSharingOrderQueryModel();
         profitSharingOrderQueryModel.setStartId(0L);
         profitSharingOrderQueryModel.setStatusList(SUPPORT_STATUS);
@@ -80,6 +82,8 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
             if (CollectionUtils.isEmpty(orders)) {
                 break;
             }
+            profitSharingOrderQueryModel.setStartId(orders.get(orders.size() - 1).getId());
+            
             List<Long> profitSharingOrderIds = new ArrayList<>();
             Set<Long> franchiseeIds = new HashSet<>();
             
@@ -102,6 +106,7 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
             });
         }
         
+        log.info("AbstractProfitSharingOrderQueryTask.executeByTenantId tenantId:{} end", tenantId);
         
     }
     
@@ -120,8 +125,8 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
             // 结果处理失败，等后续处理
             return;
         }
-    
-        profitSharingOrderTxService.update(order,curOrderDetails);
+        
+        profitSharingOrderTxService.update(order, curOrderDetails);
     }
     
     /**
