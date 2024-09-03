@@ -410,8 +410,8 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         record.put("amountLimit", newAmountLimit);
         
         Map<String, String> oldRecord = Maps.newHashMapWithExpectedSize(1);
-        record.put("scaleLimit", oldScaleLimit);
-        record.put("amountLimit", oldAmountLimit);
+        oldRecord.put("scaleLimit", oldScaleLimit);
+        oldRecord.put("amountLimit", oldAmountLimit);
         operateRecordUtil.record(oldRecord, record);
     }
     
