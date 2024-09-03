@@ -162,7 +162,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetail.setBusinessType(ProfitSharingBusinessTypeEnum.UNFREEZE.getCode());
             profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeMixedOrder.getUid()));
             profitSharingOrderDetail.setProfitSharingOrderId(profitSharingOrder.getId());
-            profitSharingOrder.setChannel(ChannelEnum.WECHAT.getCode());
+            profitSharingOrderDetail.setChannel(ChannelEnum.WECHAT.getCode());
     
             if (Objects.nonNull(unfreeze) && ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
                 List<ReceiverResp> receivers = unfreeze.getReceivers();
