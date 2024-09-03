@@ -215,7 +215,8 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
             }
             
             if (payTransAmtMap.containsKey(depositRefundEntity.getDepositPayOrderNo())){
-                depositRefundVO.setPayTransAmt(BigDecimal.valueOf(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo())));
+                BigDecimal payTransAmt = Objects.isNull(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo()))?depositRefundEntity.getRealAmount():BigDecimal.valueOf(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo()));
+                depositRefundVO.setPayTransAmt(payTransAmt);
             }
             
             return depositRefundVO;
