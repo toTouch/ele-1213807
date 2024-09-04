@@ -35,7 +35,7 @@ public interface ProfitSharingOrderDetailMapper {
     Integer existsFailByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
     
     int updateUnfreezeStatusByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("status") Integer status, @Param("unfreezeStatus") Integer unfreezeStatus,
-            @Param("businessTypeList") List<Integer> businessTypeList, long updateTime);
+            @Param("businessTypeList") List<Integer> businessTypeList,@Param("updateTime") long updateTime);
     
     /**
      * 更新
