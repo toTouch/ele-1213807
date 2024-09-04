@@ -451,6 +451,6 @@
         select alipay_amount from t_free_deposit_alipay_history where auth_pay_order_id = #{payNo}
     </select>
     <select id="selectOrderIdByAuthNo" resultType="java.lang.String">
-        select order_id from t_free_deposit_alipay_history where auth_pay_order_id = #{authNo}
+        select order_id from t_free_deposit_alipay_history where auth_pay_order_id = #{payNo}
     </select>
 </mapper>
