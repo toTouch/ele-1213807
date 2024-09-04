@@ -35,6 +35,6 @@ public class JsonUserMeiTuanRiderMallConfigController {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
         
-        return R.ok(Objects.isNull(meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(TenantContextHolder.getTenantId())));
+        return R.ok(Objects.nonNull(meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(TenantContextHolder.getTenantId())));
     }
 }
