@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.handler.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
@@ -156,6 +157,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         if (!triple.getLeft()) {
             return false;
         }
+        log.info("PXZ INFO! cancelAuthPay.result is {}", JsonUtil.toJson(result));
         
         return result.getData();
     }
