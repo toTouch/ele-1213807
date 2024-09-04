@@ -322,15 +322,13 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     private List<ProfitSharingCheckModel> executeProfitSharing(T payConfig, List<ProfitSharingTradeOrder> allowProfitSharingTradeOrders) {
         
-        // TODO: 2024/9/3 临时注释
-        // 分布式锁
-        //        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, payConfig.getTenantId(), payConfig.getFranchiseeId());
-        //        String clientId = UUID.randomUUID().toString();
-        //        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
-        //        if (!lock) {
-        //            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! lockKey:{}", lockKey);
-        //            throw new BizException("lock get error!");
-        //        }
+        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, payConfig.getTenantId(), payConfig.getFranchiseeId());
+        String clientId = UUID.randomUUID().toString();
+        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
+        if (!lock) {
+            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! lockKey:{}", lockKey);
+            throw new BizException("lock get error!");
+        }
         
         try {
             // 校验分账信息
@@ -380,7 +378,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             return checkModels;
             
         } finally {
-            //            redisService.releaseLockLua(lockKey, clientId);
+            redisService.releaseLockLua(lockKey, clientId);
         }
     }
     
@@ -760,9 +758,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @date 2024/8/28 19:28
      */
     protected abstract void order(T payConfig, List<ProfitSharingCheckModel> profitSharingModels);
-    
-    
-  
     
     
     @Data
