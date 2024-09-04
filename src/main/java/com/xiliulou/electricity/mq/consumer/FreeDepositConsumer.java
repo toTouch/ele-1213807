@@ -41,7 +41,7 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.warn("FreeDepositConsumer WARN! freeDepositOrder is null, orderId is{}", dto.getOrderId());
+            log.warn("FreeDepositConsumer WARN! freeDepositOrder is null, orderId is {}", dto.getOrderId());
             return;
         }
         
@@ -49,7 +49,7 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
         
         // 如果是已冻结/超时，则不更新
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_TIMEOUT)) {
-            log.info("FreeDepositConsumer INFO! freeDepositOrder.freeStatus is {}, orderId is{}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
+            log.info("FreeDepositConsumer INFO! freeDepositOrder.freeStatus is {}, orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
             return;
         }
         
