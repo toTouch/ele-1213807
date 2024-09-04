@@ -115,7 +115,7 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
                 log.error("PROFIT SHARING ORDER REFUND CONSUMER ERROR!", e);
             }
         }
-        log.info("PROFIT SHARING ORDE REFUND CONSUMER INFO END!orderNo = {}, refundOrderNo = {}", profitSharingTradeOrderRefund.getOrderNo(), profitSharingTradeOrderRefund.getRefundOrderNo());
+        
         ProfitSharingTradeOrder profitSharingUpdate = new ProfitSharingTradeOrder();
         profitSharingUpdate.setId(profitSharingTradeOrder.getId());
         // 交易失败

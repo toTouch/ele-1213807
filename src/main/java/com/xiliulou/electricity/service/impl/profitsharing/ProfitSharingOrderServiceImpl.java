@@ -99,14 +99,16 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
         try {
             WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
             unfreezeRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(wechatPayParamsDetails));
-            unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
+            unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
             unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
             unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);
-//            unfreezeRequest.setChannel(ChannelEnum.WECHAT);
         
-            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
+            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze start, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
             
             WechatProfitSharingUnfreezeResp unfreeze = (WechatProfitSharingUnfreezeResp) profitSharingServiceAdapter.unfreeze(unfreezeRequest);
+            
+            // todo
+            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze end, thirdTradeOrderNo={}, response={}", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreeze);
         
             // 保存解冻分账订单
             ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
