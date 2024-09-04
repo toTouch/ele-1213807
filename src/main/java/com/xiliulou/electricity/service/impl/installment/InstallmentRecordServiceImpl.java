@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.installment;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -7,6 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -19,8 +21,10 @@ import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
@@ -75,6 +79,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private FengYunConfig fengYunConfig;
     
     private RedisService redisService;
+    
+    private TenantService tenantService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -149,26 +155,36 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         try {
             InstallmentRecord installmentRecord = queryRecordWithStatusForUser(query.getUid(), InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
             if (Objects.isNull(installmentRecord)) {
-                log.warn("INSTALLMENT SIGN ERROR! There is no installment record in the initialization state, uid={}", query.getUid());
+                log.warn("INSTALLMENT SIGN ERROR! There is no installment record in the initialization state. uid={}", query.getUid());
                 return R.fail("301002", "签约失败，请联系管理员");
             }
+            
+            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+            if (Objects.isNull(tenant)) {
+                log.warn("INSTALLMENT SIGN ERROR! The user is not associated with a tenant. uid={}", query.getUid());
+                return R.fail("301002", "签约失败，请联系管理员");
+            }
+            
             
             Vars vars = new Vars();
             vars.setUserName(query.getUserName());
             vars.setMobile(query.getMobile());
+            vars.setProvinceName("陕西省");
+            vars.setCityName("西安市");
+            vars.setDistrictName("未央区");
             
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
             agreementRequest.setChannelFrom(CHANNEL_FROM_MINI_APP);
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-            agreementRequest.setMerchantName("test");
-            agreementRequest.setServiceName("");
+            agreementRequest.setMerchantName(tenant.getName());
+            agreementRequest.setServiceName("分期签约");
             agreementRequest.setServiceDescription("分期签约");
             agreementRequest.setNotifyUrl("/test");
             agreementRequest.setVars(JsonUtil.toJson(vars));
             
             FyCommonQuery<FySignAgreementRequest> commonQuery = new FyCommonQuery<>();
             commonQuery.setChannelCode("test");
-            commonQuery.setFlowNo("XLLTEST" + System.currentTimeMillis());
+            commonQuery.setFlowNo(installmentRecord.getExternalAgreementNo());
             commonQuery.setFyRequest(agreementRequest);
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);
             
