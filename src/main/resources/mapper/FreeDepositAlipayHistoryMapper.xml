@@ -278,11 +278,61 @@
     </select>
     
     <select id="queryByOrderId" resultMap="FreeDepositAlipayHistoryMap">
-        select
-        id, order_id, name, phone, id_card, operate_name, pay_amount, alipay_amount,
-        type, create_time, tenant_id, remark, pay_status
+        select id,
+               auth_pay_order_id,
+               order_id,
+               name,
+               phone,
+               id_card,
+               operate_name,
+               pay_amount,
+               alipay_amount,
+               type,
+               create_time,
+               tenant_id,
+               remark,
+               pay_status
         from t_free_deposit_alipay_history
         where order_id = #{orderId}
+    </select>
+    
+    
+    <select id="queryListByOrderId" resultType="com.xiliulou.electricity.entity.FreeDepositAlipayHistory">
+        select id,
+               auth_pay_order_id,
+               order_id,
+               name,
+               phone,
+               id_card,
+               operate_name,
+               pay_amount,
+               alipay_amount,
+               type,
+               create_time,
+               tenant_id,
+               remark,
+               pay_status
+        from t_free_deposit_alipay_history
+        where order_id = #{orderId}
+    </select>
+    
+    <select id="queryByAuthOrderId" resultMap="FreeDepositAlipayHistoryMap">
+        select id,
+               auth_pay_order_id,
+               order_id,
+               name,
+               phone,
+               id_card,
+               operate_name,
+               pay_amount,
+               alipay_amount,
+               type,
+               create_time,
+               tenant_id,
+               remark,
+               pay_status
+        from t_free_deposit_alipay_history
+        where auth_pay_order_id = #{authPayOrderId}
     </select>
     
     

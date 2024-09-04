@@ -140,6 +140,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -274,6 +277,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     
     @Resource
     private DelayFreeProducer delayFreeProducer;
+    static XllThreadPoolExecutorService handleQueryCloudBeanPool = XllThreadPoolExecutors.newFixedThreadPool("HandleQueryCloudBeanPool", 6, "handle-query-cloud-bean-pool-thread");
+    
+    
     
     /**
      * 通过ID查询单条数据从DB
@@ -1837,7 +1843,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderService.update(freeDepositOrderUpdate);
             
             UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
-                    .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getTransAmt().toString()).build();
+                    .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
             Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
             if (!triple.getLeft()) {
                 log.error("REFUND ORDER ERROR! reason is {}, orderId is {}", triple.getRight(), freeDepositOrder.getOrderId());
@@ -1911,16 +1917,49 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             
             cloudBeanGeneralViewVO.setCanRecycleUser(recycleList.size());
             cloudBeanGeneralViewVO.setCanRecycleMembercard(canRecycleList.size());
-            
-            BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
-            for (AnotherPayMembercardRecord anotherPayMembercardRecord : recycleList) {
-                canRecycleCloudBean = canRecycleCloudBean.add(cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid()));
-            }
-            cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.setScale(2, RoundingMode.HALF_UP).doubleValue());
+    
+            setCanRecycleCloudBean(cloudBeanGeneralViewVO, recycleList);
         }
         
         return Triple.of(true, null, cloudBeanGeneralViewVO);
     }
+    
+    private void setCanRecycleCloudBean(CloudBeanGeneralViewVO cloudBeanGeneralViewVO, List<AnotherPayMembercardRecord> recycleList) {
+        BigDecimal canRecycleCloudBean = BigDecimal.ZERO;
+        
+        List<CompletableFuture<BigDecimal>> canRecycleCloudBeanList = recycleList.stream().map(anotherPayMembercardRecord -> {
+            return CompletableFuture.supplyAsync(() -> {
+                return cloudBeanUseRecordService.acquireUserCanRecycleCloudBean(anotherPayMembercardRecord.getUid());
+            }, handleQueryCloudBeanPool).whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    log.error("acquire user can recycle cloud bean error, uid = {}!",anotherPayMembercardRecord.getUid(), throwable);
+                }
+            });
+        }).collect(Collectors.toList());
+        
+        try  {
+            //多个任务
+            CompletableFuture[] futureArray = canRecycleCloudBeanList.toArray(new CompletableFuture[0]);
+            //将多个任务，汇总成一个任务
+            CompletableFuture.allOf(futureArray).get(10, TimeUnit.SECONDS);
+            
+            canRecycleCloudBean = canRecycleCloudBeanList.stream().map(item -> {
+                try {
+                    return item.get();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }).collect(Collectors.reducing(BigDecimal.ZERO, BigDecimal::add));
+            
+        } catch (Exception e) {
+            log.error("acquire user can recycle cloud bean error!", e);
+        }
+        
+        cloudBeanGeneralViewVO.setCanRecycleCloudBean(canRecycleCloudBean.setScale(2, RoundingMode.HALF_UP).doubleValue());
+    }
+    
     
     @Slave
     @Override

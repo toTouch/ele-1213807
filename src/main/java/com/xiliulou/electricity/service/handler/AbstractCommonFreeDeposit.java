@@ -136,7 +136,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setTransId(authToPayQuery.getOrderId());
         request.setAuthNo(authToPayQuery.getAuthNo());
         request.setTransAmt(authToPayQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).longValue());
-        request.setCallBackUrl(String.format(freeDepositConfig.getUrl(), 1, 3, authToPayQuery.getTenantId()));
+        request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 3, authToPayQuery.getTenantId()));
         query.setData(request);
         return query;
     }
@@ -172,6 +172,8 @@ public abstract class AbstractCommonFreeDeposit {
         queryRequest.setPayNo(cancelAuthToPayQuery.getAuthPayOrderId());
         
         query.setData(queryRequest);
+        
+        log.info("PXZ INFO! buildCancelAuthPayPxzRequest.params is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -269,7 +271,7 @@ public abstract class AbstractCommonFreeDeposit {
         FyHandleFundRequest request = new FyHandleFundRequest();
         request.setPayNo(payQuery.getAuthPayOrderId());
         request.setThirdOrderNo(payQuery.getOrderId());
-        request.setAmount(payQuery.getPayTransAmt().intValue());
+        request.setAmount(payQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).intValue());
         request.setSubject(payQuery.getSubject());
         //  免押回调地址配置
         request.setNotifyUrl(String.format(freeDepositConfig.getUrl(), 2, 3, payQuery.getTenantId()));

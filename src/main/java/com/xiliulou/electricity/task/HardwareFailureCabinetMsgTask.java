@@ -26,7 +26,6 @@ public class HardwareFailureCabinetMsgTask extends IJobHandler {
     //定时任务--统计每日换电柜上的故障和告警数量
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        log.info("hardware Failure Cabinet Msg start");
         
         try {
             // 旧版本故障告警统计
@@ -34,8 +33,6 @@ public class HardwareFailureCabinetMsgTask extends IJobHandler {
         } catch (Exception e) {
             log.error("hardware Failure Cabinet Msg error",e);
         }
-        
-        log.info("hardware Failure Cabinet Msg end");
         
         return IJobHandler.SUCCESS;
     }

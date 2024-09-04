@@ -304,7 +304,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "model", required = false) String model,
+            @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
             @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
         
         //租户
@@ -328,14 +332,18 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
+    
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setModel(model);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
-        electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
+        electricityBatteryQuery.setStockStatus(stockStatus);
+        electricityBatteryQuery.setWarehouseId(warehouseId);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
+        electricityBatteryQuery.setBindStatus(bindStatus);
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
     

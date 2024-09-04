@@ -26,7 +26,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.AUTH_APY_TAG_NAME, consumerGroup = MqConsumerConstant.FREE_DEPOSIT_CONSUMER_GROUP)
+@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.AUTH_APY_TAG_NAME, consumerGroup = MqConsumerConstant.AUTH_PAY_CONSUMER_GROUP)
 public class AuthPayConsumer implements RocketMQListener<String> {
     
     @Resource
@@ -51,6 +51,12 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             return;
         }
         
+        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByAuthOrderId(dto.getAuthPayOrderId());
+        if (Objects.isNull(alipayHistory)) {
+            log.warn("AuthPayConsumer WARN! alipayHistory is null, orderId is{}", dto.getAuthPayOrderId());
+            return;
+        }
+        
         log.info("AuthPayConsumer Access Msg INFO! orderId is {}, payStatus is {}", dto.getOrderId(), freeDepositOrder.getPayStatus());
         
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
@@ -67,10 +73,10 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         
         // 更新退款订单为失败
         FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
-        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setId(alipayHistory.getId());
         freeDepositAlipayHistory.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_CLOSE);
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
-        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
+        freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
     }
     
 }

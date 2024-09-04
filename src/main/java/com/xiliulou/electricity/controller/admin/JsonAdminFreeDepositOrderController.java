@@ -255,12 +255,12 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
      * 代扣同步状态
      */
     @GetMapping("/admin/freeDepositOrder/sync/authPay/status")
-    public R syncAuthPayStatus(@RequestParam(value = "orderId") String orderId) {
+    public R syncAuthPayStatus(@RequestParam(value = "orderId") String orderId, @RequestParam(value = "authPayOrderId") String authPayOrderId) {
         Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
         if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
             return returnTripleResult(verifyPermissionResult);
         }
-        return returnTripleResult(this.freeDepositOrderService.syncAuthPayStatus(orderId));
+        return returnTripleResult(this.freeDepositOrderService.syncAuthPayStatus(orderId, authPayOrderId));
     }
 
 }

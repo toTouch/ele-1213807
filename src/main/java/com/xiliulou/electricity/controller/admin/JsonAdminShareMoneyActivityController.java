@@ -219,6 +219,8 @@ public class JsonAdminShareMoneyActivityController {
     public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "type", required = true) Integer type, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         
+        offset = (Objects.isNull(offset) || offset < 0L) ? 0L : offset;
+        size = (Objects.isNull(size) || size > 500L) ? 500L : size;
         List<Integer> packageTypes = Arrays.stream(PackageTypeEnum.values()).map(PackageTypeEnum::getCode).collect(Collectors.toList());
         if (!packageTypes.contains(type)) {
             return R.fail("000200", "业务类型参数不合法");

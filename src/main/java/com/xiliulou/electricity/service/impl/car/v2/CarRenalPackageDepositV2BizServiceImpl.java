@@ -1093,7 +1093,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(realAmount.toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getPayTransAmt().toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
@@ -1291,7 +1291,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(refundAmount.toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getPayTransAmt().toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
@@ -1353,7 +1353,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(refundAmount.toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getPayTransAmt().toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }

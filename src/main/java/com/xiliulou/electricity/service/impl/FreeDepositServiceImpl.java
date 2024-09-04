@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
@@ -126,6 +127,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", request.getUid());
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
+        log.info("FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
         
         // 实现免押
         BaseFreeDepositService freeDepositWay = freeDepositFactory.getFreeDepositWay(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());

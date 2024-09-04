@@ -40,9 +40,9 @@ public class DelayFreeProducer {
         rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
     }
     
-    public void sendDelayFreeMessage(String orderId, String tag, Integer level) {
-        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().orderId(orderId).build();
+    public void sendDelayFreeMessage(String orderId, String authPayOrderId, String tag) {
+        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().authPayOrderId(authPayOrderId).orderId(orderId).build();
         String key = "free" + DateUtil.format(DateUtil.date(), ORDER_DATE_FORMAT) + RandomUtil.randomInt(1000, 9999);
-        rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, level);
+        rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
     }
 }
