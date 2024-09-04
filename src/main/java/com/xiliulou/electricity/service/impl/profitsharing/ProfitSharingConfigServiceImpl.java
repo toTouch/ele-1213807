@@ -307,7 +307,6 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         
         // 计算累计总比例
         BigDecimal sum = BigDecimal.ZERO;
-        sum = sum.add(scaleLimit);
         if (CollectionUtils.isNotEmpty(configs)) {
             for (ProfitSharingReceiverConfig config : configs) {
                 sum = sum.add(config.getScale());

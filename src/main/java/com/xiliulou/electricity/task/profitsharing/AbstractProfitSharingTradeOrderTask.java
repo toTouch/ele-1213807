@@ -128,6 +128,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         queryModel.setChannel(this.getChannel());
         queryModel.setNotNullThirdOrderNo(YesNoEnum.YES.getCode());
         
+        // 租户+加盟商 -> 支付配置
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
         
         while (true) {
@@ -336,6 +337,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             List<ProfitSharingCheckModel> checkModels = profitSharingChecksModel.getProfitSharingCheckModels();
             
+            // 根据校验结果分组
             Map<Boolean, List<ProfitSharingCheckModel>> isSuccessMap = checkModels.stream().collect(Collectors.groupingBy(ProfitSharingCheckModel::getIsSuccess));
             
             // 成功的
@@ -533,10 +535,15 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             //计算分账总额
             BigDecimal profitSharingTotalAmount = BigDecimal.ZERO;
+            
+            // 分账方id -> 应分账金额
             Map<Long, BigDecimal> profitSharingAmountMap = Maps.newHashMapWithExpectedSize(receiverConfigs.size());
+            
             for (ProfitSharingReceiverConfig receiverConfig : receiverConfigs) {
                 BigDecimal profitSharingAmount = amount.multiply(receiverConfig.getScale());
                 profitSharingAmountMap.put(receiverConfig.getId(), profitSharingAmount);
+                
+                //当前累计分账总额
                 profitSharingTotalAmount = profitSharingTotalAmount.add(profitSharingAmount);
             }
             
@@ -550,10 +557,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 continue;
             }
             
+            //  当前累计总额
             totalAmount = totalAmount.add(profitSharingTotalAmount);
             
             if (totalAmount.compareTo(amountLimit) > 0) {
-                // 累计限额>最大限额
+                // 累计限额>月最大限额
                 
                 log.info("AbstractProfitSharingTradeOrderTask.checkProfitSharing totalAmount:{} > amountLimit:{}", totalAmount.toPlainString(), amountLimit.toPlainString());
                 
@@ -562,6 +570,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             }
             
             for (ProfitSharingReceiverConfig receiverConfig : receiverConfigs) {
+                // 添加分账详情校验模型
                 profitSharingCheckModel.addProfitSharingDetails(receiverConfig, null, profitSharingAmountMap.get(receiverConfig.getId()));
             }
             
