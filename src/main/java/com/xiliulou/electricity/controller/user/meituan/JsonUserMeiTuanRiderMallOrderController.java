@@ -9,6 +9,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,7 +63,7 @@ public class JsonUserMeiTuanRiderMallOrderController {
      * @param orderId 美团订单号
      */
     @PostMapping("/user/meiTuanRiderMall/createBatteryMemberCardOrder")
-    public R createBatteryMemberCardOrder(@RequestParam String orderId) {
+    public R createBatteryMemberCardOrder(@RequestBody String orderId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");

@@ -28,6 +28,6 @@ public class LimitTradeRequest {
     @NotBlank(message = "手机号不能为空")
     private String account;
     
-    @NotBlank(message = "套餐ID不能为空")
+    @NotNull(message = "套餐ID不能为空")
     private Long providerSkuId;
 }
