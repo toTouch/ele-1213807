@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_meituan_rider_mall_config")
+@TableName("t_mei_tuan_rider_mall_config")
 public class MeiTuanRiderMallConfig {
     
     /**
