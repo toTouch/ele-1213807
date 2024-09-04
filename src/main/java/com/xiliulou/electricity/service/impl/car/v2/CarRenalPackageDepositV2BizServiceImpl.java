@@ -1040,7 +1040,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         // 待审核
         if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             // 实际退款0元，则直接成功，不调用退款接口
-            if (BigDecimal.ZERO.compareTo(realAmount) == 0) {
+            if (BigDecimal.ZERO.compareTo(realAmount) == 0 && !PayTypeEnum.EXEMPT.getCode().equals(payType)) {
                 // 退款中，先落库
                 saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
             } else {
