@@ -43,5 +43,5 @@ public interface InstallmentDeductionPlanService {
      * @param installmentRecord 签约记录
      * @return 代扣计划生成结果
      */
-    Triple<Boolean, String, Object> generateDeductionPlan(InstallmentRecord installmentRecord);
+    List<InstallmentDeductionPlan> generateDeductionPlan(InstallmentRecord installmentRecord);
 }

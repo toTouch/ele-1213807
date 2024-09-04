@@ -26,6 +26,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -88,6 +89,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private TenantService tenantService;
     
     private FyConfigService fyConfigService;
+    
+    private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -164,14 +167,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             uid = SecurityUtils.getUid();
             InstallmentRecord installmentRecord = queryRecordWithStatusForUser(uid, InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
             if (Objects.isNull(installmentRecord)) {
-                log.warn("INSTALLMENT SIGN WARN! There is no installment record in the initialization state. uid={}", uid);
-                return R.fail("301002", "签约失败，请联系管理员");
+                return R.fail("301004", "请购买分期套餐后，再签约");
             }
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
                 log.warn("INSTALLMENT SIGN WARN! The user is not associated with a tenant. uid={}", uid);
-                return R.fail("301002", "签约失败，请联系管理员");
+                return R.fail("301004", "请购买分期套餐后，再签约");
             }
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
@@ -236,17 +238,27 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                         .queryByExternalAgreementNo(signNotifyQuery.getExternalAgreementNo());
                 
                 if (Objects.isNull(installmentRecord) || !INSTALLMENT_RECORD_STATUS_UN_SIGN.equals(installmentRecord.getStatus())) {
-                    log.warn("INSTALLMENT NOTIFY ERROR! sign notify error, no right installmentRecord, uid={}, externalAgreementNo={}", uid,
-                            signNotifyQuery.getExternalAgreementNo());
+                    log.warn("SIGN NOTIFY WARN! no right installmentRecord, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
                 }
                 
                 // 更新签约记录状态
                 InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_SIGN)
                         .updateTime(System.currentTimeMillis()).build();
                 
-                // 更新或保存入数据库
+                // 生成还款计划
+                List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanService.generateDeductionPlan(installmentRecord);
+                if (Objects.isNull(deductionPlanList)) {
+                    log.warn("SIGN NOTIFY WARN! generate deduction plan, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
+                }
                 
+                // 更新或保存入数据库
+                Triple<Boolean, String, Object> saveAndUpdateTriple = applicationContext.getBean(InstallmentRecordServiceImpl.class)
+                        .signNotifySaveAndUpdate(installmentRecordUpdate, deductionPlanList);
+                if (Objects.isNull(saveAndUpdateTriple) || saveAndUpdateTriple.getLeft()) {
+                    log.warn("SIGN NOTIFY WARN! save and update fail, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
+                }
             }
+            
             
             return "";
         } catch (Exception e) {
@@ -261,11 +273,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     }
     
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, InstallmentDeductionPlan basicDeductionPlan,
-            InstallmentRecord installmentRecord) {
+    public Triple<Boolean, String, Object> signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, List<InstallmentDeductionPlan> deductionPlanTriple) {
         // 更新签约记录
         applicationContext.getBean(InstallmentRecordService.class).update(installmentRecordUpdate);
         
+        deductionPlanTriple.parallelStream().forEach(deductionPlan -> {
+            installmentDeductionPlanService.insert(deductionPlan);
+        });
         return Triple.of(true, null, null);
     }
 }

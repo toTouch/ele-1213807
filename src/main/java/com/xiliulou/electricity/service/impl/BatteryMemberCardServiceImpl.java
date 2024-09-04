@@ -1061,7 +1061,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
         // 根据代扣计划设置子订单金额
-        BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord, memberCard);
+        BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord.getPaidInstallment() + 1, installmentRecord, memberCard);
         
         // 计算子套餐订单租期
         Integer validDays = calculateSuborderValidDays(installmentRecord);

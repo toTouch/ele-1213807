@@ -11,14 +11,17 @@ import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
+import com.xiliulou.electricity.utils.InstallmentUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -59,7 +62,7 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     }
     
     @Override
-    public Triple<Boolean, String, Object> generateDeductionPlan(InstallmentRecord installmentRecord) {
+    public List<InstallmentDeductionPlan> generateDeductionPlan(InstallmentRecord installmentRecord) {
         // 生成基础代扣计划
         InstallmentDeductionPlan basicDeductionPlan = InstallmentDeductionPlan.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo())
                 .packageId(installmentRecord.getPackageId()).packageType(installmentRecord.getPackageType()).status(DEDUCTION_PLAN_STATUS_INIT)
@@ -88,17 +91,15 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         
         List<InstallmentDeductionPlan> planList = new ArrayList<>(installmentRecord.getInstallmentNo());
         for (int i = 1; i <= installmentRecord.getInstallmentNo(); i++) {
-            
-            
-            basicDeductionPlan.setIssue(i);
-            basicDeductionPlan.setAmount(null);
+            InstallmentDeductionPlan deductionPlan = new InstallmentDeductionPlan();
+            BeanUtils.copyProperties(basicDeductionPlan, deductionPlan);
+            deductionPlan.setIssue(i);
+            deductionPlan.setAmount(InstallmentUtil.calculateSuborderAmount(i, installmentRecord, batteryMemberCard));
+            deductionPlan.setRentTime(InstallmentUtil.calculateSuborderRentTime(i, installmentRecord, batteryMemberCard));
+            deductionPlan.setDeductTime(InstallmentUtil.calculateSuborderDeductTime(i));
+            planList.add(deductionPlan);
         }
-        return null;
-    }
-    
-    private BigDecimal calculatePlansAmount(InstallmentRecord installmentRecord, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo) {
-    
-        return null;
+        return Triple.of(true, null, planList);
     }
     
 }
