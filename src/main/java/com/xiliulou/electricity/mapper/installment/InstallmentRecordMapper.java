@@ -23,7 +23,7 @@ public interface InstallmentRecordMapper {
     
     Integer count(InstallmentRecordQuery installmentRecordQuery);
 
-    InstallmentRecord selectRecordWithStatusForUser(@Param("uid") Long uid, @Param("status") Integer status);
+    InstallmentRecord selectRecordWithStatusForUser(@Param("uid") Long uid, @Param("statuses") List<Integer> statuses);
     
     InstallmentRecord selectByExternalAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
 }

@@ -88,13 +88,17 @@
         where tenant_id = #{tenantId}
             <include refid="ifLabelsForWhere"/>
     </select>
+
     <select id="selectRecordWithStatusForUser" resultMap="installmentRecordMap">
         select id, <include refid="columnsWithoutId"/>
         from t_installment_record
         where uid = #{uid}
-            and status = #{status}
+            and status in
+                <foreach collection="statuses" open="(" separator="," close=")" item="status">
+                    #{status}
+                </foreach>
         order by id desc
-        limit 1
+
     </select>
     
     <select id="selectByExternalAgreementNo" resultMap="installmentRecordMap">

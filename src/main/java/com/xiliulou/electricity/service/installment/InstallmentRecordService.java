@@ -68,7 +68,7 @@ public interface InstallmentRecordService {
      * @param status 签约记录状态
      * @return 签约记录
      */
-    InstallmentRecord queryRecordWithStatusForUser(Long uid, Integer status);
+    InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> status);
     
     /**
      * 签约回调方法
@@ -84,4 +84,6 @@ public interface InstallmentRecordService {
      * @return 返回签约记录
      */
     InstallmentRecord queryByExternalAgreementNo(String externalAgreementNo);
+
+    R<InstallmentRecordVO> queryInstallmentRecordForUser();
 }

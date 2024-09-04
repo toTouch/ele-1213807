@@ -5,15 +5,13 @@ import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,5 +35,15 @@ public class JsonUserInstallmentRecordController {
     @PostMapping("/sign")
     public R<Object> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
         return installmentRecordService.sign(query, request);
+    }
+
+    /**
+     * 查询当前登录用户的签约记录信息
+     * @return
+     */
+    @ProcessParameter
+    @GetMapping("/detail")
+    public R<InstallmentRecordVO> queryInstallmentRecordForUser() {
+        return installmentRecordService.queryInstallmentRecordForUser();
     }
 }
