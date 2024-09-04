@@ -167,7 +167,7 @@
                 priority_exchange_norm = #{priorityExchangeNorm},
             </if>
             <if test="isEnableMeiTuanRiderMall != null">
-                priority_exchange_norm = #{isEnableMeiTuanRiderMall},
+                is_enable_meituan_rider_mall = #{isEnableMeiTuanRiderMall},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
