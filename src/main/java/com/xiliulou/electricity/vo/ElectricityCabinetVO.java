@@ -161,6 +161,8 @@ public class ElectricityCabinetVO {
      * 柜机供电类型：0--市电，1--反向供电
      */
     private Integer powerType;
+    
+    private Integer pattern;
 
     /**
      * 满电标准

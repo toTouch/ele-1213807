@@ -265,14 +265,14 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             
             // 扫自己码
             if (Objects.equals(userInfo.getUid(), inviterUid)) {
-                log.info("MERCHANT JOIN ERROR! illegal operate! Can not scan own QR, inviterUid={}, joinUid={}", inviterUid, joinUid);
+                log.warn("MERCHANT JOIN ERROR! illegal operate! Can not scan own QR, inviterUid={}, joinUid={}", inviterUid, joinUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
             // 邀请人类型
             if (!Objects.equals(inviterType, MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF) && !Objects.equals(inviterType,
                     MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
-                log.info("MERCHANT JOIN ERROR! illegal operate! Inviter is illegal, inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
+                log.warn("MERCHANT JOIN WARN! illegal operate! Inviter is illegal, inviterUid={}, inviterType={}, joinUid={}", inviterUid, inviterType, joinUid);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             

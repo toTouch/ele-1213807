@@ -201,7 +201,7 @@ public class JsonAdminElectricityCabinetBoxController {
                 .command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)
                 .build();
 
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
 
         oldElectricityCabinetBox.setUsableStatus(updateUsableStatusQuery.getUsableStatus());
         oldElectricityCabinetBox.setUpdateTime(System.currentTimeMillis());
@@ -261,7 +261,7 @@ public class JsonAdminElectricityCabinetBoxController {
                 .command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)
                 .build();
 
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         return R.ok();
     }
 

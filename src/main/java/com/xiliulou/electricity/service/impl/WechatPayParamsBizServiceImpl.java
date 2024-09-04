@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.xiliulou.electricity.constant.CacheConstant.WECHAT_CERTIFICATE_KEY;
 
@@ -56,6 +57,12 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
     
     @Resource
     private RedisService redisService;
+    
+    /**
+     * 缓存过期时间-毫秒（2小时）
+     */
+    public static final Long CACHE_TIME_OUT = 3600000L * 2L;
+    
     
     @Override
     public WechatPayParamsDetails getDetailsByIdTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) throws WechatPayException {
@@ -119,13 +126,15 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         WechatV3CommonRequest build = WechatV3CommonRequest.builder().merchantId(details.getWechatMerchantId())
                 .merchantCertificateSerialNo(details.getWechatMerchantCertificateSno()).merchantApiV3Key(details.getWechatV3ApiKey()).privateKey(details.getPrivateKey()).build();
         List<String> wechatPlatformCertificate = wechatV3CommonInvokeService.getWechatPlatformCertificate(build);
+        
         if (CollectionUtils.isEmpty(wechatPlatformCertificate)) {
             // 没有从微信获取到证书，返回空Map
             return;
         }
+        log.info("INFO wechat certificates : {}", JsonUtil.toJson(wechatPlatformCertificate));
         
         // 将证书添加到缓存
-        redisService.set(key, JsonUtil.toJson(wechatPlatformCertificate));
+        redisService.set(key, JsonUtil.toJson(wechatPlatformCertificate), CACHE_TIME_OUT, TimeUnit.MILLISECONDS);
         
         details.setWechatPlatformCertificateMap(buildCertificatesFromStrings(wechatPlatformCertificate));
     }

@@ -546,7 +546,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + uid + "_" + offlineOrderMessage.getOrderId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS).build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.warn("OFFLINE EXCHANGE WARN! send command error! orderId={}", offlineOrderMessage.getOrderId());
         }
