@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderUpdate;
@@ -96,7 +97,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
             return;
         }
     
-        if (!Objects.equals(profitSharingTradeOrder.getProcessState(), ProfitSharingTradeOrderConstant.PROCESS_STATE_INIT)) {
+        if (!Objects.equals(profitSharingTradeOrder.getProcessState(), ProfitSharingTradeOderProcessStateEnum.INIT.getCode())) {
             log.warn("PROFIT SHARING ORDE CONSUMER WARN!profit order status is not init, orderNo = {}, processState = {}", profitSharingTradeOrderUpdate.getOrderNo(), profitSharingTradeOrder.getProcessState());
             return;
         }
@@ -105,7 +106,7 @@ public class ProfitSharingOrderConsumer implements RocketMQListener<String> {
         profitSharingUpdate.setId(profitSharingTradeOrder.getId());
         profitSharingUpdate.setThirdOrderNo(profitSharingTradeOrderUpdate.getThirdOrderNo());
         // 待发起分账
-        profitSharingUpdate.setProcessState(ProfitSharingTradeOrderConstant.PROCESS_STATE_PENDING);
+        profitSharingUpdate.setProcessState(ProfitSharingTradeOderProcessStateEnum.AWAIT.getCode());
         profitSharingUpdate.setUpdateTime(System.currentTimeMillis());
         
         // 修改分账交易订单

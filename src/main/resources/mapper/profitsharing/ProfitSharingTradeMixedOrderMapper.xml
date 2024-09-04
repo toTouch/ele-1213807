@@ -76,7 +76,6 @@
         from t_profit_sharing_trade_mixed_order
         where tenant_id = #{tenantId}
           and create_time > #{startTime}
-          and id > #{startId}
         order by id asc
             limit #{offset}, #{size}
     </select>

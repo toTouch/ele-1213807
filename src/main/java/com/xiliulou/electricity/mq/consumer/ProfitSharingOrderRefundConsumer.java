@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderRefund;
@@ -88,7 +89,7 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
         }
         
         // 状态是否为待分账
-        if (!Objects.equals(profitSharingTradeOrder.getProcessState(), ProfitSharingTradeOrderConstant.PROCESS_STATE_PENDING)) {
+        if (!Objects.equals(profitSharingTradeOrder.getProcessState(), ProfitSharingTradeOderProcessStateEnum.AWAIT.getCode())) {
             log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!profit order status is not init, orderNo = {}, refundOrderNo = {}, processState = {}", profitSharingTradeOrderRefund.getOrderNo(), profitSharingTradeOrderRefund.getRefundOrderNo(), profitSharingTradeOrder.getProcessState());
             return;
         }
@@ -121,7 +122,7 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
         ProfitSharingTradeOrder profitSharingUpdate = new ProfitSharingTradeOrder();
         profitSharingUpdate.setId(profitSharingTradeOrder.getId());
         // 交易失败
-        profitSharingUpdate.setProcessState(ProfitSharingTradeOrderConstant.PROCESS_STATE_INVALID);
+        profitSharingUpdate.setProcessState(ProfitSharingTradeOderProcessStateEnum.LAPSED.getCode());
        
         profitSharingUpdate.setUpdateTime(System.currentTimeMillis());
         
