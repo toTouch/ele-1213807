@@ -17,15 +17,7 @@ import java.math.BigDecimal;
  */
 public interface ProfitSharingStatisticsService {
     
-    /**
-     * 金额累计
-     *
-     * @param id
-     * @param amount
-     * @author caobotao.cbt
-     * @date 2024/8/28 17:20
-     */
-    void addTotalAmount(Long id, BigDecimal amount);
+    
     
     /**
      * 新增
@@ -70,9 +62,9 @@ public interface ProfitSharingStatisticsService {
      *
      * @param tenantId
      * @param franchiseeId
+     * @return
      * @author caobotao.cbt
      * @date 2024/9/2 17:45
-     * @return
      */
     ProfitSharingCheckVO checkMaxProfitSharingLimit(Integer tenantId, Long franchiseeId);
     

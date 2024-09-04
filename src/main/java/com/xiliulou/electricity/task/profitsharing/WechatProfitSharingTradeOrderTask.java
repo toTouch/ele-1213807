@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverTypeEnum;
 import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCreateOrderRequest;
 import com.xiliulou.pay.profitsharing.response.BaseProfitSharingCreateOrderResp;
 import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
@@ -49,7 +50,6 @@ import java.util.stream.Collectors;
 public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTradeOrderTask<WechatPayParamsDetails> {
     
     
-    
     @Override
     protected String getChannel() {
         return ChannelEnum.WECHAT.getCode();
@@ -57,7 +57,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
     
     
     @Override
-    protected void order(WechatPayParamsDetails payConfig, List<ProfitSharingCheckModel> profitSharingModels) {
+    protected void ordprofitSharingStatisticsTryLockExecuteer(WechatPayParamsDetails payConfig, List<ProfitSharingCheckModel> profitSharingModels) {
         
         for (int i = 0; i < profitSharingModels.size(); i++) {
             ProfitSharingCheckModel profitSharingCheckModel = profitSharingModels.get(i);
@@ -71,10 +71,11 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             orderRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
             orderRequest.setUnfreezeUnsplit(i == (profitSharingModels.size() - 1));
             orderRequest.setReceivers(receivers);
-//            orderRequest.setChannel(ChannelEnum.WECHAT);
             
             try {
-                log.info("WechatProfitSharingTradeOrderTask.order orderRequest:{}", JsonUtil.toJson(orderRequest));
+                log.info("WechatProfitSharingTradeOrderTask.order transactionId:{},outOrderNo:{},unfreezeUnsplit:{},receivers:{}", orderRequest.getTransactionId(),
+                        orderRequest.getOutOrderNo(), orderRequest.getUnfreezeUnsplit(), JsonUtil.toJson(receivers));
+                
                 BaseProfitSharingCreateOrderResp order = profitSharingServiceAdapter.order(orderRequest);
                 if (Objects.isNull(order)) {
                     throw new BizException("分账返回异常");
@@ -95,22 +96,12 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
                     profitSharingOrderDetail.setUpdateTime(System.currentTimeMillis());
                 });
                 
+            } catch (ProfitSharingException e) {
+                log.warn("WechatProfitSharingTradeOrderTask.order ProfitSharingException:", e);
+                buildError(profitSharingModels, e.getMessage());
             } catch (Exception e) {
                 log.warn("WechatProfitSharingTradeOrderTask.order Exception:", e);
-                profitSharingModels.forEach(check -> {
-                    check.setIsSuccess(false);
-                    check.getProfitSharingOrder().setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
-                    check.getProfitSharingDetailsCheckModels().forEach(details -> {
-                        details.setErrorMsg("微信接口调用异常");
-                        ProfitSharingOrderDetail profitSharingOrderDetail = details.getProfitSharingOrderDetail();
-                        profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
-                        profitSharingOrderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
-                        profitSharingOrderDetail.setFailReason(details.getErrorMsg());
-                        long timeMillis = System.currentTimeMillis();
-                        profitSharingOrderDetail.setUpdateTime(timeMillis);
-                        profitSharingOrderDetail.setFinishTime(timeMillis);
-                    });
-                });
+                buildError(profitSharingModels, "微信接口调用异常");
             }
             
         }
@@ -118,6 +109,34 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
         
     }
     
+    
+    /**
+     * 构建错误
+     *
+     * @param profitSharingModels
+     * @author caobotao.cbt
+     * @date 2024/9/4 17:10
+     */
+    private void buildError(List<ProfitSharingCheckModel> profitSharingModels, String msg) {
+        if (msg.length() > 400) {
+            msg = msg.substring(0, 400);
+        }
+        long timeMillis = System.currentTimeMillis();
+        
+        for (ProfitSharingCheckModel check : profitSharingModels) {
+            check.setIsSuccess(false);
+            check.getProfitSharingOrder().setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
+            for (ProfitSharingDetailsCheckModel details : check.getProfitSharingDetailsCheckModels()) {
+                details.setErrorMsg(msg);
+                ProfitSharingOrderDetail profitSharingOrderDetail = details.getProfitSharingOrderDetail();
+                profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
+                profitSharingOrderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
+                profitSharingOrderDetail.setFailReason(details.getErrorMsg());
+                profitSharingOrderDetail.setUpdateTime(timeMillis);
+                profitSharingOrderDetail.setFinishTime(timeMillis);
+            }
+        }
+    }
     
     /**
      * 接收方数据

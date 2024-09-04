@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -78,10 +79,13 @@ public class ProfitSharingOrderTxService {
     
     
     
-    public void update(ProfitSharingOrder order, List<ProfitSharingOrderDetail> curOrderDetails) {
+    public void update(ProfitSharingOrder order, List<ProfitSharingOrderDetail> curOrderDetails, ProfitSharingStatistics sharingStatistics) {
         profitSharingOrderMapper.update(order);
         for (ProfitSharingOrderDetail curOrderDetail : curOrderDetails) {
             profitSharingOrderDetailMapper.update(curOrderDetail);
+        }
+        if (Objects.nonNull(sharingStatistics)){
+            profitSharingStatisticsMapper.subtractAmountById(sharingStatistics.getId(),sharingStatistics.getTotalAmount(),System.currentTimeMillis());
         }
     }
 }

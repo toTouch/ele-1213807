@@ -4,8 +4,10 @@
 
 package com.xiliulou.electricity.task.profitsharing.base;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.task.profitsharing.AbstractProfitSharingTradeOrderTask;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
@@ -20,6 +22,11 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static com.xiliulou.electricity.constant.CacheConstant.PROFIT_SHARING_STATISTICS_LOCK_KEY;
 
 /**
  * description:
@@ -34,6 +41,9 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
     
     @Resource
     private TenantService tenantService;
+    
+    @Resource
+    private RedisService redisService;
     
     @Override
     public ReturnT<String> execute(String param) throws Exception {
@@ -78,6 +88,34 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
     
     
     /**
+     * 分布式锁+业务逻辑
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @param execute
+     * @author caobotao.cbt
+     * @date 2024/9/4 18:34
+     */
+    protected <R> R profitSharingStatisticsTryLockExecute(Integer tenantId, Long franchiseeId, TryLockExecute<R> execute) {
+        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, tenantId, franchiseeId);
+        String clientId = UUID.randomUUID().toString();
+        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
+        if (!lock) {
+            log.warn("WARN! lockKey:{}", lockKey);
+            throw new BizException("lock get error!");
+        }
+        
+        try {
+            // 业务逻辑
+            return execute.execute();
+            
+        } finally {
+            redisService.releaseLockLua(lockKey, clientId);
+        }
+        
+    }
+    
+    /**
      * 构建支付配置
      *
      * @param tenantFranchiseePayParamMap
@@ -118,4 +156,12 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
         private String traceId;
         
     }
+    
+    
+    @FunctionalInterface
+    public interface TryLockExecute<R> {
+        
+        R execute();
+    }
+    
 }

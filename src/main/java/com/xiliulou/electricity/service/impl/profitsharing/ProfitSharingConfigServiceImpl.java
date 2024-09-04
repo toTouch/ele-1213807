@@ -296,11 +296,10 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
             return;
         }
         
-        
         if (!ProfitSharingConfigProfitSharingTypeEnum.ORDER_SCALE.getCode().equals(exist.getProfitSharingType())) {
             return;
         }
-    
+        
         // 分账比例小于原比例
         
         List<ProfitSharingReceiverConfig> configs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(exist.getTenantId(), exist.getId());
@@ -399,9 +398,8 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         String oldScaleLimit = old.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros().toPlainString() + "%";
         String newScaleLimit = newConfig.getScaleLimit().multiply(new BigDecimal(100)).stripTrailingZeros().toPlainString() + "%";
         
-        String oldAmountLimit = old.getAmountLimit().toString();
-        String newAmountLimit = newConfig.getAmountLimit().toString();
-        
+        String oldAmountLimit = old.getAmountLimit().stripTrailingZeros().toPlainString();
+        String newAmountLimit = newConfig.getAmountLimit().stripTrailingZeros().toPlainString();
         
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
         record.put("franchiseeName", franchiseeName);
