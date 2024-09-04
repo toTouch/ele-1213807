@@ -18,7 +18,7 @@
     
     <sql id="base_column">
         id
-        , tenant_id, franchisee_id, third_merchant_id, third_order_no, amount, channel,del_flag, create_time, update_time    </sql>
+        , tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,del_flag, create_time, update_time, uid, whether_mixed_pay    </sql>
     
     <sql id="table_name">
         t_profit_sharing_trade_mixed_order
