@@ -456,7 +456,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         
         ShareMoneyActivity shareMoneyActivity = queryByIdFromCache(id);
         if (Objects.isNull(shareMoneyActivity)) {
-            log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+            log.warn("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
         
@@ -488,7 +488,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.warn("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -608,7 +608,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.warn("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         

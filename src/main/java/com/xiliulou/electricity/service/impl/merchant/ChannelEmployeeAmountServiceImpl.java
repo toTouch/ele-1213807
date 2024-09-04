@@ -35,7 +35,6 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
         User user = userService.queryByUidFromCache(uid);
         
         if (Objects.isNull(user)) {
-            log.error("add amount by uid error, not found channel employee user, uid = {}", uid);
             //throw new BizException("120008", "渠道员不存在");
             return NumberConstant.ZERO;
         }

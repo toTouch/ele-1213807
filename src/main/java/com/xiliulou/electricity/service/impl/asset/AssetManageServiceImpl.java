@@ -57,6 +57,11 @@ public class AssetManageServiceImpl implements AssetManageService {
                 Integer count;
                 Integer type = data.getType();
                 AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = data.getAssetBatchExitWarehouseRequest();
+                if (Objects.isNull(assetBatchExitWarehouseRequest)) {
+                    flag.set(false);
+                    return;
+                }
+                
                 if (CollectionUtils.isNotEmpty(assetBatchExitWarehouseRequest.getIdList())) {
                     if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
                         // 电柜批量退库
