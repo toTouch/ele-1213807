@@ -125,10 +125,9 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
 //
 //            startTenantId = tenantIds.get(tenantIds.size() - 1);
 //        }
-    
-        dealUnfreezeQueryWithTenantIds(new ArrayList<>(80));
-    
-    
+        List<Integer> tenantIds = new ArrayList<>();
+        tenantIds.add(80);
+        dealUnfreezeQueryWithTenantIds(tenantIds);
     }
     
     private void dealUnfreezeQueryWithTenantIds(List<Integer> tenantIds) {
@@ -136,7 +135,9 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             Integer size = 200;
             Long startId = 0L;
             while (true) {
+                log.info("dealUnfreezeQueryWithTenantIds:{},startId:{}", tenantId, startId);
                 List<ProfitSharingOrderTypeUnfreezeBO> profitSharingOrderTypeUnfreezeBOList = profitSharingOrderDetailService.listOrderTypeUnfreeze(tenantId, startId, size);
+                log.info("dealUnfreezeQueryWithTenantIds1:{},startId:{},size:{}", tenantId, startId, profitSharingOrderTypeUnfreezeBOList.size());
                 if (ObjectUtils.isEmpty(profitSharingOrderTypeUnfreezeBOList)) {
                     break;
                 }
