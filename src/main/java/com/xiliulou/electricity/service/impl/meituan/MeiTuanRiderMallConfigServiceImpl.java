@@ -148,13 +148,12 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
         while (true) {
             List<MeiTuanRiderMallConfig> configs = listEnableMeiTuanRiderMall(offset, size);
             if (CollectionUtils.isEmpty(configs)) {
-                break;
+                return list;
             }
             
             list.addAll(configs);
             offset += size;
         }
-        return list;
     }
     
     @Override

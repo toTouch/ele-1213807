@@ -28,14 +28,16 @@ public class MeiTuanRiderMallFetchOrderTask extends IJobHandler {
     public ReturnT<String> execute(String s) {
         String sessionId = UuidUtils.generateUuid();
         long startTime = System.currentTimeMillis();
-        // 默认最近1天
-        int recentDay = StringUtils.isNotBlank(s) ? 1 : Integer.parseInt(s);
-        // 美团只支持时间跨度不超过3天订单数据的拉取
-        int limitDay = 3;
-        recentDay = Math.min(recentDay, limitDay);
         
-        log.info("MeiTuanRiderMallFetchOrderTask start! sessionId={}, startTime={}", sessionId, startTime);
         try {
+            // 默认最近1天
+            int recentDay = StringUtils.isBlank(s) ? 1 : Integer.parseInt(s);
+            // 美团只支持时间跨度不超过3天订单数据的拉取
+            int limitDay = 3;
+            recentDay = Math.min(recentDay, limitDay);
+            
+            log.info("MeiTuanRiderMallFetchOrderTask start! sessionId={}, startTime={}", sessionId, startTime);
+            
             meiTuanRiderMallOrderService.handelFetchOrderTask(sessionId, startTime, recentDay);
         } catch (Exception e) {
             log.error("MeiTuanRiderMallFetchOrderTask error! sessionId={}", sessionId, e);
