@@ -121,5 +121,10 @@ public class ProfitSharingOrderDetail implements Serializable {
      * 支付渠道：ALIPAY：支付宝，WECHAT：微信
      */
     private String channel;
+    
+    /**
+     * 分账接收方名称
+     */
+    private String profitSharingReceiveName;
 }
 
