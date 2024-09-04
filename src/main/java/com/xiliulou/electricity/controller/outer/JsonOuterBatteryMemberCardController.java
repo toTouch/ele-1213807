@@ -34,6 +34,7 @@ public class JsonOuterBatteryMemberCardController {
         paramMap.put(VirtualTradeConstant.TIMESTAMP, limitTradeRequest.getTimestamp());
         paramMap.put(VirtualTradeConstant.APP_ID, limitTradeRequest.getAppId());
         paramMap.put(VirtualTradeConstant.APP_KEY, limitTradeRequest.getAppKey());
+        paramMap.put(VirtualTradeConstant.SIGN, limitTradeRequest.getSign());
         paramMap.put(VirtualTradeConstant.ACCOUNT, limitTradeRequest.getAccount());
         paramMap.put(VirtualTradeConstant.PROVIDER_SKU_ID, limitTradeRequest.getProviderSkuId());
         
