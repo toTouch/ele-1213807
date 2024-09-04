@@ -1090,7 +1090,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         
         InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityJoinHistory.getActivityId());
         if (Objects.isNull(invitationActivity)) {
-            log.error("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), activityJoinHistory.getActivityId());
+            log.warn("INVITATION ACTIVITY ERROR!not found invitationActivity,uid={},activityId={}", userInfo.getUid(), activityJoinHistory.getActivityId());
             return;
         }
         
@@ -1128,7 +1128,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         if (electricityMemberCardOrder.getPayCount() == 1) {
             //首次购买需要判断活动是否过期
             if (activityJoinHistory.getExpiredTime() < System.currentTimeMillis()) {
-                log.error("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
+                log.warn("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
                 return;
             }
             
@@ -1147,7 +1147,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         } else {
             //非首次购买需要判断 首次购买是否成功
             if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
-                log.error("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
+                log.warn("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
                 return;
             }
             
@@ -1277,7 +1277,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             if (NumberUtil.equals(payCount, NumberConstant.ONE)) {
                 //首次购买需要判断活动是否过期
                 if (activityJoinHistory.getExpiredTime() < System.currentTimeMillis()) {
-                    log.error("Invitation activity error! activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
+                    log.warn("Invitation activity error! activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
                     return;
                 }
                 
@@ -1305,7 +1305,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             } else {
                 //非首次购买需要判断 首次购买是否成功（同一个邀请人下 所有活动的首次）
                 if (!activityJoinHistoryStatusSet.contains(InvitationActivityJoinHistory.STATUS_SUCCESS)) {
-                    log.error("Invitation activity error! Unsuccessful join renewal activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(),
+                    log.warn("Invitation activity error! Unsuccessful join renewal activity, activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(),
                             userInfo.getUid());
                     return;
                 }
