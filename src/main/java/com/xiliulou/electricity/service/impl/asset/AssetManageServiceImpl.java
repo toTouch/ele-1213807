@@ -58,6 +58,7 @@ public class AssetManageServiceImpl implements AssetManageService {
                 Integer type = data.getType();
                 AssetBatchExitWarehouseRequest assetBatchExitWarehouseRequest = data.getAssetBatchExitWarehouseRequest();
                 if (Objects.isNull(assetBatchExitWarehouseRequest)) {
+                    flag.set(false);
                     return;
                 }
                 
