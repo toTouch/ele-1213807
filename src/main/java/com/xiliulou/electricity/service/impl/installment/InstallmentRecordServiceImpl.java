@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.exception.BizException;
@@ -28,6 +29,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
@@ -53,6 +55,7 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
 
@@ -156,16 +159,18 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R<Object> sign(InstallmentSignQuery query, HttpServletRequest request) {
+        Long uid = null;
         try {
-            InstallmentRecord installmentRecord = queryRecordWithStatusForUser(query.getUid(), InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
+            uid = SecurityUtils.getUid();
+            InstallmentRecord installmentRecord = queryRecordWithStatusForUser(uid, InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
             if (Objects.isNull(installmentRecord)) {
-                log.warn("INSTALLMENT SIGN ERROR! There is no installment record in the initialization state. uid={}", query.getUid());
+                log.warn("INSTALLMENT SIGN ERROR! There is no installment record in the initialization state. uid={}", uid);
                 return R.fail("301002", "签约失败，请联系管理员");
             }
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
-                log.warn("INSTALLMENT SIGN ERROR! The user is not associated with a tenant. uid={}", query.getUid());
+                log.warn("INSTALLMENT SIGN ERROR! The user is not associated with a tenant. uid={}", uid);
                 return R.fail("301002", "签约失败，请联系管理员");
             }
             
@@ -187,7 +192,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             agreementRequest.setMerchantName(tenant.getName());
             agreementRequest.setServiceName("分期签约");
             agreementRequest.setServiceDescription("分期签约");
-            agreementRequest.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), query.getUid()));
+            agreementRequest.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), uid));
             agreementRequest.setVars(JsonUtil.toJson(vars));
             
             FyCommonQuery<FySignAgreementRequest> commonQuery = new FyCommonQuery<>();
@@ -197,16 +202,19 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);
             
             if (InstallmentConstants.FY_SUCCESS_CODE.equals(fySignResult.getCode())) {
-                InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_UN_SIGN).build();
+                
+                // 更新签约记录状态位为待签约，需要与初始化的订单区分开
+                InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_UN_SIGN)
+                        .updateTime(System.currentTimeMillis()).build();
                 applicationContext.getBean(InstallmentRecordServiceImpl.class).update(installmentRecordUpdate);
                 
                 // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
-                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, query.getUid()), fySignResult.getFyResponse().getFormBody(),
-                        Long.valueOf(2 * 24 * 60 + 23 * 60 + 50), TimeUnit.MINUTES);
+                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
+                        TimeUnit.MINUTES);
                 return R.ok(fySignResult.getFyResponse());
             }
         } catch (Exception e) {
-            log.error("INSTALLMENT SIGN ERROR! uid={}", query.getUid());
+            log.error("INSTALLMENT SIGN ERROR! uid={}", uid, e);
             throw new BizException("签约失败，请联系管理员");
         }
         return R.fail("301002", "签约失败，请联系管理员");
@@ -231,6 +239,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                     log.warn("INSTALLMENT NOTIFY ERROR! sign notify error, no right installmentRecord, uid={}, externalAgreementNo={}", uid,
                             signNotifyQuery.getExternalAgreementNo());
                 }
+                
+                // 更新签约记录状态
+                InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_SIGN)
+                        .updateTime(System.currentTimeMillis()).build();
+                
+                // 更新或保存入数据库
+                
             }
             
             return "";
@@ -245,5 +260,12 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         return installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
     }
     
-    
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, InstallmentDeductionPlan basicDeductionPlan,
+            InstallmentRecord installmentRecord) {
+        // 更新签约记录
+        applicationContext.getBean(InstallmentRecordService.class).update(installmentRecordUpdate);
+        
+        return Triple.of(true, null, null);
+    }
 }

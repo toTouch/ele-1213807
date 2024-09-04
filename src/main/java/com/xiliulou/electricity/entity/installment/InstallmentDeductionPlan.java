@@ -14,6 +14,7 @@ import java.math.BigDecimal;
  * @Date: 2024/8/26 11:17
  */
 @Data
+@Builder
 @TableName("t_installment_deduction_plan")
 public class InstallmentDeductionPlan {
     
@@ -24,6 +25,11 @@ public class InstallmentDeductionPlan {
      * 请求签约号，唯一
      */
     private String externalAgreementNo;
+    
+    /**
+     * 扣款订单号，关联对应的最新一条代扣记录
+     */
+    private String payNo;
     
     /**
      * 分期期次

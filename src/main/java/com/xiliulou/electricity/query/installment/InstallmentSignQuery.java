@@ -9,13 +9,6 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class InstallmentSignQuery {
-
-    /**
-     * 请求签约用户uid
-     */
-    @NotNull(message = "购买用户数据不能为空!")
-    private Long uid;
-
     /**
      * 实际签约人姓名
      */

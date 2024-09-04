@@ -3,19 +3,28 @@ package com.xiliulou.electricity.service.impl.installment;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentDeductionPlanMapper;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
 
 /**
  * @Description ...
@@ -24,10 +33,14 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class InstallmentDeductionPlanServiceImpl implements InstallmentDeductionPlanService {
-
-    @Autowired
+    
     private InstallmentDeductionPlanMapper installmentDeductionPlanMapper;
+    
+    private BatteryMemberCardService batteryMemberCardService;
+    
+    private CarRentalPackageService carRentalPackageService;
     
     @Override
     public Integer insert(InstallmentDeductionPlan installmentDeductionPlan) {
@@ -43,6 +56,44 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     @Override
     public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentRecordQuery installmentRecordQuery) {
         return R.ok(installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(installmentRecordQuery));
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> generateDeductionPlan(InstallmentRecord installmentRecord) {
+        // 生成基础代扣计划
+        InstallmentDeductionPlan basicDeductionPlan = InstallmentDeductionPlan.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo())
+                .packageId(installmentRecord.getPackageId()).packageType(installmentRecord.getPackageType()).status(DEDUCTION_PLAN_STATUS_INIT)
+                .tenantId(installmentRecord.getTenantId()).franchiseeId(installmentRecord.getFranchiseeId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        
+        // 获取套餐
+        BatteryMemberCard batteryMemberCard = null;
+        CarRentalPackagePo carRentalPackagePo = null;
+        if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
+            batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
+            
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("GENERATE DEDUCTION PLAN WARN! batteryMemberCard is null. externalAgreementNo={}",installmentRecord.getExternalAgreementNo());
+                return Triple.of(false, null, null);
+            }
+        } else {
+            carRentalPackagePo = carRentalPackageService.selectById(installmentRecord.getPackageId());
+            
+            if (Objects.isNull(carRentalPackagePo)) {
+                log.warn("GENERATE DEDUCTION PLAN WARN! carRentalPackage is null. externalAgreementNo={}",installmentRecord.getExternalAgreementNo());
+                return Triple.of(false, null, null);
+            }
+        }
+        
+        
+        List<InstallmentDeductionPlan> planList = new ArrayList<>(installmentRecord.getInstallmentNo());
+        for (int i = 1; i <= installmentRecord.getInstallmentNo(); i++) {
+            
+            
+            basicDeductionPlan.setIssue(i);
+            basicDeductionPlan.setAmount(null);
+        }
+        return null;
     }
     
 }

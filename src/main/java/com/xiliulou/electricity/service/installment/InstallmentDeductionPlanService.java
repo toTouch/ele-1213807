@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service.installment;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -35,4 +37,11 @@ public interface InstallmentDeductionPlanService {
      * @return 代扣计划集合
      */
     R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentRecordQuery installmentRecordQuery);
+    
+    /**
+     * 生成代扣计划
+     * @param installmentRecord 签约记录
+     * @return 代扣计划生成结果
+     */
+    Triple<Boolean, String, Object> generateDeductionPlan(InstallmentRecord installmentRecord);
 }

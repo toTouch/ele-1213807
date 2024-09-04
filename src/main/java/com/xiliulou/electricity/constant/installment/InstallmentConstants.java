@@ -56,6 +56,26 @@ public interface InstallmentConstants {
     Integer INSTALLMENT_RECORD_STATUS_COMPLETED = 4;
     
     /**
+     * 代扣计划状态-未支付
+     */
+    Integer DEDUCTION_PLAN_STATUS_INIT = 0;
+    
+    /**
+     * 代扣计划状态-已支付
+     */
+    Integer DEDUCTION_PLAN_STATUS_PAID = 1;
+    
+    /**
+     * 代扣计划状态-代扣失败
+     */
+    Integer DEDUCTION_PLAN_STATUS_FAIL = 2;
+    
+    /**
+     * 代扣计划状态-取消支付
+     */
+    Integer DEDUCTION_PLAN_STATUS_CANCEL = 3;
+    
+    /**
      * 蜂云成功响应码
      */
     String FY_SUCCESS_CODE = "WZF00000";
