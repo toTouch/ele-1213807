@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.impl.installment;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
@@ -27,6 +29,7 @@ import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -44,6 +47,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +63,6 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_URL;
 
 /**
  * @Description ...
@@ -68,30 +71,45 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  */
 @Service
 @Slf4j
-@AllArgsConstructor
 public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
+    @Autowired
     private InstallmentRecordMapper installmentRecordMapper;
     
+    @Autowired
     private FranchiseeService franchiseeService;
     
+    @Autowired
     private BatteryMemberCardService batteryMemberCardService;
     
+    @Autowired
     private CarRentalPackageService carRentalPackageService;
     
+    @Autowired
     private ApplicationContext applicationContext;
     
+    @Autowired
     private FyAgreementService fyAgreementService;
     
+    @Autowired
     private FengYunConfig fengYunConfig;
     
+    @Autowired
     private RedisService redisService;
     
+    @Autowired
     private TenantService tenantService;
     
+    @Autowired
     private FyConfigService fyConfigService;
     
+    @Autowired
     private InstallmentDeductionPlanService installmentDeductionPlanService;
+    
+    @Autowired
+    private InstallmentDeductionRecordService installmentDeductionRecordService;
+    
+    XllThreadPoolExecutorService initiatingDeductThreadPool = XllThreadPoolExecutors.newFixedThreadPool("INSTALLMENT_INITIATING_DEDUCT", 1, "initiatingDeduct");
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -233,10 +251,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             String decrypt = FyAesUtil.decrypt(bizContent, fengYunConfig.getAesKey());
             InstallmentSignNotifyQuery signNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentSignNotifyQuery.class);
             
+            InstallmentRecord installmentRecord = applicationContext.getBean(InstallmentRecordService.class)
+                    .queryByExternalAgreementNo(signNotifyQuery.getExternalAgreementNo());
+            
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
-                InstallmentRecord installmentRecord = applicationContext.getBean(InstallmentRecordService.class)
-                        .queryByExternalAgreementNo(signNotifyQuery.getExternalAgreementNo());
-                
                 if (Objects.isNull(installmentRecord) || !INSTALLMENT_RECORD_STATUS_UN_SIGN.equals(installmentRecord.getStatus())) {
                     log.warn("SIGN NOTIFY WARN! no right installmentRecord, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
                 }
@@ -257,8 +275,17 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 if (Objects.isNull(saveAndUpdateTriple) || saveAndUpdateTriple.getLeft()) {
                     log.warn("SIGN NOTIFY WARN! save and update fail, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
                 }
+                
+                FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+                if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
+                    log.warn("SIGN NOTIFY WARN! initiating deduct fail, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
+                }
+                
+                // 异步发起代扣
+                initiatingDeductThreadPool.execute(() -> {
+                    installmentDeductionRecordService.initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
+                });
             }
-            
             return "SUCCESS";
         } catch (Exception e) {
             log.error("INSTALLMENT NOTIFY ERROR! uid={}, bizContent={}", uid, bizContent, e);

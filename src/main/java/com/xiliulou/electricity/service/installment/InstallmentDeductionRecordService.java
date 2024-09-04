@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.service.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.FyConfig;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -43,4 +47,21 @@ public interface InstallmentDeductionRecordService {
      * @return 分页总数
      */
     R<Integer> count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
+    
+    /**
+     * 分期代扣
+     * @param externalAgreementNo 请求签约号
+     * @return 代扣调用结果
+     */
+    R<String> deduct(String externalAgreementNo);
+    
+    /**
+     * 调起代扣
+     * @param deductionPlan 代扣计划
+     * @param installmentRecord 签约记录
+     * @param fyConfig 蜂云配置
+     * @return 调起结果
+     */
+    Triple<Boolean, Object, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig);
+    
 }

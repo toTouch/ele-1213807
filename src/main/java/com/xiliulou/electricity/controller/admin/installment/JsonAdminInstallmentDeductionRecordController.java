@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
@@ -14,9 +15,11 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -117,5 +120,9 @@ public class JsonAdminInstallmentDeductionRecordController {
         return installmentDeductionRecordService.count(installmentDeductionRecordQuery);
     }
     
-    
+    @ProcessParameter
+    @GetMapping("/deduct")
+    public R deduct(@RequestParam String externalAgreementNo) {
+        return installmentDeductionRecordService.deduct(externalAgreementNo);
+    }
 }

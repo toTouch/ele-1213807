@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,8 @@ public class JsonOuterInstallmentController {
     
     private InstallmentRecordService installmentRecordService;
     
+    private InstallmentTerminatingRecordService installmentTerminatingRecordService;
+    
     /**
      * 签约及解约回调
      */
@@ -34,6 +37,14 @@ public class JsonOuterInstallmentController {
             log.error("INSTALLMENT SIGN NOTIFY ERROR! no bizContent, uid={}", uid);
         }
         return installmentRecordService.signNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
+    }
+    
+    @PostMapping("/outer/installment/agreementPay/notify/{uid}")
+    public String agreementPayNotify(@PathVariable Long uid, @RequestBody Map<String, Object> params) {
+        if (!params.containsKey(OUTER_PARAM_BIZ_CONTENT) || StringUtils.isEmpty((String) params.get(OUTER_PARAM_BIZ_CONTENT))) {
+            log.error("INSTALLMENT AGREEMENT PAY NOTIFY ERROR! no bizContent, uid={}", uid);
+        }
+        return installmentTerminatingRecordService.agreementPayNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
     }
     
 }

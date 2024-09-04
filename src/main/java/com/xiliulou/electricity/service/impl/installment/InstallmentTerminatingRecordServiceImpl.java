@@ -81,4 +81,10 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     public R<Integer> count(InstallmentTerminatingRecordQuery query) {
         return R.ok(installmentTerminatingRecordMapper.count(query));
     }
+    
+    @Override
+    public String agreementPayNotify(String bizContent, Long uid) {
+        
+        return "SUCCESS";
+    }
 }

@@ -45,4 +45,12 @@ public interface InstallmentTerminatingRecordService {
      * @return 分页总数
      */
     R<Integer> count(InstallmentTerminatingRecordQuery query);
+    
+    /**
+     * 代扣回调方法
+     * @param bizContent 业务参数
+     * @param uid 签约用户
+     * @return 返回回调响应结果
+     */
+    String agreementPayNotify(String bizContent, Long uid);
 }
