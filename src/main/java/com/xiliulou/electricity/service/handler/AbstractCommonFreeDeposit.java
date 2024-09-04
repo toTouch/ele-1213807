@@ -172,6 +172,8 @@ public abstract class AbstractCommonFreeDeposit {
         queryRequest.setPayNo(cancelAuthToPayQuery.getAuthPayOrderId());
         
         query.setData(queryRequest);
+        
+        log.info("PXZ INFO! buildCancelAuthPayPxzRequest.params is {}", JsonUtil.toJson(query));
         return query;
     }
     
