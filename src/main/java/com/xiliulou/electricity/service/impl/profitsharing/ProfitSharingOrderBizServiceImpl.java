@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.DateFormatConstant;
@@ -43,8 +44,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.CacheConstant.PROFIT_SHARING_STATISTICS_LOCK_KEY;
 
 /**
  * @author maxiaodong
@@ -74,6 +78,9 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     
     @Resource
     private ProfitSharingStatisticsService profitSharingStatisticsService;
+    
+    @Resource
+    private RedisService redisService;
     
     private DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
@@ -282,7 +289,23 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             return;
         }
     
-        profitSharingStatisticsService.subtractAmountById(profitSharingStatistics.getId(), rollbackAmount);
+        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId());
+        String clientId = UUID.randomUUID().toString();
+        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
+        if (!lock) {
+            log.warn("PROFIT SHARING ROLLBACK AMOUNT WARN! GET LOCK FAIL lockKey:{}, id = {}, rollbackAmount = {}", lockKey, profitSharingStatistics.getId(), rollbackAmount);
+            return;
+        }
+        
+        try {
+            profitSharingStatisticsService.subtractAmountById(profitSharingStatistics.getId(), rollbackAmount);
+        } catch (Exception e) {
+            log.error("profit sharing rollback amount info,update statistics error! id = {}, rollbackAmount = {}", profitSharingStatistics.getId(), rollbackAmount, e);
+        } finally {
+            redisService.releaseLockLua(lockKey, clientId);
+        }
+        
+        
     }
     
     private void dealWithTenantIds(List<Integer> tenantIds) {
