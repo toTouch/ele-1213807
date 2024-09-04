@@ -31,7 +31,7 @@
         <if test="thirdOrderNo!=null and thirdOrderNo!=''">
             third_order_no =#{thirdOrderNo},
         </if>
-        <if test="business_type!=null">
+        <if test="businessType!=null">
             business_type =#{businessType},
         </if>
         <if test="status!=null">

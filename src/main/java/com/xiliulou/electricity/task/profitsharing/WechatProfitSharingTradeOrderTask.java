@@ -67,11 +67,11 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             //
             WechatProfitSharingCreateOrderRequest orderRequest = new WechatProfitSharingCreateOrderRequest();
             orderRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payConfig));
-            orderRequest.setTransactionId(profitSharingOrder.getThirdOrderNo());
+            orderRequest.setTransactionId(profitSharingOrder.getThirdTradeOrderNo());
             orderRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
             orderRequest.setUnfreezeUnsplit(i == (profitSharingModels.size() - 1));
             orderRequest.setReceivers(receivers);
-            orderRequest.setChannel(ChannelEnum.WECHAT);
+//            orderRequest.setChannel(ChannelEnum.WECHAT);
             
             try {
                 log.info("WechatProfitSharingTradeOrderTask.order orderRequest:{}", JsonUtil.toJson(orderRequest));
@@ -92,6 +92,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
                     // 赋值详情订单号
                     ProfitSharingOrderDetail profitSharingOrderDetail = v.getProfitSharingOrderDetail();
                     profitSharingOrderDetail.setOrderDetailNo(accountReceiverMap.get(profitSharingOrderDetail.getProfitSharingReceiveAccount()).getDetailId());
+                    profitSharingOrderDetail.setUpdateTime(System.currentTimeMillis());
                 });
                 
             } catch (Exception e) {
@@ -105,6 +106,9 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
                         profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
                         profitSharingOrderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
                         profitSharingOrderDetail.setFailReason(details.getErrorMsg());
+                        long timeMillis = System.currentTimeMillis();
+                        profitSharingOrderDetail.setUpdateTime(timeMillis);
+                        profitSharingOrderDetail.setFinishTime(timeMillis);
                     });
                 });
             }
@@ -132,7 +136,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
             receiver.setAccount(receiverConfig.getAccount());
             receiver.setName(receiverConfig.getReceiverName());
             receiver.setDescription(receiverConfig.getRemark());
-            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).toString());
+            receiver.setAmount(orderDetail.getProfitSharingAmount().multiply(new BigDecimal(100)).stripTrailingZeros().intValue());
             return receiver;
         }).collect(Collectors.toList());
     }

@@ -45,6 +45,12 @@ import java.util.stream.Collectors;
 public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrderQueryTask<WechatPayParamsDetails> {
     
     
+    public static final String WECHAT_STATUS_FINISHED = "FINISHED";
+    
+    public static final String WECHAT_STATUS_PENDING = "PENDING";
+    
+    public static final String WECHAT_STATUS_SUCCESS = "SUCCESS";
+    
     @Override
     protected String getChannel() {
         return ChannelEnum.WECHAT.getCode();
@@ -58,7 +64,7 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
         queryOrderRequest.setCommonParam(wechatProfitSharingCommonRequest);
         queryOrderRequest.setTransactionId(order.getThirdTradeOrderNo());
         queryOrderRequest.setOutOrderNo(order.getOrderNo());
-        queryOrderRequest.setChannel(ChannelEnum.WECHAT);
+//        queryOrderRequest.setChannel(ChannelEnum.WECHAT);
         try {
             BaseProfitSharingQueryOrderResp resp = profitSharingServiceAdapter.query(queryOrderRequest);
             if (Objects.isNull(resp)) {
@@ -68,7 +74,7 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
             WechatProfitSharingQueryOrderResp queryOrderResp = (WechatProfitSharingQueryOrderResp) resp;
             
             String state = queryOrderResp.getState();
-            if ("FINISHED".equals(state)) {
+            if (WECHAT_STATUS_FINISHED.equals(state)) {
                 order.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_COMPLETE.getCode());
             } else {
                 order.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_IN_PROCESS.getCode());
@@ -84,15 +90,17 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
                     return;
                 }
                 String result = receiverResp.getResult();
-                if ("PENDING".equals(result)) {
+                if (WECHAT_STATUS_PENDING.equals(result)) {
                     // 分账处理中
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode());
-                } else if ("SUCCESS".equals(result)) {
+                } else if (WECHAT_STATUS_SUCCESS.equals(result)) {
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode());
+                    orderDetail.setFinishTime(System.currentTimeMillis());
                 } else {
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
                     orderDetail.setFailReason(receiverResp.getFailReason());
                     orderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
+                    orderDetail.setFinishTime(System.currentTimeMillis());
                 }
             });
             return true;

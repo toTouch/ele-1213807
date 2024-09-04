@@ -48,11 +48,13 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -126,6 +128,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         queryModel.setChannel(this.getChannel());
         queryModel.setNotNullThirdOrderNo(YesNoEnum.YES.getCode());
         
+        // 租户+加盟商 -> 支付配置
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
         
         while (true) {
@@ -320,7 +323,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     private List<ProfitSharingCheckModel> executeProfitSharing(T payConfig, List<ProfitSharingTradeOrder> allowProfitSharingTradeOrders) {
         
-        // 分布式锁
         String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, payConfig.getTenantId(), payConfig.getFranchiseeId());
         String clientId = UUID.randomUUID().toString();
         Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
@@ -335,13 +337,14 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             List<ProfitSharingCheckModel> checkModels = profitSharingChecksModel.getProfitSharingCheckModels();
             
+            // 根据校验结果分组
             Map<Boolean, List<ProfitSharingCheckModel>> isSuccessMap = checkModels.stream().collect(Collectors.groupingBy(ProfitSharingCheckModel::getIsSuccess));
             
             // 成功的
-            List<ProfitSharingCheckModel> successList = isSuccessMap.get(Boolean.TRUE);
+            List<ProfitSharingCheckModel> successList = Optional.ofNullable(isSuccessMap.get(Boolean.TRUE)).orElse(Collections.emptyList());
             
             // 失败的
-            List<ProfitSharingCheckModel> failList = isSuccessMap.get(Boolean.FALSE);
+            List<ProfitSharingCheckModel> failList = Optional.ofNullable(isSuccessMap.get(Boolean.FALSE)).orElse(Collections.emptyList());
             
             log.info("AbstractProfitSharingTradeOrderTask.executeProfitSharing successList size:{} , failList size :{}", successList.size(), failList.size());
             
@@ -532,10 +535,15 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             //计算分账总额
             BigDecimal profitSharingTotalAmount = BigDecimal.ZERO;
+            
+            // 分账方id -> 应分账金额
             Map<Long, BigDecimal> profitSharingAmountMap = Maps.newHashMapWithExpectedSize(receiverConfigs.size());
+            
             for (ProfitSharingReceiverConfig receiverConfig : receiverConfigs) {
                 BigDecimal profitSharingAmount = amount.multiply(receiverConfig.getScale());
                 profitSharingAmountMap.put(receiverConfig.getId(), profitSharingAmount);
+                
+                //当前累计分账总额
                 profitSharingTotalAmount = profitSharingTotalAmount.add(profitSharingAmount);
             }
             
@@ -549,10 +557,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 continue;
             }
             
+            //  当前累计总额
             totalAmount = totalAmount.add(profitSharingTotalAmount);
             
             if (totalAmount.compareTo(amountLimit) > 0) {
-                // 累计限额>最大限额
+                // 累计限额>月最大限额
                 
                 log.info("AbstractProfitSharingTradeOrderTask.checkProfitSharing totalAmount:{} > amountLimit:{}", totalAmount.toPlainString(), amountLimit.toPlainString());
                 
@@ -561,6 +570,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             }
             
             for (ProfitSharingReceiverConfig receiverConfig : receiverConfigs) {
+                // 添加分账详情校验模型
                 profitSharingCheckModel.addProfitSharingDetails(receiverConfig, null, profitSharingAmountMap.get(receiverConfig.getId()));
             }
             
@@ -757,20 +767,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @date 2024/8/28 19:28
      */
     protected abstract void order(T payConfig, List<ProfitSharingCheckModel> profitSharingModels);
-    
-    
-    @Data
-    public static class TaskParam {
-        
-        /**
-         * 租户id集合
-         */
-        private List<Integer> tenantIds;
-        
-        
-        private String traceId;
-        
-    }
     
     
     @Data

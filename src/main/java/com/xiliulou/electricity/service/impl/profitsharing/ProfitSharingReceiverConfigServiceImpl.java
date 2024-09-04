@@ -207,7 +207,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         ProfitSharingReceiverConfig receiverConfig = new ProfitSharingReceiverConfig();
         receiverConfig.setId(request.getId());
         receiverConfig.setUpdateTime(System.currentTimeMillis());
-        receiverConfig.setReceiverStatus(receiver.getReceiverStatus());
+        receiverConfig.setReceiverStatus(request.getReceiverStatus());
         
         profitSharingReceiverConfigMapper.updateStatus(receiverConfig);
     }
@@ -454,7 +454,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         wechatAddRequest.setAccount(request.getAccount());
         wechatAddRequest.setName(request.getReceiverName());
         wechatAddRequest.setRelationType(request.getRelationType());
-        wechatAddRequest.setChannel(ChannelEnum.WECHAT);
+//        wechatAddRequest.setChannel(ChannelEnum.WECHAT);
         try {
             BaseProfitSharingReceiversAddResp resp = profitSharingServiceAdapter.addReceivers(wechatAddRequest);
             if (Objects.isNull(resp)) {
@@ -510,7 +510,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             deleteRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payParams));
             deleteRequest.setType(ProfitSharingConfigReceiverTypeEnum.CODE_MAP.get(receiver.getReceiverType()));
             deleteRequest.setAccount(receiver.getAccount());
-            deleteRequest.setChannel(ChannelEnum.WECHAT);
+//            deleteRequest.setChannel(ChannelEnum.WECHAT);
             profitSharingServiceAdapter.deleteReceivers(deleteRequest);
         } catch (Exception e) {
             log.info("ProfitSharingReceiverConfigServiceImpl.insert Exception：", e);

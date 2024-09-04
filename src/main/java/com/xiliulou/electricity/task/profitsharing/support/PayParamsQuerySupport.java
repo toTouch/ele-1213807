@@ -35,8 +35,19 @@ public class PayParamsQuerySupport {
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
     
+    
+    /**
+     * 查询并且构建支付配置
+     *
+     * @param tenantFranchiseePayParamMap
+     * @param tenantId
+     * @param franchiseeIds
+     * @author caobotao.cbt
+     * @date 2024/9/4 09:12
+     */
     public void queryBuildTenantFranchiseePayParamMap(Map<String, WechatPayParamsDetails> tenantFranchiseePayParamMap, Integer tenantId, Set<Long> franchiseeIds) {
         try {
+            // 判定 tenantFranchiseePayParamMap 是否已存在配置，不存在 添加到 needQueryFranchiseeIds中
             Set<Long> needQueryFranchiseeIds = new HashSet<>();
             franchiseeIds.forEach(franchiseeId -> {
                 String payParamMapKey = getPayParamMapKey(tenantId, franchiseeId);
@@ -49,12 +60,14 @@ public class PayParamsQuerySupport {
                 return;
             }
             
+            // 查询支付配置
             List<WechatPayParamsDetails> wechatPayParamsDetailsList = wechatPayParamsBizService.queryListPreciseCacheByTenantIdAndFranchiseeIds(tenantId, needQueryFranchiseeIds,
                     Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG_AND_RECEIVER_CONFIG));
-            
+            // 根据加盟商分组
             Map<Long, WechatPayParamsDetails> franchiseePayParamsMap = Optional.ofNullable(wechatPayParamsDetailsList).orElse(Collections.emptyList()).stream()
                     .collect(Collectors.toMap(WechatPayParamsDetails::getFranchiseeId, Function.identity(), (k1, k2) -> k1));
             
+            // 添加到 tenantFranchiseePayParamMap 中
             needQueryFranchiseeIds.forEach(franchiseeId -> tenantFranchiseePayParamMap.put(getPayParamMapKey(tenantId, franchiseeId), franchiseePayParamsMap.get(franchiseeId)));
             
         } catch (Exception e) {
@@ -63,6 +76,14 @@ public class PayParamsQuerySupport {
         
     }
     
+    /**
+     * 支付配置key组装
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/9/4 09:10
+     */
     public String getPayParamMapKey(Integer tenantId, Long franchiseeId) {
         return tenantId + "_" + franchiseeId;
     }
