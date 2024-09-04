@@ -95,7 +95,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         Integer startTenantId = 0;
         Integer size = 200;
         
-        while (true) {
+    /*    while (true) {
             List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
             if (CollectionUtils.isEmpty(tenantIds)) {
                 break;
@@ -104,7 +104,12 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             dealWithTenantIds(tenantIds);
             
             startTenantId = tenantIds.get(tenantIds.size() - 1);
-        }
+        }*/
+    
+        List<Integer> tenantIds = new ArrayList<>();
+        tenantIds.add(80);
+        dealWithTenantIds(tenantIds);
+    
     }
     
     /**
@@ -115,18 +120,19 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         Integer startTenantId = 0;
         Integer size = 200;
     
-        while (true) {
-            List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
-            if (CollectionUtils.isEmpty(tenantIds)) {
-                break;
-            }
-        
-            dealUnfreezeQueryWithTenantIds(tenantIds);
-        
-            startTenantId = tenantIds.get(tenantIds.size() - 1);
-        }
-        
-        
+//        while (true) {
+//            List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
+//            if (CollectionUtils.isEmpty(tenantIds)) {
+//                break;
+//            }
+//
+//            dealUnfreezeQueryWithTenantIds(tenantIds);
+//
+//            startTenantId = tenantIds.get(tenantIds.size() - 1);
+//        }
+        List<Integer> tenantIds = new ArrayList<>();
+        tenantIds.add(80);
+        dealUnfreezeQueryWithTenantIds(tenantIds);
     }
     
     private void dealUnfreezeQueryWithTenantIds(List<Integer> tenantIds) {
@@ -134,13 +140,17 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             Integer size = 200;
             Long startId = 0L;
             while (true) {
+                log.info("dealUnfreezeQueryWithTenantIds:{},startId:{}", tenantId, startId);
                 List<ProfitSharingOrderTypeUnfreezeBO> profitSharingOrderTypeUnfreezeBOList = profitSharingOrderDetailService.listOrderTypeUnfreeze(tenantId, startId, size);
+                log.info("dealUnfreezeQueryWithTenantIds1:{},startId:{},size:{}", tenantId, startId, profitSharingOrderTypeUnfreezeBOList.size());
                 if (ObjectUtils.isEmpty(profitSharingOrderTypeUnfreezeBOList)) {
                     break;
                 }
         
                 // 根据微信支付订单号处理
                 dealUnfreezeQuery(tenantId, profitSharingOrderTypeUnfreezeBOList);
+    
+                startId += profitSharingOrderTypeUnfreezeBOList.get(profitSharingOrderTypeUnfreezeBOList.size() - 1).getId();
             }
         });
         
@@ -154,7 +164,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         try {
             List<WechatPayParamsDetails> wechatPayParamsDetails = wechatPayParamsBizService.queryListPreciseCacheByTenantIdAndFranchiseeIds(tenantId, franchiseeIdList, null);
             if (CollectionUtils.isEmpty(wechatPayParamsDetails)) {
-                log.info("deal unfreeze query info, wechatPayParamsDetails is null, tenantId = {}, franchiseeIds = {}", tenantId, franchiseeIdList);
+                log.info("deal unfreeze query info1, wechatPayParamsDetails is null, tenantId = {}, franchiseeIds = {}", tenantId, franchiseeIdList);
                 return;
             }
     
@@ -163,7 +173,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     
             profitSharingOrderTypeUnfreezeBOList.stream().forEach(profitSharingOrderTypeUnfreezeBO -> {
                 if (!wechatPayParamsDetailsMap.containsKey(profitSharingOrderTypeUnfreezeBO.getFranchiseeId())) {
-                    log.info("deal unfreeze query info, wechatPayParamsDetailsMap is null, tenantId = {}, franchiseeId = {}", tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId());
+                    log.info("deal unfreeze query info1, wechatPayParamsDetailsMap is null, tenantId = {}, franchiseeId = {}", tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId());
                     return;
                 }
     
@@ -175,10 +185,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                 unfreezeRequest.setOutOrderNo(profitSharingOrderTypeUnfreezeBO.getOrderNo());
                 unfreezeRequest.setTransactionId(profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
-                log.info("deal unfreeze query info!, thirdTradeOrderNo={}, request={}, ", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), unfreezeRequest);
+                log.info("deal unfreeze query request!, thirdTradeOrderNo={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
                 try {
                     WechatProfitSharingQueryOrderResp unfreeze = (WechatProfitSharingQueryOrderResp) profitSharingServiceAdapter.query(unfreezeRequest);
+                    log.info("deal unfreeze query response!unfreeze query end, thirdTradeOrderNo={}, response={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), unfreeze);
                     if (Objects.isNull(unfreeze)) {
                         return;
                     }
@@ -198,25 +209,21 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     Integer unfreezeStatus = null;
                     BigDecimal amount = null;
                     
-                    // 是否回滚金额
-                    boolean isRollbackAmount = false;
-                    
                     if (ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
                         ReceiverResp receiverResp = unfreeze.getReceivers().get(0);
                         if (StringUtils.isNotEmpty(receiverResp.getFinishTime())) {
                             LocalDateTime localDateTime = LocalDateTime.parse(receiverResp.getFinishTime(), formatter);
                             ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.systemDefault()); // 转换为系统默认时区的ZonedDateTime
-                            finishTime = zonedDateTime.toEpochSecond();
+                            finishTime = zonedDateTime.toEpochSecond() * 1000;
                         }
     
                         if ("PENDING".equals(receiverResp.getResult())) {
-                            orderStatus = ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode();
-                        } else if ("SUCCESS".equals(unfreeze.getState())) {
-                            orderStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
+                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode();
+                        } else if ("SUCCESS".equals(receiverResp.getResult())) {
+                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
                             unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.SUCCESS.getCode();
-                            isRollbackAmount = true;
-                        } else if ("CLOSED".equals(unfreeze.getState())) {
-                            orderStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
+                        } else if ("CLOSED".equals(receiverResp.getResult())) {
+                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
                             unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.FAIL.getCode();
                         }
                         
@@ -247,17 +254,12 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     profitSharingOrderDetailUpdate.setProfitSharingAmount(amount);
                     profitSharingOrderDetailService.updateUnfreezeOrderById(profitSharingOrderDetailUpdate);
                     
-                    // 回滚余额
-                    if (isRollbackAmount) {
-                        rollbackAmount(profitSharingOrderTypeUnfreezeBO, tenantId);
-                    }
-                    
                 } catch (ProfitSharingException e) {
-                    log.error("deal unfreeze query info error!orderNo = {}, thirdTradeNo = {}", profitSharingOrderTypeUnfreezeBO.getOrderNo(), profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), e);
+                    log.error("deal unfreeze query info1 error!orderNo = {}, thirdTradeNo = {}", profitSharingOrderTypeUnfreezeBO.getOrderNo(), profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), e);
                 }
             });
         } catch (WechatPayException e) {
-            log.error("deal unfreeze query info error!", e);
+            log.error("deal unfreeze query info1 error!", e);
         }
     
     }
