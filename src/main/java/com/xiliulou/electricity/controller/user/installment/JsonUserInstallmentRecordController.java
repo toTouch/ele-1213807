@@ -7,7 +7,9 @@ import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,16 +24,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/user/Installment/record")
+@AllArgsConstructor
 public class JsonUserInstallmentRecordController {
     
-    @Autowired
     private InstallmentRecordService installmentRecordService;
-
-
-
+    
+    
+    /**
+     * 签约接口
+     */
     @ProcessParameter
     @PostMapping("/sign")
-    public R<Object> sign(@RequestBody InstallmentSignQuery query, HttpServletRequest request) {
+    public R<Object> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
         return installmentRecordService.sign(query, request);
     }
 }

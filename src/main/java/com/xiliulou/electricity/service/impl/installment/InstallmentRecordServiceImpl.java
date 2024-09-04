@@ -17,17 +17,8 @@ import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
@@ -51,6 +42,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_MINI_APP;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
 
@@ -72,31 +64,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     private CarRentalPackageService carRentalPackageService;
     
-    private RedisService redisService;
-    
-    private UserOauthBindService userOauthBindService;
-    
-    private UserInfoService userInfoService;
-    
-    private EnterpriseChannelUserService enterpriseChannelUserService;
-    
-    private ElectricityCabinetService electricityCabinetService;
-    
-    private ElectricityPayParamsService electricityPayParamsService;
-    
-    private EleDepositOrderService eleDepositOrderService;
-    
-    private InsuranceOrderService insuranceOrderService;
-    
-    private WechatPayParamsBizService wechatPayParamsBizService;
-    
-    private UnionTradeOrderService unionTradeOrderService;
-    
     private ApplicationContext applicationContext;
     
     private FyAgreementService fyAgreementService;
     
     private FengYunConfig fengYunConfig;
+    
+    private RedisService redisService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -170,7 +144,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         try {
             InstallmentRecord installmentRecord = queryRecordWithStatusForUser(query.getUid(), InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
             if (Objects.isNull(installmentRecord)) {
-                return R.fail("301002", "无初始化分期订单");
+                log.warn("INSTALLMENT SIGN ERROR! There is no installment record in the initialization state, uid={}", query.getUid());
+                return R.fail("301002", "签约失败，请联系管理员");
             }
             
             Vars vars = new Vars();
@@ -178,7 +153,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             vars.setMobile(query.getMobile());
             
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
-            agreementRequest.setChannelFrom("miniapp");
+            agreementRequest.setChannelFrom(CHANNEL_FROM_MINI_APP);
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
             agreementRequest.setMerchantName("test");
             agreementRequest.setServiceName("");
@@ -193,9 +168,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);
             
             if (InstallmentConstants.FY_SUCCESS_CODE.equals(fySignResult.getCode())) {
+                
                 return R.ok(fySignResult.getFyResponse());
             }
-            return null;
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", query.getUid());
         }

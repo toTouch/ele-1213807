@@ -1055,8 +1055,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard memberCard, ElectricityCabinet cabinet,
             InstallmentRecord installmentRecord) {
         
-        if (Objects.isNull(installmentRecord) || installmentRecord.getInstallmentNo() == installmentRecord.getPaidInstallment()) {
-            return Triple.of(false, null, "分期订单已代扣完成");
+        if (Objects.isNull(installmentRecord) || Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment())) {
+            return Triple.of(false, "分期订单已代扣完成", null);
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());

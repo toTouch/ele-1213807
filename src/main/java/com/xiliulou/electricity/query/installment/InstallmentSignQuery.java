@@ -19,12 +19,10 @@ public class InstallmentSignQuery {
     /**
      * 实际签约人姓名
      */
-    @NotNull(message = "签约人姓名不能为空!")
     private String userName;
 
     /**
      * 实际签约人手机号
      */
-    @NotNull(message = "签约人手机号不能为空!")
     private String mobile;
 }

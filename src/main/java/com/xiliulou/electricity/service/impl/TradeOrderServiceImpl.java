@@ -910,11 +910,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");
                 }
                 // 生成一期子套餐订单
-                batteryMemberCardService.generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight());
+                Triple<Boolean, String, Object> memberCardOrderTriple = batteryMemberCardService.generateInstallmentMemberCardOrder(userInfo, batteryMemberCard,
+                        electricityCabinet, installmentRecordTriple.getRight());
                 
                 // 保存相关订单并调起支付获取支付结果
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
-                        .saveOrderAndPay(eleDepositOrderTriple, insuranceOrderTriple, installmentRecordTriple, batteryMemberCard, userOauthBind, userInfo, request);
+                        .saveOrderAndPay(eleDepositOrderTriple, insuranceOrderTriple, installmentRecordTriple, memberCardOrderTriple, batteryMemberCard, userOauthBind, userInfo, request);
                 
                 
             }// 购买租车、车电一体套餐在此处扩展else代码块
@@ -932,7 +933,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> saveOrderAndPay(Triple<Boolean, String, Object> eleDepositOrderTriple, Triple<Boolean, String, Object> insuranceOrderTriple,
-            Triple<Boolean, String, InstallmentRecord> installmentRecordTriple, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo,
+            Triple<Boolean, String, InstallmentRecord> installmentRecordTriple, Triple<Boolean, String, Object> memberCardOrderTriple, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo,
             HttpServletRequest request) throws WechatPayException {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
@@ -965,6 +966,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         // 保存签约记录
         if (Objects.nonNull(installmentRecordTriple) && Boolean.TRUE.equals(installmentRecordTriple.getLeft()) && Objects.nonNull(installmentRecordTriple.getRight())) {
             installmentRecordService.insert(installmentRecordTriple.getRight());
+        }
+        
+        // 保存一期套餐订单
+        if (Objects.nonNull(memberCardOrderTriple) && Boolean.TRUE.equals(memberCardOrderTriple.getLeft()) && Objects.nonNull(memberCardOrderTriple.getRight())) {
+            ElectricityMemberCardOrder memberCardOrder = (ElectricityMemberCardOrder) memberCardOrderTriple.getRight();
+            electricityMemberCardOrderService.insert(memberCardOrder);
         }
         
         // 计算服务费并设置ElectricityTradeOrder的相关数据

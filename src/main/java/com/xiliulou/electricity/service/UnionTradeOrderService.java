@@ -40,5 +40,8 @@ public interface UnionTradeOrderService {
 
     Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource);
     
+    /**
+     * 购买分期套餐回调方法
+     */
     Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource);
 }

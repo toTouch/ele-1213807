@@ -17,7 +17,6 @@ import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
@@ -36,9 +35,6 @@ import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
@@ -128,6 +124,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -326,6 +323,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Resource
     private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
+    @Autowired
+    private ApplicationContext applicationContext;
+    
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
             HttpServletRequest request) throws WechatPayException {
@@ -449,9 +449,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
-       
+            
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
-
+            
             }
         }
         
@@ -1471,6 +1471,22 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         } else {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
             log.warn("NOTIFY INSTALLMENT UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);
+        }
+        
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
+                Pair<Boolean, Object> manageDepositOrderResult = applicationContext.getBean(UnionTradeOrderServiceImpl.class)
+                        .manageDepositOrder(orderIdList.get(i), tradeOrderStatus);
+                if (!manageDepositOrderResult.getLeft()) {
+                    return manageDepositOrderResult;
+                }
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                Pair<Boolean, Object> manageInsuranceOrderResult = applicationContext.getBean(UnionTradeOrderServiceImpl.class)
+                        .manageInsuranceOrder(orderIdList.get(i), tradeOrderStatus);
+                if (!manageInsuranceOrderResult.getLeft()) {
+                    return manageInsuranceOrderResult;
+                }
+            }
         }
         
         // 系统订单
