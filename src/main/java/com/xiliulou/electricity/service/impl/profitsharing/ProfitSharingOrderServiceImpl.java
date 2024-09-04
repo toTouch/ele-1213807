@@ -136,6 +136,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
             profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
             profitSharingOrderDetail.setProfitSharingReceiveAccount(profitSharingTradeMixedOrder.getThirdMerchantId());
+            profitSharingOrderDetail.setProfitSharingReceiveName(profitSharingTradeMixedOrder.getThirdMerchantId());
             profitSharingOrderDetail.setScale(null);
             profitSharingOrderDetail.setProfitSharingAmount(null);
             profitSharingOrderDetail.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_ACCEPT.getCode());
