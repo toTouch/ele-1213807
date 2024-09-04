@@ -447,7 +447,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("租电押金").uid(user.getUid()).build();
-            log.info("intermentPayAmount={}", unionPayOrder);
+            
             // 处理分账交易订单
             dealProfitSharingTradeOrder(generateMemberCardOrderResult, generateInsuranceOrderResult, wechatPayParamsDetails, batteryMemberCard, unionPayOrder, userInfo, orderList);
             
@@ -538,7 +538,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
                     .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
                     .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
-            log.info("intermentPayAmount={}", unionPayOrder);
+            
             if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
                 // 支付订单数量大于1 设置为混合支付
                 profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);

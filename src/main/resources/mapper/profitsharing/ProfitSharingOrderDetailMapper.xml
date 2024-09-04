@@ -235,10 +235,10 @@
                o.id
         FROM t_profit_sharing_order_detail d
                  left join t_profit_sharing_order o on o.id = d.profit_sharing_order_id
-        where tenantId = #{tenantId}
+        where d.tenant_id = #{tenantId}
           and d.business_type = 98
           and d.status in (0, 1)
-          and id > #{startId}
+          and d.id > #{startId}
         order by d.id
             limit #{size}
     </select>
