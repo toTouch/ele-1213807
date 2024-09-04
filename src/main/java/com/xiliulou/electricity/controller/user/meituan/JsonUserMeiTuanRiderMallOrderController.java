@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user.meituan;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
@@ -24,7 +25,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonUserMeiTuanRiderMallOrderController {
+public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
     
     @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
@@ -70,6 +71,6 @@ public class JsonUserMeiTuanRiderMallOrderController {
         }
         
         OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderId).build();
-        return R.ok(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
+        return returnTripleResult(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
     }
 }
