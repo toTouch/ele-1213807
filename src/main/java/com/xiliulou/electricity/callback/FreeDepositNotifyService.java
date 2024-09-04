@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.callback;
 
 
+import com.xiliulou.electricity.dto.callback.UnfreeFakeParams;
+
 import java.util.Map;
 
 /**
@@ -18,4 +20,6 @@ public interface FreeDepositNotifyService {
     
     Object notify(Integer channel,Integer business,Integer tenantId, Map<String, Object> params);
     
+    
+    Object unfreeFakeNotify(UnfreeFakeParams params) throws Exception;
 }
