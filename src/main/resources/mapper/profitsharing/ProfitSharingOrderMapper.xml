@@ -50,6 +50,17 @@
            update_time = #{updateTime}
         where id = #{id}
     </update>
+    <update id="updateUnfreezeResultById">
+        update t_profit_sharing_order
+        set update_time = #{updateTime}
+        <if test="status != null">
+            , status = #{status}
+        </if>
+        <if test="thirdOrderNo != null and thirdOrderNo != ''">
+            ,third_order_no = #{thirdOrderNo}
+        </if>
+        where id = #{id}
+    </update>
     
     <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder">
         select

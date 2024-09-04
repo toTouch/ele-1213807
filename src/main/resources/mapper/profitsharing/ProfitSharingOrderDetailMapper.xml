@@ -107,10 +107,26 @@
         id = #{id}
     </update>
     
+    <update id="updateUnfreezeResultById">
+        update t_profit_sharing_order_detail
+        set update_time = #{updateTime}
+        <if test="failReason != null and failReason != ''">
+            ,fail_reason = #{failReason}
+        </if>
+        <if test="status != null">
+            , status = #{status}
+        </if>
+        <if test="thirdOrderDetailNo != null and thirdOrderDetailNo != ''">
+            ,third_order_detail_no = #{thirdOrderDetailNo}
+        </if>
+        where id = #{id}
+    </update>
+    
     <sql id="pageFilter">
         <where>
             del_flag = 0
-            
+            and business_type in (0, 1, 2, 3, 98)
+
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>

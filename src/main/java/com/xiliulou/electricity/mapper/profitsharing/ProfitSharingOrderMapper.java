@@ -60,5 +60,7 @@ public interface ProfitSharingOrderMapper {
      * @date 2024/8/30 09:00
      */
     List<ProfitSharingOrder> selectByIdGreaterThanAndOtherConditions(ProfitSharingOrderQueryModel profitSharingOrderQueryModel);
+    
+    int updateUnfreezeResultById(ProfitSharingOrder profitSharingOrderUpdate);
 }
 

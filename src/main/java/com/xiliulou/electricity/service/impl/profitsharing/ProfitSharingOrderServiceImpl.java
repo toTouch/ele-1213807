@@ -31,11 +31,10 @@ import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingUnfreez
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -81,7 +80,6 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void doUnFreeze(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder) throws ProfitSharingException {
         WechatPayParamsDetails wechatPayParamsDetails = null;
         try {
@@ -94,26 +92,16 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
         if (Objects.isNull(wechatPayParamsDetails)) {
             log.warn("PROFIT SHARING UNFREEZE WARN!not found pay params,thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo());
         }
+        
+        ProfitSharingOrder profitSharingOrderUpdate = new ProfitSharingOrder();
+        ProfitSharingOrderDetail profitSharingOrderDetailUpdate = new ProfitSharingOrderDetail();
     
         // 调用解冻接口
         try {
-            WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
-            unfreezeRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(wechatPayParamsDetails));
-            unfreezeRequest.setOutOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
-            unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
-            unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);
-        
-            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze start, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
-            
-            WechatProfitSharingUnfreezeResp unfreeze = (WechatProfitSharingUnfreezeResp) profitSharingServiceAdapter.unfreeze(unfreezeRequest);
-            
-            // todo
-            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze end, thirdTradeOrderNo={}, response={}", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreeze);
-        
             // 保存解冻分账订单
             ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
             // 分账单号
-            profitSharingOrder.setOrderNo(unfreezeRequest.getOutOrderNo());
+            profitSharingOrder.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_UNFREEZE, profitSharingTradeMixedOrder.getUid()));
             profitSharingOrder.setBusinessType(ProfitSharingBusinessTypeEnum.UNFREEZE.getCode());
             profitSharingOrder.setAmount(profitSharingTradeMixedOrder.getAmount());
             profitSharingOrder.setThirdTradeOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
@@ -122,10 +110,6 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             if (Objects.equals(profitSharingTradeMixedOrder.getWhetherMixedPay(), ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)) {
                 String orderNo = profitSharingTradeOrderService.queryOrderNoyByThirdOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
                 profitSharingOrder.setBusinessOrderNo(orderNo);
-            }
-        
-            if (Objects.nonNull(unfreeze)) {
-                profitSharingOrder.setThirdOrderNo(unfreeze.getOrderId());
             }
         
             // 状态已受理
@@ -145,7 +129,6 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
                 profitSharingOrder.setOutAccountType(ProfitSharingOrderDetailConstant.OUT_ACCOUNT_TYPE_FRANCHISEE);
             }
     
-            profitSharingOrderMapper.insert(profitSharingOrder);
         
             // 分账明细
             ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
@@ -166,22 +149,60 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetail.setProfitSharingOrderId(profitSharingOrder.getId());
             profitSharingOrderDetail.setChannel(ChannelEnum.WECHAT.getCode());
     
-            if (Objects.nonNull(unfreeze) && ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
-                List<ReceiverResp> receivers = unfreeze.getReceivers();
+    
+            WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
+            unfreezeRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(wechatPayParamsDetails));
+            unfreezeRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
+            unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
+            unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);
+    
+            // 保存分账订单
+            profitSharingOrderMapper.insert(profitSharingOrder);
             
-                if (Objects.nonNull(new BigDecimal(receivers.get(0).getAmount()))) {
-                    profitSharingOrderDetail.setProfitSharingAmount(new BigDecimal(receivers.get(0).getAmount()).divide(new BigDecimal(100)));
-                }
+            // 保存分账明细
+            profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
+    
+            profitSharingOrderUpdate.setId(profitSharingOrder.getId());
+            profitSharingOrderDetailUpdate.setId(profitSharingOrderDetail.getId());
             
-                // 第三方分账明细单号
-                profitSharingOrderDetail.setThirdOrderDetailNo(receivers.get(0).getDetailId());
+            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze start, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
+        
+            WechatProfitSharingUnfreezeResp unfreeze = (WechatProfitSharingUnfreezeResp) profitSharingServiceAdapter.unfreeze(unfreezeRequest);
+    
+            // todo
+            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze end, thirdTradeOrderNo={}, response={}", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreeze);
+            
+            if (Objects.nonNull(unfreeze)) {
+                profitSharingOrderUpdate.setThirdOrderNo(unfreeze.getOrderId());
             }
     
-            profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
+            if (Objects.nonNull(unfreeze) && ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
+                List<ReceiverResp> receivers = unfreeze.getReceivers();
         
+                // 第三方分账明细单号
+                profitSharingOrderDetailUpdate.setThirdOrderDetailNo(receivers.get(0).getDetailId());
+            }
         } catch (ProfitSharingException e) {
+            profitSharingOrderUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
+            profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            profitSharingOrderDetailUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
+            profitSharingOrderDetailUpdate.setUpdateTime(System.currentTimeMillis());
+            
+            String failReason = e.getMessage();
+            if (StringUtils.isNotEmpty(e.getMessage()) && e.getMessage().length() > 400) {
+                failReason = e.getMessage().substring(0, 400);
+            }
+            profitSharingOrderDetailUpdate.setFailReason(failReason);
+            
             log.error("PROFIT SHARING UNFREEZE ERROR!, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo(), e);
+            
             throw new ProfitSharingException(e.getMessage());
+        } finally {
+            // 修改分账订单的返回信息
+            profitSharingOrderMapper.updateUnfreezeResultById(profitSharingOrderUpdate);
+            
+            // 修改分账订单明细的返回信息
+            profitSharingOrderDetailMapper.updateUnfreezeResultById(profitSharingOrderDetailUpdate);
         }
         
     }

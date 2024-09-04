@@ -95,7 +95,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         Integer startTenantId = 0;
         Integer size = 200;
         
-    /*    while (true) {
+        while (true) {
             List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
             if (CollectionUtils.isEmpty(tenantIds)) {
                 break;
@@ -104,12 +104,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             dealWithTenantIds(tenantIds);
             
             startTenantId = tenantIds.get(tenantIds.size() - 1);
-        }*/
-    
-        List<Integer> tenantIds = new ArrayList<>();
-        tenantIds.add(80);
-        dealWithTenantIds(tenantIds);
-    
+        }
     }
     
     /**
@@ -120,19 +115,16 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         Integer startTenantId = 0;
         Integer size = 200;
     
-//        while (true) {
-//            List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
-//            if (CollectionUtils.isEmpty(tenantIds)) {
-//                break;
-//            }
-//
-//            dealUnfreezeQueryWithTenantIds(tenantIds);
-//
-//            startTenantId = tenantIds.get(tenantIds.size() - 1);
-//        }
-        List<Integer> tenantIds = new ArrayList<>();
-        tenantIds.add(80);
-        dealUnfreezeQueryWithTenantIds(tenantIds);
+        while (true) {
+            List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
+            if (CollectionUtils.isEmpty(tenantIds)) {
+                break;
+            }
+
+            dealUnfreezeQueryWithTenantIds(tenantIds);
+
+            startTenantId = tenantIds.get(tenantIds.size() - 1);
+        }
     }
     
     private void dealUnfreezeQueryWithTenantIds(List<Integer> tenantIds) {

@@ -65,5 +65,7 @@ public interface ProfitSharingOrderDetailMapper {
      * @date 2024/8/29 18:27
      */
     List<ProfitSharingOrderDetail> selectListByProfitSharingOrderIds(@Param("tenantId") Integer tenantId, @Param("profitSharingOrderIds") List<Long> profitSharingOrderIds);
+    
+    int updateUnfreezeResultById(ProfitSharingOrderDetail profitSharingOrderDetailUpdate);
 }
 
