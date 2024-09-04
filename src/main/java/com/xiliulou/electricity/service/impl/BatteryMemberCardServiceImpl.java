@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
@@ -33,6 +35,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
@@ -48,10 +51,12 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -75,6 +80,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -152,7 +158,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     private UserDataScopeServiceImpl userDataScopeService;
     
     @Resource
-    StoreService storeService;
+    private StoreService storeService;
+    
+    @Autowired
+    private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -1043,40 +1052,42 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+    public Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard memberCard, ElectricityCabinet cabinet,
             InstallmentRecord installmentRecord) {
+        
+        if (Objects.isNull(installmentRecord) || installmentRecord.getInstallmentNo() == installmentRecord.getPaidInstallment()) {
+            return Triple.of(false, null, "分期订单已代扣完成");
+        }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
-        // 计算子订单金额
-        BigDecimal payAmount;
-        if (Objects.equals(installmentRecord.getPaidInstallment(), 0)) {
-            payAmount = batteryMemberCard.getDownPayment();
-        } else if (installmentRecord.getInstallmentNo() - installmentRecord.getPaidInstallment() > 1) {
+        // 根据代扣计划设置子订单金额
+        BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord, memberCard);
         
-        }
+        // 计算子套餐订单租期
+        Integer validDays = calculateSuborderValidDays(installmentRecord, memberCard);
         
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(batteryMemberCard.getId());
+        electricityMemberCardOrder.setMemberCardId(memberCard.getId());
         electricityMemberCardOrder.setUid(userInfo.getUid());
-        electricityMemberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());
-        electricityMemberCardOrder.setCardName(batteryMemberCard.getName());
+        electricityMemberCardOrder.setMaxUseCount(memberCard.getUseCount());
+        electricityMemberCardOrder.setCardName(memberCard.getName());
         electricityMemberCardOrder.setPayAmount(payAmount);
         electricityMemberCardOrder.setUserName(userInfo.getName());
-        electricityMemberCardOrder.setValidDays(batteryMemberCard.getValidDays());
-        electricityMemberCardOrder.setTenantId(batteryMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+        electricityMemberCardOrder.setValidDays(validDays);
+        electricityMemberCardOrder.setTenantId(memberCard.getTenantId());
+        electricityMemberCardOrder.setFranchiseeId(memberCard.getFranchiseeId());
         electricityMemberCardOrder.setPayCount(payCount);
-        electricityMemberCardOrder.setSendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null);
-        electricityMemberCardOrder.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
-        electricityMemberCardOrder.setSource(Objects.nonNull(electricityCabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
-        electricityMemberCardOrder.setStoreId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId());
-        electricityMemberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
+        electricityMemberCardOrder.setSendCouponId(Objects.nonNull(memberCard.getCouponId()) ? memberCard.getCouponId().longValue() : null);
+        electricityMemberCardOrder.setRefId(Objects.nonNull(cabinet) ? cabinet.getId().longValue() : null);
+        electricityMemberCardOrder.setSource(Objects.nonNull(cabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
+        electricityMemberCardOrder.setStoreId(Objects.nonNull(cabinet) ? cabinet.getStoreId() : userInfo.getStoreId());
+        electricityMemberCardOrder.setCouponIds(memberCard.getCouponIds());
         electricityMemberCardOrder.setParamFranchiseeId(null);
         electricityMemberCardOrder.setWechatMerchantId(null);
         
@@ -1181,5 +1192,26 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
+    }
+    
+    /**
+     * 计算分期套餐子套餐订单有效时间
+     */
+    private Integer calculateSuborderValidDays(InstallmentRecord installmentRecord, BatteryMemberCard memberCard) {
+        Integer validDays = null;
+        if (Objects.equals(installmentRecord.getPaidInstallment(), 0)) {
+            // 首期由于先生成订单未代扣成功，不设置有效天数，当代扣成功时再设置
+            return validDays;
+        } else {
+            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
+                    InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
+            
+            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+                if (Objects.equals(installmentRecord.getPaidInstallment(), deductionPlan.getIssue())) {
+                    validDays = deductionPlan.getRentTime();
+                }
+            }
+        }
+        return validDays;
     }
 }

@@ -905,6 +905,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 生成分期签约记录
                 installmentRecordTriple = installmentRecordService.generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
                 
+                if (Objects.isNull(installmentRecordTriple) || Objects.isNull(installmentRecordTriple.getRight())) {
+                    log.warn("INSTALLMENT PAY ERROR! generate installment record fail, uid={}", uid);
+                    return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                }
+                // 生成一期子套餐订单
+                batteryMemberCardService.generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight());
+                
                 // 保存相关订单并调起支付获取支付结果
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
                         .saveOrderAndPay(eleDepositOrderTriple, insuranceOrderTriple, installmentRecordTriple, batteryMemberCard, userOauthBind, userInfo, request);
@@ -920,7 +927,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             log.error("INSTALLMENT PAY ERROR! uid={}", uid, e);
         }
         
-        return R.fail("301001", "购买失败，请联系管理员");
+        return R.fail("301001", "购买分期套餐失败，请联系管理员");
     }
     
     @Transactional(rollbackFor = Exception.class)

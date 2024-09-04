@@ -4,20 +4,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.UnionPayOrder;
-import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -39,9 +29,7 @@ import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
@@ -51,20 +39,14 @@ import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -253,5 +235,5 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         return installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
     }
     
-
+    
 }
