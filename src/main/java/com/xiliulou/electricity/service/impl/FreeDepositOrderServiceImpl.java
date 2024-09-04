@@ -132,6 +132,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -2282,5 +2283,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
         
         return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public Map<String, Double> selectPayTransAmtByOrderIdsToMap(List<String> orderIds) {
+        List<FreeDepositOrder> orders =  freeDepositOrderMapper.selectPayTransAmtByOrderIds(orderIds);
+        if (CollectionUtils.isEmpty(orders)){
+            return Map.of();
+        }
+        return orders.stream().filter(Objects::nonNull).filter(o->Objects.nonNull(o.getPayTransAmt())).collect(Collectors.toMap(FreeDepositOrder::getOrderId, FreeDepositOrder::getPayTransAmt));
     }
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
@@ -73,5 +74,11 @@ public interface FreeDepositAlipayHistoryMapper extends BaseMapper<FreeDepositAl
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
     Integer selectPayingByOrderId(@Param("orderId") String orderId);
+    
+    BigDecimal selectPayTransAmtByPayNo(@Param("payNo") String payNo);
+    
+    int updateByPayNoOrOrderId(FreeDepositAlipayHistory history);
+    
+    String selectOrderIdByAuthNo(@Param("payNo") String payNo);
     
 }

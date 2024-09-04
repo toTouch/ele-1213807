@@ -15,9 +15,25 @@ import lombok.Data;
  * @since V1.0 2024/8/27
  **/
 public class PxzParams {
+    
     @Data
     public static class FreeDepositOrUnfree {
         
+        private FreeDepositOrUnfreeBody requestBody;
+        
+        private PxzHeader requestHeader;
+    }
+    
+    @Data
+    public static class AuthPay {
+        
+        private AuthPayBody requestBody;
+        
+        private PxzHeader requestHeader;
+    }
+    
+    @Data
+    public static class FreeDepositOrUnfreeBody{
         private String transId;
         
         private String authNo;
@@ -26,12 +42,20 @@ public class PxzParams {
     }
     
     @Data
-    public static class AuthPay {
+    public static class AuthPayBody {
         
         private String payNo;
         
         private String orderId;
         
         private Integer orderStatus;
+    }
+    
+    @Data
+    public static class PxzHeader {
+        
+        private Long dateTime;
+        
+        private String merchantCode;
     }
 }

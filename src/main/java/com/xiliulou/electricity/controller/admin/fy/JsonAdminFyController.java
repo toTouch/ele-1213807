@@ -51,7 +51,7 @@ public class JsonAdminFyController {
         }
         FyConfig config = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(config)) {
-            return R.fail("FY_CONFIG.0001", "未找到配置");
+            return R.ok();
         }
         FyConfigVO configVO = new FyConfigVO();
         configVO.setTenantId(config.getTenantId());

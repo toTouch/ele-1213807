@@ -43,7 +43,7 @@ public class FyFreeDepositHandler extends AbstractBusiness<FyParams.FreeDeposit>
     
     @Override
     public boolean business(Integer business) {
-        return FreeBusinessTypeEnum.FREE.getCode().equals(business);
+        return Objects.equals(business,FreeBusinessTypeEnum.FREE.getCode());
     }
     
     @Override

@@ -12,9 +12,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static com.xiliulou.electricity.entity.FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS;
 
 /**
  * <p>
@@ -55,6 +58,10 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
     public abstract String authNo(T params);
     
     public abstract Integer payStatus(T params);
+    
+    public String payNo(T params){
+        return null;
+    }
     
     @Override
     public int order() {
@@ -102,7 +109,8 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         String authNo = authNo(params);
         Integer payStatus = payStatus(params);
         Integer successCode = successCode(params);
-        
+        String payNo = payNo(params);
+        log.info("updateFreeDepositOrder, authNo is {}, payStatus is {},code is {},payNo is {}", authNo, payStatus , successCode,payNo);
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         if (StringUtils.isNotEmpty(authNo)){
@@ -111,18 +119,29 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         if (Objects.nonNull(successCode)){
             freeDepositOrderUpdate.setAuthStatus(successCode(params));
         }
-        if (Objects.nonNull(payStatus)){
+        if (Objects.nonNull(payStatus) ){
+            if (StringUtils.isNotEmpty(payNo) && Objects.equals(payStatus, PAY_STATUS_DEAL_SUCCESS)){
+                BigDecimal payTransAmt = freeDepositAlipayHistoryService.queryPayTransAmtByPayNo(payNo);
+                log.info("payTransAmt is {},payNo is {}", payTransAmt, payNo);
+                freeDepositOrderUpdate.setWithheldAmt((BigDecimal.valueOf(freeDepositOrder.getWithheldAmt()).add(payTransAmt).doubleValue()));
+                freeDepositOrderUpdate.setPayTransAmt((BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).subtract(payTransAmt)).doubleValue());
+            }
             freeDepositOrderUpdate.setPayStatus(payStatus);
         }
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        log.info("updateFreeDepositOrder, freeDepositOrderUpdate is {}", freeDepositOrderUpdate);
         freeDepositOrderService.update(freeDepositOrderUpdate);
         
         if (Objects.nonNull(payStatus)){
             FreeDepositAlipayHistory history = new FreeDepositAlipayHistory();
             history.setOrderId(freeDepositOrder.getOrderId());
+            if (StringUtils.isNotEmpty(payNo)){
+                history.setAuthPayOrderId(payNo);
+            }
             history.setPayStatus(payStatus);
             history.setUpdateTime(System.currentTimeMillis());
-            freeDepositAlipayHistoryService.updateByOrderId(history);
+//            log.info("updateFreeDepositOrder, history is {}", history);
+            freeDepositAlipayHistoryService.updateByPayNoOrOrderId(history);
         }
         
     }

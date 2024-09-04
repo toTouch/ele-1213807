@@ -32,13 +32,12 @@ import java.util.Objects;
  */
 @Slf4j
 @RestController
-@RequestMapping("/admin/freeDepositData")
 public class JsonAdminFreeDepositDataController extends BaseController {
 
     @Autowired
     FreeDepositDataService freeDepositDataService;
 
-    @PutMapping("/recharge")
+    @PutMapping("/admin/freeDepositData/recharge")
     public R recharge(@RequestBody @Validated(UpdateGroup.class) FreeDepositDataQuery freeDepositDataQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -47,7 +46,7 @@ public class JsonAdminFreeDepositDataController extends BaseController {
         }
 
         if (!SecurityUtils.isAdmin()) {
-            log.error("ELE ERROR! update faceRecognizeData no authority!");
+            log.warn("update faceRecognizeData no authority!");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -55,7 +54,7 @@ public class JsonAdminFreeDepositDataController extends BaseController {
     }
 
 
-    @GetMapping("/capacity")
+    @GetMapping("/admin/freeDeposit/capacity")
     public R capacity() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -71,15 +70,15 @@ public class JsonAdminFreeDepositDataController extends BaseController {
     
     
     
-    @PostMapping("fy/recharge")
+    @PostMapping("/admin/freeDepositData/fy/recharge")
     public R<?> rechargeFY(@RequestBody @Validated FreeDepositFyRequest params){
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            return R.ok();
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         Pair<Boolean,String> result = freeDepositDataService.rechargeFY(params);
         return result.getLeft() ? R.ok() : R.fail(result.getRight());

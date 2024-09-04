@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -175,5 +176,20 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     @Override
     public Integer queryPayingByOrderId(String orderId) {
         return freeDepositAlipayHistoryMapper.selectPayingByOrderId(orderId);
+    }
+    
+    @Override
+    public BigDecimal queryPayTransAmtByPayNo(String payNo) {
+        return freeDepositAlipayHistoryMapper.selectPayTransAmtByPayNo(payNo);
+    }
+    
+    @Override
+    public int updateByPayNoOrOrderId(FreeDepositAlipayHistory history) {
+        return freeDepositAlipayHistoryMapper.updateByPayNoOrOrderId(history);
+    }
+    
+    @Override
+    public String queryOrderIdByAuthNo(String payNo) {
+        return freeDepositAlipayHistoryMapper.selectOrderIdByAuthNo(payNo);
     }
 }

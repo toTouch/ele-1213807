@@ -171,6 +171,8 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
             freeDepositData.setCreateTime(System.currentTimeMillis());
             freeDepositData.setFreeDepositCapacity(CommonConstant.ZERO);
             freeDepositData.setTenantId(params.getTenantId());
+            freeDepositData.setDelFlag(CommonConstant.DEL_N);
+            freeDepositData.setUpdateTime(System.currentTimeMillis());
         }
         
         freeDepositData.setFyFreeDepositCapacity(
@@ -180,8 +182,10 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         freeDepositData.setByStagesCapacity(
                 ObjectUtils.defaultIfNull(freeDepositData.getByStagesCapacity(), CommonConstant.ZERO) + ObjectUtils.defaultIfNull(params.getByStagesCapacity(),
                         CommonConstant.ZERO));
-        FreeDepositRechargeRecord rechargeRecord = buildFreeDepositRechargeRecord(freeDepositData, FreeDepositData.FREE_TYPE_FY);
-        
+        FreeDepositRechargeRecord rechargeRecord = FreeDepositRechargeRecord.builder().freeType(FreeDepositData.FREE_TYPE_FY)
+                .freeRecognizeCapacity(ObjectUtils.defaultIfNull(params.getFreeDepositCapacity(), CommonConstant.ZERO))
+                .byStagesCount(ObjectUtils.defaultIfNull(params.getByStagesCapacity(), CommonConstant.ZERO)).delFlag(CommonConstant.DEL_N).operator(SecurityUtils.getUid())
+                .tenantId(params.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         if (hasData) {
             if (freeDepositDataMapper.update(freeDepositData) > 0) {
                 freeDepositRechargeRecordService.insert(rechargeRecord);

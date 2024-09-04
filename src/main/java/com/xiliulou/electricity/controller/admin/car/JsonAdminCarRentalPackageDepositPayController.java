@@ -11,6 +11,8 @@ import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
+import com.xiliulou.electricity.service.FreeDepositDataService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -22,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,6 +43,9 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
+    
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
 
     /**
      * 根据订单编号同步免押状态
@@ -100,8 +106,8 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         List<String> depositPayOrderNoList = depositPayEntityList.stream().map(CarRentalPackageDepositPayPo::getOrderNo).distinct().collect(Collectors.toList());
         List<CarRentalPackageDepositRefundPo> depositRefundPos = carRentalPackageDepositRefundService.selectRefundableByDepositPayOrderNoList(depositPayOrderNoList);
         Map<String, CarRentalPackageDepositRefundPo> refundPoMap = depositRefundPos.stream().collect(Collectors.toMap(CarRentalPackageDepositRefundPo::getDepositPayOrderNo, Function.identity(), (k1, k2) -> k2));
-
-
+        
+        Map<String, Double> payTransAmtMap = freeDepositOrderService.selectPayTransAmtByOrderIdsToMap(depositPayOrderNoList);
         // 模型转换，封装返回
         List<CarRentalPackageDepositPayVo> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
             CarRentalPackageDepositPayVo depositPayVO = new CarRentalPackageDepositPayVo();
@@ -138,6 +144,10 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
             
             if (!franchiseeMap.isEmpty()){
                 depositPayVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositPayEntity.getFranchiseeId()), new Franchisee()).getName());
+            }
+            
+            if (payTransAmtMap.containsKey(depositPayEntity.getOrderNo())){
+                depositPayVO.setPayTransAmt(BigDecimal.valueOf(payTransAmtMap.get(depositPayEntity.getOrderNo())));
             }
             return depositPayVO;
         }).collect(Collectors.toList());

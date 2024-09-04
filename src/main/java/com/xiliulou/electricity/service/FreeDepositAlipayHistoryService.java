@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.query.FreeDepositAlipayHistoryQuery;
+import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -92,4 +94,10 @@ public interface FreeDepositAlipayHistoryService {
     
     
     Integer queryPayingByOrderId(String orderId);
+    
+    BigDecimal queryPayTransAmtByPayNo(String payNo);
+    
+    int updateByPayNoOrOrderId(FreeDepositAlipayHistory history);
+    
+    String queryOrderIdByAuthNo(String payNo);
 }

@@ -77,6 +77,9 @@ public class FyConfigServiceImpl implements FyConfigService {
             if (StringUtils.isNotEmpty(params.getStoreCode())){
                 config.setStoreCode(params.getStoreCode());
             }
+            if (StringUtils.isNotEmpty(params.getChannelCode())){
+                config.setChannelCode(params.getChannelCode());
+            }
             if (insert){
                 fyConfigServiceMapper.insert(config);
                 return Pair.of(true, "");

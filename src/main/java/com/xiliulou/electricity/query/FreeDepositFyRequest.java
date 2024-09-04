@@ -34,7 +34,7 @@ public class FreeDepositFyRequest {
      * </p>
     */
     @Min(value = 1,message = "充值次数不能小于1!")
-    private Integer ByStagesCapacity;
+    private Integer byStagesCapacity;
     
     /**
      * <p>

@@ -19,6 +19,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 /**
  * <p>
  * Description: This class is PxzFreeOfChargeHandler!
@@ -36,31 +38,35 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     private final PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService;
     
+    private final FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+    
     protected PxzAuthPayHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
-            ApplicationContext applicationContext, PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService) {
+            ApplicationContext applicationContext, PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService,
+            FreeDepositAlipayHistoryService freeDepositAlipayHistoryService1) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
         
         this.pxzBaseFreeDepositOrderService = pxzBaseFreeDepositOrderService;
+        this.freeDepositAlipayHistoryService = freeDepositAlipayHistoryService1;
     }
     
     @Override
     public boolean business(Integer business) {
-        return FreeBusinessTypeEnum.FREE.getCode().equals(business);
+        return Objects.equals(business,FreeBusinessTypeEnum.AUTH_PAY.getCode());
     }
     
     @Override
     public boolean process(BusinessHandler handler,FreeDepositOrder order , PxzParams.AuthPay params) {
-        if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getOrderStatus())){
+        if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getRequestBody().getOrderStatus())){
             return pxzBaseFreeDepositOrderService.cancelAuthPay(
-                    FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
-                            .channel(order.getChannel()).channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
+                    FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getRequestBody().getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
+                            .channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
         }
         return handler.authPay(order);
     }
     
     @Override
     public String orderId(CallbackContext<PxzParams.AuthPay> callbackContext) {
-        return callbackContext.getParams().getOrderId();
+        return freeDepositAlipayHistoryService.queryOrderIdByAuthNo(callbackContext.getParams().getRequestBody().getPayNo());
     }
     
     @Override
@@ -75,7 +81,11 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     @Override
     public Integer payStatus(PxzParams.AuthPay params) {
-        return params.getOrderStatus();
+        return params.getRequestBody().getOrderStatus();
     }
     
+    @Override
+    public String payNo(PxzParams.AuthPay params) {
+        return params.getRequestBody().getPayNo();
+    }
 }
