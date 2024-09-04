@@ -964,7 +964,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
                     throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                 }
-                if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) > 0){
+                if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) < 0){
                     throw new BizException("300000", "退款金额不能大于剩余可代扣金额");
                 }
                 Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
@@ -1088,12 +1088,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
-                    if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) > 0){
+                    if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) < 0){
                         throw new BizException("300000", "退款金额不能大于剩余可代扣金额");
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getPayTransAmt().toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(realAmount.toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
@@ -1286,12 +1286,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
-                    if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) > 0){
+                    if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) < 0){
                         throw new BizException("300000", "退款金额不能大于剩余可代扣金额");
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getPayTransAmt().toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(refundAmount.toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
@@ -1348,12 +1348,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
-                    if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) > 0){
+                    if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) < 0){
                         throw new BizException("300000", "退款金额不能大于剩余可代扣金额");
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(freeDepositOrder.getPayTransAmt().toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(refundAmount.toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
