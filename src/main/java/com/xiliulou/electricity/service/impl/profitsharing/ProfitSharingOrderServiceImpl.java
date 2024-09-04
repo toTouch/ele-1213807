@@ -128,7 +128,9 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             } else {
                 profitSharingOrder.setOutAccountType(ProfitSharingOrderDetailConstant.OUT_ACCOUNT_TYPE_FRANCHISEE);
             }
-    
+            
+            // 保存分账订单
+            profitSharingOrderMapper.insert(profitSharingOrder);
         
             // 分账明细
             ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
@@ -148,20 +150,17 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeMixedOrder.getUid()));
             profitSharingOrderDetail.setProfitSharingOrderId(profitSharingOrder.getId());
             profitSharingOrderDetail.setChannel(ChannelEnum.WECHAT.getCode());
-    
+            
+            // 保存分账明细
+            profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
     
             WechatProfitSharingUnfreezeRequest unfreezeRequest = new WechatProfitSharingUnfreezeRequest();
             unfreezeRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(wechatPayParamsDetails));
             unfreezeRequest.setOutOrderNo(profitSharingOrder.getOrderNo());
             unfreezeRequest.setTransactionId(profitSharingTradeMixedOrder.getThirdOrderNo());
             unfreezeRequest.setDescription(ProfitSharingTradeOrderConstant.UNFREEZE_DESC);
-    
-            // 保存分账订单
-            profitSharingOrderMapper.insert(profitSharingOrder);
             
-            // 保存分账明细
-            profitSharingOrderDetailMapper.insert(profitSharingOrderDetail);
-    
+            // 设置修改信息id
             profitSharingOrderUpdate.setId(profitSharingOrder.getId());
             profitSharingOrderDetailUpdate.setId(profitSharingOrderDetail.getId());
             
@@ -184,9 +183,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             }
         } catch (ProfitSharingException e) {
             profitSharingOrderUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
-            profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
             profitSharingOrderDetailUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
-            profitSharingOrderDetailUpdate.setUpdateTime(System.currentTimeMillis());
             
             String failReason = e.getMessage();
             if (StringUtils.isNotEmpty(e.getMessage()) && e.getMessage().length() > 400) {
@@ -198,6 +195,9 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             
             throw new ProfitSharingException(e.getMessage());
         } finally {
+            profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            profitSharingOrderDetailUpdate.setUpdateTime(System.currentTimeMillis());
+    
             // 修改分账订单的返回信息
             profitSharingOrderMapper.updateUnfreezeResultById(profitSharingOrderUpdate);
             
