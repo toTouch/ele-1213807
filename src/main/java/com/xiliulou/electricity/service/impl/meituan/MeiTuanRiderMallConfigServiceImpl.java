@@ -121,18 +121,6 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
         return meiTuanRiderMallConfig;
     }
     
-    public static void main(String[] args) {
-        String appId = "12:234";
-        String appKey = "456r:err:thytr";
-        
-        // 去掉冒号
-        appId = StringUtils.remove(appId, ":");
-        appKey = StringUtils.remove(appKey, ":");
-        
-        System.out.println(appId);
-        System.out.println(appKey);
-    }
-    
     @Slave
     @Override
     public List<MeiTuanRiderMallConfig> listEnableMeiTuanRiderMall(Integer offset, Integer size) {

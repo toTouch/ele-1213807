@@ -68,7 +68,7 @@
                t1.update_time
         from t_mei_tuan_rider_mall_config t1
                  left join t_electricity_config t2 on t1.tenant_id = t2.tenant_id
-        where t2.is_enable_meituan_rider_mall = 0
+        where t2.is_enable_mei_tuan_rider_mall = 0
           and t1.del_flag = 0
           and t1.app_id is not null
           and t1.app_key is not null
