@@ -99,10 +99,32 @@ public interface MqProducerConstant {
     /**
      * 站内信所在新项目主题
      */
-    String AUX_MQ_TOPIC_NAME="XILIULOU_SAAS_AUX_TOPIC";
+    String AUX_MQ_TOPIC_NAME = "XILIULOU_SAAS_AUX_TOPIC";
     
     /**
      * 站内信所在新项目主题TAG
      */
-    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME = "SITE_MESSAGE";
+    
+    /**
+     * 免押topic
+     */
+    String FREE_DEPOSIT_TOPIC_NAME = "FREE_DEPOSIT_TOPIC";
+    
+    
+    /**
+     * 免押tag
+     */
+    String FREE_DEPOSIT_TAG_NAME = "FREE_DEPOSIT_TAG";
+    
+    
+    /**
+     * 解冻tag
+     */
+    String UN_FREE_DEPOSIT_TAG_NAME = "UN_FREE_DEPOSIT_TAG";
+    
+    /**
+     * 代扣tag
+     */
+    String AUTH_APY_TAG_NAME = "AUTH_PAY_TAG";
 }

@@ -151,8 +151,9 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.FreeDepositAlipayHistoryVo">
         select
         fdah.id,
+        fdah.auth_pay_order_id,
         fdah.order_id,
-        fdah.name,
+        fdah.name as 'realName',
         fdah.phone,
         fdah.id_card,
         fdah.operate_name,
@@ -162,8 +163,9 @@
         fdah.create_time,
         fdah.tenant_id,
         fdah.remark,
-        fdah.pay_status
-        from t_free_deposit_alipay_history
+        fdah.pay_status,
+        fdah.franchisee_id
+        from t_free_deposit_alipay_history fdah
         <where>
             <if test="orderId != null and orderId != ''">
                 and fdah.order_id like concat('%', #{orderId}, '%')
@@ -180,6 +182,12 @@
             <if test="type != null">
                 and fdah.type = #{type}
             </if>
+            <if test="uid != null">
+                and fdah.uid = #{uid}
+            </if>
+            <if test="payStatus != null">
+                and fdah.pay_status = #{payStatus}
+            </if>
             <if test="beginTime != null">
                 and fdah.create_time &gt; #{beginTime}
             </if>
@@ -189,6 +197,13 @@
             <if test="tenantId != null">
                 and fdah.tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeId != null">
+                and fdah.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="authPayOrderId != null and authPayOrderId != ''">
+                and fdah.auth_pay_order_id like concat('%', #{authPayOrderId}, '%')
+            </if>
+            
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and fdah.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -226,6 +241,12 @@
             <if test="type != null">
                 and fdah.type = #{type}
             </if>
+            <if test="uid != null">
+                and fdah.uid = #{uid}
+            </if>
+            <if test="payStatus != null">
+                and fdah.pay_status = #{payStatus}
+            </if>
             <if test="beginTime != null">
                 and fdah.create_time &gt; #{beginTime}
             </if>
@@ -234,6 +255,12 @@
             </if>
             <if test="tenantId != null">
                 and fdah.tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and fdah.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="authPayOrderId != null and authPayOrderId != ''">
+                and fdah.auth_pay_order_id like concat('%', #{authPayOrderId}, '%')
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and fdah.franchisee_id in
@@ -251,11 +278,61 @@
     </select>
     
     <select id="queryByOrderId" resultMap="FreeDepositAlipayHistoryMap">
-        select
-        id, order_id, name, phone, id_card, operate_name, pay_amount, alipay_amount,
-        type, create_time, tenant_id, remark, pay_status
+        select id,
+               auth_pay_order_id,
+               order_id,
+               name,
+               phone,
+               id_card,
+               operate_name,
+               pay_amount,
+               alipay_amount,
+               type,
+               create_time,
+               tenant_id,
+               remark,
+               pay_status
         from t_free_deposit_alipay_history
         where order_id = #{orderId}
+    </select>
+    
+    
+    <select id="queryListByOrderId" resultType="com.xiliulou.electricity.entity.FreeDepositAlipayHistory">
+        select id,
+               auth_pay_order_id,
+               order_id,
+               name,
+               phone,
+               id_card,
+               operate_name,
+               pay_amount,
+               alipay_amount,
+               type,
+               create_time,
+               tenant_id,
+               remark,
+               pay_status
+        from t_free_deposit_alipay_history
+        where order_id = #{orderId}
+    </select>
+    
+    <select id="queryByAuthOrderId" resultMap="FreeDepositAlipayHistoryMap">
+        select id,
+               auth_pay_order_id,
+               order_id,
+               name,
+               phone,
+               id_card,
+               operate_name,
+               pay_amount,
+               alipay_amount,
+               type,
+               create_time,
+               tenant_id,
+               remark,
+               pay_status
+        from t_free_deposit_alipay_history
+        where auth_pay_order_id = #{authPayOrderId}
     </select>
     
     
@@ -311,5 +388,69 @@
     <update id="updatePhoneByUid">
         update t_free_deposit_alipay_history set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
-
+    <update id="updateByPayNoOrOrderId">
+        update t_free_deposit_alipay_history
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="idCard != null and idCard != ''">
+                id_card = #{idCard},
+            </if>
+            <if test="operateUid != null">
+                operate_uid = #{operateUid},
+            </if>
+            <if test="operateName != null and operateName != ''">
+                operate_name = #{operateName},
+            </if>
+            <if test="payAmount != null">
+                pay_amount = #{payAmount},
+            </if>
+            <if test="alipayAmount != null">
+                alipay_amount = #{alipayAmount},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="payStatus != null">
+                pay_status = #{payStatus},
+            </if>
+        </set>
+        where order_id = #{orderId}
+        <if test="authPayOrderId != null">
+            AND auth_pay_order_id = #{authPayOrderId}
+        </if>
+    </update>
+    
+    
+    <select id="selectPayingByOrderId" resultType="integer">
+        select count(1)
+        from t_free_deposit_alipay_history
+        where order_id = #{orderId}
+          and pay_status = 1
+    </select>
+    <select id="selectPayTransAmtByPayNo" resultType="java.math.BigDecimal">
+        select alipay_amount from t_free_deposit_alipay_history where auth_pay_order_id = #{payNo}
+    </select>
+    <select id="selectOrderIdByAuthNo" resultType="java.lang.String">
+        select order_id from t_free_deposit_alipay_history where auth_pay_order_id = #{payNo}
+    </select>
 </mapper>

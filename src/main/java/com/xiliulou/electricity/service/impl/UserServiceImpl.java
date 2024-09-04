@@ -957,14 +957,18 @@ public class UserServiceImpl implements UserService {
             return Triple.of(true, null, null);
         }
         
-        Integer checkBatteryResult = electricityBatteryService.isUserBindBattery(uid, user.getTenantId());
-        if (!Objects.isNull(checkBatteryResult)) {
-            return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还电池");
+        UserInfo userRentInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userRentInfo)) {
+            log.warn("ELE WARN! not found userInfo,uid={} ", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
         
-        Integer checkCarResult = electricityCarService.isUserBindCar(uid, user.getTenantId());
-        if (!Objects.isNull(checkCarResult)) {
-            return Triple.of(false, "100253", "用户已租车辆，请先退还车辆");
+        if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还后再删除");
+        }
+        
+        if (Objects.equals(userRentInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            return Triple.of(false, "100253", "用户已租车辆，请先退还后再删除");
         }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);

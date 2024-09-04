@@ -55,19 +55,19 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
-            log.error("no sessionId,{}", receiverMessage.getOriginContent());
+            log.warn("no sessionId,{}", receiverMessage.getOriginContent());
             return;
         }
 
         CabinetPowerReport cabinetPowerReport = JsonUtil.fromJson(receiverMessage.getOriginContent(), CabinetPowerReport.class);
         if (Objects.isNull(cabinetPowerReport)) {
-            log.error("NORMAL POWER ERROR! parse  power error! originContent={}", receiverMessage.getOriginContent());
+            log.warn("NORMAL POWER WARN! parse  power error! originContent={}", receiverMessage.getOriginContent());
             return;
         }
 
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            log.error("NORMAL POWER ERROR! not found store! sessionId={},storeId={}", receiverMessage.getSessionId(), electricityCabinet.getStoreId());
+            log.warn("NORMAL POWER WARN! not found store! sessionId={},storeId={}", receiverMessage.getSessionId(), electricityCabinet.getStoreId());
             return;
         }
 
@@ -83,7 +83,17 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
                 chargeConfigType = dto.getType();
             }
         }
-
+        
+        ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue());
+        double hourPower = cabinetPowerReport.getPowerConsumption() < 0 ? 0 : cabinetPowerReport.getPowerConsumption();
+        double sumPower;
+        if (Objects.nonNull(lastElePower)) {
+            sumPower = lastElePower.getSumPower() + hourPower;
+        } else {
+            sumPower = cabinetPowerReport.getSumConsumption();
+        }
+        
+        
         ElePower power = new ElePower();
         power.setSn(electricityCabinet.getSn());
         power.setEName(electricityCabinet.getName());
@@ -94,10 +104,12 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setReportTime(cabinetPowerReport.getCreateTime());
         power.setCreateTime(System.currentTimeMillis());
         power.setType(chargeConfigType);
-        power.setSumPower(cabinetPowerReport.getSumConsumption());
-        power.setHourPower(cabinetPowerReport.getPowerConsumption());
+        power.setSumPower(sumPower);
+        power.setHourPower(hourPower);
         power.setUnitPrice(unitPrice);
         power.setElectricCharge(BigDecimal.valueOf(unitPrice).multiply(BigDecimal.valueOf(power.getHourPower())).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        power.setMeterReading(cabinetPowerReport.getSumConsumption());
+        
         elePowerService.insertOrUpdate(power);
 
 
@@ -110,7 +122,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.CALC_ELE_POWER_REPORT_ACK).build();
 
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("NORMAL POWER ERROR! send command error! sessionid:{}", receiverMessage.getSessionId());
         }

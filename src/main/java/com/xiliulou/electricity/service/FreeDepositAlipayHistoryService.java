@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.query.FreeDepositAlipayHistoryQuery;
+import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -67,7 +69,16 @@ public interface FreeDepositAlipayHistoryService {
     
     R queryCount(FreeDepositAlipayHistoryQuery query);
     
+    /**
+     * 可以代扣多次，所以这里返回可能是多条
+     * @param orderId
+     * @return
+     */
     FreeDepositAlipayHistory queryByOrderId(String orderId);
+    
+    List<FreeDepositAlipayHistory> queryListByOrderId(String orderId);
+    
+    FreeDepositAlipayHistory queryByAuthOrderId(String authPayOrderId);
     
     Integer updateByOrderId(FreeDepositAlipayHistory freeDepositAlipayHistory);
     
@@ -80,4 +91,13 @@ public interface FreeDepositAlipayHistoryService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    
+    Integer queryPayingByOrderId(String orderId);
+    
+    BigDecimal queryPayTransAmtByPayNo(String payNo);
+    
+    int updateByPayNoOrOrderId(FreeDepositAlipayHistory history);
+    
+    String queryOrderIdByAuthNo(String payNo);
 }

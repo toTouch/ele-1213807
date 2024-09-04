@@ -36,14 +36,14 @@ public class NormalEleOrderHandlerIot extends AbstractElectricityIotHandler {
 	public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 		String sessionId = receiverMessage.getSessionId();
 		if (StrUtil.isEmpty(sessionId)) {
-			log.error("no sessionId,{}", receiverMessage.getOriginContent());
+			log.warn("no sessionId,{}", receiverMessage.getOriginContent());
 			return ;
 		}
 		EleOrderVo eleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderVo.class);
 		//幂等加锁
 		Boolean result = redisService.setNx(CacheConstant.ELE_RECEIVER_CACHE_KEY + sessionId + eleOrderVo.getOrderStatus() + receiverMessage.getType(), "true", 10 * 1000L, true);
 		if (!result) {
-			log.error("sessionId is lock,{}", sessionId);
+			log.warn("sessionId is lock,{}", sessionId);
 			return ;
 		}
 

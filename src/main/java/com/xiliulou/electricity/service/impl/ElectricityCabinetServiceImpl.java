@@ -6,6 +6,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.DeviceReportConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -91,6 +93,7 @@ import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
+import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
@@ -142,6 +145,7 @@ import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
@@ -188,9 +192,15 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -895,7 +905,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     fullyElectricityBattery = (int) cabinetBoxList.stream().filter(i -> isExchangeable(i, fullyCharged)).count();
                 }
                 
-                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName(), e.getPattern());
                 
                 ElectricityCabinet item = new ElectricityCabinet();
                 item.setUpdateTime(System.currentTimeMillis());
@@ -962,7 +972,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
         
-        if (deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName())) {
+        if (deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern())) {
             electricityCabinetUpdate.setOnlineStatus(electricityCabinet.getOnlineStatus());
             checkCupboardStatusAndUpdateDiff(true, electricityCabinetUpdate);
         } else {
@@ -1108,14 +1118,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetSimpleVO> resultVo;
         // 若enableGeo为true，则从redis中获取位置信息。反之从数据库中查询柜机位置信息
         if (eleCommonConfig.isEnableGeo()) {
-            RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeDistance().includeCoordinates()
-                    .sortAscending();
-            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(
-                    CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(),
-                    new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()),
-                            new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
-            if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
-                log.info("GEO results is null, query info = {}", electricityCabinetQuery);
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
+            if (geoRadius == null) {
                 return null;
             }
             
@@ -1167,6 +1171,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         return R.ok(resultVo.stream().sorted(Comparator.comparing(ElectricityCabinetSimpleVO::getDistance)).collect(Collectors.toList()));
+    }
+    
+    private GeoResults<RedisGeoCommands.GeoLocation<String>> getGeoLocationGeoResults(ElectricityCabinetQuery electricityCabinetQuery) {
+        RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeDistance().includeCoordinates()
+                .sortAscending();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = redisService.getGeoRadius(CacheConstant.CACHE_ELECTRICITY_CABINET_GEO + electricityCabinetQuery.getTenantId(),
+                new Circle(new Point(electricityCabinetQuery.getLon(), electricityCabinetQuery.getLat()),
+                        new Distance(electricityCabinetQuery.getDistance() / 1000, Metrics.KILOMETERS)), geoRadiusCommandArgs);
+        if (Objects.isNull(geoRadius) || !DataUtil.collectionIsUsable(geoRadius.getContent())) {
+            log.info("GEO results is null, query info = {}", electricityCabinetQuery);
+            return null;
+        }
+        return geoRadius;
     }
     
     /**
@@ -1471,7 +1488,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public boolean deviceIsOnline(String productKey, String deviceName) {
+    public boolean deviceIsOnlineForIot(String productKey, String deviceName) {
         GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
         if (Objects.isNull(getDeviceStatusResponse)) {
             return false;
@@ -1489,6 +1506,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return false;
     }
     
+    @Override
+    public boolean deviceIsOnline(String productKey, String deviceName, Integer pattern) {
+        if (Objects.equals(pattern, EleCabinetConstant.TCP_PATTERN)) {
+            return deviceIsOnlineForTcp(productKey, deviceName);
+        }
+        
+        return deviceIsOnlineForIot(productKey, deviceName);
+    }
+    
+    /**
+     * TODO zhaohzilong 2024年08月26日 15:09:09 判断设备是否在线改为调用网关接口，从返回值中获取设备连接的网关IP
+     * @param productKey
+     * @param deviceName
+     * @return
+     */
+    @Override
+    public boolean deviceIsOnlineForTcp(String productKey, String deviceName) {
+        return redisService.hasKey(CacheConstant.CACHE_CABINET_SN_ONLINE + DeviceTextUtil.assembleSn(productKey, deviceName));
+    }
     
     @Override
     public Integer queryByModelId(Integer id) {
@@ -1784,13 +1820,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 换电柜是否在线
-        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             return R.fail("100004", "柜机不在线");
         }
         
-        // 不合法的命令
-        //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
         if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
@@ -1852,7 +1886,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
         
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         // 发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
@@ -1867,6 +1901,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(sessionId);
     }
     
+    @Override
+    public String acquireDeviceBindServerIp(String productKey, String deviceName) {
+        return redisService.get(CacheConstant.CACHE_CABINET_SN_ONLINE + DeviceTextUtil.assembleSn(productKey, deviceName));
+    }
     
     @Override
     public R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery) {
@@ -1906,7 +1944,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
         
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         // 发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
@@ -2075,7 +2113,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setFranchiseeId(franchisee.getId());
         }
         
-        if (deviceIsOnline(productKey, deviceName)) {
+        if (deviceIsOnline(productKey, deviceName, electricityCabinet.getPattern())) {
             electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
         } else {
@@ -2157,7 +2195,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 动态查询在线状态
-        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
@@ -3748,7 +3786,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("QUERY SELECTION EXCHANGE ERROR! electricityCabinet is offline,electricityCabinetId={},,userId={}", electricityCabinet.getId(), userInfo.getUid());
             return Triple.of(false, "100004", "柜机不在线");
@@ -3865,7 +3903,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(data).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.OTA_OPERATE).build();
         
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         // 发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
@@ -4026,7 +4064,44 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
-        List<ElectricityCabinetMapBO> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        List<ElectricityCabinetMapBO> electricityCabinets;
+        
+        // 根据id查询
+        if (Objects.nonNull(cabinetQuery.getId())) {
+            ElectricityCabinet electricityCabinet = this.queryByIdFromCache(cabinetQuery.getId());
+            
+            ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().name(electricityCabinet.getName())
+                    .distance(Objects.isNull(cabinetQuery.getDistance()) ? 1000D : cabinetQuery.getDistance()).lon(electricityCabinet.getLongitude())
+                    .lat(electricityCabinet.getLatitude()).franchiseeId(electricityCabinet.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).usableStatus(0).build();
+            GeoResults<RedisGeoCommands.GeoLocation<String>> geoRadius = getGeoLocationGeoResults(electricityCabinetQuery);
+            if (geoRadius == null) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+            
+            electricityCabinets = geoRadius.getContent().parallelStream().map(e -> {
+                ElectricityCabinetMapBO electricityCabinetMapBO = new ElectricityCabinetMapBO();
+                Integer eid = Integer.valueOf(e.getContent().getName());
+                ElectricityCabinet electricityCabinetTemp = queryByIdFromCache(eid);
+                if (Objects.isNull(electricityCabinetTemp) || !Objects.equals(ELECTRICITY_CABINET_USABLE_STATUS, electricityCabinet.getUsableStatus())) {
+                    return null;
+                }
+                
+                electricityCabinetMapBO.setId(electricityCabinetTemp.getId());
+                electricityCabinetMapBO.setName(electricityCabinetTemp.getName());
+                electricityCabinetMapBO.setAddress(electricityCabinetTemp.getAddress());
+                electricityCabinetMapBO.setLongitude(electricityCabinetTemp.getLongitude());
+                electricityCabinetMapBO.setLatitude(electricityCabinetTemp.getLatitude());
+                electricityCabinetMapBO.setOnlineStatus(electricityCabinetTemp.getOnlineStatus());
+                electricityCabinetMapBO.setUsableStatus(electricityCabinetTemp.getUsableStatus());
+                
+                return electricityCabinetMapBO;
+                
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+            
+        } else {
+            electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        }
+        
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -4035,6 +4110,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 分批次查询柜机格挡
         List<ElectricityCabinetBox> electricityCabinetBoxList = new ArrayList<>();
+        
         List<List<Integer>> partitions = ListUtil.partition(cabinetIds, NumberConstant.TWO_HUNDRED);
         partitions.forEach(item -> {
             List<ElectricityCabinetBox> boxes = electricityCabinetBoxService.listByElectricityCabinetIdS(item, TenantContextHolder.getTenantId());
@@ -4094,9 +4170,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 设置统计值
         Integer totalCount = assembleCabinetList.size();
+        
         Integer lowChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsLowCharge(), NumberConstant.ONE)).count();
+        
         Integer fullChargeCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getIsFulCharge(), NumberConstant.ONE)).count();
+        
         Integer unusableCount = (int) assembleCabinetList.stream().filter(cabinet -> BooleanUtils.isTrue(cabinet.getIsUnusable())).count();
+        
         Integer offLineCount = (int) assembleCabinetList.stream().filter(cabinet -> Objects.equals(cabinet.getOnlineStatus(), NumberConstant.ONE)).count();
         
         // 0-全部、1-少电、2-多电、3-锁仓、4-离线
@@ -4929,7 +5009,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         String netType = null;
         // 如果柜机在线，则需要取柜机上报的信号
         if (eleResult) {
@@ -5182,7 +5262,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     fullyElectricityBattery = (int) cabinetBoxList.stream().filter(i -> isExchangeable(i, fullyCharged)).count();
                 }
                 
-                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName(), e.getPattern());
                 
                 ElectricityCabinet item = new ElectricityCabinet();
                 item.setUpdateTime(System.currentTimeMillis());

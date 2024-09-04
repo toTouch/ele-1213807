@@ -49,6 +49,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableFaceid
 @EnableMq
 @EnableFreeDeposit
+@EnableFengYun
 @EnableEsign
 @EnableFengYun
 @Slf4j

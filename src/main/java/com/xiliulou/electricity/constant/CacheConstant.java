@@ -685,6 +685,16 @@ public interface CacheConstant {
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     
+    String FREE_DEPOSIT_PAY_LOCK = "free_deposit_pay_lock:";
+    
+    String CACHE_FY_CONFIG = "cache_fy_config:";
+    String CACHE_OFFLINE_KEY = "cache_offline_key:";
+    
+    /**
+     * TCP设备session缓存
+     */
+    String CACHE_CABINET_SN_ONLINE = "device_report:cabinet_online:";
+    
     
     /**
      * 柜机仓门配置key

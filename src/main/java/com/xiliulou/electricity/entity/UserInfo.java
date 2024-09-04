@@ -71,7 +71,7 @@ public class UserInfo {
     private Integer batteryDepositStatus;
 
     /**
-     * 车辆租赁状态
+     * 车辆租赁状态  0--未租，1--已租
      */
     private Integer carRentStatus;
 

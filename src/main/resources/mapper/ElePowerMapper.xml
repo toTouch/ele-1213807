@@ -16,6 +16,7 @@
         <result property="sumPower" column="sum_power" jdbcType="NUMERIC"/>
         <result property="hourPower" column="hour_power" jdbcType="NUMERIC"/>
         <result property="electricCharge" column="electric_charge" jdbcType="NUMERIC"/>
+        <result property="meterReading" column="meter_reading" jdbcType="NUMERIC"/>
     </resultMap>
 
     <!--查询单个-->
@@ -106,7 +107,7 @@
 
     <select id="queryPartAttList" resultMap="ElePowerMap">
         select
-        e_name, eid, report_time, create_time, type, sum_power, hour_power, electric_charge
+        e_name, eid, report_time, create_time, type, sum_power, hour_power, electric_charge, meter_reading
         from t_ele_power
         <where>
             tenant_id = #{tenantId}
@@ -207,9 +208,9 @@
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
-                                sum_power, hour_power, electric_charge,unit_price)
+                                sum_power, hour_power, electric_charge,unit_price,meter_reading)
         values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime},
-                #{type}, #{sumPower}, #{hourPower}, #{electricCharge},#{unitPrice})
+                #{type}, #{sumPower}, #{hourPower}, #{electricCharge},#{unitPrice},#{meterReading})
         on duplicate key update sum_power=#{sumPower},hour_power=#{hourPower},create_time=#{createTime},electric_charge=#{electricCharge}, type =#{type},unit_price=#{unitPrice}
 
     </insert>
