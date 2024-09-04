@@ -116,4 +116,6 @@ public class JsonAdminInstallmentDeductionRecordController {
         
         return installmentDeductionRecordService.count(installmentDeductionRecordQuery);
     }
+    
+    
 }

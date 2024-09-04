@@ -194,7 +194,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             agreementRequest.setMerchantName(tenant.getName());
             agreementRequest.setServiceName("分期签约");
             agreementRequest.setServiceDescription("分期签约");
-            agreementRequest.setNotifyUrl(String.format(NOTIFY_URL, uid));
+            agreementRequest.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), uid));
             agreementRequest.setVars(JsonUtil.toJson(vars));
             
             FyCommonQuery<FySignAgreementRequest> commonQuery = new FyCommonQuery<>();
