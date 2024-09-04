@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
  * @Date: 2024/8/26 11:13
  */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @TableName("t_installment_record")
 public class InstallmentRecord {
     

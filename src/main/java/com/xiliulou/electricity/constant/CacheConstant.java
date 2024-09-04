@@ -690,4 +690,9 @@ public interface CacheConstant {
      * 柜机仓门配置key
      */
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
+    
+    /**
+     * 购买分期套餐签约，缓存签约用的二维码
+     */
+    String CACHE_INSTALLMENT_FORM_BODY = "installment_form_Body:%s";
 }

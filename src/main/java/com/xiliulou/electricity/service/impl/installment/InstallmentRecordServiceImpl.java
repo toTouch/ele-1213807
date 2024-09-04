@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
@@ -36,12 +37,15 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_MINI_APP;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
@@ -140,6 +144,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R<Object> sign(InstallmentSignQuery query, HttpServletRequest request) {
         try {
             InstallmentRecord installmentRecord = queryRecordWithStatusForUser(query.getUid(), InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
@@ -168,13 +173,19 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);
             
             if (InstallmentConstants.FY_SUCCESS_CODE.equals(fySignResult.getCode())) {
+                InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_UN_SIGN).build();
+                applicationContext.getBean(InstallmentRecordServiceImpl.class).update(installmentRecordUpdate);
                 
+                // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
+                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, query.getUid()), fySignResult.getFyResponse().getFormBody(),
+                        Long.valueOf(2 * 24 * 60 + 23 * 60 + 50), TimeUnit.MINUTES);
                 return R.ok(fySignResult.getFyResponse());
             }
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", query.getUid());
+            throw new BizException("签约失败，请联系管理员");
         }
-        return R.fail("购买失败，请联系管理员");
+        return R.fail("301002", "签约失败，请联系管理员");
     }
     
     @Override

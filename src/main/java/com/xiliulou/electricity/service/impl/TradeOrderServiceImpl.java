@@ -817,36 +817,36 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         try {
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
-                log.warn("BATTERY DEPOSIT WARN! not found user,uid={}", uid);
+                log.warn("INSTALLMENT PAY WARN! not found user,uid={}", uid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.warn("BATTERY DEPOSIT WARN! user is unUsable,uid={}", uid);
+                log.warn("INSTALLMENT PAY WARN! user is unUsable,uid={}", uid);
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");
             }
             
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", uid);
+                log.warn("INSTALLMENT PAY WARN! user not auth,uid={}", uid);
                 return R.fail("ELECTRICITY.0041", "未实名认证");
             }
             
             // 检查是否为自主续费状态
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
             if (!userRenewalStatus) {
-                log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", uid, query.getPackageId());
+                log.warn("INSTALLMENT PAY WARN! user renewal status is false, uid={}, mid={}", uid, query.getPackageId());
                 return R.fail("000088", "您已是渠道用户，请联系对应站点购买套餐");
             }
             
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, query.getFranchiseeId());
             if (Objects.isNull(electricityPayParams)) {
-                log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", uid);
+                log.warn("INSTALLMENT PAY WARN! not found pay params,uid={}", uid);
                 return R.fail("100307", "未配置支付参数!");
             }
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", uid);
+                log.warn("INSTALLMENT PAY WARN! not found user oauth bind or third id is null,uid={}", uid);
                 return R.fail("100308", "未找到用户的第三方授权信息!");
             }
             
@@ -860,18 +860,18 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 购买换电套餐
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
                 if (Objects.isNull(batteryMemberCard)) {
-                    log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", uid, query.getPackageId());
+                    log.warn("INSTALLMENT PAY WARN! not found batteryMemberCard,uid={},mid={}", uid, query.getPackageId());
                     return R.fail("ELECTRICITY.00121", "电池套餐不存在");
                 }
                 
                 if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
-                    log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", uid, query.getPackageId());
+                    log.warn("INSTALLMENT PAY WARN! batteryMemberCard is disable,uid={},mid={}", uid, query.getPackageId());
                     return R.fail("100275", "电池套餐不可用");
                 }
                 
                 if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
                         batteryMemberCard.getFranchiseeId())) {
-                    log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", uid, query.getPackageId());
+                    log.warn("INSTALLMENT PAY WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", uid, query.getPackageId());
                     return R.fail("100349", "用户加盟商与套餐加盟商不一致");
                 }
                 
@@ -889,7 +889,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
                         electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
-                    log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
+                    log.warn("INSTALLMENT PAY WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
                             batteryMemberCard.getId());
                     return R.fail("100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
                 }
@@ -906,7 +906,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 installmentRecordTriple = installmentRecordService.generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
                 
                 if (Objects.isNull(installmentRecordTriple) || Objects.isNull(installmentRecordTriple.getRight())) {
-                    log.warn("INSTALLMENT PAY ERROR! generate installment record fail, uid={}", uid);
+                    log.warn("INSTALLMENT PAY WARN! generate installment record fail, uid={}", uid);
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");
                 }
                 // 生成一期子套餐订单

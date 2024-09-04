@@ -71,7 +71,7 @@ public interface InstallmentConstants {
     Integer NOTIFY_STATUS_SIGN = 1;
     
     /**
-     * 回调类型，签约成功
+     * 回调类型，解约成功
      */
     Integer NOTIFY_STATUS_UN_SIGN = 2;
     

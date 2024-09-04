@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -43,8 +42,8 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -80,7 +79,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -921,7 +919,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
             batteryMemberCard.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
             batteryMemberCard.setDownPayment(Objects.nonNull(query.getDownPayment()) ? query.getDownPayment() : null);
-        }else {
+        } else {
             return Triple.of(false, "100107", "业务类型参数不正确");
         }
         
@@ -981,9 +979,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setOriginalBatteryModel(query.getBatteryModel());
             query.setBatteryModel(null);
         }
-    
+        
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectListSuperAdminPage(query);
-    
+        
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
@@ -997,14 +995,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.nonNull(franchisee)) {
                 batteryMemberCardVO.setFranchiseeName(franchisee.getName());
             }
-        
+            
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
-            
+                
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
-        
+            
             // 设置优惠券
             if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
                 List<CouponSearchVo> coupons = new ArrayList<>();
@@ -1015,7 +1013,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 if (StringUtils.isNotBlank(item.getCouponIds())) {
                     couponIdsSet.addAll(JsonUtil.fromJsonArray(item.getCouponIds(), Integer.class));
                 }
-            
+                
                 if (!CollectionUtils.isEmpty(couponIdsSet)) {
                     couponIdsSet.forEach(couponId -> {
                         CouponSearchVo couponSearchVo = new CouponSearchVo();
@@ -1029,12 +1027,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
                 batteryMemberCardVO.setCoupons(coupons);
             }
-        
+            
             // 设置用户分组
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
                 List<SearchVo> userInfoGroups = new ArrayList<>();
                 List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
-            
+                
                 if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
                     for (Long userInfoGroupId : userInfoGroupIds) {
                         SearchVo searchVo = new SearchVo();
@@ -1066,7 +1064,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord, memberCard);
         
         // 计算子套餐订单租期
-        Integer validDays = calculateSuborderValidDays(installmentRecord, memberCard);
+        Integer validDays = calculateSuborderValidDays(installmentRecord);
         
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
@@ -1197,11 +1195,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     /**
      * 计算分期套餐子套餐订单有效时间
      */
-    private Integer calculateSuborderValidDays(InstallmentRecord installmentRecord, BatteryMemberCard memberCard) {
+    private Integer calculateSuborderValidDays(InstallmentRecord installmentRecord) {
         Integer validDays = null;
         if (Objects.equals(installmentRecord.getPaidInstallment(), 0)) {
-            // 首期由于先生成订单未代扣成功，不设置有效天数，当代扣成功时再设置
-            return validDays;
+            // 由于首期订单生成时还没有代扣成功，不设置有效天数，当代扣成功时再设置
+            validDays = -1;
         } else {
             List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
                     InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
