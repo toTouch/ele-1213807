@@ -143,6 +143,8 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         
                 // 根据微信支付订单号处理
                 dealUnfreezeQuery(tenantId, profitSharingOrderTypeUnfreezeBOList);
+    
+                startId += profitSharingOrderTypeUnfreezeBOList.get(profitSharingOrderTypeUnfreezeBOList.size() - 1).getId();
             }
         });
         
