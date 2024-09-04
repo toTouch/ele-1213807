@@ -35,10 +35,6 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
     @Resource
     private ProfitSharingConfigService profitSharingConfigService;
     
-    @Override
-    public void addTotalAmount(Long id, BigDecimal amount) {
-        profitSharingStatisticsMapper.addTotalAmount(amount, id, System.currentTimeMillis());
-    }
     
     @Override
     public void insert(ProfitSharingStatistics sharingStatistics) {

@@ -225,11 +225,10 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         if (CollectionUtils.isNotEmpty(supportRefundOrderList)) {
             // 当前订单组存在支持退款的订单
-            
             this.disposeByRefund(payConfig, mixedOrder, notSupportRefundOrderList, supportRefundOrderList);
         } else {
             // 无退款，执行分账
-            this.executeProfitSharing(payConfig, notSupportRefundOrderList);
+            this.tryLockExecuteProfitSharing(payConfig, notSupportRefundOrderList);
             mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
             List<Long> successIds = notSupportRefundOrderList.stream().map(ProfitSharingTradeOrder::getId).collect(Collectors.toList());
             profitSharingTradeOrderTxService.updateStatus(mixedOrder, successIds, null, null);
@@ -285,9 +284,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                         refundOrder.getStatus());
                 // 有退款
                 if (BatteryMembercardRefundOrder.STATUS_SUCCESS.equals(refundOrder.getStatus())) {
-                    // 退款成功,退款分账单更新状态为已失效
-                    profitSharingTradeOrder.setProcessState(ProfitSharingTradeOderProcessStateEnum.LAPSED.getCode());
-                    profitSharingTradeOrder.setRemark("已退款");
+                    // 退款成功,退款分账单更新状态为已失效(正常不会出现，因为退款成功后会将状态更新为失效，任务扫描不到)
                     lapsedTradeOrderIds.add(profitSharingTradeOrder.getId());
                 } else if (this.IN_PROCESS_STATUS.contains(refundOrder.getStatus())) {
                     // 当前订单在退款中间态，整个订单组延期处理
@@ -309,12 +306,27 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         }
         
         // 执行分账
-        this.executeProfitSharing(payConfig, allowProfitSharingTradeOrders);
+        this.tryLockExecuteProfitSharing(payConfig, allowProfitSharingTradeOrders);
         
         mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
         List<Long> successIds = allowProfitSharingTradeOrders.stream().map(ProfitSharingTradeOrder::getId).collect(Collectors.toList());
         profitSharingTradeOrderTxService.updateStatus(mixedOrder, successIds, lapsedTradeOrderIds, "已退款");
     }
+    
+    
+    /**
+     * 加锁执行
+     *
+     * @param payConfig
+     * @param allowProfitSharingTradeOrders
+     * @author caobotao.cbt
+     * @date 2024/9/4 18:35
+     */
+    private List<ProfitSharingCheckModel> tryLockExecuteProfitSharing(T payConfig, List<ProfitSharingTradeOrder> allowProfitSharingTradeOrders) {
+        return this
+                .profitSharingStatisticsTryLockExecute(payConfig.getTenantId(), payConfig.getFranchiseeId(), () -> executeProfitSharing(payConfig, allowProfitSharingTradeOrders));
+    }
+    
     
     /**
      * @param payConfig
@@ -324,69 +336,58 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     private List<ProfitSharingCheckModel> executeProfitSharing(T payConfig, List<ProfitSharingTradeOrder> allowProfitSharingTradeOrders) {
         
-        String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, payConfig.getTenantId(), payConfig.getFranchiseeId());
-        String clientId = UUID.randomUUID().toString();
-        Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
-        if (!lock) {
-            log.warn("AbstractProfitSharingTradeOrderTask.executeProfitSharing WARN! lockKey:{}", lockKey);
-            throw new BizException("lock get error!");
+        // 校验分账信息
+        ProfitSharingChecksModel profitSharingChecksModel = this.checkProfitSharing(payConfig, allowProfitSharingTradeOrders);
+        
+        List<ProfitSharingCheckModel> checkModels = profitSharingChecksModel.getProfitSharingCheckModels();
+        
+        // 根据校验结果分组
+        Map<Boolean, List<ProfitSharingCheckModel>> isSuccessMap = checkModels.stream().collect(Collectors.groupingBy(ProfitSharingCheckModel::getIsSuccess));
+        
+        // 成功的
+        List<ProfitSharingCheckModel> successList = Optional.ofNullable(isSuccessMap.get(Boolean.TRUE)).orElse(Collections.emptyList());
+        
+        // 失败的
+        List<ProfitSharingCheckModel> failList = Optional.ofNullable(isSuccessMap.get(Boolean.FALSE)).orElse(Collections.emptyList());
+        
+        log.info("AbstractProfitSharingTradeOrderTask.executeProfitSharing successList size:{} , failList size :{}", successList.size(), failList.size());
+        
+        if (CollectionUtils.isEmpty(successList)) {
+            // 无成功的，全部失败，则需要解冻
+            checkModels.forEach(checkModel -> this.buildFailProfitSharingCheckModel(checkModel, payConfig));
+            profitSharingOrderTxService.insert(checkModels);
+            return checkModels;
         }
         
-        try {
-            // 校验分账信息
-            ProfitSharingChecksModel profitSharingChecksModel = this.checkProfitSharing(payConfig, allowProfitSharingTradeOrders);
+        // 生成成功订单
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        successList.forEach(profitSharingCheckModel -> {
+            ProfitSharingTradeOrder profitSharingTradeOrder = profitSharingCheckModel.getProfitSharingTradeOrder();
+            ProfitSharingOrder sharingOrder = this.initProfitSharingOrder(payConfig, profitSharingTradeOrder, atomicInteger.getAndIncrement());
+            profitSharingCheckModel.setProfitSharingOrder(sharingOrder);
             
-            List<ProfitSharingCheckModel> checkModels = profitSharingChecksModel.getProfitSharingCheckModels();
-            
-            // 根据校验结果分组
-            Map<Boolean, List<ProfitSharingCheckModel>> isSuccessMap = checkModels.stream().collect(Collectors.groupingBy(ProfitSharingCheckModel::getIsSuccess));
-            
-            // 成功的
-            List<ProfitSharingCheckModel> successList = Optional.ofNullable(isSuccessMap.get(Boolean.TRUE)).orElse(Collections.emptyList());
-            
-            // 失败的
-            List<ProfitSharingCheckModel> failList = Optional.ofNullable(isSuccessMap.get(Boolean.FALSE)).orElse(Collections.emptyList());
-            
-            log.info("AbstractProfitSharingTradeOrderTask.executeProfitSharing successList size:{} , failList size :{}", successList.size(), failList.size());
-            
-            if (CollectionUtils.isEmpty(successList)) {
-                // 无成功的，全部失败，则需要解冻
-                checkModels.forEach(checkModel -> this.buildFailProfitSharingCheckModel(checkModel, payConfig));
-                profitSharingOrderTxService.insert(checkModels);
-                return checkModels;
-            }
-            
-            // 生成成功订单
-            AtomicInteger atomicInteger = new AtomicInteger(0);
-            successList.forEach(profitSharingCheckModel -> {
-                ProfitSharingTradeOrder profitSharingTradeOrder = profitSharingCheckModel.getProfitSharingTradeOrder();
-                ProfitSharingOrder sharingOrder = this.initProfitSharingOrder(payConfig, profitSharingTradeOrder, atomicInteger.getAndIncrement());
-                profitSharingCheckModel.setProfitSharingOrder(sharingOrder);
-                
-                AtomicInteger subAtomicInteger = new AtomicInteger(0);
-                profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(details -> {
-                    ProfitSharingOrderDetail orderDetail = this
-                            .initProfitSharingDetailsCheckModel(payConfig, profitSharingTradeOrder, details.getProfitSharingReceiverConfig(), details.getProfitSharingAmount(),
-                                    subAtomicInteger.getAndIncrement());
-                    details.setProfitSharingOrderDetail(orderDetail);
-                });
+            AtomicInteger subAtomicInteger = new AtomicInteger(0);
+            profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(details -> {
+                ProfitSharingOrderDetail orderDetail = this
+                        .initProfitSharingDetailsCheckModel(payConfig, profitSharingTradeOrder, details.getProfitSharingReceiverConfig(), details.getProfitSharingAmount(),
+                                subAtomicInteger.getAndIncrement());
+                details.setProfitSharingOrderDetail(orderDetail);
             });
-            
-            List<ProfitSharingCheckModel> insertList = new ArrayList<>(successList);
-            
-            if (CollectionUtils.isNotEmpty(failList)) {
-                failList.forEach(checkModel -> this.buildFailProfitSharingCheckModel(checkModel, payConfig));
-                insertList.addAll(failList);
-            }
-            profitSharingOrderTxService.insert(insertList);
-            
-            this.executeOrder(payConfig, successList, profitSharingChecksModel);
-            
-            return checkModels;
-            
-        } finally {
-            redisService.releaseLockLua(lockKey, clientId);
+        });
+        
+        List<ProfitSharingCheckModel> insertList = new ArrayList<>(successList);
+        
+        if (CollectionUtils.isNotEmpty(failList)) {
+            failList.forEach(checkModel -> this.buildFailProfitSharingCheckModel(checkModel, payConfig));
+            insertList.addAll(failList);
         }
+        profitSharingOrderTxService.insert(insertList);
+        
+        this.executeOrder(payConfig, successList, profitSharingChecksModel);
+        
+        return checkModels;
+        
+        
     }
     
     
@@ -449,6 +450,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             if (!profitSharingCheckModel.getIsSuccess()) {
                 continue;
             }
+            // 调用成功 累计金额
             List<ProfitSharingDetailsCheckModel> profitSharingDetailsCheckModels = profitSharingCheckModel.getProfitSharingDetailsCheckModels();
             for (ProfitSharingDetailsCheckModel profitSharingDetailsCheckModel : profitSharingDetailsCheckModels) {
                 BigDecimal profitSharingAmount = profitSharingDetailsCheckModel.getProfitSharingOrderDetail().getProfitSharingAmount();

@@ -8,6 +8,7 @@ import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
@@ -24,6 +25,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,62 +53,82 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
     
     public static final String WECHAT_STATUS_SUCCESS = "SUCCESS";
     
+    public static final String WECHAT_STATUS_CLOSED = "CLOSED";
+    
     @Override
     protected String getChannel() {
         return ChannelEnum.WECHAT.getCode();
     }
     
     @Override
-    protected Boolean queryBuildProfitSharingOrder(WechatPayParamsDetails payParams, ProfitSharingOrder order, List<ProfitSharingOrderDetail> curOrderDetails) {
+    protected void queryBuildProfitSharingOrder(WechatPayParamsDetails payParams, DealWithProfitSharingOrderModel orderModel) {
+        
+        ProfitSharingOrder order = orderModel.getOrder();
+        
+        List<ProfitSharingOrderDetail> curOrderDetails = orderModel.getCurOrderDetails();
         
         WechatProfitSharingCommonRequest wechatProfitSharingCommonRequest = ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payParams);
         WechatProfitSharingQueryOrderRequest queryOrderRequest = new WechatProfitSharingQueryOrderRequest();
         queryOrderRequest.setCommonParam(wechatProfitSharingCommonRequest);
         queryOrderRequest.setTransactionId(order.getThirdTradeOrderNo());
         queryOrderRequest.setOutOrderNo(order.getOrderNo());
-//        queryOrderRequest.setChannel(ChannelEnum.WECHAT);
         try {
             BaseProfitSharingQueryOrderResp resp = profitSharingServiceAdapter.query(queryOrderRequest);
             if (Objects.isNull(resp)) {
                 log.warn("WechatProfitSharingOrderQueryTask.queryBuildProfitSharingOrder WARN! result is null");
-                return false;
+                throw new BizException("分账结果查询失败");
             }
             WechatProfitSharingQueryOrderResp queryOrderResp = (WechatProfitSharingQueryOrderResp) resp;
             
             String state = queryOrderResp.getState();
             if (WECHAT_STATUS_FINISHED.equals(state)) {
+                // 完成
                 order.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_COMPLETE.getCode());
             } else {
+                //处理中
                 order.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_IN_PROCESS.getCode());
             }
             
+            // 根据分账账号将微信分账接受记录分组
             Map<String, ReceiverResp> accountMap = Optional.ofNullable(queryOrderResp.getReceivers()).orElse(Collections.emptyList()).stream()
                     .collect(Collectors.toMap(ReceiverResp::getAccount, Function.identity(), (k1, k2) -> k1));
             
-            curOrderDetails.forEach(orderDetail -> {
+            // 失败订单金额
+            BigDecimal failAmount = orderModel.getFailAmount();
+            
+            for (ProfitSharingOrderDetail orderDetail : curOrderDetails) {
                 ReceiverResp receiverResp = accountMap.get(orderDetail.getProfitSharingReceiveAccount());
                 if (Objects.isNull(receiverResp)) {
+                    // 无分账结果（正常情况不会存在）
                     log.warn("WechatProfitSharingOrderQueryTask.queryBuildProfitSharingOrder WARN! orderDetailId:{}, wechat result is null", orderDetail.getId());
-                    return;
+                    continue;
                 }
+                
                 String result = receiverResp.getResult();
                 if (WECHAT_STATUS_PENDING.equals(result)) {
                     // 分账处理中
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode());
                 } else if (WECHAT_STATUS_SUCCESS.equals(result)) {
+                    // 分账成功
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode());
                     orderDetail.setFinishTime(System.currentTimeMillis());
-                } else {
+                } else if (WECHAT_STATUS_CLOSED.equals(result)) {
+                    // 分账失败
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
                     orderDetail.setFailReason(receiverResp.getFailReason());
                     orderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
                     orderDetail.setFinishTime(System.currentTimeMillis());
+                    // 累加失败订单金额
+                    orderModel.addFailAmount(orderDetail.getProfitSharingAmount());
+                    
+                } else {
+                    log.warn("WechatProfitSharingOrderQueryTask.queryBuildProfitSharingOrder Unknown state:{} ", result);
                 }
-            });
-            return true;
+            }
+            
         } catch (Exception e) {
             log.error("WechatProfitSharingOrderQueryTask.queryBuildProfitSharingOrder Exception:", e);
-            return false;
+            throw new BizException("系统异常");
         }
     }
     
