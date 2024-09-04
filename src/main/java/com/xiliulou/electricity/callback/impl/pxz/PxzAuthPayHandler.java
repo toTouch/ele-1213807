@@ -38,11 +38,15 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
     
     private final PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService;
     
+    private final FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+    
     protected PxzAuthPayHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
-            ApplicationContext applicationContext, PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService) {
+            ApplicationContext applicationContext, PxzBaseFreeDepositOrderServiceImpl pxzBaseFreeDepositOrderService,
+            FreeDepositAlipayHistoryService freeDepositAlipayHistoryService1) {
         super(freeDepositOrderService, freeDepositAlipayHistoryService, applicationContext);
         
         this.pxzBaseFreeDepositOrderService = pxzBaseFreeDepositOrderService;
+        this.freeDepositAlipayHistoryService = freeDepositAlipayHistoryService1;
     }
     
     @Override
@@ -55,14 +59,14 @@ public class PxzAuthPayHandler extends AbstractBusiness<PxzParams.AuthPay> imple
         if (!FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS.equals(params.getRequestBody().getOrderStatus())){
             return pxzBaseFreeDepositOrderService.cancelAuthPay(
                     FreeDepositCancelAuthToPayQuery.builder().authPayOrderId(params.getRequestBody().getPayNo()).uid(order.getUid()).tenantId(order.getTenantId()).orderId(order.getOrderId())
-                            .channel(order.getChannel()).channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
+                            .channel(FreeDepositChannelEnum.PXZ.getChannel()).build());
         }
         return handler.authPay(order);
     }
     
     @Override
     public String orderId(CallbackContext<PxzParams.AuthPay> callbackContext) {
-        return callbackContext.getParams().getRequestBody().getOrderId();
+        return freeDepositAlipayHistoryService.queryOrderIdByAuthNo(callbackContext.getParams().getRequestBody().getPayNo());
     }
     
     @Override

@@ -175,4 +175,9 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     public int updateByPayNoOrOrderId(FreeDepositAlipayHistory history) {
         return freeDepositAlipayHistoryMapper.updateByPayNoOrOrderId(history);
     }
+    
+    @Override
+    public String queryOrderIdByAuthNo(String payNo) {
+        return freeDepositAlipayHistoryMapper.selectOrderIdByAuthNo(payNo);
+    }
 }

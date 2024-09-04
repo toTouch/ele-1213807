@@ -75,4 +75,6 @@ public interface FreeDepositAlipayHistoryMapper extends BaseMapper<FreeDepositAl
     
     int updateByPayNoOrOrderId(FreeDepositAlipayHistory history);
     
+    String selectOrderIdByAuthNo(@Param("payNo") String payNo);
+    
 }

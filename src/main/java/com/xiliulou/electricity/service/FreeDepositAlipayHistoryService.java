@@ -89,4 +89,6 @@ public interface FreeDepositAlipayHistoryService {
     BigDecimal queryPayTransAmtByPayNo(String payNo);
     
     int updateByPayNoOrOrderId(FreeDepositAlipayHistory history);
+    
+    String queryOrderIdByAuthNo(String payNo);
 }
