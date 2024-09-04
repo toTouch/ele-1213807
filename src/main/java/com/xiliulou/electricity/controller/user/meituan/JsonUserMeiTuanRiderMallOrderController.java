@@ -59,8 +59,7 @@ public class JsonUserMeiTuanRiderMallOrderController {
     /**
      * 根据美团订单，创建换电套餐订单
      *
-     * @param packageId 套餐ID
-     * @param orderId   美团订单号
+     * @param orderId 美团订单号
      */
     @PostMapping("/user/meiTuanRiderMall/createBatteryMemberCardOrder")
     public R createBatteryMemberCardOrder(@RequestParam String orderId) {

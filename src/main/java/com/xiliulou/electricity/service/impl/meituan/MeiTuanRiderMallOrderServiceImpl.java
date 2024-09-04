@@ -1284,7 +1284,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         while (true) {
             OrdersDataRsp ordersDataRsp = virtualTradeService.listAllOrders(apiConfig, cursor, pageSize, startTime, endTime);
-            if (Objects.isNull(ordersDataRsp)) {
+            if (Objects.isNull(ordersDataRsp) || Objects.equals(ordersDataRsp.getTotal(), 0)) {
                 break;
             }
             
