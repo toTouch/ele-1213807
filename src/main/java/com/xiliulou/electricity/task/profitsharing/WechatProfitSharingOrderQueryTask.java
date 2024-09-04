@@ -26,6 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +97,6 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
                     .collect(Collectors.toMap(ReceiverResp::getAccount, Function.identity(), (k1, k2) -> k1));
             
             // 失败订单金额
-            BigDecimal failAmount = orderModel.getFailAmount();
             
             for (ProfitSharingOrderDetail orderDetail : curOrderDetails) {
                 ReceiverResp receiverResp = accountMap.get(orderDetail.getProfitSharingReceiveAccount());
@@ -105,19 +107,20 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
                 }
                 
                 String result = receiverResp.getResult();
+                
                 if (WECHAT_STATUS_PENDING.equals(result)) {
                     // 分账处理中
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode());
                 } else if (WECHAT_STATUS_SUCCESS.equals(result)) {
                     // 分账成功
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode());
-                    orderDetail.setFinishTime(System.currentTimeMillis());
+                    orderDetail.setFinishTime(parsingFinishTime(receiverResp.getFinishTime()));
                 } else if (WECHAT_STATUS_CLOSED.equals(result)) {
                     // 分账失败
                     orderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
                     orderDetail.setFailReason(receiverResp.getFailReason());
                     orderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
-                    orderDetail.setFinishTime(System.currentTimeMillis());
+                    orderDetail.setFinishTime(parsingFinishTime(receiverResp.getFinishTime()));
                     // 累加失败订单金额
                     orderModel.addFailAmount(orderDetail.getProfitSharingAmount());
                     
@@ -132,6 +135,30 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
         }
     }
     
+    
+    /**
+     * 时间解析
+     *
+     * @param finishTime
+     * @author caobotao.cbt
+     * @date 2024/9/4 19:53
+     */
+    public long parsingFinishTime(String finishTime) {
+        
+        if (StringUtils.isBlank(finishTime)) {
+            log.warn("WARN wechat finishTime isBlank");
+            return System.currentTimeMillis();
+        }
+        
+        // 使用ISO_OFFSET_DATE_TIME格式化器来解析RFC 3339格式的字符串
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        
+        // 解析字符串为ZonedDateTime对象
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(finishTime, formatter);
+        
+        Instant instant = zonedDateTime.toInstant();
+        return instant.toEpochMilli();
+    }
     
     /**
      * 查询构建支付配置
