@@ -26,11 +26,11 @@ import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +80,11 @@ public interface ElectricityCabinetService {
     
     Integer queryFullyElectricityBattery(Integer id, String batteryType);
     
-    boolean deviceIsOnline(String productKey, String deviceName);
+    boolean deviceIsOnlineForIot(String productKey, String deviceName);
+    
+    boolean deviceIsOnline(String productKey, String deviceName, Integer pattern);
+    
+    boolean deviceIsOnlineForTcp(String productKey, String deviceName);
     
     Integer queryByModelId(Integer id);
     
@@ -95,6 +99,8 @@ public interface ElectricityCabinetService {
     R checkOpenSessionId(String sessionId);
     
     R sendCommandToEleForOuter(EleOuterCommandQuery eleOuterCommandQuery);
+    
+    String acquireDeviceBindServerIp(String productKey, String deviceName);
     
     R queryByDeviceOuter(String productKey, String deviceName);
     
@@ -128,7 +134,9 @@ public interface ElectricityCabinetService {
     
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
     
-    Pair<Boolean, Integer> findUsableEmptyCellNoV2(Integer eid, String version);
+    Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version);
+    
+    Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version);
     
     R getFranchisee(String productKey, String deviceName);
     

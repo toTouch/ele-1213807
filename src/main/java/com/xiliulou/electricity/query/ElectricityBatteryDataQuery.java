@@ -20,6 +20,10 @@ public class ElectricityBatteryDataQuery {
     private String sn;
     
     /**
+     * sn码 列表
+     */
+    private List<String> sns;
+    /**
      * 电池物理状态 0：在仓，1：不在仓
      */
     private Integer physicsStatus;

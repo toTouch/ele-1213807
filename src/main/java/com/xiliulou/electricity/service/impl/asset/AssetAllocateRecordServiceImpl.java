@@ -132,22 +132,17 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         try {
             Integer type = assetAllocateRecordRequest.getType();
-            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
-            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
-                if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())) {
-                    return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
-                } else if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_CABINET.getCode())) {
-                    return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
-                } else {
-                    return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
-                }
+            // 盘点盘点状态
+            R inventoryStatus = judgeInventoryStatus(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
+            if (!inventoryStatus.isSuccess()) {
+                return R.fail(inventoryStatus.getErrCode(), inventoryStatus.getErrMsg());
             }
             
             List<String> exitsSn = new ArrayList<>();
             List<Long> idList = assetAllocateRecordRequest.getIdList();
             
             //根据sn查询
-            if (Objects.equals(assetAllocateRecordRequest.getSubmitType(),AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)){
+            if (Objects.equals(assetAllocateRecordRequest.getSubmitType(), AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)) {
                 List<String> snList = assetAllocateRecordRequest.getSnList();
                 if (CollectionUtils.isEmpty(snList)) {
                     return R.ok();
@@ -160,13 +155,13 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 
                 Map<String, Long> map = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
                 for (String s : snList) {
-                    if (!map.containsKey(s)){
+                    if (!map.containsKey(s)) {
                         exitsSn.add(s);
                     }
                 }
                 
-                if (CollectionUtils.isNotEmpty(exitsSn)){
-                    return R.fail("300832",String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交",String.join(",",exitsSn)));
+                if (CollectionUtils.isNotEmpty(exitsSn)) {
+                    return R.fail("300832", String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交", String.join(",", exitsSn)));
                 }
                 
                 idList = ListUtil.toList(map.values());
@@ -246,21 +241,23 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 }
             } else {
                 //电池调拨
-//                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
-//                    log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
-//                            assetAllocateRecordRequest.getTargetFranchiseeId());
-//                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
-//                }
+                //                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
+                //                    log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
+                //                            assetAllocateRecordRequest.getTargetFranchiseeId());
+                //                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
+                //                }
                 return electricityBatteryMove(assetAllocateRecordRequest, tenantId, idList, uid);
             }
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + uid);
         }
     }
+    
     /**
      * <p>
-     *    Description: queryIdBasedOnTypeAndSNCode
+     * Description: queryIdBasedOnTypeAndSNCode
      * </p>
+     *
      * @param assetAllocateRecordRequest assetAllocateRecordRequest
      * @return java.util.List<java.lang.Long>
      * <p>Project: AssetAllocateRecordServiceImpl</p>
@@ -268,21 +265,21 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
      * <p>Company: www.xiliulou.com</p>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
-    */
-    private Map<String,Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
+     */
+    private Map<String, Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
         List<String> snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
         Integer type = assetAllocateRecordRequest.getType();
-        Map<String,Long> result = null;
-        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CAR.getCode())){
-            result = electricityCarService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        Map<String, Long> result = null;
+        if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_CAR.getCode())) {
+            result = electricityCarService.listIdsBySnArray(snList, TenantContextHolder.getTenantId(), assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())){
-            result = electricityBatteryService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())) {
+            result = electricityBatteryService.listIdsBySnArray(snList, TenantContextHolder.getTenantId(), assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CABINET.getCode())){
-            result = electricityCabinetService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_CABINET.getCode())) {
+            result = electricityCabinetService.listIdsBySnArray(snList, TenantContextHolder.getTenantId(), assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (MapUtil.isEmpty(result)){
+        if (MapUtil.isEmpty(result)) {
             return MapUtil.empty();
         }
         return result;
@@ -507,7 +504,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
-       
         
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
@@ -524,13 +520,14 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 assetAllocateRecordVO.setTargetFranchiseeId(item.getNewFranchiseeId());
                 assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
                 assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
-    
-    
+                
                 if (Objects.nonNull(item.getOldFranchiseeId())) {
-                    assetAllocateRecordVO.setSourceFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getOldFranchiseeId())).orElse(new Franchisee()).getName());
+                    assetAllocateRecordVO.setSourceFranchiseeName(
+                            Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getOldFranchiseeId())).orElse(new Franchisee()).getName());
                 }
                 if (Objects.nonNull(item.getNewFranchiseeId())) {
-                    assetAllocateRecordVO.setTargetFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getNewFranchiseeId())).orElse(new Franchisee()).getName());
+                    assetAllocateRecordVO.setTargetFranchiseeName(
+                            Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getNewFranchiseeId())).orElse(new Franchisee()).getName());
                 }
                 if (Objects.nonNull(item.getOldStoreId())) {
                     assetAllocateRecordVO.setSourceStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getOldStoreId())).orElse(new Store()).getName());
@@ -571,5 +568,21 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         queryModel.setFranchiseeIds(pair.getRight());
         
         return assetAllocateRecordMapper.countTotal(queryModel);
+    }
+    
+    private R judgeInventoryStatus(Long franchiseeId, Integer type) {
+        // 查询盘点状态
+        Integer inventoryStatus = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, type);
+        if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+            if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
+                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+            } else if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
+                return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
+            } else {
+                return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
+            }
+        }
+        
+        return R.ok();
     }
 }

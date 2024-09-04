@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
@@ -45,6 +46,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -450,7 +452,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_UNLOCK_CABINET).build();
         
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         //删除缓存
         redisService.delete(CacheConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
         
@@ -1026,8 +1028,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.batchEditRentReturn(rentReturnQuery);
     }
     
-    
-    
     /**
      * 运维端编辑租退标准回显
      */
@@ -1035,5 +1035,40 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName);
     }
+    
+    /**
+     * 修改柜机模式
+     */
+//    @PostMapping(value = "/admin/electricityCabinet/batchUpdateCabinetPattern")
+//    public R batchUpdateCabinetPattern(@RequestBody @Validated ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
+//
+//    }
+    
+    /**
+     * 修改柜机模式
+     */
+    @PostMapping(value = "/admin/electricityCabinet/updateCabinetPattern")
+    public R updateCabinetPattern(@RequestBody @Validated EleCabinetPatternQuery query) {
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
+        if (Objects.isNull(otherSetting) || StringUtils.isBlank(otherSetting.getApiAddress())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("apiAddress", otherSetting.getApiAddress());
+        params.put("iotConnectMode", query.getPattern());
+        
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(query.getProductKey());
+        commandQuery.setDeviceName(query.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+        return electricityCabinetService.sendCommandToEleForOuter(commandQuery);
+    }
+    
     
 }

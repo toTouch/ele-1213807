@@ -188,6 +188,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.isNull(
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm())) {
+            return R.fail("100668", "优先换电标准不能为空");
+        }
+        
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.nonNull(
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm()) && (
+                Double.compare(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm(), ElectricityConfigAddAndUpdateQuery.MIN_NORM) < 0
+                        || Double.compare(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm(), ElectricityConfigAddAndUpdateQuery.MAX_NORM) > 0)) {
+            return R.fail("100669", "电量标准须满足50-100");
+        }
+        
+        
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         ElectricityConfig oldElectricityConfig = new ElectricityConfig();
         BeanUtil.copyProperties(electricityConfig, oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
@@ -207,20 +220,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsSelectionExchange(electricityConfigAddAndUpdateQuery.getIsSelectionExchange());
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
-            //electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
             electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
-//            electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
-//            electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
             electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
             electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
             electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
             electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
-            //electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
-            //electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
             electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
             electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+            electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
+            electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
+            
+           
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -246,20 +258,17 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
         electricityConfig.setIsSelectionExchange(electricityConfigAddAndUpdateQuery.getIsSelectionExchange());
         electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
-        //electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
         electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
-//        electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
-//        electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
         electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
         electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
         electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
         electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
-        //electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
-        //electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
         electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
         electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+        electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
+        electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
         
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
