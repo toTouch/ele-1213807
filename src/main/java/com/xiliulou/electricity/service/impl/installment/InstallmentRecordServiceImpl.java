@@ -8,6 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
@@ -50,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_MINI_APP;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
 
@@ -81,6 +83,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private RedisService redisService;
     
     private TenantService tenantService;
+    
+    private FyConfigService fyConfigService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -165,6 +169,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 return R.fail("301002", "签约失败，请联系管理员");
             }
             
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
+            if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
+                throw new BizException("100428", "免押功能未配置相关信息！请联系客服处理");
+            }
             
             Vars vars = new Vars();
             vars.setUserName(query.getUserName());
@@ -174,16 +182,16 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             vars.setDistrictName("未央区");
             
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
-            agreementRequest.setChannelFrom(CHANNEL_FROM_MINI_APP);
+            agreementRequest.setChannelFrom(CHANNEL_FROM_H5);
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
             agreementRequest.setMerchantName(tenant.getName());
             agreementRequest.setServiceName("分期签约");
             agreementRequest.setServiceDescription("分期签约");
-            agreementRequest.setNotifyUrl("/test");
+            agreementRequest.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), query.getUid()));
             agreementRequest.setVars(JsonUtil.toJson(vars));
             
             FyCommonQuery<FySignAgreementRequest> commonQuery = new FyCommonQuery<>();
-            commonQuery.setChannelCode("test");
+            commonQuery.setChannelCode(fyConfig.getChannelCode());
             commonQuery.setFlowNo(installmentRecord.getExternalAgreementNo());
             commonQuery.setFyRequest(agreementRequest);
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);

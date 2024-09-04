@@ -76,7 +76,7 @@ public interface InstallmentConstants {
     Integer NOTIFY_STATUS_UN_SIGN = 2;
     
     /**
-     * 客户端来源(miniapp)
+     * 客户端来源(h5)，h5模式返回url，可以直接访问
      */
-    String CHANNEL_FROM_MINI_APP = "miniapp";
+    String CHANNEL_FROM_H5 = "h5";
 }
