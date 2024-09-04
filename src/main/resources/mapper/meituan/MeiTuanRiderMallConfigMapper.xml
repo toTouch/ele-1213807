@@ -20,13 +20,13 @@
     <update id="update">
         update t_meituan_rider_mall_config
         <set>
-            <if test="appId != null">
+            <if test="appId != null and appId != ''">
                 app_id = #{appId},
             </if>
-            <if test="appKey != null">
+            <if test="appKey != null and appId != ''">
                 app_key = #{appKey},
             </if>
-            <if test="secret != null">
+            <if test="secret != null and appId != ''">
                 secret = #{secret},
             </if>
             <if test="updateTime != null">
@@ -35,8 +35,8 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            where id = #{id}
         </set>
+        where id = #{id} and tenant_id = #{tenantId}
     </update>
     
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">

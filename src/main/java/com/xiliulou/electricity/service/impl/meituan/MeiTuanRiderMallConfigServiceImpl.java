@@ -56,8 +56,9 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
             return insert;
         }
         
-        MeiTuanRiderMallConfig updateMeiTuanRiderMallConfig = MeiTuanRiderMallConfig.builder().id(meiTuanRiderMallConfig.getId()).appId(meiTuanRiderMallConfigRequest.getAppId())
-                .appKey(meiTuanRiderMallConfigRequest.getAppKey()).secret(meiTuanRiderMallConfigRequest.getSecret()).updateTime(System.currentTimeMillis()).build();
+        MeiTuanRiderMallConfig updateMeiTuanRiderMallConfig = MeiTuanRiderMallConfig.builder().id(meiTuanRiderMallConfig.getId()).tenantId(tenantId)
+                .appId(meiTuanRiderMallConfigRequest.getAppId()).appKey(meiTuanRiderMallConfigRequest.getAppKey()).secret(meiTuanRiderMallConfigRequest.getSecret())
+                .updateTime(System.currentTimeMillis()).build();
         
         Integer update = meiTuanRiderMallConfigMapper.update(updateMeiTuanRiderMallConfig);
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
