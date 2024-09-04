@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.meituan;
 
+import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,7 +19,9 @@ public class LimitTradeVO {
     private Boolean limitResult;
     
     /**
-     * 限制原因:1-老客限制
+     * 限制原因:0- 不限制 1-老客限制
+     *
+     * @see VirtualTradeStatusEnum
      */
     private Integer limitType;
     

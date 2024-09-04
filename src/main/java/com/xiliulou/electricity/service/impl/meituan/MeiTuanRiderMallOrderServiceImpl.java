@@ -1338,8 +1338,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         String sign = request.getSign();
         Long memberCardId = request.getProviderSkuId();
         String phone = request.getAccount();
-        LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).build();
-        LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TRADE_OLD_USER.getCode()).build();
+        LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
+        LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
         // 套餐不存在：不限制
