@@ -515,7 +515,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     public R queryInfo(Integer id) {
         ShareActivity shareActivity = queryByIdFromCache(id);
         if (Objects.isNull(shareActivity)) {
-            log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+            log.warn("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
         
@@ -625,7 +625,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ACTIVITY ERROR!not found user");
+            log.warn("ACTIVITY ERROR!not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
