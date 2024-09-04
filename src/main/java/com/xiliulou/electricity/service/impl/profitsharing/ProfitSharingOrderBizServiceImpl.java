@@ -158,7 +158,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         try {
             List<WechatPayParamsDetails> wechatPayParamsDetails = wechatPayParamsBizService.queryListPreciseCacheByTenantIdAndFranchiseeIds(tenantId, franchiseeIdList, null);
             if (CollectionUtils.isEmpty(wechatPayParamsDetails)) {
-                log.info("deal unfreeze query info, wechatPayParamsDetails is null, tenantId = {}, franchiseeIds = {}", tenantId, franchiseeIdList);
+                log.info("deal unfreeze query info1, wechatPayParamsDetails is null, tenantId = {}, franchiseeIds = {}", tenantId, franchiseeIdList);
                 return;
             }
     
@@ -167,7 +167,7 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     
             profitSharingOrderTypeUnfreezeBOList.stream().forEach(profitSharingOrderTypeUnfreezeBO -> {
                 if (!wechatPayParamsDetailsMap.containsKey(profitSharingOrderTypeUnfreezeBO.getFranchiseeId())) {
-                    log.info("deal unfreeze query info, wechatPayParamsDetailsMap is null, tenantId = {}, franchiseeId = {}", tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId());
+                    log.info("deal unfreeze query info1, wechatPayParamsDetailsMap is null, tenantId = {}, franchiseeId = {}", tenantId, profitSharingOrderTypeUnfreezeBO.getFranchiseeId());
                     return;
                 }
     
@@ -179,11 +179,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                 unfreezeRequest.setOutOrderNo(profitSharingOrderTypeUnfreezeBO.getOrderNo());
                 unfreezeRequest.setTransactionId(profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
-                log.info("deal unfreeze query info!, thirdTradeOrderNo={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
+                log.info("deal unfreeze query request!, thirdTradeOrderNo={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
                 try {
                     WechatProfitSharingQueryOrderResp unfreeze = (WechatProfitSharingQueryOrderResp) profitSharingServiceAdapter.query(unfreezeRequest);
-                    log.info("PROFIT SHARING UNFREEZE INFO!unfreeze query end, thirdTradeOrderNo={}, response={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), unfreeze);
+                    log.info("deal unfreeze query response!unfreeze query end, thirdTradeOrderNo={}, response={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), unfreeze);
                     if (Objects.isNull(unfreeze)) {
                         return;
                     }
@@ -258,11 +258,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     }
                     
                 } catch (ProfitSharingException e) {
-                    log.error("deal unfreeze query info error!orderNo = {}, thirdTradeNo = {}", profitSharingOrderTypeUnfreezeBO.getOrderNo(), profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), e);
+                    log.error("deal unfreeze query info1 error!orderNo = {}, thirdTradeNo = {}", profitSharingOrderTypeUnfreezeBO.getOrderNo(), profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), e);
                 }
             });
         } catch (WechatPayException e) {
-            log.error("deal unfreeze query info error!", e);
+            log.error("deal unfreeze query info1 error!", e);
         }
     
     }
