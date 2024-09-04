@@ -183,9 +183,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             }
         } catch (ProfitSharingException e) {
             profitSharingOrderUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
-            profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
             profitSharingOrderDetailUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
-            profitSharingOrderDetailUpdate.setUpdateTime(System.currentTimeMillis());
             
             String failReason = e.getMessage();
             if (StringUtils.isNotEmpty(e.getMessage()) && e.getMessage().length() > 400) {
@@ -197,6 +195,9 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             
             throw new ProfitSharingException(e.getMessage());
         } finally {
+            profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            profitSharingOrderDetailUpdate.setUpdateTime(System.currentTimeMillis());
+    
             // 修改分账订单的返回信息
             profitSharingOrderMapper.updateUnfreezeResultById(profitSharingOrderUpdate);
             
