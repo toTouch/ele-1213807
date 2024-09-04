@@ -56,14 +56,14 @@ public class MerchantCheckFilter implements Filter {
 
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(user)) {
-            log.error("user not exists! uid={}", SecurityUtils.getUid());
+            log.warn("user not exists! uid={}", SecurityUtils.getUid());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             ResponseUtil.out(response, R.fail("用户不存在"));
             return;
         }
 
         if (user.isLock()) {
-            log.error("user is locked! uid={}", SecurityUtils.getUid());
+            log.warn("user is locked! uid={}", SecurityUtils.getUid());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             ResponseUtil.out(response, R.fail("当前登录账号已禁用，请联系客服处理"));
             return;
