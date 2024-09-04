@@ -216,13 +216,13 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                         }
     
                         if ("PENDING".equals(receiverResp.getResult())) {
-                            orderStatus = ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode();
-                        } else if ("SUCCESS".equals(unfreeze.getState())) {
-                            orderStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
+                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode();
+                        } else if ("SUCCESS".equals(receiverResp.getResult())) {
+                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
                             unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.SUCCESS.getCode();
                             isRollbackAmount = true;
-                        } else if ("CLOSED".equals(unfreeze.getState())) {
-                            orderStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
+                        } else if ("CLOSED".equals(receiverResp.getResult())) {
+                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
                             unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.FAIL.getCode();
                         }
                         
