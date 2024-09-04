@@ -164,19 +164,19 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             uid = SecurityUtils.getUid();
             InstallmentRecord installmentRecord = queryRecordWithStatusForUser(uid, InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT);
             if (Objects.isNull(installmentRecord)) {
-                log.warn("INSTALLMENT SIGN ERROR! There is no installment record in the initialization state. uid={}", uid);
+                log.warn("INSTALLMENT SIGN WARN! There is no installment record in the initialization state. uid={}", uid);
                 return R.fail("301002", "签约失败，请联系管理员");
             }
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
-                log.warn("INSTALLMENT SIGN ERROR! The user is not associated with a tenant. uid={}", uid);
+                log.warn("INSTALLMENT SIGN WARN! The user is not associated with a tenant. uid={}", uid);
                 return R.fail("301002", "签约失败，请联系管理员");
             }
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
             if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
-                throw new BizException("100428", "免押功能未配置相关信息！请联系客服处理");
+                return R.fail("301003", "签约功能未配置相关信息！请联系客服处理");
             }
             
             Vars vars = new Vars();

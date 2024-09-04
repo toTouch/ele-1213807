@@ -96,4 +96,9 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         return null;
     }
     
+    private BigDecimal calculatePlansAmount(InstallmentRecord installmentRecord, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo) {
+    
+        return null;
+    }
+    
 }
