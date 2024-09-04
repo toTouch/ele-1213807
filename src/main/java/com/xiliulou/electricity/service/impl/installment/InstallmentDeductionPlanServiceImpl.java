@@ -77,14 +77,14 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("GENERATE DEDUCTION PLAN WARN! batteryMemberCard is null. externalAgreementNo={}",installmentRecord.getExternalAgreementNo());
-                return Triple.of(false, null, null);
+                return null;
             }
         } else {
             carRentalPackagePo = carRentalPackageService.selectById(installmentRecord.getPackageId());
             
             if (Objects.isNull(carRentalPackagePo)) {
                 log.warn("GENERATE DEDUCTION PLAN WARN! carRentalPackage is null. externalAgreementNo={}",installmentRecord.getExternalAgreementNo());
-                return Triple.of(false, null, null);
+                return null;
             }
         }
         
@@ -99,7 +99,7 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             deductionPlan.setDeductTime(InstallmentUtil.calculateSuborderDeductTime(i));
             planList.add(deductionPlan);
         }
-        return Triple.of(true, null, planList);
+        return planList;
     }
     
 }

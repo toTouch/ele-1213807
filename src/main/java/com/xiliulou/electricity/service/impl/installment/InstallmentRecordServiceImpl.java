@@ -59,6 +59,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_URL;
 
 /**
  * @Description ...
@@ -160,7 +161,6 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R<Object> sign(InstallmentSignQuery query, HttpServletRequest request) {
         Long uid = null;
         try {
@@ -194,7 +194,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             agreementRequest.setMerchantName(tenant.getName());
             agreementRequest.setServiceName("分期签约");
             agreementRequest.setServiceDescription("分期签约");
-            agreementRequest.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), uid));
+            agreementRequest.setNotifyUrl(String.format(NOTIFY_URL, uid));
             agreementRequest.setVars(JsonUtil.toJson(vars));
             
             FyCommonQuery<FySignAgreementRequest> commonQuery = new FyCommonQuery<>();
@@ -259,8 +259,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 }
             }
             
-            
-            return "";
+            return "SUCCESS";
         } catch (Exception e) {
             log.error("INSTALLMENT NOTIFY ERROR! uid={}, bizContent={}", uid, bizContent, e);
             return null;
