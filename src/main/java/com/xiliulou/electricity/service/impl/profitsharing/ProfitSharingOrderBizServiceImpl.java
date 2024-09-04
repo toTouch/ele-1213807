@@ -204,15 +204,12 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     Integer unfreezeStatus = null;
                     BigDecimal amount = null;
                     
-                    // 是否回滚金额
-                    boolean isRollbackAmount = false;
-                    
                     if (ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
                         ReceiverResp receiverResp = unfreeze.getReceivers().get(0);
                         if (StringUtils.isNotEmpty(receiverResp.getFinishTime())) {
                             LocalDateTime localDateTime = LocalDateTime.parse(receiverResp.getFinishTime(), formatter);
                             ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.systemDefault()); // 转换为系统默认时区的ZonedDateTime
-                            finishTime = zonedDateTime.toEpochSecond();
+                            finishTime = zonedDateTime.toEpochSecond() * 1000;
                         }
     
                         if ("PENDING".equals(receiverResp.getResult())) {
@@ -220,7 +217,6 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                         } else if ("SUCCESS".equals(receiverResp.getResult())) {
                             orderDetailStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
                             unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.SUCCESS.getCode();
-                            isRollbackAmount = true;
                         } else if ("CLOSED".equals(receiverResp.getResult())) {
                             orderDetailStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
                             unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.FAIL.getCode();
@@ -252,11 +248,6 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     profitSharingOrderDetailUpdate.setFailReason(failReason);
                     profitSharingOrderDetailUpdate.setProfitSharingAmount(amount);
                     profitSharingOrderDetailService.updateUnfreezeOrderById(profitSharingOrderDetailUpdate);
-                    
-                    // 回滚余额
-                    if (isRollbackAmount) {
-                        rollbackAmount(profitSharingOrderTypeUnfreezeBO, tenantId);
-                    }
                     
                 } catch (ProfitSharingException e) {
                     log.error("deal unfreeze query info1 error!orderNo = {}, thirdTradeNo = {}", profitSharingOrderTypeUnfreezeBO.getOrderNo(), profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), e);
