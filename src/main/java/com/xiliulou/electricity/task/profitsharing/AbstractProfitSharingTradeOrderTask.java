@@ -615,7 +615,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @date 2024/8/29 09:11
      */
     private ProfitSharingOrderDetail buildErrorProfitSharingOrderDetail(T payConfig, ProfitSharingTradeOrder profitSharingOrder, ProfitSharingReceiverConfig receiverConfig,
-            String failReason, Integer businessType, Integer unfreezeStatus,, Integer suffix) {
+            String failReason, Integer businessType, Integer unfreezeStatus, Integer suffix) {
         long time = System.currentTimeMillis();
         ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
         profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingOrder.getThirdOrderNo());
