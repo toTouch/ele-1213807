@@ -57,7 +57,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
     
     
     @Override
-    protected void ordprofitSharingStatisticsTryLockExecuteer(WechatPayParamsDetails payConfig, List<ProfitSharingCheckModel> profitSharingModels) {
+    protected void order(WechatPayParamsDetails payConfig, List<ProfitSharingCheckModel> profitSharingModels) {
         
         for (int i = 0; i < profitSharingModels.size(); i++) {
             ProfitSharingCheckModel profitSharingCheckModel = profitSharingModels.get(i);
