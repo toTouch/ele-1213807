@@ -20,6 +20,8 @@ public interface MeiTuanRiderMallConfigService {
     
     MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config);
     
+    MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config);
+    
     List<MeiTuanRiderMallConfig> listEnableMeiTuanRiderMall(Integer offset, Integer size);
     
     List<MeiTuanRiderMallConfig> listAll();

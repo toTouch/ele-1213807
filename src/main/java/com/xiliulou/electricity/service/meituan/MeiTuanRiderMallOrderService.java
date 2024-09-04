@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.meituan;
 
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
@@ -35,6 +36,6 @@ public interface MeiTuanRiderMallOrderService {
     /**
      * 美团骑手商城限制提单校验
      */
-    LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request);
+    LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request, MeiTuanRiderMallConfig meiTuanRiderMallConfig);
     
 }

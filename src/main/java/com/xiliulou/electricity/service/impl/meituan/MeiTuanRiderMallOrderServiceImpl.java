@@ -1332,22 +1332,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request) {
+    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
+        Integer tenantId = meiTuanRiderMallConfig.getTenantId();
         Long timestamp = request.getTimestamp();
         String sign = request.getSign();
         Long memberCardId = request.getProviderSkuId();
         String phone = request.getAccount();
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).build();
         LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TRADE_OLD_USER.getCode()).build();
-        
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfig(
-                MeiTuanRiderMallConfig.builder().appId(request.getAppId()).appKey(request.getAppKey()).build());
-        // 配置不存在：不限制
-        if (Objects.isNull(meiTuanRiderMallConfig)) {
-            return noLimit;
-        }
-        
-        Integer tenantId = meiTuanRiderMallConfig.getTenantId();
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
         // 套餐不存在：不限制

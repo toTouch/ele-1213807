@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
+import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author HeYafeng
@@ -26,6 +29,9 @@ import java.util.Map;
 public class JsonOuterBatteryMemberCardController {
     
     @Resource
+    private MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
+    
+    @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     @PostMapping("/outer/batteryMemberCard/limitTrade")
@@ -34,15 +40,20 @@ public class JsonOuterBatteryMemberCardController {
         paramMap.put(VirtualTradeConstant.TIMESTAMP, limitTradeRequest.getTimestamp());
         paramMap.put(VirtualTradeConstant.APP_ID, limitTradeRequest.getAppId());
         paramMap.put(VirtualTradeConstant.APP_KEY, limitTradeRequest.getAppKey());
-        paramMap.put(VirtualTradeConstant.SIGN, limitTradeRequest.getSign());
         paramMap.put(VirtualTradeConstant.ACCOUNT, limitTradeRequest.getAccount());
         paramMap.put(VirtualTradeConstant.PROVIDER_SKU_ID, limitTradeRequest.getProviderSkuId());
         
-        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, limitTradeRequest.getSign());
+        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(
+                MeiTuanRiderMallConfig.builder().appId(limitTradeRequest.getAppId()).appKey(limitTradeRequest.getAppKey()).build());
+        if (Objects.isNull(meiTuanRiderMallConfig)) {
+            return R.fail(VirtualTradeStatusEnum.CHECK_SIGN_ERROR.getDesc());
+        }
+        
+        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), limitTradeRequest.getSign());
         if (!checkSign) {
             return R.fail(VirtualTradeStatusEnum.CHECK_SIGN_ERROR.getDesc());
         }
         
-        return R.ok(meiTuanRiderMallOrderService.meiTuanLimitTradeCheck(limitTradeRequest));
+        return R.ok(meiTuanRiderMallOrderService.meiTuanLimitTradeCheck(limitTradeRequest, meiTuanRiderMallConfig));
     }
 }
