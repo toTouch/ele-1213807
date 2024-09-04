@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_meituan_rider_mall_order")
+@TableName("t_mei_tuan_rider_mall_order")
 public class MeiTuanRiderMallOrder {
     
     /**

@@ -4,20 +4,20 @@
     <!-- 基础字段 -->
     <sql id="basic_field">
         id
-        , meituan_order_id, meituan_order_time, meituan_order_status, meituan_actually_pay_price, meituan_virtual_recharge_type, meituan_account, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag, create_time, update_time
+        , mei_tuan_order_id, mei_tuan_order_time, mei_tuan_order_status, mei_tuan_actually_pay_price, mei_tuan_virtual_recharge_type, mei_tuan_account, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag, create_time, update_time
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_meituan_rider_mall_order (meituan_order_id, meituan_order_time, meituan_order_status, meituan_actually_pay_price, meituan_virtual_recharge_type,
-                                                meituan_account, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag,
+        insert into t_mei_tuan_rider_mall_order (mei_tuan_order_id, mei_tuan_order_time, mei_tuan_order_status, mei_tuan_actually_pay_price, mei_tuan_virtual_recharge_type,
+                                                 mei_tuan_account, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag,
                                                 create_time, update_time)
         values (#{meiTuanOrderId}, #{meiTuanOrderTime}, #{meiTuanOrderStatus}, #{meiTuanActuallyPayPrice}, #{meiTuanVirtualRechargeType}, #{meiTuanAccount}, #{coupon}, #{orderId},
                 #{orderSyncStatus}, #{orderUseStatus}, #{packageId}, #{packageType}, #{uid}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
     
     <insert id="batchInsert">
-        insert into t_meituan_rider_mall_order(meituan_order_id, meituan_order_time, meituan_order_status, meituan_actually_pay_price, meituan_virtual_recharge_type,
-        meituan_account, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag, create_time, update_time) values
+        insert into t_mei_tuan_rider_mall_order(mei_tuan_order_id, mei_tuan_order_time, mei_tuan_order_status, mei_tuan_actually_pay_price, mei_tuan_virtual_recharge_type,
+        mei_tuan_account, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag, create_time, update_time) values
         <foreach item="item" index="index" collection="list" separator=",">
             (#{item.meiTuanOrderId}, #{item.meiTuanOrderTime}, #{item.meiTuanOrderStatus}, #{item.meiTuanActuallyPayPrice}, #{item.meiTuanVirtualRechargeType},
             #{item.meiTuanAccount}, #{item.coupon}, #{item.orderId},
@@ -27,10 +27,10 @@
     </insert>
     
     <update id="update">
-        update t_meituan_rider_mall_order
+        update t_mei_tuan_rider_mall_order
         <set>
             <if test="meiTuanOrderStatus != null">
-                meituan_order_status = #{meiTuanOrderStatus},
+                mei_tuan_order_status = #{meiTuanOrderStatus},
             </if>
             <if test="orderId != null and orderId != ''">
                 order_id = #{orderId},
@@ -52,7 +52,7 @@
     </update>
     
     <update id="batchUpdateSyncOrderStatus">
-        update t_meituan_rider_mall_order
+        update t_mei_tuan_rider_mall_order
         set order_sync_status = 3
         where order_sync_status = 1 and id in
         <foreach collection="list" item="item" separator=",">
@@ -63,10 +63,10 @@
     <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
-        from t_meituan_rider_mall_order
-        where meituan_order_id = #{orderId}
+        from t_mei_tuan_rider_mall_order
+        where mei_tuan_order_id = #{orderId}
         <if test="phone != null and phone != ''">
-            and meituan_account = #{phone}
+            and mei_tuan_account = #{phone}
         </if>
         <if test="uid != null and uid != 0">
             and uid = #{uid}
@@ -77,8 +77,8 @@
     <select id="selectByUidAndPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
-        from t_meituan_rider_mall_order
-        where tenant_id = #{tenantId} and uid = #{uid} and meituan_account = #{phone} and meituan_order_status != 20
+        from t_mei_tuan_rider_mall_order
+        where tenant_id = #{tenantId} and uid = #{uid} and mei_tuan_account = #{phone} and mei_tuan_order_status != 20
         <if test="orderId != null and orderId != ''">
             and order_id = #{orderId}
         </if>
@@ -89,7 +89,7 @@
     <select id="selectListUnSyncedOrder" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
-        from t_meituan_rider_mall_order
+        from t_mei_tuan_rider_mall_order
         where tenant_id = #{tenantId} and order_sync_status != 3 and del_flag = 0
         order by id
         limit #{offset}, #{size}
