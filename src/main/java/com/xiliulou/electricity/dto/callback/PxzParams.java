@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.dto.callback;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -52,6 +54,8 @@ public class PxzParams {
     }
     
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class PxzHeader {
         
         private Long dateTime;
