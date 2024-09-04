@@ -96,4 +96,21 @@ public class JsonUserCarDepositPayV2Controller extends BasicController {
         
         return R.ok(carRenalPackageDepositV2BizService.refundDeposit(tenantId, user.getUid(), depositPayOrderNo));
     }
+    
+    /**
+     * 用户名下的押金信息(单车、车电一体)
+     *
+     * @return
+     */
+    @GetMapping("/queryUnRefundCarDeposit")
+    public R<CarRentalPackageDepositPayVo> queryUnRefundCarDeposit() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return R.ok(carRenalPackageDepositV2BizService.selectUnRefundCarDeposit(tenantId, user.getUid()));
+    }
 }

@@ -76,4 +76,13 @@ public interface CarRenalPackageDepositV2BizService {
      */
     boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo);
     
+    /**
+     * 用户名下的押金信息(单车、车电一体)
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 押金缴纳信息
+     */
+    CarRentalPackageDepositPayVo selectUnRefundCarDeposit(Integer tenantId, Long uid);
+    
 }
