@@ -1265,7 +1265,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         // 从美团拉取订单
         List<OrderRsp> orderRspList = this.fetchOrders(apiConfig, startTime, endTime);
-        log.info("MeiTuanRiderMallOrderServiceImpl.handleFetchOrdersByTenant.orderRspList={}", orderRspList);
         if (CollectionUtils.isEmpty(orderRspList)) {
             return;
         }
@@ -1279,18 +1278,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     private List<OrderRsp> fetchOrders(MeiTuanRiderMallApiConfig apiConfig, Long startTime, Long endTime) {
-        log.info("MeiTuanRiderMallOrderServiceImpl.fetchOrders start! apiConfig={}, startTime={}, endTime={}", apiConfig, startTime, endTime);
-        
         Long cursor = null;
         Integer pageSize = 100;
         List<OrderRsp> list = new ArrayList<>();
         
         while (true) {
             OrdersDataRsp ordersDataRsp = virtualTradeService.listAllOrders(apiConfig, cursor, pageSize, startTime, endTime);
-            log.info("MeiTuanRiderMallOrderServiceImpl.fetchOrders.listAllOrders ordersDataRsp={}", ordersDataRsp);
             
             if (Objects.isNull(ordersDataRsp) || Objects.equals(ordersDataRsp.getTotal(), 0)) {
-                log.info("MeiTuanRiderMallOrderServiceImpl.fetchOrders.listAllOrders list={}", list);
                 return list;
             }
             
