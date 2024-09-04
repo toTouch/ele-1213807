@@ -3,7 +3,8 @@
 <mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id,
+        id
+        ,
         profit_sharing_order_id,
         third_trade_order_no,
         order_detail_no,
@@ -61,6 +62,9 @@
             <if test="unfreezeStatus!=null">
                 unfreeze_status=#{unfreezeStatus},
             </if>
+            <if test="finishTime!=null">
+                finish_time=#{finishTime},
+            </if>
             update_time=#{updateTime}
         </set>
         where id =#{id}
@@ -83,24 +87,24 @@
     <update id="updateUnfreezeOrderById">
         UPDATE t_profit_sharing_order_detail
         SET
-            <if test="status != null">
-                status = #{status},
-            </if>
-            <if test="finishTime != null">
-                finish_time = #{finishTime},
-            </if>
-            <if test="unfreezeStatus != null">
-                unfreeze_status = #{unfreezeStatus},
-            </if>
-            <if test="failReason != null and failReason != ''">
-                fail_reason = #{failReason},
-            </if>
-            <if test="profitSharingAmount != null">
-                profit_sharing_amount = #{profitSharingAmount},
-            </if>
-            update_time = #{updateTime}
+        <if test="status != null">
+            status = #{status},
+        </if>
+        <if test="finishTime != null">
+            finish_time = #{finishTime},
+        </if>
+        <if test="unfreezeStatus != null">
+            unfreeze_status = #{unfreezeStatus},
+        </if>
+        <if test="failReason != null and failReason != ''">
+            fail_reason = #{failReason},
+        </if>
+        <if test="profitSharingAmount != null">
+            profit_sharing_amount = #{profitSharingAmount},
+        </if>
+        update_time = #{updateTime}
         WHERE
-            id = #{id}
+        id = #{id}
     </update>
     
     <sql id="pageFilter">
@@ -223,34 +227,31 @@
     </select>
     
     <select id="selectListOrderTypeUnfreeze"
-            resultType="com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO">
-        SELECT
-            d.third_trade_order_no,
-            o.order_no,
-            d.id as detailId,
-            d.franchisee_Id,
-            o.id
-        FROM
-            t_profit_sharing_order_detail d
-                left join t_profit_sharing_order o on o.id = d.profit_sharing_order_id
-        where
-          tenantId = #{tenantId}
+        resultType="com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO">
+        SELECT d.third_trade_order_no,
+               o.order_no,
+               d.id as detailId,
+               d.franchisee_Id,
+               o.id
+        FROM t_profit_sharing_order_detail d
+                 left join t_profit_sharing_order o on o.id = d.profit_sharing_order_id
+        where tenantId = #{tenantId}
           and d.business_type = 98
           and d.status in (0, 1)
           and id > #{startId}
         order by d.id
-        limit #{size}
+            limit #{size}
     </select>
     <select id="selectListFailByThirdOrderNo"
-            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
         SELECT
-            <include refid="basic_field"/>
+        <include refid="basic_field"/>
         FROM
-            t_profit_sharing_order_detail d
+        t_profit_sharing_order_detail d
         WHERE
-            d.business_type in (0, 1, 2)
-          and d.`status` = 3
-          and d.third_trade_order_no = #{thirdTradeOrderNo}
+        d.business_type in (0, 1, 2)
+        and d.`status` = 3
+        and d.third_trade_order_no = #{thirdTradeOrderNo}
     </select>
 
 

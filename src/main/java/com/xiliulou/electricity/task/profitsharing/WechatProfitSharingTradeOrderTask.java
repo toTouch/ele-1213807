@@ -92,6 +92,7 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
                     // 赋值详情订单号
                     ProfitSharingOrderDetail profitSharingOrderDetail = v.getProfitSharingOrderDetail();
                     profitSharingOrderDetail.setOrderDetailNo(accountReceiverMap.get(profitSharingOrderDetail.getProfitSharingReceiveAccount()).getDetailId());
+                    profitSharingOrderDetail.setUpdateTime(System.currentTimeMillis());
                 });
                 
             } catch (Exception e) {
@@ -105,6 +106,9 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
                         profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
                         profitSharingOrderDetail.setUnfreezeStatus(ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
                         profitSharingOrderDetail.setFailReason(details.getErrorMsg());
+                        long timeMillis = System.currentTimeMillis();
+                        profitSharingOrderDetail.setUpdateTime(timeMillis);
+                        profitSharingOrderDetail.setFinishTime(timeMillis);
                     });
                 });
             }
