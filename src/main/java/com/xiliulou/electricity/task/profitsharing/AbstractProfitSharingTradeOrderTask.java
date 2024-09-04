@@ -469,6 +469,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         detail.setThirdTradeOrderNo(profitSharingTradeOrder.getThirdOrderNo());
         detail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeOrder.getUid()) + andIncrement);
         detail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
+        detail.setProfitSharingReceiveName(receiverConfig.getReceiverName());
         detail.setScale(receiverConfig.getScale());
         detail.setProfitSharingAmount(profitSharingAmount);
         detail.setStatus(ProfitSharingOrderDetailStatusEnum.ACCEPT.getCode());
@@ -623,6 +624,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingOrder.getThirdOrderNo());
         profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingOrder.getUid()) + suffix);
         profitSharingOrderDetail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
+        profitSharingOrderDetail.setProfitSharingReceiveName(receiverConfig.getReceiverName());
         profitSharingOrderDetail.setScale(receiverConfig.getScale());
         profitSharingOrderDetail.setProfitSharingAmount(BigDecimal.ZERO);
         profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
