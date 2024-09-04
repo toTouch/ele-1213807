@@ -9,6 +9,8 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
@@ -53,6 +55,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     @Resource
     private ApplicationContext applicationContext;
+    
+    @Resource
+    private DelayFreeProducer delayFreeProducer;
     
     
     @Override
@@ -129,6 +134,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         log.info("FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
         
+        // 发送延迟队列延迟更新免押状态为最终态
+        delayFreeProducer.sendDelayFreeMessage(request.getFreeDepositOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
+        
         // 实现免押
         BaseFreeDepositService freeDepositWay = freeDepositFactory.getFreeDepositWay(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());
         return freeDepositWay.freeDepositOrder(request);
@@ -142,6 +150,10 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
         log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
+        
+        // 解冻延迟
+        delayFreeProducer.sendDelayFreeMessage(query.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
+        
         // 免押解冻
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.unFreezeDeposit(query);
@@ -154,6 +166,10 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
         log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
+        
+        // 解冻延迟
+        delayFreeProducer.sendDelayFreeMessage(query.getOrderId(), query.getAuthPayOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
+        
         // 代扣
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.authToPay(query);

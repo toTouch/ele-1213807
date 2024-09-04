@@ -47,9 +47,6 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
-import com.xiliulou.electricity.mq.producer.EnterpriseUserCostRecordProducer;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
@@ -60,9 +57,6 @@ import com.xiliulou.electricity.query.enterprise.EnterprisePurchaseOrderQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseRentBatteryOrderQuery;
 import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -268,8 +262,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     @Resource
     private FreeDepositService freeDepositService;
     
-    @Resource
-    private DelayFreeProducer delayFreeProducer;
     
     @Deprecated
     @Override
@@ -1133,9 +1125,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(),
                 JsonUtil.toJson(depositOrderDTO.getData()), 300 * 1000L, false);
-        
-        // 发送延迟队列延迟更新免押状态为最终态
-        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
         
         
         return Triple.of(true, null, depositOrderDTO.getData());
