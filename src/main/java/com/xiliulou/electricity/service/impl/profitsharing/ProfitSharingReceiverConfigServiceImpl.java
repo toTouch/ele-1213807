@@ -8,6 +8,7 @@ import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 
 import com.google.common.collect.Maps;
@@ -280,7 +281,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, request.getTenantId());
             franchiseeMap = Optional.ofNullable(franchisees).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Franchisee::getId, v -> v.getName()));
         }
-    
+        
         for (ProfitSharingReceiverConfigVO v : voList) {
             v.setFranchiseeName(franchiseeMap.get(v.getFranchiseeId()));
             ProfitSharingConfigVO profitSharingConfigVO = sharingConfigVOMap.get(v.getProfitSharingConfigId());
@@ -454,12 +455,14 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         wechatAddRequest.setAccount(request.getAccount());
         wechatAddRequest.setName(request.getReceiverName());
         wechatAddRequest.setRelationType(request.getRelationType());
-//        wechatAddRequest.setChannel(ChannelEnum.WECHAT);
         try {
             BaseProfitSharingReceiversAddResp resp = profitSharingServiceAdapter.addReceivers(wechatAddRequest);
             if (Objects.isNull(resp)) {
                 throw new BizException("分账接收方添加失败，微信返回为空");
             }
+        } catch (ProfitSharingException p) {
+            log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers ProfitSharingException:", p);
+            throw new BizException(p.getMessage());
         } catch (BizException e) {
             log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers BizException:", e);
             throw e;
@@ -510,8 +513,10 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             deleteRequest.setCommonParam(ElectricityPayParamsConverter.optWechatProfitSharingCommonRequest(payParams));
             deleteRequest.setType(ProfitSharingConfigReceiverTypeEnum.CODE_MAP.get(receiver.getReceiverType()));
             deleteRequest.setAccount(receiver.getAccount());
-//            deleteRequest.setChannel(ChannelEnum.WECHAT);
             profitSharingServiceAdapter.deleteReceivers(deleteRequest);
+        } catch (ProfitSharingException p) {
+            log.warn("ProfitSharingReceiverConfigServiceImpl.deleteWechatReceivers ProfitSharingException:", p);
+            throw new BizException(p.getMessage());
         } catch (Exception e) {
             log.info("ProfitSharingReceiverConfigServiceImpl.insert Exception：", e);
             throw new BizException("支付配置查询失败");
