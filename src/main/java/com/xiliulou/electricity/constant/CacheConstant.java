@@ -697,7 +697,6 @@ public interface CacheConstant {
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
     
     String CACHE_MEI_TUAN_RIDER_MALL_CONFIG = "mei_tuan_rider_mall_config:";
-    String CACHE_MEI_TUAN_RIDER_MALL_CONFIG_APP = "mei_tuan_rider_mall_config_app:%s:%s";
     
     String CACHE_MEI_TUAN_RIDER_MALL_ORDER_FETCH_TIME = "mei_tuan_rider_mall_order_fetch_time:";
     

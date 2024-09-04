@@ -54,7 +54,7 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
             Integer insert = meiTuanRiderMallConfigMapper.insert(meiTuanRiderMallConfig);
             DbUtils.dbOperateSuccessThenHandleCache(insert, i -> {
                 redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + tenantId);
-                redisService.delete(String.format(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG_APP, appId, appKey));
+                redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey);
             });
             
             return insert;
@@ -66,7 +66,7 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
         Integer update = meiTuanRiderMallConfigMapper.update(updateMeiTuanRiderMallConfig);
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + tenantId);
-            redisService.delete(String.format(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG_APP, appId, appKey));
+            redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey);
             
         });
         
@@ -106,9 +106,8 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
     public MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config) {
         String appId = config.getAppId();
         String appKey = config.getAppKey();
-        String key = String.format(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG_APP, appId, appKey);
         
-        MeiTuanRiderMallConfig cacheConfig = redisService.getWithHash(key, MeiTuanRiderMallConfig.class);
+        MeiTuanRiderMallConfig cacheConfig = redisService.getWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, MeiTuanRiderMallConfig.class);
         if (Objects.nonNull(cacheConfig)) {
             return cacheConfig;
         }
@@ -118,8 +117,20 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
             return null;
         }
         
-        redisService.saveWithHash(key, meiTuanRiderMallConfig);
+        redisService.saveWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, meiTuanRiderMallConfig);
         return meiTuanRiderMallConfig;
+    }
+    
+    public static void main(String[] args) {
+        String appId = "12:234";
+        String appKey = "456r:err:thytr";
+        
+        // 去掉冒号
+        appId = StringUtils.remove(appId, ":");
+        appKey = StringUtils.remove(appKey, ":");
+        
+        System.out.println(appId);
+        System.out.println(appKey);
     }
     
     @Slave
