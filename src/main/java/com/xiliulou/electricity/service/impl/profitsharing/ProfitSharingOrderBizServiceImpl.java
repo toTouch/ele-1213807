@@ -115,18 +115,20 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
         Integer startTenantId = 0;
         Integer size = 200;
     
-        while (true) {
-            List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
-            if (CollectionUtils.isEmpty(tenantIds)) {
-                break;
-            }
-        
-            dealUnfreezeQueryWithTenantIds(tenantIds);
-        
-            startTenantId = tenantIds.get(tenantIds.size() - 1);
-        }
-        
-        
+//        while (true) {
+//            List<Integer> tenantIds = tenantService.queryIdListByStartId(startTenantId, size);
+//            if (CollectionUtils.isEmpty(tenantIds)) {
+//                break;
+//            }
+//
+//            dealUnfreezeQueryWithTenantIds(tenantIds);
+//
+//            startTenantId = tenantIds.get(tenantIds.size() - 1);
+//        }
+    
+        dealUnfreezeQueryWithTenantIds(new ArrayList<>(80));
+    
+    
     }
     
     private void dealUnfreezeQueryWithTenantIds(List<Integer> tenantIds) {
@@ -175,10 +177,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                 unfreezeRequest.setOutOrderNo(profitSharingOrderTypeUnfreezeBO.getOrderNo());
                 unfreezeRequest.setTransactionId(profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
-                log.info("deal unfreeze query info!, thirdTradeOrderNo={}, request={}, ", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), unfreezeRequest);
+                log.info("deal unfreeze query info!, thirdTradeOrderNo={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
     
                 try {
                     WechatProfitSharingQueryOrderResp unfreeze = (WechatProfitSharingQueryOrderResp) profitSharingServiceAdapter.query(unfreezeRequest);
+                    log.info("PROFIT SHARING UNFREEZE INFO!unfreeze query end, thirdTradeOrderNo={}, response={}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo(), unfreeze);
                     if (Objects.isNull(unfreeze)) {
                         return;
                     }

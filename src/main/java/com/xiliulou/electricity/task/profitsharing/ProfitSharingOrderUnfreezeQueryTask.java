@@ -28,9 +28,9 @@ public class ProfitSharingOrderUnfreezeQueryTask extends IJobHandler {
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         TtlTraceIdSupport.set();
+        
         try {
             profitSharingOrderBizService.doUnfreezeQueryTask();
-            
         } catch (Exception e) {
             log.error("profit sharing order unfreeze query task execute error", e);
         } finally {
