@@ -5163,7 +5163,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Slave
     public R listSuperAdminPage(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.selectListSuperAdminPage(electricityCabinetQuery);
         if (ObjectUtil.isEmpty(electricityCabinetList)) {
