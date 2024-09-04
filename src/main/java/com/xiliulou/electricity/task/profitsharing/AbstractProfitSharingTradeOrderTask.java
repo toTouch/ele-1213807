@@ -57,6 +57,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -356,13 +357,17 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             }
             
             // 生成成功订单
+            AtomicInteger atomicInteger = new AtomicInteger(0);
             successList.forEach(profitSharingCheckModel -> {
                 ProfitSharingTradeOrder profitSharingTradeOrder = profitSharingCheckModel.getProfitSharingTradeOrder();
-                ProfitSharingOrder sharingOrder = this.initProfitSharingOrder(payConfig, profitSharingTradeOrder);
+                ProfitSharingOrder sharingOrder = this.initProfitSharingOrder(payConfig, profitSharingTradeOrder, atomicInteger.getAndIncrement());
                 profitSharingCheckModel.setProfitSharingOrder(sharingOrder);
+                
+                AtomicInteger subAtomicInteger = new AtomicInteger(0);
                 profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(details -> {
                     ProfitSharingOrderDetail orderDetail = this
-                            .initProfitSharingDetailsCheckModel(payConfig, profitSharingTradeOrder, details.getProfitSharingReceiverConfig(), details.getProfitSharingAmount());
+                            .initProfitSharingDetailsCheckModel(payConfig, profitSharingTradeOrder, details.getProfitSharingReceiverConfig(), details.getProfitSharingAmount(),
+                                    subAtomicInteger.getAndIncrement());
                     details.setProfitSharingOrderDetail(orderDetail);
                 });
             });
@@ -396,13 +401,18 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     private void buildFailProfitSharingCheckModel(ProfitSharingCheckModel checkModel, T payConfig) {
         ProfitSharingTradeOrder profitSharingTradeOrder = checkModel.getProfitSharingTradeOrder();
         // 构建分账失败订单
-        ProfitSharingOrder profitSharingOrder = this.buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        
+        ProfitSharingOrder profitSharingOrder = this
+                .buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), atomicInteger.getAndIncrement());
         checkModel.setProfitSharingOrder(profitSharingOrder);
         checkModel.getProfitSharingDetailsCheckModels().forEach(detail -> {
+            
+            AtomicInteger subAtomicInteger = new AtomicInteger(0);
             // 构建分账失败明细订单
             ProfitSharingOrderDetail profitSharingOrderDetail = this
                     .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, detail.getProfitSharingReceiverConfig(), detail.getErrorMsg(),
-                            ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
+                            ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode(), subAtomicInteger.getAndIncrement());
             detail.setProfitSharingOrderDetail(profitSharingOrderDetail);
         });
     }
@@ -451,11 +461,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     }
     
     private ProfitSharingOrderDetail initProfitSharingDetailsCheckModel(T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingReceiverConfig receiverConfig,
-            BigDecimal profitSharingAmount) {
+            BigDecimal profitSharingAmount, int andIncrement) {
         long timeMillis = System.currentTimeMillis();
         ProfitSharingOrderDetail detail = new ProfitSharingOrderDetail();
         detail.setThirdTradeOrderNo(profitSharingTradeOrder.getThirdOrderNo());
-        detail.setOrderDetailNo(OrderIdUtil.generateBusinessId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeOrder.getUid()));
+        detail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingTradeOrder.getUid()) + andIncrement);
         detail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
         detail.setScale(receiverConfig.getScale());
         detail.setProfitSharingAmount(profitSharingAmount);
@@ -471,11 +481,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         return detail;
     }
     
-    private ProfitSharingOrder initProfitSharingOrder(T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder) {
+    private ProfitSharingOrder initProfitSharingOrder(T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, int andIncrement) {
         ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
         
         profitSharingOrder.setThirdTradeOrderNo(profitSharingTradeOrder.getThirdOrderNo());
-        profitSharingOrder.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER, profitSharingTradeOrder.getUid()));
+        profitSharingOrder.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER, profitSharingTradeOrder.getUid()) + andIncrement);
         profitSharingOrder.setBusinessOrderNo(profitSharingTradeOrder.getOrderNo());
         profitSharingOrder.setAmount(profitSharingTradeOrder.getAmount());
         profitSharingOrder.setBusinessType(profitSharingTradeOrder.getOrderType());
@@ -605,11 +615,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @date 2024/8/29 09:11
      */
     private ProfitSharingOrderDetail buildErrorProfitSharingOrderDetail(T payConfig, ProfitSharingTradeOrder profitSharingOrder, ProfitSharingReceiverConfig receiverConfig,
-            String failReason, Integer businessType, Integer unfreezeStatus) {
+            String failReason, Integer businessType, Integer unfreezeStatus, Integer suffix) {
         long time = System.currentTimeMillis();
         ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
         profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingOrder.getThirdOrderNo());
-        profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingOrder.getUid()));
+        profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingOrder.getUid()) + suffix);
         profitSharingOrderDetail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
         profitSharingOrderDetail.setScale(receiverConfig.getScale());
         profitSharingOrderDetail.setProfitSharingAmount(BigDecimal.ZERO);
@@ -632,13 +642,14 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      *
      * @param payConfig
      * @param profitSharingTradeOrder
+     * @param suffix
      * @author caobotao.cbt
      * @date 2024/8/28 18:10
      */
-    private ProfitSharingOrder buildErrorProfitSharingOrder(T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, Integer businessType) {
+    private ProfitSharingOrder buildErrorProfitSharingOrder(T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, Integer businessType, Integer suffix) {
         ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
         profitSharingOrder.setThirdTradeOrderNo(profitSharingTradeOrder.getThirdOrderNo());
-        profitSharingOrder.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER, profitSharingTradeOrder.getUid()));
+        profitSharingOrder.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER, profitSharingTradeOrder.getUid()) + suffix);
         profitSharingOrder.setBusinessOrderNo(profitSharingTradeOrder.getOrderNo());
         profitSharingOrder.setAmount(profitSharingTradeOrder.getAmount());
         profitSharingOrder.setBusinessType(businessType);
@@ -717,14 +728,15 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         List<Long> tradeOrderIds = new ArrayList<>(orders.size());
         
         Map<ProfitSharingOrder, ProfitSharingOrderDetail> insertMap = Maps.newHashMap();
-        
+        AtomicInteger atomicInteger = new AtomicInteger(0);
         orders.forEach(profitSharingTradeOrder -> {
             tradeOrderIds.add(profitSharingTradeOrder.getId());
-            
-            ProfitSharingOrder profitSharingOrder = this.buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode());
+            AtomicInteger subAtomicInteger = new AtomicInteger(0);
+            ProfitSharingOrder profitSharingOrder = this
+                    .buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), atomicInteger.getAndIncrement());
             ProfitSharingOrderDetail profitSharingOrderDetail = this
                     .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, null, "分账接收方不存在", ProfitSharingBusinessTypeEnum.SYSTEM.getCode(),
-                            ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode());
+                            ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode(), subAtomicInteger.getAndIncrement());
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
         });
         
