@@ -106,9 +106,11 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
             return;
         }
         
-        // 根据微信支付订单号查询分账交易订单中是否存在除了自己外不可退的订单
+        // 根据微信支付订单号查询分账交易订单中是否存在除了自己外不可退的订单 且退款小于支付金额的进行解冻
         boolean existsNotRefundByThirdOrderNo = profitSharingTradeOrderService.existsNotRefundByThirdOrderNo(profitSharingTradeOrder.getThirdOrderNo(), profitSharingTradeOrderRefund.getOrderNo());
-        if (!existsNotRefundByThirdOrderNo) {
+        if (!existsNotRefundByThirdOrderNo && Objects.nonNull(profitSharingTradeMixedOrder.getAmount()) && Objects.nonNull(profitSharingTradeOrderRefund.getRefundAmount())
+                && profitSharingTradeOrderRefund.getRefundAmount().compareTo(profitSharingTradeMixedOrder.getAmount()) == -1) {
+          
             try {
                 profitSharingOrderService.doUnFreeze(profitSharingTradeMixedOrder);
             } catch (ProfitSharingException e) {
@@ -141,6 +143,8 @@ public class ProfitSharingOrderRefundConsumer implements RocketMQListener<String
                 log.warn("PROFIT SHARING ORDE REFUND CONSUMER WARN!electricity member card refund order status illegal,orderId={}", profitSharingTradeOrderRefund.getOrderNo());
                 return false;
             }
+    
+            profitSharingTradeOrderRefund.setRefundAmount(batteryMembercardRefundOrder.getRefundAmount());
         }
         
         return true;
