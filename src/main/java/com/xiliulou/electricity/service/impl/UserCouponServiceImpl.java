@@ -236,7 +236,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         Coupon coupon = couponService.queryByIdFromCache(id);
         if (Objects.isNull(coupon)) {
-            log.error("Coupon  ERROR! not found coupon ! couponId:{} ", id);
+            log.warn("Coupon  ERROR! not found coupon ! couponId:{} ", id);
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
         
@@ -254,7 +254,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             //查询用户手机号
             User user = userService.queryByUidFromCache(uid);
             if (Objects.isNull(user)) {
-                log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
+                log.warn("batchRelease  ERROR! not found user,uid:{} ", uid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             couponBuild.uid(uid);
@@ -271,7 +271,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         //用户区分
         TokenUser operateUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(operateUser)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.warn("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -284,7 +284,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         Coupon coupon = couponService.queryByIdFromCache(id);
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
-            log.error("Coupon  ERROR! not found coupon ! couponId={} ", id);
+            log.warn("Coupon  ERROR! not found coupon ! couponId={} ", id);
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
         
@@ -306,13 +306,13 @@ public class UserCouponServiceImpl implements UserCouponService {
             //查询用户手机号
             User user = userService.queryByUidFromCache(uid);
             if (Objects.isNull(user)) {
-                log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
+                log.warn("batchRelease  ERROR! not found user,uid:{} ", uid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
-                log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
+                log.warn("batchRelease  ERROR! not found user,uid:{} ", uid);
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             couponBuild.uid(uid);
@@ -342,7 +342,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         //用户区分
         TokenUser operateUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(operateUser)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.warn("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -390,14 +390,14 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+            log.warn("ELECTRICITY  ERROR! not found user! userId:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
         //2.判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            log.warn("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
@@ -531,7 +531,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("getShareCoupon ERROR! not found user ");
+            log.warn("getShareCoupon ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -543,30 +543,30 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("getShareCoupon ERROR! not found user,uid={}", user.getUid());
+            log.warn("getShareCoupon ERROR! not found user,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("getShareCoupon  ERROR! user not auth,uid={}", user.getUid());
+            log.warn("getShareCoupon  ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("getShareCoupon  ERROR! not found userInfo,uid={}", user.getUid());
+            log.warn("getShareCoupon  ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         
         ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
         if (Objects.isNull(shareActivity)) {
-            log.error("getShareCoupon  ERROR! not found Activity,ActivityId={},uid={}", activityId, user.getUid());
+            log.warn("getShareCoupon  ERROR! not found Activity,ActivityId={},uid={}", activityId, user.getUid());
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
         
         //查询活动规则
         List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityId);
         if (ObjectUtil.isEmpty(shareActivityRuleList)) {
-            log.error("getShareCoupon ERROR! not found Activity ! ActivityId={},uid={}", activityId, user.getUid());
+            log.warn("getShareCoupon ERROR! not found Activity ! ActivityId={},uid={}", activityId, user.getUid());
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
         
@@ -578,12 +578,12 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         Coupon coupon = couponService.queryByIdFromCache(couponId);
         if (Objects.isNull(coupon)) {
-            log.error("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+            log.warn("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
         
         if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.error("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
+            log.warn("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
             return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
         }
         
@@ -745,12 +745,12 @@ public class UserCouponServiceImpl implements UserCouponService {
         //增加优惠劵发放人Id
         Long operateUid = SecurityUtils.getUid();
         if (Objects.isNull(operateUid)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.warn("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         User operateUser = userService.queryByUidFromCache(operateUid);
         if (Objects.isNull(operateUser)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.warn("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -758,7 +758,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         Coupon coupon = couponService.queryByIdFromCache(request.getCouponId());
         if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
-            log.error("Coupon  ERROR! not found coupon ! couponId={} ", request.getCouponId());
+            log.warn("Coupon  ERROR! not found coupon ! couponId={} ", request.getCouponId());
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
         
@@ -870,7 +870,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         MDC.put(CommonConstant.TRACE_ID, userCouponDTO.getTraceId());
         String lockValue = userCouponDTO.getSourceOrderNo() + "_" + userCouponDTO.getCouponId() + "_" + userCouponDTO.getUid();
         if (!redisService.setNx(CacheConstant.CACHE_SEND_COUPON_PACKAGE_PURCHASE_KEY + lockValue, lockValue, 10 * 1000L, false)) {
-            log.error("Handle activity for real name auth error, operations frequently, uid = {}", userCouponDTO.getUid());
+            log.warn("Handle activity for real name auth error, operations frequently, uid = {}", userCouponDTO.getUid());
         }
         
         try {
@@ -882,13 +882,13 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
             if (Objects.isNull(userInfo)) {
-                log.error("send coupon failed! not found user,uid = {}", uid);
+                log.warn("send coupon failed! not found user,uid = {}", uid);
                 return;
             }
             
             Coupon coupon = couponService.queryByIdFromDB(couponId.intValue());
             if (Objects.isNull(coupon)) {
-                log.error("query coupon issue! not found coupon ! couponId = {} ", couponId);
+                log.warn("query coupon issue! not found coupon ! couponId = {} ", couponId);
                 return;
             }
             
