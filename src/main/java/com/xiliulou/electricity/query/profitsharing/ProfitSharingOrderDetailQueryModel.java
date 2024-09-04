@@ -35,7 +35,7 @@ public class ProfitSharingOrderDetailQueryModel {
     /**
      * 分账接收方
      */
-    private String profitSharingReceiveAccount;
+    private String profitSharingReceiveName;
     
     /**
      * 分账状态：0：已受理、1：处理中、2：分账完成，3：分账失败

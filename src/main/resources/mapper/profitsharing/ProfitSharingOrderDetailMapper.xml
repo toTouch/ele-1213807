@@ -10,6 +10,7 @@
         order_detail_no,
         third_order_detail_no,
         profit_sharing_receive_account,
+        profit_sharing_receive_name,
         scale,
         profit_sharing_amount,
         STATUS,
@@ -150,8 +151,8 @@
                 </foreach>
             </if>
             
-            <if test="profitSharingReceiveAccount != null and profitSharingReceiveAccount != ''">
-                and profit_sharing_receive_account like concat('%',#{profitSharingReceiveAccount},'%')
+            <if test="profitSharingReceiveName != null and profitSharingReceiveName != ''">
+                and profit_sharing_receive_name like concat('%',#{profitSharingReceiveName},'%')
             </if>
             
             <if test="status != null">

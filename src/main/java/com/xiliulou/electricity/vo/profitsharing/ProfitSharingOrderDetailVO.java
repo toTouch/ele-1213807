@@ -47,7 +47,7 @@ public class ProfitSharingOrderDetailVO {
     /**
      * 分账接收方
      */
-    private String profitSharingReceiveAccount;
+    private String profitSharingReceiveName;
     
     /**
      * 分账比例

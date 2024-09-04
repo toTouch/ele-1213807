@@ -5,7 +5,7 @@
     <sql id="basic_field">
         id
         , third_trade_order_no, order_no, third_order_no, amount, business_type,
-            status, type, tenant_id, franchisee_id, third_merchant_id, del_flag, create_time,update_time
+            status, type, tenant_id, franchisee_id, third_merchant_id, del_flag, create_time,update_time,business_order_no, out_account_type, channel
     </sql>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
