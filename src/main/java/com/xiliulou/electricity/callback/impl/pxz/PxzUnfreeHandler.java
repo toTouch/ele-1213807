@@ -31,7 +31,7 @@ import java.util.Arrays;
 @Service
 public class PxzUnfreeHandler extends AbstractBusiness<PxzParams.FreeDepositOrUnfree> implements PxzSupport<PxzParams.FreeDepositOrUnfree> {
     
-    private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.UNFREE.getCode(),11,12};
+    private final int[] BUSINESS_ARRAY = {FreeBusinessTypeEnum.UNFREE.getCode(),FreeDepositOrder.AUTH_UN_FREEZING,FreeDepositOrder.AUTH_UN_FROZEN};
     
     protected PxzUnfreeHandler(FreeDepositOrderService freeDepositOrderService, FreeDepositAlipayHistoryService freeDepositAlipayHistoryService,
             ApplicationContext applicationContext) {

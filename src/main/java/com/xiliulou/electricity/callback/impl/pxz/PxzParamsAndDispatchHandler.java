@@ -54,7 +54,7 @@ public class PxzParamsAndDispatchHandler implements PxzSupport<Map<String,Object
         if (FreeBusinessTypeEnum.AUTH_PAY.getCode().equals(callbackContext.getBusiness())) {
             
             PxzParams.AuthPay params = JsonUtil.fromJson(encrypt, PxzParams.AuthPay.class);
-            log.info("pxz callback params : {}", params);
+            log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
             return CallbackContext.builder()
                     .business(callbackContext.getBusiness())
                     .channel(callbackContext.getChannel())
@@ -68,7 +68,7 @@ public class PxzParamsAndDispatchHandler implements PxzSupport<Map<String,Object
         }
         
         PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
-        log.info("pxz callback params : {}", params);
+        log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
         return CallbackContext.builder()
                 .business(params.getRequestBody().getAuthStatus())
                 .channel(callbackContext.getChannel())
