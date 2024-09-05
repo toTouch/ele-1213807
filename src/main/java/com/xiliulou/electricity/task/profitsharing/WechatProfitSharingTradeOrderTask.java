@@ -173,6 +173,5 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
     @Override
     protected void queryBuildTenantFranchiseePayParamMap(Map<String, WechatPayParamsDetails> tenantFranchiseePayParamMap, Integer tenantId, Set<Long> franchiseeIds) {
         payParamsQuerySupport.queryBuildTenantFranchiseePayParamMap(tenantFranchiseePayParamMap, tenantId, franchiseeIds);
-        
     }
 }

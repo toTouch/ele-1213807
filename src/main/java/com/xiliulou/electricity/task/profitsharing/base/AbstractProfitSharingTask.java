@@ -30,7 +30,7 @@ import static com.xiliulou.electricity.constant.CacheConstant.PROFIT_SHARING_STA
 
 
 /**
- * description:
+ * description: 分账任务抽象类
  *
  * @author caobotao.cbt
  * @date 2024/8/29 17:09
@@ -50,12 +50,14 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
     public ReturnT<String> execute(String param) throws Exception {
         
         try {
+            // 参数解析
             TaskParam taskParam = new TaskParam();
             if (StringUtils.isNotBlank(param)) {
                 taskParam = JsonUtil.fromJson(param, AbstractProfitSharingTradeOrderTask.TaskParam.class);
             }
             
             if (StringUtils.isNotBlank(taskParam.getTraceId())) {
+                //指定 traceId
                 TtlTraceIdSupport.set(taskParam.getTraceId());
             } else {
                 TtlTraceIdSupport.set();
@@ -64,9 +66,12 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
             if (CollectionUtils.isNotEmpty(taskParam.getTenantIds())) {
                 // 指定租户
                 taskParam.getTenantIds().forEach(tid -> this.executeByTenantId(tid));
+                
                 return ReturnT.SUCCESS;
             }
             
+            // 无参数
+            // 租户id从0开始
             Integer startTenantId = 0;
             
             while (true) {
@@ -77,12 +82,14 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
                     break;
                 }
                 startTenantId = tenantIds.get(tenantIds.size() - 1);
-                // 处理租户分账
+                
+                // 根据租户处理
                 tenantIds.forEach(tid -> this.executeByTenantId(tid));
             }
             
             return ReturnT.SUCCESS;
         } finally {
+            // 清除traceId
             TtlTraceIdSupport.clear();
         }
     }
@@ -98,8 +105,11 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
      * @date 2024/9/4 18:34
      */
     protected <R> R profitSharingStatisticsTryLockExecute(Integer tenantId, Long franchiseeId, TryLockExecute<R> execute) {
+        
+        // 获取锁key
         String lockKey = String.format(PROFIT_SHARING_STATISTICS_LOCK_KEY, tenantId, franchiseeId);
         String clientId = UUID.randomUUID().toString();
+        // 加锁：过期时间5秒，重试3次，每次间隔一秒
         Boolean lock = redisService.tryLock(lockKey, clientId, 5L, 3, 1000L);
         if (!lock) {
             log.warn("WARN! lockKey:{}", lockKey);
@@ -111,6 +121,8 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
             return execute.execute();
             
         } finally {
+            
+            // 解锁
             redisService.releaseLockLua(lockKey, clientId);
         }
         
@@ -144,7 +156,9 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
      */
     protected abstract String getChannel();
     
-    
+    /**
+     * 任务自定义参数
+     */
     @Data
     public static class TaskParam {
         
@@ -159,6 +173,9 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
     }
     
     
+    /**
+     * 分布式锁内执行的函数
+     */
     @FunctionalInterface
     public interface TryLockExecute<R> {
         
