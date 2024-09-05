@@ -41,6 +41,7 @@ public class UnFreeDepositConsumer implements RocketMQListener<String> {
             log.warn("UnFreeDepositConsumer.accept.msg is null");
             return;
         }
+        log.info("UnFreeDepositConsumer Access Msg INFO! msg is {} ", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
         

@@ -34,5 +34,8 @@ public class FreeDepositDelayDTO implements Serializable {
      */
     private String authPayOrderId;
     
+    /**
+     * mdc
+     */
     private String mdc;
 }

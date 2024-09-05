@@ -42,11 +42,9 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             log.warn("AuthPayConsumer.accept.msg is null");
             return;
         }
+        log.info("AuthPayConsumer Access Msg INFO! msg is {}", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
-        
-        log.info("AuthPayConsumer Access Msg INFO! dto is {}", JsonUtil.toJson(dto));
-        
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
@@ -59,8 +57,6 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             log.warn("AuthPayConsumer WARN! alipayHistory is null, orderId is {}", dto.getAuthPayOrderId());
             return;
         }
-        
-       
         
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
             log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is {}", freeDepositOrder.getPayStatus(), dto.getOrderId());
