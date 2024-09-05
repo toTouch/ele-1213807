@@ -70,7 +70,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
         freeDepositAlipayHistory.setId(alipayHistory.getId());
         freeDepositAlipayHistory.setRemark("代扣超时关闭");
-        freeDepositAlipayHistory.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_CLOSE);
+        freeDepositAlipayHistory.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_FAIL);
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
         freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
     }
