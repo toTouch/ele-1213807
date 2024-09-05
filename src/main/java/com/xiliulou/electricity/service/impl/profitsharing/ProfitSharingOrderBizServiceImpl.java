@@ -305,20 +305,24 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     private void dealWithTenantIds(List<Integer> tenantIds) {
         // 两个月前的第一天
         long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
+        long endTime = System.currentTimeMillis();
+        Integer size = 200;
+    
         tenantIds.stream().forEach(tenantId -> {
-            Integer offset = 0;
-            Integer size = 200;
-            
+            Long startId = 0L;
+    
             while (true) {
-                List<String> thirdOrderNoList = profitSharingTradeMixedOrderService.listThirdOrderNoByTenantId(tenantId, startTime, offset, size);
-                if (ObjectUtils.isEmpty(thirdOrderNoList)) {
+                List<ProfitSharingTradeMixedOrder> profitSharingTradeMixedOrderList = profitSharingTradeMixedOrderService.listThirdOrderNoByTenantId(tenantId, startTime, endTime, startId, size);
+                if (ObjectUtils.isEmpty(profitSharingTradeMixedOrderList)) {
                     break;
                 }
+    
+                List<String> thirdOrderNoList = profitSharingTradeMixedOrderList.stream().map(ProfitSharingTradeMixedOrder::getThirdOrderNo).collect(Collectors.toList());
                 
                 // 根据微信支付订单号处理
                 dealWithThirdOrderNo(thirdOrderNoList);
-                
-                offset += size;
+    
+                startId = profitSharingTradeMixedOrderList.get(profitSharingTradeMixedOrderList.size() - 1).getId();
             }
         });
     }
@@ -334,11 +338,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             }
             
             // 不存在解冻待处理的明细
-            boolean existsNotUnfreezeByThirdOrderNo = profitSharingOrderDetailService.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
-            if (!existsNotUnfreezeByThirdOrderNo) {
-                log.info("profit sharing unfreeze info,thirdOrderNo = {} is not exists unfreeze order detail", thirdOrderNo);
-                return;
-            }
+//            boolean existsNotUnfreezeByThirdOrderNo = profitSharingOrderDetailService.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
+//            if (!existsNotUnfreezeByThirdOrderNo) {
+//                log.info("profit sharing unfreeze info,thirdOrderNo = {} is not exists unfreeze order detail", thirdOrderNo);
+//                return;
+//            }
             
             // 存在未处理完成的明细
             boolean existsNotCompleteByThirdOrderNo = profitSharingOrderDetailService.existsNotCompleteByThirdOrderNo(thirdOrderNo);

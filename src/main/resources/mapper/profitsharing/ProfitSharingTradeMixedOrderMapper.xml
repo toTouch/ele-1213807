@@ -71,13 +71,17 @@
         from t_profit_sharing_trade_mixed_order where third_order_no = #{thirdOrderNo} limit 1
     </select>
     
-    <select id="selectListThirdOrderNoByTenantId" resultType="java.lang.String">
-        select third_order_no
-        from t_profit_sharing_trade_mixed_order
-        where tenant_id = #{tenantId}
-          and create_time > #{startTime}
-        order by id asc
-            limit #{offset}, #{size}
+    <select id="selectListThirdOrderNoByTenantId" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select
+            r.third_order_no,
+            r.id
+        from t_profit_sharing_trade_mixed_order r
+        where r.tenant_id = #{tenantId}
+          and r.create_time > #{startTime}
+          and r.create_time &lt; #{endTime}
+          and r.id > #{startId}
+          and exists (select 1 from t_profit_sharing_order_detail d where  d.third_trade_order_no = r.third_order_no  and d.unfreeze_status = 0 )
+         limit  #{size}
     </select>
     <select id="selectById"
         resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
