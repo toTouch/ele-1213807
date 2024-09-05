@@ -77,4 +77,11 @@ public interface InstallmentTerminatingRecordService {
      * @return 审核是否成功
      */
     R<String> handleTerminatingRecord(HandleTerminatingRecordQuery query);
+    
+    /**
+     * 根据id查询解约申请记录
+     * @param id 解约记录id
+     * @return 解约记录
+     */
+    InstallmentTerminatingRecord queryById(Long id);
 }

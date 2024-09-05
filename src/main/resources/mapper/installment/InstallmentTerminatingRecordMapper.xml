@@ -172,4 +172,11 @@
             </if>
         </where>
     </select>
+    
+    <select id="selectById"
+            resultType="com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_terminating_record
+        where id = #{id}
+    </select>
 </mapper>

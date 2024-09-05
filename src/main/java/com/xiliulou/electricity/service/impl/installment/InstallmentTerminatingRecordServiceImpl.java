@@ -5,9 +5,10 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.FyConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
-import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentTerminatingRecordMapper;
@@ -18,11 +19,19 @@ import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQu
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FyConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
+import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
+import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FyReleaseAgreementRequest;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyReleaseAgreementRsp;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
+import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,9 +45,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_SUCCESS_CODE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
 
 /**
  * @Description ...
@@ -64,6 +77,14 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
+    private FyAgreementService fyAgreementService;
+    
+    private FengYunConfig fengYunConfig;
+    
+    private FyConfigService fyConfigService;
+    
+    private UserInfoService userInfoService;
+    
     @Override
     public Integer insert(InstallmentTerminatingRecord installmentTerminatingRecord) {
         return installmentTerminatingRecordMapper.insert(installmentTerminatingRecord);
@@ -86,7 +107,6 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             vo.setFranchiseeName(franchiseeService.queryByIdFromCache(installmentTerminatingRecord.getFranchiseeId()).getName());
             
             // 设置电或者车的套餐名称，设置总金额和未支付金额
-            String packageName;
             if (Objects.equals(installmentTerminatingRecord.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
                 BatteryMemberCard memberCard = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId());
                 vo.setPackageName(memberCard.getName());
@@ -170,8 +190,78 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     
     @Override
     public R<String> handleTerminatingRecord(HandleTerminatingRecordQuery query) {
-        return null;
+        InstallmentTerminatingRecord terminatingRecord = installmentTerminatingRecordMapper.selectById(query.getId());
+        if (Objects.isNull(terminatingRecord)) {
+            return R.fail("解约记录为空");
+        }
+        
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(terminatingRecord.getExternalAgreementNo());
+        if (Objects.isNull(installmentRecord)) {
+            return R.fail("签约记录为空");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return R.fail("未退还电池");
+        }
+        
+        List<InstallmentTerminatingRecord> terminatingRecords = installmentTerminatingRecordMapper.selectListForRecordWithStatus(
+                InstallmentTerminatingRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_RECORD_STATUS_INIT).build());
+        if (CollectionUtils.isNotEmpty(terminatingRecords)) {
+            return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
+        if (Objects.equals(query.getStatus(), TERMINATING_RECORD_STATUS_REFUSE)) {
+            InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
+            terminatingRecordUpdate.setId(query.getId());
+            terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_REFUSE);
+            terminatingRecordUpdate.setOpinion(query.getOpinion());
+            terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            
+            installmentTerminatingRecordMapper.update(terminatingRecordUpdate);
+            return R.ok();
+        } else {
+            
+            return terminatingInstallmentRecord(installmentRecord);
+        }
     }
     
+    @Override
+    public InstallmentTerminatingRecord queryById(Long id) {
+        return installmentTerminatingRecordMapper.selectById(id);
+    }
     
+    public R<String> terminatingInstallmentRecord(InstallmentRecord installmentRecord) {
+        try {
+            FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+            if (Objects.isNull(config)) {
+                return R.fail("租户分期配置不存在");
+            }
+            
+            FyCommonQuery<FyReleaseAgreementRequest> commonQuery = new FyCommonQuery<>();
+            FyReleaseAgreementRequest request = new FyReleaseAgreementRequest();
+            request.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+            request.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), installmentRecord.getUid()));
+            
+            commonQuery.setChannelCode(config.getChannelCode());
+            commonQuery.setFlowNo(installmentRecord.getExternalAgreementNo());
+            commonQuery.setFyRequest(request);
+            
+            FyResult<FyReleaseAgreementRsp> result = fyAgreementService.releaseAgreement(commonQuery);
+            if (!Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
+                return R.fail("解约失败");
+            }
+            
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_TERMINATE);
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordService.update(installmentRecordUpdate);
+            
+            return R.ok();
+        } catch (Exception e) {
+            log.error("TERMINATING INSTALLMENT RECORD ERROR!", e);
+        }
+        return R.fail("解约失败");
+    }
 }

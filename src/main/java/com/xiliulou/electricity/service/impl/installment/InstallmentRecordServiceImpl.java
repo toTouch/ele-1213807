@@ -49,17 +49,14 @@ import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
-import org.ehcache.core.util.CollectionUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -67,8 +64,10 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_CANCEL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
@@ -212,6 +211,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 return R.ok(redisService.get(String.format(CACHE_INSTALLMENT_FORM_BODY, uid)));
             }
             
+            if (Objects.isNull(query.getMobile()) || Objects.isNull(query.getUserName())) {
+                return R.fail("初次签约需要输入用户信息");
+            }
+            
             Vars vars = new Vars();
             vars.setUserName(query.getUserName());
             vars.setMobile(query.getMobile());
@@ -296,15 +299,15 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 });
                 
                 // 更新或保存入数据库
-                Triple<Boolean, String, Object> saveAndUpdateTriple = applicationContext.getBean(InstallmentRecordServiceImpl.class)
-                        .signNotifySaveAndUpdate(installmentRecordUpdate, deductionPlanList);
-                if (Objects.isNull(saveAndUpdateTriple) || saveAndUpdateTriple.getLeft()) {
-                    log.warn("SIGN NOTIFY WARN! save and update fail, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
-                }
+                applicationContext.getBean(InstallmentRecordServiceImpl.class).signNotifySaveAndUpdate(installmentRecordUpdate, deductionPlanList);
                 
+                // 签约成功，删除签约二维码缓存
+                redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, uid));
+            } else {
+                // 处理解约成功回调
+                handleTerminating(installmentRecord);
             }
             
-            redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, uid));
             return "SUCCESS";
         } catch (Exception e) {
             log.error("INSTALLMENT NOTIFY ERROR! uid={}, bizContent={}", uid, bizContent, e);
@@ -344,15 +347,15 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         return R.ok(installmentRecordVO);
     }
     
-    @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, List<InstallmentDeductionPlan> deductionPlanTriple) {
+    
+    public void signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, List<InstallmentDeductionPlan> deductionPlanTriple) {
         // 更新签约记录
         applicationContext.getBean(InstallmentRecordService.class).update(installmentRecordUpdate);
         
         deductionPlanTriple.forEach(deductionPlan -> {
             installmentDeductionPlanService.insert(deductionPlan);
         });
-        return Triple.of(true, null, null);
+        R.ok();
     }
     
     private void setPackageMessage(InstallmentRecordVO installmentRecordVO, InstallmentRecord installmentRecord) {
@@ -370,6 +373,28 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentRecordVO.getPackageId());
             installmentRecordVO.setPackageName(carRentalPackagePo.getName());
         }
+    }
+    
+    private R<String> handleTerminating(InstallmentRecord installmentRecord) {
+        // 更新签约记录
+        InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+        installmentRecordUpdate.setId(installmentRecord.getId());
+        installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
+        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
+                InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_PLAN_STATUS_INIT).build()).getData();
+        
+        installmentRecordMapper.update(installmentRecordUpdate);
+        if (!CollectionUtils.isEmpty(deductionPlans)) {
+            deductionPlans.parallelStream().forEach(deductionPlan -> {
+                InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+                deductionPlanUpdate.setId(deductionPlan.getId());
+                deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_CANCEL);
+                deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+                installmentDeductionPlanService.update(deductionPlanUpdate);
+            });
+        }
+        return R.ok();
     }
 }

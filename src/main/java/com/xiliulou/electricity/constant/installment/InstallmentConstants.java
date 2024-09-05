@@ -88,7 +88,7 @@ public interface InstallmentConstants {
     /**
      * 代扣记录状态-代扣成功
      */
-    Integer DEDUCTION_RECORD_STATUS_SUCCESS = 0;
+    Integer DEDUCTION_RECORD_STATUS_SUCCESS = 1;
     
     /**
      * 代扣记录状态-代扣失败

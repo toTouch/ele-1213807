@@ -54,6 +54,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_SUCCESS;
@@ -224,12 +225,20 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
             
             // 调用成功，则保存代扣中的记录
             if (Objects.equals(FY_SUCCESS_CODE, fyAgreementPayRspFyResult.getCode())) {
+                
                 installmentDeductionRecordMapper.insert(installmentDeductionRecord);
                 return Triple.of(true, null, null);
             }
         } catch (Exception e) {
             log.error("INSTALLMENT DEDUCT ERROR!", e);
         }
+        
+        InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+        deductionPlanUpdate.setId(deductionPlan.getId());
+        deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+        deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_FAIL);
+        installmentDeductionPlanService.update(deductionPlanUpdate);
+        
         // 报错或调用失败则保存代扣失败的记录
         installmentDeductionRecord.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
         installmentDeductionRecordMapper.insert(installmentDeductionRecord);

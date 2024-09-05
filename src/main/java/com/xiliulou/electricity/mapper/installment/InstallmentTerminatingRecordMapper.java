@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -25,4 +26,6 @@ public interface InstallmentTerminatingRecordMapper {
     Integer count(InstallmentTerminatingRecordQuery query);
     
     List<InstallmentTerminatingRecord> selectListForRecordWithStatus(InstallmentTerminatingRecordQuery query);
+    
+    InstallmentTerminatingRecord selectById(@Param("id") Long id);
 }
