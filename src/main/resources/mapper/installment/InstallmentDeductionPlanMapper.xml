@@ -80,13 +80,22 @@
         where external_agreement_no = #{externalAgreementNo}
             and tenant_id = #{tenantId}
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId},
+                and franchisee_id = #{franchiseeId}
             </if>
             <if test="franchiseeIds != null">
                 and franchisee_id in
                 <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
                     #{franchiseeId}
                 </foreach>
+            </if>
+            <if test="statuses != null and statuses.size > 0">
+                and status in
+                <foreach collection="statuses" open="(" separator="," close=")" item="status">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="endTime != null">
+                and deduct_time &lt;= #{endTime}
             </if>
     </select>
     

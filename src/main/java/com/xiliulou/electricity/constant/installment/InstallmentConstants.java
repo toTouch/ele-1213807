@@ -76,6 +76,21 @@ public interface InstallmentConstants {
     Integer DEDUCTION_PLAN_STATUS_CANCEL = 3;
     
     /**
+     * 解约记录-审核中
+     */
+    Integer TERMINATING_RECORD_STATUS_INIT = 0;
+    
+    /**
+     * 解约记录-拒绝
+     */
+    Integer TERMINATING_RECORD_STATUS_REFUSE = 1;
+    
+    /**
+     * 解约记录-通过
+     */
+    Integer TERMINATING_RECORD_STATUS_RELEASE = 2;
+    
+    /**
      * 蜂云成功响应码
      */
     String FY_SUCCESS_CODE = "WZF00000";

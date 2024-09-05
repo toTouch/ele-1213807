@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.installment;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
+import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface InstallmentTerminatingRecordMapper {
     List<InstallmentTerminatingRecord> selectPage(InstallmentTerminatingRecordQuery query);
     
     Integer count(InstallmentTerminatingRecordQuery query);
+    
+    List<InstallmentTerminatingRecord> selectListForRecordWithStatus(InstallmentTerminatingRecordQuery query);
 }

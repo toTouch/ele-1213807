@@ -47,6 +47,13 @@ public interface InstallmentTerminatingRecordService {
     R<Integer> count(InstallmentTerminatingRecordQuery query);
     
     /**
+     * 根据状态查询签约记录对应的解约申请
+     * @param query 参数
+     * @return 返回解约申请
+     */
+    List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query);
+    
+    /**
      * 代扣回调方法
      * @param bizContent 业务参数
      * @param uid 签约用户

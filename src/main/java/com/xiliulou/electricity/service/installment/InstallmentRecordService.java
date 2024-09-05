@@ -84,6 +84,10 @@ public interface InstallmentRecordService {
      * @return 返回签约记录
      */
     InstallmentRecord queryByExternalAgreementNo(String externalAgreementNo);
-
+    
+    /**
+     * 查询小程序登录用户的签约记录信息
+     * @return 返回详细信息
+     */
     R<InstallmentRecordVO> queryInstallmentRecordForUser();
 }

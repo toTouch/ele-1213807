@@ -38,8 +38,7 @@ public class JsonUserInstallmentRecordController {
     }
 
     /**
-     * 查询当前登录用户的签约记录信息
-     * @return
+     * 查询当前登录用户正在使用的签约记录信息
      */
     @ProcessParameter
     @GetMapping("/detail")

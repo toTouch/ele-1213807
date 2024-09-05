@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @Description ...
  * @Author: SongJP
@@ -27,4 +29,29 @@ public class InstallmentRecordVO extends InstallmentRecord {
      * 套餐名称
      */
     private String franchiseeName;
+    
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
+    
+    /**
+     * 是否逾期，0-正常，1-逾期
+     */
+    private Integer overdue;
+    
+    /**
+     * 是否正在解约审核，0-正常，1-审核中
+     */
+    private Integer underReview;
+    
+    /**
+     * 剩余每期金额
+     */
+    private BigDecimal remainingPrice;
 }

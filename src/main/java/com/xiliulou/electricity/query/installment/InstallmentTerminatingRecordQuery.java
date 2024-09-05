@@ -19,6 +19,11 @@ public class InstallmentTerminatingRecordQuery {
     private Integer size;
     
     /**
+     * 请求签约号，唯一
+     */
+    private String externalAgreementNo;
+    
+    /**
      * 请求签约用户uid
      */
     private Long uid;
@@ -27,6 +32,8 @@ public class InstallmentTerminatingRecordQuery {
      * 审核状态
      */
     private Integer status;
+    
+    private List<Integer> statuses;
     
     private Integer tenantId;
     

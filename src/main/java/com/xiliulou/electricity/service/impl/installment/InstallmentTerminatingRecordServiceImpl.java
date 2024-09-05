@@ -11,9 +11,9 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,18 +27,15 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class InstallmentTerminatingRecordServiceImpl implements InstallmentTerminatingRecordService {
     
-    @Autowired
     private InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
     
-    @Autowired
     FranchiseeService franchiseeService;
     
-    @Autowired
     private BatteryMemberCardService batteryMemberCardService;
     
-    @Autowired
     private CarRentalPackageService carRentalPackageService;
     
     @Override
@@ -80,6 +77,11 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     @Override
     public R<Integer> count(InstallmentTerminatingRecordQuery query) {
         return R.ok(installmentTerminatingRecordMapper.count(query));
+    }
+    
+    @Override
+    public List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query) {
+        return installmentTerminatingRecordMapper.selectListForRecordWithStatus(query);
     }
     
     @Override

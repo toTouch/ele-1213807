@@ -53,7 +53,7 @@ public class InstallmentUtil {
     }
     
     /**
-     * 计算还款计划每期租期，只能用于在签约完成后生成还款计划
+     * 计算还款计划每期租期，用于在签约完成后生成还款计划
      */
     public static Integer calculateSuborderRentTime(Integer issue, InstallmentRecord installmentRecord, BatteryMemberCard memberCard) {
         Integer rentTime = null;
@@ -78,6 +78,9 @@ public class InstallmentUtil {
         return rentTime;
     }
     
+    /**
+     * 计算还款计划还款时间，用于在签约完成后生成还款计划
+     */
     public static Long calculateSuborderDeductTime(Integer issue) {
         LocalTime currentTime = LocalTime.now();
         LocalDate startDate = LocalDate.now();

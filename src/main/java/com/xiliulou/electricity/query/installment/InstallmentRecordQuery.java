@@ -36,10 +36,17 @@ public class InstallmentRecordQuery {
      */
     private Integer status;
     
+    private List<Integer> statuses;
+    
     /**
      * 签约类型类型，0-换电，1-租车，2-车电一体
      */
     private Integer packageType;
+    
+    /**
+     * 代扣时间范围
+     */
+    private Long endTime;
     
     private Integer tenantId;
     
