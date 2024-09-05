@@ -67,8 +67,8 @@
     </select>
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
-        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`, payment_channel,
-        FROM     t_ele_battery_service_fee_order
+        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`, payment_channel
+        FROM    t_ele_battery_service_fee_order
         <where>
             <if test="status != null">
                 and status in (1,3)
