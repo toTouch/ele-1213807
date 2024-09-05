@@ -61,16 +61,10 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         }
         
         if (!Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is {}", freeDepositOrder.getPayStatus(), alipayHistory.getAuthPayOrderId());
+            log.info("AuthPayConsumer.status not update! alipayHistory.payStatus is {}, orderId is {}", alipayHistory.getPayStatus(), alipayHistory.getAuthPayOrderId());
             return;
         }
         
-        // 更新冻结状态为失败
-        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_CLOSE);
-        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        freeDepositOrderService.update(freeDepositOrderUpdate);
         
         // 更新退款订单为失败
         FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();

@@ -13,6 +13,7 @@ import com.xiliulou.electricity.bo.UnFreeDepositOrderBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.dto.callback.UnfreeFakeParams;
@@ -730,8 +731,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100434", "退押失败，超过代扣金额");
         }
         
+        Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
         // 如果存在代扣的免押订单，则不允许退押
-        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+        if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
             return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
         }
         
@@ -1131,8 +1133,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "", "免押退款中，请稍后！");
         }
         
+        Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
         // 如果存在代扣的免押订单，则不允许退押
-        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+        if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
             return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
         }
         
