@@ -379,8 +379,8 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
      * @date 2024/8/26 10:14
      */
     private void checkPersonageAccount(ProfitSharingReceiverConfigOptRequest request) {
-        UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(request.getAccount(), UserOauthBind.SOURCE_WX_PRO, request.getTenantId());
-        if (Objects.isNull(userOauthBind)) {
+        Integer count = userOauthBindService.countByThirdIdAndSourceAndTenantId(request.getAccount(), UserOauthBind.SOURCE_WX_PRO, request.getTenantId());
+        if (Objects.isNull(count) || count == 0) {
             throw new BizException("openid不存在");
         }
     }
