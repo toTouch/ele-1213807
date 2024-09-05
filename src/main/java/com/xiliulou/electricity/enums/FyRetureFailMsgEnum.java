@@ -18,6 +18,7 @@ public enum FyRetureFailMsgEnum {
     
     
     PAY_NOT_MONEY_FAIL("支付宝预授权转支付失败，没有可用的支付工具", "用户账户余额不足，代扣失败"),
+    STORE_NOT_EXIST("此门店不存在", "请联系管理员检查免押配置"),
     
     ;
     
