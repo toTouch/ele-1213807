@@ -161,6 +161,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordServi
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -442,6 +443,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     private ApplicationContext applicationContext;
     
+    @Autowired
+    private InstallmentRecordService installmentRecordService;
+    
     /**
      * 根据用户ID查询对应状态的记录
      *
@@ -518,6 +522,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     vo.setRejectReason(batteryMembercardRefundOrder.getMsg());
                 }
             });
+            
+            if (Objects.nonNull(item.getExternalAgreementNo())) {
+                InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(item.getExternalAgreementNo());
+                vo.setInstallmentRecordStatus(installmentRecord.getStatus());
+            }
             
             return vo;
         }).collect(Collectors.toList());

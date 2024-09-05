@@ -830,7 +830,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
                     Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
             if (Objects.nonNull(installmentRecord)) {
-                return R.fail("301008", "存在未完成的分期订单，不可购买分期套餐");
+                return R.fail("301008", "当前有进行中的分期签约，完成或取消后方可续签分期套餐");
             }
             
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {

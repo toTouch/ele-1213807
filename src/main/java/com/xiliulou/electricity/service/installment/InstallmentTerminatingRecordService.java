@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
+import com.xiliulou.electricity.query.installment.HandleTerminatingRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 
@@ -52,4 +54,27 @@ public interface InstallmentTerminatingRecordService {
      * @return 返回解约申请
      */
     List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query);
+    
+    /**
+     * 用户端申请解约
+     * @param externalAgreementNo 请求签约号
+     * @param reason 原因
+     * @return 申请结果
+     */
+    R<String> createTerminatingRecord(String externalAgreementNo, String reason);
+    
+    /**
+     * 生成解约记录
+     * @param installmentRecord 签约记录
+     * @param reason 原因
+     * @return 返回解约记录
+     */
+    InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason);
+    
+    /**
+     * 审核解约申请
+     * @param query 参数
+     * @return 审核是否成功
+     */
+    R<String> handleTerminatingRecord(HandleTerminatingRecordQuery query);
 }
