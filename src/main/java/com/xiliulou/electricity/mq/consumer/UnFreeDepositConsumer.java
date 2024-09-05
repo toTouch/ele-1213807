@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.FreeDepositOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -44,6 +45,7 @@ public class UnFreeDepositConsumer implements RocketMQListener<String> {
         log.info("UnFreeDepositConsumer Access Msg INFO! msg is {} ", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
+        MDC.put("traceId", dto.getMdc());
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {

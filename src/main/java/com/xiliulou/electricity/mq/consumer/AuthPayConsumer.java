@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.FreeDepositOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,6 +46,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         log.info("AuthPayConsumer Access Msg INFO! msg is {}", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
+        MDC.put("traceId", dto.getMdc());
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
@@ -58,8 +60,8 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             return;
         }
         
-        if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is {}", freeDepositOrder.getPayStatus(), dto.getOrderId());
+        if (!Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+            log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is {}", freeDepositOrder.getPayStatus(), alipayHistory.getAuthPayOrderId());
             return;
         }
         
