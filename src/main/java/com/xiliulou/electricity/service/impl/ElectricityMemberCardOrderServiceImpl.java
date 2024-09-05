@@ -102,6 +102,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
@@ -155,7 +156,6 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -408,9 +408,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     AnotherPayMembercardRecordService anotherPayMembercardRecordService;
     
     @Autowired
-    private UserInfoGroupService userInfoGroupService;
-    
-    @Autowired
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Autowired
@@ -424,6 +421,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     private SiteMessagePublish siteMessagePublish;
+    
+    @Resource
+    private CouponActivityPackageService couponActivityPackageService;
     
     /**
      * 根据用户ID查询对应状态的记录
@@ -2578,11 +2578,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 refId = electricityCabinet.getId().longValue();
             }
         }
-    
+        
         // 多加盟商版本增加：加盟商一致性校验
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = calculatePayAmount(electricityMemberCard.getHolidayPrice(), userCouponIds, electricityMemberCard.getFranchiseeId());
+        Triple<Boolean, String, Object> calculatePayAmountResult = calculatePayAmount(electricityMemberCard.getHolidayPrice(), userCouponIds,
+                electricityMemberCard.getFranchiseeId());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
@@ -3795,7 +3796,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 log.warn("ELE WARN! not found coupon,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
-    
+            
             // 多加盟商版本增加：加盟商一致性校验
             if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), franchiseeId)) {
                 log.warn("ELE WARN! coupon is not same franchisee,couponId={},franchiseeId={}", userCouponId, franchiseeId);
@@ -3812,6 +3813,72 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (userCoupon.getDeadline() < System.currentTimeMillis()) {
                 log.warn("ELE WARN! userCoupon is deadline,userCouponId={}", userCouponId);
                 return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
+            }
+            
+            // 使用折扣劵  折扣券作废，不处理——>产品提的需求
+            if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.DISCOUNT)) {
+                log.info("ELE INFO! not found coupon,userCouponId={}", userCouponId);
+            }
+            
+            // 使用满减劵
+            if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.FULL_REDUCTION)) {
+                payAmount = payAmount.subtract(coupon.getAmount());
+            }
+        }
+        
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+        
+        return Triple.of(true, null, payAmount);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> calculatePayAmount(BatteryMemberCard batteryMemberCard, Set<Integer> userCouponIds) {
+        BigDecimal payAmount = batteryMemberCard.getRentPrice();
+        Long franchiseeId = batteryMemberCard.getFranchiseeId();
+        
+        if (CollectionUtils.isEmpty(userCouponIds)) {
+            return Triple.of(true, null, payAmount);
+        }
+        
+        for (Integer userCouponId : userCouponIds) {
+            UserCoupon userCoupon = userCouponService.queryByIdFromDB(userCouponId);
+            if (Objects.isNull(userCoupon)) {
+                log.warn("ELE WARN! not found userCoupon,userCouponId={}", userCouponId);
+                return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
+            }
+            
+            Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
+            if (Objects.isNull(coupon)) {
+                log.warn("ELE WARN! not found coupon,userCouponId={}", userCouponId);
+                return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
+            }
+            
+            // 多加盟商版本增加：加盟商一致性校验
+            if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), franchiseeId)) {
+                log.warn("ELE WARN! coupon is not same franchisee,couponId={},franchiseeId={}", userCouponId, franchiseeId);
+                return Triple.of(false, "120126", "此优惠券暂不可用，请选择其他优惠券");
+            }
+            
+            // 优惠券是否使用
+            if (!Objects.equals(UserCoupon.STATUS_UNUSED, userCoupon.getStatus())) {
+                log.warn("ELE WARN! userCoupon is used,userCouponId={}", userCouponId);
+                return Triple.of(false, "ELECTRICITY.0090", "优惠券不可用");
+            }
+            
+            // 优惠券是否过期
+            if (userCoupon.getDeadline() < System.currentTimeMillis()) {
+                log.warn("ELE WARN! userCoupon is deadline,userCouponId={}", userCouponId);
+                return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
+            }
+            
+            // 校验优惠券的使用，是否指定这个套餐
+            // 1-租电 2-租车 3-车电一体
+            Boolean valid = couponActivityPackageService.checkPackageIsValid(coupon, batteryMemberCard.getId(), PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            if (!valid) {
+                log.info("ELE WARN! check the package is valid, couponId={}, userCouponId={}, batteryMemberCardId={}", coupon.getId(), userCouponId, batteryMemberCard.getId());
+                return Triple.of(false, "300034", "使用优惠券有误");
             }
             
             // 使用折扣劵  折扣券作废，不处理——>产品提的需求

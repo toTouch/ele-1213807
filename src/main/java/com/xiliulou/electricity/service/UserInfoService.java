@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
+import com.xiliulou.electricity.vo.userinfo.UserAccountInfoVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -181,4 +182,6 @@ public interface UserInfoService extends IService<UserInfo> {
     List<UserInfo> listByUids(List<Long> uidList, Integer tenantId);
     
     List<UserInfo> queryListUserInfoByPhone(String phone);
+    
+    UserAccountInfoVO selectAccountInfo();
 }

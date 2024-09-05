@@ -335,7 +335,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     public MerchantInviterVO querySuccessInviter(Long uid) {
         UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
-            log.error("querySuccessInviter userInfoExtra not exist, uid={}", uid);
+            log.warn("querySuccessInviter userInfoExtra not exist, uid={}", uid);
             return null;
         }
         
@@ -404,7 +404,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             // 获取商户保护期和有效期
             MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
             if (Objects.isNull(merchantAttr)) {
-                log.error("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
+                log.warn("Modify inviter fail! not found merchantAttr, merchantId={}", merchantId);
                 return R.fail("120212", "商户不存在");
             }
             

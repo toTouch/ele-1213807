@@ -162,7 +162,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.warn("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -179,7 +179,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         // 只使用 merchantMinProAppId、merchantMinProAppSecert 参数，可以调用此方法，加盟商ID传入默认 0
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.warn("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
             return R.failMsg("未配置支付参数!");
         }
         

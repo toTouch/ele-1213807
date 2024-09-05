@@ -1041,8 +1041,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds,
-                batteryMemberCard.getFranchiseeId());
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard, userCouponIds);
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
@@ -1092,12 +1091,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getMemberId());
             return Triple.of(false, "ELECTRICITY.100000", acquireUserBatteryServiceFeeResult.getRight());
         }
-    
+        
         // 多加盟商版本增加：加盟商一致性校验
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), query.getUserCouponIds(),
-                batteryMemberCard.getFranchiseeId());
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard, query.getUserCouponIds());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }

@@ -7,30 +7,19 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.queue.EleOperateQueueHandler;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +45,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     @Resource
     RedisService redisService;
     
-    @Resource
-    EleOperateQueueHandler eleOperateQueueHandler;
     
     @Resource
     ElectricityCabinetOrderService electricityCabinetOrderService;
@@ -86,26 +73,26 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
-            log.error("SELF OPEN CELL EXCHANGE NO sessionId,{}", receiverMessage.getOriginContent());
+            log.warn("SELF OPEN CELL EXCHANGE NO sessionId,{}", receiverMessage.getOriginContent());
             return;
         }
         
         EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleSelfOPenCellOrderVo.class);
         
         if (Objects.isNull(eleSelfOPenCellOrderVo)) {
-            log.error("SELF OPEN CELL ERROR! eleSelfOPenCellOrderVo is null , sessionId {}", sessionId);
+            log.warn("SELF OPEN CELL ERROR! eleSelfOPenCellOrderVo is null , sessionId {}", sessionId);
             return;
         }
         //幂等加锁
         Boolean result = redisService.setNx(CacheConstant.SELF_OPEN_CALL_CACHE_KEY + eleSelfOPenCellOrderVo.getOrderId(), "true", 10 * 1000L, true);
         if (!result) {
-            log.error("SELF OPEN CELL ERROR orderId is lock, sessionId is {}, orderId is {}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
+            log.warn("SELF OPEN CELL ERROR orderId is lock, sessionId is {}, orderId is {}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
         
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleSelfOPenCellOrderVo.getOrderId());
         if (Objects.isNull(electricityCabinetOrder)) {
-            log.error("SELF OPEN CELL ERROR! not found order! sessionId is {}, orderId:{}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
+            log.warn("SELF OPEN CELL ERROR! not found order! sessionId is {}, orderId:{}", sessionId, eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
         
@@ -126,13 +113,13 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             userBatteryMemberCardService.deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
             
-            
             // 修改订单最终状态为成功
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
             newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
             newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS);
             newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
+            newElectricityCabinetOrder.setOrderStatus(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
             newElectricityCabinetOrder.setNewElectricityBatterySn(eleSelfOPenCellOrderVo.getTakeBatteryName());
             newElectricityCabinetOrder.setSwitchEndTime(eleSelfOPenCellOrderVo.getReportTime());
             newElectricityCabinetOrder.setRemark("新仓门自助开仓");
@@ -178,7 +165,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     private void takeBatteryHandler(EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(cabinetOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("SELF OPEN CELL  error! userInfo is null!uid={},sessionId is {} ,orderId={}", cabinetOrder.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
+            log.warn("SELF OPEN CELL  error! userInfo is null!uid={},sessionId is {} ,orderId={}", cabinetOrder.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
                     eleSelfOPenCellOrderVo.getOrderId());
             return;
         }
@@ -237,7 +224,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(cabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
         } else {
-            log.error("SELF OPEN CELL error! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
+            log.warn("SELF OPEN CELL error! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
                     eleSelfOPenCellOrderVo.getOrderId());
         }
         

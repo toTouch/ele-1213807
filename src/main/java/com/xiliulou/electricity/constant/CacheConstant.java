@@ -41,7 +41,7 @@ public interface CacheConstant {
     /**
      * 微信支付证书缓存（调用微信接口获取）
      */
-    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:%d:%d";
+    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:V2:%d:%d";
     
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
@@ -703,4 +703,17 @@ public interface CacheConstant {
     String VEHICLE_BINDING_IDEMPOTENT_LOCK = "vehicle_binding_idempotent_lock:%s";
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
+    String CACHE_OFFLINE_KEY = "cache_offline_key:";
+    String CACHE_OFFLINE_KEY_V2 = "cache_offline_key_v2:";
+
+    /**
+     * TCP设备session缓存
+     */
+    String CACHE_CABINET_SN_ONLINE = "device_report:cabinet_online:";
+    
+    
+    /**
+     * 柜机仓门配置key
+     */
+    String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
 }

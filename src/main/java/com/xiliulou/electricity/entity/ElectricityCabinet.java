@@ -129,6 +129,11 @@ public class ElectricityCabinet {
     private Integer exchangeType;
     
     /**
+     * iot连接模式  0:阿里云 1：华为云 2:自建TCP
+     */
+    private Integer pattern;
+    
+    /**
      * 区域id
      */
     private Long areaId;

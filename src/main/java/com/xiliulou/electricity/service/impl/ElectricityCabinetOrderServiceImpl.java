@@ -317,7 +317,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("ELECTRICITY  WARN!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
@@ -378,7 +378,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_OLD_DOOR)
                     .build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         }
         
         //新电池开门
@@ -395,7 +395,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_NEW_DOOR)
                     .build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         }
         redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId());
         return R.ok();
@@ -830,7 +830,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("self open cell WARN!  electricityCabinet is offline ！electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
@@ -962,11 +962,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
             electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
             
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                    .orderId(orderSelfOpenCellQuery.getOrderId()).tenantId(electricityCabinet.getTenantId()).msg("旧电池检测失败，自助开仓")
-                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
+            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
+                ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                        .orderId(orderSelfOpenCellQuery.getOrderId()).tenantId(electricityCabinet.getTenantId()).msg("旧电池检测失败，自助开仓")
+                        .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                        .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+                
+                electricityCabinetOrderOperHistoryService.insert(history);
+            }
             
             ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
@@ -980,12 +983,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("orderId", orderSelfOpenCellQuery.getOrderId());
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
+            dataMap.put("userSelfOpenCell", true);
             
             String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             return R.ok(sessionId);
         } catch (Exception e) {
             log.error("order is error" + e);
@@ -1107,7 +1111,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             return Triple.of(false, "100004", "柜机不在线");
         }
@@ -1203,7 +1207,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             return Triple.of(false, "100004", "柜机不在线");
         }
@@ -1420,24 +1424,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
         
-        ElectricityCabinetOrderOperHistory history = electricityCabinetOrderOperHistoryService.queryOrderHistoryFinallyFail(lastOrder.getOrderId());
-        if (Objects.isNull(history)) {
-            log.warn("Orderv3 WARN! lastExchangeFailHandler.history is null, orderId is{}", lastOrder.getOrderId());
-            // 订单中途未结束,包括初始化订单
+        String orderStatus = lastOrder.getOrderStatus();
+        if (StrUtil.isEmpty(orderStatus)) {
+            log.info("Orderv3 INFO! lastExchangeFailHandler.orderStatus is null, orderId is {}", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
         
-        String msg = history.getMsg();
-        log.info("Orderv3 INFO! lastExchangeFailHandler.lastOrderId is{},history.msg is {}", lastOrder.getOrderId(), msg);
-        
-        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败 || 换电柜正在使用中操作取消
-        if (msg.contains(ExchangeFailCellUtil.BATTERY_CHECK_FAIL_TIME) || (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(
-                lastOrder.getOldCellNo(), msg))) {
+        log.info("Orderv3 INFO! lastExchangeFailHandler.orderStatus is {}", orderStatus);
+        //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
             return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
         }
         
-        //  新仓门&开门失败 || 换电柜正在使用中操作取消
-        if (msg.contains(ExchangeFailCellUtil.OPEN_CELL_FAIL) && ExchangeFailCellUtil.judgeOpenFailIsNewCell(lastOrder.getNewCellNo(), msg)) {
+        //  新仓门开门失败
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
             return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet);
         }
         
@@ -1473,13 +1473,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         log.info("Orderv3 INFO! newCellOpenFail.cabinetBox is {}, battery is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
                 Objects.nonNull(battery) ? JsonUtil.toJson(battery) : "null", JsonUtil.toJson(lastOrder));
+        
         // 用户绑定的电池状态是否为租借状态 && 用户绑定的电池在仓 & 电池所在的仓门=上个订单的旧仓门
         if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && StrUtil.isNotBlank(
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
+            vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
             String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox);
             vo.setSessionId(sessionId);
-            vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
@@ -1520,8 +1521,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
+            this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
@@ -1550,10 +1551,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     private String backSelfOpen(Integer cell, String userBindingBatterySn, ElectricityCabinetOrder order, ElectricityCabinet cabinet, String msg) {
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
-                .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        electricityCabinetOrderOperHistoryService.insert(history);
+        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(order.getOrderId())
+                    .tenantId(order.getTenantId()).msg(msg).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+        
+            electricityCabinetOrderOperHistoryService.insert(history);
+        }
         
         ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
         electricityCabinetOrderUpdate.setId(order.getId());
@@ -1566,16 +1570,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         dataMap.put("orderId", order.getOrderId());
         dataMap.put("cellNo", cell);
         dataMap.put("batteryName", userBindingBatterySn);
+        dataMap.put("userSelfOpenCell", false);
         
         String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + order.getOrderId();
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
                 .command(ElectricityIotConstant.SELF_OPEN_CELL).build();
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, cabinet);
         return sessionId;
     }
-    
-    
     
     
     @Override
@@ -1648,8 +1651,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Boolean.FALSE.equals(exchangeStatus.getLeft())) {
             return exchangeStatus;
         }
-        
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(selectBox.getElectricityCabinetId(), electricityCabinet.getVersion());
+        // 20240808舒适换电需求，选仓换电不走舒适换电
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.selectCellExchangeFindUsableEmptyCellNo(selectBox.getElectricityCabinetId(),
+                electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             log.warn("SELECTION EXCHANGE ORDER WARN!  not found usable empty cell!uid={},eid={}", userInfo.getUid(), electricityCabinet.getId());
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
@@ -1776,6 +1780,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
@@ -1790,7 +1798,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
         }
@@ -1839,6 +1847,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
@@ -1853,7 +1865,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
         }
@@ -2000,7 +2012,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(userInfo.getUid(), electricityCabinet.getId(),
+                electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -2040,6 +2053,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
@@ -2054,7 +2071,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
         }
@@ -2134,8 +2151,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(userInfo.getUid(), electricityCabinet.getId(),
+                electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
+            log.warn("ORDER WARN! There is no empty cell.");
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
@@ -2179,6 +2198,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
@@ -2193,7 +2216,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
         }
@@ -2643,7 +2666,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("self open cell WARN!  electricityCabinet is offline ！electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
@@ -2746,10 +2769,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         try {
             // 用户自助开仓
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
-                    .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
-                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            electricityCabinetOrderOperHistoryService.insert(history);
+            if (electricityCabinet.getVersion().isBlank() || VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
+                ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(query.getOrderId())
+                        .tenantId(electricityCabinet.getTenantId()).msg("用户自助开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                        .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+                
+                electricityCabinetOrderOperHistoryService.insert(history);
+            }
             
             // 如果旧电池检测失败会在这个表里面，导致在订单记录中存在自主开仓，所以移除旧版本的自主开仓记录
             electricityExceptionOrderStatusRecordService.queryRecordAndUpdateStatus(electricityCabinetOrder.getOrderId());
@@ -2770,6 +2796,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
                 dataMap.put("isTakeCell", true);
             }
+            dataMap.put("userSelfOpenCell", true);
            
             //dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
             
@@ -2777,7 +2804,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             return R.ok(sessionId);
         } catch (Exception e) {
             log.error("order is error" + e);
@@ -2909,7 +2936,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(userInfo.getUid(), electricityCabinet.getId(),
+                electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -2953,6 +2981,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
@@ -2967,7 +2999,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
         }
@@ -3025,7 +3057,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         
-        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(userInfo.getUid(), electricityCabinet.getId(),
+                electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
@@ -3064,6 +3097,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
+        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
+            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        }
+        
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
                 commandData.put("multiBatteryModelName", electricityBattery.getModel());
@@ -3078,7 +3115,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
-        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
         }
@@ -3129,16 +3166,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName,
             ElectricityCabinetBox cabinetBox) {
         
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
-                .orderId(cabinetOrder.getOrderId()).tenantId(cabinet.getTenantId()).msg("电池检测成功")
-                .seq(ElectricityCabinetOrderOperHistory.OPEN_FULL_CELL_BATTERY).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
-                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        electricityCabinetOrderOperHistoryService.insert(history);
-        
+        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis())
+                    .orderId(cabinetOrder.getOrderId()).tenantId(cabinet.getTenantId()).msg("电池检测成功")
+                    .seq(ElectricityCabinetOrderOperHistory.OPEN_FULL_CELL_BATTERY).type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                    .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+            
+            electricityCabinetOrderOperHistoryService.insert(history);
+        }
         
         ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
         electricityCabinetOrderUpdate.setId(cabinetOrder.getId());
         electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetOrderUpdate.setNewCellNo(cellNo);
         electricityCabinetOrderUpdate.setRemark("取电流程");
         update(electricityCabinetOrderUpdate);
         
@@ -3153,7 +3193,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
                 .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, cabinet);
         
         // 删除redis
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId(), "取电中，请稍后", 5L, TimeUnit.MINUTES);
@@ -3180,7 +3220,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         for (int i = 0; i < exchangeableList.size(); i++) {
             // 20240614修改：过滤掉电池不符合标准的电池
-            fullBatteryCell = rentBatteryOrderService.acquireFullBatteryBox(exchangeableList, userInfo, franchisee);
+            fullBatteryCell = rentBatteryOrderService.acquireFullBatteryBox(exchangeableList, userInfo, franchisee, electricityCabinet.getFullyCharged());
             if (StringUtils.isBlank(fullBatteryCell)) {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");

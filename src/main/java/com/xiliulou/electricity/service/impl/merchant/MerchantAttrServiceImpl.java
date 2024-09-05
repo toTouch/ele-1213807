@@ -161,7 +161,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
     @Override
     public Boolean checkInvitationTime(MerchantAttr merchantAttr, Long invitationTime) {
         if (Objects.isNull(merchantAttr.getInvitationValidTime()) || Objects.isNull(merchantAttr.getValidTimeUnit())) {
-            log.error("ELE ERROR!merchantAttr is illegal,tenantId={}", merchantAttr.getTenantId());
+            log.warn("ELE ERROR!merchantAttr is illegal,tenantId={}", merchantAttr.getTenantId());
             return Boolean.FALSE;
         }
         
@@ -169,7 +169,7 @@ public class MerchantAttrServiceImpl implements MerchantAttrService {
                 : 1000 * 60 * 60L);
         
         if (System.currentTimeMillis() > (invitationTime + validTime)) {
-            log.error("ELE ERROR!invitation is expired,tenantId={}", merchantAttr.getTenantId());
+            log.warn("ELE WARN!invitation is expired,tenantId={}", merchantAttr.getTenantId());
             return Boolean.FALSE;
         }
         

@@ -408,7 +408,7 @@ public class JsonAdminUserInfoController extends BaseController {
     }
     
     /**
-     * 会员列表删除
+     * 会员列表删除  实名用户列表删除
      */
     @DeleteMapping(value = "/admin/userInfo/{uid}")
     @Log(title = "会员列表删除")

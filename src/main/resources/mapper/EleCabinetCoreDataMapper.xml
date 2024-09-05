@@ -28,18 +28,53 @@
     
     <!--查询单个-->
     <select id="queryById" resultMap="EleCabinetCoreDataMap">
-        select
-          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,core_version
+        select id,
+               electricity_cabinet_id,
+               lock_open,
+               smoke_sensor_open,
+               light_open,
+               fan_open,
+               extinguisher_open,
+               v,
+               a,
+               power,
+               power_factor,
+               active_electrical_energy,
+               water_pump_open,
+               water_level_warning,
+               temp,
+               humidity,
+               water_leaching_warning,
+               create_time,
+               update_time,
+               core_version
         from t_ele_cabinet_core_data
         where id = #{id}
     </select>
     
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EleCabinetCoreDataMap">
-        select
-          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,core_version
-        from t_ele_cabinet_core_data
-        limit #{offset}, #{limit}
+        select id,
+               electricity_cabinet_id,
+               lock_open,
+               smoke_sensor_open,
+               light_open,
+               fan_open,
+               extinguisher_open,
+               v,
+               a,
+               power,
+               power_factor,
+               active_electrical_energy,
+               water_pump_open,
+               water_level_warning,
+               temp,
+               humidity,
+               water_leaching_warning,
+               create_time,
+               update_time,
+               core_version
+        from t_ele_cabinet_core_data limit #{offset}, #{limit}
     </select>
     
     <!--通过实体作为筛选条件查询-->
@@ -112,8 +147,12 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
-        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor,
+                                            active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,
+                                            core_version, heat_open, backup_power, backup_power_reason)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor},
+                #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime}, #{coreVersion},
+                #{heatOpen}, #{backupPower}, #{backupPowerReason})
     </insert>
     
     <!--通过主键修改数据-->
@@ -181,21 +220,92 @@
         where id = #{id}
     </update>
     
+    <update id="updateByUk">
+        update t_ele_cabinet_core_data
+        <set>
+            <if test="lockOpen != null">
+                lock_open = #{lockOpen},
+            </if>
+            <if test="smokeSensorOpen != null">
+                smoke_sensor_open = #{smokeSensorOpen},
+            </if>
+            <if test="lightOpen != null">
+                light_open = #{lightOpen},
+            </if>
+            <if test="fanOpen != null">
+                fan_open = #{fanOpen},
+            </if>
+            <if test="extinguisherOpen != null">
+                extinguisher_open = #{extinguisherOpen},
+            </if>
+            <if test="v != null">
+                v = #{v},
+            </if>
+            <if test="a != null">
+                a = #{a},
+            </if>
+            <if test="power != null">
+                power = #{power},
+            </if>
+            <if test="powerFactor != null">
+                power_factor = #{powerFactor},
+            </if>
+            <if test="activeElectricalEnergy != null">
+                active_electrical_energy = #{activeElectricalEnergy},
+            </if>
+            <if test="waterPumpOpen != null">
+                water_pump_open = #{waterPumpOpen},
+            </if>
+            <if test="waterLevelWarning != null">
+                water_level_warning = #{waterLevelWarning},
+            </if>
+            <if test="temp != null">
+                temp = #{temp},
+            </if>
+            <if test="humidity != null">
+                humidity = #{humidity},
+            </if>
+            <if test="waterLeachingWarning != null">
+                water_leaching_warning = #{waterLeachingWarning},
+            </if>
+            <if test="coreVersion != null">
+                core_version = #{coreVersion},
+            </if>
+            <if test="heatOpen != null">
+                heat_open = #{heatOpen},
+            </if>
+            <if test="backupPower != null">
+                backup_power = #{backupPower},
+            </if>
+            <if test="backupPowerReason != null">
+                backup_power_reason = #{backupPowerReason},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where electricity_cabinet_id = #{electricityCabinetId}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_ele_cabinet_core_data where id = #{id}
+        delete
+        from t_ele_cabinet_core_data
+        where id = #{id}
     </delete>
     
     <insert id="insertOrUpdateCabinetCoreData" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,
-        core_version,heat_open, backup_power, backup_power_reason)
-        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime},
-        #{coreVersion},#{heatOpen},#{backupPower},#{backupPowerReason})
-        on duplicate key update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open =
-        #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power =
-        #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open =
-        #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity =
-        #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime},core_version=#{coreVersion},heat_open=#{heatOpen},backup_power=#{backupPower},backup_power_reason=#{backupPowerReason}
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor,
+                                            active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,
+                                            core_version, heat_open, backup_power, backup_power_reason)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor},
+                #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime},
+                #{coreVersion}, #{heatOpen}, #{backupPower}, #{backupPowerReason}) on duplicate key
+        update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open =
+            #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power =
+            #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open =
+            #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity =
+            #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime},core_version=#{coreVersion},heat_open=#{heatOpen},backup_power=#{backupPower},backup_power_reason=#{backupPowerReason}
     </insert>
     
     
@@ -239,12 +349,28 @@
     </select>
     
     <select id="selectByEid" resultMap="EleCabinetCoreDataMap">
-        select
-        id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power,
-        power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity,
-        water_leaching_warning, create_time, update_time,core_version
+        select id,
+               electricity_cabinet_id,
+               lock_open,
+               smoke_sensor_open,
+               light_open,
+               fan_open,
+               extinguisher_open,
+               v,
+               a,
+               power,
+               power_factor,
+               active_electrical_energy,
+               water_pump_open,
+               water_level_warning,
+               temp,
+               humidity,
+               water_leaching_warning,
+               create_time,
+               update_time,
+               core_version
         from t_ele_cabinet_core_data
-        where electricity_cabinet_id=#{eid}
+        where electricity_cabinet_id = #{eid}
     </select>
     
     <select id="selectListByEids" resultMap="EleCabinetCoreDataMap">

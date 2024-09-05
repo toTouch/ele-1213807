@@ -42,8 +42,7 @@ public class WechatAccessTokenSeviceImpl implements WechatAccessTokenSevice {
             accessToken = JSONUtil.toBean(result, AccessTokenVo.class).getAccessToken();
             log.info("微信获取accessToken结果：" + result);
             if (ObjectUtil.isEmpty(accessToken)) {
-                log.error("WX_MP SEND_TEMPLATE ERROR,GET ACCESS_TOKEN ERROR,MSG:{},APPID:{},SECRET:{}",
-                        result, appId, secret);
+                log.warn("WX_MP SEND_TEMPLATE WARN!GET ACCESS_TOKEN ERROR,MSG:{},APPID:{},SECRET:{}", result, appId, secret);
                 return Pair.of(false, "获取微信accessToken失败!");
             } else {
                 //token有效期 7200秒,redis 保存6000秒

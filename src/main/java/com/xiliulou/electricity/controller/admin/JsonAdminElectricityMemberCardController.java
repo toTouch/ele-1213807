@@ -86,6 +86,8 @@ public class JsonAdminElectricityMemberCardController {
     public R getElectricityUsablePackage(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "franchiseeId", required = true) Long franchiseeId, @RequestParam(value = "type", required = true) Integer type) {
         
+        offset = (Objects.isNull(offset) || offset < 0L) ? 0L : offset;
+        size = (Objects.isNull(size) || size > 500L) ? 500L : size;
         if (!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)) {
             return R.fail("000200", "业务类型参数不合法");
         }

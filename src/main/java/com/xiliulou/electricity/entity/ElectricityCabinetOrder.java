@@ -128,6 +128,12 @@ public class ElectricityCabinetOrder {
      */
     private String channel;
     
+    
+    /**
+     * 订单阶段状态
+     */
+    private String orderStatus;
+    
     /**
      * 换电订单生成 0.0
      */
@@ -227,6 +233,9 @@ public class ElectricityCabinetOrder {
     public static final String COMPLETE_BATTERY_TAKE_TIMEOUT = "COMPLETE_BATTERY_TAKE_TIMEOUT";
     
     
+    
+
+
     //订单取消 11.0
     public static final String ORDER_CANCEL = "ORDER_CANCEL";
     

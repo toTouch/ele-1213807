@@ -476,7 +476,8 @@
                teco.create_time,
                teco.update_time,
                teco.franchisee_id,
-               teco.tenant_id
+               teco.tenant_id,
+               teco.order_status
         from t_electricity_cabinet_order teco
         where uid = #{uid}
           and create_time &lt; #{currentTime}
