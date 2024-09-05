@@ -212,7 +212,7 @@
             <if test="storeId != null">
                 store_id = #{storeId},
             </if>
-            <if test="payment_channel != null and payment_channel != ''">
+            <if test="paymentChannel != null and paymentChannel != ''">
                 payment_channel = #{paymentChannel},
             </if>
         </set>
