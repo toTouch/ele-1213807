@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.enums.FyRetureFailMsgEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
@@ -314,7 +315,7 @@ public abstract class AbstractCommonFreeDeposit {
         String code = result.getCode();
         if (!Objects.equals(code, FreeDepositConstant.SUCCESS_CODE)) {
             log.warn("FY ERROR! fyResultCheck fail! code is fail!  orderId={}", orderId);
-            return Triple.of(false, "100401", result.getMessage());
+            return Triple.of(false, "100401", FyRetureFailMsgEnum.getReturnMsg(result.getMessage()));
         }
         
         if (Objects.isNull(result.getFyResponse())) {
