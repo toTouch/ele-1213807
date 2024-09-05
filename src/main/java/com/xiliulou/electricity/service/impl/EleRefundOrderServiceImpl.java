@@ -726,11 +726,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
-        if (refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
-            log.warn("FREE DEPOSIT WARN! refundAmount is over payTransAmt,orderId={}", freeDepositOrder.getOrderId());
-            return Triple.of(false, "100434", "退押失败，超过代扣金额");
-        }
-        
         Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
         // 如果存在代扣的免押订单，则不允许退押
         if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
@@ -764,6 +759,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
         }
+        
+        if (refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! refundAmount is over payTransAmt,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100434", "退押失败，超过代扣金额");
+        }
+        
         
         // 处理电池免押订单退款
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
