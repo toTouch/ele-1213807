@@ -20,6 +20,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
@@ -244,9 +245,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                         .updateTime(System.currentTimeMillis()).build();
                 applicationContext.getBean(InstallmentRecordServiceImpl.class).update(installmentRecordUpdate);
                 // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
-                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody().replace("\"", ""), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
+                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
                         TimeUnit.MINUTES);
-                return R.ok(fySignResult.getFyResponse().getFormBody().replace("\"", ""));
+                return R.ok(fySignResult.getFyResponse().getFormBody());
             }
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", uid, e);
@@ -334,7 +335,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         
         // 查询有无逾期代扣计划
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo())
+                InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo())
                         .statuses(Arrays.asList(DEDUCTION_PLAN_STATUS_INIT, DEDUCTION_PLAN_STATUS_FAIL)).endTime(System.currentTimeMillis()).build()).getData();
         installmentRecordVO.setOverdue(CollectionUtils.isEmpty(deductionPlans) ? 0 : 1);
         
@@ -383,7 +384,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_PLAN_STATUS_INIT).build()).getData();
+                InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_PLAN_STATUS_INIT).build()).getData();
         
         installmentRecordMapper.update(installmentRecordUpdate);
         if (!CollectionUtils.isEmpty(deductionPlans)) {

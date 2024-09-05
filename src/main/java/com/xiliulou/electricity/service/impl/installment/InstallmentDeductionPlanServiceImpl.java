@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentDeductionPlanMapper;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -57,8 +58,8 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     
     @Slave
     @Override
-    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentRecordQuery installmentRecordQuery) {
-        return R.ok(installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(installmentRecordQuery));
+    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query) {
+        return R.ok(installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query));
     }
     
     @Override
@@ -100,6 +101,16 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             planList.add(deductionPlan);
         }
         return planList;
+    }
+    
+    @Override
+    public List<String> listExternalAgreementNoForDeduct(Long time) {
+        return installmentDeductionPlanMapper.selectListExternalAgreementNoForDeduct(time);
+    }
+    
+    @Override
+    public InstallmentDeductionPlan queryPlanForDeductByAgreementNo(String externalAgreementNo) {
+        return installmentDeductionPlanMapper.selectPlanForDeductByAgreementNo(externalAgreementNo);
     }
     
 }

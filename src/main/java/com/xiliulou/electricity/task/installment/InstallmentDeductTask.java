@@ -23,6 +23,11 @@ public class InstallmentDeductTask extends IJobHandler {
     
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        return null;
+        try {
+            installmentDeductionRecordService.dailyInstallmentDeduct();
+        } catch (Exception e) {
+            log.error("XXL-JOB INSTALLMENT DEDUCT ERROR!", e);
+        }
+        return IJobHandler.SUCCESS;
     }
 }

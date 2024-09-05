@@ -98,6 +98,7 @@ import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
 import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.queryModel.enterprise.EnterpriseChannelUserExitQueryModel;
@@ -4433,7 +4434,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             validDays = -1;
         } else {
             List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                    InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
+                    InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
             
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
                 if (Objects.equals(installmentRecord.getPaidInstallment(), deductionPlan.getIssue())) {

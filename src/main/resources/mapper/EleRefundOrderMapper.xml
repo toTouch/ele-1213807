@@ -117,7 +117,7 @@
             </if>
             <if test="query.statuses != null and query.statuses.size > 0">
                 and tero.status in
-                    <foreach collection="query.status" open="(" separator="," close=")" item="status">
+                    <foreach collection="query.statuses" open="(" separator="," close=")" item="status">
                         #{status}
                     </foreach>
             </if>

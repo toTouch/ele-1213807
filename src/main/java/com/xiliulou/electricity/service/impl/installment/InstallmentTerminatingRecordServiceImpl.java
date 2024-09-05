@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentTerminatingRecordMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.installment.HandleTerminatingRecordQuery;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -163,7 +164,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     @Override
     public InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason) {
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).statuses(List.of(DEDUCTION_PLAN_STATUS_PAID)).build()).getData();
+                InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).statuses(List.of(DEDUCTION_PLAN_STATUS_PAID)).build()).getData();
         BigDecimal paidAmount = new BigDecimal("0");
         if (CollectionUtils.isNotEmpty(deductionPlans)) {
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
@@ -176,13 +177,13 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         installmentTerminatingRecord.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         installmentTerminatingRecord.setUserName(installmentRecord.getUserName());
         installmentTerminatingRecord.setMobile(installmentRecord.getMobile());
-        installmentTerminatingRecord.setPackageId(installmentTerminatingRecord.getPackageId());
+        installmentTerminatingRecord.setPackageId(installmentRecord.getPackageId());
         installmentTerminatingRecord.setPackageType(installmentRecord.getPackageType());
         installmentTerminatingRecord.setPaidAmount(paidAmount);
         installmentTerminatingRecord.setStatus(TERMINATING_RECORD_STATUS_INIT);
         installmentTerminatingRecord.setReason(reason);
         installmentTerminatingRecord.setTenantId(installmentRecord.getTenantId());
-        installmentTerminatingRecord.setFranchiseeId(installmentTerminatingRecord.getFranchiseeId());
+        installmentTerminatingRecord.setFranchiseeId(installmentRecord.getFranchiseeId());
         installmentTerminatingRecord.setCreateTime(System.currentTimeMillis());
         installmentTerminatingRecord.setUpdateTime(System.currentTimeMillis());
         return installmentTerminatingRecord;
@@ -205,9 +206,9 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             return R.fail("未退还电池");
         }
         
-        List<InstallmentTerminatingRecord> terminatingRecords = installmentTerminatingRecordMapper.selectListForRecordWithStatus(
-                InstallmentTerminatingRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_RECORD_STATUS_INIT).build());
-        if (CollectionUtils.isNotEmpty(terminatingRecords)) {
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
+                InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_RECORD_STATUS_INIT).build()).getData();
+        if (CollectionUtils.isNotEmpty(deductionPlans)) {
             return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         

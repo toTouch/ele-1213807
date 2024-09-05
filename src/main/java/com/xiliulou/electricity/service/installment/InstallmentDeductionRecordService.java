@@ -79,8 +79,14 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 根据资金处理订单号查询代扣记录
+     *
      * @param payNo 资金处理订单号
      * @return 代扣记录
      */
     InstallmentDeductionRecord queryByPayNo(String payNo);
+    
+    /**
+     * 代扣定时任务
+     */
+    void dailyInstallmentDeduct();
 }

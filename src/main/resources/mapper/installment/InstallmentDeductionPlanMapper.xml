@@ -3,18 +3,21 @@
 <mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentDeductionPlanMapper">
     
     <sql id="columnsWithoutId">
-        external_agreement_no, issue, amount, package_id, package_type, rent_time, deduct_time, payment_time, `status`, tenant_id,
+        external_agreement_no, pay_no, issue, amount, package_id, package_type, rent_time, deduct_time, payment_time, `status`, tenant_id,
         franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
-        #{externalAgreementNo}, #{issue}, #{amount}, #{packageId}, #{packageType}, #{rentTime}, #{deductTime}, #{paymentTime}, #{status},
+        #{externalAgreementNo}, #{payNo}, #{issue}, #{amount}, #{packageId}, #{packageType}, #{rentTime}, #{deductTime}, #{paymentTime}, #{status},
         #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
     <sql id="ifLabelsForWhere">
         <if test="externalAgreementNo != null and externalAgreementNo != ''">
             and external_agreement_no = #{externalAgreementNo},
+        </if>
+        <if test="payNo != null and payNo != ''">
+            and pay_no = #{payNo},
         </if>
         <if test="issue != null">
             and issue = #{issue},
@@ -60,6 +63,7 @@
     <resultMap id="installmentDeductionPlanMap" type="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="externalAgreementNo" column="external_agreement_no" jdbcType="VARCHAR"/>
+        <result property="payNo" column="pay_no" jdbcType="VARCHAR"/>
         <result property="issue" column="issue" jdbcType="INTEGER"/>
         <result property="amount" column="amount" jdbcType="DECIMAL"/>
         <result property="packageId" column="package_id" jdbcType="BIGINT"/>
@@ -78,7 +82,9 @@
         select id, <include refid="columnsWithoutId"/>
         from t_installment_deduction_plan
         where external_agreement_no = #{externalAgreementNo}
-            and tenant_id = #{tenantId}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
@@ -99,15 +105,36 @@
             </if>
     </select>
     
+    <select id="selectListExternalAgreementNoForDeduct" resultType="java.lang.String">
+        select external_agreement_no
+        from t_installment_deduction_plan
+        where deduct_time &lt;= #{time}
+            and status = 0
+        group by external_agreement_no
+    </select>
+    
+    <select id="selectPlanForDeductByAgreementNo"
+            resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where external_agreement_no = #{externalAgreementNo}
+            and `status` = 0
+        order by issue
+        limit 1
+    </select>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_deduction_plan(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>
     
     <update id="update">
-        update t_installment_record
+        update t_installment_deduction_plan
         <set>
             <if test="externalAgreementNo != null and externalAgreementNo != ''">
                 external_agreement_no = #{externalAgreementNo},
+            </if>
+            <if test="payNo != null and payNo != ''">
+                pay_no = #{payNo},
             </if>
             <if test="issue != null">
                 issue = #{issue},

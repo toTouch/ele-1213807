@@ -99,20 +99,20 @@ public class ProcessParameterAspect {
                 throw new BizException("方法请求参数对象属性无tenantId、franchiseeIds");
             }
             tenantIdField.setAccessible(true);
-            tenantIdField.set(clazz, tenantId);
+            tenantIdField.set(requestQuery, tenantId);
             franchiseeIdsField.setAccessible(true);
-            franchiseeIdsField.set(clazz, franchiseeIds);
+            franchiseeIdsField.set(requestQuery, franchiseeIds);
         }
         
         // 校验分页参数
         if ((type & processParameterPageParam) == processParameterPageParam) {
-            handlePageRequest(clazz);
+            handlePageRequest(clazz, requestQuery);
         }
         
         return joinPoint.proceed(args);
     }
     
-    private void handlePageRequest(Class<?> clazz) throws Exception {
+    private void handlePageRequest(Class<?> clazz, Object requestQuery) throws Exception {
         Field offsetField = findField(clazz, "offset");
         Field sizeField = findField(clazz, "size");
         if (Objects.isNull(offsetField) || Objects.isNull(sizeField)) {
@@ -122,16 +122,16 @@ public class ProcessParameterAspect {
         offsetField.setAccessible(true);
         sizeField.setAccessible(true);
         
-        Integer offset = (Integer) offsetField.get(clazz);
-        Integer size = (Integer) sizeField.get(clazz);
+        Integer offset = (Integer) offsetField.get(requestQuery);
+        Integer size = (Integer) sizeField.get(requestQuery);
         
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0;
-            offsetField.set(clazz, offset);
+            offsetField.set(requestQuery, offset);
         }
         if (Objects.isNull(size) || size < 0 || size > maxSize) {
             size = 10;
-            sizeField.set(clazz, size);
+            sizeField.set(requestQuery, size);
         }
     }
     

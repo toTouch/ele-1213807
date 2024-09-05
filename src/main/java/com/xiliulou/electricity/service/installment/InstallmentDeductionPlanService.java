@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.installment;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -33,10 +34,10 @@ public interface InstallmentDeductionPlanService {
     
     /**
      * 根据分期套餐签约记录查询代扣计划
-     * @param installmentRecordQuery 请求签约号
+     * @param query 请求签约号
      * @return 代扣计划集合
      */
-    R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentRecordQuery installmentRecordQuery);
+    R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query);
     
     /**
      * 生成代扣计划
@@ -44,4 +45,18 @@ public interface InstallmentDeductionPlanService {
      * @return 代扣计划生成结果
      */
     List<InstallmentDeductionPlan> generateDeductionPlan(InstallmentRecord installmentRecord);
+    
+    /**
+     * 查询可代扣的请求签约号
+     * @param time 当前时间
+     * @return 请求签约号集合
+     */
+    List<String> listExternalAgreementNoForDeduct(Long time);
+    
+    /**
+     * 根据请求签约号查询
+     * @param externalAgreementNo 请求签约号
+     * @return 可代扣计划
+     */
+    InstallmentDeductionPlan queryPlanForDeductByAgreementNo(String externalAgreementNo);
 }

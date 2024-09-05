@@ -1,10 +1,8 @@
 package com.xiliulou.electricity.query.installment;
 
-import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -13,22 +11,13 @@ import java.util.List;
 /**
  * @Description ...
  * @Author: SongJP
- * @Date: 2024/8/28 14:44
+ * @Date: 2024/9/5 23:20
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InstallmentTerminatingRecordQuery {
-    
-    private Integer offset;
-    
-    private Integer size;
-    
-    /**
-     * 请求签约用户uid
-     */
-    private Long uid;
+public class InstallmentDeductionPlanQuery {
     
     /**
      * 请求签约号，唯一
@@ -36,14 +25,19 @@ public class InstallmentTerminatingRecordQuery {
     private String externalAgreementNo;
     
     /**
-     * 实际签约人姓名
+     * 扣款订单号，关联对应的最新一条代扣记录
      */
-    private String userName;
+    private String payNo;
     
     /**
-     * 实际签约人手机号
+     * 分期期次
      */
-    private String mobile;
+    private Integer issue;
+    
+    /**
+     * 应还款金额
+     */
+    private BigDecimal amount;
     
     /**
      * 分期套餐id
@@ -56,29 +50,24 @@ public class InstallmentTerminatingRecordQuery {
     private Integer packageType;
     
     /**
-     * 已支付金额
+     * 租期，单位天
      */
-    private BigDecimal paidAmount;
+    private Integer rentTime;
     
     /**
-     * 审核状态
+     * 应还款时间
+     */
+    private Long deductTime;
+    
+    /**
+     * 应还款时间
+     */
+    private Long paymentTime;
+    
+    /**
+     * 支付状态
      */
     private Integer status;
-    
-    /**
-     * 申请解约原因
-     */
-    private String reason;
-    
-    /**
-     * 审核意见
-     */
-    private String opinion;
-    
-    /**
-     * 审核人uid
-     */
-    private Long auditorId;
     
     private Integer tenantId;
     
@@ -88,7 +77,9 @@ public class InstallmentTerminatingRecordQuery {
     
     private Long updateTime;
     
+    private List<Long> franchiseeIds;
+    
     private List<Integer> statuses;
     
-    private List<Long> franchiseeIds;
+    private Long endTime;
 }

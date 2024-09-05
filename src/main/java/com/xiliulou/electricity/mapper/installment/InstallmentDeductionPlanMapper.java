@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper.installment;
 
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,5 +20,9 @@ public interface InstallmentDeductionPlanMapper {
     
     Integer update(InstallmentDeductionPlan installmentDeductionPlan);
     
-    List<InstallmentDeductionPlan> selectListDeductionPlanByAgreementNo(InstallmentRecordQuery installmentRecordQuery);
+    List<InstallmentDeductionPlan> selectListDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query);
+    
+    List<String> selectListExternalAgreementNoForDeduct(@Param("time") Long time);
+    
+    InstallmentDeductionPlan selectPlanForDeductByAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
 }

@@ -148,7 +148,7 @@
         select id, <include refid="columnsWithoutId"/>
         from t_installment_terminating_record
         where tenant_id = #{tenantId}
-            <include refid="fieldsWithoutId"/>
+            <include refid="ifLabelsForWhere"/>
         limit #{offset}, #{size}
     </select>
     
@@ -156,7 +156,7 @@
         select count(1)
         from t_installment_terminating_record
         where tenant_id = #{tenantId}
-            <include refid="fieldsWithoutId"/>
+            <include refid="ifLabelsForWhere"/>
     </select>
     
     <select id="selectListForRecordWithStatus" resultMap="installmentTerminatingRecordMap">

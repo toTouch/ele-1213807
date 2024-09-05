@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.installment.InstallmentDeductionRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentDeductNotifyQuery;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -154,7 +155,7 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
             
             // 查询出签约记录对应的代扣计划
             List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                    InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
+                    InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
             
             // 发起代扣
             Triple<Boolean, String, Object> initiatingDeductTriple = null;
@@ -177,7 +178,7 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig) {
         if (redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
-            return Triple.of(false, "以对该用户执行代扣，请稍候再试", null);
+            return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);
         }
         
         // payNo仅有20个字符，用uid加时间秒值不会重复
@@ -288,6 +289,15 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     @Override
     public InstallmentDeductionRecord queryByPayNo(String payNo) {
         return installmentDeductionRecordMapper.selectRecordByPayNo(payNo);
+    }
+    
+    @Override
+    public void dailyInstallmentDeduct() {
+        List<String> externalAgreementNos = installmentDeductionPlanService.listExternalAgreementNoForDeduct(System.currentTimeMillis());
+        
+        externalAgreementNos.parallelStream().forEach(externalAgreementNo -> {
+            InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryPlanForDeductByAgreementNo(externalAgreementNo);
+        });
     }
     
     private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentDeductionRecord deductionRecord, InstallmentRecord installmentRecord, Long uid) {
