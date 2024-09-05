@@ -116,8 +116,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     @Override
     protected void executeByTenantId(Integer tenantId) {
         
-        log.info("INFO tenantId:{} start", tenantId);
-        
         // 查询参数
         ProfitSharingTradeMixedOrderQueryModel queryModel = new ProfitSharingTradeMixedOrderQueryModel();
         queryModel.setState(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode());
@@ -179,8 +177,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                 executeByThirdOrderNo(mixedOrder, curTradeOrders, tenantFranchiseePayParamMap);
             });
         }
-        
-        log.info("AbstractProfitSharingTradeOrderTask.executeByTenantId tenantId:{} end", tenantId);
     }
     
     
