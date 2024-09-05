@@ -967,7 +967,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     throw new BizException("300000", "数据有误");
                 }
                 
-                if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
+                if (Objects.nonNull(freeDepositOrder.getPayStatus()) && FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                     throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                 }
                 if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) < 0){
@@ -1092,7 +1092,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         log.warn("refundDepositCreate failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                         throw new BizException("300000", "数据有误");
                     }
-                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
+                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
                     if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) < 0){
@@ -1291,7 +1291,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         log.warn("saveApproveRefundDepositOrderTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                         throw new BizException("300000", "数据有误");
                     }
-                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
+                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
                     if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) < 0){
@@ -1353,7 +1353,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         log.warn("saveApproveRefundDepositOrderTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                         throw new BizException("300000", "数据有误");
                     }
-                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
+                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
                     if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) < 0){
