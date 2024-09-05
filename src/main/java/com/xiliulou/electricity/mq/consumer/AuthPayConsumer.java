@@ -84,7 +84,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         
         // 拍小组即使金额不足也代扣成功，所以如果5分钟没有代扣成功，执行取消代扣
         FreeDepositCancelAuthToPayQuery cancelAuthToPayQuery = FreeDepositCancelAuthToPayQuery.builder().orderId(alipayHistory.getOrderId())
-                .authPayOrderId(alipayHistory.getAuthPayOrderId()).tenantId(freeDepositAlipayHistory.getTenantId()).uid(freeDepositOrder.getUid()).build();
+                .authPayOrderId(alipayHistory.getAuthPayOrderId()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
         applicationContext.getBean(FreeDepositServiceWayEnums.PXZ.getImplService(), BaseFreeDepositService.class).cancelAuthPay(cancelAuthToPayQuery);
     }
     
