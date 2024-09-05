@@ -13,13 +13,10 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -119,29 +116,6 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
         
         redisService.saveWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, meiTuanRiderMallConfig);
         return meiTuanRiderMallConfig;
-    }
-    
-    @Slave
-    @Override
-    public List<MeiTuanRiderMallConfig> listEnableMeiTuanRiderMall(Integer offset, Integer size) {
-        return meiTuanRiderMallConfigMapper.selectListEnableMeiTuanRiderMall(offset, size);
-    }
-    
-    @Override
-    public List<MeiTuanRiderMallConfig> listAll() {
-        List<MeiTuanRiderMallConfig> list = new ArrayList<>();
-        int offset = 0;
-        int size = 50;
-        
-        while (true) {
-            List<MeiTuanRiderMallConfig> configs = listEnableMeiTuanRiderMall(offset, size);
-            if (CollectionUtils.isEmpty(configs)) {
-                return list;
-            }
-            
-            list.addAll(configs);
-            offset += size;
-        }
     }
     
     @Override

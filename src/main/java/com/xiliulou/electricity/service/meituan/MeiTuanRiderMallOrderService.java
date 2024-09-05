@@ -17,21 +17,13 @@ import java.util.List;
  */
 public interface MeiTuanRiderMallOrderService {
     
-    void handelFetchOrderTask(String sessionId, Long startTime, Integer recentDay);
-    
-    void handelSyncOrderStatusTask(String sessionId, long startTime);
-    
     MeiTuanRiderMallOrder queryByOrderId(String orderId, String phone, Long uid);
     
     List<OrderVO> listOrders(OrderQuery query);
     
-    List<MeiTuanRiderMallOrder> listOrdersByUidAndPhone(OrderQuery query);
+    List<MeiTuanRiderMallOrder> listOrdersByUid(OrderQuery query);
     
     Triple<Boolean, String, Object> createBatteryMemberCardOrder(OrderQuery query);
-    
-    List<MeiTuanRiderMallOrder> listAllUnSyncedOrder(Integer tenantId);
-    
-    List<MeiTuanRiderMallOrder> listUnSyncedOrder(Integer tenantId, Integer offset, Integer size);
     
     /**
      * 美团骑手商城限制提单校验

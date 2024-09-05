@@ -32,14 +32,4 @@ public class OrderQuery {
      */
     private String orderId;
     
-    /**
-     * 用于判断当前时间与上次定时任务执行时间的差值，如果大于这个值，则从美团拉取近5分钟的订单
-     */
-    private Integer gapSecond;
-    
-    /**
-     * 最近N分钟：当需要主动拉取美团订单时，拉取的时间范围
-     */
-    private Integer recentMinute;
-    
 }

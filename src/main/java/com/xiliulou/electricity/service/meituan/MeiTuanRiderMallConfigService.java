@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service.meituan;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
 
-import java.util.List;
-
 /**
  * @author HeYafeng
  * @description 美团骑手商城配置信息服务接口
@@ -21,10 +19,6 @@ public interface MeiTuanRiderMallConfigService {
     MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config);
     
     MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config);
-    
-    List<MeiTuanRiderMallConfig> listEnableMeiTuanRiderMall(Integer offset, Integer size);
-    
-    List<MeiTuanRiderMallConfig> listAll();
     
     MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId);
 }

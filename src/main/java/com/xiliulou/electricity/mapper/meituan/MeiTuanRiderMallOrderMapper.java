@@ -15,15 +15,7 @@ public interface MeiTuanRiderMallOrderMapper {
     
     MeiTuanRiderMallOrder selectByOrderId(@Param("orderId") String orderId, @Param("phone") String phone, @Param("uid") Long uid);
     
-    Integer insert(MeiTuanRiderMallOrder order);
-    
-    Integer batchInsert(@Param("list") List<MeiTuanRiderMallOrder> insertList);
-    
-    List<MeiTuanRiderMallOrder> selectByUidAndPhone(OrderQuery query);
-    
-    List<MeiTuanRiderMallOrder> selectListUnSyncedOrder(@Param("tenantId") Integer tenantId, @Param("offset") Integer offset, @Param("size") Integer size);
-    
-    Integer batchUpdateSyncOrderStatus(@Param("list") List<MeiTuanRiderMallOrder> updateList);
+    List<MeiTuanRiderMallOrder> selectByUid(OrderQuery query);
     
     Integer update(MeiTuanRiderMallOrder meiTuanRiderMallOrder);
 }
