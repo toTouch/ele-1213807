@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -18,17 +19,21 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,6 +76,10 @@ public class BatteryBusinessHandler implements BusinessHandler {
     private final EnterpriseChannelUserService enterpriseChannelUserService;
     
     private final UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    private final UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    private final ServiceFeeUserInfoService serviceFeeUserInfoService;
     
     @Override
     public boolean support(Integer type) {
@@ -129,6 +138,15 @@ public class BatteryBusinessHandler implements BusinessHandler {
         try {
             // 更新退款订单
             EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(order.getOrderId());
+            if (Objects.isNull(eleRefundOrder)){
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
+                // 生成退款订单
+                eleRefundOrder = EleRefundOrder.builder().orderId(order.getOrderId())
+                        .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, order.getUid())).payAmount(eleDepositOrder.getPayAmount())
+                        .refundAmount(new BigDecimal(order.getTransAmt().toString())).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                        .tenantId(eleDepositOrder.getTenantId()).franchiseeId(order.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                eleRefundOrderService.insert(eleRefundOrder);
+            }
             EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -161,6 +179,15 @@ public class BatteryBusinessHandler implements BusinessHandler {
             }
             
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+            
+            // 删除用户电池套餐资源包
+            userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
+            
+            // 删除用户电池型号
+            userBatteryTypeService.deleteByUid(userInfo.getUid());
+            
+            // 删除用户电池服务费
+            serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
             
             // 修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
