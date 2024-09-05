@@ -173,7 +173,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
         // 代扣延迟
-        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).authPayOrderId(query.getAuthPayOrderId()).orderId(query.getOrderId()).build();
+        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().channel(query.getChannel()).mdc(MDC.get(TRACE_ID)).authPayOrderId(query.getAuthPayOrderId()).orderId(query.getOrderId()).build();
         delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.AUTH_APY_TAG_NAME);
         
         // 代扣

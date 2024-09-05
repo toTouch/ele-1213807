@@ -5,14 +5,18 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.dto.FreeDepositDelayDTO;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -36,6 +40,8 @@ public class AuthPayConsumer implements RocketMQListener<String> {
     @Resource
     private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
     
+    @Resource
+    private ApplicationContext applicationContext;
     
     @Override
     public void onMessage(String msg) {
@@ -59,8 +65,9 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             log.warn("AuthPayConsumer WARN! alipayHistory is null, orderId is {}", dto.getAuthPayOrderId());
             return;
         }
-        
-        if (!Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+        // 成功/失败 return
+        if (Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS) || Objects.equals(alipayHistory.getPayStatus(),
+                FreeDepositOrder.PAY_STATUS_DEAL_FAIL)) {
             log.info("AuthPayConsumer.status not update! alipayHistory.payStatus is {}, orderId is {}", alipayHistory.getPayStatus(), alipayHistory.getAuthPayOrderId());
             return;
         }
@@ -74,6 +81,11 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         freeDepositAlipayHistory.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_FAIL);
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
         freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
+        
+        // 拍小组即使金额不足也代扣成功，所以如果5分钟没有代扣成功，执行取消代扣
+        FreeDepositCancelAuthToPayQuery cancelAuthToPayQuery = FreeDepositCancelAuthToPayQuery.builder().orderId(alipayHistory.getOrderId())
+                .authPayOrderId(alipayHistory.getAuthPayOrderId()).tenantId(freeDepositAlipayHistory.getTenantId()).uid(freeDepositOrder.getUid()).build();
+        applicationContext.getBean(FreeDepositServiceWayEnums.PXZ.getImplService(), BaseFreeDepositService.class).cancelAuthPay(cancelAuthToPayQuery);
     }
     
 }
