@@ -745,7 +745,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 }
             } else {
                 // 0元退
-                if (BigDecimal.ZERO.compareTo(refundAmount) == 0) {
+                if (BigDecimal.ZERO.compareTo(refundAmount) == 0 && !PayTypeEnum.EXEMPT.getCode().equals(payType)) {
                     // 线上、线下，退款成功
                     if (PayTypeEnum.ON_LINE.getCode().equals(payType) || PayTypeEnum.OFF_LINE.getCode().equals(payType)) {
                         refundDepositInsertEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
