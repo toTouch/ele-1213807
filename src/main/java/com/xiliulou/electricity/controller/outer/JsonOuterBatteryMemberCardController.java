@@ -6,6 +6,7 @@ import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
 import com.xiliulou.thirdmall.entity.meituan.response.JsonR;
+import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import com.xiliulou.thirdmall.util.meituan.MeiTuanRiderMallUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -45,12 +46,12 @@ public class JsonOuterBatteryMemberCardController {
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(
                 MeiTuanRiderMallConfig.builder().appId(limitTradeRequest.getAppId()).appKey(limitTradeRequest.getAppKey()).build());
         if (Objects.isNull(meiTuanRiderMallConfig)) {
-            return JsonR.failAppConfig();
+            return JsonR.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getCode(), VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc());
         }
         
         Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), limitTradeRequest.getSign());
         if (!checkSign) {
-            return JsonR.failCheckSign();
+            return JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc());
         }
         
         return JsonR.ok(meiTuanRiderMallOrderService.meiTuanLimitTradeCheck(limitTradeRequest, meiTuanRiderMallConfig));
