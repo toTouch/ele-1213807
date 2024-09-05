@@ -54,6 +54,7 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FreeDepositService;
@@ -192,6 +193,9 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
     
     @Override
     public FreeDepositUserInfoVo queryFreeDepositStatus(Integer tenantId, Long uid) {
@@ -957,11 +961,13 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
                 String freeDepositOrderNo = depositPayEntity.getOrderNo();
                 FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                Integer payStatus = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrderNo);
                 if (ObjectUtils.isEmpty(freeDepositOrder)) {
                     log.warn("refundDepositCreateSpecial failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                     throw new BizException("300000", "数据有误");
                 }
-                if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
+                
+                if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                     throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                 }
                 if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) < 0){
@@ -1081,11 +1087,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 if (PayTypeEnum.EXEMPT.getCode().equals(payType)) {
                     String freeDepositOrderNo = depositPayEntity.getOrderNo();
                     FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                    Integer payStatus = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrderNo);
                     if (ObjectUtils.isEmpty(freeDepositOrder)) {
                         log.warn("refundDepositCreate failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                         throw new BizException("300000", "数据有误");
                     }
-                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
+                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
                     if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(realAmount) < 0){
@@ -1199,7 +1206,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 depositRefundUpdateEntity.setPayType(payType);
                 depositRefundUpdateEntity.setCompelOffLine(compelOffLine);
             }
-            
+            Integer payStatus = freeDepositAlipayHistoryService.queryPayingByOrderId(depositPayEntity.getOrderNo());
             // 非零元退押
             if (BigDecimal.ZERO.compareTo(refundAmount) < 0) {
                 // 赋值退款单状态：审核通过
@@ -1279,11 +1286,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     
                     String freeDepositOrderNo = depositPayEntity.getOrderNo();
                     FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(freeDepositOrderNo);
+                    
                     if (ObjectUtils.isEmpty(freeDepositOrder)) {
                         log.warn("saveApproveRefundDepositOrderTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                         throw new BizException("300000", "数据有误");
                     }
-                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
+                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
                     if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) < 0){
@@ -1345,7 +1353,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         log.warn("saveApproveRefundDepositOrderTx failed. not found t_free_deposit_order. orderId is {}", freeDepositOrderNo);
                         throw new BizException("300000", "数据有误");
                     }
-                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(freeDepositOrder.getPayStatus())){
+                    if (Objects.nonNull(freeDepositOrder.getPayStatus()) && !FreeDepositOrder.PAY_STATUS_DEALING.equals(payStatus)){
                         throw new BizException("300000", "当前有正在执行中的免押代扣，无法退押");
                     }
                     if (BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(refundAmount) < 0){
