@@ -60,7 +60,7 @@ public interface InstallmentRecordService {
     /**
      * 请求峰云签约接口返回二维码链接
      */
-    R<Object> sign(InstallmentSignQuery query, HttpServletRequest request);
+    R<String> sign(InstallmentSignQuery query, HttpServletRequest request);
     
     /**
      * 根据状态查询用户的最近一条签约记录

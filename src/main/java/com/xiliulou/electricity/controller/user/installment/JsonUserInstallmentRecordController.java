@@ -33,7 +33,7 @@ public class JsonUserInstallmentRecordController {
      */
     @ProcessParameter
     @PostMapping("/sign")
-    public R<Object> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
+    public R<String> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
         return installmentRecordService.sign(query, request);
     }
 

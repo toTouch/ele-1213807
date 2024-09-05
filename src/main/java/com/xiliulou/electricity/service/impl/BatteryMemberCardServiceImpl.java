@@ -13,7 +13,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
@@ -28,7 +27,6 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
-import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -55,9 +53,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDeta
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
-import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
@@ -1049,49 +1045,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }).collect(Collectors.toList());
     }
     
-    @Override
-    public Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard memberCard, ElectricityCabinet cabinet,
-            InstallmentRecord installmentRecord) {
-        
-        if (Objects.isNull(installmentRecord) || Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment())) {
-            return Triple.of(false, "分期订单已代扣完成", null);
-        }
-        
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
-        
-        // 根据代扣计划设置子订单金额
-        BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord.getPaidInstallment() + 1, installmentRecord, memberCard);
-        
-        // 计算子套餐订单租期
-        Integer validDays = calculateSuborderValidDays(installmentRecord);
-        
-        ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
-        electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
-        electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
-        electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(memberCard.getId());
-        electricityMemberCardOrder.setUid(userInfo.getUid());
-        electricityMemberCardOrder.setMaxUseCount(memberCard.getUseCount());
-        electricityMemberCardOrder.setCardName(memberCard.getName());
-        electricityMemberCardOrder.setPayAmount(payAmount);
-        electricityMemberCardOrder.setUserName(userInfo.getName());
-        electricityMemberCardOrder.setValidDays(validDays);
-        electricityMemberCardOrder.setTenantId(memberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(memberCard.getFranchiseeId());
-        electricityMemberCardOrder.setPayCount(payCount);
-        electricityMemberCardOrder.setSendCouponId(Objects.nonNull(memberCard.getCouponId()) ? memberCard.getCouponId().longValue() : null);
-        electricityMemberCardOrder.setRefId(Objects.nonNull(cabinet) ? cabinet.getId().longValue() : null);
-        electricityMemberCardOrder.setSource(Objects.nonNull(cabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
-        electricityMemberCardOrder.setStoreId(Objects.nonNull(cabinet) ? cabinet.getStoreId() : userInfo.getStoreId());
-        electricityMemberCardOrder.setCouponIds(memberCard.getCouponIds());
-        electricityMemberCardOrder.setParamFranchiseeId(null);
-        electricityMemberCardOrder.setWechatMerchantId(null);
-        
-        return Triple.of(true, null, electricityMemberCardOrder);
-    }
-    
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {
         
         List<MemberCardBatteryType> memberCardBatteryTypeList = Lists.newArrayList();
@@ -1190,26 +1143,5 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
-    }
-    
-    /**
-     * 计算分期套餐子套餐订单有效时间
-     */
-    private Integer calculateSuborderValidDays(InstallmentRecord installmentRecord) {
-        Integer validDays = null;
-        if (Objects.equals(installmentRecord.getPaidInstallment(), 0)) {
-            // 由于首期订单生成时还没有代扣成功，不设置有效天数，当代扣成功时再设置
-            validDays = -1;
-        } else {
-            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                    InstallmentRecordQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
-            
-            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
-                if (Objects.equals(installmentRecord.getPaidInstallment(), deductionPlan.getIssue())) {
-                    validDays = deductionPlan.getRentTime();
-                }
-            }
-        }
-        return validDays;
     }
 }

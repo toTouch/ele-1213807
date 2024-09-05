@@ -188,7 +188,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     }
     
     @Override
-    public R<Object> sign(InstallmentSignQuery query, HttpServletRequest request) {
+    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request) {
         Long uid = null;
         try {
             uid = SecurityUtils.getUid();
@@ -206,6 +206,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
             if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
                 return R.fail("301003", "签约功能未配置相关信息！请联系客服处理");
+            }
+            
+            if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
+                return R.ok(redisService.get(String.format(CACHE_INSTALLMENT_FORM_BODY, uid)));
             }
             
             Vars vars = new Vars();
@@ -236,11 +240,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_UN_SIGN)
                         .updateTime(System.currentTimeMillis()).build();
                 applicationContext.getBean(InstallmentRecordServiceImpl.class).update(installmentRecordUpdate);
-                
                 // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
                 redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
                         TimeUnit.MINUTES);
-                return R.ok(fySignResult.getFyResponse());
+                return R.ok(fySignResult.getFyResponse().getFormBody());
             }
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", uid, e);
@@ -265,6 +268,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
                 if (Objects.isNull(installmentRecord) || !INSTALLMENT_RECORD_STATUS_UN_SIGN.equals(installmentRecord.getStatus())) {
                     log.warn("SIGN NOTIFY WARN! no right installmentRecord, uid={}, externalAgreementNo={}", uid, signNotifyQuery.getExternalAgreementNo());
+                }
+                
+                if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_SIGN)) {
+                    return "SUCCESS";
                 }
                 
                 // 更新签约记录状态
@@ -296,6 +303,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 }
                 
             }
+            
+            redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, uid));
             return "SUCCESS";
         } catch (Exception e) {
             log.error("INSTALLMENT NOTIFY ERROR! uid={}, bizContent={}", uid, bizContent, e);
@@ -353,6 +362,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecordVO.setPackageName(batteryMemberCard.getName());
             installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
             installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
+            installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
             
             // 计算剩余每期金额
             installmentRecordVO.setRemainingPrice(InstallmentUtil.calculateSuborderAmount(2, installmentRecord, batteryMemberCard));

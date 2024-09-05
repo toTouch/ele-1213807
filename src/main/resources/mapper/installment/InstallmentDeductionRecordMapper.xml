@@ -90,6 +90,12 @@
             <include refid="ifLabelsForWhere"/>
     </select>
     
+    <select id="selectRecordByPayNo" resultMap="installmentDeductionRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_record
+        where pay_no = #{payNo}
+    </select>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_deduction_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>

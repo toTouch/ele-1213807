@@ -704,5 +704,12 @@ public interface CacheConstant {
     /**
      * 购买分期套餐签约，缓存签约用的二维码
      */
-    String CACHE_INSTALLMENT_FORM_BODY = "installment_form_Body:%s";
+    String CACHE_INSTALLMENT_FORM_BODY = "installment:form_Body:%s";
+    
+    /**
+     * 代扣锁
+     */
+    String CACHE_INSTALLMENT_DEDUCT_LOCK = "installment:deduct_lock:%d";
+    
+    String CACHE_INSTALLMENT_PAYMENT_LOCK = "installment:payment_lock:%d";
 }

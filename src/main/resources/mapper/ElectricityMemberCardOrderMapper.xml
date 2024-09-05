@@ -566,7 +566,9 @@
         member_card_id ,
         use_status ,
         send_coupon_id,
-		order_type
+		order_type,
+        external_agreement_no,
+        issue
     </sql>
     
     <select id="selectListByOrderIds" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
@@ -702,5 +704,14 @@
         where
         create_time &gt;=#{beginTime}
         and create_time &lt;=#{endTime}
+    </select>
+    
+    <select id="selectOrderByAgreementNoAndIssue"
+            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where external_agreement_no = #{externalAgreementNo}
+            and issue = #{issue}
     </select>
 </mapper>

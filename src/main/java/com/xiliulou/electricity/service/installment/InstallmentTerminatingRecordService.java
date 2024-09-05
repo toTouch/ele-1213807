@@ -52,12 +52,4 @@ public interface InstallmentTerminatingRecordService {
      * @return 返回解约申请
      */
     List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query);
-    
-    /**
-     * 代扣回调方法
-     * @param bizContent 业务参数
-     * @param uid 签约用户
-     * @return 返回回调响应结果
-     */
-    String agreementPayNotify(String bizContent, Long uid);
 }

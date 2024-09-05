@@ -7,7 +7,6 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
-import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -29,6 +28,7 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 更新单条数据
+     *
      * @param installmentDeductionRecord 数据库表实体类对象
      * @return 更新操作影响的数据行数
      */
@@ -36,6 +36,7 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 分页查询数据
+     *
      * @param installmentDeductionRecordQuery 分页查询请求参数
      * @return 分页数据VO结果
      */
@@ -43,6 +44,7 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 查询分页总数
+     *
      * @param installmentDeductionRecordQuery 分页查询请求参数
      * @return 分页总数
      */
@@ -50,6 +52,7 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 分期代扣
+     *
      * @param externalAgreementNo 请求签约号
      * @return 代扣调用结果
      */
@@ -57,11 +60,27 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 调起代扣
-     * @param deductionPlan 代扣计划
+     *
+     * @param deductionPlan     代扣计划
      * @param installmentRecord 签约记录
-     * @param fyConfig 蜂云配置
+     * @param fyConfig          蜂云配置
      * @return 调起结果
      */
-    Triple<Boolean, Object, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig);
+    Triple<Boolean, String, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig);
     
+    /**
+     * 代扣回调方法
+     *
+     * @param bizContent 业务参数
+     * @param uid        签约用户
+     * @return 返回回调响应结果
+     */
+    String agreementPayNotify(String bizContent, Long uid);
+    
+    /**
+     * 根据资金处理订单号查询代扣记录
+     * @param payNo 资金处理订单号
+     * @return 代扣记录
+     */
+    InstallmentDeductionRecord queryByPayNo(String payNo);
 }

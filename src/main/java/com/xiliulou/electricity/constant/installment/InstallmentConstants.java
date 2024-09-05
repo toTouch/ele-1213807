@@ -76,6 +76,21 @@ public interface InstallmentConstants {
     Integer DEDUCTION_PLAN_STATUS_CANCEL = 3;
     
     /**
+     * 代扣记录状态-代扣中
+     */
+    Integer DEDUCTION_RECORD_STATUS_INIT = 0;
+    
+    /**
+     * 代扣记录状态-代扣成功
+     */
+    Integer DEDUCTION_RECORD_STATUS_SUCCESS = 0;
+    
+    /**
+     * 代扣记录状态-代扣失败
+     */
+    Integer DEDUCTION_RECORD_STATUS_FAIL = 2;
+    
+    /**
      * 解约记录-审核中
      */
     Integer TERMINATING_RECORD_STATUS_INIT = 0;

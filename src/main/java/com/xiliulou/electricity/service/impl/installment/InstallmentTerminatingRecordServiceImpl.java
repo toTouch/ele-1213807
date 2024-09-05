@@ -90,9 +90,5 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecordMapper.selectListForRecordWithStatus(query);
     }
     
-    @Override
-    public String agreementPayNotify(String bizContent, Long uid) {
-        
-        return "SUCCESS";
-    }
+
 }

@@ -51,6 +51,11 @@ public class InstallmentRecordVO extends InstallmentRecord {
     private Integer underReview;
     
     /**
+     * 租金
+     */
+    private BigDecimal rentPrice;
+    
+    /**
      * 剩余每期金额
      */
     private BigDecimal remainingPrice;

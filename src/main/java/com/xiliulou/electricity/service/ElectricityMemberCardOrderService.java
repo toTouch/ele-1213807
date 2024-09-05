@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
@@ -164,8 +166,22 @@ public interface ElectricityMemberCardOrderService {
     List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
     
     /**
-     * 生成换电套餐订单
+     * 生成分期换电套餐订单
      */
-    Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, IntegratedPaymentAdd integratedPaymentAdd,
-            Set<Integer> userCouponIds, ElectricityCabinet electricityCabinet, ElectricityPayParams electricityPayParams);
+    Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+            InstallmentRecord installmentRecord);
+    
+    /**
+     * 根据请求签约号及期次查询对应的套餐订单
+     * @param externalAgreementNo 请求签约号
+     * @param issue 期次
+     * @return 返回套餐订单
+     */
+    ElectricityMemberCardOrder queryOrderByAgreementNoAndIssue(String externalAgreementNo, Integer issue);
+    
+    /**
+     * 后台续费套餐、分期套餐续费
+     */
+    ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
+            UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard, InstallmentRecord installmentRecord, Integer source);
 }
