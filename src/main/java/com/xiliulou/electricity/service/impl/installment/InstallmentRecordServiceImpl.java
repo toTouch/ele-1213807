@@ -244,9 +244,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                         .updateTime(System.currentTimeMillis()).build();
                 applicationContext.getBean(InstallmentRecordServiceImpl.class).update(installmentRecordUpdate);
                 // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
-                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
+                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody().replace("\"", ""), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
                         TimeUnit.MINUTES);
-                return R.ok(fySignResult.getFyResponse().getFormBody());
+                return R.ok(fySignResult.getFyResponse().getFormBody().replace("\"", ""));
             }
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", uid, e);
