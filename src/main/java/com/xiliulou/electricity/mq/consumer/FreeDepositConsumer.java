@@ -36,6 +36,7 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
             log.warn("FreeDepositConsumer.accept.msg is null");
             return;
         }
+        log.info("FreeDepositConsumer Access Msg INFO! msg is {} ", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
         
@@ -45,7 +46,7 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
             return;
         }
         
-        log.info("FreeDepositConsumer Access Msg INFO! orderId is {}, authStatus is {}", dto.getOrderId(), freeDepositOrder.getAuthStatus());
+        log.info("FreeDepositConsumer Access Msg INFO! freeDepositOrder.authStatus is {} , orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
         
         // 如果是已冻结/超时，则不更新
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_TIMEOUT)) {

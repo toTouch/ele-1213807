@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
+import com.xiliulou.electricity.dto.FreeDepositDelayDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -60,6 +61,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Resource
     private DelayFreeProducer delayFreeProducer;
     
+    String TRACE_ID = "traceId";
     
     @Override
     public FreeDepositOrderStatusBO getFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
@@ -136,7 +138,8 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         log.info("FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
         
         // 发送延迟队列延迟更新免押状态为最终态
-        delayFreeProducer.sendDelayFreeMessage(request.getFreeDepositOrderId(), MqProducerConstant.FREE_DEPOSIT_TAG_NAME, MDC.get("traceId"));
+        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(request.getFreeDepositOrderId()).build();
+        delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
         
         // 实现免押
         BaseFreeDepositService freeDepositWay = freeDepositFactory.getFreeDepositWay(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());
@@ -153,7 +156,8 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
         // 解冻延迟
-        delayFreeProducer.sendDelayFreeMessage(query.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME, MDC.get("traceId"));
+        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(query.getOrderId()).build();
+        delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
         
         // 免押解冻
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
@@ -168,8 +172,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
-        // 解冻延迟
-        delayFreeProducer.sendAuthPayDelayFreeMessage(query.getOrderId(), query.getAuthPayOrderId(), MqProducerConstant.AUTH_APY_TAG_NAME, MDC.get("traceId"));
+        // 代扣延迟
+        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).authPayOrderId(query.getAuthPayOrderId()).orderId(query.getOrderId()).build();
+        delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.AUTH_APY_TAG_NAME);
         
         // 代扣
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
