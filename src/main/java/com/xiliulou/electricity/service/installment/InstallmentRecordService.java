@@ -90,4 +90,6 @@ public interface InstallmentRecordService {
      * @return 返回详细信息
      */
     R<InstallmentRecordVO> queryInstallmentRecordForUser();
+
+    R queryStatus(String externalAgreementNo);
 }

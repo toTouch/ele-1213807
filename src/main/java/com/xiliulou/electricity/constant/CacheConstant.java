@@ -710,6 +710,19 @@ public interface CacheConstant {
      * 代扣锁
      */
     String CACHE_INSTALLMENT_DEDUCT_LOCK = "installment:deduct_lock:%d";
-    
+
+    /**
+     * 分期套餐混合支付锁
+     */
     String CACHE_INSTALLMENT_PAYMENT_LOCK = "installment:payment_lock:%d";
+
+    /**
+     * 分期套餐签约回调锁
+     */
+    String CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK = "installment:sign_notify_lock:%d";
+
+    /**
+     * 分期套餐代扣回调锁
+     */
+    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
 }

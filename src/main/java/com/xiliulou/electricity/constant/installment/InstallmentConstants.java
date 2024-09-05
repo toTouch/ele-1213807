@@ -134,6 +134,21 @@ public interface InstallmentConstants {
      * 客户端来源(h5)，h5模式返回url，可以直接访问
      */
     String CHANNEL_FROM_H5 = "h5";
+
+    /**
+     * 签约记录查询结果-签约成功
+     */
+    Integer SIGN_QUERY_STATUS_SIGN = 2;
+
+    /**
+     * 签约记录查询结果-解约成功
+     */
+    Integer SIGN_QUERY_STATUS_CANCEL = 3;
+
+    /**
+     * 代扣记录查询结果-扣款成功
+     */
+    String AGREEMENT_PAY_QUERY_STATUS_SUCCESS = "TRADE_SUCCESS";
     
     String NOTIFY_URL = "https://ele.xiliulou.com/electricityCabinet/outer/installment/sign/notify/%d";
     

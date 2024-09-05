@@ -45,4 +45,9 @@ public class JsonUserInstallmentRecordController {
     public R<InstallmentRecordVO> queryInstallmentRecordForUser() {
         return installmentRecordService.queryInstallmentRecordForUser();
     }
+
+    @GetMapping("/queryStatus")
+    public R queryStatus(@RequestParam String externalAgreementNo) {
+        return installmentRecordService.queryStatus(externalAgreementNo);
+    }
 }

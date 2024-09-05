@@ -89,4 +89,6 @@ public interface InstallmentDeductionRecordService {
      * 代扣定时任务
      */
     void dailyInstallmentDeduct();
+
+    R queryStatus(String payNo);
 }

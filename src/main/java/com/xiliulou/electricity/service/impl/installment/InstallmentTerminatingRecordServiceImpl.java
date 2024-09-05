@@ -245,7 +245,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             request.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), installmentRecord.getUid()));
             
             commonQuery.setChannelCode(config.getChannelCode());
-            commonQuery.setFlowNo(installmentRecord.getExternalAgreementNo());
+            commonQuery.setFlowNo(installmentRecord.getExternalAgreementNo() + System.currentTimeMillis());
             commonQuery.setFyRequest(request);
             
             FyResult<FyReleaseAgreementRsp> result = fyAgreementService.releaseAgreement(commonQuery);
