@@ -52,7 +52,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        Triple<Boolean, String, Object> triple = pxzResultCheck(callPxzRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(callPxzRsp, orderId, null);
         if (!triple.getLeft()) {
             return triple;
         }
@@ -73,7 +73,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return null;
         }
         
-        Triple<Boolean, String, Object> triple = pxzResultCheck(pxzQueryOrderRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(pxzQueryOrderRsp, orderId, null);
         if (!triple.getLeft()) {
             return null;
         }
@@ -94,7 +94,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
-        Triple<Boolean, String, Object> triple = pxzResultCheck(pxzUnfreezeDepositCommonRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(pxzUnfreezeDepositCommonRsp, orderId, null);
         if (!triple.getLeft()) {
             return triple;
         }
@@ -107,6 +107,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
         PxzCommonRsp<PxzAuthToPayRsp> authToPayRsp = null;
         Long uid = query.getUid();
         String orderId = query.getOrderId();
+        String authPayOrderId = query.getAuthPayOrderId();
         try {
             authToPayRsp = pxzDepositService.authToPay(buildAuthPxzRequest(query));
         } catch (Exception e) {
@@ -114,7 +115,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return Triple.of(false, "100401", "免押代扣调用失败！");
         }
         
-        Triple<Boolean, String, Object> triple = pxzResultCheck(authToPayRsp, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(authToPayRsp, orderId, authPayOrderId);
         if (!triple.getLeft()) {
             return triple;
         }
@@ -134,7 +135,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             return null;
         }
         
-        Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId, null);
         if (!triple.getLeft()) {
             return null;
         }
@@ -153,7 +154,7 @@ public class PxzBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposi
             log.error("Pxz ERROR! cancelAuthPay fail! uid={},orderId={}", uid, orderId, e);
             return false;
         }
-        Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId);
+        Triple<Boolean, String, Object> triple = pxzResultCheck(result, orderId, null);
         if (!triple.getLeft()) {
             return false;
         }

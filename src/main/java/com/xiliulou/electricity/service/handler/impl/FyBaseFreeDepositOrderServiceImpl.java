@@ -50,7 +50,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -71,7 +71,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return null;
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return null;
         }
@@ -96,7 +96,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -108,6 +108,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
         FyResult<FyHandleFundRsp> result = null;
         String orderId = query.getOrderId();
+        String authPayOrderId = query.getAuthPayOrderId();
         try {
             result = fyDepositService.handleFund(buildFyAuthPayRequest(query));
         } catch (Exception e) {
@@ -115,7 +116,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押代扣调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, authPayOrderId);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -134,7 +135,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return null;
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return null;
         }

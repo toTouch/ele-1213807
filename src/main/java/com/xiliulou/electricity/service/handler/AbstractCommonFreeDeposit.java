@@ -3,8 +3,11 @@ package com.xiliulou.electricity.service.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.FreeDepositConstant;
+import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
@@ -16,6 +19,7 @@ import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
+import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
@@ -59,6 +63,11 @@ public abstract class AbstractCommonFreeDeposit {
     
     @Resource
     private FreeDepositConfig freeDepositConfig;
+    
+    @Resource
+    private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+    
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("AUTH_PAY_THREAD", 2, "authPayThread");
     
     
     public PxzCommonRequest<PxzFreeDepositOrderRequest> buildFreeDepositOrderPxzRequest(FreeDepositOrderRequest freeDepositOrderRequest) {
@@ -178,7 +187,7 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
-    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp<?> rsp, String orderId) {
+    public Triple<Boolean, String, Object> pxzResultCheck(PxzCommonRsp<?> rsp, String orderId, String authPayOrderId) {
         if (Objects.isNull(rsp)) {
             log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp is null! orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
@@ -186,6 +195,10 @@ public abstract class AbstractCommonFreeDeposit {
         
         if (!rsp.isSuccess()) {
             log.warn("Pxz ERROR! pxzResultCheck fail! pxzQueryOrderRsp is fail! orderId={}, rsp is {}", orderId, JsonUtil.toJson(rsp));
+            // 代扣失败添加失败原因
+            threadPool.execute(() -> {
+                authPayFailRecord(authPayOrderId, rsp.getRespDesc());
+            });
             return Triple.of(false, "100401", rsp.getRespDesc());
         }
         
@@ -306,7 +319,7 @@ public abstract class AbstractCommonFreeDeposit {
         return fyConfig;
     }
     
-    public Triple<Boolean, String, Object> fyResultCheck(FyResult result, String orderId) {
+    public Triple<Boolean, String, Object> fyResultCheck(FyResult result, String orderId, String authPayOrderId) {
         if (Objects.isNull(result)) {
             log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);
             return Triple.of(false, "100401", "免押调用失败！");
@@ -315,6 +328,10 @@ public abstract class AbstractCommonFreeDeposit {
         String code = result.getCode();
         if (!Objects.equals(code, FreeDepositConstant.SUCCESS_CODE)) {
             log.warn("FY ERROR! fyResultCheck fail! code is fail!  orderId={}", orderId);
+            // 代扣失败添加失败原因
+            threadPool.execute(() -> {
+                authPayFailRecord(authPayOrderId, result.getMessage());
+            });
             return Triple.of(false, "100401", FyRetureFailMsgEnum.getReturnMsg(result.getMessage()));
         }
         
@@ -361,4 +378,16 @@ public abstract class AbstractCommonFreeDeposit {
     }
     
     
+    public void authPayFailRecord(String authPayOrderId, String msg) {
+        FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByAuthOrderId(authPayOrderId);
+        if (Objects.isNull(alipayHistory)) {
+            log.warn("authPayFailRecord Warn! alipayHistory is null ,authPayOrderId is {}", authPayOrderId);
+            return;
+        }
+        FreeDepositAlipayHistory updateAlipayHistory = new FreeDepositAlipayHistory();
+        updateAlipayHistory.setId(alipayHistory.getId());
+        updateAlipayHistory.setRemark(msg);
+        updateAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.update(updateAlipayHistory);
+    }
 }
