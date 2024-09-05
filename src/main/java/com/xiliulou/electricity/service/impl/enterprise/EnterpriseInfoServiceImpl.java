@@ -1839,7 +1839,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderService.update(freeDepositOrderUpdate);
             
             UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
-                    .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
+                    .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).authNO(freeDepositOrder.getAuthNo()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
             Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
             if (!triple.getLeft()) {
                 log.error("REFUND ORDER ERROR! reason is {}, orderId is {}", triple.getRight(), freeDepositOrder.getOrderId());

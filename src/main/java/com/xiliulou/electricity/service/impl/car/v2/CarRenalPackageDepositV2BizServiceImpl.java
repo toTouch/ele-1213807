@@ -14,13 +14,10 @@ import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -44,15 +41,12 @@ import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
-import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
-import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositDataService;
@@ -60,7 +54,6 @@ import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -80,15 +73,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
-import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
-import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
@@ -98,16 +82,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -975,7 +956,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 }
                 Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                         UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(realAmount.toString()).build());
+                                .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).amount(realAmount.toString()).build());
                 if (!triple.getLeft()){
                     throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                 }
@@ -1100,7 +1081,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(realAmount.toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).amount(realAmount.toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
@@ -1299,7 +1280,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(refundAmount.toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).amount(refundAmount.toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }
@@ -1361,7 +1342,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                     }
                     Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(
                             UnFreeDepositOrderQuery.builder().uid(freeDepositOrder.getUid()).tenantId(depositPayEntity.getTenantId()).subject("租车套餐免押解冻")
-                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).amount(refundAmount.toString()).build());
+                                    .orderId(freeDepositOrderNo).channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).amount(refundAmount.toString()).build());
                     if (!triple.getLeft()){
                         throw new BizException(triple.getMiddle(), String.valueOf(triple.getRight()));
                     }

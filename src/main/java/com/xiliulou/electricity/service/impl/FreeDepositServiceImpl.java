@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
+import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.dto.FreeDepositDelayDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
+import com.xiliulou.electricity.dto.callback.UnfreeFakeParams;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -30,6 +32,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -60,6 +63,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     @Resource
     private DelayFreeProducer delayFreeProducer;
+    
+    @Resource
+    private FreeDepositNotifyService freeDepositNotifyService;
     
     String TRACE_ID = "traceId";
     
@@ -155,6 +161,21 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         log.info("FreeDeposit INFO! unFreezeDeposit.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
+        BigDecimal eleRefundAmount = new BigDecimal(query.getAmount()).compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : new BigDecimal(query.getAmount());
+        
+        // 0元退押处理
+        if (eleRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
+            UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel()).tenantId(query.getTenantId())
+                    .build();
+            try {
+                freeDepositNotifyService.unfreeFakeNotify(params);
+            } catch (Exception e) {
+                log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
+            }
+            
+            return Triple.of(true, "", "退款中，请稍后");
+        }
+        
         // 解冻延迟
         FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(query.getOrderId()).build();
         delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
@@ -173,7 +194,8 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
         // 代扣延迟
-        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().channel(query.getChannel()).mdc(MDC.get(TRACE_ID)).authPayOrderId(query.getAuthPayOrderId()).orderId(query.getOrderId()).build();
+        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().channel(query.getChannel()).mdc(MDC.get(TRACE_ID)).authPayOrderId(query.getAuthPayOrderId())
+                .orderId(query.getOrderId()).build();
         delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.AUTH_APY_TAG_NAME);
         
         // 代扣

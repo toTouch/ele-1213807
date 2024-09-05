@@ -84,6 +84,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         log.info("authPayConsumer info! queryPxzAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
         
         // 0:代扣成功；1:代扣处理中；2:代扣失败
+        // todo 状态处理
         if (Objects.equals(authPayStatusBO.getOrderStatus(), FreeDepositOrder.PAY_STATUS_DEALING) || Objects.equals(authPayStatusBO.getOrderStatus(),
                 FreeDepositOrder.PAY_STATUS_DEAL_FAIL)) {
             // 更新退款订单为失败
