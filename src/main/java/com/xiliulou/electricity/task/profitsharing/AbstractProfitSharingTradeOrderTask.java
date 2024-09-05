@@ -623,9 +623,13 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
         profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingOrder.getThirdOrderNo());
         profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingOrder.getUid()) + suffix);
-        profitSharingOrderDetail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
-        profitSharingOrderDetail.setProfitSharingReceiveName(receiverConfig.getReceiverName());
-        profitSharingOrderDetail.setScale(receiverConfig.getScale());
+        
+        if (Objects.nonNull(receiverConfig)) {
+            profitSharingOrderDetail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
+            profitSharingOrderDetail.setProfitSharingReceiveName(receiverConfig.getReceiverName());
+            profitSharingOrderDetail.setScale(receiverConfig.getScale());
+        }
+        
         profitSharingOrderDetail.setProfitSharingAmount(BigDecimal.ZERO);
         profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
         profitSharingOrderDetail.setFailReason(failReason);
@@ -733,7 +737,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         Map<ProfitSharingOrder, ProfitSharingOrderDetail> insertMap = Maps.newHashMap();
         AtomicInteger atomicInteger = new AtomicInteger(0);
-        orders.forEach(profitSharingTradeOrder -> {
+        
+        for (ProfitSharingTradeOrder profitSharingTradeOrder : orders) {
             tradeOrderIds.add(profitSharingTradeOrder.getId());
             AtomicInteger subAtomicInteger = new AtomicInteger(0);
             ProfitSharingOrder profitSharingOrder = this
@@ -742,7 +747,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                     .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, null, "分账接收方不存在", ProfitSharingBusinessTypeEnum.SYSTEM.getCode(),
                             ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode(), subAtomicInteger.getAndIncrement());
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
-        });
+        }
         
         profitSharingTradeOrderTxService.insert(tradeOrderIds, ProfitSharingTradeOderProcessStateEnum.SUCCESS.getCode(), "分账接收方未配置", insertMap);
         
