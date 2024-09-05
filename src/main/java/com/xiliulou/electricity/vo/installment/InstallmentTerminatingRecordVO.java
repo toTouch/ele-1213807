@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+
 /**
  * @Description ...
  * @Author: SongJP
@@ -12,6 +14,16 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class InstallmentTerminatingRecordVO extends InstallmentTerminatingRecord {
+    
+    /**
+     * 签约金额
+     */
+    private BigDecimal amount;
+    
+    /**
+     * 未支付金额
+     */
+    private BigDecimal unpaidAmount;
     
     /**
      * 套餐名称

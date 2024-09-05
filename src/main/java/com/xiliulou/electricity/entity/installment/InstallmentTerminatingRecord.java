@@ -50,19 +50,9 @@ public class InstallmentTerminatingRecord {
     private Integer packageType;
     
     /**
-     * 签约金额
-     */
-    private BigDecimal amount;
-    
-    /**
      * 已支付金额
      */
     private BigDecimal paidAmount;
-    
-    /**
-     * 未支付金额
-     */
-    private BigDecimal unpaidAmount;
     
     /**
      * 审核状态

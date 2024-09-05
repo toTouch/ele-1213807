@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.impl.installment;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.mapper.installment.InstallmentTerminatingRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
@@ -59,14 +61,18 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             
             vo.setFranchiseeName(franchiseeService.queryByIdFromCache(installmentTerminatingRecord.getFranchiseeId()).getName());
             
-            // 设置电或者车的套餐名称
+            // 设置电或者车的套餐名称，设置总金额和未支付金额
             String packageName;
             if (Objects.equals(installmentTerminatingRecord.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
-                packageName = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId()).getName();
+                BatteryMemberCard memberCard = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId());
+                vo.setPackageName(memberCard.getName());
+                vo.setAmount(memberCard.getRentPrice());
+                vo.setUnpaidAmount(vo.getAmount().subtract(vo.getPaidAmount()));
             } else {
-                packageName = carRentalPackageService.selectById(installmentTerminatingRecord.getPackageId()).getName();
+                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentTerminatingRecord.getPackageId());
+                vo.setPackageName(carRentalPackagePo.getName());
             }
-            vo.setPackageName(packageName);
+            
             return vo;
         }).collect(Collectors.toList());
         
