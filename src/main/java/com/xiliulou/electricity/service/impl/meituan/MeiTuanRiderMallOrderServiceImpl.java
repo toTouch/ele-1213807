@@ -1278,12 +1278,15 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     private List<OrderRsp> fetchOrders(MeiTuanRiderMallApiConfig apiConfig, Long startTime, Long endTime) {
+        log.debug("MeiTuanRiderMallOrderServiceImpl.fetchOrders start! apiConfig={}, startTime={}, endTime={}", apiConfig, startTime, endTime);
+        
         Long cursor = null;
         Integer pageSize = 100;
         List<OrderRsp> list = new ArrayList<>();
         
         while (true) {
             OrdersDataRsp ordersDataRsp = virtualTradeService.listAllOrders(apiConfig, cursor, pageSize, startTime, endTime);
+            log.debug("MeiTuanRiderMallOrderServiceImpl.fetchOrders.listAllOrders ordersDataRsp={}", ordersDataRsp);
             
             if (Objects.isNull(ordersDataRsp) || Objects.equals(ordersDataRsp.getTotal(), 0)) {
                 return list;
