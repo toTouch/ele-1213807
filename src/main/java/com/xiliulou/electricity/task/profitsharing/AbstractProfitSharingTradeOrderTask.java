@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 import static com.xiliulou.electricity.constant.CacheConstant.PROFIT_SHARING_STATISTICS_LOCK_KEY;
 
 /**
- * description:
+ * description: 分账交易下单抽象任务
  *
  * @author caobotao.cbt
  * @date 2024/8/28 09:40
@@ -84,9 +84,6 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     
     @Resource
     private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-    
-    @Resource
-    private RedisService redisService;
     
     @Resource
     protected ProfitSharingServiceAdapter profitSharingServiceAdapter;
@@ -119,8 +116,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     @Override
     protected void executeByTenantId(Integer tenantId) {
         
-        log.info("AbstractProfitSharingTradeOrderTask.executeByTenantId tenantId:{} start", tenantId);
+        log.info("INFO tenantId:{} start", tenantId);
         
+        // 查询参数
         ProfitSharingTradeMixedOrderQueryModel queryModel = new ProfitSharingTradeMixedOrderQueryModel();
         queryModel.setState(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode());
         queryModel.setTenantId(tenantId);
@@ -141,33 +139,35 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             }
             queryModel.setStartId(mixedOrders.get(mixedOrders.size() - 1).getId());
             
+            // 第三方支付单号 -> 聚合分账交易订单
             Map<String, ProfitSharingTradeMixedOrder> thirdOrderNoMixedOrderMap = mixedOrders.stream()
                     .collect(Collectors.toMap(ProfitSharingTradeMixedOrder::getThirdOrderNo, Function.identity()));
             
-            //查询代发起分账的明细
+            //查询代发起分账的交易订单明细
             List<ProfitSharingTradeOrder> tradeOrders = profitSharingTradeOrderService
                     .queryListByThirdOrderNosAndChannelAndProcessState(tenantId, ProfitSharingTradeOderProcessStateEnum.AWAIT.getCode(), this.getChannel(),
                             new ArrayList<>(thirdOrderNoMixedOrderMap.keySet()));
             
+            //本次查出的加盟商id集合
             Set<Long> franchiseeIds = new HashSet<>();
+            
+            //第三方支付单号 -> 分账的交易订单明细集合
             Map<String, List<ProfitSharingTradeOrder>> thirdOrderNoMap = new HashMap<>();
+            
             tradeOrders.forEach(profitSharingTradeOrder -> {
                 thirdOrderNoMap.computeIfAbsent(profitSharingTradeOrder.getThirdOrderNo(), k -> new ArrayList<>()).add(profitSharingTradeOrder);
                 franchiseeIds.add(profitSharingTradeOrder.getFranchiseeId());
             });
             
-            tradeOrders.stream().map(ProfitSharingTradeOrder::getFranchiseeId).collect(Collectors.toSet());
-            
             // 查询构建支付配置
             this.queryBuildTenantFranchiseePayParamMap(tenantFranchiseePayParamMap, tenantId, franchiseeIds);
             
-            // 处理第三方订单号
             thirdOrderNoMixedOrderMap.forEach((thirdOrderNo, mixedOrder) -> {
                 
                 List<ProfitSharingTradeOrder> curTradeOrders = thirdOrderNoMap.get(thirdOrderNo);
                 
                 if (CollectionUtils.isEmpty(curTradeOrders)) {
-                    // 将当前聚合订单状态更新为已处理（补偿）
+                    // 将当前聚合订单状态更新为已处理（补偿，正常不会出现）
                     log.info("AbstractProfitSharingTradeOrderTask.executeByTenantId update status is COMPLETE,mixedOrderId:{}", mixedOrder.getId());
                     mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
                     mixedOrder.setUpdateTime(System.currentTimeMillis());
@@ -623,9 +623,13 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
         profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingOrder.getThirdOrderNo());
         profitSharingOrderDetail.setOrderDetailNo(OrderIdUtil.generateBusinessOrderId(BusinessType.PROFIT_SHARING_ORDER_DETAIL, profitSharingOrder.getUid()) + suffix);
-        profitSharingOrderDetail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
-        profitSharingOrderDetail.setProfitSharingReceiveName(receiverConfig.getReceiverName());
-        profitSharingOrderDetail.setScale(receiverConfig.getScale());
+        
+        if (Objects.nonNull(receiverConfig)) {
+            profitSharingOrderDetail.setProfitSharingReceiveAccount(receiverConfig.getAccount());
+            profitSharingOrderDetail.setProfitSharingReceiveName(receiverConfig.getReceiverName());
+            profitSharingOrderDetail.setScale(receiverConfig.getScale());
+        }
+        
         profitSharingOrderDetail.setProfitSharingAmount(BigDecimal.ZERO);
         profitSharingOrderDetail.setStatus(ProfitSharingOrderDetailStatusEnum.FAIL.getCode());
         profitSharingOrderDetail.setFailReason(failReason);
@@ -725,7 +729,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             return true;
         }
         
-        log.info("AbstractProfitSharingTradeOrderTask.checkDisposeByReceiver  Enable Receivers is null,tenantId:{},franchiseeId:{}", payConfig.getTenantId(),
+        log.info("AbstractProfitSharingTradeOrderTask.checkDisposeByReceiver Enable Receivers is null,tenantId:{},franchiseeId:{}", payConfig.getTenantId(),
                 payConfig.getFranchiseeId());
         
         // 无可用分账接收方,生成分账订单和分账订单明细（用来解冻）
@@ -733,7 +737,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         
         Map<ProfitSharingOrder, ProfitSharingOrderDetail> insertMap = Maps.newHashMap();
         AtomicInteger atomicInteger = new AtomicInteger(0);
-        orders.forEach(profitSharingTradeOrder -> {
+        
+        for (ProfitSharingTradeOrder profitSharingTradeOrder : orders) {
             tradeOrderIds.add(profitSharingTradeOrder.getId());
             AtomicInteger subAtomicInteger = new AtomicInteger(0);
             ProfitSharingOrder profitSharingOrder = this
@@ -742,7 +747,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
                     .buildErrorProfitSharingOrderDetail(payConfig, profitSharingTradeOrder, null, "分账接收方不存在", ProfitSharingBusinessTypeEnum.SYSTEM.getCode(),
                             ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode(), subAtomicInteger.getAndIncrement());
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
-        });
+        }
         
         profitSharingTradeOrderTxService.insert(tradeOrderIds, ProfitSharingTradeOderProcessStateEnum.SUCCESS.getCode(), "分账接收方未配置", insertMap);
         
@@ -763,7 +768,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             return true;
         }
         
-        //支付参数缺失
+        //支付参数缺失，更新状态为完成，不在处理
         List<Long> tradeOrderIds = orders.stream().map(ProfitSharingTradeOrder::getId).collect(Collectors.toList());
         
         mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());

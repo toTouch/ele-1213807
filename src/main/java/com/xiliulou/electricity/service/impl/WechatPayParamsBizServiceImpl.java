@@ -364,7 +364,15 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         
     }
     
-    
+    /**
+     * 批量构建分账配置
+     *
+     * @param queryProfitSharingConfig
+     * @param tenantId
+     * @param wechatPayParamsDetailsList
+     * @author caobotao.cbt
+     * @date 2024/9/5 09:01
+     */
     private void batchBuildProfitSharing(Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig, Integer tenantId, List<WechatPayParamsDetails> wechatPayParamsDetailsList) {
         
         if (CollectionUtils.isEmpty(queryProfitSharingConfig)) {
@@ -376,6 +384,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
             return;
         }
         
+        // 查询分账方配置
         List<Integer> payParamIds = wechatPayParamsDetailsList.stream().map(WechatPayParamsDetails::getId).collect(Collectors.toList());
         List<ProfitSharingConfig> sharingConfigs = profitSharingConfigService.queryListByPayParamsIdsFromCache(tenantId, payParamIds);
         if (CollectionUtils.isEmpty(sharingConfigs)) {
@@ -392,11 +401,11 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         });
         
         if (!queryProfitSharingConfig.contains(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG_AND_RECEIVER_CONFIG)) {
-            // 分账方配置不存在或者无需查询接收方
             wechatPayParamsDetailsList.forEach(payParamsDetails -> payParamsDetails.setProfitSharingConfig(payParamIdMap.get(payParamsDetails.getId())));
             return;
         }
         
+        // 分账接收方配置查询
         List<ProfitSharingReceiverConfig> profitSharingReceiverConfigs = profitSharingReceiverConfigService.queryListByProfitSharingConfigIds(tenantId, profitSharingConfigIds);
         Map<Long, List<ProfitSharingReceiverConfig>> receiverConfigMap = Optional.ofNullable(profitSharingReceiverConfigs).orElse(Collections.emptyList()).stream()
                 .collect(Collectors.groupingBy(ProfitSharingReceiverConfig::getProfitSharingConfigId));

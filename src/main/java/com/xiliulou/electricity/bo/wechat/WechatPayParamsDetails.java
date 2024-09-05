@@ -151,6 +151,12 @@ public class WechatPayParamsDetails extends BasePayConfig {
         
     }
     
+    /**
+     * 获取可用的主分账配置
+     *
+     * @author caobotao.cbt
+     * @date 2024/9/5 10:03
+     */
     @Override
     public ProfitSharingConfig getEnableProfitSharingConfig() {
         if (Objects.nonNull(this.profitSharingConfig) && ProfitSharingConfigStatusEnum.OPEN.getCode().equals(this.profitSharingConfig.getConfigStatus())) {
