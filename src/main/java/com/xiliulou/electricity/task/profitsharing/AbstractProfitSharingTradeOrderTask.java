@@ -223,9 +223,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         } else {
             // 无退款，执行分账
             this.tryLockExecuteProfitSharing(payConfig, notSupportRefundOrderList);
-            mixedOrder.setState(ProfitSharingTradeMixedOrderStateEnum.COMPLETE.getCode());
+            
             List<Long> successIds = notSupportRefundOrderList.stream().map(ProfitSharingTradeOrder::getId).collect(Collectors.toList());
-            profitSharingTradeOrderTxService.updateStatus(mixedOrder, successIds, null, null);
+            profitSharingTradeOrderTxService.updateSuccessStatus(mixedOrder, successIds);
         }
         
         
@@ -743,7 +743,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
         }
         
-        profitSharingTradeOrderTxService.insert(tradeOrderIds, ProfitSharingTradeOderProcessStateEnum.SUCCESS.getCode(), "分账接收方未配置", insertMap);
+        profitSharingTradeOrderTxService.updateByReceiversConfigError(mixedOrder,tradeOrderIds, insertMap);
         
         return false;
     }
