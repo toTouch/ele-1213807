@@ -66,7 +66,7 @@ public class InstallmentDeductionPlan {
     private Long deductTime;
     
     /**
-     * 应还款时间
+     * 实际还款时间
      */
     private Long paymentTime;
     

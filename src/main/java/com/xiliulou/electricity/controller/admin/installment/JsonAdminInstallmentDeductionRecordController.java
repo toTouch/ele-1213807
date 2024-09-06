@@ -120,11 +120,7 @@ public class JsonAdminInstallmentDeductionRecordController {
         return installmentDeductionRecordService.count(installmentDeductionRecordQuery);
     }
     
-    @ProcessParameter
-    @GetMapping("/deduct")
-    public R deduct(@RequestParam String externalAgreementNo) {
-        return installmentDeductionRecordService.deduct(externalAgreementNo);
-    }
+    
 
     @GetMapping("/queryStatus")
     public R queryStatus(@RequestParam String payNo) {

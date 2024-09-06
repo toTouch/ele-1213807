@@ -139,47 +139,6 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     }
 
     @Override
-    public R<String> deduct(String externalAgreementNo) {
-        try {
-            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(externalAgreementNo);
-            if (Objects.isNull(installmentRecord)) {
-                return R.fail("301005", "签约记录不存在");
-            }
-
-            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-            if (Objects.isNull(tenant)) {
-                log.warn("INSTALLMENT DEDUCT WARN! The user is not associated with a tenant. uid={}", installmentRecord.getUid());
-                return R.fail("301004", "请购买分期套餐后，再签约");
-            }
-
-            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
-            if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
-                return R.fail("301003", "签约代扣功能未配置相关信息！请联系客服处理");
-            }
-
-            // 查询出签约记录对应的代扣计划
-            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                    InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
-
-            // 发起代扣
-            Triple<Boolean, String, Object> initiatingDeductTriple = null;
-            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
-                if (Objects.equals(deductionPlan.getIssue(), (installmentRecord.getPaidInstallment() + 1)) && deductionPlan.getDeductTime() <= System.currentTimeMillis()) {
-                    initiatingDeductTriple = initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
-                }
-            }
-
-            if (Objects.nonNull(initiatingDeductTriple)) {
-                return initiatingDeductTriple.getLeft() ? R.ok() : R.fail(initiatingDeductTriple.getMiddle());
-            }
-            return R.fail("301007", "无可代扣分期订单");
-        } catch (Exception e) {
-            log.error("INSTALLMENT DEDUCT ERROR!", e);
-        }
-        return R.fail("301006", "代扣失败");
-    }
-
-    @Override
     public Triple<Boolean, String, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig) {
         if (redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);

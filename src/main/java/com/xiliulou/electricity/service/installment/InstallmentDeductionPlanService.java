@@ -67,4 +67,19 @@ public interface InstallmentDeductionPlanService {
      * @return 还款计划
      */
     InstallmentDeductionPlan queryByAgreementNoAndIssue(String agreementNo, Integer issue);
+    
+    /**
+     * 分期代扣
+     *
+     * @param id 请求签约号
+     * @return 代扣调用结果
+     */
+    R<String> deduct(Long id);
+    
+    /**
+     * 根据id查询代扣计划
+     * @param id 主键id
+     * @return 代扣计划
+     */
+    InstallmentDeductionPlan queryById(Long id);
 }

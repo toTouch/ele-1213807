@@ -51,14 +51,6 @@ public interface InstallmentDeductionRecordService {
     R<Integer> count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
     
     /**
-     * 分期代扣
-     *
-     * @param externalAgreementNo 请求签约号
-     * @return 代扣调用结果
-     */
-    R<String> deduct(String externalAgreementNo);
-    
-    /**
      * 调起代扣
      *
      * @param deductionPlan     代扣计划

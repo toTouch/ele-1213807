@@ -60,6 +60,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -182,7 +183,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         // 生成分期签约记录订单号
         String externalAgreementNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN, userInfo.getUid());
         InstallmentRecord installmentRecord = InstallmentRecord.builder().uid(userInfo.getUid()).externalAgreementNo(externalAgreementNo).userName(null).mobile(null)
-                .packageType(query.getPackageType()).status(INSTALLMENT_RECORD_STATUS_INIT).paidInstallment(0).createTime(System.currentTimeMillis())
+                .packageType(query.getPackageType()).paidAmount(new BigDecimal("0")).status(INSTALLMENT_RECORD_STATUS_INIT).paidInstallment(0).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         
         if (InstallmentConstants.PACKAGE_TYPE_BATTERY.equals(query.getPackageType())) {
@@ -307,6 +308,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         InstallmentRecord installmentRecord = installmentRecordMapper.selectRecordWithStatusForUser(uid,
                 Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
         
+        if (Objects.isNull(installmentRecord)) {
+            return R.ok();
+        }
         InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();
         BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
         // 设置套餐信息
@@ -395,6 +399,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecordVO.setInstallmentServiceFee(batteryMemberCard.getInstallmentServiceFee());
             installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
             installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
+            installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
             
             // 计算剩余每期金额
             installmentRecordVO.setRemainingPrice(InstallmentUtil.calculateSuborderAmount(2, installmentRecord, batteryMemberCard));

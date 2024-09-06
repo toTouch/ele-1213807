@@ -27,4 +27,6 @@ public interface InstallmentDeductionPlanMapper {
     InstallmentDeductionPlan selectPlanForDeductByAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
     
     InstallmentDeductionPlan selectByAgreementNoAndIssue(@Param("agreementNo") String agreementNo, @Param("issue") Integer issue);
+    
+    InstallmentDeductionPlan selectById(@Param("id") Long id);
 }

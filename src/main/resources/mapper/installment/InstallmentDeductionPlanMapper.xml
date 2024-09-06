@@ -131,6 +131,12 @@
             and issue = #{issue}
     </select>
     
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where id = #{id}
+    </select>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_deduction_plan(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>
