@@ -137,14 +137,12 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             }
             queryModel.setStartId(mixedOrders.get(mixedOrders.size() - 1).getId());
             
-            // 第三方支付单号 -> 聚合分账交易订单
-            Map<String, ProfitSharingTradeMixedOrder> thirdOrderNoMixedOrderMap = mixedOrders.stream()
-                    .collect(Collectors.toMap(ProfitSharingTradeMixedOrder::getThirdOrderNo, Function.identity()));
+            // 第三方支付单号
+            List<String> thirdOrderNos = mixedOrders.stream().map(ProfitSharingTradeMixedOrder::getThirdOrderNo).collect(Collectors.toList());
             
             //查询代发起分账的交易订单明细
             List<ProfitSharingTradeOrder> tradeOrders = profitSharingTradeOrderService
-                    .queryListByThirdOrderNosAndChannelAndProcessState(tenantId, ProfitSharingTradeOderProcessStateEnum.AWAIT.getCode(), this.getChannel(),
-                            new ArrayList<>(thirdOrderNoMixedOrderMap.keySet()));
+                    .queryListByThirdOrderNosAndChannelAndProcessState(tenantId, ProfitSharingTradeOderProcessStateEnum.AWAIT.getCode(), this.getChannel(), thirdOrderNos);
             
             //本次查出的加盟商id集合
             Set<Long> franchiseeIds = new HashSet<>();
@@ -160,9 +158,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             // 查询构建支付配置
             this.queryBuildTenantFranchiseePayParamMap(tenantFranchiseePayParamMap, tenantId, franchiseeIds);
             
-            thirdOrderNoMixedOrderMap.forEach((thirdOrderNo, mixedOrder) -> {
+            mixedOrders.forEach((mixedOrder) -> {
                 
-                List<ProfitSharingTradeOrder> curTradeOrders = thirdOrderNoMap.get(thirdOrderNo);
+                List<ProfitSharingTradeOrder> curTradeOrders = thirdOrderNoMap.get(mixedOrder.getThirdOrderNo());
                 
                 if (CollectionUtils.isEmpty(curTradeOrders)) {
                     // 将当前聚合订单状态更新为已处理（补偿，正常不会出现）
