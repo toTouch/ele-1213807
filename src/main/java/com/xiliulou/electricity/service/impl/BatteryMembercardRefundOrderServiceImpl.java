@@ -685,7 +685,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         
         try {
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-    
+            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
             
             applicationContext.getBean(BatteryMembercardRefundOrderService.class).handleRefundOrderV2(batteryMembercardRefundOrderInsert, basePayConfig, request);
@@ -825,7 +825,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         try {
-            electricityMemberCardOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
             
             batteryMembercardRefundOrder.setRefundAmount(refundAmount);
