@@ -67,7 +67,7 @@ public class ExchangeUserSelectVo {
     
     
     /**
-     * 是否进入选仓换电
+     * 是否进入选仓换电,1是，0否
      */
     private Integer isEnterSelectCellExchange;
     
