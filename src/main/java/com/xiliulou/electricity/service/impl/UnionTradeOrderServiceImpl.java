@@ -490,7 +490,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
-                log.info("notifyIntegratedPayment orderTypeList = {}", orderTypeList);
                 for (int i = 0; i < orderTypeList.size(); i++) {
                     if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
                         // 处理换电-保险分账
@@ -523,7 +522,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         profitSharingTradeOrderUpdate.setOrderNo(OrderNo);
         profitSharingTradeOrderUpdate.setOrderType(orderType);
         profitSharingTradeOrderUpdate.setTradeStatus(tradeStatus);
-        log.info("send profit sharing order mq, profitSharingTradeOrderUpdate={}", profitSharingTradeOrderUpdate);
         rocketMqService.sendAsyncMsg(MqProducerConstant.PROFIT_SHARING_ORDER_TOPIC, JsonUtil.toJson(profitSharingTradeOrderUpdate));
     }
     
@@ -612,7 +610,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
-                log.info("NOTIFY MEMBERCARD INSURANCE ORDER PROFIT SHARING ORDER MQ,tradeOrderNo={}", unionTradeOrder.getTradeOrderNo());
                 for (int i = 0; i < orderTypeList.size(); i++) {
                     if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
                         // 处理换电-保险分账

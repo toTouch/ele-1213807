@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
@@ -96,7 +97,6 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
         ProfitSharingOrder profitSharingOrderUpdate = new ProfitSharingOrder();
         ProfitSharingOrderDetail profitSharingOrderDetailUpdate = new ProfitSharingOrderDetail();
     
-        // 调用解冻接口
         try {
             // 保存解冻分账订单
             ProfitSharingOrder profitSharingOrder = new ProfitSharingOrder();
@@ -124,9 +124,9 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrder.setUpdateTime(System.currentTimeMillis());
             // 分账方类型
             if (Objects.equals(profitSharingTradeMixedOrder.getFranchiseeId(), NumberConstant.ZERO_L)) {
-                profitSharingOrder.setOutAccountType(ProfitSharingOrderDetailConstant.OUT_ACCOUNT_TYPE_DEFAULT);
+                profitSharingOrder.setOutAccountType(ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType());
             } else {
-                profitSharingOrder.setOutAccountType(ProfitSharingOrderDetailConstant.OUT_ACCOUNT_TYPE_FRANCHISEE);
+                profitSharingOrder.setOutAccountType(ElectricityPayParamsConfigEnum.FRANCHISEE_CONFIG.getType());
             }
             
             // 保存分账订单
@@ -165,13 +165,11 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderUpdate.setId(profitSharingOrder.getId());
             profitSharingOrderDetailUpdate.setId(profitSharingOrderDetail.getId());
             
-            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze start, thirdTradeOrderNo={}, request={}, ", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreezeRequest);
-        
+            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze start, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo());
+    
+            // 调用解冻接口
             WechatProfitSharingUnfreezeResp unfreeze = (WechatProfitSharingUnfreezeResp) profitSharingServiceAdapter.unfreeze(unfreezeRequest);
     
-            // todo
-            log.info("PROFIT SHARING UNFREEZE INFO!unfreeze end, thirdTradeOrderNo={}, response={}", profitSharingTradeMixedOrder.getThirdOrderNo(), unfreeze);
-            
             if (Objects.nonNull(unfreeze)) {
                 profitSharingOrderUpdate.setThirdOrderNo(unfreeze.getOrderId());
             }
