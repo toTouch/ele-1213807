@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.callback;
 
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
@@ -108,6 +110,8 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
     protected void updateFreeDepositOrder(FreeDepositOrder freeDepositOrder,T params) {
         String authNo = authNo(params);
         Integer payStatus = payStatus(params);
+        
+        
         Integer successCode = successCode(params);
         String payNo = payNo(params);
         log.info("updateFreeDepositOrder, authNo is {}, payStatus is {},code is {},payNo is {}", authNo, payStatus , successCode,payNo);
@@ -140,6 +144,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
             }
             history.setPayStatus(payStatus);
             history.setUpdateTime(System.currentTimeMillis());
+            history.setRemark(StrUtil.SPACE);
 //            log.info("updateFreeDepositOrder, history is {}", history);
             freeDepositAlipayHistoryService.updateByPayNoOrOrderId(history);
         }

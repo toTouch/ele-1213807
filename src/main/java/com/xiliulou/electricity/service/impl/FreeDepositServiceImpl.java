@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.electricity.service.handler.FreeDepositFactory;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @ClassName: FreeDepositServiceImpl
@@ -68,6 +71,8 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     private FreeDepositNotifyService freeDepositNotifyService;
     
     String TRACE_ID = "traceId";
+    
+    private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("free-deposit-pool",1, "free-deposit"));
     
     @Override
     public FreeDepositOrderStatusBO getFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
@@ -165,13 +170,25 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         // 0元退押处理
         if (eleRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
-            UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel()).tenantId(query.getTenantId())
+            final UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel()).tenantId(query.getTenantId())
                     .build();
-            try {
-                freeDepositNotifyService.unfreeFakeNotify(params);
-            } catch (Exception e) {
-                log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
-            }
+            //这里使用异步线程模拟回调,使用同步会导致之前的业务同步等待异步回调完成，导致二次改状态为中间态
+            executorService.execute(()->{
+                try {
+                    //这里睡5s是为了模拟回调时的延迟，以等待自身业务完成
+                    Thread.sleep(5 * 1000);
+                    freeDepositNotifyService.unfreeFakeNotify(params);
+                }catch (Exception e){
+                    log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
+                }
+            });
+//            UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel()).tenantId(query.getTenantId())
+//                    .build();
+//            try {
+//                freeDepositNotifyService.unfreeFakeNotify(params);
+//            } catch (Exception e) {
+//                log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
+//            }
             
             return Triple.of(true, "", "退款中，请稍后");
         }
