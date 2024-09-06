@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.impl.installment;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -50,7 +52,9 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -98,7 +102,7 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     private BatteryMemberCardService batteryMemberCardService;
 
     private UserBatteryMemberCardService userBatteryMemberCardService;
-
+    
     @Override
     public Integer insert(InstallmentDeductionRecord installmentDeductionRecord) {
         return installmentDeductionRecordMapper.insert(installmentDeductionRecord);
@@ -328,15 +332,25 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         }
 
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(deductionRecord.getExternalAgreementNo());
-
+        
+        InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryByAgreementNoAndIssue(deductionRecord.getExternalAgreementNo(), deductionRecord.getIssue());
+        
         Triple<Boolean, String, Object> handlePackageTriple = null;
         if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
             // 处理换电代扣成功的场景
             handlePackageTriple = applicationContext.getBean(InstallmentDeductionRecordServiceImpl.class).handleBatteryMemberCard(deductionRecord, installmentRecord, deductionRecord.getUid());
         }
 
-        // 全部代扣完场景的处理
+        // 代扣成功后其他记录的处理
         if (Objects.nonNull(handlePackageTriple) && handlePackageTriple.getLeft()) {
+            InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+            deductionPlanUpdate.setId(deductionPlan.getId());
+            deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
+            deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
+            deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
+            deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentDeductionPlanService.update(deductionPlanUpdate);
+            
             InstallmentDeductionRecord deductionRecordUpdate = new InstallmentDeductionRecord();
             deductionRecordUpdate.setId(deductionRecord.getId());
             deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_SUCCESS);
@@ -345,8 +359,14 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
 
             InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
             installmentRecordUpdate.setId(installmentRecord.getId());
-            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
+            // 若全部代扣完，改为已完成，并且解约
+            if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
+                installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
+                
+            }
             installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+            installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(deductionRecord.getAmount()));
             installmentRecordService.update(installmentRecordUpdate);
         }
         return R.ok();

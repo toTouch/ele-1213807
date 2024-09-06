@@ -113,4 +113,9 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         return installmentDeductionPlanMapper.selectPlanForDeductByAgreementNo(externalAgreementNo);
     }
     
+    @Override
+    public InstallmentDeductionPlan queryByAgreementNoAndIssue(String agreementNo, Integer issue) {
+        return installmentDeductionPlanMapper.selectByAgreementNoAndIssue(agreementNo, issue);
+    }
+    
 }

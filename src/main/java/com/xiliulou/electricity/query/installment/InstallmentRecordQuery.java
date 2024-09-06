@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.DeferredImportSelector;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -56,6 +57,11 @@ public class InstallmentRecordQuery {
      * 分期套餐类型，0-换电，1-租车，2-车电一体
      */
     private Integer packageType;
+    
+    /**
+     * 已支付金额
+     */
+    private BigDecimal paidAmount;
     
     /**
      * 签约状态

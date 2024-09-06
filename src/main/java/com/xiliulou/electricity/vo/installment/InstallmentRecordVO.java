@@ -59,4 +59,9 @@ public class InstallmentRecordVO extends InstallmentRecord {
      * 剩余每期金额
      */
     private BigDecimal remainingPrice;
+    
+    /**
+     * 未支付期数
+     */
+    private Integer unpaidInstallmentNo;
 }

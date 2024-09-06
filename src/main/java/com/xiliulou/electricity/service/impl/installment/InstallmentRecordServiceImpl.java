@@ -67,7 +67,20 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.*;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_CANCEL;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_SUCCESS_CODE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_CANCEL;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
 
 /**
  * @Description ...
@@ -145,6 +158,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             // 设置套餐信息
             setPackageMessage(installmentRecordVO, installmentRecord);
             
+            installmentRecordVO.setUnpaidInstallmentNo(installmentRecordVO.getInstallmentNo() - installmentRecordVO.getPaidInstallment());
             return installmentRecordVO;
         }).collect(Collectors.toList());
         
@@ -235,7 +249,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
                 
                 // 更新签约记录状态位为待签约，需要与初始化的订单区分开
                 InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_UN_SIGN)
-                        .updateTime(System.currentTimeMillis()).build();
+                        .userName(query.getUserName()).mobile(query.getMobile()).updateTime(System.currentTimeMillis()).build();
                 applicationContext.getBean(InstallmentRecordServiceImpl.class).update(installmentRecordUpdate);
                 // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
                 redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
@@ -307,32 +321,32 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         
         return R.ok(installmentRecordVO);
     }
-
+    
     @Override
     public R queryStatus(String externalAgreementNo) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(fyConfig)) {
             return R.fail("签约代扣功能未配置相关信息！请联系客服处理");
         }
-
+        
         R queried = queryInterfaceForInstallmentRecord(externalAgreementNo, fyConfig);
         if (!queried.isSuccess()) {
             return queried;
         }
-
+        
         InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
-        FyQuerySignAgreementRsp rsp = (FyQuerySignAgreementRsp)queried.getData();
-
+        FyQuerySignAgreementRsp rsp = (FyQuerySignAgreementRsp) queried.getData();
+        
         if (Objects.equals(Integer.valueOf(rsp.getStatus()), SIGN_QUERY_STATUS_SIGN)) {
             handleSign(installmentRecord);
         } else if (Objects.equals(Integer.valueOf(rsp.getStatus()), SIGN_QUERY_STATUS_CANCEL)) {
             handleTerminating(installmentRecord);
         }
-
+        
         return R.ok();
     }
-
-
+    
+    
     public void signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, List<InstallmentDeductionPlan> deductionPlanTriple) {
         // 更新签约记录
         applicationContext.getBean(InstallmentRecordService.class).update(installmentRecordUpdate);
@@ -359,44 +373,43 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecordVO.setPackageName(carRentalPackagePo.getName());
         }
     }
-
+    
     private R<String> handleSign(InstallmentRecord installmentRecord) {
         if (Objects.isNull(installmentRecord) || !INSTALLMENT_RECORD_STATUS_UN_SIGN.equals(installmentRecord.getStatus())) {
             log.warn("SIGN NOTIFY WARN! no right installmentRecord, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
         }
-
-        if (redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK, installmentRecord.getUid()), "1", 3*1000L, false)) {
+        
+        if (redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             return R.ok();
         }
-
+        
         if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_SIGN)) {
             return R.ok();
         }
-
+        
         // 更新签约记录状态
         InstallmentRecord installmentRecordUpdate = InstallmentRecord.builder().id(installmentRecord.getId()).status(INSTALLMENT_RECORD_STATUS_SIGN)
                 .updateTime(System.currentTimeMillis()).build();
-
+        
         // 生成还款计划
         List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanService.generateDeductionPlan(installmentRecord);
         if (Objects.isNull(deductionPlanList)) {
             log.warn("SIGN NOTIFY WARN! generate deduction plan, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
         }
-
+        
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(
-                fyConfig.getChannelCode())) {
+        if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
             log.warn("SIGN NOTIFY WARN! initiating deduct fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
         }
-
+        
         // 尽快给用户完成代扣和套餐绑定，异步发起代扣
         initiatingDeductThreadPool.execute(() -> {
             installmentDeductionRecordService.initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
         });
-
+        
         // 更新或保存入数据库
         applicationContext.getBean(InstallmentRecordServiceImpl.class).signNotifySaveAndUpdate(installmentRecordUpdate, deductionPlanList);
-
+        
         // 签约成功，删除签约二维码缓存
         redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, installmentRecord.getUid()));
         return R.ok();
@@ -406,16 +419,16 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_CANCELLED)) {
             return R.ok();
         }
-
+        
         // 更新签约记录
         InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
         installmentRecordUpdate.setId(installmentRecord.getId());
         installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-
+        
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
                 InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_PLAN_STATUS_INIT).build()).getData();
-
+        
         installmentRecordMapper.update(installmentRecordUpdate);
         if (!CollectionUtils.isEmpty(deductionPlans)) {
             deductionPlans.parallelStream().forEach(deductionPlan -> {
@@ -428,14 +441,14 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
         return R.ok();
     }
-
+    
     public R queryInterfaceForInstallmentRecord(String externalAgreementNo, FyConfig fyConfig) {
         try {
             FyCommonQuery<FyQuerySignAgreementRequest> commonQuery = new FyCommonQuery<>();
-
+            
             FyQuerySignAgreementRequest request = new FyQuerySignAgreementRequest();
             request.setExternalAgreementNo(externalAgreementNo);
-
+            
             commonQuery.setChannelCode(fyConfig.getChannelCode());
             commonQuery.setFlowNo(externalAgreementNo + System.currentTimeMillis());
             commonQuery.setFyRequest(request);

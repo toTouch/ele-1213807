@@ -59,4 +59,12 @@ public interface InstallmentDeductionPlanService {
      * @return 可代扣计划
      */
     InstallmentDeductionPlan queryPlanForDeductByAgreementNo(String externalAgreementNo);
+    
+    /**
+     * 根据请求签约号和期数查询还款计划
+     * @param agreementNo 请求签约号
+     * @param issue 期数
+     * @return 还款计划
+     */
+    InstallmentDeductionPlan queryByAgreementNoAndIssue(String agreementNo, Integer issue);
 }

@@ -26,6 +26,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
@@ -217,6 +218,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             terminatingRecordUpdate.setId(query.getId());
             terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_REFUSE);
             terminatingRecordUpdate.setOpinion(query.getOpinion());
+            terminatingRecordUpdate.setAuditorId(SecurityUtils.getUid());
             terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
             
             installmentTerminatingRecordMapper.update(terminatingRecordUpdate);

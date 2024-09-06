@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @Description 签约记录表实体类
  * @Author: SongJP
@@ -52,6 +54,11 @@ public class InstallmentRecord {
      * 分期套餐类型，0-换电，1-租车，2-车电一体
      */
     private Integer packageType;
+    
+    /**
+     * 已支付金额
+     */
+    private BigDecimal paidAmount;
     
     /**
      * 签约状态
