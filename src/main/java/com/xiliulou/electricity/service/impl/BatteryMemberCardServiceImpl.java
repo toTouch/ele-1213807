@@ -15,7 +15,9 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -36,7 +38,9 @@ import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -146,6 +150,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Resource
     StoreService storeService;
+    
+    @Resource
+    private PxzConfigService pxzConfigService;
+    
+    @Resource
+    private FyConfigService fyConfigService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -848,6 +858,17 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query, franchisee);
         if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
             return verifyBatteryMemberCardResult;
+        }
+        
+        // 免押套餐校验免押配置
+        if (Objects.equals(query.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)){
+                return Triple.of(false, "100379", "免押套餐，需要先配置免押配置");
+            }
         }
         
         // 套餐数量最多150个，仅对换电套餐做限制
