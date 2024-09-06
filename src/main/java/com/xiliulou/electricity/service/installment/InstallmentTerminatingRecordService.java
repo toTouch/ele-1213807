@@ -84,4 +84,11 @@ public interface InstallmentTerminatingRecordService {
      * @return 解约记录
      */
     InstallmentTerminatingRecord queryById(Long id);
+    
+    /**
+     * 调用蜂云解约接口
+     * @param installmentRecord 签约记录
+     * @return 调用结果
+     */
+    R<String> terminatingInstallmentRecord(InstallmentRecord installmentRecord);
 }

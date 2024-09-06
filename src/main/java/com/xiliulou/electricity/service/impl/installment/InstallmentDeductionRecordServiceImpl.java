@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.installment.InstallmentDeductionRecordMapper;
 import com.xiliulou.electricity.query.installment.InstallmentDeductNotifyQuery;
@@ -34,6 +35,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
@@ -102,6 +104,8 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     private BatteryMemberCardService batteryMemberCardService;
 
     private UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    private InstallmentTerminatingRecordService installmentTerminatingRecordService;
     
     @Override
     public Integer insert(InstallmentDeductionRecord installmentDeductionRecord) {
@@ -362,12 +366,17 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
             // 若全部代扣完，改为已完成，并且解约
             if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
                 installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
-                
             }
             installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
             installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
             installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(deductionRecord.getAmount()));
             installmentRecordService.update(installmentRecordUpdate);
+            
+            if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
+                InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕");
+                installmentTerminatingRecordService.insert(installmentTerminatingRecord);
+                installmentTerminatingRecordService.terminatingInstallmentRecord(installmentRecord);
+            }
         }
         return R.ok();
     }

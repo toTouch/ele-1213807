@@ -92,4 +92,11 @@ public interface InstallmentRecordService {
     R<InstallmentRecordVO> queryInstallmentRecordForUser();
 
     R queryStatus(String externalAgreementNo);
+    
+    /**
+     * 生成解约记录并解约
+     * @param externalAgreementNo 请求签约号
+     * @return 解约结果
+     */
+    R terminateRecord(String externalAgreementNo);
 }

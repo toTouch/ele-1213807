@@ -30,6 +30,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
@@ -71,6 +72,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_CANCEL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_SUCCESS_CODE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
@@ -129,6 +131,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Autowired
     private InstallmentTerminatingRecordService installmentTerminatingRecordService;
+    
+    @Autowired
+    private UserInfoService userInfoService;
     
     XllThreadPoolExecutorService initiatingDeductThreadPool = XllThreadPoolExecutors.newFixedThreadPool("INSTALLMENT_INITIATING_DEDUCT", 1, "initiatingDeduct");
     
@@ -342,6 +347,31 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         } else if (Objects.equals(Integer.valueOf(rsp.getStatus()), SIGN_QUERY_STATUS_CANCEL)) {
             handleTerminating(installmentRecord);
         }
+        
+        return R.ok();
+    }
+    
+    @Override
+    public R terminateRecord(String externalAgreementNo) {
+        InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
+        if (Objects.isNull(installmentRecord)) {
+            return R.fail("签约记录为空");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return R.fail("未退还电池");
+        }
+        
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
+                InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).status(DEDUCTION_RECORD_STATUS_INIT).build()).getData();
+        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(deductionPlans)) {
+            return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
+        InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, null);
+        installmentTerminatingRecordService.insert(installmentTerminatingRecord);
+        installmentTerminatingRecordService.terminatingInstallmentRecord(installmentRecord);
         
         return R.ok();
     }

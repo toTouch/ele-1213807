@@ -117,4 +117,14 @@ public class JsonAdminInstallmentRecordController {
     public R queryStatus(@RequestParam String externalAgreementNo) {
         return installmentRecordService.queryStatus(externalAgreementNo);
     }
+    
+    /**
+     * 后台解约
+     * @param externalAgreementNo 请求签约号
+     * @return 解约结果
+     */
+    @GetMapping("/terminate")
+    public R terminateRecord(@RequestParam String externalAgreementNo) {
+        return installmentRecordService.terminateRecord(externalAgreementNo);
+    }
 }
