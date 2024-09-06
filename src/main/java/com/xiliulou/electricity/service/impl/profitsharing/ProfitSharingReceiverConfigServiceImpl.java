@@ -379,8 +379,8 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
      * @date 2024/8/26 10:14
      */
     private void checkPersonageAccount(ProfitSharingReceiverConfigOptRequest request) {
-        UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(request.getAccount(), UserOauthBind.SOURCE_WX_PRO, request.getTenantId());
-        if (Objects.isNull(userOauthBind)) {
+        Integer count = userOauthBindService.countByThirdIdAndSourceAndTenantId(request.getAccount(), UserOauthBind.SOURCE_WX_PRO, request.getTenantId());
+        if (Objects.isNull(count) || count == 0) {
             throw new BizException("openid不存在");
         }
     }
@@ -421,7 +421,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         String newScale = newConfig.getScale().multiply(new BigDecimal(100)).stripTrailingZeros().toPlainString() + "%";
         
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
-        record.put("account", old.getAccount() + "/" + old.getReceiverName());
+        record.put("account", old.getReceiverName());
         record.put("scale", newScale);
         record.put("remark", newConfig.getRemark());
         
@@ -434,7 +434,7 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     
     private void operateDeleteRecord(ProfitSharingReceiverConfig newConfig) {
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
-        record.put("account", newConfig.getAccount() + "/" + newConfig.getReceiverName());
+        record.put("account", newConfig.getReceiverName());
         operateRecordUtil.record(null, record);
     }
     

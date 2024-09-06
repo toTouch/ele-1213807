@@ -82,6 +82,11 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
     private FranchiseeService franchiseeService;
     
     /**
+     * 微信分账最大比例限制
+     */
+    public static final BigDecimal WECHAT_MAX_SCALE = new BigDecimal("0.3");
+    
+    /**
      * 初始化默认订单类型
      */
     static {
@@ -302,6 +307,11 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         
         // 分账比例小于原比例
         
+        // 微信限制比例不可超过30%
+        if (scaleLimit.compareTo(WECHAT_MAX_SCALE) > 0) {
+            throw new BizException("最大比例限制不可超过 30%");
+        }
+        
         List<ProfitSharingReceiverConfig> configs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(exist.getTenantId(), exist.getId());
         
         // 计算累计总比例
@@ -364,7 +374,7 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         profitSharingConfig.setOrderType(DEFAULT_ORDER_TYPE);
         profitSharingConfig.setAmountLimit(BigDecimal.ZERO);
         profitSharingConfig.setProfitSharingType(ProfitSharingConfigProfitSharingTypeEnum.ORDER_SCALE.getCode());
-        profitSharingConfig.setScaleLimit(BigDecimal.ZERO);
+        profitSharingConfig.setScaleLimit(WECHAT_MAX_SCALE);
         profitSharingConfig.setCycleType(ProfitSharingConfigCycleTypeEnum.D_1.getCode());
         profitSharingConfig.setCreateTime(System.currentTimeMillis());
         profitSharingConfig.setUpdateTime(System.currentTimeMillis());

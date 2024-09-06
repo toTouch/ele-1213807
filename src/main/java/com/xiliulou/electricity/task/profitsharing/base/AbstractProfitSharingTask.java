@@ -84,13 +84,39 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
                 startTenantId = tenantIds.get(tenantIds.size() - 1);
                 
                 // 根据租户处理
-                tenantIds.forEach(tid -> this.executeByTenantId(tid));
+                tenantIds.forEach(tid -> this.catchExecuteByTenantId(tid));
             }
             
+            return ReturnT.SUCCESS;
+        } catch (Exception e) {
+            log.error("AbstractProfitSharingTask.execute Exception :", e);
             return ReturnT.SUCCESS;
         } finally {
             // 清除traceId
             TtlTraceIdSupport.clear();
+        }
+    }
+    
+    /**
+     * 根据租户id执行，包含异常捕获
+     *
+     * @param tid
+     * @author caobotao.cbt
+     * @date 2024/9/5 14:00
+     */
+    protected void catchExecuteByTenantId(Integer tid) {
+        try {
+            log.info("tenantId:{} start", tid);
+            
+            this.executeByTenantId(tid);
+            
+            log.info("tenantId:{} end", tid);
+            
+        } catch (Exception e) {
+            
+            log.warn("tenantId:{} err end", tid);
+            
+            log.error("AbstractProfitSharingTask.catchExecuteByTenantId Exception:", e);
         }
     }
     

@@ -4,7 +4,6 @@
 
 package com.xiliulou.electricity.task.profitsharing;
 
-import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
@@ -65,8 +64,6 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
     @Resource
     private ProfitSharingOrderTxService profitSharingOrderTxService;
     
-    @Resource
-    private RedisService redisService;
     
     /**
      * 已受理、处理中状态
@@ -83,8 +80,6 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
      */
     @Override
     protected void executeByTenantId(Integer tenantId) {
-        
-        log.info("AbstractProfitSharingOrderQueryTask.executeByTenantId tenantId:{} start", tenantId);
         
         ProfitSharingOrderQueryModel profitSharingOrderQueryModel = new ProfitSharingOrderQueryModel();
         profitSharingOrderQueryModel.setStartId(0L);
@@ -124,8 +119,6 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
                 this.dealWithByProfitSharingOrder(payParams, orderModel);
             });
         }
-        
-        log.info("AbstractProfitSharingOrderQueryTask.executeByTenantId tenantId:{} end", tenantId);
         
     }
     
