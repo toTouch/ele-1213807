@@ -69,7 +69,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         }
         // 如果不是交易处理中，返回
         if (!Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            log.info("AuthPayConsumer.status not update! alipayHistory.payStatus is {}, orderId is {}", alipayHistory.getPayStatus(), alipayHistory.getAuthPayOrderId());
+            log.info("AuthPayConsumer Info! alipayHistory.payStatus not need update, orderId is {}", alipayHistory.getAuthPayOrderId());
             return;
         }
         
@@ -80,7 +80,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
                 .authNo(freeDepositOrder.getAuthNo()).orderId(alipayHistory.getOrderId()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
         AuthPayStatusBO authPayStatusBO = baseFreeDepositService.queryAuthToPayStatus(freeDepositAuthToPayStatusQuery);
         
-        log.info("authPayConsumer info! queryAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
+        log.info("AuthPayConsumer info! queryAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
         
         // 如果代扣中1和代扣失败2，更新为失败
         if (Objects.equals(authPayStatusBO.getOrderStatus(), FreeDepositOrder.PAY_STATUS_DEALING) || Objects.equals(authPayStatusBO.getOrderStatus(),

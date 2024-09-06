@@ -57,7 +57,7 @@ public class UnFreeDepositConsumer implements RocketMQListener<String> {
         
         // 如果不是解冻中，返回
         if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
-            log.info("UnFreeDepositConsumer.status not update! freeDepositOrder.authStatus is {}, orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
+            log.info("UnFreeDepositConsumer Info! freeDepositOrder.status not need update!  orderId is {}", dto.getOrderId());
             return;
         }
         
