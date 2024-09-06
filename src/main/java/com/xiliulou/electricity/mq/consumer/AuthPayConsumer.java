@@ -67,9 +67,8 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             log.warn("AuthPayConsumer WARN! alipayHistory is null, orderId is {}", dto.getAuthPayOrderId());
             return;
         }
-        // 成功/失败 return
-        if (Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEAL_SUCCESS) || Objects.equals(alipayHistory.getPayStatus(),
-                FreeDepositOrder.PAY_STATUS_DEAL_FAIL)) {
+        // 如果不是交易处理中，返回
+        if (!Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
             log.info("AuthPayConsumer.status not update! alipayHistory.payStatus is {}, orderId is {}", alipayHistory.getPayStatus(), alipayHistory.getAuthPayOrderId());
             return;
         }
