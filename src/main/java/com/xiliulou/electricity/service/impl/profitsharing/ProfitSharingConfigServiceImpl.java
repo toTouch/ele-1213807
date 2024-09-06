@@ -372,9 +372,9 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         profitSharingConfig.setPayParamId(payParams.getId());
         profitSharingConfig.setConfigStatus(request.getConfigStatus());
         profitSharingConfig.setOrderType(DEFAULT_ORDER_TYPE);
-        profitSharingConfig.setAmountLimit(WECHAT_MAX_SCALE);
+        profitSharingConfig.setAmountLimit(BigDecimal.ZERO);
         profitSharingConfig.setProfitSharingType(ProfitSharingConfigProfitSharingTypeEnum.ORDER_SCALE.getCode());
-        profitSharingConfig.setScaleLimit(BigDecimal.ZERO);
+        profitSharingConfig.setScaleLimit(WECHAT_MAX_SCALE);
         profitSharingConfig.setCycleType(ProfitSharingConfigCycleTypeEnum.D_1.getCode());
         profitSharingConfig.setCreateTime(System.currentTimeMillis());
         profitSharingConfig.setUpdateTime(System.currentTimeMillis());
