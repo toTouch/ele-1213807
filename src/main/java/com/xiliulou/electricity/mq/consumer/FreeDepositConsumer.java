@@ -51,7 +51,8 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
         log.info("FreeDepositConsumer Access Msg INFO! freeDepositOrder.authStatus is {} , orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
         
         // 如果不是 冻结中的，不更新
-        if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FREEZING)) {
+        if (!(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE) || Objects.equals(freeDepositOrder.getAuthStatus(),
+                FreeDepositOrder.AUTH_FREEZING))) {
             log.info("FreeDepositConsumer INFO! freeDepositOrder.freeStatus is {}, orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
             return;
         }
