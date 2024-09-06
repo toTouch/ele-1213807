@@ -480,7 +480,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         try {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
+            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderTxService.update(eleRefundOrderUpdate);
             
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
