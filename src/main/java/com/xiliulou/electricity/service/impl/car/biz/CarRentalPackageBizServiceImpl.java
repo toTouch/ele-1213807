@@ -385,15 +385,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
         
         // 免押套餐校验免押配置
-        if (Objects.equals(optModel.getFreeDeposit(), BatteryMemberCard.FREE_DEPOSIT)) {
-            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-            
-            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-            
-            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
-                throw new BizException("100380", "请先完成免押配置，再新增免押套餐");
-            }
-        }
+        checkFreeDepositConfig(optModel);
         
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
@@ -451,6 +443,18 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardService.insertBatteryMemberCardAndBatteryType(batteryMemberCard, batteryModelTypes);
         
         return true;
+    }
+    
+    private void checkFreeDepositConfig(CarRentalPackageOptModel optModel) {
+        if (Objects.equals(optModel.getFreeDeposit(), BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
+                throw new BizException("100380", "请先完成免押配置，再新增免押套餐");
+            }
+        }
     }
     
     private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePo entity) {

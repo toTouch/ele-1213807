@@ -776,6 +776,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100271", "请先下架套餐再进行编辑操作");
         }
         
+        Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
+        if (triple.getLeft()) {
+            return triple;
+        }
+        
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
         batteryMemberCardUpdate.setId(batteryMemberCard.getId());
         batteryMemberCardUpdate.setName(query.getName());
@@ -860,15 +865,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
-        // 免押套餐校验免押配置
-        if (Objects.equals(query.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT)) {
-            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-            
-            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-            
-            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)){
-                return Triple.of(false, "100380", "请先完成免押配置，再新增免押套餐");
-            }
+        Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
+        if (triple.getLeft()) {
+            return triple;
         }
         
         // 套餐数量最多150个，仅对换电套餐做限制
@@ -911,6 +910,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         return Triple.of(true, null, null);
+    }
+    
+    private Triple<Boolean, String, Object> checkFreeDepositConfig(BatteryMemberCardQuery query) {
+        // 免押套餐校验免押配置
+        if (Objects.equals(query.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
+                return Triple.of(true, "100380", "请先完成免押配置，再新增免押套餐");
+            }
+        }
+        return Triple.of(false, null, null);
     }
     
     @Override
