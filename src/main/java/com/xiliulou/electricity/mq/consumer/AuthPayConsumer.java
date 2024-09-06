@@ -74,7 +74,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             return;
         }
         
-        //  再次查询代扣状态，如果代扣中和代扣失败，更新为失败
+        // 再次查询代扣状态
         BaseFreeDepositService baseFreeDepositService = applicationContext.getBean(FreeDepositServiceWayEnums.PXZ.getImplService(), BaseFreeDepositService.class);
         
         FreeDepositAuthToPayStatusQuery freeDepositAuthToPayStatusQuery = FreeDepositAuthToPayStatusQuery.builder().authPayOrderId(alipayHistory.getAuthPayOrderId())
@@ -83,10 +83,10 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         
         log.info("authPayConsumer info! queryPxzAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
         
-        // 0:代扣成功；1:代扣处理中；2:代扣失败
-        // todo 状态处理
+        // ，如果代扣中和代扣失败，更新为失败. 1:代扣处理中；2:代扣失败
         if (Objects.equals(authPayStatusBO.getOrderStatus(), FreeDepositOrder.PAY_STATUS_DEALING) || Objects.equals(authPayStatusBO.getOrderStatus(),
                 FreeDepositOrder.PAY_STATUS_DEAL_FAIL)) {
+            
             // 更新退款订单为失败
             FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
             freeDepositAlipayHistory.setId(alipayHistory.getId());
