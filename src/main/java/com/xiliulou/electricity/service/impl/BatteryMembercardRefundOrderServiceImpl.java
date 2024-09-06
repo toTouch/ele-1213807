@@ -291,7 +291,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
         return this.batteryMembercardRefundOrderMapper.update(batteryMembercardRefundOrder);
     }
@@ -315,7 +314,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.batteryMembercardRefundOrderMapper.deleteById(id) > 0;
     }
@@ -334,7 +332,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefund(String orderNo) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -520,7 +517,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request, Integer offlineRefund) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
@@ -713,7 +709,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, BigDecimal refundAmount, Integer status, HttpServletRequest request,
             Integer offlineRefund) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(
@@ -804,7 +799,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleBatteryOnlineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder,
             ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal refundAmount, String msg, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
@@ -852,7 +846,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(UserBatteryMemberCard userBatteryMemberCard, BatteryMembercardRefundOrder batteryMembercardRefundOrder,
             ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo, BigDecimal refundAmount, String msg) {
         if (Objects.equals(userBatteryMemberCard.getOrderId(), electricityMemberCardOrder.getOrderId())) {

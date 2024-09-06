@@ -672,7 +672,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 String depositOrderId = orderList.get(index);
                 
-                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS);
+                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS, userInfo);
             }
             
             // 电池套餐
@@ -684,8 +684,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
                 
                 String memberCardOrderId = orderList.get(index);
-                //                unionTradeOrderService.manageMemberCardOrder(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
-                unionTradeOrderService.manageMemberCardOrderV2(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
+                unionTradeOrderService.manageMemberCardOrderV2(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS, userInfo);
             }
             
             // 电池保险
@@ -697,7 +696,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
                 
                 String insuranceOrderId = orderList.get(index);
-                unionTradeOrderService.manageInsuranceOrder(insuranceOrderId, InsuranceOrder.STATUS_SUCCESS);
+                unionTradeOrderService.manageInsuranceOrder(insuranceOrderId, InsuranceOrder.STATUS_SUCCESS, userInfo);
             }
         }
         

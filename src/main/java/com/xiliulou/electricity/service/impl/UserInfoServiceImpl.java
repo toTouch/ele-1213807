@@ -421,7 +421,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UserInfo insert(UserInfo userInfo) {
         userInfoMapper.insert(userInfo);
         return userInfo;
@@ -434,7 +433,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
         int result = this.userInfoMapper.update(userInfo);
         redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
@@ -743,7 +741,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    @Transactional
     public R updateStatus(Long uid, Integer usableStatus) {
         
         // 租户
@@ -915,7 +912,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R verifyAuth(Long id, Integer authStatus, String msg) {
         // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -958,7 +954,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    @Transactional
     public R updateAuth(UserInfo userInfo) {
         
         // 租户
@@ -1085,7 +1080,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     // 后台绑定电池
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         if (!redisService.setNx(CacheConstant.CACHE_USER_BIND_BATTERY_LOCK + userInfoBatteryAddAndUpdate.getUid(), "1", 5 * 1000L, false)) {
             return R.fail("100032", "该用户已绑定电池");
@@ -1358,7 +1352,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R webUnBindBattery(Long uid) {
         
         // 租户

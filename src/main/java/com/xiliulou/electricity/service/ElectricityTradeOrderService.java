@@ -43,23 +43,6 @@ public interface ElectricityTradeOrderService {
     BasePayOrderCreateDTO commonCreateTradeOrderAndGetPayParamsV2(CommonPayOrder commonPayOrder, BasePayConfig payConfig, String openId, HttpServletRequest request)
             throws PayException;
     
-    
-    //月卡回调
-    Pair<Boolean, Object> notifyMemberOrder(BaseOrderCallBackResource callBackResource);
-    
-    
-    //押金支付回调
-    Pair<Boolean, Object> notifyDepositOrder(BaseOrderCallBackResource callBackResource);
-    
-    //电池服务费支付回调
-    Pair<Boolean, Object> notifyBatteryServiceFeeOrder(BaseOrderCallBackResource callBackResource);
-    
-    //租车押金支付回调
-    Pair<Boolean, Object> notifyRentCarDepositOrder(BaseOrderCallBackResource callBackResource);
-    
-    //租车月卡回调
-    Pair<Boolean, Object> notifyRentCarMemberOrder(BaseOrderCallBackResource callBackResource);
-    
     //保险回调
     Pair<Boolean, Object> notifyInsuranceOrder(BaseOrderCallBackResource callBackResource);
     

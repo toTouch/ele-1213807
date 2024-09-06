@@ -154,13 +154,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     EnterpriseBatteryPackageMapper enterpriseBatteryPackageMapper;
     
     @Resource
-    ElectricityPayParamsService electricityPayParamsService;
-    
-    @Resource
     UserOauthBindService userOauthBindService;
-    
-    @Resource
-    ElectricityTradeOrderService electricityTradeOrderService;
     
     @Resource
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
@@ -196,9 +190,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     EleRefundOrderService eleRefundOrderService;
     
     @Resource
-    BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
-    
-    @Resource
     CloudBeanUseRecordService cloudBeanUseRecordService;
     
     @Resource
@@ -209,9 +200,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     ElectricityBatteryService electricityBatteryService;
-    
-    @Resource
-    EnterpriseUserCostRecordProducer enterpriseUserCostRecordProducer;
     
     @Resource
     private BatteryMemberCardMapper batteryMemberCardMapper;
@@ -238,15 +226,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     private FranchiseeService franchiseeService;
     
     @Resource
-    private CouponService couponService;
-    
-    @Resource
-    private CarRentalPackageService carRentalPackageService;
-    
-    @Resource
-    private BatteryModelService batteryModelService;
-    
-    @Resource
     private EnterpriseInfoService enterpriseInfoService;
     
     @Resource
@@ -266,9 +245,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
-    
-    @Resource
-    private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
     
     @Resource
     private FreeDepositOrderService freeDepositOrderService;
@@ -1200,7 +1176,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新保险状态
             if (Objects.nonNull(insuranceOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     throw new BizException("300072", (String) result.getRight());
                 }
@@ -1474,7 +1450,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新押金状态
             if (Objects.nonNull(eleDepositOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     //return  Triple.of(false, "100349", result.getRight());
                     throw new BizException("300071", (String) result.getRight());
@@ -1483,7 +1459,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新保险状态
             if (Objects.nonNull(insuranceOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     throw new BizException("300072", (String) result.getRight());
                 }
@@ -1773,7 +1749,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新保险状态
             if (Objects.nonNull(insuranceOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     throw new BizException("300072", (String) result.getRight());
                 }

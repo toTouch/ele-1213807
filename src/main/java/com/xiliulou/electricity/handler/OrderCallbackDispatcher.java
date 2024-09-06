@@ -39,13 +39,13 @@ public class OrderCallbackDispatcher {
     
     @PostConstruct
     private void initStrategies() {
-        strategies.put(ElectricityTradeOrder.ATTACH_DEPOSIT, param -> electricityTradeOrderService.notifyDepositOrder(param));
-        
-        strategies.put(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE, param -> electricityTradeOrderService.notifyBatteryServiceFeeOrder(param));
-        
-        strategies.put(ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT, param -> electricityTradeOrderService.notifyRentCarDepositOrder(param));
-        
-        strategies.put(ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD, param -> electricityTradeOrderService.notifyRentCarMemberOrder(param));
+//        strategies.put(ElectricityTradeOrder.ATTACH_DEPOSIT, param -> electricityTradeOrderService.notifyDepositOrder(param));
+//
+//        strategies.put(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE, param -> electricityTradeOrderService.notifyBatteryServiceFeeOrder(param));
+//
+//        strategies.put(ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT, param -> electricityTradeOrderService.notifyRentCarDepositOrder(param));
+//
+//        strategies.put(ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD, param -> electricityTradeOrderService.notifyRentCarMemberOrder(param));
         
         strategies.put(CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc(), param -> electricityTradeOrderService.notifyCarRenalPackageOrder(param));
         
@@ -58,8 +58,6 @@ public class OrderCallbackDispatcher {
         strategies.put(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE, param -> unionTradeOrderService.notifyMembercardInsurance(param));
         
         strategies.put(UnionTradeOrder.ATTACH_SERVUCE_FEE, param -> unionTradeOrderService.notifyServiceFee(param));
-        
-        
     }
     
     /**
@@ -74,15 +72,13 @@ public class OrderCallbackDispatcher {
         if (strategy != null) {
             strategy.execute(callBackResource);
         } else {
-            electricityTradeOrderService.notifyMemberOrder(callBackResource);
+//            electricityTradeOrderService.notifyMemberOrder(callBackResource);
         }
     }
     
     
     @FunctionalInterface
     interface OrderCallbackStrategy<T extends BaseOrderCallBackResource> {
-        
-        
         void execute(T callBackResource);
     }
 }

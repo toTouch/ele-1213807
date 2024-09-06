@@ -258,7 +258,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R returnDeposit(HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

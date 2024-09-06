@@ -16,9 +16,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -47,7 +45,6 @@ import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -57,7 +54,6 @@ import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBattery;
@@ -86,8 +82,6 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMappe
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
-import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -854,7 +848,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline, String applyReason) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1164,7 +1157,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R disableMemberCardForRollback() {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(tokenUser)) {
@@ -1280,7 +1272,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R adminDisableMemberCard(Long uid, Integer days) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_DISABLE_LOCK + uid, "1", 2 * 1000L, false);
         if (!result) {
@@ -1538,7 +1529,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R adminEnableMemberCard(Long uid) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_ENABLE_LOCK + uid, "1", 2 * 1000L, false);
         if (!result) {
@@ -1672,7 +1662,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R cleanBatteryServiceFee(Long uid) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_CLEAN_BATTERY_SERVICE_FEE_LOCK + uid, "1", 2 * 1000L, false);
         if (!result) {
@@ -2623,7 +2612,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R cancelPayMemberCard() {
         
         // 用户
@@ -2679,7 +2667,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * 结束订单
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> endOrder(String orderNo, Long uid) {
         
         if (!redisService.setNx(CacheConstant.ELE_CACHE_BATTERY_CANCELL_PAYMENT_LOCK_KEY + uid, "1", 5 * 1000L, false)) {
@@ -2823,7 +2810,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Triple.of(true, null, null);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveUserInfoAndOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard,
             UserBatteryDepositAndMembercardQuery query) {
         BigDecimal deposit = query.getBatteryDeposit();
@@ -2964,7 +2950,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> editUserBatteryMemberCard(UserBatteryMembercardQuery query) {
         boolean result = redisService.setNx(CacheConstant.CACHE_USER_MEMBER_CARD_EDIT_LOCK + query.getUid(), "1", 2 * 1000L, false);
         if (!result) {
@@ -3371,7 +3356,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Triple.of(true, null, null);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public ElectricityMemberCardOrder saveRenewalUserBatteryMemberCardOrder(User user, UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindbatteryMemberCard) {
         

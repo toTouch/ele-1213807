@@ -221,7 +221,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public EleRefundOrder insert(EleRefundOrder eleRefundOrder) {
         this.eleRefundOrderMapper.insert(eleRefundOrder);
         return eleRefundOrder;
@@ -234,7 +233,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(EleRefundOrder eleRefundOrder) {
         return this.eleRefundOrderMapper.updateById(eleRefundOrder);
     }
@@ -290,7 +288,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyDepositRefundOrder(BaseOrderRefundCallBackResource callBackResource) {
         //幂等加锁
         
@@ -393,7 +390,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
             HttpServletRequest request) {
         
@@ -697,7 +693,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryFreeDepositRefund(String errMsg, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
