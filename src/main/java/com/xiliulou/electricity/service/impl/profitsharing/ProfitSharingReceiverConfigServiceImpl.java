@@ -7,9 +7,7 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
-import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
-import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;

@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.task.profitsharing;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
@@ -11,13 +12,11 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStat
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.task.profitsharing.support.PayParamsQuerySupport;
 
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverTypeEnum;
-import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCreateOrderRequest;
 import com.xiliulou.pay.profitsharing.response.BaseProfitSharingCreateOrderResp;
@@ -27,7 +26,6 @@ import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;

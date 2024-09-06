@@ -1460,7 +1460,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         BasePayConfig config = null;
         try {
             config = payConfigBizService
-                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId());
+                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId(),null);
             if (Objects.isNull(config)) {
                 throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             }
@@ -2845,7 +2845,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) || MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(userInfo.getFranchiseeId()) ? Long
                     .valueOf(buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
             //            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userFranchiseeId);
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(buyOptModel.getPaymentChannel(), tenantId, userFranchiseeId);
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(buyOptModel.getPaymentChannel(), tenantId, userFranchiseeId,null);
             if (Objects.isNull(payParamConfig)) {
                 throw new BizException("100234", "未配置支付参数");
             }

@@ -1620,7 +1620,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         BasePayConfig config = null;
         try {
             config = payConfigBizService
-                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId());
+                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId(),null);
             if (Objects.isNull(config)) {
                 throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             }
