@@ -40,6 +40,9 @@ public interface UserOauthBindService {
     Integer update(UserOauthBind userOauthBind);
     
     
+    
+    UserOauthBind queryOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
+    
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
     
     UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId);
@@ -47,6 +50,9 @@ public interface UserOauthBindService {
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone, Integer tenantId);
     
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
+    
+    
+    UserOauthBind queryUserOauthBySysId(Long uid, Integer tenantId);
     
     List<UserOauthBind> queryListByUid(Long uid);
     
@@ -64,6 +70,7 @@ public interface UserOauthBindService {
      * @date 2024/8/8 11:29
      */
     List<UserOauthBind> selectListByUidAndPhone(String phone, Long uid, Integer tenantId);
+    UserOauthBind selectByUidAndPhone(String phone, Long uid, Integer tenantId);
     
     /**
      * 根据手机号、类型、租户查询用户
@@ -75,6 +82,15 @@ public interface UserOauthBindService {
      */
     List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId);
     
+    /**
+     * @param phone
+     * @param source
+     * @param tenantId
+     * @return
+     * @see UserOauthBindService#listUserByPhone(String, Integer, Integer)
+     */
+    @Deprecated
+    UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId);
     
     
     Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer source, Integer tenantId);
@@ -145,4 +161,16 @@ public interface UserOauthBindService {
      * @date 2024/8/7 19:14
      */
     List<UserOauthBind> queryListByUidAndSource(Long uid, Integer source);
+    
+    /**
+     * 根据参数获取数量
+     *
+     * @param openId
+     * @param sourceWxPro
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/9/5 20:39
+     */
+    Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId);
+    
 }

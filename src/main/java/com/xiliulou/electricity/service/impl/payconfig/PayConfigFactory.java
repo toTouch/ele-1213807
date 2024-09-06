@@ -5,6 +5,7 @@
 package com.xiliulou.electricity.service.impl.payconfig;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.core.base.enums.ChannelEnum;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,7 +38,7 @@ public class PayConfigFactory {
      * <p>
      * key:{@link ChannelEnum#getCode()}
      * <p>
-     * value: {@link PayConfigStrategy#execute(Integer, Long)} ()}
+     * value: {@link PayConfigStrategy#execute(java.lang.Integer, java.lang.Long, java.util.Set)} ()}
      */
     private Map<String, PayConfigStrategy> strategyMap = new ConcurrentHashMap<>();
     
@@ -46,7 +48,7 @@ public class PayConfigFactory {
      * <p>
      * key:{@link ChannelEnum#getCode()}
      * <p>
-     * value: {@link PayConfigStrategy#execute(Integer, Long)} ()}
+     * value: {@link PayConfigStrategy#execute(java.lang.Integer, java.lang.Long, java.util.Set)} ()}
      */
     private Map<String, PayConfigStrategy> preciseStrategyMap = new ConcurrentHashMap<>();
     
@@ -74,11 +76,14 @@ public class PayConfigFactory {
      * @date 2024/7/18 15:47
      */
     private void registerAliPay() {
+        
+        // TODO: 2024/9/6 支付包暂时不支持分账配置查询
         // 支付宝支付参数查询
-        strategyMap.put(ChannelEnum.ALIPAY.getCode(), (tenantId, franchiseeId) -> alipayAppConfigService.queryByTenantIdAndFranchiseeId(tenantId, franchiseeId));
+        strategyMap.put(ChannelEnum.ALIPAY.getCode(),
+                (tenantId, franchiseeId, queryProfitSharingConfig) -> alipayAppConfigService.queryByTenantIdAndFranchiseeId(tenantId, franchiseeId));
         // 支付宝支付参数精确查询
-        preciseStrategyMap
-                .put(ChannelEnum.ALIPAY.getCode(), (tenantId, franchiseeId) -> alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId));
+        preciseStrategyMap.put(ChannelEnum.ALIPAY.getCode(),
+                (tenantId, franchiseeId, queryProfitSharingConfig) -> alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId));
     }
     
     /**
@@ -89,11 +94,12 @@ public class PayConfigFactory {
      */
     private void registerWxPay() {
         // 微信支付参数查询
-        strategyMap.put(ChannelEnum.WECHAT.getCode(), (tenantId, franchiseeId) -> wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId));
+        strategyMap.put(ChannelEnum.WECHAT.getCode(), (tenantId, franchiseeId, queryProfitSharingConfig) -> wechatPayParamsBizService
+                .getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId, queryProfitSharingConfig));
         
         // 微信支付参数精确查询
-        preciseStrategyMap.put(ChannelEnum.WECHAT.getCode(),
-                (tenantId, franchiseeId) -> wechatPayParamsBizService.getPreciseDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId));
+        preciseStrategyMap.put(ChannelEnum.WECHAT.getCode(), (tenantId, franchiseeId, queryProfitSharingConfig) -> wechatPayParamsBizService
+                .getPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId, queryProfitSharingConfig));
         
     }
     
@@ -111,7 +117,7 @@ public class PayConfigFactory {
     @FunctionalInterface
     public interface PayConfigStrategy {
         
-        BasePayConfig execute(Integer tenantId, Long franchiseeId) throws PayException;
+        BasePayConfig execute(Integer tenantId, Long franchiseeId, Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig) throws PayException;
     }
     
 }

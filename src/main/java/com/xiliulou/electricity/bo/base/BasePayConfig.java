@@ -5,7 +5,16 @@
 package com.xiliulou.electricity.bo.base;
 
 
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
+
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * description: 支付配置
@@ -38,6 +47,34 @@ public abstract class BasePayConfig implements Serializable {
      * 支付类型
      */
     public abstract String getPaymentChannel();
+    
+    /**
+     * 获取可用的分账接收方支付配置
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/27 10:39
+     */
+    
+    /**
+     * 获取可用的分账接收方支付配置
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/27 10:39
+     */
+    public abstract List<ProfitSharingReceiverConfig> getEnableProfitSharingReceiverConfigs();
+    
+    /**
+     * 获取可用分账配置
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/28 17:50
+     */
+    public abstract ProfitSharingConfig getEnableProfitSharingConfig();
+    
+    /**
+     * 配置类型
+     */
+    public abstract Integer getConfigType();
     
     
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.exrefund;
 
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
@@ -9,14 +10,19 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderRefund;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,7 +62,10 @@ public class RefundPayBatteryRentServiceImpl implements RefundPayService {
     @Autowired
     private BatteryMemberCardService batteryMemberCardService;
     
-    
+    @Resource
+    private RocketMqService rocketMqService;
+
+
     @Override
     public void process(BaseOrderRefundCallBackResource callBackResource) {
         
@@ -177,6 +186,9 @@ public class RefundPayBatteryRentServiceImpl implements RefundPayService {
             
             //退租 发送返利MQ
             batteryMembercardRefundOrderService.sendMerchantRebateRefundMQ(batteryMembercardRefundOrder.getUid(), batteryMembercardRefundOrder.getRefundOrderNo());
+            
+            // 分账退款回调 发送MQ
+            sendProfitSharingOrderRefundMQ(batteryMembercardRefundOrder);
         } else {
             BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
@@ -192,6 +204,19 @@ public class RefundPayBatteryRentServiceImpl implements RefundPayService {
         }
     }
     
+    /**
+     * 发送换电套餐退租分账 MQ
+     * @param batteryMembercardRefundOrder
+     */
+    private void sendProfitSharingOrderRefundMQ(BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
+        ProfitSharingTradeOrderRefund profitSharingTradeOrderUpdate = new ProfitSharingTradeOrderRefund();
+        profitSharingTradeOrderUpdate.setOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
+        profitSharingTradeOrderUpdate.setRefundOrderNo(batteryMembercardRefundOrder.getRefundOrderNo());
+        profitSharingTradeOrderUpdate.setOrderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+    
+        rocketMqService.sendAsyncMsg(MqProducerConstant.PROFIT_SHARING_ORDER_REFUND_TOPIC, JsonUtil.toJson(profitSharingTradeOrderUpdate));
+    }
+
     @Override
     public String getOptType() {
         return RefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode();

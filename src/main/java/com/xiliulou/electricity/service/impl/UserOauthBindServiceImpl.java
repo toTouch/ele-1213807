@@ -244,6 +244,12 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectOpenIdListByUidsAndTenantId(longs, tenantId);
     }
     
+    @Slave
+    @Override
+    public Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId) {
+        return userOauthBindMapper.countByThirdIdAndSourceAndTenantId(openId, sourceWxPro,tenantId);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean checkOpenIdByJsCode(String jsCode) {

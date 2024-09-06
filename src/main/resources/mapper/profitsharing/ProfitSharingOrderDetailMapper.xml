@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id
+        ,
+        profit_sharing_order_id,
+        third_trade_order_no,
+        order_detail_no,
+        third_order_detail_no,
+        profit_sharing_receive_account,
+        profit_sharing_receive_name,
+        scale,
+        profit_sharing_amount,
+        STATUS,
+        fail_reason,
+        finish_time,
+        unfreeze_status,
+        tenant_id,
+        franchisee_id,
+        del_flag,
+        create_time,
+        update_time,
+        out_account_type,
+        business_type
+    </sql>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_order_detail(profit_sharing_order_id, third_trade_order_no, order_detail_no, third_order_detail_no,
+                                                  profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id,
+                                                  franchisee_id,
+                                                  create_time, update_time, out_account_type, business_type, channel, profit_sharing_receive_name)
+        values (#{profitSharingOrderId}, #{thirdTradeOrderNo}, #{orderDetailNo}, #{thirdOrderDetailNo},
+                #{profitSharingReceiveAccount}, #{scale}, #{profitSharingAmount}, #{status}, #{failReason}, #{finishTime}, #{unfreezeStatus}, #{tenantId}, #{franchiseeId},
+                #{createTime}, #{updateTime}, #{outAccountType}, #{businessType}, #{channel}, #{profitSharingReceiveName})
+    </insert>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_profit_sharing_order_detail( profit_sharing_order_id, third_trade_order_no, order_detail_no, third_order_detail_no,
+        profit_sharing_receive_account, scale, profit_sharing_amount, status, fail_reason, finish_time, unfreeze_status, tenant_id, franchisee_id,
+        create_time, update_time, out_account_type, business_type, channel, profit_sharing_receive_name)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.profitSharingOrderId} , #{item.thirdTradeOrderNo}, #{item.orderDetailNo}, #{item.thirdOrderDetailNo}
+            , #{item.profitSharingReceiveAccount}, #{item.scale}, #{item.profitSharingAmount}, #{item.status}, #{item.failReason}, #{item.finishTime}, #{item.unfreezeStatus},
+            #{item.tenantId}
+            , #{item.franchiseeId}, #{item.createTime}, #{item.updateTime}, #{item.outAccountType}, #{item.businessType}, #{item.channel}, #{item.profitSharingReceiveName})
+        </foreach>
+    </insert>
+    <update id="update">
+        update t_profit_sharing_order_detail
+        <set>
+            <if test="thirdTradeOrderNo!=null and thirdTradeOrderNo!=''">
+                third_order_detail_no=#{thirdOrderDetailNo},
+            </if>
+            <if test="status!=null">
+                status=#{status},
+            </if>
+            <if test="failReason!=null and failReason!=''">
+                fail_reason=#{failReason},
+            </if>
+            <if test="unfreezeStatus!=null">
+                unfreeze_status=#{unfreezeStatus},
+            </if>
+            <if test="finishTime!=null">
+                finish_time=#{finishTime},
+            </if>
+            update_time=#{updateTime}
+        </set>
+        where id =#{id}
+    </update>
+    
+    <update id="updateUnfreezeStatusByThirdOrderNo">
+        update t_profit_sharing_order_detail
+        set
+        unfreeze_status = #{unfreezeStatus},
+        update_time = #{updateTime}
+        where
+        third_trade_order_no = #{thirdOrderNo}
+        and status = #{status}
+        and business_type in
+        <foreach collection="businessTypeList" item="businessType" open="(" close=")" separator=",">
+            #{businessType}
+        </foreach>
+        and unfreeze_status = 0
+    </update>
+    <update id="updateUnfreezeOrderById">
+        UPDATE t_profit_sharing_order_detail
+        SET
+        <if test="status != null">
+            status = #{status},
+        </if>
+        <if test="finishTime != null">
+            finish_time = #{finishTime},
+        </if>
+        <if test="unfreezeStatus != null">
+            unfreeze_status = #{unfreezeStatus},
+        </if>
+        <if test="failReason != null and failReason != ''">
+            fail_reason = #{failReason},
+        </if>
+        <if test="profitSharingAmount != null">
+            profit_sharing_amount = #{profitSharingAmount},
+        </if>
+        update_time = #{updateTime}
+        WHERE
+        id = #{id}
+    </update>
+    
+    <update id="updateUnfreezeResultById">
+        update t_profit_sharing_order_detail
+        set update_time = #{updateTime}
+        <if test="failReason != null and failReason != ''">
+            ,fail_reason = #{failReason}
+        </if>
+        <if test="status != null">
+            , status = #{status}
+        </if>
+        <if test="thirdOrderDetailNo != null and thirdOrderDetailNo != ''">
+            ,third_order_detail_no = #{thirdOrderDetailNo}
+        </if>
+        where id = #{id}
+    </update>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            and business_type in (0, 1, 2, 3, 98)
+
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            
+            <if test="startTime != null">
+                and create_time <![CDATA[>=]]> #{startTime}
+            </if>
+            
+            <if test="endTime != null">
+                and create_time <![CDATA[<=]]> #{endTime}
+            </if>
+            
+            <if test="outAccountType != null">
+                and out_account_type = #{outAccountType}
+            </if>
+            
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            
+            <if test="profitSharingReceiveName != null and profitSharingReceiveName != ''">
+                and profit_sharing_receive_name like concat('%',#{profitSharingReceiveName},'%')
+            </if>
+            
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            
+            <if test="businessType != null">
+                and business_type = #{businessType}
+            </if>
+            
+            <if test="thirdTradeOrderNo != null and thirdTradeOrderNo != ''">
+                and third_trade_order_no like concat('%',#{thirdTradeOrderNo},'%')
+            </if>
+        </where>
+    </sql>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_profit_sharing_order_detail
+        <include refid="pageFilter"/>
+    </select>
+    
+    <select id="selectListByPage"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_profit_sharing_order_detail
+        <include refid="pageFilter"/>
+        order by create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="selectListUnfreezeByThirdOrderNo" resultType="java.lang.String">
+        SELECT
+        distinct third_trade_order_no
+        FROM
+        t_profit_sharing_order r
+        WHERE
+        r.third_trade_order_no in
+        <foreach collection="list" item="thirdOrderNo" open="(" close=")" separator=",">
+            #{thirdOrderNo}
+        </foreach>
+        AND r.business_type = 98
+    </select>
+    
+    <select id="existsNotUnfreezeByThirdOrderNo" resultType="Integer">
+        SELECT 1
+        FROM t_profit_sharing_order_detail d
+        where d.business_type in (0, 1, 2, 99)
+          and d.unfreeze_status = 0
+          and d.third_trade_order_no = #{thirdOrderNo} limit 1
+    </select>
+    
+    <select id="existsNotCompleteByThirdOrderNo" resultType="Integer">
+        SELECT 1
+        FROM t_profit_sharing_order_detail d
+        where d.business_type in (0, 1, 2, 99)
+          and d.`status` in (0, 1)
+          and d.third_trade_order_no = #{thirdOrderNo} limit 1
+    </select>
+    
+    <select id="existsFailByThirdOrderNo" resultType="Integer">
+        SELECT 1
+        FROM t_profit_sharing_order_detail d
+        where d.business_type in (0, 1, 2, 99)
+          and d.`status` = 3
+          and d.third_trade_order_no = #{thirdOrderNo} limit 1
+    </select>
+    
+    
+    <select id="selectListByProfitSharingOrderIds"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
+        SELECT
+        <include refid="basic_field"/>
+        FROM t_profit_sharing_order_detail
+        where
+        del_flag=0
+        and tenant_id=#{tenantId}
+        and profit_sharing_order_id in
+        <foreach collection="profitSharingOrderIds" open="(" separator="," item="profitSharingOrderId" close=")">
+            #{profitSharingOrderId}
+        </foreach>
+    
+    </select>
+    
+    <select id="selectListOrderTypeUnfreeze"
+        resultType="com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO">
+        SELECT d.third_trade_order_no,
+               o.order_no,
+               d.id as detailId,
+               d.franchisee_Id,
+               o.id
+        FROM t_profit_sharing_order_detail d
+                 left join t_profit_sharing_order o on o.id = d.profit_sharing_order_id
+        where d.tenant_id = #{tenantId}
+          and d.business_type = 98
+          and d.status in (0, 1)
+          and d.id > #{startId}
+        order by d.id
+            limit #{size}
+    </select>
+    <select id="selectListFailByThirdOrderNo"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_profit_sharing_order_detail d
+        WHERE
+        d.business_type in (0, 1, 2)
+        and d.`status` = 3
+        and d.third_trade_order_no = #{thirdTradeOrderNo}
+    </select>
+
+
+</mapper>
+
+
+
+

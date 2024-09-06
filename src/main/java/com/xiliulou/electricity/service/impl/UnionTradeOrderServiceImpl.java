@@ -56,10 +56,12 @@ import com.xiliulou.electricity.enums.SlippageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderUpdate;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
@@ -388,8 +390,13 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         model.setPayConfig(payParamConfig);
         model.setTenantId(unionTradeOrder.getTenantId());
         model.setFranchiseeId(payParamConfig.getFranchiseeId());
+        // 如果分账标识不为空且为true则分账
+        if (Objects.nonNull(unionPayOrder.getProfitSharing()) && unionPayOrder.getProfitSharing()) {
+            model.setProfitSharing(true);
+        }
         
         BasePayRequest basePayRequest = payConfigConverter.converterOrderCreate(model);
+        
         
         return payServiceDispatcher.order(basePayRequest);
     }
@@ -454,11 +461,13 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 if (!manageInsuranceOrderResult.getLeft()) {
                     return manageInsuranceOrderResult;
                 }
+                
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
                 Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
+    
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
             
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
@@ -490,6 +499,24 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             
             return Pair.of(result, null);
         }
+    
+        // 处理分账回调
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                log.info("notifyIntegratedPayment orderTypeList = {}", orderTypeList);
+                for (int i = 0; i < orderTypeList.size(); i++) {
+                    if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                        // 处理换电-保险分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+                    } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                        // 处理换电套餐分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdLIst.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+                    }
+                }
+            
+            }
+        });
         
         // 小程序虚拟发货
         if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
@@ -497,6 +524,23 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         return Pair.of(result, null);
+    }
+    
+    /**
+     * 发送分账交易订单回调信息
+     * @param transactionId
+     * @param OrderNo
+     * @param tradeStatus
+     * @param orderType
+     */
+    private void sendProfitSharingOrderMQ(String transactionId, String OrderNo, Integer tradeStatus, Integer orderType) {
+        ProfitSharingTradeOrderUpdate profitSharingTradeOrderUpdate = new ProfitSharingTradeOrderUpdate();
+        profitSharingTradeOrderUpdate.setThirdOrderNo(transactionId);
+        profitSharingTradeOrderUpdate.setOrderNo(OrderNo);
+        profitSharingTradeOrderUpdate.setOrderType(orderType);
+        profitSharingTradeOrderUpdate.setTradeStatus(tradeStatus);
+        log.info("send profit sharing order mq, profitSharingTradeOrderUpdate={}", profitSharingTradeOrderUpdate);
+        rocketMqService.sendAsyncMsg(MqProducerConstant.PROFIT_SHARING_ORDER_TOPIC, JsonUtil.toJson(profitSharingTradeOrderUpdate));
     }
     
     /**
@@ -577,6 +621,24 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+    
+        // 处理分账回调
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                log.info("NOTIFY MEMBERCARD INSURANCE ORDER PROFIT SHARING ORDER MQ,tradeOrderNo={}", unionTradeOrder.getTradeOrderNo());
+                for (int i = 0; i < orderTypeList.size(); i++) {
+                    if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                        // 处理换电-保险分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+                    } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                        // 处理换电套餐分账
+                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
+                    }
+                }
+            
+            }
         });
         
         // 小程序虚拟发货
@@ -1426,6 +1488,19 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+    
+        // 处理分账回调
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                for (int i = 0; i < orderTypeList.size(); i++) {
+                    if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_PAUSE.getCode()) || Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode())) {
+                        // 处理换电-滞纳金缴纳
+                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode());
+                    }
+                }
+            }
         });
         
         // 小程序虚拟发货
