@@ -105,6 +105,7 @@ public class ElectricityAppConfigServiceImpl extends ServiceImpl<ElectricityAppC
         return R.ok(queryFromCacheByUid(userInfo.getUid()));
     }
     
+    @Override
     public ElectricityAppConfig queryFromCacheByUid(Long uid) {
         //查询用户配置缓存
         ElectricityAppConfig cache = redisService.getWithHash(CacheConstant.CACHE_ELE_APP_SET_CONFIG + uid, ElectricityAppConfig.class);

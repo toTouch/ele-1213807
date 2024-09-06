@@ -20,6 +20,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityAppConfig;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -55,6 +56,7 @@ import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityAppConfigService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
@@ -216,6 +218,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private ExchangeConfig exchangeConfig;
+    
+    @Resource
+    private ElectricityAppConfigService electricityAppConfigService;
     
     public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.19";
     
@@ -1511,10 +1516,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
+            
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
-            // todo 判断是否可以走选仓换电
-            this.getFullCellAndOpenFullCell(lastOrder, cabinetBox, userBindingBatterySn, vo, cabinet, userInfo);
+            //  判断是否可以走选仓换电
+            if (isEnterSelectCellExchange(userInfo)) {
+                vo.setIsEnterSelectCellExchange(ExchangeUserSelectVo.ENTER_SELECT_CELL_EXCHANGE);
+            } else {
+                // 打开满电仓走取电逻辑
+                Integer cellNo = this.getFullCellHandler(cabinet, userInfo);
+                vo.setCell(cellNo);
+                // 下发取电命令
+                String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox);
+                vo.setSessionId(sessionId);
+            }
             
             return Pair.of(true, vo);
         } else {
@@ -1525,21 +1540,28 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private void isEnterSelectCellExchange(UserInfo userInfo){
+    
+    
+    private Boolean isEnterSelectCellExchange(UserInfo userInfo) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
-        if (Objects.isNull(electricityConfig)){
-            return;
+        if (Objects.isNull(electricityConfig)) {
+            return false;
         }
         
-        
-        if (Objects.equals(electricityConfig.getIsSelectionExchange(), SelectionExchageEunm.ENABLE_SELECTION_EXCHANGE.getCode())) {
-            // 允许换电
-            return;
+        ElectricityAppConfig electricityAppConfig = electricityAppConfigService.queryFromCacheByUid(userInfo.getUid());
+        if (Objects.isNull(electricityAppConfig)) {
+            return false;
         }
+        
+        if (Objects.equals(electricityConfig.getIsSelectionExchange(), SelectionExchageEunm.ENABLE_SELECTION_EXCHANGE.getCode()) && Objects.equals(
+                electricityAppConfig.getIsSelectionExchange(), SelectionExchageEunm.ENABLE_SELECTION_EXCHANGE.getCode())) {
+            // 允许选仓换电
+            return true;
+        }
+        return false;
     }
     
-    private void getFullCellAndOpenFullCell(ElectricityCabinetOrder lastOrder, ElectricityCabinetBox cabinetBox, String userBindingBatterySn, ExchangeUserSelectVo vo,
-            ElectricityCabinet cabinet, UserInfo userInfo) {
+    private Integer getFullCellHandler(ElectricityCabinet cabinet, UserInfo userInfo) {
         // 执行取电流程，下发开满电仓指令， 按照租电分配满电仓走
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         // 分配满电仓
@@ -1548,11 +1570,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             throw new BizException(getFullCellResult.getMiddle(), "换电柜暂无满电电池");
         }
         Integer cellNo = Integer.valueOf((String) getFullCellResult.getRight());
-        vo.setCell(cellNo);
-        
-        // 下发取电命令
-        String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox);
-        vo.setSessionId(sessionId);
+        return cellNo;
+        //        vo.setCell(cellNo);
+        //
+        //        // 下发取电命令
+        //        String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox);
+        //        vo.setSessionId(sessionId);
     }
     
     

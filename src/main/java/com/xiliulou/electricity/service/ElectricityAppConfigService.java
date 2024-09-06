@@ -17,4 +17,6 @@ public interface ElectricityAppConfigService extends IService<ElectricityAppConf
     R queryUserAppConfigInfo();
     
     Integer updateByUid(ElectricityAppConfig electricityAppConfig);
+    
+    ElectricityAppConfig queryFromCacheByUid(Long uid);
 }
