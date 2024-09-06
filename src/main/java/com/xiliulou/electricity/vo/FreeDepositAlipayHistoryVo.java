@@ -12,6 +12,8 @@ public class FreeDepositAlipayHistoryVo {
     
     private Long id;
     
+    private Long uid;
+    
     /**
      * 代扣订单号
      */
