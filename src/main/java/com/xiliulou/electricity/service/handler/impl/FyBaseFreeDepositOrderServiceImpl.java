@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAuthPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHandleFundRsp;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHonourAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryFreezeRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryHandleFundRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
@@ -152,7 +153,21 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query) {
-        return false;
+        FyResult<FyHonourAgreementRsp> result = null;
+        String orderId = query.getOrderId();
+        try {
+            result = fyDepositService.honourAgreement(buildHonourAgreementRequest(query));
+        } catch (Exception e) {
+            log.error("FY ERROR! queryAuthToPayStatus fail!  orderId={}", orderId, e);
+            return false;
+        }
+        
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
+        if (!resultCheck.getLeft()) {
+            return false;
+        }
+        
+        return true;
     }
     
     

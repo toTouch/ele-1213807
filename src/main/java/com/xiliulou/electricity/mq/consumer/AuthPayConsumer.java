@@ -73,16 +73,16 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             return;
         }
         
-        // 再次查询代扣状态
-        BaseFreeDepositService baseFreeDepositService = applicationContext.getBean(FreeDepositServiceWayEnums.PXZ.getImplService(), BaseFreeDepositService.class);
+        BaseFreeDepositService baseFreeDepositService = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(dto.getChannel()), BaseFreeDepositService.class);
         
+        // 再次查询代扣状态
         FreeDepositAuthToPayStatusQuery freeDepositAuthToPayStatusQuery = FreeDepositAuthToPayStatusQuery.builder().authPayOrderId(alipayHistory.getAuthPayOrderId())
                 .authNo(freeDepositOrder.getAuthNo()).orderId(alipayHistory.getOrderId()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
         AuthPayStatusBO authPayStatusBO = baseFreeDepositService.queryAuthToPayStatus(freeDepositAuthToPayStatusQuery);
         
-        log.info("authPayConsumer info! queryPxzAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
+        log.info("authPayConsumer info! queryAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
         
-        // ，如果代扣中和代扣失败，更新为失败. 1:代扣处理中；2:代扣失败
+        // 如果代扣中1和代扣失败2，更新为失败
         if (Objects.equals(authPayStatusBO.getOrderStatus(), FreeDepositOrder.PAY_STATUS_DEALING) || Objects.equals(authPayStatusBO.getOrderStatus(),
                 FreeDepositOrder.PAY_STATUS_DEAL_FAIL)) {
             
@@ -96,7 +96,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
             freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
             
-            // 拍小组即使金额不足也代扣成功，所以如果5分钟没有代扣成功，执行取消代扣
+            // 执行取消代扣
             FreeDepositCancelAuthToPayQuery cancelAuthToPayQuery = FreeDepositCancelAuthToPayQuery.builder().orderId(alipayHistory.getOrderId())
                     .authPayOrderId(alipayHistory.getAuthPayOrderId()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
             baseFreeDepositService.cancelAuthPay(cancelAuthToPayQuery);

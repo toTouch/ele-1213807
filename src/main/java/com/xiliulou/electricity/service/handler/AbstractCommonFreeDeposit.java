@@ -27,6 +27,7 @@ import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.AuthPayVars;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAuthPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyHandleFundRequest;
+import com.xiliulou.pay.deposit.fengyun.pojo.request.FyHonourAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryFreezeStatusRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryHandleFundStatusRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
@@ -310,6 +311,20 @@ public abstract class AbstractCommonFreeDeposit {
         return query;
     }
     
+    public FyCommonQuery<FyHonourAgreementRequest> buildHonourAgreementRequest(FreeDepositCancelAuthToPayQuery payQuery) {
+        FyConfig fyConfig = getFyConfig(payQuery.getTenantId());
+        
+        FyCommonQuery<FyHonourAgreementRequest> query = new FyCommonQuery<>();
+        FyHonourAgreementRequest request = new FyHonourAgreementRequest();
+        request.setPayNo(payQuery.getAuthPayOrderId());
+        request.setBizType("CLOSED");
+        
+        query.setFlowNo(payQuery.getOrderId());
+        query.setFyRequest(request);
+        query.setChannelCode(fyConfig.getChannelCode());
+        return query;
+    }
+    
     
     private FyConfig getFyConfig(Integer tenantId) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenantId);
@@ -319,6 +334,7 @@ public abstract class AbstractCommonFreeDeposit {
         return fyConfig;
     }
     
+    @SuppressWarnings("all")
     public Triple<Boolean, String, Object> fyResultCheck(FyResult result, String orderId, String authPayOrderId) {
         if (Objects.isNull(result)) {
             log.warn("FY ERROR! fyResultCheck fail! result is null!  orderId={}", orderId);

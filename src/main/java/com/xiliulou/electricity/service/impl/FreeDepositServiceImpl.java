@@ -182,13 +182,6 @@ public class FreeDepositServiceImpl implements FreeDepositService {
                     log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
                 }
             });
-//            UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel()).tenantId(query.getTenantId())
-//                    .build();
-//            try {
-//                freeDepositNotifyService.unfreeFakeNotify(params);
-//            } catch (Exception e) {
-//                log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
-//            }
             
             return Triple.of(true, "", "退款中，请稍后");
         }
