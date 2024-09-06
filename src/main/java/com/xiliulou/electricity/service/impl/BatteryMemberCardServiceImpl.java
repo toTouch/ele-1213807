@@ -867,7 +867,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             
             if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)){
-                return Triple.of(false, "100380", "免押套餐，需要先配置免押配置");
+                return Triple.of(false, "100380", "请先完成免押配置，再新增免押套餐");
             }
         }
         

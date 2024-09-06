@@ -391,7 +391,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             
             if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
-                throw new BizException("100380", "免押套餐，需要先配置免押配置");
+                throw new BizException("100380", "请先完成免押配置，再新增免押套餐");
             }
         }
         
