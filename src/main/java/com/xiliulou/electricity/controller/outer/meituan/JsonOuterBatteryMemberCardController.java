@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.outer;
+package com.xiliulou.electricity.controller.outer.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
