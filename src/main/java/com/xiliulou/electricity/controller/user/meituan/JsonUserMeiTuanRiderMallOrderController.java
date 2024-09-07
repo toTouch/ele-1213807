@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.meituan;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
+import com.xiliulou.electricity.request.meituan.CreateMemberCardOrderRequest;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.Objects;
 
 /**
@@ -59,13 +61,13 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
      * @param orderId 美团订单号
      */
     @PostMapping("/user/meiTuanRiderMall/createBatteryMemberCardOrder")
-    public R createBatteryMemberCardOrder(@RequestBody String orderId) {
+    public R createBatteryMemberCardOrder(@RequestBody @Valid CreateMemberCardOrderRequest orderRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
         
-        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderId).build();
+        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).uid(user.getUid()).orderId(orderRequest.getOrderId()).build();
         return returnTripleResult(meiTuanRiderMallOrderService.createBatteryMemberCardOrder(query));
     }
 }
