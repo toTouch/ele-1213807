@@ -57,8 +57,6 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
     
     /**
      * 根据美团订单，创建换电套餐订单
-     *
-     * @param orderId 美团订单号
      */
     @PostMapping("/user/meiTuanRiderMall/createBatteryMemberCardOrder")
     public R createBatteryMemberCardOrder(@RequestBody @Valid CreateMemberCardOrderRequest orderRequest) {
