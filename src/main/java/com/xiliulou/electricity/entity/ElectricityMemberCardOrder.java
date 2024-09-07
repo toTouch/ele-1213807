@@ -75,7 +75,7 @@ public class ElectricityMemberCardOrder {
     private Integer isBindActivity;
     
     /**
-     * 交易方式： 0-线上， 1-线下， 2-企业代付， 3-分期
+     * 交易方式： 0-线上， 1-线下， 2-企业代付， 4-分期
      */
     private Integer payType;
     
@@ -180,6 +180,11 @@ public class ElectricityMemberCardOrder {
     
     public static final Integer ENTERPRISE_PAYMENT = 2;
     
+    /**
+     * 交易方式-分期
+     */
+    public static final Integer INSTALLMENT_PAYMENT = 3;
+    
     //套餐订单来源，1：扫码，2：线上，3：后台
     public static final Integer SOURCE_SCAN = 1;
     
@@ -210,10 +215,4 @@ public class ElectricityMemberCardOrder {
     public static final Integer REFUND_STATUS_REFUSED = 6;
     
     public static final Long SEND_COUPON_ID_DEFAULT_VALUE = 0L;
-    
-    /**
-     * 交易方式-分期
-     */
-    public static final Integer PAY_TYPE_INSTALLMENT = 3;
-    
 }
