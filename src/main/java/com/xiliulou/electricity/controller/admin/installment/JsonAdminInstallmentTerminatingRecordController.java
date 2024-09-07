@@ -42,11 +42,5 @@ public class JsonAdminInstallmentTerminatingRecordController {
         return installmentTerminatingRecordService.count(query);
     }
     
-    /**
-     * 审核解约申请
-     */
-    @PostMapping("/handle")
-    public R<String> handleTerminatingRecord(@RequestBody @Validated HandleTerminatingRecordQuery query) {
-        return installmentTerminatingRecordService.handleTerminatingRecord(query);
-    }
+
 }

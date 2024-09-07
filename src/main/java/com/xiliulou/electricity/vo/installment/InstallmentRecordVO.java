@@ -15,8 +15,6 @@ import java.math.BigDecimal;
  * @Date: 2024/8/27 11:04
  */
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
 public class InstallmentRecordVO extends InstallmentRecord {
     

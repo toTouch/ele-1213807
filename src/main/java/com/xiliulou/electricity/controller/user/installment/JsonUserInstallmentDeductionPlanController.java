@@ -27,12 +27,11 @@ public class JsonUserInstallmentDeductionPlanController {
     
     @GetMapping("/listDeductionPlanForRecord")
     public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
-        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery.builder().externalAgreementNo(externalAgreementNo).build());
+        InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
+        query.setExternalAgreementNo(externalAgreementNo);
+        
+        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(query);
     }
     
-    @ProcessParameter
-    @GetMapping("/deduct")
-    public R deduct(@RequestParam Long id) {
-        return installmentDeductionPlanService.deduct(id);
-    }
+
 }

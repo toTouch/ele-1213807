@@ -28,14 +28,7 @@ public class JsonUserInstallmentRecordController {
     
     private InstallmentRecordService installmentRecordService;
     
-    /**
-     * 签约接口
-     */
-    @ProcessParameter
-    @PostMapping("/sign")
-    public R<String> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
-        return installmentRecordService.sign(query, request);
-    }
+
     
     /**
      * 查询当前登录用户正在使用的签约记录信息
@@ -46,8 +39,5 @@ public class JsonUserInstallmentRecordController {
         return installmentRecordService.queryInstallmentRecordForUser();
     }
     
-    @GetMapping("/queryStatus")
-    public R queryStatus(@RequestParam String externalAgreementNo) {
-        return installmentRecordService.queryStatus(externalAgreementNo);
-    }
+
 }

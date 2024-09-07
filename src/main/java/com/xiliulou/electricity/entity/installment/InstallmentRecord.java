@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -16,9 +17,6 @@ import java.math.BigDecimal;
  * @Date: 2024/8/26 11:13
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @TableName("t_installment_record")
 public class InstallmentRecord {
     

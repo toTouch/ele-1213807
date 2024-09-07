@@ -56,11 +56,6 @@ public interface InstallmentRecordService {
      * @return 生成分期签约记录的结果
      */
     Triple<Boolean, String, InstallmentRecord> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo, UserInfo userInfo);
-
-    /**
-     * 请求峰云签约接口返回二维码链接
-     */
-    R<String> sign(InstallmentSignQuery query, HttpServletRequest request);
     
     /**
      * 根据状态查询用户的最近一条签约记录
@@ -69,14 +64,6 @@ public interface InstallmentRecordService {
      * @return 签约记录
      */
     InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> status);
-    
-    /**
-     * 签约回调方法
-     * @param bizContent 业务参数
-     * @param uid 业务请求用户
-     * @return 返回成功响应
-     */
-    String signNotify(String bizContent, Long uid);
     
     /**
      * 根据请求签约号查询签约记录
@@ -90,13 +77,6 @@ public interface InstallmentRecordService {
      * @return 返回详细信息
      */
     R<InstallmentRecordVO> queryInstallmentRecordForUser();
-
-    R queryStatus(String externalAgreementNo);
     
-    /**
-     * 生成解约记录并解约
-     * @param externalAgreementNo 请求签约号
-     * @return 解约结果
-     */
-    R terminateRecord(String externalAgreementNo);
+
 }

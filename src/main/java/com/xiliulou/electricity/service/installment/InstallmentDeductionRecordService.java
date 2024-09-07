@@ -50,24 +50,7 @@ public interface InstallmentDeductionRecordService {
      */
     R<Integer> count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
     
-    /**
-     * 调起代扣
-     *
-     * @param deductionPlan     代扣计划
-     * @param installmentRecord 签约记录
-     * @param fyConfig          蜂云配置
-     * @return 调起结果
-     */
-    Triple<Boolean, String, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig);
-    
-    /**
-     * 代扣回调方法
-     *
-     * @param bizContent 业务参数
-     * @param uid        签约用户
-     * @return 返回回调响应结果
-     */
-    String agreementPayNotify(String bizContent, Long uid);
+
     
     /**
      * 根据资金处理订单号查询代扣记录
@@ -76,11 +59,4 @@ public interface InstallmentDeductionRecordService {
      * @return 代扣记录
      */
     InstallmentDeductionRecord queryByPayNo(String payNo);
-    
-    /**
-     * 代扣定时任务
-     */
-    void dailyInstallmentDeduct();
-
-    R queryStatus(String payNo);
 }

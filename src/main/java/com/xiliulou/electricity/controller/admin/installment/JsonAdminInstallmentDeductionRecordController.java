@@ -122,8 +122,5 @@ public class JsonAdminInstallmentDeductionRecordController {
     
     
 
-    @GetMapping("/queryStatus")
-    public R queryStatus(@RequestParam String payNo) {
-        return installmentDeductionRecordService.queryStatus(payNo);
-    }
+
 }

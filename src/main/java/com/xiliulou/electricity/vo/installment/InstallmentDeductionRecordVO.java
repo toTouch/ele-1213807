@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.vo.installment;
 
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * @Description ...

@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.vo.installment;
 
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 

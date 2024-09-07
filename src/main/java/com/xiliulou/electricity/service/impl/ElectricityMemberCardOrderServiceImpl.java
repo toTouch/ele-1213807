@@ -3269,7 +3269,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
         }
         
-        ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard, null, null);
+        ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard,
+                null, null);
         
         // 8. 处理分账
         DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
@@ -3428,7 +3429,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             memberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         } else {
             // 传递代扣记录则为续费分期套餐子订单
-            memberCardOrder = (ElectricityMemberCardOrder)applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
+            memberCardOrder = (ElectricityMemberCardOrder) applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
                     .generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, null, installmentRecord).getRight();
             memberCardOrder.setSource(source);
         }
@@ -4430,8 +4431,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 由于首期订单生成时还没有代扣成功，不设置有效天数，当代扣成功时再设置
             validDays = -1;
         } else {
-            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(
-                    InstallmentDeductionPlanQuery.builder().externalAgreementNo(installmentRecord.getExternalAgreementNo()).build()).getData();
+            InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
+            query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+            
+            List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(query).getData();
             
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
                 if (Objects.equals(installmentRecord.getPaidInstallment(), deductionPlan.getIssue())) {

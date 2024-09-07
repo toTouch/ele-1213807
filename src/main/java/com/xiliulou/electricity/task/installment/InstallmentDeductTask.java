@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.task.installment;
 
+import com.xiliulou.electricity.callback.impl.fy.FyInstallmentHandler;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
@@ -19,12 +20,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class InstallmentDeductTask extends IJobHandler {
     
-    private InstallmentDeductionRecordService installmentDeductionRecordService;
+    private FyInstallmentHandler fyInstallmentHandler;
     
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         try {
-            installmentDeductionRecordService.dailyInstallmentDeduct();
+            fyInstallmentHandler.dailyInstallmentDeduct();
         } catch (Exception e) {
             log.error("XXL-JOB INSTALLMENT DEDUCT ERROR!", e);
         }

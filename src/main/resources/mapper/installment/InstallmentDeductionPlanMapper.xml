@@ -3,12 +3,12 @@
 <mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentDeductionPlanMapper">
     
     <sql id="columnsWithoutId">
-        external_agreement_no, pay_no, issue, amount, package_id, package_type, rent_time, deduct_time, payment_time, `status`, tenant_id,
+        external_agreement_no, pay_no, trade_no, issue, amount, package_id, package_type, rent_time, deduct_time, payment_time, `status`, tenant_id,
         franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
-        #{externalAgreementNo}, #{payNo}, #{issue}, #{amount}, #{packageId}, #{packageType}, #{rentTime}, #{deductTime}, #{paymentTime}, #{status},
+        #{externalAgreementNo}, #{payNo}, #{tradeNo}, #{issue}, #{amount}, #{packageId}, #{packageType}, #{rentTime}, #{deductTime}, #{paymentTime}, #{status},
         #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
@@ -18,6 +18,9 @@
         </if>
         <if test="payNo != null and payNo != ''">
             and pay_no = #{payNo},
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and trade_no = #{tradeNo},
         </if>
         <if test="issue != null">
             and issue = #{issue},
@@ -64,6 +67,7 @@
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="externalAgreementNo" column="external_agreement_no" jdbcType="VARCHAR"/>
         <result property="payNo" column="pay_no" jdbcType="VARCHAR"/>
+        <result property="tradeNo" column="trade_no" jdbcType="VARCHAR"/>
         <result property="issue" column="issue" jdbcType="INTEGER"/>
         <result property="amount" column="amount" jdbcType="DECIMAL"/>
         <result property="packageId" column="package_id" jdbcType="BIGINT"/>
@@ -149,6 +153,9 @@
             </if>
             <if test="payNo != null and payNo != ''">
                 pay_no = #{payNo},
+            </if>
+            <if test="tradeNo != null and tradeNo != ''">
+                trade_no = #{tradeNo},
             </if>
             <if test="issue != null">
                 issue = #{issue},

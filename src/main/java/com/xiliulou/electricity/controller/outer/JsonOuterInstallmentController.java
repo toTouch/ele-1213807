@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.electricity.callback.impl.fy.FyInstallmentHandler;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import lombok.AllArgsConstructor;
@@ -24,9 +25,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 @Slf4j
 public class JsonOuterInstallmentController {
     
-    private InstallmentRecordService installmentRecordService;
-    
-    private InstallmentDeductionRecordService installmentDeductionRecordService;
+    private FyInstallmentHandler fyInstallmentHandler;
     
     /**
      * 签约及解约回调
@@ -36,7 +35,7 @@ public class JsonOuterInstallmentController {
         if (!params.containsKey(OUTER_PARAM_BIZ_CONTENT) || StringUtils.isEmpty((String) params.get(OUTER_PARAM_BIZ_CONTENT))) {
             log.error("INSTALLMENT SIGN NOTIFY ERROR! no bizContent, uid={}", uid);
         }
-        return installmentRecordService.signNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
+        return fyInstallmentHandler.signNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
     }
     
     @PostMapping("/outer/installment/agreementPay/notify/{uid}")
@@ -44,7 +43,7 @@ public class JsonOuterInstallmentController {
         if (!params.containsKey(OUTER_PARAM_BIZ_CONTENT) || StringUtils.isEmpty((String) params.get(OUTER_PARAM_BIZ_CONTENT))) {
             log.error("INSTALLMENT AGREEMENT PAY NOTIFY ERROR! no bizContent, uid={}", uid);
         }
-        return installmentDeductionRecordService.agreementPayNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
+        return fyInstallmentHandler.agreementPayNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
     }
     
 }

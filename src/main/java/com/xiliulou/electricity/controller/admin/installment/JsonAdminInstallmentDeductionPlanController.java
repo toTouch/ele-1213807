@@ -5,7 +5,6 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
-import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
@@ -69,8 +68,10 @@ public class JsonAdminInstallmentDeductionPlanController {
             }
         }
         
-        InstallmentDeductionPlanQuery installmentRecordQuery = InstallmentDeductionPlanQuery.builder().tenantId(tenantId).franchiseeIds(franchiseeIds)
-                .externalAgreementNo(externalAgreementNo).build();
+        InstallmentDeductionPlanQuery installmentRecordQuery = new InstallmentDeductionPlanQuery();
+        installmentRecordQuery.setFranchiseeIds(franchiseeIds);
+        installmentRecordQuery.setExternalAgreementNo(externalAgreementNo);
+        installmentRecordQuery.setTenantId(tenantId);
         
         return installmentDeductionPlanService.listDeductionPlanByAgreementNo(installmentRecordQuery);
     }

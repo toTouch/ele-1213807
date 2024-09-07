@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -16,9 +17,6 @@ import java.math.BigDecimal;
  * @Date: 2024/8/26 11:17
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName("t_installment_deduction_plan")
 public class InstallmentDeductionPlan {
     
@@ -34,6 +32,11 @@ public class InstallmentDeductionPlan {
      * 扣款订单号，关联对应的最新一条代扣记录
      */
     private String payNo;
+    
+    /**
+     * 扣款交易单号
+     */
+    private String tradeNo;
     
     /**
      * 分期期次

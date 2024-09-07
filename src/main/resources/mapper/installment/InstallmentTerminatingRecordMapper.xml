@@ -149,6 +149,7 @@
         from t_installment_terminating_record
         where tenant_id = #{tenantId}
             <include refid="ifLabelsForWhere"/>
+        order by id desc
         limit #{offset}, #{size}
     </select>
     

@@ -23,9 +23,5 @@ public class JsonUserInstallmentTerminatingRecordController {
     
     private InstallmentTerminatingRecordService installmentTerminatingRecordService;
     
-    @ProcessParameter
-    @PostMapping("/create")
-    public R<String> terminatingRecord(@RequestBody @Validated CreateTerminatingRecordQuery query) {
-        return installmentTerminatingRecordService.createTerminatingRecord(query.getExternalAgreementNo(), query.getReason());
-    }
+
 }
