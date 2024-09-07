@@ -17,6 +17,7 @@ import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -72,7 +73,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     String TRACE_ID = "traceId";
     
-    private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("free-deposit-pool",1, "free-deposit"));
+    private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("free-deposit-pool", 1, "free-deposit"));
     
     @Override
     public FreeDepositOrderStatusBO getFreeDepositOrderStatus(FreeDepositOrderStatusQuery query) {
@@ -146,7 +147,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", request.getUid());
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
-        log.info("FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
+        log.info("FreeDeposit INFO! FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
         
         // 发送延迟队列延迟更新免押状态为最终态
         FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(request.getFreeDepositOrderId()).build();
@@ -170,15 +171,15 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         // 0元退押处理
         if (eleRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
-            final UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel()).tenantId(query.getTenantId())
-                    .build();
+            final UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel())
+                    .tenantId(query.getTenantId()).build();
             //这里使用异步线程模拟回调,使用同步会导致之前的业务同步等待异步回调完成，导致二次改状态为中间态
-            executorService.execute(()->{
+            executorService.execute(() -> {
                 try {
                     //这里睡5s是为了模拟回调时的延迟，以等待自身业务完成
                     Thread.sleep(5 * 1000);
                     freeDepositNotifyService.unfreeFakeNotify(params);
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
                 }
             });
@@ -201,6 +202,11 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.warn("authToPay WARN! authToPay.query is null");
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
+        
+        if (Objects.isNull(query.getChannel())) {
+            return Triple.of(false, "100436", "代扣异常，无法判断代扣渠道");
+        }
+        
         log.info("FreeDeposit INFO! authToPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         
         // 代扣延迟
@@ -216,13 +222,36 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Override
     public AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query) {
         if (Objects.isNull(query)) {
-            log.warn("queryAuthToPayStatus WARN! authToPay.query is null");
+            log.warn("FreeDeposit WARN! queryAuthToPayStatus.query is null");
             return null;
         }
-        log.info("QueryAuthToPayStatus INFO! queryAuthToPayStatus.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
+        
+        if (Objects.isNull(query.getChannel())) {
+            log.error("FreeDeposit Error! queryAuthToPayStatus.channel is null");
+            return null;
+        }
+        
+        log.info("FreeDeposit INFO! queryAuthToPayStatus.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
         // 代扣状态
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.queryAuthToPayStatus(query);
+    }
+    
+    @Override
+    public Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query) {
+        if (Objects.isNull(query)) {
+            log.warn("FreeDeposit WARN! cancelAuthPay.query is null");
+            return null;
+        }
+        
+        if (Objects.isNull(query.getChannel())) {
+            log.error("FreeDeposit Error! cancelAuthPay.channel is null");
+            return null;
+        }
+        log.info("FreeDeposit INFO! cancelAuthPay.channel is {}, orderId is {}", query.getChannel(), query.getOrderId());
+        // 代扣状态
+        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
+        return service.cancelAuthPay(query);
     }
 }
 

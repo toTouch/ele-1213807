@@ -6,19 +6,17 @@ import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositDelayDTO;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
 import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
-import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
+import com.xiliulou.electricity.service.FreeDepositService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -43,7 +41,7 @@ public class AuthPayConsumer implements RocketMQListener<String> {
     private FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
     
     @Resource
-    private ApplicationContext applicationContext;
+    private FreeDepositService freeDepositService;
     
     @Override
     public void onMessage(String msg) {
@@ -73,14 +71,18 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             return;
         }
         
-        BaseFreeDepositService baseFreeDepositService = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(dto.getChannel()), BaseFreeDepositService.class);
-        
         // 再次查询代扣状态
         FreeDepositAuthToPayStatusQuery freeDepositAuthToPayStatusQuery = FreeDepositAuthToPayStatusQuery.builder().authPayOrderId(alipayHistory.getAuthPayOrderId())
-                .authNo(freeDepositOrder.getAuthNo()).orderId(alipayHistory.getOrderId()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
-        AuthPayStatusBO authPayStatusBO = baseFreeDepositService.queryAuthToPayStatus(freeDepositAuthToPayStatusQuery);
+                .authNo(freeDepositOrder.getAuthNo()).channel(dto.getChannel()).orderId(alipayHistory.getOrderId()).tenantId(freeDepositOrder.getTenantId())
+                .uid(freeDepositOrder.getUid()).build();
+        AuthPayStatusBO authPayStatusBO = freeDepositService.queryAuthToPayStatus(freeDepositAuthToPayStatusQuery);
         
-        log.info("AuthPayConsumer info! queryAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
+        log.info("AuthPayConsumer Info! queryAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
+        
+        if (Objects.isNull(authPayStatusBO)) {
+            log.warn("AuthPayConsumer Warn! queryAuthPayStatus.authPayStatusBO is null");
+            return;
+        }
         
         // 如果代扣中1和代扣失败2，更新为失败
         if (Objects.equals(authPayStatusBO.getOrderStatus(), FreeDepositOrder.PAY_STATUS_DEALING) || Objects.equals(authPayStatusBO.getOrderStatus(),
@@ -98,8 +100,8 @@ public class AuthPayConsumer implements RocketMQListener<String> {
             
             // 执行取消代扣
             FreeDepositCancelAuthToPayQuery cancelAuthToPayQuery = FreeDepositCancelAuthToPayQuery.builder().orderId(alipayHistory.getOrderId())
-                    .authPayOrderId(alipayHistory.getAuthPayOrderId()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
-            baseFreeDepositService.cancelAuthPay(cancelAuthToPayQuery);
+                    .authPayOrderId(alipayHistory.getAuthPayOrderId()).channel(dto.getChannel()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
+            freeDepositService.cancelAuthPay(cancelAuthToPayQuery);
         }
     }
     
