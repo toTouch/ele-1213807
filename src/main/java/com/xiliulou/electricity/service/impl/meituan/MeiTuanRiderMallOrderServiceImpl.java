@@ -915,7 +915,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         String orderId = meiTuanRiderMallOrder.getMeiTuanOrderId();
         DeliverRsp deliverRsp = null;
         try {
-            deliverRsp = virtualTradeService.deliverOrder(apiConfig, orderId, null, VirtualTradeStatusEnum.VP_RECHARGE_STATUS_SUCCESS.getCode(),
+            deliverRsp = virtualTradeService.deliverOrder(apiConfig, orderId, orderId, VirtualTradeStatusEnum.VP_RECHARGE_STATUS_SUCCESS.getCode(),
                     userBatteryMemberCard.getOrderEffectiveTime() / 1000, userBatteryMemberCard.getOrderExpireTime() / 1000);
         } catch (Exception e) {
             log.error("NotifyMeiTuanDeliver error! notifyMeiTuanDeliver fail, uid={}, orderId={}", uid, orderId, e);
