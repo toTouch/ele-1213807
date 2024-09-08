@@ -57,7 +57,7 @@ public class FyInstallmentHandler {
             R<String> stringR;
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
                 log.info("回调调试，签约回调");
-                stringR = installmentBizService.handleSign(installmentRecord);
+                stringR = installmentBizService.handleSign(installmentRecord, signNotifyQuery.getAgreementNo());
             } else {
                 // 处理解约成功回调
                 stringR = installmentBizService.handleTerminating(installmentRecord);

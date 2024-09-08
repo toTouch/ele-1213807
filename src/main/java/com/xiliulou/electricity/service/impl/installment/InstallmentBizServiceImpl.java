@@ -23,6 +23,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.installment.HandleTerminatingRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -56,14 +57,13 @@ import com.xiliulou.pay.deposit.fengyun.pojo.response.FyReleaseAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FySignAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
@@ -136,8 +137,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     private final EleRefundOrderService eleRefundOrderService;
     
-    XllThreadPoolExecutorService initiatingDeductThreadPool = XllThreadPoolExecutors.newFixedThreadPool("INSTALLMENT_INITIATING_DEDUCT", 1, "initiatingDeduct");
+    XllThreadPoolExecutorService initiatingDeductThreadPool;
     
+    @PostConstruct
+    public void init() {
+        initiatingDeductThreadPool = XllThreadPoolExecutors.newFixedThreadPool("INSTALLMENT_INITIATING_DEDUCT", 1, "initiatingDeduct");
+    }
     
     @Override
     public R querySignStatus(String externalAgreementNo) {
@@ -155,7 +160,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         FyQuerySignAgreementRsp rsp = (FyQuerySignAgreementRsp) queried.getData();
         
         if (Objects.equals(Integer.valueOf(rsp.getStatus()), SIGN_QUERY_STATUS_SIGN)) {
-            handleSign(installmentRecord);
+            handleSign(installmentRecord, rsp.getAgreementNo());
         } else if (Objects.equals(Integer.valueOf(rsp.getStatus()), SIGN_QUERY_STATUS_CANCEL)) {
             handleTerminating(installmentRecord);
         }
@@ -175,12 +180,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("未退还电池");
         }
         
-        InstallmentDeductionPlanQuery deductionPlanQuery = new InstallmentDeductionPlanQuery();
-        deductionPlanQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        deductionPlanQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
         
-        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(deductionPlans)) {
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
             return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
@@ -208,11 +213,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("未退还电池");
         }
         
-        InstallmentDeductionPlanQuery deductionPlanQuery = new InstallmentDeductionPlanQuery();
-        deductionPlanQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        deductionPlanQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(deductionPlans)) {
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
             return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
@@ -366,7 +372,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R<String> handleSign(InstallmentRecord installmentRecord) {
+    public R<String> handleSign(InstallmentRecord installmentRecord, String agreementNo) {
         if (Objects.isNull(installmentRecord) || !INSTALLMENT_RECORD_STATUS_UN_SIGN.equals(installmentRecord.getStatus())) {
             log.warn("SIGN NOTIFY WARN! no right installmentRecord, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
             return R.fail(null);
@@ -387,6 +393,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentRecordUpdate.setId(installmentRecord.getId());
         installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_SIGN);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentRecordUpdate.setAgreementNo(agreementNo);
         
         log.info("回调调试，生成还款计划");
         // 生成还款计划
@@ -395,14 +402,15 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             log.warn("SIGN NOTIFY WARN! generate deduction plan, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
         }
         
-        FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
         if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
-            log.warn("SIGN NOTIFY WARN! initiating deduct fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+            log.warn("SIGN NOTIFY WARN! fyConfig wrong, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
         }
         
-        log.info("回调调试，发起代扣");
         // 尽快给用户完成代扣和套餐绑定，异步发起代扣
+        installmentRecord.setAgreementNo(agreementNo);
         initiatingDeductThreadPool.execute(() -> {
+            log.info("回调调试，异步代扣");
             initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
         });
         
@@ -454,6 +462,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.ok();
         }
         
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK, deductionRecord.getUid()), "1", 3 * 1000L, false)) {
+            return R.ok();
+        }
+        
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(deductionRecord.getExternalAgreementNo());
         
         InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryByAgreementNoAndIssue(deductionRecord.getExternalAgreementNo(), deductionRecord.getIssue());
@@ -461,7 +473,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         Triple<Boolean, String, Object> handlePackageTriple = null;
         if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
             // 处理换电代扣成功的场景
-            handlePackageTriple = handleBatteryMemberCard(deductionRecord, installmentRecord, deductionRecord.getUid());
+            handlePackageTriple = handleBatteryMemberCard(deductionRecord, installmentRecord, deductionPlan, deductionRecord.getUid());
         }
         
         // 代扣成功后其他记录的处理
@@ -502,7 +514,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        if (redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
+        log.info("回调调试，代扣开始，deductionPlan={}", deductionPlan);
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
+            log.info("回调调试，代扣获取锁失败");
             return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);
         }
         
@@ -512,8 +526,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         // 生成代扣记录
         InstallmentDeductionRecord installmentDeductionRecord = new InstallmentDeductionRecord();
-        installmentDeductionRecord.setUid(installmentDeductionRecord.getUid());
-        installmentDeductionRecord.setExternalAgreementNo(installmentDeductionRecord.getExternalAgreementNo());
+        installmentDeductionRecord.setUid(installmentRecord.getUid());
+        installmentDeductionRecord.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         installmentDeductionRecord.setPayNo(payNo);
         installmentDeductionRecord.setRepaymentPlanNo(repaymentPlanNo);
         installmentDeductionRecord.setUserName(installmentRecord.getUserName());
@@ -526,6 +540,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentDeductionRecord.setFranchiseeId(deductionPlan.getFranchiseeId());
         installmentDeductionRecord.setCreateTime(System.currentTimeMillis());
         installmentDeductionRecord.setUpdateTime(System.currentTimeMillis());
+        installmentDeductionRecordService.insert(installmentDeductionRecord);
         
         try {
             
@@ -534,9 +549,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             FyAgreementPayRequest request = new FyAgreementPayRequest();
             
             request.setPayNo(payNo);
-            request.setAgreementNo(deductionPlan.getExternalAgreementNo());
+            request.setAgreementNo(installmentRecord.getAgreementNo());
             request.setRepaymentPlanNo(repaymentPlanNo);
-            request.setTotalAmount(Integer.valueOf(deductionPlan.getAmount().multiply(new BigDecimal("100")).toString()));
+            request.setTotalAmount(deductionPlan.getAmount().multiply(new BigDecimal("100")).intValue());
             request.setSubject("分期套餐代扣支付");
             request.setNotifyUrl(String.format(fengYunConfig.getAgreementPayNotifyUrl(), installmentRecord.getUid()));
             request.setUserName(installmentRecord.getUserName());
@@ -544,15 +559,17 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             request.setProvinceName("陕西省");
             request.setCityName("西安市");
             
+            log.info("回调调试，代扣参数，request={}", request);
+            
             fyCommonQuery.setChannelCode(fyConfig.getChannelCode());
             fyCommonQuery.setFlowNo(repaymentPlanNo + System.currentTimeMillis());
             fyCommonQuery.setFyRequest(request);
             FyResult<FyAgreementPayRsp> fyAgreementPayRspFyResult = fyAgreementService.agreementPay(fyCommonQuery);
             
-            // 调用成功，则保存代扣中的记录
+            log.info("回调调试，代扣结果，fyAgreementPayRspFyResult={}", fyAgreementPayRspFyResult);
+            
+            // 调用成功
             if (Objects.equals(FY_SUCCESS_CODE, fyAgreementPayRspFyResult.getCode())) {
-                
-                installmentDeductionRecordService.insert(installmentDeductionRecord);
                 return Triple.of(true, null, null);
             }
         } catch (Exception e) {
@@ -594,6 +611,15 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("有未完成的解约申请");
         }
         
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
         InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, reason);
         installmentTerminatingRecordService.insert(installmentTerminatingRecord);
         
@@ -601,7 +627,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     
-    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentDeductionRecord deductionRecord, InstallmentRecord installmentRecord, Long uid) {
+    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentDeductionRecord deductionRecord, InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
@@ -610,8 +636,13 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionRecord.getExternalAgreementNo(), 1);
         
-        // 优先给用户绑定套餐
+        // 给用户绑定套餐
         if (Objects.equals(deductionRecord.getIssue(), 1)) {
+            ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
+            memberCardOrderUpdate.setId(memberCardOrder.getId());
+            memberCardOrderUpdate.setValidDays(deductionPlan.getRentTime());
+            electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
+            
             unionTradeOrderService.manageMemberCardOrderV2(memberCardOrder.getOrderId(), ElectricityTradeOrder.STATUS_SUCCESS);
         } else {
             // 下述校验在上文的绑定第一期套餐方法内部做了，故在此处校验

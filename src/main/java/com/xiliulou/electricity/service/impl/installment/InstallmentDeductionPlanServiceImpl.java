@@ -73,12 +73,24 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         // 获取套餐
         BatteryMemberCard batteryMemberCard = null;
         CarRentalPackagePo carRentalPackagePo;
+        List<InstallmentDeductionPlan> planList = null;
         if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
             batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
             
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("GENERATE DEDUCTION PLAN WARN! batteryMemberCard is null. externalAgreementNo={}", installmentRecord.getExternalAgreementNo());
                 return null;
+            }
+            
+            planList = new ArrayList<>(installmentRecord.getInstallmentNo());
+            for (int i = 1; i <= installmentRecord.getInstallmentNo(); i++) {
+                InstallmentDeductionPlan deductionPlan = new InstallmentDeductionPlan();
+                BeanUtils.copyProperties(basicDeductionPlan, deductionPlan);
+                deductionPlan.setIssue(i);
+                deductionPlan.setAmount(InstallmentUtil.calculateSuborderAmount(i, installmentRecord, batteryMemberCard));
+                deductionPlan.setRentTime(InstallmentUtil.calculateSuborderRentTime(i, installmentRecord, batteryMemberCard));
+                deductionPlan.setDeductTime(InstallmentUtil.calculateSuborderDeductTime(i));
+                planList.add(deductionPlan);
             }
         } else {
             carRentalPackagePo = carRentalPackageService.selectById(installmentRecord.getPackageId());
@@ -89,16 +101,7 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             }
         }
         
-        List<InstallmentDeductionPlan> planList = new ArrayList<>(installmentRecord.getInstallmentNo());
-        for (int i = 1; i <= installmentRecord.getInstallmentNo(); i++) {
-            InstallmentDeductionPlan deductionPlan = new InstallmentDeductionPlan();
-            BeanUtils.copyProperties(basicDeductionPlan, deductionPlan);
-            deductionPlan.setIssue(i);
-            deductionPlan.setAmount(InstallmentUtil.calculateSuborderAmount(i, installmentRecord, batteryMemberCard));
-            deductionPlan.setRentTime(InstallmentUtil.calculateSuborderRentTime(i, installmentRecord, batteryMemberCard));
-            deductionPlan.setDeductTime(InstallmentUtil.calculateSuborderDeductTime(i));
-            planList.add(deductionPlan);
-        }
+
         return planList;
     }
     

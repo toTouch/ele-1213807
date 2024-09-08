@@ -61,6 +61,11 @@ public interface InstallmentConstants {
     Integer INSTALLMENT_RECORD_STATUS_CANCELLED = 5;
     
     /**
+     * 分期记录状态-取消支付
+     */
+    Integer INSTALLMENT_RECORD_STATUS_CANCEL_PAY = 6;
+    
+    /**
      * 代扣计划状态-未支付
      */
     Integer DEDUCTION_PLAN_STATUS_INIT = 0;

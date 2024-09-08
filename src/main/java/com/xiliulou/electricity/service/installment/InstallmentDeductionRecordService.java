@@ -59,4 +59,11 @@ public interface InstallmentDeductionRecordService {
      * @return 代扣记录
      */
     InstallmentDeductionRecord queryByPayNo(String payNo);
+    
+    /**
+     * 根据请求签约号及其他参数查询代扣记录
+     * @param installmentDeductionRecordQuery 查询参数
+     * @return 代扣记录
+     */
+    List<InstallmentDeductionRecord> listDeductionRecord(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
 }

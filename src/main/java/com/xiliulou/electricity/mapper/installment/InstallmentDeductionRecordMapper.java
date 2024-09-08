@@ -24,4 +24,6 @@ public interface InstallmentDeductionRecordMapper {
     Integer count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
     
     InstallmentDeductionRecord selectRecordByPayNo(String payNo);
+    
+    List<InstallmentDeductionRecord> selectListDeductionRecord(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
 }

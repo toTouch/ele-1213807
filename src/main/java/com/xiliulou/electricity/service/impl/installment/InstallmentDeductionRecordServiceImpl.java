@@ -68,5 +68,10 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         return installmentDeductionRecordMapper.selectRecordByPayNo(payNo);
     }
     
+    @Override
+    public List<InstallmentDeductionRecord> listDeductionRecord(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {
+        return installmentDeductionRecordMapper.selectListDeductionRecord(installmentDeductionRecordQuery);
+    }
+    
     
 }

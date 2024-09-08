@@ -2,8 +2,6 @@ package com.xiliulou.electricity.utils;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
-import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Objects;
 
@@ -22,10 +19,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  * @Author: SongJP
  * @Date: 2024/9/4 9:29
  */
-@AllArgsConstructor
 public class InstallmentUtil {
-    
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     /**
      * 计算还款计划每期金额

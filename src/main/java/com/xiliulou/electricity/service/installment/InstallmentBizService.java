@@ -62,9 +62,10 @@ public interface InstallmentBizService {
     /**
      * 签约成功的处理
      * @param installmentRecord 签约记录
+     * @param agreementNo 用户签约成功记录编号，代扣使用
      * @return 处理结果
      */
-    R<String> handleSign(InstallmentRecord installmentRecord);
+    R<String> handleSign(InstallmentRecord installmentRecord, String agreementNo);
     
     /**
      * 解约成功的处理

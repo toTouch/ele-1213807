@@ -3,48 +3,51 @@
 <mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper">
     
     <sql id="columnsWithoutId">
-        uid, external_agreement_no, user_name, mobile, package_id, package_type, paid_amount, `status`, installment_no, paid_installment, tenant_id,
+        uid, external_agreement_no, agreement_no, user_name, mobile, package_id, package_type, paid_amount, `status`, installment_no, paid_installment, tenant_id,
         franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
-        #{uid}, #{externalAgreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{paidAmount}, #{status}, #{installmentNo}, #{paidInstallment},
+        #{uid}, #{externalAgreementNo}, #{agreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{paidAmount}, #{status}, #{installmentNo}, #{paidInstallment},
         #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
     <sql id="ifLabelsForWhere">
         <if test="uid != null">
-            and uid = #{uid},
+            and uid = #{uid}
         </if>
         <if test="externalAgreementNo != null and externalAgreementNo != ''">
-            and external_agreement_no = #{externalAgreementNo},
+            and external_agreement_no = #{externalAgreementNo}
+        </if>
+        <if test="agreementNo != null and agreementNo != ''">
+            and agreement_no = #{agreementNo}
         </if>
         <if test="userName != null and userName != ''">
-            and user_name = #{userName},
+            and user_name = #{userName}
         </if>
         <if test="mobile != null and mobile != ''">
-            and mobile = #{mobile},
+            and mobile = #{mobile}
         </if>
         <if test="packageId != null">
-            and package_id = #{packageId},
+            and package_id = #{packageId}
         </if>
         <if test="packageType != null">
-            and package_type = #{packageType},
+            and package_type = #{packageType}
         </if>
         <if test="paidAmount != null">
-            and paid_amount = #{paidAmount},
+            and paid_amount = #{paidAmount}
         </if>
         <if test="status != null">
-            and `status` = #{status},
+            and `status` = #{status}
         </if>
         <if test="installmentNo != null">
-            and installment_no = #{installmentNo},
+            and installment_no = #{installmentNo}
         </if>
         <if test="paidInstallment != null">
-            and paid_installment = #{paidInstallment},
+            and paid_installment = #{paidInstallment}
         </if>
         <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId},
+            and franchisee_id = #{franchiseeId}
         </if>
         <if test="franchiseeIds != null">
             and franchisee_id in
@@ -53,10 +56,10 @@
             </foreach>
         </if>
         <if test="createTime != null">
-            and create_time = #{createTime},
+            and create_time = #{createTime}
         </if>
         <if test="updateTime != null">
-            and update_time = #{updateTime},
+            and update_time = #{updateTime}
         </if>
     </sql>
     
@@ -64,10 +67,12 @@
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="uid" column="uid" jdbcType="BIGINT"/>
         <result property="externalAgreementNo" column="external_agreement_no" jdbcType="VARCHAR"/>
+        <result property="agreementNo" column="agreement_no" jdbcType="VARCHAR"/>
         <result property="userName" column="user_name" jdbcType="VARCHAR"/>
         <result property="mobile" column="mobile" jdbcType="VARCHAR"/>
         <result property="packageId" column="package_id" jdbcType="BIGINT"/>
         <result property="packageType" column="package_type" jdbcType="TINYINT"/>
+        <result property="paidAmount" column="paid_amount" jdbcType="DECIMAL"/>
         <result property="status" column="status" jdbcType="TINYINT"/>
         <result property="installmentNo" column="installment_no" jdbcType="TINYINT"/>
         <result property="paidInstallment" column="paid_installment" jdbcType="TINYINT"/>
@@ -124,6 +129,9 @@
             <if test="externalAgreementNo != null and externalAgreementNo != ''">
                 external_agreement_no = #{externalAgreementNo},
             </if>
+            <if test="agreementNo != null and agreementNo != ''">
+                agreement_no = #{agreementNo},
+            </if>
             <if test="userName != null and userName != ''">
                 user_name = #{userName},
             </if>
@@ -135,6 +143,9 @@
             </if>
             <if test="packageType != null">
                 package_type = #{packageType},
+            </if>
+            <if test="paidAmount != null">
+                paid_amount = #{paidAmount},
             </if>
             <if test="status != null">
                 `status` = #{status},

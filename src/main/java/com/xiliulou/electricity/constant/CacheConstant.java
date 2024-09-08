@@ -717,12 +717,12 @@ public interface CacheConstant {
     String CACHE_INSTALLMENT_PAYMENT_LOCK = "installment:payment_lock:%d";
 
     /**
-     * 分期套餐签约回调锁
+     * 分期套餐签约成功后处理逻辑锁
      */
     String CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK = "installment:sign_notify_lock:%d";
 
     /**
-     * 分期套餐代扣回调锁
+     * 分期套餐代扣后处理逻辑锁
      */
     String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
 }

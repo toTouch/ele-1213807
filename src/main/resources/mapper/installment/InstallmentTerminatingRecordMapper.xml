@@ -87,58 +87,55 @@
     </insert>
     
     <update id="update">
-        update t_installment_record
+        update t_installment_terminating_record
         <set>
             <if test="uid != null">
-                uid = #{uid},
+                uid = #{uid}
             </if>
             <if test="externalAgreementNo != null and externalAgreementNo != ''">
-                external_agreement_no = #{externalAgreementNo},
+                external_agreement_no = #{externalAgreementNo}
             </if>
             <if test="userName != null and userName != ''">
-                user_name = #{userName},
+                user_name = #{userName}
             </if>
             <if test="mobile != null and mobile != ''">
-                mobile = #{mobile},
+                mobile = #{mobile}
             </if>
             <if test="packageId != null">
-                package_id = #{packageId},
+                package_id = #{packageId}
             </if>
             <if test="packageType != null">
-                package_type = #{packageType},
+                package_type = #{packageType}
             </if>
             <if test="amount != null">
-                amount = #{amount},
+                amount = #{amount}
             </if>
             <if test="paidAmount != null">
-                paid_amount = #{paidAmount},
+                paid_amount = #{paidAmount}
             </if>
             <if test="unpaidAmount != null">
-                unpaid_amount = #{unpaidAmount},
+                unpaid_amount = #{unpaidAmount}
             </if>
             <if test="status != null">
-                `status` = #{status},
+                `status` = #{status}
             </if>
             <if test="reason != null and reason != ''">
-                reason = #{reason},
+                reason = #{reason}
             </if>
             <if test="opinion != null and opinion != ''">
-                opinion = #{opinion},
+                opinion = #{opinion}
             </if>
             <if test="auditorId != null">
-                auditor_id = #{auditorId},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
+                auditor_id = #{auditorId}
             </if>
             <if test="franchiseeId != null">
-                franchisee_id = #{franchiseeId},
+                franchisee_id = #{franchiseeId}
             </if>
             <if test="createTime != null">
-                create_time = #{createTime},
+                create_time = #{createTime}
             </if>
             <if test="updateTime != null">
-                update_time = #{updateTime},
+                update_time = #{updateTime}
             </if>
         </set>
         where id = #{id}
@@ -172,6 +169,7 @@
                 </foreach>
             </if>
         </where>
+        order by id desc
     </select>
     
     <select id="selectById"

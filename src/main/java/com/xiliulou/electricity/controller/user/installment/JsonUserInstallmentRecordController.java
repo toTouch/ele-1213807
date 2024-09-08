@@ -28,8 +28,6 @@ public class JsonUserInstallmentRecordController {
     
     private InstallmentRecordService installmentRecordService;
     
-
-    
     /**
      * 查询当前登录用户正在使用的签约记录信息
      */

@@ -34,6 +34,11 @@ public class InstallmentRecord {
     private String externalAgreementNo;
     
     /**
+     * 用户签约成功记录编号，代扣使用
+     */
+    private String agreementNo;
+    
+    /**
      * 实际签约人姓名
      */
     private String userName;

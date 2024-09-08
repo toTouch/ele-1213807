@@ -67,4 +67,14 @@ public class InstallmentRecordVO extends InstallmentRecord {
      * 未支付金额
      */
     private BigDecimal unpaidAmount;
+    
+    /**
+     * 值为1时，解约申请被拒绝过
+     */
+    private Integer refused;
+    
+    /**
+     * 解约申请被拒绝的最新的原因
+     */
+    private String opinion;
 }

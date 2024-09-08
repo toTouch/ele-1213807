@@ -46,6 +46,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
 
 /**
  * @Description ...
@@ -175,13 +176,34 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
         installmentRecordVO.setOverdue(CollectionUtils.isEmpty(deductionPlans) ? 0 : 1);
         
-        // 查询有无审核中的解约申请
+        // 查询有无审核中的、被拒绝的解约申请
         InstallmentTerminatingRecordQuery terminatingRecordQuery = new InstallmentTerminatingRecordQuery();
         terminatingRecordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        terminatingRecordQuery.setStatus(TERMINATING_RECORD_STATUS_INIT);
+        terminatingRecordQuery.setStatuses(Arrays.asList(TERMINATING_RECORD_STATUS_INIT, TERMINATING_RECORD_STATUS_REFUSE));
         
         List<InstallmentTerminatingRecord> terminatingRecords = installmentTerminatingRecordService.listForRecordWithStatus(terminatingRecordQuery);
-        installmentRecordVO.setUnderReview(CollectionUtils.isEmpty(terminatingRecords) ? 0 : 1);
+        
+        if (CollectionUtils.isEmpty(terminatingRecords)) {
+            installmentRecordVO.setUnderReview(0);
+            return R.ok(installmentRecordVO);
+        }
+        
+        // 设置有无审核中的解约申请
+        for (InstallmentTerminatingRecord terminatingRecord : terminatingRecords) {
+            if (Objects.equals(TERMINATING_RECORD_STATUS_INIT, terminatingRecord.getStatus())) {
+                installmentRecordVO.setUnderReview(1);
+                break;
+            }
+        }
+        
+        // 展示审核被拒绝的原因
+        for (InstallmentTerminatingRecord terminatingRecord : terminatingRecords) {
+            if (Objects.equals(TERMINATING_RECORD_STATUS_REFUSE, terminatingRecord.getStatus())) {
+                installmentRecordVO.setRefused(1);
+                installmentRecordVO.setOpinion(terminatingRecord.getOpinion());
+                break;
+            }
+        }
         
         return R.ok(installmentRecordVO);
     }

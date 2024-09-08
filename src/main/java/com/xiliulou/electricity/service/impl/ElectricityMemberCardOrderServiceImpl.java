@@ -3431,6 +3431,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             // 传递代扣记录则为续费分期套餐子订单
             memberCardOrder = (ElectricityMemberCardOrder) applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
                     .generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, null, installmentRecord).getRight();
+            memberCardOrder.setValidDays(InstallmentUtil.calculateSuborderRentTime(installmentRecord.getPaidInstallment() + 1, installmentRecord, batteryMemberCard));
             memberCardOrder.setSource(source);
         }
         
@@ -4379,8 +4380,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "分期订单已代扣完成", null);
         }
         
+        // UserBatteryMemberCard更新购买次数在本方法之后，此处需+1
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
+        int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1;
         
         // 根据代扣计划设置子订单金额
         BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord.getPaidInstallment() + 1, installmentRecord, memberCard);
@@ -4402,7 +4404,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setValidDays(validDays);
         electricityMemberCardOrder.setTenantId(memberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(memberCard.getFranchiseeId());
-        electricityMemberCardOrder.setPayCount(payCount);
+        electricityMemberCardOrder.setPayCount(payCount + 1);
         electricityMemberCardOrder.setSendCouponId(Objects.nonNull(memberCard.getCouponId()) ? memberCard.getCouponId().longValue() : null);
         electricityMemberCardOrder.setRefId(Objects.nonNull(cabinet) ? cabinet.getId().longValue() : null);
         electricityMemberCardOrder.setSource(Objects.nonNull(cabinet) ? ElectricityMemberCardOrder.SOURCE_SCAN : ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
