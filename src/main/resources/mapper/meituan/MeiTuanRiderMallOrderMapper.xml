@@ -28,8 +28,8 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            where id = #{id}
         </set>
+        where id = #{id}
     </update>
     
     <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
