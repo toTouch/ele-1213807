@@ -912,13 +912,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
         }
         
-        String orderId = meiTuanRiderMallOrder.getOrderId();
+        String orderId = meiTuanRiderMallOrder.getMeiTuanOrderId();
         DeliverRsp deliverRsp = null;
         try {
             deliverRsp = virtualTradeService.deliverOrder(apiConfig, orderId, null, VirtualTradeStatusEnum.VP_RECHARGE_STATUS_SUCCESS.getCode(),
                     userBatteryMemberCard.getOrderEffectiveTime() / 1000, userBatteryMemberCard.getOrderExpireTime() / 1000);
         } catch (Exception e) {
             log.error("NotifyMeiTuanDeliver error! notifyMeiTuanDeliver fail, uid={}, orderId={}", uid, orderId, e);
+            return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
         }
         
         if (Objects.isNull(deliverRsp)) {
