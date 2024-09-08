@@ -395,6 +395,9 @@ public abstract class AbstractCommonFreeDeposit {
     
     
     public void authPayFailRecord(String authPayOrderId, String msg) {
+        if (Objects.isNull(authPayOrderId)) {
+            return;
+        }
         FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByAuthOrderId(authPayOrderId);
         if (Objects.isNull(alipayHistory)) {
             log.warn("authPayFailRecord Warn! alipayHistory is null ,authPayOrderId is {}", authPayOrderId);
