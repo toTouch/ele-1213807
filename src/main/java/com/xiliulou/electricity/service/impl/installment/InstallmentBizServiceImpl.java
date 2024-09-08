@@ -372,20 +372,23 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail(null);
         }
         
-        if (redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
+            log.info("回调调试，获取锁失败");
             return R.ok();
         }
         
         if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_SIGN)) {
+            log.info("回调调试，已签约");
             return R.ok();
         }
-        
+        log.info("回调调试，修改签约记录状态");
         // 更新签约记录状态
         InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
         installmentRecordUpdate.setId(installmentRecord.getId());
         installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_SIGN);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         
+        log.info("回调调试，生成还款计划");
         // 生成还款计划
         List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanService.generateDeductionPlan(installmentRecord);
         if (Objects.isNull(deductionPlanList)) {
@@ -397,14 +400,18 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             log.warn("SIGN NOTIFY WARN! initiating deduct fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
         }
         
+        log.info("回调调试，发起代扣");
         // 尽快给用户完成代扣和套餐绑定，异步发起代扣
         initiatingDeductThreadPool.execute(() -> {
             initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
         });
         
-        // 更新或保存入数据库
-        signNotifySaveAndUpdate(installmentRecordUpdate, deductionPlanList);
+        // 更新签约记录
+        installmentRecordService.update(installmentRecordUpdate);
+        // 保存还款计划
+        deductionPlanList.forEach(installmentDeductionPlanService::insert);
         
+        log.info("回调调试，删除缓存");
         // 签约成功，删除签约二维码缓存
         redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, installmentRecord.getUid()));
         return R.ok();
@@ -644,17 +651,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         return R.fail("查询失败");
     }
-    
-    private void signNotifySaveAndUpdate(InstallmentRecord installmentRecordUpdate, List<InstallmentDeductionPlan> deductionPlanTriple) {
-        // 更新签约记录
-        installmentRecordService.update(installmentRecordUpdate);
-        
-        deductionPlanTriple.forEach(deductionPlan -> {
-            installmentDeductionPlanService.insert(deductionPlan);
-        });
-        R.ok();
-    }
-    
     
     private R<String> terminatingInstallmentRecord(InstallmentRecord installmentRecord) {
         try {
