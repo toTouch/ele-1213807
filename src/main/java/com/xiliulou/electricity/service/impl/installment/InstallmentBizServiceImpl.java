@@ -96,6 +96,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.SIGN_QUERY_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_RELEASE;
 
 /**
  * @Description ...
@@ -222,17 +223,20 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
+        InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
+        terminatingRecordUpdate.setId(query.getId());
+        terminatingRecordUpdate.setOpinion(query.getOpinion());
+        terminatingRecordUpdate.setAuditorId(SecurityUtils.getUid());
+        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        
         if (Objects.equals(query.getStatus(), TERMINATING_RECORD_STATUS_REFUSE)) {
-            InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
-            terminatingRecordUpdate.setId(query.getId());
             terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_REFUSE);
-            terminatingRecordUpdate.setOpinion(query.getOpinion());
-            terminatingRecordUpdate.setAuditorId(SecurityUtils.getUid());
-            terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
-            
             installmentTerminatingRecordService.update(terminatingRecordUpdate);
+            
             return R.ok();
         } else {
+            terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_RELEASE);
+            installmentTerminatingRecordService.update(terminatingRecordUpdate);
             
             return terminatingInstallmentRecord(installmentRecord);
         }
