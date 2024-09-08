@@ -732,7 +732,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             commonQuery.setFlowNo(externalAgreementNo + System.currentTimeMillis());
             commonQuery.setFyRequest(request);
             FyResult<FyQueryAgreementPayRsp> result = fyAgreementService.queryAgreementPay(commonQuery);
-            if (!Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
+
+            if (Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
+                // 传递结果给外部方法校验
                 return R.ok(result.getFyResponse());
             }
         } catch (Exception e) {
