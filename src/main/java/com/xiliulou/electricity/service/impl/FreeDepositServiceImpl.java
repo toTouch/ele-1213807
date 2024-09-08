@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
@@ -11,7 +12,6 @@ import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
@@ -71,7 +71,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Resource
     private FreeDepositNotifyService freeDepositNotifyService;
     
-   public static final String TRACE_ID = "traceId";
+    public static final String TRACE_ID = "traceId";
     
     private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("free-deposit-pool", 1, "free-deposit"));
     
@@ -142,19 +142,21 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
         
-        if (Objects.isNull(request.getChannel())) {
-            return Triple.of(false, "100436", "免押渠道异常，稍后再试");
+        // 获取租户免押次数
+        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(request.getTenantId());
+        if (Objects.isNull(freeDepositData)) {
+            log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", request.getUid());
+            return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
-        
-        log.info("FreeDeposit INFO! freeDepositOrder.channel is {}", request.getChannel());
+        log.info("FreeDeposit INFO! FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
         
         // 发送延迟队列延迟更新免押状态为最终态
         FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(request.getFreeDepositOrderId()).build();
         delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
         
         // 实现免押
-        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(request.getChannel()), BaseFreeDepositService.class);
-        return service.freeDepositOrder(request);
+        BaseFreeDepositService freeDepositWay = freeDepositFactory.getFreeDepositWay(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());
+        return freeDepositWay.freeDepositOrder(request);
     }
     
     
@@ -253,16 +255,5 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         return service.cancelAuthPay(query);
     }
     
-    @Override
-    public Integer getFreeDepositOrderChannel(Integer tenantId) {
-        // 获取租户免押次数
-        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(tenantId);
-        if (Objects.isNull(freeDepositData)) {
-            log.warn("FREE DEPOSIT WARN! freeDepositData is null,tenantId is {}", tenantId);
-            throw new BizException("100404", "免押次数未充值，请联系管理员");
-        }
-        
-        return freeDepositFactory.getFreeDepositChannel(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());
-    }
 }
 

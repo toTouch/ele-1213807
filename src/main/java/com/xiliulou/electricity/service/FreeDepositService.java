@@ -74,11 +74,5 @@ public interface FreeDepositService {
      */
     Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query);
     
-    /**
-     * 获取免押渠道
-     *
-     * @param tenantId
-     * @return
-     */
-    Integer getFreeDepositOrderChannel(Integer tenantId);
+ 
 }

@@ -1144,8 +1144,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
         
-        // 获取免押渠道
-        Integer channel = freeDepositService.getFreeDepositOrderChannel(userInfo.getTenantId());
+        // 免押下单
+        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(uid).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard()).payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId())
+                .realName(freeQuery.getRealName()).subject("电池免押").build();
+        Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
+        if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
+            return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
+        }
+        
+        FreeDepositOrderDTO depositOrderDTO = (FreeDepositOrderDTO) freeDepositOrderTriple.getRight();
         
         // 待冻结
         FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder().uid(uid).authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE).idCard(freeQuery.getIdCard())
@@ -1154,7 +1162,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .franchiseeId(eleDepositOrder.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).transAmt(eleDepositOrder.getPayAmount().doubleValue())
                 // 生成免押订单的时候，免押金额=剩余可代扣金额
                 .payTransAmt(eleDepositOrder.getPayAmount().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY)
-                .channel(channel).build();
+                .channel(depositOrderDTO.getChannel()).build();
         
         insert(freeDepositOrder);
         eleDepositOrderService.insert(eleDepositOrder);
@@ -1171,18 +1179,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
-        
-        // 免押下单
-        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(uid).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber())
-                .idCard(freeQuery.getIdCard()).channel(channel).payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId())
-                .realName(freeQuery.getRealName()).subject("电池免押").build();
-        Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
-        if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
-            return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
-        }
-        
-        FreeDepositOrderDTO depositOrderDTO = (FreeDepositOrderDTO) freeDepositOrderTriple.getRight();
-        
         
         log.info("generate free deposit data from pxz for battery package, data = {}", JsonUtil.toJson(depositOrderDTO));
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
