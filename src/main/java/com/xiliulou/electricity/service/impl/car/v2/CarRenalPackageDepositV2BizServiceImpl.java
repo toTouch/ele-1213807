@@ -436,19 +436,24 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         CarRentalPackageMemberTermPo memberTermInsertOrUpdateEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage,
                 carRentalPackageDepositPayInsert.getOrderNo(), memberTermEntity);
         
-        // 调用第三方
-        Triple<Boolean, String, Object> triple = freeDepositService.freeDepositOrder(
-                FreeDepositOrderRequest.builder().idCard(freeDepositOrder.getIdCard()).tenantId(tenantId).realName(freeDepositOrder.getRealName()).subject("租车套餐免押")
-                        .payAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()))
-                        .freeDepositOrderId(freeDepositOrder.getOrderId()).phoneNumber(freeDepositOrder.getPhone()).uid(uid).build());
-        if (Boolean.FALSE.equals(triple.getLeft())){
-            throw new BizException(triple.getMiddle(), triple.getRight().toString());
-        }
-        FreeDepositOrderDTO freeDepositOrderDTO = (FreeDepositOrderDTO) triple.getRight();
-        freeDepositOrder.setChannel(freeDepositOrderDTO.getChannel());
+        // 提前获取免押渠道
+        Integer channel = freeDepositService.getFreeDepositOrderChannel(userInfo.getTenantId());
+        
+        freeDepositOrder.setChannel(channel);
         freeDepositOrder.setPayTransAmt(freeDepositOrder.getTransAmt());
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
+        
+        
+        // 调用第三方
+        Triple<Boolean, String, Object> triple = freeDepositService.freeDepositOrder(
+                FreeDepositOrderRequest.builder().idCard(freeDepositOrder.getIdCard()).tenantId(tenantId).realName(freeDepositOrder.getRealName()).subject("租车套餐免押")
+                        .payAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt())).freeDepositOrderId(freeDepositOrder.getOrderId()).phoneNumber(freeDepositOrder.getPhone())
+                        .uid(uid).channel(channel).build());
+        if (Boolean.FALSE.equals(triple.getLeft())) {
+            throw new BizException(triple.getMiddle(), triple.getRight().toString());
+        }
+        FreeDepositOrderDTO freeDepositOrderDTO = (FreeDepositOrderDTO) triple.getRight();
         
         log.info("generate free deposit data from pxz for car rental, data = {}", triple.getRight());
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码

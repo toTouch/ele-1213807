@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
@@ -142,21 +141,20 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         if (Objects.isNull(request)) {
             return Triple.of(false, "100419", "系统异常，稍后再试");
         }
-        // 获取租户免押次数
-        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(request.getTenantId());
-        if (Objects.isNull(freeDepositData)) {
-            log.warn("FREE DEPOSIT WARN! freeDepositData is null,uid={}", request.getUid());
-            return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
+        
+        if (Objects.isNull(request.getChannel())) {
+            return Triple.of(false, "100436", "免押渠道异常，稍后再试");
         }
-        log.info("FreeDeposit INFO! FreeDepositServiceImpl.freeDepositData is {}", JsonUtil.toJson(freeDepositData));
+        
+        log.info("FreeDeposit INFO! freeDepositOrder.channel is {}", request.getChannel());
         
         // 发送延迟队列延迟更新免押状态为最终态
         FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(request.getFreeDepositOrderId()).build();
         delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.FREE_DEPOSIT_TAG_NAME);
         
         // 实现免押
-        BaseFreeDepositService freeDepositWay = freeDepositFactory.getFreeDepositWay(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());
-        return freeDepositWay.freeDepositOrder(request);
+        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(request.getChannel()), BaseFreeDepositService.class);
+        return service.freeDepositOrder(request);
     }
     
     

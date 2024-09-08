@@ -53,4 +53,10 @@ public class FreeDepositOrderRequest {
      */
     private String subject;
     
+    
+    /**
+     * 免押渠道
+     */
+    private Integer channel;
+    
 }

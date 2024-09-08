@@ -1084,24 +1084,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
         
-      
-        // 免押下单
-        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(userInfo.getUid()).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber()).idCard(freeQuery.getIdCard())
-                .payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId()).realName(freeQuery.getRealName()).subject("企业渠道用户电池免押")
-                .build();
-        Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
-        if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
-            return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
-        }
-        
-        FreeDepositOrderDTO depositOrderDTO =(FreeDepositOrderDTO) freeDepositOrderTriple.getRight();
+        // 获取免押渠道
+        Integer channel = freeDepositService.getFreeDepositOrderChannel(userInfo.getTenantId());
         
         FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder().uid(freeQuery.getUid()).authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE).idCard(freeQuery.getIdCard())
                 .orderId(eleDepositOrder.getOrderId()).phone(freeQuery.getPhoneNumber()).realName(freeQuery.getRealName()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).storeId(eleDepositOrder.getStoreId())
                 .franchiseeId(eleDepositOrder.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).transAmt(eleDepositOrder.getPayAmount().doubleValue())
                 .payTransAmt(eleDepositOrder.getPayAmount().doubleValue())
-                .type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY).channel(depositOrderDTO.getChannel()).build();
+                .type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(FreeDepositOrder.DEPOSIT_TYPE_BATTERY).channel(channel).build();
         
         
         freeDepositOrderService.insert(freeDepositOrder);
@@ -1119,6 +1110,18 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
         userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
+        
+        // 免押下单
+        FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(userInfo.getUid()).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard()).payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId()).realName(freeQuery.getRealName())
+                .subject("企业渠道用户电池免押").channel(channel).build();
+        Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
+        if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
+            return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
+        }
+        
+        FreeDepositOrderDTO depositOrderDTO = (FreeDepositOrderDTO) freeDepositOrderTriple.getRight();
+        
         
         
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", depositOrderDTO);
