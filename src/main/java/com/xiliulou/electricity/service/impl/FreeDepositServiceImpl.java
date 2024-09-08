@@ -71,7 +71,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Resource
     private FreeDepositNotifyService freeDepositNotifyService;
     
-    String TRACE_ID = "traceId";
+   public static final String TRACE_ID = "traceId";
     
     private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("free-deposit-pool", 1, "free-deposit"));
     
