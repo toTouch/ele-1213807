@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
@@ -252,6 +253,18 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         // 代扣状态
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
         return service.cancelAuthPay(query);
+    }
+    
+    @Override
+    public Integer getFreeDepositOrderChannel(Integer tenantId) {
+        // 获取租户免押次数
+        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(tenantId);
+        if (Objects.isNull(freeDepositData)) {
+            log.warn("FREE DEPOSIT WARN! freeDepositData is null,tenantId is {}", tenantId);
+            throw new BizException("100404", "免押次数未充值，请联系管理员");
+        }
+        
+        return freeDepositFactory.getFreeDepositChannel(freeDepositData.getFreeDepositCapacity(), freeDepositData.getFyFreeDepositCapacity());
     }
 }
 

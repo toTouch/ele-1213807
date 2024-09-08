@@ -31,4 +31,17 @@ public class FreeDepositFactory {
         }
         throw new CustomBusinessException("免押次数未充值，请联系管理员");
     }
+    
+    
+    public Integer getFreeDepositChannel(Integer pxzFreeDepositNum, Integer fyFreeDepositNum) {
+        if (pxzFreeDepositNum > NumberConstant.ZERO) {
+            // 拍小租
+            return FreeDepositServiceWayEnums.PXZ.getChannel();
+        }
+        if (fyFreeDepositNum > NumberConstant.ZERO) {
+            //  蜂云
+            return FreeDepositServiceWayEnums.FY.getChannel();
+        }
+        throw new CustomBusinessException("免押次数未充值，请联系管理员");
+    }
 }
