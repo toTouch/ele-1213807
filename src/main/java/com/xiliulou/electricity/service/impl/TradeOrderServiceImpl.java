@@ -944,7 +944,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return R.fail("301001", "购买分期套餐失败，请联系管理员");
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> saveOrderAndPay(Triple<Boolean, String, Object> eleDepositOrderTriple, Triple<Boolean, String, Object> insuranceOrderTriple,
             Triple<Boolean, String, InstallmentRecord> installmentRecordTriple, Triple<Boolean, String, Object> memberCardOrderTriple, BatteryMemberCard batteryMemberCard,
             UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request) throws WechatPayException {
@@ -996,14 +995,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
         
         // 处理0元问题
-        // if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-        //     Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
-        //     if (Boolean.FALSE.equals(result.getLeft())) {
-        //         return result;
-        //     }
-        //
-        //     return Triple.of(true, "", null);
-        // }
+        if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            if (Boolean.FALSE.equals(result.getLeft())) {
+                return result;
+            }
+            return Triple.of(true, "", null);
+        }
         
         // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
         WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(userInfo.getTenantId(),

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user.installment;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.ProcessParameter;
+import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
@@ -37,5 +38,8 @@ public class JsonUserInstallmentRecordController {
         return installmentRecordService.queryInstallmentRecordForUser();
     }
     
-
+    @PostMapping("/cancel")
+    public R<String> cancel(@RequestBody InstallmentRecordQuery query) {
+        return installmentRecordService.cancel(query.getExternalAgreementNo());
+    }
 }

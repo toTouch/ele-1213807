@@ -78,5 +78,10 @@ public interface InstallmentRecordService {
      */
     R<InstallmentRecordVO> queryInstallmentRecordForUser();
     
-
+    /**
+     * 取消签约
+     * @param externalAgreementNo 请求签约号
+     * @return 处理结果
+     */
+    R<String> cancel(String externalAgreementNo);
 }

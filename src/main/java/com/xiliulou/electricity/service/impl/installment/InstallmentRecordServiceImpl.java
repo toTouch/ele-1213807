@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
@@ -206,6 +207,42 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
         
         return R.ok(installmentRecordVO);
+    }
+    
+    @Override
+    public R<String> cancel(String externalAgreementNo) {
+        InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
+        if (Objects.isNull(installmentRecord)) {
+            return R.fail("签约记录不存在");
+        }
+        
+        if (!Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_INIT) && !Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
+            return R.fail("该分期套餐已签约成功，不可取消");
+        }
+        
+        InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+        installmentRecordUpdate.setId(installmentRecord.getId());
+        installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCEL_PAY);
+        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        InstallmentDeductionPlanQuery deductionPlanQuery = new InstallmentDeductionPlanQuery();
+        deductionPlanQuery.setStatuses(Arrays.asList(DEDUCTION_PLAN_STATUS_INIT, DEDUCTION_PLAN_STATUS_FAIL));
+        deductionPlanQuery.setExternalAgreementNo(externalAgreementNo);
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
+        
+        installmentRecordMapper.update(installmentRecordUpdate);
+        if (CollectionUtils.isEmpty(deductionPlans)) {
+            return R.ok();
+        }
+        
+        deductionPlans.forEach(installmentDeductionPlan -> {
+            InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+            deductionPlanUpdate.setId(installmentDeductionPlan.getId());
+            deductionPlanUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCEL_PAY);
+            deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentDeductionPlanService.update(deductionPlanUpdate);
+        });
+        return R.ok();
     }
     
     
