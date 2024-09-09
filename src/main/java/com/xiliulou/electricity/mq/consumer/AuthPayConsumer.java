@@ -80,8 +80,10 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         
         log.info("AuthPayConsumer Info! queryAuthPayStatus.result is {}", Objects.nonNull(authPayStatusBO) ? JsonUtil.toJson(authPayStatusBO) : "null");
         
+        // 如果查询失败也修改为失败
         if (Objects.isNull(authPayStatusBO)) {
             log.warn("AuthPayConsumer Warn! queryAuthPayStatus.authPayStatusBO is null");
+            updateOrderStatus(alipayHistory);
             return;
         }
         
@@ -90,20 +92,25 @@ public class AuthPayConsumer implements RocketMQListener<String> {
                 FreeDepositOrder.PAY_STATUS_DEAL_FAIL)) {
             
             // 更新退款订单为失败
-            FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
-            freeDepositAlipayHistory.setId(alipayHistory.getId());
-            if (StrUtil.isEmpty(alipayHistory.getRemark())) {
-                freeDepositAlipayHistory.setRemark("代扣超时关闭");
-            }
-            freeDepositAlipayHistory.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_FAIL);
-            freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
-            freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
+            updateOrderStatus(alipayHistory);
             
             // 执行取消代扣
             FreeDepositCancelAuthToPayQuery cancelAuthToPayQuery = FreeDepositCancelAuthToPayQuery.builder().orderId(alipayHistory.getOrderId())
                     .authPayOrderId(alipayHistory.getAuthPayOrderId()).channel(dto.getChannel()).tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).build();
             freeDepositService.cancelAuthPay(cancelAuthToPayQuery);
         }
+    }
+    
+    private void updateOrderStatus(FreeDepositAlipayHistory alipayHistory) {
+        // 更新退款订单为失败
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setId(alipayHistory.getId());
+        if (StrUtil.isEmpty(alipayHistory.getRemark())) {
+            freeDepositAlipayHistory.setRemark("代扣超时关闭");
+        }
+        freeDepositAlipayHistory.setPayStatus(FreeDepositOrder.PAY_STATUS_DEAL_FAIL);
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.update(freeDepositAlipayHistory);
     }
     
 }

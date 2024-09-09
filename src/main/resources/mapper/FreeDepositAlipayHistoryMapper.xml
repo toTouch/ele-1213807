@@ -169,7 +169,7 @@
         from t_free_deposit_alipay_history fdah
         <where>
             <if test="orderId != null and orderId != ''">
-                and fdah.order_id like concat('%', #{orderId}, '%')
+                and fdah.order_id = #{orderId}
             </if>
             <if test="userName != null and userName != ''">
                 and fdah.name like concat('%', #{userName}, '%')
@@ -202,7 +202,7 @@
                 and fdah.franchisee_id = #{franchiseeId}
             </if>
             <if test="authPayOrderId != null and authPayOrderId != ''">
-                and fdah.auth_pay_order_id like concat('%', #{authPayOrderId}, '%')
+                and fdah.auth_pay_order_id = #{authPayOrderId}
             </if>
             
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
@@ -228,7 +228,7 @@
         from t_free_deposit_alipay_history fdah
         <where>
             <if test="orderId != null and orderId != ''">
-                and fdah.order_id like concat('%', #{orderId}, '%')
+                and fdah.order_id = #{orderId}
             </if>
             <if test="userName != null and userName != ''">
                 and fdah.name like concat('%', #{userName}, '%')
@@ -261,7 +261,7 @@
                 and fdah.franchisee_id = #{franchiseeId}
             </if>
             <if test="authPayOrderId != null and authPayOrderId != ''">
-                and fdah.auth_pay_order_id like concat('%', #{authPayOrderId}, '%')
+                and fdah.auth_pay_order_id = #{authPayOrderId}
             </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and fdah.franchisee_id in
