@@ -121,6 +121,7 @@
         select id, <include refid="columnsWithoutId"/>
         from t_installment_record
         where uid = #{uid}
+            and status in (0,1,2,3,4)
         order by id desc
         limit 1
     </select>
