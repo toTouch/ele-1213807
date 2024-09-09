@@ -934,8 +934,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                                 request);
                 
                 // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
-                double score = (double) Instant.now().plus(7, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
+                double score = (double) Instant.now().plus(5, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
                 redisService.zsetAddString(CACHE_INSTALLMENT_CANCEL_SIGN, installmentRecordTriple.getRight().getExternalAgreementNo(), score);
+                log.info("取消签约定时任务调试，存入请求签约号1，externalAgreementNo={}，score={}", installmentRecordTriple.getRight().getExternalAgreementNo(), score);
                 
             }// 购买租车、车电一体套餐在此处扩展else代码块
             

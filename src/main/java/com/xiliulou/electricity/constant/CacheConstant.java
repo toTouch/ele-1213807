@@ -707,7 +707,7 @@ public interface CacheConstant {
     String CACHE_INSTALLMENT_FORM_BODY = "installment:form_Body:%s";
     
     /**
-     * 分期套餐代扣后处理逻辑锁
+     * 分期套餐取消签约记录key
      */
     String CACHE_INSTALLMENT_CANCEL_SIGN = "installment:cancel_sign";
     

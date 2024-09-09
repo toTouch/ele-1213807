@@ -32,12 +32,14 @@ public class InstallmentCancelTask {
     public void cancelSign() {
         double now = System.currentTimeMillis();
         double min = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-        
+        log.info("取消签约定时任务调试，min={}，now={}", min, now);
         Set<String> zSetStringByRange = redisService.getZsetStringByRange(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
         if (CollectionUtils.isEmpty(zSetStringByRange)) {
+            log.info("取消签约定时任务调试，未取到请求签约号");
             return;
         }
-
+        
+        log.info("取消签约定时任务调试，zSetStringByRange={}", zSetStringByRange);
         for (String externalAgreementNo : zSetStringByRange) {
             try {
                 installmentRecordService.cancel(externalAgreementNo);

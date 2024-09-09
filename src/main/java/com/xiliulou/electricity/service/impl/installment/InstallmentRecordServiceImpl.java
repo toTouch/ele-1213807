@@ -237,6 +237,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         installmentRecordUpdate.setId(installmentRecord.getId());
         installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCEL_PAY);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentRecordMapper.update(installmentRecordUpdate);
         
         List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.listOrderByExternalAgreementNo(externalAgreementNo);
         if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
