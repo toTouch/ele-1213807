@@ -163,6 +163,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         // 用户端查询指定的签约记录
         if (!StringUtils.isEmpty(externalAgreementNo)) {
             InstallmentRecord installmentRecord = queryByExternalAgreementNo(externalAgreementNo);
+            if (Objects.isNull(installmentRecord)) {
+                return R.ok();
+            }
             BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
             return R.ok(installmentRecordVO);
         }

@@ -45,5 +45,7 @@ public class InstallmentCancelTask {
                 log.error("Installment Cancel Task error! externalAgreementNo={}", externalAgreementNo, e);
             }
         }
+        
+        redisService.removeZsetRangeByScore(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
     }
 }

@@ -98,6 +98,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -106,6 +108,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_PAYMENT_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
@@ -925,11 +928,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 Triple<Boolean, String, Object> memberCardOrderTriple = electricityMemberCardOrderService.generateInstallmentMemberCardOrder(userInfo, batteryMemberCard,
                         electricityCabinet, installmentRecordTriple.getRight());
                 
-                // 保存相关订单并调起支付获取支付结果
+                // 保存相关订单并调起支付
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
                         .saveOrderAndPay(eleDepositOrderTriple, insuranceOrderTriple, installmentRecordTriple, memberCardOrderTriple, batteryMemberCard, userOauthBind, userInfo,
                                 request);
                 
+                // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
+                double score = (double) Instant.now().plus(7, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
+                redisService.zsetAddString(CACHE_INSTALLMENT_CANCEL_SIGN, installmentRecordTriple.getRight().getExternalAgreementNo(), score);
                 
             }// 购买租车、车电一体套餐在此处扩展else代码块
             
