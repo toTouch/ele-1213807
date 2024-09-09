@@ -159,25 +159,24 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     @Override
     public R<InstallmentRecordVO> queryInstallmentRecordForUser(String externalAgreementNo) {
         InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();
-        
+        InstallmentRecord installmentRecord = new InstallmentRecord();
         // 用户端查询指定的签约记录
         if (!StringUtils.isEmpty(externalAgreementNo)) {
-            InstallmentRecord installmentRecord = queryByExternalAgreementNo(externalAgreementNo);
+            installmentRecord = queryByExternalAgreementNo(externalAgreementNo);
             if (Objects.isNull(installmentRecord)) {
                 return R.ok();
             }
             BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
-            return R.ok(installmentRecordVO);
+
+        } else {
+            // 用户端查询最新签约记录
+            Long uid = SecurityUtils.getUid();
+            installmentRecord = queryLatestRecordByUid(uid);
+            if (Objects.isNull(installmentRecord)) {
+                return R.ok();
+            }
+            BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
         }
-        
-        // 用户端查询最新签约记录
-        Long uid = SecurityUtils.getUid();
-        InstallmentRecord installmentRecord = queryLatestRecordByUid(uid);
-        
-        if (Objects.isNull(installmentRecord)) {
-            return R.ok();
-        }
-        BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
         
         // 设置套餐信息
         setPackageMessage(installmentRecordVO, installmentRecord);
