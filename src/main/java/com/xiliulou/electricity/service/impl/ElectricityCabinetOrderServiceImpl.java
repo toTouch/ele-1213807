@@ -1388,6 +1388,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("OrderV3 WARN! lastExchangeSuccessHandler is not satisfySelfOpenCondition, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
+        
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCabinetName(cabinet.getName());
         vo.setOrderId(lastOrder.getOrderId());
@@ -1395,7 +1396,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setCell(lastOrder.getNewCellNo());
         // 设置是否选仓换电
         setEnterSelectCellExchange(userInfo, vo);
-        
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
@@ -1411,7 +1411,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setSessionId(sessionId);
             // 设置不可以选仓换电标识
             vo.setIsEnterSelectCellExchange(ExchangeUserSelectVo.NOT_ENTER_SELECT_CELL_EXCHANGE);
-            
             return Pair.of(true, vo);
         } else {
             // 没有在仓
@@ -1478,7 +1477,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("OrderV3 INFO! newCellOpenFail.cabinetBox is {}, battery is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
                 Objects.nonNull(battery) ? JsonUtil.toJson(battery) : "null", JsonUtil.toJson(lastOrder));
         
-        // 用户绑定的电池状态是否为租借状态 && 用户绑定的电池在仓 & 电池所在的仓门=上个订单的旧仓门
+        // 用户绑定的电池状态是否为租借状态 && 用户绑定的电池在仓 & 电池所在的仓门=上个订单的旧仓门；开新仓门
         if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && StrUtil.isNotBlank(
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
@@ -1486,7 +1485,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox);
             vo.setSessionId(sessionId);
             vo.setIsEnterSelectCellExchange(ExchangeUserSelectVo.NOT_ENTER_SELECT_CELL_EXCHANGE);
-            
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
@@ -1507,6 +1505,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         vo.setOrderId(lastOrder.getOrderId());
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+        // 设置是否选仓换电
+        setEnterSelectCellExchange(userInfo, vo);
         
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
@@ -1514,11 +1514,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 不在仓，前端会自主开仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getOldCellNo());
-            
             return Pair.of(true, vo);
         }
-        // 设置是否选仓换电
-        setEnterSelectCellExchange(userInfo, vo);
         
         String userBindingBatterySn = electricityBattery.getSn();
         // 用户电池是否在仓
@@ -1830,9 +1827,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
-            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        }
+        commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -1897,9 +1893,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
-            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        }
+        commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+       
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -2102,9 +2097,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
-            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        }
+        commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+        
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -2246,9 +2240,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
-            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        }
+        commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+       
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -3031,9 +3024,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
-            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        }
+        commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+     
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -3147,9 +3139,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
         }
         
-        if (!electricityCabinet.getVersion().isBlank() && VersionUtil.compareVersion(electricityCabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) >= 0) {
-            commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        }
+        commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+     
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
