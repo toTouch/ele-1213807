@@ -127,4 +127,15 @@ public interface MqProducerConstant {
      * 代扣tag
      */
     String AUTH_APY_TAG_NAME = "AUTH_PAY_TAG";
+    
+    /**
+     * 分期topic
+     */
+    String INSTALLMENT_TOPIC_NAME = "INSTALLMENT_TOPIC";
+    
+    
+    /**
+     * 分期tag
+     */
+    String INSTALLMENT_TAG_NAME = "INSTALLMENT_TAG";
 }

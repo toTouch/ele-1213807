@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -19,6 +20,10 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.message.RechargeAlarm;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.installment.HandleTerminatingRecordQuery;
@@ -29,6 +34,7 @@ import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQu
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
@@ -137,6 +143,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     private final TenantService tenantService;
     
     private final EleRefundOrderService eleRefundOrderService;
+    
+    private final SiteMessagePublish siteMessagePublish;
+    
+    private final FreeDepositDataService freeDepositDataService;
     
     XllThreadPoolExecutorService initiatingDeductThreadPool;
     
@@ -330,6 +340,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("初次签约需要输入用户信息");
             }
             
+            FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(installmentRecord.getTenantId());
+            if (Objects.isNull(freeDepositData) || Objects.isNull(freeDepositData.getByStagesCapacity()) || freeDepositData.getByStagesCapacity() < 1) {
+                return R.fail("分期签约次数不足，请充值");
+            }
+            
             Vars vars = new Vars();
             vars.setUserName(query.getUserName());
             vars.setMobile(query.getMobile());
@@ -366,6 +381,18 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
                 redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
                         TimeUnit.MINUTES);
+                
+                // 扣减次数
+                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+                freeDepositDataUpdate.setId(freeDepositData.getId());
+                Integer remaining = freeDepositData.getByStagesCapacity() - 1;
+                freeDepositDataUpdate.setByStagesCapacity(remaining);
+                freeDepositDataService.update(freeDepositDataUpdate);
+                // 发送站内信
+                siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
+                        .tenantId(installmentRecord.getTenantId().longValue()).addContext("type", RechargeAlarm.AUTH_PAY.getCode())
+                        .addContext("count", remaining).build());
+                
                 return R.ok(fySignResult.getFyResponse().getFormBody());
             }
         } catch (Exception e) {
@@ -426,6 +453,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         log.info("回调调试，删除缓存");
         // 签约成功，删除签约二维码缓存
         redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, installmentRecord.getUid()));
+        
         return R.ok();
     }
     
