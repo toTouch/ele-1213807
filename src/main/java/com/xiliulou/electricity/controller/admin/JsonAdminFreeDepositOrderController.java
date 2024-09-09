@@ -3,8 +3,10 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,6 +40,10 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
 
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    
+    @Autowired
+    FreeDepositService freeDepositService;
 
     /**
      * 分页
@@ -261,6 +268,20 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
             return returnTripleResult(verifyPermissionResult);
         }
         return returnTripleResult(this.freeDepositOrderService.syncAuthPayStatus(orderId, authPayOrderId));
+    }
+    
+    
+    /**
+     * 取消代扣
+     */
+    @PutMapping("/admin/freeDepositOrder/cancelAuthPay")
+    public R freeDepositTrilateralPay(@RequestBody FreeDepositCancelAuthToPayQuery query) {
+        
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+        return R.ok(freeDepositService.cancelAuthPay(query));
     }
 
 }
