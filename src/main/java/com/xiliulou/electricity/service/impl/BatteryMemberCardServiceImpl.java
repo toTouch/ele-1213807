@@ -778,7 +778,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
         if (triple.getLeft()) {
-            return triple;
+            return Triple.of(false, triple.getMiddle(), triple.getRight());
         }
         
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
@@ -867,7 +867,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
         if (triple.getLeft()) {
-            return triple;
+            return Triple.of(false, triple.getMiddle(), triple.getRight());
         }
         
         // 套餐数量最多150个，仅对换电套餐做限制
