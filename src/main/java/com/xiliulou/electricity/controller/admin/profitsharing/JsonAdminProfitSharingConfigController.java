@@ -9,6 +9,7 @@ import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequ
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigUpdateStatusOptRequest;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigRemainingVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,6 +66,14 @@ public class JsonAdminProfitSharingConfigController {
         request.setTenantId(TenantContextHolder.getTenantId());
         profitSharingConfigService.updateStatus(request);
         return R.ok();
+    }
+    
+    
+    
+    @GetMapping(value = "/admin/profitSharingConfig/getRemainingScaleLimit/{id}" )
+    public R getRemainingScaleLimit(@PathVariable("id") Long id) {
+        ProfitSharingConfigRemainingVO profitSharingConfigVO = profitSharingConfigService.queryRemainingScaleLimit(TenantContextHolder.getTenantId(), id);
+        return R.ok(profitSharingConfigVO);
     }
     
     
