@@ -385,7 +385,7 @@
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
-            bmc.business_type in (0, 3) and bmc.status=0 and bmc.del_flag=0
+            bmc.business_type in (0, 4) and bmc.status=0 and bmc.del_flag=0
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>

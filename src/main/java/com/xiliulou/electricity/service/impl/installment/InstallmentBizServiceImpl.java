@@ -163,7 +163,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     public R querySignStatus(String externalAgreementNo) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(fyConfig)) {
-            return R.fail("签约代扣功能未配置相关信息！请联系客服处理");
+            return R.fail("301003","签约代扣功能未配置相关信息！请联系客服处理");
         }
         
         R queried = queryInterfaceForInstallmentRecord(externalAgreementNo, fyConfig);
@@ -341,12 +341,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             }
             
             if (Objects.isNull(query.getMobile()) || Objects.isNull(query.getUserName())) {
-                return R.fail("初次签约需要输入用户信息");
+                return R.fail("301009", "初次签约需要输入用户信息");
             }
             
             FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(installmentRecord.getTenantId());
             if (Objects.isNull(freeDepositData) || Objects.isNull(freeDepositData.getByStagesCapacity()) || freeDepositData.getByStagesCapacity() < 1) {
-                return R.fail("分期签约次数不足，请充值");
+                return R.fail("301010", "分期签约次数不足，请充值");
             }
             
             Vars vars = new Vars();
@@ -403,7 +403,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             }
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", uid, e);
-            throw new BizException("签约失败，请联系管理员");
         }
         return R.fail("301002", "签约失败，请联系管理员");
     }
