@@ -42,5 +42,5 @@ public class OrderVO {
     /**
      * 订单使用状态:0-未使用 1-已使用
      */
-    private Integer orderUserStatus;
+    private Integer orderUseStatus;
 }
