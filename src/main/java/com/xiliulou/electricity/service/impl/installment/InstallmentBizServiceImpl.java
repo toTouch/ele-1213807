@@ -622,8 +622,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentDeductionPlanService.update(deductionPlanUpdate);
         
         // 报错或调用失败则保存代扣失败的记录
-        installmentDeductionRecord.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
-        installmentDeductionRecordService.insert(installmentDeductionRecord);
+        InstallmentDeductionRecord deductionRecordUpdate = new InstallmentDeductionRecord();
+        deductionRecordUpdate.setId(installmentDeductionRecord.getId());
+        deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
+        deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentDeductionRecordService.update(deductionRecordUpdate);
         return Triple.of(false, "代扣失败", null);
     }
     
