@@ -860,48 +860,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
-        // 三方接口免押查询
-        FreeDepositOrderStatusQuery dto = FreeDepositOrderStatusQuery.builder().tenantId(userInfo.getTenantId()).channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
-                .uid(userInfo.getUid()).build();
-        FreeDepositOrderStatusBO bo = freeDepositService.getFreeDepositOrderStatus(dto);
-        if (Objects.isNull(bo)) {
-            return Triple.of(false, "100402", "免押查询失败！");
-        }
-        
-        
-        //更新免押订单状态
-        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthNo(bo.getAuthNo());
-        freeDepositOrderUpdate.setAuthStatus(bo.getAuthStatus());
-        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        freeDepositOrderService.update(freeDepositOrderUpdate);
-        
-        //冻结成功
-        if (Objects.equals(bo.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            
-            //扣减免押次数
-            freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
-            
-            //更新押金订单状态
-            EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
-            eleDepositOrderUpdate.setId(eleDepositOrder.getId());
-            eleDepositOrderUpdate.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleDepositOrderService.update(eleDepositOrderUpdate);
-            
-            //绑定加盟商、更新押金状态
-            UserInfo userInfoUpdate = new UserInfo();
-            userInfoUpdate.setUid(uid);
-            userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-            userInfoUpdate.setStoreId(eleDepositOrder.getStoreId());
-            userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
-            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(userInfoUpdate);
-        }
-        
         freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
-        freeDepositUserInfoVo.setBatteryDepositAuthStatus(bo.getAuthStatus());
+        freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
         
         return Triple.of(true, null, freeDepositUserInfoVo);
         
