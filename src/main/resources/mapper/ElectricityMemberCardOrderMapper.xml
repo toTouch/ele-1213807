@@ -718,4 +718,12 @@
         where external_agreement_no = #{externalAgreementNo}
             and issue = #{issue}
     </select>
+    
+    <select id="selectListOrderByExternalAgreementNo"
+            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where external_agreement_no = #{externalAgreementNo}
+    </select>
 </mapper>

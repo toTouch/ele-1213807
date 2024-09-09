@@ -2681,7 +2681,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         memberCardOrderUpdate.setSource(NumberConstant.ZERO);
         memberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
-        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCELL);// 更新订单状态 为取消支付
+        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCEL);// 更新订单状态 为取消支付
         memberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
         memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.baseMapper.updateById(memberCardOrderUpdate);
@@ -2727,7 +2727,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         memberCardOrderUpdate.setSource(NumberConstant.ZERO);
         memberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
-        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCELL);// 更新订单状态 为取消支付
+        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCEL);// 更新订单状态 为取消支付
         memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.baseMapper.updateById(memberCardOrderUpdate);
         
@@ -3546,6 +3546,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         eleUserOperateRecordService.insert(eleUserMembercardOperateRecord);
         
         return memberCardOrder;
+    }
+    
+    @Slave
+    @Override
+    public List<ElectricityMemberCardOrder> listOrderByExternalAgreementNo(String externalAgreementNo) {
+        return electricityMemberCardOrderMapper.selectListOrderByExternalAgreementNo(externalAgreementNo);
     }
     
     @Override

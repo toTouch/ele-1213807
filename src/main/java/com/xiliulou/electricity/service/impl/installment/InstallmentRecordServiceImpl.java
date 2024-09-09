@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
@@ -32,6 +34,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -43,8 +46,6 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
@@ -71,6 +72,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     private InstallmentTerminatingRecordService installmentTerminatingRecordService;
     
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -147,7 +149,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         return installmentRecordMapper.selectRecordWithStatusForUser(uid, statuses);
     }
     
-    
+    @Slave
     @Override
     public InstallmentRecord queryByExternalAgreementNo(String externalAgreementNo) {
         return installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
@@ -155,16 +157,25 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Slave
     @Override
-    public R<InstallmentRecordVO> queryInstallmentRecordForUser() {
+    public R<InstallmentRecordVO> queryInstallmentRecordForUser(String externalAgreementNo) {
+        InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();
+        
+        // 用户端查询指定的签约记录
+        if (StringUtils.isEmpty(externalAgreementNo)) {
+            InstallmentRecord installmentRecord = queryByExternalAgreementNo(externalAgreementNo);
+            BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
+            return R.ok(installmentRecordVO);
+        }
+        
+        // 用户端查询最新签约记录
         Long uid = SecurityUtils.getUid();
-        InstallmentRecord installmentRecord = installmentRecordMapper.selectRecordWithStatusForUser(uid,
-                Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
+        InstallmentRecord installmentRecord = queryLatestRecordByUid(uid);
         
         if (Objects.isNull(installmentRecord)) {
             return R.ok();
         }
-        InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();
         BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
+        
         // 设置套餐信息
         setPackageMessage(installmentRecordVO, installmentRecord);
         
@@ -225,24 +236,25 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCEL_PAY);
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         
-        InstallmentDeductionPlanQuery deductionPlanQuery = new InstallmentDeductionPlanQuery();
-        deductionPlanQuery.setStatuses(Arrays.asList(DEDUCTION_PLAN_STATUS_INIT, DEDUCTION_PLAN_STATUS_FAIL));
-        deductionPlanQuery.setExternalAgreementNo(externalAgreementNo);
-        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
-        
-        installmentRecordMapper.update(installmentRecordUpdate);
-        if (CollectionUtils.isEmpty(deductionPlans)) {
+        List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.listOrderByExternalAgreementNo(externalAgreementNo);
+        if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
             return R.ok();
         }
         
-        deductionPlans.forEach(installmentDeductionPlan -> {
-            InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
-            deductionPlanUpdate.setId(installmentDeductionPlan.getId());
-            deductionPlanUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCEL_PAY);
-            deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
-            installmentDeductionPlanService.update(deductionPlanUpdate);
-        });
+        // 取消签约场景下只会有一个套餐子订单，处理集合内的第一个就可以了
+        ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrders.get(0);
+        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
+        memberCardOrderUpdate.setId(memberCardOrder.getId());
+        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCEL);
+        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
         return R.ok();
+    }
+    
+    @Slave
+    @Override
+    public InstallmentRecord queryLatestRecordByUid(Long uid) {
+        return installmentRecordMapper.selectLatestRecordByUid(uid);
     }
     
     

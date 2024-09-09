@@ -116,6 +116,15 @@
         where external_agreement_no = #{externalAgreementNo}
     </select>
     
+    <select id="selectLatestRecordByUid"
+            resultType="com.xiliulou.electricity.entity.installment.InstallmentRecord">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where uid = #{uid}
+        order by id desc
+        limit 1
+    </select>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>

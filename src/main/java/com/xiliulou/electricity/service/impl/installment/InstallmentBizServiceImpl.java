@@ -72,12 +72,16 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK;
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
@@ -376,11 +380,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 installmentRecordUpdate.setMobile(query.getMobile());
                 installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_UN_SIGN);
                 installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-                
                 installmentRecordService.update(installmentRecordUpdate);
-                // 二维码缓存2天零23小时50分钟，减少卡在二维码3天有效期的末尾的出错
-                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), Long.valueOf(2 * 24 * 60 + 23 * 60 + 50),
-                        TimeUnit.MINUTES);
+                
+                // 二维码缓存3天，利用zSet实现延时取消签约，分数为三天后的当前时刻减去2分钟
+                // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
+                double score = (double) Instant.now().plus(7, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
+                redisService.zsetAddString(CACHE_INSTALLMENT_CANCEL_SIGN, installmentRecord.getExternalAgreementNo(), score);
+                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), 3L,
+                        TimeUnit.DAYS);
                 
                 // 扣减次数
                 FreeDepositData freeDepositDataUpdate = new FreeDepositData();
@@ -390,8 +397,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 freeDepositDataService.update(freeDepositDataUpdate);
                 // 发送站内信
                 siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                        .tenantId(installmentRecord.getTenantId().longValue()).addContext("type", RechargeAlarm.AUTH_PAY.getCode())
-                        .addContext("count", remaining).build());
+                        .tenantId(installmentRecord.getTenantId().longValue()).addContext("type", RechargeAlarm.AUTH_PAY.getCode()).addContext("count", remaining).build());
                 
                 return R.ok(fySignResult.getFyResponse().getFormBody());
             }
@@ -659,7 +665,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     
-    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentDeductionRecord deductionRecord, InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid) {
+    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentDeductionRecord deductionRecord, InstallmentRecord installmentRecord,
+            InstallmentDeductionPlan deductionPlan, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
@@ -760,7 +767,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             commonQuery.setFlowNo(externalAgreementNo + System.currentTimeMillis());
             commonQuery.setFyRequest(request);
             FyResult<FyQueryAgreementPayRsp> result = fyAgreementService.queryAgreementPay(commonQuery);
-
+            
             if (Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
                 // 传递结果给外部方法校验
                 return R.ok(result.getFyResponse());

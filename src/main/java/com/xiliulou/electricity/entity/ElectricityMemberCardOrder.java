@@ -163,7 +163,7 @@ public class ElectricityMemberCardOrder {
     
     public static final Integer STATUS_FAIL = 2;
     
-    public static final Integer STATUS_CANCELL = 3;
+    public static final Integer STATUS_CANCEL = 3;
     
     
     public static final Integer BIND_ACTIVITY = 1;

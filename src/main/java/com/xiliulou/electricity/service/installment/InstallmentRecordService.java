@@ -74,9 +74,10 @@ public interface InstallmentRecordService {
     
     /**
      * 查询小程序登录用户的签约记录信息
+     * @param externalAgreementNo 请求签约号
      * @return 返回详细信息
      */
-    R<InstallmentRecordVO> queryInstallmentRecordForUser();
+    R<InstallmentRecordVO> queryInstallmentRecordForUser(String externalAgreementNo);
     
     /**
      * 取消签约
@@ -84,4 +85,11 @@ public interface InstallmentRecordService {
      * @return 处理结果
      */
     R<String> cancel(String externalAgreementNo);
+    
+    /**
+     * 查询用户最新一条签约记录
+     * @param uid uid
+     * @return 签约记录
+     */
+    InstallmentRecord queryLatestRecordByUid(Long uid);
 }

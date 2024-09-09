@@ -734,7 +734,7 @@
         from t_battery_member_card
         <where>
             <if test="businessTypes != null">
-                and tbmc.business_type in
+                and business_type in
                 <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
                     #{businessType}
                 </foreach>

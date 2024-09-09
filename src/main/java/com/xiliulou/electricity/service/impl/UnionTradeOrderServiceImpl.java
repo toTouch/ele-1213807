@@ -662,7 +662,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         // 处理用户端取消支付的问题
-        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())) {
+        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCEL, electricityMemberCardOrder.getStatus())) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         }
         
@@ -842,7 +842,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         // 处理用户端取消支付的问题
-        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())) {
+        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCEL, electricityMemberCardOrder.getStatus())) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         }
         
