@@ -54,6 +54,11 @@ public class MeiTuanRiderMallOrder {
     private Integer meiTuanVirtualRechargeType;
     
     /**
+     * 骑手商城skuId
+     */
+    private Long meiTuanSkuId;
+    
+    /**
      * 手机号
      */
     private String meiTuanAccount;
@@ -83,7 +88,7 @@ public class MeiTuanRiderMallOrder {
     private Integer orderUseStatus;
     
     /**
-     * 套餐ID(也就是美团skuId)
+     * 套餐ID(即美团providerSkuId)
      */
     private Long packageId;
     
