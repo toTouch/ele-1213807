@@ -883,8 +883,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         // 套餐数量最多150个，仅对换电套餐做限制
+        List<Integer> typeList = Arrays.asList(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(),
+                BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
         if (Objects.equals(query.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())) {
-            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())
+            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessTypes(typeList)
                     .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
             
             if (selectByPageCount(queryCount) >= BatteryMemberCardConstants.MAX_BATTERY_MEMBER_CARD_NUM) {

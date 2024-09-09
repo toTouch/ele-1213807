@@ -31,7 +31,7 @@ public class InstallmentCancelTask {
     @Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
     public void cancelSign() {
         double now = System.currentTimeMillis();
-        double min = Instant.now().minus(1, ChronoUnit.MINUTES).toEpochMilli();
+        double min = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
         
         Set<String> zSetStringByRange = redisService.getZsetStringByRange(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
         if (CollectionUtils.isEmpty(zSetStringByRange)) {

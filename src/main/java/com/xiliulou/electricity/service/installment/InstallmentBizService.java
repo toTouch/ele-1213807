@@ -77,9 +77,10 @@ public interface InstallmentBizService {
     /**
      * 代扣成功的处理
      * @param deductionRecord 代扣记录
+     * @param tradeNo 支付宝交易号
      * @return 处理结果
      */
-    R handleAgreementPaySuccess(InstallmentDeductionRecord deductionRecord);
+    R handleAgreementPaySuccess(InstallmentDeductionRecord deductionRecord, String tradeNo);
     
     /**
      * 调起代扣

@@ -115,7 +115,7 @@ public class BatteryMemberCardQuery {
     private List<Integer> rentTypes;
     
     /**
-     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐；3，分期套餐
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐；4，分期套餐
      *
      * @see BatteryMemberCardBusinessTypeEnum
      */

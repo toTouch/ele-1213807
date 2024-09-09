@@ -152,7 +152,7 @@
         from t_battery_member_card
         <where>
             case
-                when #{catchEnterprise} = 1 then business_type in (0, 2)
+                when #{catchEnterprise} = 1 then business_type in (0, 2, 4)
                 else business_type = 0
             end
             <if test="franchiseeId != null">

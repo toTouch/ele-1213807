@@ -79,7 +79,7 @@ public class FyInstallmentHandler {
             InstallmentDeductionRecord deductionRecord = installmentDeductionRecordService.queryByPayNo(deductNotifyQuery.getPayNo());
             
             // 处理代扣成功的场景
-            installmentBizService.handleAgreementPaySuccess(deductionRecord);
+            installmentBizService.handleAgreementPaySuccess(deductionRecord, deductNotifyQuery.getTradeNo());
             
             return "SUCCESS";
         } catch (Exception e) {

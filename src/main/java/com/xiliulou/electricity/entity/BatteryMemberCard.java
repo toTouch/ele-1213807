@@ -203,7 +203,7 @@ public class BatteryMemberCard {
     /**
      * 业务类型-分期换电套餐
      */
-    public static final Integer BUSINESS_TYPE_INSTALLMENT_BATTERY = 3;
+    public static final Integer BUSINESS_TYPE_INSTALLMENT_BATTERY = 4;
 
     //租赁类型 0:不限 1:新租 2:续租
     public static final Integer RENT_TYPE_UNLIMIT = 0;

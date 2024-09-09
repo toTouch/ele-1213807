@@ -20,7 +20,7 @@ public enum BatteryMemberCardBusinessTypeEnum implements BasicEnum<Integer, Stri
 
     BUSINESS_TYPE_ENTERPRISE_BATTERY(2, "企业渠道换电套餐"),
     
-    BUSINESS_TYPE_INSTALLMENT_BATTERY(3, "分期换电套餐"),
+    BUSINESS_TYPE_INSTALLMENT_BATTERY(4, "分期换电套餐"),
 
     ;
 

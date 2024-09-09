@@ -274,7 +274,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         FyQueryAgreementPayRsp rsp = (FyQueryAgreementPayRsp) queried.getData();
         if (Objects.equals(rsp.getStatus(), AGREEMENT_PAY_QUERY_STATUS_SUCCESS)) {
             // 处理成功的场景
-            handleAgreementPaySuccess(installmentDeductionRecord);
+            handleAgreementPaySuccess(installmentDeductionRecord, rsp.getTradeNo());
         }
         return R.ok();
     }
@@ -495,7 +495,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R handleAgreementPaySuccess(InstallmentDeductionRecord deductionRecord) {
+    public R handleAgreementPaySuccess(InstallmentDeductionRecord deductionRecord, String tradeNo) {
         if (Objects.equals(deductionRecord.getStatus(), DEDUCTION_RECORD_STATUS_SUCCESS)) {
             return R.ok();
         }
@@ -518,6 +518,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         if (Objects.nonNull(handlePackageTriple) && handlePackageTriple.getLeft()) {
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
             deductionPlanUpdate.setId(deductionPlan.getId());
+            deductionPlanUpdate.setTradeNo(tradeNo);
             deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
             deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
             deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
