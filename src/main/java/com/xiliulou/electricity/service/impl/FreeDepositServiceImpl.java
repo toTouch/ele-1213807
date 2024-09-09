@@ -11,8 +11,10 @@ import com.xiliulou.electricity.dto.callback.UnfreeFakeParams;
 import com.xiliulou.electricity.entity.FreeDepositData;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.enums.FreeDepositServiceWayEnums;
-import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
@@ -22,8 +24,10 @@ import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.FreeDepositDataService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.electricity.service.handler.FreeDepositFactory;
 import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
@@ -54,7 +58,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     UserBatteryDepositService userBatteryDepositService;
     
     @Resource
-    private FreeDepositOrderMapper freeDepositOrderMapper;
+    private FreeDepositOrderService freeDepositOrderService;
     
     @Resource
     FreeDepositDataService freeDepositDataService;
@@ -70,6 +74,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     
     @Resource
     private FreeDepositNotifyService freeDepositNotifyService;
+    
+    @Resource
+    private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
     public static final String TRACE_ID = "traceId";
     
@@ -97,38 +104,58 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         
         Long uid = freeDepositUserDTO.getUid();
-        // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
-        UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(batteryDeposit) || UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT.equals(batteryDeposit.getDepositType())) {
-            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.batteryDeposit is null, uid is {}", uid);
-            return Triple.of(false, null, null);
-        }
         
-        // 获取押金订单记录
-        FreeDepositOrder freeDepositOrder = freeDepositOrderMapper.queryByOrderId(batteryDeposit.getOrderId());
+        String orderId;
+        Long packageId;
+        // 判断当前免押操作是购买换电套餐还是租车套餐
+        if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(freeDepositUserDTO.getPackageType())) {
+            // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
+            UserBatteryDeposit batteryDeposit = userBatteryDepositService.selectByUidFromCache(freeDepositUserDTO.getUid());
+            if (Objects.isNull(batteryDeposit) || UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT.equals(batteryDeposit.getDepositType())) {
+                log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.batteryDeposit is null, uid is {}", uid);
+                return Triple.of(false, null, null);
+            }
+            orderId = batteryDeposit.getOrderId();
+            packageId = batteryDeposit.getDid();
+        } else {
+            // 获取购买租车套餐时已存在的免押订单信息
+            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.selectLastByUid(freeDepositUserDTO.getTenantId(),
+                    freeDepositUserDTO.getUid());
+            if (Objects.isNull(carRentalPackageDepositPayPo) || YesNoEnum.NO.getCode().equals(carRentalPackageDepositPayPo.getFreeDeposit())) {
+                log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.carDeposit is null, uid is {}", uid);
+                return Triple.of(false, null, null);
+            }
+            orderId = carRentalPackageDepositPayPo.getOrderNo();
+            packageId = carRentalPackageDepositPayPo.getRentalPackageId();
+        }
+        log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.orderId = {}, package id = {}, user data = {}", orderId, packageId, JsonUtil.toJson(freeDepositUserDTO));
+        
+        // 免押订单
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder)) {
-            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositOrder is null, orderId is {}", batteryDeposit.getOrderId());
+            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositOrder is null, orderId is {}", orderId);
             return Triple.of(false, null, null);
         }
         
         // 如果都一样，查询是否免押过； 只要有一个不一样，继续新的免押
         if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
-                || !Objects.equals(batteryDeposit.getDid(), freeDepositUserDTO.getPackageId())) {
+                || !Objects.equals(packageId, freeDepositUserDTO.getPackageId())) {
             log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new, go on new Free, uid is {}", uid);
             return Triple.of(false, null, freeDepositOrder);
         }
         
-        log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.channel is {}, orderId is {}", freeDepositOrder.getChannel(), batteryDeposit.getOrderId());
+        log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.channel is {}, orderId is {}", freeDepositOrder.getChannel(), orderId);
         
         // 是否免押
-        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().orderId(batteryDeposit.getOrderId()).tenantId(freeDepositUserDTO.getTenantId()).uid(uid).build();
+        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().orderId(orderId).tenantId(freeDepositUserDTO.getTenantId()).uid(uid).build();
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(freeDepositOrder.getChannel()), BaseFreeDepositService.class);
         FreeDepositOrderStatusBO bo = service.queryFreeDepositOrderStatus(query);
         
         if (Objects.nonNull(bo) && PxzQueryOrderRsp.AUTH_FROZEN.equals(bo.getAuthStatus())) {
-            log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), batteryDeposit.getOrderId());
+            log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), orderId);
             return Triple.of(true, "100400", "免押已成功，请勿重复操作");
         }
+        
         return Triple.of(false, null, null);
     }
     
