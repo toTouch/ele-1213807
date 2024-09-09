@@ -227,11 +227,11 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     public R<String> cancel(String externalAgreementNo) {
         InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
-            return R.fail("签约记录不存在");
+            return R.fail("301005", "签约记录不存在");
         }
         
         if (!Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_INIT) && !Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
-            return R.fail("该分期套餐已签约成功，不可取消");
+            return R.fail("301016", "该分期套餐已签约成功，不可取消");
         }
         
         InstallmentRecord installmentRecordUpdate = new InstallmentRecord();

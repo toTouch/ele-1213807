@@ -286,7 +286,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             
             InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryById(id);
             if (Objects.isNull(deductionPlan)) {
-                return R.fail("代扣计划不存在");
+                return R.fail("301011", "代扣计划不存在");
             }
             
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(deductionPlan.getExternalAgreementNo());
@@ -634,13 +634,13 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(externalAgreementNo);
         if (Objects.isNull(installmentRecord) || Arrays.asList(INSTALLMENT_RECORD_STATUS_COMPLETED, INSTALLMENT_RECORD_STATUS_CANCELLED).contains(installmentRecord.getStatus())) {
             log.info("CREATE TERMINATING RECORD INFO! Record cancellation externalAgreementNo={}", externalAgreementNo);
-            return R.fail("分期套餐已解约");
+            return R.fail("301012", "分期套餐已解约");
         }
         
         Integer num = (Integer) eleRefundOrderService.queryCount(
                 EleRefundQuery.builder().uid(installmentRecord.getUid()).statuses(Arrays.asList(EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUND)).build()).getData();
         if (Objects.nonNull(num) && num > 0) {
-            return R.fail("有未完成的押金退款订单");
+            return R.fail("301013", "有未完成的押金退款订单");
         }
         
         InstallmentTerminatingRecordQuery query = new InstallmentTerminatingRecordQuery();
@@ -649,7 +649,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         List<InstallmentTerminatingRecord> records = installmentTerminatingRecordService.listForRecordWithStatus(query);
         if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(records)) {
-            return R.fail("有未完成的解约申请");
+            return R.fail("301014", "有未完成的解约申请");
         }
         
         InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
@@ -658,7 +658,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
         if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
-            return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, reason);
