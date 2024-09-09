@@ -1302,6 +1302,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return scanCabinetNotEqualOrderCabinetHandler(userInfo, electricityBattery, lastOrder);
         }
         
+        
         if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             // 上一个成功
             return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, userInfo);
@@ -1392,6 +1393,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setOrderId(lastOrder.getOrderId());
         // 上一次成功，这次只能返回新仓门
         vo.setCell(lastOrder.getNewCellNo());
+        // 设置是否选仓换电
+        setEnterSelectCellExchange(userInfo, vo);
+        
         
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
@@ -1405,16 +1409,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 后台自主开仓
             String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
             vo.setSessionId(sessionId);
-            // 设置是否可以选仓换电标识
+            // 设置不可以选仓换电标识
             vo.setIsEnterSelectCellExchange(ExchangeUserSelectVo.NOT_ENTER_SELECT_CELL_EXCHANGE);
             
             return Pair.of(true, vo);
         } else {
             // 没有在仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
-            // 设置是否选仓换电
-            setEnterSelectCellExchange(userInfo, vo);
-            
             return Pair.of(true, vo);
         }
     }
@@ -1457,19 +1458,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());
+        // 设置是否选仓换电
+        setEnterSelectCellExchange(userInfo, vo);
         
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("OrderV3 WARN!newCellOpenFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 没有在仓，需要返回前端仓门号
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
-            // 设置是否选仓换电
-            setEnterSelectCellExchange(userInfo, vo);
             return Pair.of(true, vo);
         }
         
         String userBindingBatterySn = electricityBattery.getSn();
-        
         // 用户电池是否在仓
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(userBindingBatterySn, cabinet.getId());
         
@@ -1491,8 +1491,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         } else {
             // 没有在仓，需要返回前端仓门号
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
-            // 设置是否选仓换电
-            setEnterSelectCellExchange(userInfo, vo);
             return Pair.of(true, vo);
         }
     }
@@ -1516,11 +1514,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 不在仓，前端会自主开仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getOldCellNo());
-            // 设置是否选仓换电
-            setEnterSelectCellExchange(userInfo, vo);
             
             return Pair.of(true, vo);
         }
+        // 设置是否选仓换电
+        setEnterSelectCellExchange(userInfo, vo);
         
         String userBindingBatterySn = electricityBattery.getSn();
         // 用户电池是否在仓
@@ -1555,8 +1553,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 不在仓，前端会自主开仓
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getOldCellNo());
-            // 设置是否选仓换电
-            setEnterSelectCellExchange(userInfo, vo);
             return Pair.of(true, vo);
         }
     }
