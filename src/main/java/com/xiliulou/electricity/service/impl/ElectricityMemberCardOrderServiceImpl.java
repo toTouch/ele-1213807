@@ -503,7 +503,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 vo.setLimitCount(batteryMemberCard.getLimitCount());
                 vo.setRentType(batteryMemberCard.getRentType());
                 vo.setRentUnit(batteryMemberCard.getRentUnit());
-                vo.setValidDays(batteryMemberCard.getValidDays());
                 vo.setUseCount(batteryMemberCard.getUseCount());
                 if (Objects.equals(BatteryMemberCard.YES, batteryMemberCard.getIsRefund()) && System.currentTimeMillis() < (item.getCreateTime()
                         + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L)) {
