@@ -183,7 +183,7 @@ public class ElectricityMemberCardOrder {
     /**
      * 交易方式-分期
      */
-    public static final Integer INSTALLMENT_PAYMENT = 3;
+    public static final Integer INSTALLMENT_PAYMENT = 4;
     
     //套餐订单来源，1：扫码，2：线上，3：后台
     public static final Integer SOURCE_SCAN = 1;
