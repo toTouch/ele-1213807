@@ -4385,9 +4385,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "分期订单已代扣完成", null);
         }
         
-        // UserBatteryMemberCard更新购买次数在本方法之后，此处需+1
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard) + 1;
+        int payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
         
         // 根据代扣计划设置子订单金额
         BigDecimal payAmount = InstallmentUtil.calculateSuborderAmount(installmentRecord.getPaidInstallment() + 1, installmentRecord, memberCard);
@@ -4399,7 +4398,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        electricityMemberCardOrder.setStatus(installmentRecord.getPaidInstallment() > 0 ? ElectricityMemberCardOrder.STATUS_SUCCESS : ElectricityMemberCardOrder.STATUS_INIT);
         electricityMemberCardOrder.setMemberCardId(memberCard.getId());
         electricityMemberCardOrder.setUid(userInfo.getUid());
         electricityMemberCardOrder.setMaxUseCount(memberCard.getUseCount());
