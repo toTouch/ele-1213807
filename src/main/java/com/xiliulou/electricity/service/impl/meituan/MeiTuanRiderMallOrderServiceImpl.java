@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -35,6 +36,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.EleUserOperateRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -147,6 +149,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     @Slave
     @Override
@@ -269,7 +274,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 }
             }
             
-            Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> pair = null;
+            Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> pair;
             
             // 已缴纳押金
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -315,8 +320,18 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     // 绑定的套餐
                     BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                     
+                    // 电池型号是否匹配
+                    List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                    List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(userBatteryMemberCard.getMemberCardId());
+                    Boolean matched = isBatteryTypeMatched(userInfo, userBindBatteryTypes, memberCardBatteryTypes);
+                    if (!matched) {
+                        log.warn("MeiTuan order redeem fail! batteryType not matched, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
+                        return Triple.of(false, "120140", "美团商城订单与已使用的套餐电池型号不一致，请核实后操作");
+                    }
+                    
                     // 续费套餐
-                    pair = saveRenewalUserBatteryMemberCardOrder(userInfo, batteryMemberCard, userBatteryMemberCard, userBindBatteryMemberCard, meiTuanRiderMallOrder);
+                    pair = saveRenewalUserBatteryMemberCardOrder(userInfo, batteryMemberCard, userBatteryMemberCard, userBindBatteryMemberCard, meiTuanRiderMallOrder,
+                            userBindBatteryTypes, memberCardBatteryTypes);
                 }
             } else {
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -417,7 +432,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             serviceFeeUserInfoInsert.setTenantId(memberCardOrder.getTenantId());
             serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
             serviceFeeUserInfoInsert.setDisableMemberCardNo("");
-    
+            
             if (Objects.nonNull(serviceFeeUserInfo)) {
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsert);
                 
@@ -476,7 +491,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Transactional(rollbackFor = Exception.class)
     public Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> saveRenewalUserBatteryMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard,
-            UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindBatteryMemberCard, MeiTuanRiderMallOrder meiTuanRiderMallOrder) {
+            UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindBatteryMemberCard, MeiTuanRiderMallOrder meiTuanRiderMallOrder,
+            List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes) {
         ElectricityMemberCardOrder memberCardOrder = null;
         UserBatteryMemberCard rollBackUserBatteryMemberCard = null;
         ElectricityMemberCardOrder rollBackElectricityMemberCardOrder = null;
@@ -513,7 +529,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             UserBatteryMemberCard existUserBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             // 封装回滚数据
             rollBackUserBatteryMemberCard = new UserBatteryMemberCard();
-    
+            
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)
                     || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || Objects.isNull(userBindBatteryMemberCard) || (
@@ -575,8 +591,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 
                 // 更新用户电池型号
                 Set<String> totalBatteryTypes = new HashSet<>();
-                List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(memberCardOrder.getUid());
-                List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCardOrder.getMemberCardId());
                 if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
                     totalBatteryTypes.addAll(userBindBatteryTypes);
                 }
@@ -992,6 +1006,25 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         return rollBackBO;
+    }
+    
+    private Boolean isBatteryTypeMatched(UserInfo userInfo, List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes) {
+        // 用户绑定的电池型号串数
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
+                userBindBatteryTypes = userBindBatteryTypes.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
+            }
+        }
+        
+        // 套餐电池型号串数 number
+        List<String> number = memberCardBatteryTypes.stream().filter(StringUtils::isNotBlank).map(e -> e.substring(e.lastIndexOf("_") + 1)).collect(Collectors.toList());
+        
+        if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
+            return !(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryTypes));
+        }
+        
+        return false;
     }
     
     private Triple<Boolean, String, Object> notifyMeiTuanDeliver(MeiTuanRiderMallConfig config, MeiTuanRiderMallOrder meiTuanRiderMallOrder,
