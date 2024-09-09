@@ -90,6 +90,8 @@ public abstract class AbstractCommonFreeDeposit {
         request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 1, freeDepositOrderRequest.getTenantId()));
         query.setData(request);
         
+        log.info("PXZ INFO! FreeDepositOrderPxzRequest.query is {}", JsonUtil.toJson(query));
+        
         return query;
     }
     
@@ -113,9 +115,12 @@ public abstract class AbstractCommonFreeDeposit {
         PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
         request.setTransId(orderStatusQuery.getOrderId());
         query.setData(request);
+        
+        log.info("PXZ INFO! QueryFreeDepositOrderStatusPxzRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
+    @SuppressWarnings("all")
     public PxzCommonRequest<PxzFreeDepositUnfreezeRequest> buildUnFreeDepositOrderPxzRequest(UnFreeDepositOrderQuery unFreeDepositOrderQuery) {
         PxzConfig pxzConfig = getPxzConfig(unFreeDepositOrderQuery.getTenantId());
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
@@ -129,6 +134,8 @@ public abstract class AbstractCommonFreeDeposit {
         queryRequest.setTransId(unFreeDepositOrderQuery.getOrderId());
         
         query.setData(queryRequest);
+        
+        log.info("PXZ INFO! UnFreeDepositOrderPxzRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -149,6 +156,8 @@ public abstract class AbstractCommonFreeDeposit {
         request.setTransAmt(authToPayQuery.getPayTransAmt().multiply(BigDecimal.valueOf(100)).longValue());
         request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 3, authToPayQuery.getTenantId()));
         query.setData(request);
+        
+        log.info("PXZ INFO! AuthPxzRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -166,6 +175,8 @@ public abstract class AbstractCommonFreeDeposit {
         // todo保证唯一
         request.setPayNo(authToPayStatusQuery.getAuthPayOrderId());
         query.setData(request);
+        
+        log.info("PXZ INFO! AuthPxzStatusRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -184,7 +195,7 @@ public abstract class AbstractCommonFreeDeposit {
         
         query.setData(queryRequest);
         
-        log.info("PXZ INFO! buildCancelAuthPayPxzRequest.params is {}", JsonUtil.toJson(query));
+        log.info("PXZ INFO! CancelAuthPayPxzRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -242,6 +253,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(orderRequest.getFreeDepositOrderId());
         query.setFyRequest(request);
         query.setChannelCode(fyConfig.getChannelCode());
+        
+        log.info("FY INFO! FyFreeDepositRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -256,6 +269,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(orderStatusQuery.getOrderId());
         query.setFyRequest(request);
         query.setChannelCode(fyConfig.getChannelCode());
+        
+        log.info("FY INFO! FyFreeDepositStatusRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -276,6 +291,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(orderStatusQuery.getOrderId());
         query.setFyRequest(request);
         query.setChannelCode(fyConfig.getChannelCode());
+        
+        log.info("FY INFO! FyUnFreeRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -295,6 +312,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(payQuery.getOrderId());
         query.setFyRequest(request);
         query.setChannelCode(fyConfig.getChannelCode());
+        
+        log.info("FY INFO! FyAuthPayRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
@@ -308,6 +327,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(payQuery.getOrderId());
         query.setFyRequest(request);
         query.setChannelCode(fyConfig.getChannelCode());
+        
+        log.info("FY INFO! FyAuthPayStatusRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     
