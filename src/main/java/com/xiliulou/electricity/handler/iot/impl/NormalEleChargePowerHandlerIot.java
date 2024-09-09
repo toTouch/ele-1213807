@@ -103,7 +103,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
                 hourPower = 0.00;
             } else {
                 // 上报电表读数非错误码时，小时耗电量后端计算，处理上报错误码之后的那一条数据小时耗电量错误的场景
-                double difference = cabinetPowerReport.getSumConsumption() - lastElePower.getSumPower();
+                double difference = cabinetPowerReport.getSumConsumption() - lastElePower.getMeterReading();
                 hourPower = Math.max(difference, 0.00);
                 sumPower = lastElePower.getSumPower() + hourPower;
             }
