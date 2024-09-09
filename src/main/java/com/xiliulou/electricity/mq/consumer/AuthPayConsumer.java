@@ -67,7 +67,8 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         }
         // 如果不是交易处理中，返回
         if (!Objects.equals(alipayHistory.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            log.info("AuthPayConsumer Info! alipayHistory.payStatus not need update, orderId is {}", alipayHistory.getAuthPayOrderId());
+            log.info("AuthPayConsumer Info! alipayHistory.payStatus not need update,payStatus is {}, orderId is {}", alipayHistory.getPayStatus(),
+                    alipayHistory.getAuthPayOrderId());
             return;
         }
         

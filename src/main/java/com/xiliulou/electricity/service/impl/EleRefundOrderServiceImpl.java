@@ -719,10 +719,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
-        Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
-        // 如果存在代扣的免押订单，则不允许退押
-        if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
-            return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+        if (!Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
+            // 如果存在代扣的免押订单，则不允许退押
+            if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
+                return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+            }
         }
         
         
