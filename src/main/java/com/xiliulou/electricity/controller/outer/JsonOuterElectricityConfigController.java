@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,7 +62,7 @@ public class JsonOuterElectricityConfigController extends BaseController {
     @Deprecated
     @GetMapping(value = "/outer/merchant/minPro/config")
     public R merchantMinProConfig(@RequestParam("appId") String appId) {
-        return returnTripleResult(electricityPayParamsService.queryByMerchantAppId(appId));
+        return returnTripleResult(Triple.of(true,null,null));
     }
     
     /**

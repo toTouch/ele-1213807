@@ -6,7 +6,10 @@ package com.xiliulou.electricity.service.pay;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.core.base.enums.ChannelEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.pay.base.exception.PayException;
+
+import java.util.Set;
 
 /**
  * description: 支付配置查询业务层
@@ -25,12 +28,14 @@ public interface PayConfigBizService {
      * @param paymentChannel 支付方式 {@link ChannelEnum}
      * @param tenantId       租户id
      * @param franchiseeId   加盟商id
+     * @param queryProfitSharingConfig 分账配置详情枚举
      * @return
      * @author caobotao.cbt
      * @date 2024/7/16 15:46
      */
-    BasePayConfig queryPayParams(String paymentChannel, Integer tenantId, Long franchiseeId) throws PayException;
+    BasePayConfig queryPayParams(String paymentChannel, Integer tenantId, Long franchiseeId, Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig) throws PayException;
     
+
     
     /**
      * 支付参数查询 （精确查询，传入的franchiseeId是什么，就查什么）
@@ -42,7 +47,7 @@ public interface PayConfigBizService {
      * @author caobotao.cbt
      * @date 2024/7/18 14:36
      */
-    BasePayConfig queryPrecisePayParams(String paymentChannel, Integer tenantId, Long franchiseeId) throws PayException;
+    BasePayConfig queryPrecisePayParams(String paymentChannel, Integer tenantId, Long franchiseeId, Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig) throws PayException;
     
     
     /**

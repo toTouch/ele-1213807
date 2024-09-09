@@ -99,6 +99,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
     
     
+    
     @Override
     public List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId) {
         return userOauthBindMapper.selectListOauthByOpenIdAndSource(openid, source, tenantId);
@@ -176,7 +177,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         
         return update(build) == 1 ? Pair.of(true, null) : Pair.of(false, "修改失败 ");
     }
-
+    
+    
     @Slave
     @Override
     public List<UserOauthBind> queryListByUid(Long uid) {
@@ -200,6 +202,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
         return userOauthBindMapper.selectListByUidAndPhone(phone, uid, tenantId);
     }
     
+    
     /**
      * 根据手机号、类型、租户查询用户
      *
@@ -213,6 +216,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     public List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId) {
         return userOauthBindMapper.selectListUserByPhone(phone, source, tenantId);
     }
+    
     
     
     /**
@@ -242,6 +246,12 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     public List<UserOauthBind> queryOpenIdListByUidsAndTenantId(List<Long> longs, Integer tenantId) {
         return userOauthBindMapper.selectOpenIdListByUidsAndTenantId(longs, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId) {
+        return userOauthBindMapper.countByThirdIdAndSourceAndTenantId(openId, sourceWxPro,tenantId);
     }
     
     @Override

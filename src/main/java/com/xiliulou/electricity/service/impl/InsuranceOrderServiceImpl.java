@@ -253,7 +253,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     
         BasePayConfig payParamConfig = null;
         try {
-            payParamConfig = payConfigBizService.queryPayParams(insuranceOrderAdd.getPaymentChannel(), tenantId, userInfo.getFranchiseeId());
+            payParamConfig = payConfigBizService.queryPayParams(insuranceOrderAdd.getPaymentChannel(), tenantId, userInfo.getFranchiseeId(),null);
         } catch (PayException e) {
             log.warn("CREATE INSURANCE_ORDER ERROR!not found pay params,uid={}", user.getUid(), e);
             return R.fail("100307", "未配置支付参数!");
