@@ -402,7 +402,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
             
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-            userBatteryTypes = null;
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypes = userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo);
                 userBatteryTypeService.batchInsert(userBatteryTypes);
@@ -418,8 +417,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             serviceFeeUserInfoInsert.setTenantId(memberCardOrder.getTenantId());
             serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
             serviceFeeUserInfoInsert.setDisableMemberCardNo("");
-            
-            rollBackServiceFeeUserInfo = null;
+    
             if (Objects.nonNull(serviceFeeUserInfo)) {
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsert);
                 
@@ -515,10 +513,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             UserBatteryMemberCard existUserBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             // 封装回滚数据
             rollBackUserBatteryMemberCard = new UserBatteryMemberCard();
-            rollBackElectricityMemberCardOrder = null;
-            insertUserBatteryTypeListForRollBack = null;
-            userBatteryTypes = null;
-            
+    
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)
                     || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || Objects.isNull(userBindBatteryMemberCard) || (
@@ -1225,7 +1220,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         Integer tenantId = meiTuanRiderMallConfig.getTenantId();
         Long timestamp = request.getTimestamp();
         String sign = request.getSign();
-        Long memberCardId = request.getProviderSkuId();
+        Long memberCardId = Long.parseLong(request.getProviderSkuId());
         String phone = request.getAccount();
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
         LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();

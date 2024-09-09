@@ -29,5 +29,5 @@ public class LimitTradeRequest {
     private String account;
     
     @NotNull(message = "套餐ID不能为空")
-    private Long providerSkuId;
+    private String providerSkuId;
 }
