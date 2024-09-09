@@ -238,6 +238,19 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Override
     @Slave
+    public List<BatteryMemberCardSearchVO> searchV2(BatteryMemberCardQuery query) {
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectBySearchV2(query);
+        
+        return list.parallelStream().map(item -> {
+            BatteryMemberCardSearchVO batteryMemberCardVO = new BatteryMemberCardSearchVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+    }
+    
+    @Deprecated
+    @Override
+    @Slave
     public List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectBySearch(query);
         

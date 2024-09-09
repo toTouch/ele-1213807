@@ -93,11 +93,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         query.setFranchiseeIds(franchiseeIds);
         query.setDelFlag(BatteryMemberCard.DEL_NORMAL);
         
-        // BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
-        //         .franchiseeIds(franchiseeIds).delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name)
-        //         .catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0).build();
-        
-        return R.ok(batteryMemberCardService.search(query));
+        return R.ok(batteryMemberCardService.searchV2(query));
     }
     
     /**
