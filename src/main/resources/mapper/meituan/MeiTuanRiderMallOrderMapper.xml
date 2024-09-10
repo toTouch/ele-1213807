@@ -54,7 +54,7 @@
         <if test="orderId != null and orderId != ''">
             and order_id = #{orderId}
         </if>
-        order by order_use_status desc, id desc
+        order by order_use_status asc, id desc
         limit #{offset}, #{size}
     </select>
 
