@@ -545,7 +545,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean refundConfirmation(CarRentalPackageRefundReq carRentalPackageRefundReq) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
@@ -631,7 +630,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param rentRefundEntity
      * @param packageOrderEntity
      */
-    @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundRentOrder(CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo rentRefundEntity, CarRentalPackageOrderPo packageOrderEntity) {
         log.info("save approve refund order flow start, order No = {}, refund amount = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getAmount(),
                 carRentRefundVo.getUid());
