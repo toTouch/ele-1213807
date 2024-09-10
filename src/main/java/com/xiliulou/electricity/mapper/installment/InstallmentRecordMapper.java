@@ -27,7 +27,7 @@ public interface InstallmentRecordMapper {
     
     InstallmentRecord selectByExternalAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
     
-    InstallmentRecord selectByExternalAgreementNoWithoutInit(@Param("externalAgreementNo") String externalAgreementNo);
+    InstallmentRecord selectByExternalAgreementNoWithoutUnpaid(@Param("externalAgreementNo") String externalAgreementNo);
     
-    InstallmentRecord selectLatestRecordByUid(@Param("uid") Long uid);
+    InstallmentRecord selectLatestUsingRecordByUid(@Param("uid") Long uid);
 }

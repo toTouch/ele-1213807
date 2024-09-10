@@ -66,9 +66,9 @@ public interface InstallmentConstants {
     Integer INSTALLMENT_RECORD_STATUS_CANCEL_PAY = 6;
     
     /**
-     * 分期记录状态-已支付服务费
+     * 分期记录状态-未支付服务费
      */
-    Integer INSTALLMENT_RECORD_STATUS_FEE_PAID = 7;
+    Integer INSTALLMENT_RECORD_STATUS_UNPAID = 7;
     
     /**
      * 代扣计划状态-未支付

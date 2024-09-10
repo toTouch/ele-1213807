@@ -141,7 +141,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_FEE_PAID;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 
 /**
  * @program: XILIULOU
@@ -1460,7 +1460,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "未找到交易订单!");
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(unionTradeOrder.getExternalAgreementNo());
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(unionTradeOrder.getExternalAgreementNo());
         
         String jsonOrderType = unionTradeOrder.getJsonOrderType();
         List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
@@ -1481,7 +1481,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             
             InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
             installmentRecordUpdate.setId(installmentRecord.getId());
-            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_FEE_PAID);
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_INIT);
             installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
             installmentRecordService.update(installmentRecordUpdate);
         } else {

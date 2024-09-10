@@ -45,8 +45,8 @@ import java.util.stream.Collectors;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_FEE_PAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UNPAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_REFUSE;
@@ -126,7 +126,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         installmentRecord.setMobile(null);
         installmentRecord.setPackageType(query.getPackageType());
         installmentRecord.setPaidAmount(new BigDecimal("0"));
-        installmentRecord.setStatus(INSTALLMENT_RECORD_STATUS_INIT);
+        installmentRecord.setStatus(INSTALLMENT_RECORD_STATUS_UNPAID);
         installmentRecord.setPaidInstallment(0);
         installmentRecord.setCreateTime(System.currentTimeMillis());
         installmentRecord.setUpdateTime(System.currentTimeMillis());
@@ -158,8 +158,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Slave
     @Override
-    public InstallmentRecord queryByExternalAgreementNoWithoutInit(String externalAgreementNo) {
-        return installmentRecordMapper.selectByExternalAgreementNoWithoutInit(externalAgreementNo);
+    public InstallmentRecord queryByExternalAgreementNoWithoutUnpaid(String externalAgreementNo) {
+        return installmentRecordMapper.selectByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
     }
     
     @Slave
@@ -170,12 +170,12 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         
         if (!StringUtils.isEmpty(externalAgreementNo)) {
             // 用户端查询指定的签约记录
-            installmentRecord = queryByExternalAgreementNoWithoutInit(externalAgreementNo);
+            installmentRecord = queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         } else {
             // 用户端查询最新签约记录
             Long uid = SecurityUtils.getUid();
             // 初始化状态的签约记录为未支付签约服务费时，不可展示给用户，也不参与业务，若一直不支付，3天后由自动取消机制修改为取消状态
-            installmentRecord = queryLatestRecordByUid(uid);
+            installmentRecord = queryLatestUsingRecordByUid(uid);
         }
         
         if (Objects.isNull(installmentRecord)) {
@@ -229,12 +229,12 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Override
     public R<String> cancel(String externalAgreementNo) {
-        InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNoWithoutInit(externalAgreementNo);
+        InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
         }
         
-        List<Integer> list = Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_FEE_PAID, INSTALLMENT_RECORD_STATUS_UN_SIGN);
+        List<Integer> list = Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN);
         if (Objects.isNull(installmentRecord.getStatus()) || !list.contains(installmentRecord.getStatus())) {
             return R.fail("301016", "该分期套餐已签约成功，不可取消");
         }
@@ -262,8 +262,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Slave
     @Override
-    public InstallmentRecord queryLatestRecordByUid(Long uid) {
-        return installmentRecordMapper.selectLatestRecordByUid(uid);
+    public InstallmentRecord queryLatestUsingRecordByUid(Long uid) {
+        return installmentRecordMapper.selectLatestUsingRecordByUid(uid);
     }
     
     

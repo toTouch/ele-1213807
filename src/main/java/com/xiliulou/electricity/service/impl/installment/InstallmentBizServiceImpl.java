@@ -95,7 +95,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_SUCCESS_CODE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_FEE_PAID;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
@@ -169,7 +169,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return queried;
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(externalAgreementNo);
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         FyQuerySignAgreementRsp rsp = (FyQuerySignAgreementRsp) queried.getData();
         
         if (Objects.equals(Integer.valueOf(rsp.getStatus()), SIGN_QUERY_STATUS_SIGN)) {
@@ -183,7 +183,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public R terminateRecord(String externalAgreementNo) {
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(externalAgreementNo);
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
         }
@@ -225,7 +225,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("301018", "解约申请不存在");
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(terminatingRecord.getExternalAgreementNo());
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(terminatingRecord.getExternalAgreementNo());
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
         }
@@ -296,7 +296,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301011", "代扣计划不存在");
             }
             
-            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(deductionPlan.getExternalAgreementNo());
+            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(deductionPlan.getExternalAgreementNo());
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
@@ -327,7 +327,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         try {
             uid = SecurityUtils.getUid();
             InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
-                    Arrays.asList(INSTALLMENT_RECORD_STATUS_FEE_PAID, INSTALLMENT_RECORD_STATUS_UN_SIGN));
+                    Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN));
             if (Objects.isNull(installmentRecord)) {
                 return R.fail("301004", "请购买分期套餐成功后，再签约");
             }
@@ -511,7 +511,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.ok();
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(deductionRecord.getExternalAgreementNo());
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(deductionRecord.getExternalAgreementNo());
         
         InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryByAgreementNoAndIssue(deductionRecord.getExternalAgreementNo(), deductionRecord.getIssue());
         
@@ -639,7 +639,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public R<String> createTerminatingRecord(String externalAgreementNo, String reason) {
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(externalAgreementNo);
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         if (Objects.isNull(installmentRecord) || Arrays.asList(INSTALLMENT_RECORD_STATUS_COMPLETED, INSTALLMENT_RECORD_STATUS_CANCELLED).contains(installmentRecord.getStatus())) {
             log.info("CREATE TERMINATING RECORD INFO! Record cancellation externalAgreementNo={}", externalAgreementNo);
             return R.fail("301012", "分期套餐已解约");

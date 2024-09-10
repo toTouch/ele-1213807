@@ -75,7 +75,7 @@ public interface InstallmentRecordService {
      * @param externalAgreementNo 请求签约号
      * @return 返回签约记录
      */
-    InstallmentRecord queryByExternalAgreementNoWithoutInit(String externalAgreementNo);
+    InstallmentRecord queryByExternalAgreementNoWithoutUnpaid(String externalAgreementNo);
     
     /**
      * 查询小程序登录用户的签约记录信息
@@ -96,5 +96,5 @@ public interface InstallmentRecordService {
      * @param uid uid
      * @return 签约记录
      */
-    InstallmentRecord queryLatestRecordByUid(Long uid);
+    InstallmentRecord queryLatestUsingRecordByUid(Long uid);
 }

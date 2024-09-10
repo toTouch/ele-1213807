@@ -116,19 +116,19 @@
         where external_agreement_no = #{externalAgreementNo}
     </select>
     
-    <select id="selectByExternalAgreementNoWithoutInit" resultMap="installmentRecordMap">
+    <select id="selectByExternalAgreementNoWithoutUnpaid" resultMap="installmentRecordMap">
         select id, <include refid="columnsWithoutId"/>
         from t_installment_record
         where external_agreement_no = #{externalAgreementNo}
-            and status != 0
+            and status != 7
     </select>
     
-    <select id="selectLatestRecordByUid"
+    <select id="selectLatestUsingRecordByUid"
             resultType="com.xiliulou.electricity.entity.installment.InstallmentRecord">
         select id, <include refid="columnsWithoutId"/>
         from t_installment_record
         where uid = #{uid}
-            and status in (1,2,3,4,7)
+            and status in (0,1,2,3)
         order by id desc
         limit 1
     </select>
