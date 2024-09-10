@@ -29,7 +29,6 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -54,6 +53,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
 import com.xiliulou.thirdmall.config.meituan.MeiTuanRiderMallHostConfig;
+import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
 import com.xiliulou.thirdmall.entity.meituan.MeiTuanRiderMallApiConfig;
 import com.xiliulou.thirdmall.entity.meituan.response.virtualtrade.DeliverRsp;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
@@ -66,6 +66,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -1249,12 +1250,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
+    public LimitTradeVO meiTuanLimitTradeCheck(MultiValueMap<String, Object> paramMap, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
         Integer tenantId = meiTuanRiderMallConfig.getTenantId();
-        Long timestamp = request.getTimestamp();
-        String sign = request.getSign();
-        Long memberCardId = Long.parseLong(request.getProviderSkuId());
-        String phone = request.getAccount();
+        Long timestamp = Long.parseLong(paramMap.get(VirtualTradeConstant.TIMESTAMP).toString());
+        String sign = paramMap.get(VirtualTradeConstant.SIGN).toString();
+        Long memberCardId = Long.parseLong(paramMap.get(VirtualTradeConstant.PROVIDER_SKU_ID).toString());
+        String phone = paramMap.get(VirtualTradeConstant.ACCOUNT).toString();
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
         LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();
         
