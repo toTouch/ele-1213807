@@ -179,7 +179,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (!getLockSuccess) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
-        
+    
+        MeiTuanOrderRedeemRollBackBO rollBackBO = null;
         try {
             // 校验是否开启美团商城
             MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(tenantId);
@@ -187,62 +188,62 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("MeiTuan order redeem fail! not found meiTuanRiderMallConfig, uid={}, tenantId={}", uid, tenantId);
                 return Triple.of(false, "120134", "兑换失败，请联系客服处理");
             }
-            
+        
             // 校验美团订单是否存在
             MeiTuanRiderMallOrder meiTuanRiderMallOrder = this.queryByOrderId(meiTuanOrderId, null, uid);
             if (Objects.isNull(meiTuanRiderMallOrder)) {
                 log.warn("MeiTuan order redeem fail! not found meiTuanOrderId, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120131", "未能查询到该美团订单号码，请稍后再试");
             }
-            
+        
             if (Objects.equals(meiTuanRiderMallOrder.getOrderUseStatus(), VirtualTradeStatusEnum.ORDER_USE_STATUS_USED.getCode())) {
                 log.warn("MeiTuan order redeem fail! meiTuanOrderId used, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120138", "该订单已兑换，请勿重复兑换");
             }
-            
+        
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 log.warn("MeiTuan order redeem fail! not found user,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
             }
-            
+        
             // 套餐ID
             Long memberCardId = meiTuanRiderMallOrder.getPackageId();
-            
+        
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("MeiTuan order redeem fail! not found batteryMemberCard,uid={}, memberCardId={}", uid, memberCardId);
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
-            
+        
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("MeiTuan order redeem fail! user is unUsable,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
             }
-            
+        
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("MeiTuan order redeem fail! user not auth,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
-            
+        
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("MeiTuan order redeem fail! batteryMemberCard is down,uid={},mid={}", uid, memberCardId);
                 return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
             }
-            
+        
             if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
                     batteryMemberCard.getFranchiseeId())) {
                 log.warn("MeiTuan order redeem fail! batteryMemberCard franchiseeId not equals,uid={},mid={}", uid, memberCardId);
                 return Triple.of(false, "120132", "美团商城订单与绑定加盟商不一致，请核实后操作");
             }
-            
+        
             // 检查是否为自主续费状态
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
             if (!userRenewalStatus) {
                 log.warn("MeiTuan order redeem fail! user renewal status is false, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
                 return Triple.of(false, "120133", "您是站点代付用户，无法使用美团商城换电卡");
             }
-            
+        
             // 判断套餐用户分组和用户的用户分组是否匹配
             List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(
                     UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
@@ -274,9 +275,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
                 }
             }
-            
+        
             Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> pair;
-            
+        
             // 已缴纳押金
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
@@ -311,8 +312,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     }
                     
                     // 是否有滞纳金
-                    Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo,
-                            userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                    Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
+                            batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                     if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                         log.warn("MeiTuan order redeem fail! user exist battery service fee,uid={},mid={}", uid, userBatteryMemberCard.getMemberCardId());
                         return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
@@ -342,23 +343,29 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 
                 pair = saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
             }
-            
+        
             if (Objects.isNull(pair)) {
                 log.warn("MeiTuan order redeem fail! pair is null, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
                 return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
             }
-            
+        
             ElectricityMemberCardOrder electricityMemberCardOrder = pair.getLeft();
-            MeiTuanOrderRedeemRollBackBO rollBackBO = pair.getRight();
-            
+            rollBackBO = pair.getRight();
+        
             // 通知美团发货
             Triple<Boolean, String, Object> deliverTriple = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
             // 发货失败，执行回滚
             if (!deliverTriple.getLeft()) {
                 this.asyncRollback(rollBackBO);
             }
-            
+        
             return Triple.of(true, "", null);
+        } catch (Exception e) {
+            // 异常，执行回滚
+            this.asyncRollback(rollBackBO);
+    
+            log.error("MeiTuan order redeem fail! uid={}, meiTuanOrderId={}, e={}", uid, meiTuanOrderId, e);
+            return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
         } finally {
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY + uid);
         }
