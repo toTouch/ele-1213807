@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -32,16 +34,29 @@ public class JsonOuterBatteryMemberCardController {
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     @PostMapping("/outer/batteryMemberCard/limitTrade")
-    public JsonR meiTuanLimitTradeCheck(@RequestBody MultiValueMap<String, Object> paramMap) {
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(
-                MeiTuanRiderMallConfig.builder().appId(paramMap.get(VirtualTradeConstant.APP_ID).get(0).toString())
-                        .appKey(paramMap.get(VirtualTradeConstant.APP_KEY).get(0).toString()).build());
+    public JsonR meiTuanLimitTradeCheck(@RequestBody MultiValueMap<String, Object> requestMap) {
+        String appId = requestMap.get(VirtualTradeConstant.APP_ID).get(0).toString();
+        String appKey = requestMap.get(VirtualTradeConstant.APP_KEY).get(0).toString();
+        Long timestamp = Long.parseLong(requestMap.get(VirtualTradeConstant.TIMESTAMP).get(0).toString());
+        String sign = requestMap.get(VirtualTradeConstant.SIGN).get(0).toString();
+        String account = requestMap.get(VirtualTradeConstant.ACCOUNT).get(0).toString();
+        String providerSkuId = requestMap.get(VirtualTradeConstant.PROVIDER_SKU_ID).get(0).toString();
+        
+        Map<String, Object> paramMap = new HashMap<>(requestMap.toSingleValueMap());
+        paramMap.put(VirtualTradeConstant.APP_ID, appId);
+        paramMap.put(VirtualTradeConstant.APP_KEY, appKey);
+        paramMap.put(VirtualTradeConstant.TIMESTAMP, timestamp);
+        paramMap.put(VirtualTradeConstant.SIGN, sign);
+        paramMap.put(VirtualTradeConstant.ACCOUNT, account);
+        paramMap.put(VirtualTradeConstant.PROVIDER_SKU_ID, providerSkuId);
+        
+        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
         
         if (Objects.isNull(meiTuanRiderMallConfig)) {
             return JsonR.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getCode(), VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc());
         }
         
-        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap.toSingleValueMap(), meiTuanRiderMallConfig.getSecret(), paramMap.get(VirtualTradeConstant.SIGN).toString());
+        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), paramMap.get(VirtualTradeConstant.SIGN).toString());
         if (!checkSign) {
             return JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc());
         }
