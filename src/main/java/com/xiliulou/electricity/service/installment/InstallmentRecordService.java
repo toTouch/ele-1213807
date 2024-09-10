@@ -7,11 +7,9 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
-import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -71,6 +69,13 @@ public interface InstallmentRecordService {
      * @return 返回签约记录
      */
     InstallmentRecord queryByExternalAgreementNo(String externalAgreementNo);
+    
+    /**
+     * 根据请求签约号查询签约记录不包含初始化状态的记录
+     * @param externalAgreementNo 请求签约号
+     * @return 返回签约记录
+     */
+    InstallmentRecord queryByExternalAgreementNoWithoutInit(String externalAgreementNo);
     
     /**
      * 查询小程序登录用户的签约记录信息

@@ -1460,7 +1460,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "未找到交易订单!");
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(unionTradeOrder.getExternalAgreementNo());
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(unionTradeOrder.getExternalAgreementNo());
         
         String jsonOrderType = unionTradeOrder.getJsonOrderType();
         List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);

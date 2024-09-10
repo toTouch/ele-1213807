@@ -158,13 +158,19 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Slave
     @Override
+    public InstallmentRecord queryByExternalAgreementNoWithoutInit(String externalAgreementNo) {
+        return installmentRecordMapper.selectByExternalAgreementNoWithoutInit(externalAgreementNo);
+    }
+    
+    @Slave
+    @Override
     public R<InstallmentRecordVO> queryInstallmentRecordForUser(String externalAgreementNo) {
         InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();
         InstallmentRecord installmentRecord;
         
         if (!StringUtils.isEmpty(externalAgreementNo)) {
             // 用户端查询指定的签约记录
-            installmentRecord = queryByExternalAgreementNo(externalAgreementNo);
+            installmentRecord = queryByExternalAgreementNoWithoutInit(externalAgreementNo);
         } else {
             // 用户端查询最新签约记录
             Long uid = SecurityUtils.getUid();
@@ -223,7 +229,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
     @Override
     public R<String> cancel(String externalAgreementNo) {
-        InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNo(externalAgreementNo);
+        InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNoWithoutInit(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
         }

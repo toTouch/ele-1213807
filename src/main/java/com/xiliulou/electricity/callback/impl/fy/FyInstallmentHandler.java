@@ -52,7 +52,7 @@ public class FyInstallmentHandler {
             InstallmentSignNotifyQuery signNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentSignNotifyQuery.class);
             
             log.info("回调调试，signNotifyQuery={}", JsonUtil.toJson(signNotifyQuery));
-            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(signNotifyQuery.getExternalAgreementNo());
+            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(signNotifyQuery.getExternalAgreementNo());
             
             R<String> stringR;
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
@@ -96,7 +96,7 @@ public class FyInstallmentHandler {
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
             
-            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(externalAgreementNo);
+            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(externalAgreementNo);
             
             installmentBizService.initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
         });

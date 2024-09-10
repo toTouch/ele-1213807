@@ -521,7 +521,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             });
             
             if (Objects.nonNull(item.getExternalAgreementNo())) {
-                InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(item.getExternalAgreementNo());
+                InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutInit(item.getExternalAgreementNo());
                 vo.setInstallmentRecordStatus(installmentRecord.getStatus());
             }
             

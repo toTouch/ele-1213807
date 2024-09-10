@@ -114,6 +114,12 @@
         select id, <include refid="columnsWithoutId"/>
         from t_installment_record
         where external_agreement_no = #{externalAgreementNo}
+    </select>
+    
+    <select id="selectByExternalAgreementNoWithoutInit" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where external_agreement_no = #{externalAgreementNo}
             and status != 0
     </select>
     

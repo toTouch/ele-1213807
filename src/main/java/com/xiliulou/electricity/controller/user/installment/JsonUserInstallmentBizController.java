@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @AllArgsConstructor
-// @RequestMapping("/user/installment/business")
 public class JsonUserInstallmentBizController {
     
     private InstallmentBizService installmentBizService;

@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.task.installment;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -30,24 +33,29 @@ public class InstallmentCancelTask {
     
     @Scheduled(fixedRate = 60 * 1000, initialDelay = 60 * 1000)
     public void cancelSign() {
-        double now = System.currentTimeMillis();
-        double min = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
-        log.info("取消签约定时任务调试，min={}，now={}", min, now);
-        Set<String> zSetStringByRange = redisService.getZsetStringByRange(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
-        if (CollectionUtils.isEmpty(zSetStringByRange)) {
-            log.info("取消签约定时任务调试，未取到请求签约号");
-            return;
-        }
-        
-        log.info("取消签约定时任务调试，zSetStringByRange={}", zSetStringByRange);
-        for (String externalAgreementNo : zSetStringByRange) {
-            try {
-                installmentRecordService.cancel(externalAgreementNo);
-            } catch (Exception e) {
-                log.error("Installment Cancel Task error! externalAgreementNo={}", externalAgreementNo, e);
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+        try {
+            double now = System.currentTimeMillis();
+            double min = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
+            log.info("取消签约定时任务调试，min={}，now={}", min, now);
+            Set<String> zSetStringByRange = redisService.getZsetStringByRange(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
+            if (CollectionUtils.isEmpty(zSetStringByRange)) {
+                log.info("取消签约定时任务调试，未取到请求签约号");
+                return;
             }
+            
+            log.info("取消签约定时任务调试，zSetStringByRange={}", zSetStringByRange);
+            for (String externalAgreementNo : zSetStringByRange) {
+                try {
+                    installmentRecordService.cancel(externalAgreementNo);
+                } catch (Exception e) {
+                    log.error("Installment Cancel Task error! externalAgreementNo={}", externalAgreementNo, e);
+                }
+            }
+            
+            redisService.removeZsetRangeByScore(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
+        } finally {
+            MDC.clear();
         }
-        
-        redisService.removeZsetRangeByScore(CACHE_INSTALLMENT_CANCEL_SIGN, min, now);
     }
 }
