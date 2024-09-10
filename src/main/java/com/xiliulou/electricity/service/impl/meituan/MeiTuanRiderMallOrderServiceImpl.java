@@ -54,7 +54,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
 import com.xiliulou.thirdmall.config.meituan.MeiTuanRiderMallHostConfig;
-import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
 import com.xiliulou.thirdmall.entity.meituan.MeiTuanRiderMallApiConfig;
 import com.xiliulou.thirdmall.entity.meituan.response.virtualtrade.DeliverRsp;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
@@ -74,7 +73,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -1028,9 +1026,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         // 套餐电池型号串数 number
         List<String> number = memberCardBatteryTypes.stream().filter(StringUtils::isNotBlank).map(e -> e.substring(e.lastIndexOf("_") + 1)).collect(Collectors.toList());
-        
         if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
-            return !(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryTypes));
+            return CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryTypes);
         }
         
         return false;
