@@ -913,8 +913,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 if (!UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                     eleDepositOrderTriple = eleDepositOrderService.generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet, electricityPayParams);
                     
-                    if (Objects.isNull(eleDepositOrderTriple) || Boolean.FALSE.equals(eleDepositOrderTriple.getLeft()) || Objects.isNull(eleDepositOrderTriple.getRight())) {
-                        log.info("INSTALLMENT PAY WARN! generate eleDepositOrder record fail, uid={}", uid);
+                    if (Objects.isNull(eleDepositOrderTriple) || Boolean.FALSE.equals(eleDepositOrderTriple.getLeft())) {
+                        log.info("INSTALLMENT PAY INFO! generate eleDepositOrder record fail, uid={}", uid);
                         return R.fail("301001", "购买分期套餐失败，请联系管理员");
                     }
                 }
@@ -923,8 +923,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 if (Objects.nonNull(query.getInsuranceId())) {
                     insuranceOrderTriple = insuranceOrderService.generateInsuranceOrder(userInfo, query.getInsuranceId(), electricityCabinet, electricityPayParams);
                     
-                    if (Objects.isNull(insuranceOrderTriple) || Boolean.FALSE.equals(insuranceOrderTriple.getLeft()) || Objects.isNull(insuranceOrderTriple.getRight())) {
-                        log.info("INSTALLMENT PAY WARN! generate insuranceOrder record fail, uid={}", uid);
+                    if (Objects.isNull(insuranceOrderTriple) || Boolean.FALSE.equals(insuranceOrderTriple.getLeft())) {
+                        log.info("INSTALLMENT PAY INFO! generate insuranceOrder record fail, uid={}", uid);
                         return R.fail("301001", "购买分期套餐失败，请联系管理员");
                     }
                 }
@@ -932,7 +932,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 生成分期签约记录
                 installmentRecordTriple = installmentRecordService.generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
                 if (Objects.isNull(installmentRecordTriple) || Boolean.FALSE.equals(installmentRecordTriple.getLeft()) || Objects.isNull(installmentRecordTriple.getRight())) {
-                    log.info("INSTALLMENT PAY WARN! generate installment record fail, uid={}", uid);
+                    log.info("INSTALLMENT PAY INFO! generate installment record fail, uid={}", uid);
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");
                 }
                 
@@ -940,7 +940,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 Triple<Boolean, String, ElectricityMemberCardOrder> memberCardOrderTriple = electricityMemberCardOrderService.generateInstallmentMemberCardOrder(userInfo,
                         batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight());
                 if (Objects.isNull(memberCardOrderTriple) || Boolean.FALSE.equals(memberCardOrderTriple.getLeft()) || Objects.isNull(memberCardOrderTriple.getRight())) {
-                    log.info("INSTALLMENT PAY WARN! generate memberCardOrder fail, uid={}", uid);
+                    log.info("INSTALLMENT PAY INFO! generate memberCardOrder fail, uid={}", uid);
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");
                 }
                 
@@ -976,21 +976,25 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         BigDecimal totalAmount = BigDecimal.valueOf(0);
         
-        // 保存押金订单
-        eleDepositOrderService.insert(eleDepositOrder);
+        if (Objects.nonNull(eleDepositOrder)) {
+            // 保存押金订单
+            eleDepositOrderService.insert(eleDepositOrder);
+            
+            orderList.add(eleDepositOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+            payAmountList.add(eleDepositOrder.getPayAmount());
+            totalAmount = totalAmount.add(eleDepositOrder.getPayAmount());
+        }
         
-        orderList.add(eleDepositOrder.getOrderId());
-        orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-        payAmountList.add(eleDepositOrder.getPayAmount());
-        totalAmount = totalAmount.add(eleDepositOrder.getPayAmount());
-        
-        // 保存保险订单
-        insuranceOrderService.insert(insuranceOrder);
-        
-        orderList.add(insuranceOrder.getOrderId());
-        orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-        payAmountList.add(insuranceOrder.getPayAmount());
-        totalAmount = totalAmount.add(insuranceOrder.getPayAmount());
+        if (Objects.nonNull(insuranceOrder)) {
+            // 保存保险订单
+            insuranceOrderService.insert(insuranceOrder);
+            
+            orderList.add(insuranceOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
+            payAmountList.add(insuranceOrder.getPayAmount());
+            totalAmount = totalAmount.add(insuranceOrder.getPayAmount());
+        }
         
         // 保存签约记录
         installmentRecordService.insert(installmentRecord);
