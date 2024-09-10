@@ -67,12 +67,6 @@ public class ExchangeUserSelectVo {
     
     
     /**
-     * 是否进入选仓换电,1是，0否
-     */
-    private Integer isEnterSelectCellExchange;
-    
-    
-    /**
      * 是否进入多次换电
      */
     public static final Integer ENTER_MORE_EXCHANGE = 1;
@@ -107,13 +101,6 @@ public class ExchangeUserSelectVo {
     
     public static final Integer ENTER_TAKE_BATTERY = 1;
     
-    
-    /**
-     * 是否进入选仓换电
-     */
-    public static final Integer NOT_ENTER_SELECT_CELL_EXCHANGE = 0;
-    
-    public static final Integer ENTER_SELECT_CELL_EXCHANGE = 1;
     
     
 }
