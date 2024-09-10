@@ -395,11 +395,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
         
+        BigDecimal eleRefundAmount=null;
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
-//        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        //BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
         // 退款金额为1️剩余代扣金额
-        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
-        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        if (Objects.isNull(freeDepositOrder)) {
+            BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+            eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        } else {
+            eleRefundAmount = payAmount;
+        }
+        
         
         UserInfo updateUserInfo = new UserInfo();
         boolean eleRefund = false;
