@@ -1460,7 +1460,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "未找到交易订单!");
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(unionTradeOrder.getExternalAgreementNo());
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(unionTradeOrder.getExternalAgreementNo());
         if (Objects.isNull(installmentRecord)) {
             log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found installmentRecord externalAgreementNo={}", unionTradeOrder.getExternalAgreementNo());
         }
