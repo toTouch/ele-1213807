@@ -69,6 +69,7 @@ public class ProfitSharingReceiverConfigConverter {
         profitSharingReceiverConfigModel.setProfitSharingConfigId(request.getProfitSharingConfigId());
         profitSharingReceiverConfigModel.setSize(request.getSize());
         profitSharingReceiverConfigModel.setOffset(request.getOffset());
+        profitSharingReceiverConfigModel.setDataPermissionFranchiseeIds(request.getDataPermissionFranchiseeIds());
         return profitSharingReceiverConfigModel;
     }
     

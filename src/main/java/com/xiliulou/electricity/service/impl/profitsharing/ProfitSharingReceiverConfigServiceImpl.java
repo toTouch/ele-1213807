@@ -205,6 +205,9 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
         // 校验幂等
         this.checkIdempotent(receiver.getProfitSharingConfigId());
         
+        //数据权限
+        this.checkFranchiseeDataPermission(request.getDataPermissionFranchiseeIds(), receiver.getFranchiseeId());
+        
         ProfitSharingReceiverConfig receiverConfig = new ProfitSharingReceiverConfig();
         receiverConfig.setId(request.getId());
         receiverConfig.setUpdateTime(System.currentTimeMillis());
@@ -214,13 +217,17 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
     }
     
     @Override
-    public void removeById(Integer tenantId, Long id) {
+    public void removeById(Integer tenantId, Long id, List<Long> dataPermissionFranchiseeIds) {
         ProfitSharingReceiverConfig receiver = profitSharingReceiverConfigMapper.selectById(tenantId, id);
         if (Objects.isNull(receiver)) {
             throw new BizException("数据不存在");
         }
+        
         // 校验幂等
         this.checkIdempotent(receiver.getProfitSharingConfigId());
+        
+        //数据权限
+        this.checkFranchiseeDataPermission(dataPermissionFranchiseeIds, receiver.getFranchiseeId());
         
         //调用微信
         this.deleteWechatReceivers(receiver);
@@ -310,6 +317,8 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
      */
     private void checkReceiver(ProfitSharingReceiverConfigOptRequest request, ProfitSharingConfig profitSharingConfig, ProfitSharingReceiverConfig originalReceiverConfig) {
         
+        this.checkFranchiseeDataPermission(request.getDataPermissionFranchiseeIds(), profitSharingConfig.getFranchiseeId());
+        
         List<ProfitSharingReceiverConfig> existList = profitSharingReceiverConfigMapper
                 .selectListByTenantIdAndProfitSharingConfigId(request.getTenantId(), request.getProfitSharingConfigId());
         existList = Optional.ofNullable(existList).orElse(Collections.emptyList());
@@ -369,6 +378,21 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             throw new BizException("未知的分账接收方类型");
         }
         
+    }
+    
+    /**
+     * 加盟商数据权限校验
+     *
+     * @param dataPermissionFranchiseeIds
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/9/10 10:44
+     */
+    private void checkFranchiseeDataPermission(List<Long> dataPermissionFranchiseeIds, Long franchiseeId) {
+        // 数据校验
+        if (CollectionUtils.isNotEmpty(dataPermissionFranchiseeIds) && !dataPermissionFranchiseeIds.contains(franchiseeId)) {
+            throw new BizException("ELECTRICITY.0038", "加盟商不存在");
+        }
     }
     
     /**
