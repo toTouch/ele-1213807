@@ -77,7 +77,7 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         FreeDepositOrder freeDepositOrder = getFreeDepositOrder(orderId);
         if (Objects.isNull(freeDepositOrder)) {
             log.warn("freeDepositOrder is null, orderId is{}", orderId);
-            return success();
+            return failed();
         }
         boolean isSuccess = true;
         if (CollectionUtils.isNotEmpty(businessHandlerList)){
