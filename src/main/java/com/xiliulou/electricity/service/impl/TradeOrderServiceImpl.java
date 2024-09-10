@@ -912,19 +912,21 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 // 生成押金订单
                 if (!UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                     eleDepositOrderTriple = eleDepositOrderService.generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet, electricityPayParams);
-                }
-                if (Objects.isNull(eleDepositOrderTriple) || Boolean.FALSE.equals(eleDepositOrderTriple.getLeft()) || Objects.isNull(eleDepositOrderTriple.getRight())) {
-                    log.info("INSTALLMENT PAY WARN! generate eleDepositOrder record fail, uid={}", uid);
-                    return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                    
+                    if (Objects.isNull(eleDepositOrderTriple) || Boolean.FALSE.equals(eleDepositOrderTriple.getLeft()) || Objects.isNull(eleDepositOrderTriple.getRight())) {
+                        log.info("INSTALLMENT PAY WARN! generate eleDepositOrder record fail, uid={}", uid);
+                        return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                    }
                 }
                 
                 // 生成保险订单
                 if (Objects.nonNull(query.getInsuranceId())) {
                     insuranceOrderTriple = insuranceOrderService.generateInsuranceOrder(userInfo, query.getInsuranceId(), electricityCabinet, electricityPayParams);
-                }
-                if (Objects.isNull(insuranceOrderTriple) || Boolean.FALSE.equals(insuranceOrderTriple.getLeft()) || Objects.isNull(insuranceOrderTriple.getRight())) {
-                    log.info("INSTALLMENT PAY WARN! generate insuranceOrder record fail, uid={}", uid);
-                    return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                    
+                    if (Objects.isNull(insuranceOrderTriple) || Boolean.FALSE.equals(insuranceOrderTriple.getLeft()) || Objects.isNull(insuranceOrderTriple.getRight())) {
+                        log.info("INSTALLMENT PAY WARN! generate insuranceOrder record fail, uid={}", uid);
+                        return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                    }
                 }
                 
                 // 生成分期签约记录
