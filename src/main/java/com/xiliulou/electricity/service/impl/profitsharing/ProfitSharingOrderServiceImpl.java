@@ -89,9 +89,10 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
         } catch (WechatPayException e) {
             log.warn("PROFIT SHARING UNFREEZE WARN!not found pay params, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo());
         }
-    
+        
         if (Objects.isNull(wechatPayParamsDetails)) {
             log.warn("PROFIT SHARING UNFREEZE WARN!not found pay params,thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo());
+            return;
         }
         
         ProfitSharingOrder profitSharingOrderUpdate = new ProfitSharingOrder();

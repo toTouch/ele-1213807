@@ -41,6 +41,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -316,17 +317,39 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     break;
                 }
     
-                List<String> thirdOrderNoList = profitSharingTradeMixedOrderList.stream().map(ProfitSharingTradeMixedOrder::getThirdOrderNo).collect(Collectors.toList());
+                List<String> thirdOrderNoList = new ArrayList<>();
+                Set<Long> franchiseeIdList = new HashSet<>();
+                
+                profitSharingTradeMixedOrderList.stream().forEach(profitSharingTradeMixedOrder -> {
+                    franchiseeIdList.add(profitSharingTradeMixedOrder.getFranchiseeId());
+                    thirdOrderNoList.add(profitSharingTradeMixedOrder.getThirdOrderNo());
+                });
+    
+                List<WechatPayParamsDetails> wechatPayParamsDetails = null;
+                
+                try {
+                    wechatPayParamsDetails = wechatPayParamsBizService.queryListPreciseCacheByTenantIdAndFranchiseeIds(tenantId, franchiseeIdList, null);
+                } catch (WechatPayException e) {
+                    log.error("deal unfreeze error, query wechatPayParamsDetails is null! tenantId = {}, franchiseeIds = {}", tenantId, franchiseeIdList, e);
+                }
+                
+                if (CollectionUtils.isEmpty(wechatPayParamsDetails)) {
+                    log.info("deal unfreeze info, wechatPayParamsDetails is null, tenantId = {}, franchiseeIds = {}", tenantId, franchiseeIdList);
+                    continue;
+                }
+    
+                Map<Long, WechatPayParamsDetails> wechatPayParamsDetailsMap = wechatPayParamsDetails.stream().collect(
+                        Collectors.toMap(WechatPayParamsDetails::getFranchiseeId, Function.identity(), (wechatPayParamsDetails1, wechatPayParamsDetails2) -> wechatPayParamsDetails1));
                 
                 // 根据微信支付订单号处理
-                dealWithThirdOrderNo(thirdOrderNoList);
+                dealWithThirdOrderNo(thirdOrderNoList, wechatPayParamsDetailsMap);
     
                 startId = profitSharingTradeMixedOrderList.get(profitSharingTradeMixedOrderList.size() - 1).getId();
             }
         });
     }
     
-    private void dealWithThirdOrderNo(List<String> thirdOrderNoList) {
+    private void dealWithThirdOrderNo(List<String> thirdOrderNoList, Map<Long, WechatPayParamsDetails> wechatPayParamsDetailsMap) {
         // 查询出存在解冻的订单
         List<String> unfreezeByThirdOrderNoList = profitSharingOrderService.listUnfreezeByThirdOrderNo(thirdOrderNoList);
     
@@ -335,13 +358,6 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
             if (unfreezeByThirdOrderNoList.contains(thirdOrderNo)) {
                 return;
             }
-            
-            // 不存在解冻待处理的明细
-//            boolean existsNotUnfreezeByThirdOrderNo = profitSharingOrderDetailService.existsNotUnfreezeByThirdOrderNo(thirdOrderNo);
-//            if (!existsNotUnfreezeByThirdOrderNo) {
-//                log.info("profit sharing unfreeze info,thirdOrderNo = {} is not exists unfreeze order detail", thirdOrderNo);
-//                return;
-//            }
             
             // 存在未处理完成的明细
             boolean existsNotCompleteByThirdOrderNo = profitSharingOrderDetailService.existsNotCompleteByThirdOrderNo(thirdOrderNo);
@@ -359,6 +375,12 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                 ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = profitSharingTradeMixedOrderService.queryByThirdOrderNo(thirdOrderNo);
                 if (ObjectUtils.isEmpty(profitSharingTradeMixedOrder)) {
                     log.info("PROFIT SHARING UNFREEZE INFO!, profit sharing trade mixed order is not find, thirdOrderNo = {}",thirdOrderNo);
+                    return;
+                }
+    
+                // 判断支付配置是否存在
+                if (!wechatPayParamsDetailsMap.containsKey(profitSharingTradeMixedOrder.getFranchiseeId())) {
+                    log.info("PROFIT SHARING UNFREEZE INFO!, wechat pay params details is not find, franchiseeId = {}",profitSharingTradeMixedOrder.getFranchiseeId());
                     return;
                 }
                 
