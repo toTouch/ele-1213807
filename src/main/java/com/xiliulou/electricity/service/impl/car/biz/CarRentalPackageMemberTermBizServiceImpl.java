@@ -281,6 +281,21 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             return false;
         }
         
+        if (Objects.isNull(memberTermEntity.getDueTimeTotal())) {
+            log.warn("isExpirePackageOrder.dueTimeTotal is null, uid is {}", uid);
+            return false;
+        }
+        
+        if (Objects.isNull(memberTermEntity.getRentalPackageConfine())) {
+            log.warn("isExpirePackageOrder.rentalPackageConfine is null, uid is {}", uid);
+            return false;
+        }
+        
+        if (Objects.isNull(memberTermEntity.getResidue())) {
+            log.warn("isExpirePackageOrder.residue is null, uid is {}", uid);
+            return false;
+        }
+        
         if (now >= memberTermEntity.getDueTimeTotal() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
                 && memberTermEntity.getResidue() <= 0L)) {
             return true;
