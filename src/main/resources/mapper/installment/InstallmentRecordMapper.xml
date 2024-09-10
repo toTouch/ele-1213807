@@ -86,6 +86,9 @@
         select id, <include refid="columnsWithoutId"/>
         from t_installment_record
         where tenant_id = #{tenantId}
+            <if test="status == null">
+                and `status` != 7
+            </if>
             <include refid="ifLabelsForWhere"/>
         order by id desc
         limit #{offset}, #{size}
@@ -95,6 +98,9 @@
         select count(1)
         from t_installment_record
         where tenant_id = #{tenantId}
+            <if test="status == null">
+                and `status` != 7
+            </if>
             <include refid="ifLabelsForWhere"/>
     </select>
 
