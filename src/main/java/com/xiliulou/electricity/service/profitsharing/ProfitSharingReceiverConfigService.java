@@ -88,7 +88,7 @@ public interface ProfitSharingReceiverConfigService {
      * @author caobotao.cbt
      * @date 2024/8/26 13:59
      */
-    void removeById(Integer tenantId, Long id);
+    void removeById(Integer tenantId, Long id,List<Long> dataPermissionFranchiseeIds);
     
     
     /**

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.controller.admin.base.AbstractFranchiseeDataPermissionController;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -33,7 +34,7 @@ import java.util.List;
  **/
 @Slf4j
 @RestController
-public class JsonAdminElectricityPayParamsController {
+public class JsonAdminElectricityPayParamsController extends AbstractFranchiseeDataPermissionController {
     
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
@@ -78,7 +79,7 @@ public class JsonAdminElectricityPayParamsController {
     
     @GetMapping(value = "/admin/electricityPayParams/queryFranchisee")
     public R queryFranchisee() {
-        List<FranchiseeIdNameVO> franchiseeVOS = electricityPayParamsService.queryFranchisee(TenantContextHolder.getTenantId());
+        List<FranchiseeIdNameVO> franchiseeVOS = electricityPayParamsService.queryFranchisee(TenantContextHolder.getTenantId(),checkFranchiseeDataPermission());
         return R.ok(franchiseeVOS);
     }
     

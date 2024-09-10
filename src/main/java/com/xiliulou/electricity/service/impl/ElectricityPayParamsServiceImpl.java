@@ -39,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -234,13 +233,21 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Slave
     @Override
-    public List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId) {
+    public List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId, List<Long> dataPermissionFranchiseeIds) {
         List<Long> franchiseeIds = baseMapper.selectFranchiseeIdsByTenantId(tenantId);
         // 过滤掉默认加盟商
         franchiseeIds = Optional.ofNullable(franchiseeIds).orElse(Collections.emptyList()).stream().filter(v -> !MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(v)).distinct()
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(franchiseeIds)) {
             return Collections.emptyList();
+        }
+        
+        if (CollectionUtils.isNotEmpty(dataPermissionFranchiseeIds)) {
+            franchiseeIds = franchiseeIds.stream().filter(v -> dataPermissionFranchiseeIds.contains(v)).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+            
         }
         
         List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, tenantId);

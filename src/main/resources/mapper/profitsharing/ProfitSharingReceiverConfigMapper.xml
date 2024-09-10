@@ -32,6 +32,12 @@
         del_flag = 0
         and tenant_id=#{tenantId}
         and profit_sharing_config_id=#{profitSharingConfigId}
+        <if test="dataPermissionFranchiseeIds!=null and dataPermissionFranchiseeIds.size > 0">
+            and franchisee_id IN
+            <foreach collection="dataPermissionFranchiseeIds" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
     </sql>
     
     

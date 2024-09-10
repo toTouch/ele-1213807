@@ -114,11 +114,12 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * 聚合租户加盟商
      *
      * @param tenantId
+     * @param dataPermissionFranchiseeIds
      * @return
      * @author caobotao.cbt
      * @date 2024/8/22 17:52
      */
-    List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId);
+    List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId, List<Long> dataPermissionFranchiseeIds);
     
     /**
      * 根据租户id+商户号查询

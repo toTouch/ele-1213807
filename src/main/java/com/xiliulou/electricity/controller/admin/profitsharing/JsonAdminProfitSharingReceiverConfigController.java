@@ -5,6 +5,7 @@
 package com.xiliulou.electricity.controller.admin.profitsharing;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.controller.admin.base.AbstractFranchiseeDataPermissionController;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverConfigOptRequest;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverConfigQryRequest;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingReceiverConfigStatusOptRequest;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -36,7 +36,7 @@ import java.util.List;
  * @date 2024/8/22 16:45
  */
 @RestController
-public class JsonAdminProfitSharingReceiverConfigController {
+public class JsonAdminProfitSharingReceiverConfigController extends AbstractFranchiseeDataPermissionController {
     
     
     @Resource
@@ -52,7 +52,9 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @GetMapping("/admin/queryWxMiniOpenIdByPhone")
     public R queryWxMiniOpenIdByPhone(@RequestParam("phone") String phone) {
+        
         String openId = profitSharingReceiverConfigService.queryWxMiniOpenIdByPhone(phone, TenantContextHolder.getTenantId());
+        
         return R.ok(openId);
     }
     
@@ -65,7 +67,10 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @PostMapping(value = "/admin/profitSharingReceiverConfig")
     public R insert(@Validated(CreateGroup.class) @RequestBody ProfitSharingReceiverConfigOptRequest request) {
+        
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setDataPermissionFranchiseeIds(checkFranchiseeDataPermission());
+        
         profitSharingReceiverConfigService.insert(request);
         return R.ok();
     }
@@ -79,7 +84,10 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @PutMapping(value = "/admin/profitSharingReceiverConfig")
     public R update(@Validated(UpdateGroup.class) @RequestBody ProfitSharingReceiverConfigOptRequest request) {
+        
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setDataPermissionFranchiseeIds(checkFranchiseeDataPermission());
+        
         profitSharingReceiverConfigService.update(request);
         return R.ok();
     }
@@ -94,7 +102,8 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @DeleteMapping(value = "/admin/profitSharingReceiverConfig/{id}")
     public R remove(@PathVariable(value = "id") Long id) {
-        profitSharingReceiverConfigService.removeById(TenantContextHolder.getTenantId(), id);
+        
+        profitSharingReceiverConfigService.removeById(TenantContextHolder.getTenantId(), id, checkFranchiseeDataPermission());
         return R.ok();
     }
     
@@ -107,7 +116,10 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @PutMapping(value = "/admin/profitSharingReceiverConfig/updateStatus")
     public R updateStatus(@Validated @RequestBody ProfitSharingReceiverConfigStatusOptRequest request) {
+        
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setDataPermissionFranchiseeIds(checkFranchiseeDataPermission());
+        
         profitSharingReceiverConfigService.updateStatus(request);
         return R.ok();
     }
@@ -121,12 +133,13 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @GetMapping(value = "/admin/profitSharingReceiverConfig/{id}")
     public R details(@PathVariable(value = "id") Long id) {
+        
         ProfitSharingReceiverConfigDetailsVO detailsVO = profitSharingReceiverConfigService.queryDetailsById(TenantContextHolder.getTenantId(), id);
+        
+        this.checkFranchiseeDataPermissionByFranchiseeId(detailsVO.getFranchiseeId());
+        
         return R.ok(detailsVO);
     }
-    
-    
-
     
     
     /**
@@ -137,8 +150,12 @@ public class JsonAdminProfitSharingReceiverConfigController {
      */
     @PostMapping(value = "/admin/profitSharingReceiverConfig/pageList")
     public R pageList(@Validated(QueryGroup.class) @RequestBody ProfitSharingReceiverConfigQryRequest request) {
+        
         request.setTenantId(TenantContextHolder.getTenantId());
+        request.setDataPermissionFranchiseeIds(checkFranchiseeDataPermission());
+        
         List<ProfitSharingReceiverConfigVO> configVOList = profitSharingReceiverConfigService.pageList(request);
+        
         return R.ok(configVOList);
     }
     
@@ -152,7 +169,9 @@ public class JsonAdminProfitSharingReceiverConfigController {
     @PostMapping(value = "/admin/profitSharingReceiverConfig/count")
     public R count(@Validated @RequestBody ProfitSharingReceiverConfigQryRequest request) {
         request.setTenantId(TenantContextHolder.getTenantId());
-         Integer count = profitSharingReceiverConfigService.count(request);
+        request.setDataPermissionFranchiseeIds(checkFranchiseeDataPermission());
+        
+        Integer count = profitSharingReceiverConfigService.count(request);
         return R.ok(count);
     }
 }
