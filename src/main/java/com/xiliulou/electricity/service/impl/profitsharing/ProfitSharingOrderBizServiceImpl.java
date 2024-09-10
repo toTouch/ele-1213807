@@ -194,6 +194,18 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                         orderStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
                     }
     
+                    // 修改分账主表的状态
+                    ProfitSharingOrder profitSharingOrderUpdate = new ProfitSharingOrder();
+                    profitSharingOrderUpdate.setId(profitSharingOrderTypeUnfreezeBO.getId());
+                    profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    profitSharingOrderUpdate.setStatus(orderStatus);
+                    profitSharingOrderService.updateUnfreezeOrderById(profitSharingOrderUpdate);
+                    
+                    if (CollectionUtils.isEmpty(unfreeze.getReceivers())) {
+                        log.info("deal unfreeze query info, receivers is null, thirdTradeOrderNo = {}", profitSharingOrderTypeUnfreezeBO.getThirdTradeOrderNo());
+                        return;
+                    }
+                    
                     // 明细表分账状态
                     Integer orderDetailStatus = null;
                     Long finishTime = null;
@@ -201,39 +213,30 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                     Integer unfreezeStatus = null;
                     BigDecimal amount = null;
                     
-                    if (ObjectUtils.isNotEmpty(unfreeze.getReceivers())) {
-                        ReceiverResp receiverResp = unfreeze.getReceivers().get(0);
-                        if (StringUtils.isNotEmpty(receiverResp.getFinishTime())) {
-                            LocalDateTime localDateTime = LocalDateTime.parse(receiverResp.getFinishTime(), formatter);
-                            ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.systemDefault()); // 转换为系统默认时区的ZonedDateTime
-                            finishTime = zonedDateTime.toEpochSecond() * 1000;
-                        }
-    
-                        if (WechatProfitSharingStatusEnum.PENDING.getDesc().equals(receiverResp.getResult())) {
-                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode();
-                        } else if (WechatProfitSharingStatusEnum.SUCCESS.getDesc().equals(receiverResp.getResult())) {
-                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
-                            unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.SUCCESS.getCode();
-                        } else if (WechatProfitSharingStatusEnum.CLOSED.getDesc().equals(receiverResp.getResult())) {
-                            orderDetailStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
-                            unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.FAIL.getCode();
-                        }
-                        
-                        if (StringUtils.isNotEmpty(receiverResp.getFailReason())) {
-                            failReason = receiverResp.getFailReason();
-                        }
-                        
-                        if (Objects.nonNull(receiverResp.getAmount())) {
-                            amount = new BigDecimal(receiverResp.getAmount()).divide(new BigDecimal(100));
-                        }
+                    ReceiverResp receiverResp = unfreeze.getReceivers().get(0);
+                    if (StringUtils.isNotEmpty(receiverResp.getFinishTime())) {
+                        LocalDateTime localDateTime = LocalDateTime.parse(receiverResp.getFinishTime(), formatter);
+                        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.systemDefault()); // 转换为系统默认时区的ZonedDateTime
+                        finishTime = zonedDateTime.toEpochSecond() * 1000;
                     }
-    
-                    // 修改分账主表的状态
-                    ProfitSharingOrder profitSharingOrderUpdate = new ProfitSharingOrder();
-                    profitSharingOrderUpdate.setId(profitSharingOrderTypeUnfreezeBO.getId());
-                    profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
-                    profitSharingOrderUpdate.setStatus(orderStatus);
-                    profitSharingOrderService.updateUnfreezeOrderById(profitSharingOrderUpdate);
+
+                    if (WechatProfitSharingStatusEnum.PENDING.getDesc().equals(receiverResp.getResult())) {
+                        orderDetailStatus = ProfitSharingOrderDetailStatusEnum.IN_PROCESS.getCode();
+                    } else if (WechatProfitSharingStatusEnum.SUCCESS.getDesc().equals(receiverResp.getResult())) {
+                        orderDetailStatus = ProfitSharingOrderDetailStatusEnum.COMPLETE.getCode();
+                        unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.SUCCESS.getCode();
+                    } else if (WechatProfitSharingStatusEnum.CLOSED.getDesc().equals(receiverResp.getResult())) {
+                        orderDetailStatus = ProfitSharingOrderDetailStatusEnum.FAIL.getCode();
+                        unfreezeStatus = ProfitSharingOrderDetailUnfreezeStatusEnum.FAIL.getCode();
+                    }
+                    
+                    if (StringUtils.isNotEmpty(receiverResp.getFailReason())) {
+                        failReason = receiverResp.getFailReason();
+                    }
+                    
+                    if (Objects.nonNull(receiverResp.getAmount())) {
+                        amount = new BigDecimal(receiverResp.getAmount()).divide(new BigDecimal(100));
+                    }
                     
                     // 修改分账明细表的状态
                     ProfitSharingOrderDetail profitSharingOrderDetailUpdate = new ProfitSharingOrderDetail();
@@ -303,8 +306,8 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     }
     
     private void dealWithTenantIds(List<Integer> tenantIds) {
-        // 两个月前的第一天
-        long startTime = DateUtils.getBeforeMonthFirstDayTimestamp(DateFormatConstant.LAST_MONTH);
+        // 一个月前的第一天
+        long startTime = DateUtils.getBeforeDayTimestamp(DateFormatConstant.MONTH_DAYS);
         long endTime = System.currentTimeMillis();
         Integer size = 200;
     

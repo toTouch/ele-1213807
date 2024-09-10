@@ -182,7 +182,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
                 profitSharingOrderDetailUpdate.setThirdOrderDetailNo(receivers.get(0).getDetailId());
             }
         } catch (ProfitSharingException e) {
-            profitSharingOrderUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
+            profitSharingOrderUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_COMPLETE.getCode());
             profitSharingOrderDetailUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
             
             String failReason = e.getMessage();
