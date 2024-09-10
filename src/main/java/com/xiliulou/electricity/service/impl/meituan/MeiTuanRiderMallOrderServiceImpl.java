@@ -29,6 +29,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -1257,12 +1258,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(Map<String, Object> paramMap, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
+    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
         Integer tenantId = meiTuanRiderMallConfig.getTenantId();
-        Long timestamp = Long.parseLong(paramMap.get(VirtualTradeConstant.TIMESTAMP).toString());
-        String sign = paramMap.get(VirtualTradeConstant.SIGN).toString();
-        Long memberCardId = Long.parseLong(paramMap.get(VirtualTradeConstant.PROVIDER_SKU_ID).toString());
-        String phone = paramMap.get(VirtualTradeConstant.ACCOUNT).toString();
+        Long timestamp = request.getTimestamp();
+        String sign = request.getSign();
+        Long memberCardId = Long.valueOf(request.getProviderSkuId());
+        String phone = request.getAccount();
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
         LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();
         
