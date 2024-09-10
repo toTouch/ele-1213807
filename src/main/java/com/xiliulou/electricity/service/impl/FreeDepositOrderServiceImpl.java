@@ -1647,7 +1647,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("免押租电").uid(uid).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                    request);
+                    request, null);
             return Triple.of(true, null, resultDTO);
         } catch (DecoderException | WechatPayException e) {
             log.error("FREE DEPOSIT HYBRID ERROR! wechat v3 order  error! uid={}", uid, e);

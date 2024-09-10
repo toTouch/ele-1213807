@@ -451,7 +451,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("租电押金").uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                    request);
+                    request, null);
             return Triple.of(true, null, resultDTO);
             
             // 友好提示，对用户端不展示错误信息
@@ -651,7 +651,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("租电套餐").uid(userInfo.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                    request);
+                    request, null);
             return Triple.of(true, null, resultDTO);
             
             // 友好提示，对用户端不展示错误信息
@@ -799,7 +799,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE).description("滞纳金")
                     .uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                    request);
+                    request, null);
             return Triple.of(true, null, resultDTO);
             
             // 友好提示，对用户端不展示错误信息
@@ -913,25 +913,39 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 if (!UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                     eleDepositOrderTriple = eleDepositOrderService.generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet, electricityPayParams);
                 }
+                if (Objects.isNull(eleDepositOrderTriple) || Boolean.FALSE.equals(eleDepositOrderTriple.getLeft()) || Objects.isNull(eleDepositOrderTriple.getRight())) {
+                    log.info("INSTALLMENT PAY WARN! generate eleDepositOrder record fail, uid={}", uid);
+                    return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                }
+                
                 // 生成保险订单
                 if (Objects.nonNull(query.getInsuranceId())) {
                     insuranceOrderTriple = insuranceOrderService.generateInsuranceOrder(userInfo, query.getInsuranceId(), electricityCabinet, electricityPayParams);
                 }
-                // 生成分期签约记录
-                installmentRecordTriple = installmentRecordService.generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
-                
-                if (Objects.isNull(installmentRecordTriple) || Objects.isNull(installmentRecordTriple.getRight())) {
-                    log.warn("INSTALLMENT PAY WARN! generate installment record fail, uid={}", uid);
+                if (Objects.isNull(insuranceOrderTriple) || Boolean.FALSE.equals(insuranceOrderTriple.getLeft()) || Objects.isNull(insuranceOrderTriple.getRight())) {
+                    log.info("INSTALLMENT PAY WARN! generate insuranceOrder record fail, uid={}", uid);
                     return R.fail("301001", "购买分期套餐失败，请联系管理员");
                 }
+                
+                // 生成分期签约记录
+                installmentRecordTriple = installmentRecordService.generateInstallmentRecord(query, batteryMemberCard, null, userInfo);
+                if (Objects.isNull(installmentRecordTriple) || Boolean.FALSE.equals(installmentRecordTriple.getLeft()) || Objects.isNull(installmentRecordTriple.getRight())) {
+                    log.info("INSTALLMENT PAY WARN! generate installment record fail, uid={}", uid);
+                    return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                }
+                
                 // 生成一期子套餐订单
-                Triple<Boolean, String, Object> memberCardOrderTriple = electricityMemberCardOrderService.generateInstallmentMemberCardOrder(userInfo, batteryMemberCard,
-                        electricityCabinet, installmentRecordTriple.getRight());
+                Triple<Boolean, String, ElectricityMemberCardOrder> memberCardOrderTriple = electricityMemberCardOrderService.generateInstallmentMemberCardOrder(userInfo,
+                        batteryMemberCard, electricityCabinet, installmentRecordTriple.getRight());
+                if (Objects.isNull(memberCardOrderTriple) || Boolean.FALSE.equals(memberCardOrderTriple.getLeft()) || Objects.isNull(memberCardOrderTriple.getRight())) {
+                    log.info("INSTALLMENT PAY WARN! generate memberCardOrder fail, uid={}", uid);
+                    return R.fail("301001", "购买分期套餐失败，请联系管理员");
+                }
                 
                 // 保存相关订单并调起支付
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
-                        .saveOrderAndPay(eleDepositOrderTriple, insuranceOrderTriple, installmentRecordTriple, memberCardOrderTriple, batteryMemberCard, userOauthBind, userInfo,
-                                request);
+                        .saveOrderAndPay((EleDepositOrder) eleDepositOrderTriple.getRight(), (InsuranceOrder) insuranceOrderTriple.getRight(), installmentRecordTriple.getRight(),
+                                memberCardOrderTriple.getRight(), batteryMemberCard, userOauthBind, userInfo, request);
                 
                 // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
                 double score = (double) Instant.now().plus(5, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
@@ -951,9 +965,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return R.fail("301001", "购买分期套餐失败，请联系管理员");
     }
     
-    public Triple<Boolean, String, Object> saveOrderAndPay(Triple<Boolean, String, Object> eleDepositOrderTriple, Triple<Boolean, String, Object> insuranceOrderTriple,
-            Triple<Boolean, String, InstallmentRecord> installmentRecordTriple, Triple<Boolean, String, Object> memberCardOrderTriple, BatteryMemberCard batteryMemberCard,
-            UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request) throws WechatPayException {
+    public Triple<Boolean, String, Object> saveOrderAndPay(EleDepositOrder eleDepositOrder, InsuranceOrder insuranceOrder, InstallmentRecord installmentRecord,
+            ElectricityMemberCardOrder memberCardOrder, BatteryMemberCard batteryMemberCard, UserOauthBind userOauthBind, UserInfo userInfo, HttpServletRequest request)
+            throws WechatPayException {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
@@ -961,37 +975,26 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         BigDecimal totalAmount = BigDecimal.valueOf(0);
         
         // 保存押金订单
-        if (Objects.nonNull(eleDepositOrderTriple) && Boolean.TRUE.equals(eleDepositOrderTriple.getLeft()) && Objects.nonNull(eleDepositOrderTriple.getRight())) {
-            EleDepositOrder eleDepositOrder = (EleDepositOrder) eleDepositOrderTriple.getRight();
-            eleDepositOrderService.insert(eleDepositOrder);
-            
-            orderList.add(eleDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-            payAmountList.add(eleDepositOrder.getPayAmount());
-            totalAmount = totalAmount.add(eleDepositOrder.getPayAmount());
-        }
+        eleDepositOrderService.insert(eleDepositOrder);
+        
+        orderList.add(eleDepositOrder.getOrderId());
+        orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+        payAmountList.add(eleDepositOrder.getPayAmount());
+        totalAmount = totalAmount.add(eleDepositOrder.getPayAmount());
         
         // 保存保险订单
-        if (Objects.nonNull(insuranceOrderTriple) && Boolean.TRUE.equals(insuranceOrderTriple.getLeft()) && Objects.nonNull(insuranceOrderTriple.getRight())) {
-            InsuranceOrder insuranceOrder = (InsuranceOrder) insuranceOrderTriple.getRight();
-            insuranceOrderService.insert(insuranceOrder);
-            
-            orderList.add(insuranceOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-            payAmountList.add(insuranceOrder.getPayAmount());
-            totalAmount = totalAmount.add(insuranceOrder.getPayAmount());
-        }
+        insuranceOrderService.insert(insuranceOrder);
+        
+        orderList.add(insuranceOrder.getOrderId());
+        orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
+        payAmountList.add(insuranceOrder.getPayAmount());
+        totalAmount = totalAmount.add(insuranceOrder.getPayAmount());
         
         // 保存签约记录
-        if (Objects.nonNull(installmentRecordTriple) && Boolean.TRUE.equals(installmentRecordTriple.getLeft()) && Objects.nonNull(installmentRecordTriple.getRight())) {
-            installmentRecordService.insert(installmentRecordTriple.getRight());
-        }
+        installmentRecordService.insert(installmentRecord);
         
         // 保存一期套餐订单
-        if (Objects.nonNull(memberCardOrderTriple) && Boolean.TRUE.equals(memberCardOrderTriple.getLeft()) && Objects.nonNull(memberCardOrderTriple.getRight())) {
-            ElectricityMemberCardOrder memberCardOrder = (ElectricityMemberCardOrder) memberCardOrderTriple.getRight();
-            electricityMemberCardOrderService.insert(memberCardOrder);
-        }
+        electricityMemberCardOrderService.insert(memberCardOrder);
         
         // 计算服务费并设置ElectricityTradeOrder的相关数据
         if (batteryMemberCard.getInstallmentServiceFee().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
@@ -1019,7 +1022,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalAmount).tenantId(userInfo.getTenantId()).attach(UnionTradeOrder.ATTACH_INSTALLMENT)
                 .description("购买分期套餐").uid(userInfo.getUid()).build();
         WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                request);
+                request, installmentRecord.getExternalAgreementNo());
         return Triple.of(true, null, resultDTO);
     }
     

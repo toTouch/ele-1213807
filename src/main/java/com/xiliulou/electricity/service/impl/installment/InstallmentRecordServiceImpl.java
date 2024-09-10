@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_FEE_PAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
@@ -159,24 +160,22 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     @Override
     public R<InstallmentRecordVO> queryInstallmentRecordForUser(String externalAgreementNo) {
         InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();
-        InstallmentRecord installmentRecord = new InstallmentRecord();
-        // 用户端查询指定的签约记录
+        InstallmentRecord installmentRecord;
+        
         if (!StringUtils.isEmpty(externalAgreementNo)) {
+            // 用户端查询指定的签约记录
             installmentRecord = queryByExternalAgreementNo(externalAgreementNo);
-            if (Objects.isNull(installmentRecord)) {
-                return R.ok();
-            }
-            BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
-
         } else {
             // 用户端查询最新签约记录
             Long uid = SecurityUtils.getUid();
+            // 初始化状态的签约记录为未支付签约服务费时，不可展示给用户，也不参与业务，若一直不支付，3天后由自动取消机制修改为取消状态
             installmentRecord = queryLatestRecordByUid(uid);
-            if (Objects.isNull(installmentRecord)) {
-                return R.ok();
-            }
-            BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
         }
+        
+        if (Objects.isNull(installmentRecord)) {
+            return R.ok();
+        }
+        BeanUtils.copyProperties(installmentRecord, installmentRecordVO);
         
         // 设置套餐信息
         setPackageMessage(installmentRecordVO, installmentRecord);
@@ -229,7 +228,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             return R.fail("301005", "签约记录不存在");
         }
         
-        if (!Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_INIT) && !Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
+        List<Integer> list = Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_FEE_PAID, INSTALLMENT_RECORD_STATUS_UN_SIGN);
+        if (Objects.isNull(installmentRecord.getStatus()) || !list.contains(installmentRecord.getStatus())) {
             return R.fail("301016", "该分期套餐已签约成功，不可取消");
         }
         

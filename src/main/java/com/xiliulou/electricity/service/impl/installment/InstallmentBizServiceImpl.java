@@ -97,6 +97,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_SUCCESS_CODE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_FEE_PAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
@@ -187,12 +188,21 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     public R terminateRecord(String externalAgreementNo) {
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
-            return R.fail("签约记录为空");
+            return R.fail("301005", "签约记录不存在");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            return R.fail("未退还电池");
+            return R.fail("301017", "未退还电池");
+        }
+        
+        InstallmentTerminatingRecordQuery query = new InstallmentTerminatingRecordQuery();
+        query.setUid(installmentRecord.getUid());
+        query.setStatuses(List.of(TERMINATING_RECORD_STATUS_INIT));
+        
+        List<InstallmentTerminatingRecord> records = installmentTerminatingRecordService.listForRecordWithStatus(query);
+        if (!CollectionUtils.isEmpty(records)) {
+            return R.fail("301014", "有未完成的解约申请");
         }
         
         InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
@@ -201,7 +211,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
         if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
-            return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, null);
@@ -215,17 +225,17 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     public R<String> handleTerminatingRecord(HandleTerminatingRecordQuery query) {
         InstallmentTerminatingRecord terminatingRecord = installmentTerminatingRecordService.queryById(query.getId());
         if (Objects.isNull(terminatingRecord)) {
-            return R.fail("解约记录为空");
+            return R.fail("301018", "解约申请不存在");
         }
         
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(terminatingRecord.getExternalAgreementNo());
         if (Objects.isNull(installmentRecord)) {
-            return R.fail("签约记录为空");
+            return R.fail("301005", "签约记录不存在");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            return R.fail("未退还电池");
+            return R.fail("301017", "未退还电池");
         }
         
         InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
@@ -234,7 +244,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
         if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
-            return R.fail("当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
@@ -260,7 +270,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     public R queryDeductStatus(String payNo) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(fyConfig)) {
-            return R.fail("签约代扣功能未配置相关信息！请联系客服处理");
+            return R.fail("301003", "签约代扣功能未配置相关信息！请联系客服处理");
         }
         
         InstallmentDeductionRecord installmentDeductionRecord = installmentDeductionRecordService.queryByPayNo(payNo);
@@ -294,7 +304,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
                 log.warn("INSTALLMENT DEDUCT WARN! The user is not associated with a tenant. uid={}", uid);
-                return R.fail("301004", "请购买分期套餐后，再签约");
+                return R.fail("301007", "请购买分期套餐成功后，再代扣");
             }
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
@@ -320,15 +330,15 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         try {
             uid = SecurityUtils.getUid();
             InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
-                    Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN));
+                    Arrays.asList(INSTALLMENT_RECORD_STATUS_FEE_PAID, INSTALLMENT_RECORD_STATUS_UN_SIGN));
             if (Objects.isNull(installmentRecord)) {
-                return R.fail("301004", "请购买分期套餐后，再签约");
+                return R.fail("301004", "请购买分期套餐成功后，再签约");
             }
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
                 log.warn("INSTALLMENT SIGN WARN! The user is not associated with a tenant. uid={}", uid);
-                return R.fail("301004", "请购买分期套餐后，再签约");
+                return R.fail("301004", "请购买分期套餐成功后，再签约");
             }
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(tenant.getId());
@@ -641,7 +651,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         Integer num = (Integer) eleRefundOrderService.queryCount(
                 EleRefundQuery.builder().uid(installmentRecord.getUid()).statuses(Arrays.asList(EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUND)).build()).getData();
         if (Objects.nonNull(num) && num > 0) {
-            return R.fail("301013", "有未完成的押金退款订单");
+            return R.fail("301013", "有未完成的押金退款");
         }
         
         InstallmentTerminatingRecordQuery query = new InstallmentTerminatingRecordQuery();
@@ -649,7 +659,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         query.setStatuses(List.of(TERMINATING_RECORD_STATUS_INIT));
         
         List<InstallmentTerminatingRecord> records = installmentTerminatingRecordService.listForRecordWithStatus(query);
-        if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(records)) {
+        if (!CollectionUtils.isEmpty(records)) {
             return R.fail("301014", "有未完成的解约申请");
         }
         

@@ -42,6 +42,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -111,6 +112,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.mq.service.RocketMqService;
@@ -138,6 +140,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_FEE_PAID;
 
 /**
  * @program: XILIULOU
@@ -326,9 +330,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Autowired
     private ApplicationContext applicationContext;
     
+    @Autowired
+    private InstallmentRecordService installmentRecordService;
+    
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
-            HttpServletRequest request) throws WechatPayException {
+            HttpServletRequest request, String externalAgreementNo) throws WechatPayException {
         
         String ip = request.getRemoteAddr();
         UnionTradeOrder unionTradeOrder = new UnionTradeOrder();
@@ -345,6 +352,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
         unionTradeOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
         unionTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+        unionTradeOrder.setExternalAgreementNo(externalAgreementNo);
         baseMapper.insert(unionTradeOrder);
         
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
@@ -1452,6 +1460,8 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             return Pair.of(false, "未找到交易订单!");
         }
         
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(unionTradeOrder.getExternalAgreementNo());
+        
         String jsonOrderType = unionTradeOrder.getJsonOrderType();
         List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
         
@@ -1468,6 +1478,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         Integer tradeOrderStatus;
         if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+            
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_FEE_PAID);
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordService.update(installmentRecordUpdate);
         } else {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
             log.warn("NOTIFY INSTALLMENT UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);

@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @AllArgsConstructor
-// @RequestMapping("/user/installment/deduct")
+// @RequestMapping("/user/installment/business")
 public class JsonUserInstallmentBizController {
     
     private InstallmentBizService installmentBizService;
@@ -30,7 +30,6 @@ public class JsonUserInstallmentBizController {
     /**
      * 签约接口
      */
-    @ProcessParameter
     @PostMapping("/user/Installment/record/sign")
     public R<String> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
         return installmentBizService.sign(query, request);
@@ -47,13 +46,11 @@ public class JsonUserInstallmentBizController {
     /**
      * 用户端代扣
      */
-    @ProcessParameter
     @GetMapping("/user/installment/deductionPlan/deduct")
     public R deduct(@RequestParam Long id) {
         return installmentBizService.deduct(id);
     }
     
-    @ProcessParameter
     @PostMapping("/user/Installment/Terminating/create")
     public R<String> terminatingRecord(@RequestBody @Validated CreateTerminatingRecordQuery query) {
         return installmentBizService.createTerminatingRecord(query.getExternalAgreementNo(), query.getReason());

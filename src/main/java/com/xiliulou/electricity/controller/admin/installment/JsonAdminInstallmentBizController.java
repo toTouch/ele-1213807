@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @AllArgsConstructor
-// @RequestMapping("/admin/installment")
+// @RequestMapping("/admin/installment/business")
 public class JsonAdminInstallmentBizController {
     
     private InstallmentBizService installmentBizService;

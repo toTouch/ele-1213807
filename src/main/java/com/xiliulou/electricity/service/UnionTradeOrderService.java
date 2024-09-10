@@ -16,7 +16,8 @@ public interface UnionTradeOrderService {
     WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder,
                                                                     WechatPayParamsDetails wechatPayParamsDetails,
                                                                     String openId,
-                                                                    HttpServletRequest request) throws WechatPayException;
+                                                                    HttpServletRequest request,
+                                                                    String externalAgreementNo) throws WechatPayException;
 
 
     //集成支付回调

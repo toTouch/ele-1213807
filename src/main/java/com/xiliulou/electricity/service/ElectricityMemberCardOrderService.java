@@ -165,7 +165,7 @@ public interface ElectricityMemberCardOrderService {
     /**
      * 生成分期换电套餐订单
      */
-    Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+    Triple<Boolean, String, ElectricityMemberCardOrder> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
             InstallmentRecord installmentRecord);
     
     /**

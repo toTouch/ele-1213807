@@ -3428,7 +3428,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             memberCardOrder.setCouponIds(batteryMemberCard.getCouponIds());
         } else {
             // 传递代扣记录则为续费分期套餐子订单
-            memberCardOrder = (ElectricityMemberCardOrder) applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
+            memberCardOrder = applicationContext.getBean(ElectricityMemberCardOrderServiceImpl.class)
                     .generateInstallmentMemberCardOrder(userInfo, batteryMemberCard, null, installmentRecord).getRight();
             memberCardOrder.setValidDays(InstallmentUtil.calculateSuborderRentTime(installmentRecord.getPaidInstallment() + 1, installmentRecord, batteryMemberCard));
             memberCardOrder.setSource(source);
@@ -4378,7 +4378,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    public Triple<Boolean, String, Object> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard memberCard, ElectricityCabinet cabinet,
+    public Triple<Boolean, String, ElectricityMemberCardOrder> generateInstallmentMemberCardOrder(UserInfo userInfo, BatteryMemberCard memberCard, ElectricityCabinet cabinet,
             InstallmentRecord installmentRecord) {
         
         if (Objects.isNull(installmentRecord) || Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment())) {
