@@ -28,7 +28,6 @@ public class JsonUserInstallmentRecordController {
     /**
      * 查询当前登录用户正在使用的签约记录信息
      */
-    @ProcessParameter
     @GetMapping("/detail")
     public R<InstallmentRecordVO> queryInstallmentRecordForUser(@RequestParam(value = "externalAgreementNo", required = false) String externalAgreementNo) {
         

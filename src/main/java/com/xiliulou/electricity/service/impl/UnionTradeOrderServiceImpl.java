@@ -1440,11 +1440,11 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
-            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found electricity_trade_order trade_order_no={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
-            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! electricity_trade_order  status is not init, trade_order_no={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
         
@@ -1456,19 +1456,20 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
         if (Objects.isNull(electricityTradeOrderList)) {
-            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found electricity_trade_order trade_order_no={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(unionTradeOrder.getExternalAgreementNo());
+        if (Objects.isNull(installmentRecord)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found installmentRecord externalAgreementNo={}", unionTradeOrder.getExternalAgreementNo());
+        }
         
         String jsonOrderType = unionTradeOrder.getJsonOrderType();
         List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
         
         String jsonOrderId = unionTradeOrder.getJsonOrderId();
         List<String> orderIdList = JsonUtil.fromJsonArray(jsonOrderId, String.class);
-        
-        List<String> jsonFeeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonSingleFee(), String.class);
         
         if (CollectionUtils.isEmpty(orderIdList)) {
             log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
