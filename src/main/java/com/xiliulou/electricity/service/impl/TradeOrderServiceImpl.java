@@ -910,6 +910,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
                 
                 // 生成押金订单
+                EleDepositOrder eleDepositOrder = null;
                 if (!UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                     eleDepositOrderTriple = eleDepositOrderService.generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet, electricityPayParams);
                     
@@ -917,9 +918,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         log.info("INSTALLMENT PAY INFO! generate eleDepositOrder record fail, uid={}", uid);
                         return R.fail("301001", "购买分期套餐失败，请联系管理员");
                     }
+                    eleDepositOrder = (EleDepositOrder) eleDepositOrderTriple.getRight();
                 }
                 
                 // 生成保险订单
+                InsuranceOrder insuranceOrder = null;
                 if (Objects.nonNull(query.getInsuranceId())) {
                     insuranceOrderTriple = insuranceOrderService.generateInsuranceOrder(userInfo, query.getInsuranceId(), electricityCabinet, electricityPayParams);
                     
@@ -927,6 +930,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         log.info("INSTALLMENT PAY INFO! generate insuranceOrder record fail, uid={}", uid);
                         return R.fail("301001", "购买分期套餐失败，请联系管理员");
                     }
+                    insuranceOrder = (InsuranceOrder) insuranceOrderTriple.getRight();
                 }
                 
                 // 生成分期签约记录
@@ -946,8 +950,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 // 保存相关订单并调起支付
                 saveOrderAndPayResult = applicationContext.getBean(TradeOrderServiceImpl.class)
-                        .saveOrderAndPay((EleDepositOrder) eleDepositOrderTriple.getRight(), (InsuranceOrder) insuranceOrderTriple.getRight(), installmentRecordTriple.getRight(),
-                                memberCardOrderTriple.getRight(), batteryMemberCard, userOauthBind, userInfo, request);
+                        .saveOrderAndPay(eleDepositOrder, insuranceOrder, installmentRecordTriple.getRight(), memberCardOrderTriple.getRight(), batteryMemberCard, userOauthBind,
+                                userInfo, request);
                 
                 // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
                 double score = (double) Instant.now().plus(5, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
