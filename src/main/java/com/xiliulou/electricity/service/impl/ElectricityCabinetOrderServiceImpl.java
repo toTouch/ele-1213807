@@ -1271,6 +1271,96 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
+    @Override
+    public Triple<Boolean, String, Object> orderV3Check(OrderQueryV3 orderQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ORDER ERROR!  not found user,eid={}", orderQuery.getEid());
+            return Triple.of(false, "100001", "未能找到用户");
+        }
+        
+        Triple<Boolean, String, Object> checkExistsOrderResult = checkUserExistsUnFinishOrder(user.getUid());
+        if (checkExistsOrderResult.getLeft()) {
+            log.warn("ORDER WARN! user exists unFinishOrder! uid={}", user.getUid());
+            return Triple.of(false, checkExistsOrderResult.getMiddle(), checkExistsOrderResult.getRight());
+        }
+        
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getEid());
+        if (Objects.isNull(electricityCabinet)) {
+            return Triple.of(false, "100003", "柜机不存在");
+        }
+        
+        //换电柜是否打烊
+        boolean isBusiness = this.isBusiness(electricityCabinet);
+        if (isBusiness) {
+            return Triple.of(false, "100203", "换电柜已打烊");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
+        if (!eleResult) {
+            return Triple.of(false, "100004", "柜机不在线");
+        }
+        
+        //这里加柜机的缓存，为了限制不同时分配格挡
+        if (!redisService.setNx(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "100214", "已有其他用户正在使用中，请稍后再试");
+        }
+        
+        if (!redisService.setNx(CacheConstant.ORDER_TIME_UID + user.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "100002", "下单过于频繁");
+        }
+        
+        try {
+            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            if (Objects.isNull(store)) {
+                log.warn("ORDER WARN!  not found store ！uid={},eid={},storeId={}", user.getUid(), electricityCabinet.getId(), electricityCabinet.getStoreId());
+                return Triple.of(false, "100204", "未找到门店");
+            }
+            
+            //校验用户
+            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("ORDER WARN! not found user info,uid={} ", user.getUid());
+                return Triple.of(false, "100205", "未找到用户审核信息");
+            }
+            
+            //用户是否可用
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.warn("ORDER WARN! user is unUsable,uid={} ", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
+            
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("ORDER WARN! userinfo is UN AUTH! uid={}", user.getUid());
+                return Triple.of(false, "100206", "用户未审核");
+            }
+            
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+            
+            // 多次换电拦截
+            if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
+                if (StringUtils.isNotBlank(electricityCabinet.getVersion())
+                        && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+                    Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
+                    if (pair.getLeft()) {
+                        // 返回让前端选择
+                        return Triple.of(true, null, pair.getRight());
+                    }
+                }
+            }
+            
+            ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+            vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+            return Triple.of(true, null, vo);
+        } catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
+        } finally {
+            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());
+        }
+    }
+    
     /**
      * @return Boolean=false继续走正常换电
      */
@@ -2961,18 +3051,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
-        // 多次扫码处理
-        if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
-            if (StringUtils.isNotBlank(electricityCabinet.getVersion())
-                    && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
-                if (pair.getLeft()) {
-                    // 返回让前端选择
-                    return Triple.of(true, null, pair.getRight());
-                }
-            }
-        }
-        
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
@@ -2990,8 +3068,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
         }
-        
-        
         
         //修改按此套餐的次数
         Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
@@ -3024,7 +3100,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-     
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -3046,7 +3121,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        // vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }
@@ -3079,18 +3154,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        
-        // 多次换电拦截
-        if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
-            if (StringUtils.isNotBlank(electricityCabinet.getVersion())
-                    && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
-                if (pair.getLeft()) {
-                    // 返回让前端选择
-                    return Triple.of(true, null, pair.getRight());
-                }
-            }
-        }
         
         
         //默认是小程序下单
@@ -3161,7 +3224,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        // vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }

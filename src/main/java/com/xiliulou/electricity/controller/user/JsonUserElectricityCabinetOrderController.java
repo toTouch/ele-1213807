@@ -50,6 +50,18 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.orderV2(orderQuery));
     }
     
+    
+    /**
+     * 短时间内多次换电优化前置拦截
+     *
+     * @param orderQuery
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/order/check")
+    public R orderV3Check(@RequestBody @Validated OrderQueryV3 orderQuery) {
+        return returnTripleResult(electricityCabinetOrderService.orderV3Check(orderQuery));
+    }
+    
     /**
      * 短时间内多次换电优化
      *
