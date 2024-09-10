@@ -6,9 +6,9 @@ import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.util.MultiValueMap;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author HeYafeng
@@ -28,6 +28,6 @@ public interface MeiTuanRiderMallOrderService {
     /**
      * 美团骑手商城限制提单校验
      */
-    LimitTradeVO meiTuanLimitTradeCheck(Map<String, Object> paramMap, MeiTuanRiderMallConfig meiTuanRiderMallConfig);
+    LimitTradeVO meiTuanLimitTradeCheck(MultiValueMap<String, Object> paramMap, MeiTuanRiderMallConfig meiTuanRiderMallConfig);
     
 }

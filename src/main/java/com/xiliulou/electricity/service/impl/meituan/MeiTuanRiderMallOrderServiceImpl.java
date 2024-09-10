@@ -66,6 +66,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -73,7 +74,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -1250,7 +1250,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(Map<String, Object> paramMap, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
+    public LimitTradeVO meiTuanLimitTradeCheck(MultiValueMap<String, Object> paramMap, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
         Integer tenantId = meiTuanRiderMallConfig.getTenantId();
         Long timestamp = Long.parseLong(paramMap.get(VirtualTradeConstant.TIMESTAMP).toString());
         String sign = paramMap.get(VirtualTradeConstant.SIGN).toString();
