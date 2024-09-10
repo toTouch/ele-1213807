@@ -775,6 +775,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100253", "用户已绑定车辆");
         }
         
+        // 三方解冻
+        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
+                .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
+        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
+        if (!triple.getLeft()) {
+            return Triple.of(false, "100406", triple.getRight());
+        }
+        
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
@@ -792,15 +800,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.update(carRefundOrderUpdate);
-        }
-        
-        
-        // 三方解冻
-        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
-                .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
-        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
-        if (!triple.getLeft()) {
-            return Triple.of(false, "100406", triple.getRight());
         }
         
         return Triple.of(true, "", "退款中，请稍后");
@@ -1145,6 +1144,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100031", "不能重复退押金");
         }
         
+        
+        // 三方解冻
+        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
+                .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
+        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
+        if (!triple.getLeft()) {
+            return Triple.of(false, "100406", triple.getRight());
+        }
+        
         // 获取订单代扣信息计算返还金额
         BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
         
@@ -1164,14 +1172,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
-        
-        // 三方解冻
-        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
-                .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
-        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
-        if (!triple.getLeft()) {
-            return Triple.of(false, "100406", triple.getRight());
-        }
         
         return Triple.of(true, "100413", "免押押金解冻中");
     }
