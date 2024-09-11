@@ -84,6 +84,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.orderSelectionExchange(exchangeQuery));
     }
     
+    /**
+     * 选仓换电取电流程
+     *
+     * @param exchangeQuery
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/order/selectionExchange/takeBattery")
+    public R orderSelectionExchangeTakeBattery(@RequestBody @Validated OrderSelectionExchangeQuery exchangeQuery) {
+        return returnTripleResult(electricityCabinetOrderService.orderSelectionExchangeTakeBattery(exchangeQuery));
+    }
+    
     //换电柜再次开门
     @Deprecated
     @PostMapping("/user/electricityCabinetOrder/openDoor")

@@ -30,4 +30,6 @@ public class OrderSelectionExchangeQuery {
     @NotNull(message = "选择的仓门不能为空!")
     private Integer selectionCellNo;
     
+    
+    private String orderId;
 }
