@@ -546,7 +546,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         Triple<Boolean, String, Object> handlePackageTriple = null;
         if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
             // 处理换电代扣成功的场景
-            handlePackageTriple = handleBatteryMemberCard(deductionRecord, installmentRecord, deductionPlan, deductionRecord.getUid());
+            handlePackageTriple = handleBatteryMemberCard(installmentRecord, deductionPlan, deductionRecord.getUid());
         }
         
         // 代扣成功后其他记录的处理
@@ -592,6 +592,25 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             log.info("回调调试，代扣获取锁失败");
             return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);
+        }
+        
+        // 首期0元
+        if (Objects.equals(deductionPlan.getIssue(), 1) && Objects.equals(deductionPlan.getAmount(), new BigDecimal("0"))) {
+            handleBatteryMemberCard(installmentRecord, deductionPlan, installmentRecord.getUid());
+            
+            InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+            deductionPlanUpdate.setId(deductionPlan.getId());
+            deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
+            deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
+            deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentDeductionPlanService.update(deductionPlanUpdate);
+            
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+            installmentRecordService.update(installmentRecordUpdate);
+            return Triple.of(true, null, null);
         }
         
         // payNo仅有20个字符，用uid加时间秒值不会重复
@@ -704,7 +723,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     
-    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentDeductionRecord deductionRecord, InstallmentRecord installmentRecord,
+    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord,
             InstallmentDeductionPlan deductionPlan, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
@@ -712,10 +731,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         
-        ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionRecord.getExternalAgreementNo(), 1);
+        ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.queryOrderByAgreementNoAndIssue(deductionPlan.getExternalAgreementNo(), 1);
         
         // 给用户绑定套餐
-        if (Objects.equals(deductionRecord.getIssue(), 1)) {
+        if (Objects.equals(deductionPlan.getIssue(), 1)) {
             ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
             memberCardOrderUpdate.setId(memberCardOrder.getId());
             memberCardOrderUpdate.setValidDays(deductionPlan.getRentTime());
