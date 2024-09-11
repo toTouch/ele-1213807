@@ -68,7 +68,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(receiverMessage.getSessionId()).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).data(dataMap).command(ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_ACK).build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("HARDWARE WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
         }

@@ -678,7 +678,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         
         Region region = regionService.selectByCodeFromCache(regionCode);
         if (Objects.isNull(region)) {
-            log.error("ELE ERROR! not found region,code={},uid={}", regionCode, SecurityUtils.getUid());
+            log.warn("ELE WARN! not found region,code={},uid={}", regionCode, SecurityUtils.getUid());
             return Triple.of(false, "100248", "区域不存在");
         }
         
@@ -711,7 +711,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             currentCityFranchiseeList.forEach(item -> {
                 Region franchiseeRegion = regionService.selectByIdFromCache(item.getRegionId());
                 if (Objects.isNull(franchiseeRegion)) {
-                    log.error("ELE ERROR!not found franchiseeRegion regionId={},uid={}", item.getRegionId(), SecurityUtils.getUid());
+                    log.warn("ELE WARN!not found franchiseeRegion regionId={},uid={}", item.getRegionId(), SecurityUtils.getUid());
                     return;
                 }
                 regionSet.add(franchiseeRegion);
@@ -738,7 +738,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         
         City city = cityService.queryByCodeFromCache(cityCode);
         if (Objects.isNull(city)) {
-            log.error("ELE ERROR! not found city,cityCode={},uid={}", cityCode, SecurityUtils.getUid());
+            log.warn("ELE ERROR! not found city,cityCode={},uid={}", cityCode, SecurityUtils.getUid());
             return Triple.of(false, "100249", "城市不存在");
         }
         
