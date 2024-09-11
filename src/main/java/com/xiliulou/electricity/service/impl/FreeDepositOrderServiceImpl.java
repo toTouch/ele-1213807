@@ -2272,6 +2272,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
     
     @Override
+    public FreeDepositOrder queryUserOrderByHash(Integer tenantId, Long uid, String md5) {
+        List<FreeDepositOrder> freeDepositOrders = freeDepositOrderMapper.selectListByUid(tenantId, uid);
+        if (CollectionUtils.isNotEmpty(freeDepositOrders)){
+            return freeDepositOrders.stream().filter(freeDepositOrder -> freeDepositOrder.checkDepositUser(md5)).findFirst().orElse(null);
+        }
+        return null;
+    }
+    
+    @Override
     public Map<String, Double> selectPayTransAmtByOrderIdsToMap(List<String> orderIds) {
         List<FreeDepositOrder> orders =  freeDepositOrderMapper.selectPayTransAmtByOrderIds(orderIds);
         if (CollectionUtils.isEmpty(orders)){

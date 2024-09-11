@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.HashUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.hash.MD5Utils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -113,7 +115,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         Long uid = freeDepositUserDTO.getUid();
         
         // 用户信息不一致生成新的二维码,不能取redis的二维码
-        String md5 = SecureUtil.md5(freeDepositUserDTO.getRealName() + freeDepositUserDTO.getIdCard() + freeDepositUserDTO.getPackageId());
+        String md5 = MD5Utils.digest(Optional.ofNullable(freeDepositUserDTO.getRealName()).orElse("").trim()+
+                Optional.ofNullable(freeDepositUserDTO.getIdCard()).orElse("").trim()+
+                Optional.ofNullable(freeDepositUserDTO.getPackageId()).orElse(-1L));
         String redisFreeUserInfo = redisService.get(String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid));
         if (!Objects.equals(redisFreeUserInfo, md5)) {
             log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new,newMd5 is {}, lastMd5 is {}, uid is {}", md5, redisFreeUserInfo, uid);
@@ -121,7 +125,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         
         String orderId;
-        Long packageId;
+        FreeDepositOrder freeDepositOrder;
         // 判断当前免押操作是购买换电套餐还是租车套餐
         if (PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode().equals(freeDepositUserDTO.getPackageType())) {
             // 获取换电套餐已存在的免押订单信息. 如果不存在或者押金类型为缴纳押金类型则返回
@@ -131,43 +135,29 @@ public class FreeDepositServiceImpl implements FreeDepositService {
                 return Triple.of(false, null, null);
             }
             orderId = batteryDeposit.getOrderId();
-            packageId = batteryDeposit.getDid();
-        } else {
-            // 获取购买租车套餐时已存在的免押订单信息
-            CarRentalPackageDepositPayPo carRentalPackageDepositPayPo = carRentalPackageDepositPayService.selectLastByUid(freeDepositUserDTO.getTenantId(),
-                    freeDepositUserDTO.getUid());
-            if (Objects.isNull(carRentalPackageDepositPayPo) || YesNoEnum.NO.getCode().equals(carRentalPackageDepositPayPo.getFreeDeposit())) {
-                log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.carDeposit is null, uid is {}", uid);
+            // 免押订单
+            freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
+            if (Objects.isNull(freeDepositOrder)) {
+                log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositOrder is null, orderId is {}", orderId);
                 return Triple.of(false, null, null);
             }
-            orderId = carRentalPackageDepositPayPo.getOrderNo();
-            packageId = carRentalPackageDepositPayPo.getRentalPackageId();
+            log.info("Battery FreeDeposit INFO! checkExistSuccessFreeDepositOrder data = {}", JsonUtil.toJson(freeDepositOrder));
+        } else {
+            freeDepositOrder = freeDepositOrderService.queryUserOrderByHash(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid(),md5);
+            if (Objects.isNull(freeDepositOrder)) {
+                log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositOrder is null, uid is {}", freeDepositUserDTO.getUid());
+                return Triple.of(false, null, null);
+            }
+            log.info("Car FreeDeposit INFO! checkExistSuccessFreeDepositOrder data = {}", JsonUtil.toJson(freeDepositOrder));
         }
-        log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.orderId = {}, package id = {}, user data = {}", orderId, packageId, JsonUtil.toJson(freeDepositUserDTO));
-        
-        // 免押订单
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(orderId);
-        if (Objects.isNull(freeDepositOrder)) {
-            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositOrder is null, orderId is {}", orderId);
-            return Triple.of(false, null, null);
-        }
-        
-        // 如果都一样，查询是否免押过； 只要有一个不一样，继续新的免押
-//        if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
-//                || !Objects.equals(packageId, freeDepositUserDTO.getPackageId())) {
-//            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new, go on new Free, uid is {}", uid);
-//            return Triple.of(false, null, freeDepositOrder);
-//        }
-        
-        log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.channel is {}, orderId is {}", freeDepositOrder.getChannel(), orderId);
         
         // 是否免押
-        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().orderId(orderId).tenantId(freeDepositUserDTO.getTenantId()).uid(uid).build();
+        FreeDepositOrderStatusQuery query = FreeDepositOrderStatusQuery.builder().orderId(freeDepositOrder.getOrderId()).tenantId(freeDepositUserDTO.getTenantId()).uid(uid).build();
         BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(freeDepositOrder.getChannel()), BaseFreeDepositService.class);
         FreeDepositOrderStatusBO bo = service.queryFreeDepositOrderStatus(query);
         
         if (Objects.nonNull(bo) && PxzQueryOrderRsp.AUTH_FROZEN.equals(bo.getAuthStatus())) {
-            log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), orderId);
+            log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), freeDepositOrder.getOrderId());
             return Triple.of(true, "100400", "免押已成功，请勿重复操作");
         }
         

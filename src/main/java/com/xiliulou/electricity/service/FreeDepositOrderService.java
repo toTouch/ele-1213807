@@ -107,4 +107,6 @@ public interface FreeDepositOrderService {
     Map<String,Double> selectPayTransAmtByOrderIdsToMap(List<String> orderId);
     
     Triple<Boolean, String, Object> syncAuthPayStatus(String orderId,String authPayOrderId);
+    
+    FreeDepositOrder queryUserOrderByHash(Integer tenantId, Long uid, String md5);
 }

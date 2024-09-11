@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.callback.impl.business;
 
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.callback.BusinessHandler;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -81,6 +83,8 @@ public class BatteryBusinessHandler implements BusinessHandler {
     
     private final ServiceFeeUserInfoService serviceFeeUserInfoService;
     
+    private final RedisService redisService;
+    
     @Override
     public boolean support(Integer type) {
         return Objects.equals(type, FreeDepositOrder.DEPOSIT_TYPE_BATTERY);
@@ -140,6 +144,15 @@ public class BatteryBusinessHandler implements BusinessHandler {
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
+            String key = CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid;
+            if (redisService.hasKey(key)) {
+                redisService.delete(key);
+            }
+            String lockKey =CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY+uid;
+            if (redisService.hasKey(lockKey)) {
+                redisService.delete(lockKey);
+            }
+            log.info("Battery/battery electronics order no deposit callback completed, order number: {}",order.getOrderId());
         }catch (Exception e){
             log.error("battery freeDeposit error!", e);
             return false;

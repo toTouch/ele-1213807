@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.callback.impl.business;
 
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.callback.BusinessHandler;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
@@ -72,6 +74,8 @@ public class CarBusinessHandler implements BusinessHandler {
     
     private final UserInfoGroupDetailService userInfoGroupDetailService;
     
+    private final RedisService redisService;
+    
     @Override
     public boolean support(Integer type) {
         return !Objects.equals(type, FreeDepositOrder.DEPOSIT_TYPE_BATTERY);
@@ -120,6 +124,11 @@ public class CarBusinessHandler implements BusinessHandler {
             if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
                 log.info("userBatteryDepositService.synchronizedUserBatteryDepositInfo. depositPayOrderNo is {}", depositPayEntity.getOrderNo());
                 userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
+            }
+            //删除5分钟的二维码
+            String key = CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid;
+            if (redisService.hasKey(key)) {
+                redisService.delete(key);
             }
             log.info("Car/car electronics order no deposit callback completed, order number: {}",order.getOrderId());
             return true;

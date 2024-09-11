@@ -1,11 +1,17 @@
 package com.xiliulou.electricity.entity;
 
 
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.hash.MD5Utils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * (FreeDepositOrder)实体类
@@ -93,6 +99,11 @@ public class FreeDepositOrder {
      */
     private Integer depositType;
     
+    /**
+     * 业务套餐的id
+     */
+    private Long packageId;
+    
     private Long createTime;
     
     private Long updateTime;
@@ -151,5 +162,25 @@ public class FreeDepositOrder {
     
     
     public static final Long YEAR = 365L * 24 * 60 * 60 * 1000;
+    
+    /**
+     * <p>
+     *    Description: checkDepositUser
+     *    根据用户的姓名,身份证号,套餐id生成唯一哈希判断是否为同一用户
+     * </p>
+     * @param hasCode hasCode
+     * @return boolean
+     * <p>Project: FreeDepositOrder</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/9/11
+    */
+    public boolean checkDepositUser(String hasCode) {
+        String md5 = MD5Utils.digest(Optional.ofNullable(this.getRealName()).orElse("").trim() +
+                Optional.ofNullable(this.getIdCard()).orElse("").trim() +
+                Optional.ofNullable(this.getPackageId()).orElse(-1L));
+        return Objects.equals(hasCode,md5);
+    }
     
 }
