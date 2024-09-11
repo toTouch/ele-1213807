@@ -119,7 +119,7 @@
         select external_agreement_no
         from t_installment_deduction_plan
         where deduct_time &lt;= #{time}
-            and status = 0
+            and `status` in (0,2)
         group by external_agreement_no
     </select>
     
