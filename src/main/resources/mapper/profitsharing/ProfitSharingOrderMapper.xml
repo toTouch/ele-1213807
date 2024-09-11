@@ -44,10 +44,10 @@
     <update id="updateUnfreezeOrderById">
         update t_profit_sharing_order
         set
-            <if test="status != null">
-                status = #{status},
-            </if>
-           update_time = #{updateTime}
+        <if test="status != null">
+            status = #{status},
+        </if>
+        update_time = #{updateTime}
         where id = #{id}
     </update>
     <update id="updateUnfreezeResultById">
@@ -99,6 +99,7 @@
         where del_flag=0
         and tenant_id=#{tenantId}
         and id>#{startId}
+        and type=#{type}
         and status in
         <foreach collection="statusList" open="(" close=")" item="status" separator=",">
             #{status}

@@ -24,4 +24,6 @@ public class ProfitSharingOrderQueryModel {
     private Integer tenantId;
     
     private Integer size;
+    
+    private Integer type;
 }
