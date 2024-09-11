@@ -1875,17 +1875,22 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         String orderId = exchangeQuery.getOrderId();
-        ElectricityCabinetOrder cabinetOrder = this.queryByOrderId(orderId);
         
-        // todo  取电流程
+        ElectricityCabinetOrder cabinetOrder = this.queryByOrderId(orderId);
+        if (Objects.isNull(cabinetOrder)) {
+            return Triple.of(false, "100486", "不存在的换电订单号");
+        }
+        
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
-            log.warn("OrderV3 WARN!oldCellCheckFail.userBindingBatterySn  is null, uid is {}", cabinetOrder.getUid());
+            log.warn("SelectExchangeTakeBattery WARN ! electricityBattery  is null, uid is {}", cabinetOrder.getUid());
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
             return Triple.of(true, null, vo);
         }
+        
+        // 选仓取电流程
         String userBindingBatterySn = electricityBattery.getSn();
         String sessionId = this.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
                 cabinetOrder.getOldCellNo().toString());
@@ -3424,7 +3429,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, cabinet);
         
-        // 删除redis
+        // 设置状态redis
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId(), "取电中，请稍后", 5L, TimeUnit.MINUTES);
         
         return sessionId;
