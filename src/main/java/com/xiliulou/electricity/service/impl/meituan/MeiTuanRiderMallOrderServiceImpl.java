@@ -249,29 +249,29 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (CollectionUtils.isNotEmpty(userInfoGroups)) {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
                     log.warn("MeiTuan order redeem fail! batteryMemberCard down, uid={}, mid={}", uid, memberCardId);
-                    return Triple.of(false, "120138", "用户分组与套餐不匹配，无法兑换，请联系客服处理");
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
                 
                 List<Long> userGroupIds = userInfoGroups.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
                 userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
                 if (CollectionUtils.isEmpty(userGroupIds)) {
                     log.warn("MeiTuan order redeem fail! UseInfoGroup not contain systemGroup, uid={}, mid={}", uid, memberCardId);
-                    return Triple.of(false, "120138", "用户分组与套餐不匹配，无法兑换，请联系客服处理");
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
             } else {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                     log.warn("MeiTuan order redeem fail! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}", uid, memberCardId);
-                    return Triple.of(false, "120138", "用户分组与套餐不匹配，无法兑换，请联系客服处理");
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
                 
                 if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                     log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
-                    return Triple.of(false, "120138", "用户分组与套餐不匹配，无法兑换，请联系客服处理");
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
                 
                 if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
                     log.warn("MeiTuan order redeem fail! New use cannot purchase old rentType memberCard, uid={}, mid={}", uid, memberCardId);
-                    return Triple.of(false, "120138", "用户分组与套餐不匹配，无法兑换，请联系客服处理");
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
             }
             
