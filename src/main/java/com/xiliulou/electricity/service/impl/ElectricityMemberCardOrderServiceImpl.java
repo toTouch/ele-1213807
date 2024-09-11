@@ -520,13 +520,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 }
             });
             
-            if (Objects.nonNull(item.getExternalAgreementNo())) {
-                InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(item.getExternalAgreementNo());
-                vo.setInstallmentRecordStatus(installmentRecord.getStatus());
+            if (Objects.isNull(item.getExternalAgreementNo())) {
+                return vo;
             }
             
+            // 套餐订单绑定了分期签约号即为分期代扣生成的套餐订单，若对应的签约记录状态为未支付不于小程序订单中心展示
+            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(item.getExternalAgreementNo());
+            if (Objects.isNull(installmentRecord)) {
+                return null;
+            }
+            vo.setInstallmentRecordStatus(installmentRecord.getStatus());
             return vo;
-        }).collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         
     }
     
