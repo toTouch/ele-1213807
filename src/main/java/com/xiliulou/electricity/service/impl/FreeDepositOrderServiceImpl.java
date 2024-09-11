@@ -1168,7 +1168,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         eleDepositOrderService.insert(eleDepositOrder);
         
         // 绑定免押订单
-        UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+        /*UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
         userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
         userBatteryDeposit.setUid(uid);
         userBatteryDeposit.setDid(eleDepositOrder.getMid());
@@ -1178,7 +1178,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-        userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
+        userBatteryDepositService.insertOrUpdate(userBatteryDeposit);*/
         
         log.info("generate free deposit data from pxz for battery package, data = {}", JsonUtil.toJson(depositOrderDTO));
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码

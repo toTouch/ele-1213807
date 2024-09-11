@@ -1066,7 +1066,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         eleDepositOrderService.insert(eleDepositOrder);
         
         //绑定免押订单
-        UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+        /*UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
         userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
         userBatteryDeposit.setUid(freeQuery.getUid());
         userBatteryDeposit.setDid(eleDepositOrder.getMid());
@@ -1076,7 +1076,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
         userBatteryDeposit.setCreateTime(System.currentTimeMillis());
         userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-        userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
+        userBatteryDepositService.insertOrUpdate(userBatteryDeposit);*/
         
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", depositOrderDTO);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
