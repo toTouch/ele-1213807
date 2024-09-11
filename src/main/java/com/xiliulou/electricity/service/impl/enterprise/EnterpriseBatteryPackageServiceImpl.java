@@ -2498,50 +2498,51 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(enterprisePackageOrderVO.getPackageId());
             //如果当前用户绑定的套餐被解绑或者当前套餐不是企业套餐，则获取最近一笔的企业套餐购买订单
             //重新获取套餐信息，并设置套餐过期时间为空
-            if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode()
-                    .equals(batteryMemberCard.getBusinessType())) {
-                ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
-                if (Objects.isNull(electricityMemberCardOrder)) {
-                    continue;
-                }
-                
-                BatteryMemberCard batteryPackage = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
-                enterprisePackageOrderVO.setOrderNo(electricityMemberCardOrder.getOrderId());
-                enterprisePackageOrderVO.setPackageId(batteryPackage.getId());
-                enterprisePackageOrderVO.setPackageName(batteryPackage.getName());
-                enterprisePackageOrderVO.setPackageExpiredTime(null);
-                enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
-                enterprisePackageOrderVO.setBatteryDeposit(batteryPackage.getDeposit());
-                
-                //获取关联押金订单信息
-                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), electricityMemberCardOrder.getOrderId());
-                if (Objects.nonNull(eleDepositOrderVO)) {
-                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
-                } else {
-                    //免押，页面显示为0
-                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
-                }
-                
-                //设置企业代付时间
-                enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
-                
-            } else {
-                enterprisePackageOrderVO.setPackageName(batteryMemberCard.getName());
-                enterprisePackageOrderVO.setPayAmount(batteryMemberCard.getRentPrice());
-                
-                //设置押金
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(enterprisePackageOrderVO.getUid());
-                if (Objects.nonNull(userBatteryDeposit)) {
-                    enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-                    enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
-                }
-                
-                //设置套餐购买后企业代付时间
-                ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
-                if (Objects.nonNull(electricityMemberCardOrder)) {
+            if (Objects.nonNull(batteryMemberCard)) {
+                if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
+                    ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
+                    if (Objects.isNull(electricityMemberCardOrder)) {
+                        continue;
+                    }
+        
+                    BatteryMemberCard batteryPackage = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+                    enterprisePackageOrderVO.setOrderNo(electricityMemberCardOrder.getOrderId());
+                    enterprisePackageOrderVO.setPackageId(batteryPackage.getId());
+                    enterprisePackageOrderVO.setPackageName(batteryPackage.getName());
+                    enterprisePackageOrderVO.setPackageExpiredTime(null);
+                    enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
+                    enterprisePackageOrderVO.setBatteryDeposit(batteryPackage.getDeposit());
+        
+                    //获取关联押金订单信息
+                    EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), electricityMemberCardOrder.getOrderId());
+                    if (Objects.nonNull(eleDepositOrderVO)) {
+                        enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+                    } else {
+                        //免押，页面显示为0
+                        enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
+                    }
+        
+                    //设置企业代付时间
                     enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
+        
+                } else {
+                    enterprisePackageOrderVO.setPackageName(batteryMemberCard.getName());
+                    enterprisePackageOrderVO.setPayAmount(batteryMemberCard.getRentPrice());
+        
+                    //设置押金
+                    UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(enterprisePackageOrderVO.getUid());
+                    if (Objects.nonNull(userBatteryDeposit)) {
+                        enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+                        enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
+                    }
+        
+                    //设置套餐购买后企业代付时间
+                    ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(enterprisePackageOrderVO.getOrderNo());
+                    if (Objects.nonNull(electricityMemberCardOrder)) {
+                        enterprisePackageOrderVO.setPaymentTime(electricityMemberCardOrder.getCreateTime());
+                    }
+        
                 }
-                
             }
             
             //查看此时用户有无绑定电池信息，若存在续租的线上套餐，则存在电池信息
