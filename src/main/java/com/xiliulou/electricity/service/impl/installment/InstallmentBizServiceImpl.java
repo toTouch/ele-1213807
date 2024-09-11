@@ -711,6 +711,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
             memberCardOrderUpdate.setId(memberCardOrder.getId());
             memberCardOrderUpdate.setValidDays(deductionPlan.getRentTime());
+            memberCardOrderUpdate.setCreateTime(System.currentTimeMillis());
+            memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
             
             unionTradeOrderService.manageMemberCardOrderV2(memberCardOrder.getOrderId(), ElectricityTradeOrder.STATUS_SUCCESS);
