@@ -43,12 +43,12 @@ public interface MqConsumerConstant {
     /**
      * 分账订单消费组
      */
-    String PROFIT_SHARING_ORDER_GROUP = "profit_sharing_order_group";
+    String PROFIT_SHARING_ORDER_GROUP = "PROFIT_SHARING_ORDER_GROUP";
     
     /**
      * 分账订单退款消费组
      */
-    String PROFIT_SHARING_ORDER_REFUND_GROUP = "profit_sharing_order_refund_group";
+    String PROFIT_SHARING_ORDER_REFUND_GROUP = "PROFIT_SHARING_ORDER_REFUND_GROUP";
     
     /**
      * 电池电压电流变化 consumer group
