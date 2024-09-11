@@ -39,6 +39,7 @@ import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
+import com.xiliulou.electricity.enums.OrderCheckEnum;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -1342,7 +1343,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
                 if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                         && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                    Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
+                    Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.CHECK.getCode());
                     if (pair.getLeft()) {
                         // 返回让前端选择
                         return Triple.of(true, null, pair.getRight());
@@ -1364,7 +1365,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     /**
      * @return Boolean=false继续走正常换电
      */
-    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, OrderQueryV3 orderQueryV3) {
+    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, OrderQueryV3 orderQueryV3,Integer code) {
         if (Objects.equals(orderQueryV3.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
             log.info("OrderV3 INFO! not same cabinet, normal exchange");
             return Pair.of(false, null);
@@ -1392,13 +1393,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return scanCabinetNotEqualOrderCabinetHandler(userInfo, electricityBattery, lastOrder);
         }
         
-        
         if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             // 上一个成功
-            return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, userInfo);
+            return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, userInfo, code);
         } else {
             // 上一个失败
-            return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo);
+            return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo, code);
         }
     }
     
@@ -1462,7 +1462,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
-            UserInfo userInfo) {
+            UserInfo userInfo, Integer code) {
         // 上次成功不可能为空
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             throw new CustomBusinessException("上次换电成功，但是用户绑定电池为空");
@@ -1495,8 +1495,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             // 后台自主开仓
-            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
-            vo.setSessionId(sessionId);
+            if (Objects.equals(code, OrderCheckEnum.ORDER.getCode())) {
+                String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
+                vo.setSessionId(sessionId);
+            }
             return Pair.of(true, vo);
         } else {
             // 没有在仓
@@ -1506,7 +1508,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
-    private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo) {
+    private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo, Integer code) {
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
@@ -1520,19 +1522,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("OrderV3 INFO! lastExchangeFailHandler.orderStatus is {}", orderStatus);
         //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
         if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
-            return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
+            return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo, code);
         }
         
         //  新仓门开门失败
         if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
-            return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
+            return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet, userInfo, code);
         }
         
         return Pair.of(false, null);
     }
     
     private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
-            UserInfo userInfo) {
+            UserInfo userInfo, Integer code) {
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
@@ -1567,7 +1569,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
-            vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox));
+            if (Objects.equals(code, OrderCheckEnum.ORDER.getCode())) {
+                vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox));
+            }
+           
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
@@ -1577,7 +1582,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private Pair<Boolean, Object> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
-            UserInfo userInfo) {
+            UserInfo userInfo,Integer code) {
         
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
             // 旧仓门不满足开仓条件
@@ -1615,9 +1620,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             // 获取满电仓
             Integer cellNo = this.getFullCellHandler(cabinet, userInfo);
             vo.setCell(cellNo);
+            
             // 下发取电命令
-            String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox);
-            vo.setSessionId(sessionId);
+            if (Objects.equals(code,OrderCheckEnum.ORDER.getCode())) {
+                String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox);
+                vo.setSessionId(sessionId);
+            }
             
             return Pair.of(true, vo);
         } else {
@@ -3054,7 +3062,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.ORDER.getCode());
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
@@ -3175,7 +3183,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery);
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.ORDER.getCode());
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
