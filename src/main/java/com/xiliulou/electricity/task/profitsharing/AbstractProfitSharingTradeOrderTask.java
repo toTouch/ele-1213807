@@ -567,9 +567,9 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             //  当前累计总额
             totalAmount = totalAmount.add(profitSharingTotalAmount);
             
-            if (totalAmount.compareTo(amountLimit) > 0) {
-                // 累计限额>月最大限额
-                
+            if (amountLimit.compareTo(BigDecimal.ZERO) > 0 && totalAmount.compareTo(amountLimit) > 0) {
+                //分账限额=0的时候不限制，只有分账限额>0才需要校验累计限额
+                //累计限额>月最大限额
                 log.info("AbstractProfitSharingTradeOrderTask.checkProfitSharing totalAmount:{} > amountLimit:{}", totalAmount.toPlainString(), amountLimit.toPlainString());
                 
                 this.buildErrorProfitSharingCheckModel(receiverConfigs, profitSharingCheckModel, "分账余额不足", BigDecimal.ZERO);
@@ -743,7 +743,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
         }
         
-        profitSharingTradeOrderTxService.updateByReceiversConfigError(mixedOrder,tradeOrderIds, insertMap);
+        profitSharingTradeOrderTxService.updateByReceiversConfigError(mixedOrder, tradeOrderIds, insertMap);
         
         return false;
     }

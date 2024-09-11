@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingStatistics;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderQueryModel;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,6 +88,7 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
         profitSharingOrderQueryModel.setStatusList(SUPPORT_STATUS);
         profitSharingOrderQueryModel.setTenantId(tenantId);
         profitSharingOrderQueryModel.setSize(SIZE);
+        profitSharingOrderQueryModel.setType(ProfitSharingOrderTypeEnum.PROFIT_SHARING.getCode());
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
         
         while (true) {
@@ -113,10 +116,19 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
             this.queryBuildTenantFranchiseePayParamMap(tenantFranchiseePayParamMap, tenantId, franchiseeIds);
             
             orders.forEach(order -> {
+                log.info("AbstractProfitSharingOrderQueryTask.executeByTenantId orderNo:{} start", order.getOrderNo());
+                
                 List<ProfitSharingOrderDetail> curOrderDetails = profitSharingOrderIdGPMap.get(order.getId());
-                T payParams = tenantFranchiseePayParamMap.get(payParamsQuerySupport.getPayParamMapKey(order.getTenantId(), order.getFranchiseeId()));
+                String payParamMapKey = payParamsQuerySupport.getPayParamMapKey(order.getTenantId(), order.getFranchiseeId());
+                T payParams = tenantFranchiseePayParamMap.get(payParamMapKey);
+                if (Objects.isNull(payParams)) {
+                    log.warn("AbstractProfitSharingOrderQueryTask.executeByTenantId WARN! payParamMapKey:{}, pay config is null", payParamMapKey);
+                    return;
+                }
                 DealWithProfitSharingOrderModel orderModel = new DealWithProfitSharingOrderModel(order, curOrderDetails, BigDecimal.ZERO);
                 this.dealWithByProfitSharingOrder(payParams, orderModel);
+                
+                log.info("AbstractProfitSharingOrderQueryTask.executeByTenantId orderNo:{} end", order.getOrderNo());
             });
         }
         
