@@ -657,15 +657,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             }
             
             // 设置分期套餐期数、剩余每期费用
-            if (Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
-                int installmentNo = batteryMemberCardVO.getValidDays() / 30;
-                batteryMemberCardVO.setInstallmentNo(installmentNo);
-                
+            if (!Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
+                result.add(batteryMemberCardVO);
+                continue;
+            }
+            
+            int installmentNo = batteryMemberCardVO.getValidDays() / 30;
+            batteryMemberCardVO.setInstallmentNo(installmentNo);
+            if (installmentNo > 1) {
                 BigDecimal rentPrice = batteryMemberCardVO.getRentPrice();
                 BigDecimal downPayment = batteryMemberCardVO.getDownPayment();
                 batteryMemberCardVO.setRemainingCost(rentPrice.subtract(downPayment).divide(new BigDecimal(String.valueOf(installmentNo - 1)), 2, RoundingMode.DOWN));
+            } else {
+                batteryMemberCardVO.setRemainingCost(new BigDecimal("0"));
             }
-            
             result.add(batteryMemberCardVO);
         }
         

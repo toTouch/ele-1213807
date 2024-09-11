@@ -31,6 +31,9 @@ public class InstallmentUtil {
                 // 首期金额
                 payAmount = memberCard.getDownPayment();
             } else {
+                if (issue == 2 && 2 == installmentRecord.getInstallmentNo()) {
+                    return memberCard.getRentPrice().subtract(memberCard.getDownPayment());
+                }
                 // 第二期~倒数第二期的金额
                 BigDecimal otherInstallmentNo = new BigDecimal(String.valueOf(installmentRecord.getInstallmentNo() - 1));
                 payAmount = memberCard.getRentPrice().subtract(memberCard.getDownPayment()).divide(otherInstallmentNo, 2, RoundingMode.DOWN);
