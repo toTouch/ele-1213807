@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentDeductNotifyQuery;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
@@ -18,9 +19,11 @@ import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
 
 /**
@@ -93,6 +96,14 @@ public class FyInstallmentHandler {
         
         externalAgreementNos.parallelStream().forEach(externalAgreementNo -> {
             InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryPlanForDeductByAgreementNo(externalAgreementNo);
+            
+            InstallmentDeductionRecordQuery query = new InstallmentDeductionRecordQuery();
+            query.setExternalAgreementNo(deductionPlan.getExternalAgreementNo());
+            query.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+            List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(query);
+            if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+                return;
+            }
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
             

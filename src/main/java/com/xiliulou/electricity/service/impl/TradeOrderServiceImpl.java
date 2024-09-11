@@ -435,7 +435,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 处理0元问题
             if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 
-                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     return result;
                 }
@@ -449,7 +449,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                    .description("租电押金").uid(user.getUid()).build();
+                    .description("租电押金和租金").uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request, null);
             return Triple.of(true, null, resultDTO);
@@ -635,7 +635,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 处理0元问题
             if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 
-                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     return result;
                 }
@@ -671,10 +671,18 @@ public class TradeOrderServiceImpl implements TradeOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList) {
+    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, InstallmentRecord installmentRecord) {
+        if (Objects.nonNull(installmentRecord)) {
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_INIT);
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordService.update(installmentRecordUpdate);
+        }
+        
         if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
             log.error("ELE UNION BATTERY DEPOSIT ORDER ERROR! orderList is empty,uid={}", userInfo.getUid());
-            return Triple.of(false, "000001", "系统异常");
+            return Objects.isNull(installmentRecord) ? Triple.of(false, "000001", "系统异常") : Triple.of(true, null, null);
         }
         
         // 遍历订单类型
@@ -962,7 +970,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             // 根据支付调用结果返回
             if (Objects.nonNull(saveOrderAndPayResult)) {
-                return saveOrderAndPayResult.getLeft() ? R.ok(saveOrderAndPayResult.getRight()) : R.fail(saveOrderAndPayResult.getRight());
+                return saveOrderAndPayResult.getLeft() ? R.ok(saveOrderAndPayResult.getRight()) : R.fail("301001", "购买分期套餐失败，请联系管理员");
             }
         } catch (Exception e) {
             log.error("INSTALLMENT PAY ERROR! uid={}", uid, e);
@@ -1016,7 +1024,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 处理0元问题
         if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, installmentRecord);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }

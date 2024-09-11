@@ -49,7 +49,7 @@ public interface InstallmentBizService {
     /**
      * 用户端分期代扣
      *
-     * @param id 请求签约号
+     * @param id 代扣计划id
      * @return 代扣调用结果
      */
     R<String> deduct(Long id);

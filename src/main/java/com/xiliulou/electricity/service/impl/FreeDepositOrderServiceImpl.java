@@ -1634,7 +1634,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 处理支付0元场景
         if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
-            Triple<Boolean, String, Object> result = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            Triple<Boolean, String, Object> result = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }

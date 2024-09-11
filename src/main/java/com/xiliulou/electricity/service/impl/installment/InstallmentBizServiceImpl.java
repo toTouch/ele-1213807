@@ -302,6 +302,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301011", "代扣计划不存在");
             }
             
+            InstallmentDeductionRecordQuery query = new InstallmentDeductionRecordQuery();
+            query.setExternalAgreementNo(deductionPlan.getExternalAgreementNo());
+            query.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+            List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(query);
+            if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+                return R.fail("301020", "当前有正在执行中的分期代扣，请稍后再试");
+            }
+            
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(deductionPlan.getExternalAgreementNo());
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());

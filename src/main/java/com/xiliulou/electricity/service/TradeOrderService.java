@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import org.apache.commons.lang3.tuple.Triple;
@@ -19,7 +20,7 @@ public interface TradeOrderService {
 
     Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request);
 
-    Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList);
+    Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, InstallmentRecord installmentRecord);
 
     Triple<Boolean, String, Object> payMemberCardAndInsurance(BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request);
 
