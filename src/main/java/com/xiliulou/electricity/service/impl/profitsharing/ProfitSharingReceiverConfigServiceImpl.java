@@ -486,13 +486,13 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             }
         } catch (ProfitSharingException p) {
             log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers ProfitSharingException:", p);
-            throw new BizException(p.getMessage());
+            throw new BizException("新增分账接收方失败，请联系客服处理");
         } catch (BizException e) {
             log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers BizException:", e);
-            throw e;
+            throw new BizException("新增分账接收方失败，请联系客服处理");
         } catch (Exception e) {
             log.warn("ProfitSharingReceiverConfigServiceImpl.addWechatReceivers Exception:", e);
-            throw new BizException("分账接收方添加失败");
+            throw new BizException("新增分账接收方失败，请联系客服处理");
         }
         
         
@@ -540,10 +540,10 @@ public class ProfitSharingReceiverConfigServiceImpl implements ProfitSharingRece
             profitSharingServiceAdapter.deleteReceivers(deleteRequest);
         } catch (ProfitSharingException p) {
             log.warn("ProfitSharingReceiverConfigServiceImpl.deleteWechatReceivers ProfitSharingException:", p);
-            throw new BizException(p.getMessage());
+            throw new BizException("删除分账接收方失败，请联系客服处理");
         } catch (Exception e) {
             log.info("ProfitSharingReceiverConfigServiceImpl.insert Exception：", e);
-            throw new BizException("支付配置查询失败");
+            throw new BizException("删除分账接收方失败，请联系客服处理");
         }
     }
     
