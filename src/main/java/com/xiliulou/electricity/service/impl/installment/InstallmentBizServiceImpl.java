@@ -595,7 +595,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         // 首期0元
-        if (Objects.equals(deductionPlan.getIssue(), 1) && Objects.equals(deductionPlan.getAmount(), new BigDecimal("0"))) {
+        if (Objects.equals(deductionPlan.getIssue(), 1) && Objects.equals(deductionPlan.getAmount(), new BigDecimal("0.00"))) {
             handleBatteryMemberCard(installmentRecord, deductionPlan, installmentRecord.getUid());
             
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
