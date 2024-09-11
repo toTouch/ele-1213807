@@ -129,7 +129,7 @@ public class WechatProfitSharingOrderQueryTask extends AbstractProfitSharingOrde
             
         } catch (Exception e) {
             log.error("WechatProfitSharingOrderQueryTask.queryBuildProfitSharingOrder Exception:", e);
-            throw new BizException("系统异常");
+            throw new BizException("分账查询失败");
         }
     }
     

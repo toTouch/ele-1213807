@@ -141,6 +141,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrderDetail.setProfitSharingAmount(null);
             profitSharingOrderDetail.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_ACCEPT.getCode());
             profitSharingOrderDetail.setTenantId(profitSharingTradeMixedOrder.getTenantId());
+            profitSharingOrderDetail.setType(ProfitSharingOrderTypeEnum.UNFREEZE.getCode());
             profitSharingOrderDetail.setFranchiseeId(profitSharingTradeMixedOrder.getFranchiseeId());
             profitSharingOrderDetail.setOutAccountType(profitSharingOrder.getOutAccountType());
             // 无需解冻
