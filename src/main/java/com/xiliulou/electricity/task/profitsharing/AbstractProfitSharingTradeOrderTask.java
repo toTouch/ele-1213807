@@ -46,6 +46,7 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -551,7 +552,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             Map<Long, BigDecimal> profitSharingAmountMap = Maps.newHashMapWithExpectedSize(receiverConfigs.size());
             
             for (ProfitSharingReceiverConfig receiverConfig : receiverConfigs) {
-                BigDecimal profitSharingAmount = amount.multiply(receiverConfig.getScale());
+                // 向下取正 保留两位小数
+                BigDecimal profitSharingAmount = amount.multiply(receiverConfig.getScale()).setScale(2, RoundingMode.DOWN);;
                 profitSharingAmountMap.put(receiverConfig.getId(), profitSharingAmount);
                 
                 //当前累计分账总额
