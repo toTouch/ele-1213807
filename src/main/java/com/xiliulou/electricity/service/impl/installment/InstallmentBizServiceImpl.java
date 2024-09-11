@@ -594,22 +594,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);
         }
         
-        // 首期0元
-        if (Objects.equals(deductionPlan.getIssue(), 1) && Objects.equals(deductionPlan.getAmount(), new BigDecimal("0.00"))) {
-            handleBatteryMemberCard(installmentRecord, deductionPlan, installmentRecord.getUid());
-            
-            InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
-            deductionPlanUpdate.setId(deductionPlan.getId());
-            deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
-            deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
-            deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
-            installmentDeductionPlanService.update(deductionPlanUpdate);
-            
-            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
-            installmentRecordUpdate.setId(installmentRecord.getId());
-            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
-            installmentRecordService.update(installmentRecordUpdate);
+        // 代扣0元
+        if (Objects.equals(deductionPlan.getAmount(), new BigDecimal("0.00"))) {
+            handleDeductZero(installmentRecord, deductionPlan);
             return Triple.of(true, null, null);
         }
         
@@ -722,6 +709,24 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         return R.ok();
     }
     
+    public R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan) {
+        handleBatteryMemberCard(installmentRecord, deductionPlan, installmentRecord.getUid());
+        
+        InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+        deductionPlanUpdate.setId(deductionPlan.getId());
+        deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
+        deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
+        deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentDeductionPlanService.update(deductionPlanUpdate);
+        
+        InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+        installmentRecordUpdate.setId(installmentRecord.getId());
+        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+        installmentRecordService.update(installmentRecordUpdate);
+        
+        return R.ok();
+    }
     
     private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord,
             InstallmentDeductionPlan deductionPlan, Long uid) {

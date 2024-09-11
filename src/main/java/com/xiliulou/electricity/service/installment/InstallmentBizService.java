@@ -99,4 +99,12 @@ public interface InstallmentBizService {
      * @return 申请结果
      */
     R<String> createTerminatingRecord(String externalAgreementNo, String reason);
+    
+    /**
+     * 处理代扣成功
+     * @param installmentRecord 签约记录
+     * @param deductionPlan 代扣计划
+     * @return 处理结果
+     */
+    R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan);
 }

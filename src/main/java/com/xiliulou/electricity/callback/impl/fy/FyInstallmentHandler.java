@@ -21,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
@@ -105,9 +107,16 @@ public class FyInstallmentHandler {
                 return;
             }
             
-            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
-            
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
+            
+            if (Objects.equals(deductionPlan.getAmount(), new BigDecimal("0.00"))) {
+                installmentBizService.handleDeductZero(installmentRecord, deductionPlan);
+            }
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
+            if (Objects.isNull(fyConfig)) {
+                log.error("DEDUCT TASK ERROR! FyConfig is null, tenantId={}", deductionPlan.getTenantId());
+            }
             
             installmentBizService.initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
         });
