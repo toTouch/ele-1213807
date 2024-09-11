@@ -309,7 +309,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                         log.warn("MeiTuan order redeem fail! userBatteryMemberCard disable,uid={},mid={}", uid, memberCardId);
                         return Triple.of(false, "120142", "用户套餐冻结中，不允许操作");
                     }
-    
+                    
                     if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
                         log.warn("MeiTuan order redeem fail! userBatteryMemberCard freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
                         return Triple.of(false, "120143", "用户套餐冻结审核中，不允许操作");
@@ -328,7 +328,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     
                     // 电池型号是否匹配
                     List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(uid);
-                    List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(userBatteryMemberCard.getMemberCardId());
+                    List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCardId);
                     Boolean matched = isBatteryTypeMatched(userInfo, userBindBatteryTypes, memberCardBatteryTypes);
                     if (!matched) {
                         log.warn("MeiTuan order redeem fail! batteryType not matched, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
@@ -357,9 +357,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             rollBackBO = pair.getRight();
             
             // 通知美团发货
-            Triple<Boolean, String, Object> deliverTriple = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
             // 发货失败，执行回滚
-            if (!deliverTriple.getLeft()) {
+            if (!deliverResult) {
                 this.asyncRollback(rollBackBO);
             }
             
@@ -1073,52 +1073,52 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return false;
     }
     
-    private Triple<Boolean, String, Object> notifyMeiTuanDeliver(MeiTuanRiderMallConfig config, MeiTuanRiderMallOrder meiTuanRiderMallOrder,
-            ElectricityMemberCardOrder electricityMemberCardOrder, Long uid) {
+    private Boolean notifyMeiTuanDeliver(MeiTuanRiderMallConfig config, MeiTuanRiderMallOrder meiTuanRiderMallOrder, ElectricityMemberCardOrder electricityMemberCardOrder,
+            Long uid) {
         MeiTuanRiderMallApiConfig apiConfig = MeiTuanRiderMallApiConfig.builder().appId(config.getAppId()).appKey(config.getAppKey()).secret(config.getSecret())
                 .host(meiTuanRiderMallHostConfig.getHost()).build();
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
             log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, userBatteryMemberCard is null, uid={}", uid);
-            return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
+            return Boolean.FALSE;
         }
         
         String orderId = meiTuanRiderMallOrder.getMeiTuanOrderId();
-        DeliverRsp deliverRsp = null;
-        try {
-            deliverRsp = virtualTradeService.deliverOrder(apiConfig, orderId, orderId, VirtualTradeStatusEnum.VP_RECHARGE_STATUS_SUCCESS.getCode(),
-                    userBatteryMemberCard.getOrderEffectiveTime() / 1000, userBatteryMemberCard.getOrderExpireTime() / 1000);
-        } catch (Exception e) {
-            log.error("NotifyMeiTuanDeliver error! notifyMeiTuanDeliver fail, uid={}, orderId={}", uid, orderId, e);
-            return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
-        }
-        
+        DeliverRsp deliverRsp = virtualTradeService.deliverOrder(apiConfig, orderId, orderId, VirtualTradeStatusEnum.VP_RECHARGE_STATUS_SUCCESS.getCode(),
+                userBatteryMemberCard.getOrderEffectiveTime() / 1000, userBatteryMemberCard.getOrderExpireTime() / 1000);
         if (Objects.isNull(deliverRsp)) {
             log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, deliverRsp is null, uid={}, orderId={}", uid, orderId);
-            return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
+            return Boolean.FALSE;
         }
         
-        // 修改同步对账状态为:已处理
-        meiTuanRiderMallOrder.setOrderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
-        meiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
-        
-        // 发货失败-美团订单已取消，修改订单状态为“已取消”
+        // 发货失败
+        Integer failReason = deliverRsp.getFailReason();
         if (!deliverRsp.getResult()) {
-            meiTuanRiderMallOrder.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode());
+            if (Objects.nonNull(failReason) && Objects.equals(failReason, VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode())) {
+                // 订单取消导致发货失败，“订单取消”
+                meiTuanRiderMallOrder.setMeiTuanOrderStatus(failReason);
+                log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuan order canceled, uid={}, orderId={}", uid, orderId);
+            }
             
-            log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuan order canceled, uid={}, orderId={}", uid, orderId);
-            return Triple.of(false, "120135", "兑换套餐已下架，兑换失败，请联系客服处理");
+            meiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+            meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrder);
+            return Boolean.FALSE;
         }
         
-        // 发货成功-修改订单状态为“已发货”，使用状态为：已使用
+        // 发货成功
+        // 关联套餐订单
         meiTuanRiderMallOrder.setOrderId(electricityMemberCardOrder.getOrderId());
+        // 修改订单状态为“已发货”
         meiTuanRiderMallOrder.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_DELIVERED.getCode());
+        // 修改同步对账状态为“已处理”
+        meiTuanRiderMallOrder.setOrderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
         meiTuanRiderMallOrder.setOrderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_USED.getCode());
+        meiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
         
         meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrder);
         
-        return Triple.of(true, "", "");
+        return Boolean.TRUE;
     }
     
     private void asyncRollback(MeiTuanOrderRedeemRollBackBO rollBackBO) {
