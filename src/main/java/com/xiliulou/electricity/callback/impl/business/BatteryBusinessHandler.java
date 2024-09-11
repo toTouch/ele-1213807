@@ -96,16 +96,29 @@ public class BatteryBusinessHandler implements BusinessHandler {
                 return true;
             }
             
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-            if (Objects.isNull(userBatteryDeposit)) {
-                log.warn("handlerFreeDepositSuccess warn! userBatteryDeposit is null, uid is {}", uid);
-                return true;
-            }
-            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+//            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+//            if (Objects.isNull(userBatteryDeposit)) {
+//                log.warn("handlerFreeDepositSuccess warn! userBatteryDeposit is null, uid is {}", uid);
+//                return true;
+//            }
+            
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
             if (Objects.isNull(eleDepositOrder)) {
-                log.warn("handlerFreeDepositSuccess warn! eleDepositOrder is null, orderId is {}", userBatteryDeposit.getOrderId());
+                log.warn("handlerFreeDepositSuccess warn! eleDepositOrder is null, orderId is {}", order.getOrderId());
                 return true;
             }
+            //绑定免押订单
+            UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+            userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setUid(order.getUid());
+            userBatteryDeposit.setDid(eleDepositOrder.getMid());
+            userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
+            userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
             // 更新押金订单状态
             EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
             eleDepositOrderUpdate.setId(eleDepositOrder.getId());
@@ -121,6 +134,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
             
+
             // 绑定电池型号
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
