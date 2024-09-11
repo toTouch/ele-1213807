@@ -621,6 +621,89 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         redisService.delete(CacheConstant.CACHE_ENTERPRISE_INFO + enterpriseId);
     }
     
+    @Override
+    public Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("RECYCLE WARN! not found user,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+    
+        if (!redisService.setNx(CacheConstant.CACHE_RECYCLE_CLOUD_BEAN_LOCK + uid, String.valueOf(System.currentTimeMillis()), 3000L, false)) {
+            log.warn("RECYCLE WARN! Frequency too fast");
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+    
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("RECYCLE WARN! user is unUsable,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+    
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("RECYCLE WARN! user not auth,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+    
+        EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
+        if (Objects.isNull(enterpriseChannelUser)) {
+            log.warn("RECYCLE WARN! user illegal,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+    
+        EnterpriseInfo enterpriseInfo = this.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
+        if (Objects.isNull(enterpriseInfo)) {
+            log.error("RECYCLE CLOUD BEAN ERROR! not found enterpriseInfo,enterpriseId={},uid={}", enterpriseChannelUser.getEnterpriseId(), uid);
+            return Triple.of(false, "ELECTRICITY.0019", "企业信息不存在");
+        }
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                log.warn("check User Enable Exit! user rent battery,uid={}", uid);
+                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
+            }
+        
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                log.warn("check User Enable Exit! user stop member card review,uid={}", uid);
+                return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
+            }
+        
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                log.warn("check User Enable Exit! member card is disable userId={}", uid);
+                return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
+            }
+        
+            if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+                return Triple.of(true, null, null);
+            }
+        
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.warn("check User Enable Exit! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+            }
+        
+            // 判断滞纳金
+            Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
+                    batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+            if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                log.warn("check User Enable Exit! user exist battery service fee,uid={}", userInfo.getUid());
+                return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
+            }
+        }
+    
+        //回收押金
+        Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo);
+        if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
+            return batteryDepositTriple;
+        }
+        
+        //解绑用户相关信息
+        unbindUserData(userInfo, enterpriseChannelUser);
+    
+        return Triple.of(true, null, null);
+    }
+    
     private int getRentDayNum(Long beginTime, Long endTime) {
         int maxDaySize = 1;
         

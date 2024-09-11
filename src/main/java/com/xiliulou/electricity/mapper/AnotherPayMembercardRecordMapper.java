@@ -46,4 +46,6 @@ public interface AnotherPayMembercardRecordMapper extends BaseMapper<AnotherPayM
     List<AnotherPayMembercardRecord> selectListByEnterpriseId(Long enterpriseId);
     
     int batchUpdateBeginAndEndTimeByIds(@Param("idList") List<Long> idList,@Param("realDisableTime") long realDisableTime,@Param("updateTime") long currentTimeMillis);
+    
+    Integer existPayRecordByUid(@Param("uid") Long uid);
 }
