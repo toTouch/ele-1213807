@@ -68,6 +68,11 @@ public class ProfitSharingOrderDetail implements Serializable {
     private Integer status;
     
     /**
+     * 分账类型：0：分出、1：解冻
+     */
+    private Integer type;
+    
+    /**
      * 失败原因
      */
     private String failReason;

@@ -53,4 +53,9 @@ public class ProfitSharingOrderDetailQueryModel {
     private String thirdTradeOrderNo;
     
     private Integer tenantId;
+    
+    /**
+     * 分账类型：0：分出、1：解冻
+     */
+    private Integer type;
 }

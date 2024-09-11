@@ -43,7 +43,8 @@ public class JsonAdminProfitSharingOrderController {
     public R pageCount(@RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime
             , @RequestParam(value = "outAccountType", required = false) Integer outAccountType, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "profitSharingReceiveName", required = false) String profitSharingReceiveName, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "thirdTradeOrderNo", required = false) String thirdTradeOrderNo) {
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "thirdTradeOrderNo", required = false) String thirdTradeOrderNo,
+            @RequestParam(value = "type", required = false) Integer type) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -70,7 +71,7 @@ public class JsonAdminProfitSharingOrderController {
     
         ProfitSharingOrderDetailPageRequest profitSharingOrderDetailPageRequest = ProfitSharingOrderDetailPageRequest.builder().startTime(startTime).endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId()).franchiseeIdList(franchiseeIdList).outAccountType(outAccountType).profitSharingReceiveName(profitSharingReceiveName)
-                .status(status).businessType(businessType).thirdTradeOrderNo(thirdTradeOrderNo).build();
+                .status(status).businessType(businessType).type(type).thirdTradeOrderNo(thirdTradeOrderNo).build();
         
         return R.ok(profitSharingOrderDetailService.countTotal(profitSharingOrderDetailPageRequest));
     }
@@ -85,7 +86,8 @@ public class JsonAdminProfitSharingOrderController {
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "startTime", required = false) Long startTime, @RequestParam(value = "endTime", required = false) Long endTime
             , @RequestParam(value = "outAccountType", required = false) Integer outAccountType, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "profitSharingReceiveName", required = false) String profitSharingReceiveName, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "thirdTradeOrderNo", required = false) String thirdTradeOrderNo) {
+            @RequestParam(value = "businessType", required = false) Integer businessType, @RequestParam(value = "thirdTradeOrderNo", required = false) String thirdTradeOrderNo,
+            @RequestParam(value = "type", required = false) Integer type) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -120,7 +122,7 @@ public class JsonAdminProfitSharingOrderController {
     
         ProfitSharingOrderDetailPageRequest profitSharingOrderDetailPageRequest = ProfitSharingOrderDetailPageRequest.builder().startTime(startTime).endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId()).franchiseeIdList(franchiseeIdList).outAccountType(outAccountType).profitSharingReceiveName(profitSharingReceiveName)
-                .status(status).businessType(businessType).thirdTradeOrderNo(thirdTradeOrderNo).offset(offset).size(size).build();
+                .status(status).businessType(businessType).thirdTradeOrderNo(thirdTradeOrderNo).type(type).offset(offset).size(size).build();
         
         return R.ok(profitSharingOrderDetailService.listByPage(profitSharingOrderDetailPageRequest));
     }
