@@ -289,6 +289,16 @@ public class DateUtils {
     }
     
     /**
+     * 获取具体天数前的时间
+     * @param minusDay
+     * @return
+     */
+    public static long getBeforeDayTimestamp(Integer minusDay) {
+        LocalDate lastDay = LocalDate.now().minusDays(minusDay);
+        return lastDay.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    /**
      * 获取前某月最后一天23:59:59时间戳
      */
     public static long getBeforeMonthLastDayTimestamp(Integer minusMonth) {

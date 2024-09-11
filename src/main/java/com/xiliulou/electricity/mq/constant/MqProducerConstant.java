@@ -85,6 +85,16 @@ public interface MqProducerConstant {
     String BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC = "battery_member_card_merchant_rebate_topic";
     
     /**
+     * 分账交易订单处理
+     */
+    String PROFIT_SHARING_ORDER_TOPIC = "PROFIT_SHARING_ORDER_TOPIC";
+    
+    /**
+     * 分账交易订单退款处理
+     */
+    String PROFIT_SHARING_ORDER_REFUND_TOPIC = "PROFIT_SHARING_ORDER_REFUND_TOPIC";
+    
+    /**
      * <p>
      * Description:
      * </p>

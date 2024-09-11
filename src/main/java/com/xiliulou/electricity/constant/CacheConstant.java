@@ -25,18 +25,18 @@ public interface CacheConstant {
     /**
      * 微信支付参数缓存key
      */
-    String ELE_PAY_PARAMS_KEY="saas_ele:pay_params:%d:%d";
+    String ELE_PAY_PARAMS_KEY = "saas_ele:pay_params:%d:%d";
     
     /**
      * 微信支付证书
      */
-    String PAYMENT_CERTIFICATE_KEY="saas_ele:pay_payment_certificate:%d:%d";
+    String PAYMENT_CERTIFICATE_KEY = "saas_ele:pay_payment_certificate:%d:%d";
     
     
     /**
      * 微信支付证书缓存（调用微信接口获取）
      */
-    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:V2:%d:%d";
+    String WECHAT_CERTIFICATE_KEY = "saas_ele:wechat_certificate:v3:%d:%d";
     
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
@@ -578,7 +578,7 @@ public interface CacheConstant {
     String CACHE_UPGRADE_CONDITION_UPDATE_LOCK = "cache_upgrade_condition_update_lock:";
     String CACHE_CHANNEL_SWITCH_STATE_UPDATE_LOCK = "cache_channel_switch_state_update_lock:";
     String CACHE_INVITATION_CONDITION_UPDATE_LOCK = "cache_invitation_condition_update_lock:";
-
+    
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
     String CACHE_INVITATION_ACTIVITY_USER_SAVE_LOCK = "cache_invitation_activity_user_save_lock:";
@@ -588,13 +588,13 @@ public interface CacheConstant {
     String CACHE_ASSET_WAREHOUSE_UPDATE_LOCK = "cache_asset_warehouse_update_lock:";
     String CACHE_ASSET_ALLOCATE_LOCK = "cache_asset_allocate_lock:";
     String CACHE_ASSET_BATCH_INVENTORY_LOCK = "cache_asset_batch_inventory_lock:";
-
+    
     String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
-
+    
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
     
     String CACHE_MERCHANT_LEVEL_UPDATE_LOCK = "cache_merchant_level_update_lock:";
-
+    
     String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
     String CACHE_MERCHANT = "cache_merchant:";
     // 商家修改
@@ -602,14 +602,14 @@ public interface CacheConstant {
     String MERCHANT_PLACE_SAVE_UID = "merchant_place_save_uid:";
     
     String MERCHANT_PLACE_UPDATE_UID = "merchant_place_update_uid:";
-
+    
     String MERCHANT_PLACE_DELETE_UID = "merchant_place_delete_uid:";
-
+    
     String CACHE_MERCHANT_PLACE = "cache_merchant_place:";
-
+    
     String MERCHANT_PLACE_CABINET_BIND_UID = "merchant_place_cabinet_bind_uid:";
     String MERCHANT_PLACE_CABINET_UNBIND_UID = "merchant_place_cabinet_unbind_uid:";
-
+    
     String MERCHANT_PLACE_CABINET_DELETE_UID = "merchant_place_cabinet_delete_uid:";
     
     String CACHE_CHANNEL_EMPLOYEE_SAVE_LOCK = "cache_channel_employee_save_lock:";
@@ -620,7 +620,7 @@ public interface CacheConstant {
     
     String CACHE_MERCHANT_EMPLOYEE_UPDATE_LOCK = "cache_merchant_employee_update_lock:";
     
-    String  CACHE_MERCHANT_WITHDRAW_APPLICATION = "cache_merchant_withdraw_application:";
+    String CACHE_MERCHANT_WITHDRAW_APPLICATION = "cache_merchant_withdraw_application:";
     
     String CACHE_MERCHANT_WITHDRAW_APPLICATION_REVIEW = "cache_merchant_withdraw_application_review:";
     
@@ -650,7 +650,7 @@ public interface CacheConstant {
     String CACHE_USER_BATTERY_MEMBER_CARD_RENEWAL_LOCK = "cache_user_battery_member_card_renewal_lock:";
     
     String CACHE_MERCHANT_MODIFY_INVITER_LOCK = "cache_merchant_modify_inviter_lock:";
-
+    
     
     String CACHE_RECYCLE_CLOUD_BEAN_LOCK = "cache_recycle_cloud_bean_lock:";
     
@@ -694,7 +694,32 @@ public interface CacheConstant {
     
     
     /**
+     * 分账配置缓存
+     */
+    String PROFIT_SHARING_PAY_PARAMS_ID_KEY = "saas_ele:profit_sharing:pay_params%d:%d";
+    
+    
+    /**
+     * 分账配置幂等
+     */
+    String PROFIT_SHARING_IDEMPOTENT_KEY = "saas_ele:profit_sharing:idempotent:%d";
+    
+    /**
+     * 分账配置幂等
+     */
+    String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent:%d";
+    
+    
+    
+    /**
+     * 分账统计分布式锁
+     */
+    String PROFIT_SHARING_STATISTICS_LOCK_KEY = "saas_ele:profit_sharing_statistics:lock:%d:%d";
+    
+    
+    /**
      * 柜机仓门配置key
      */
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
 }
+

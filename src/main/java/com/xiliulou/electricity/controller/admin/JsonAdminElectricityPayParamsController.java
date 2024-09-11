@@ -2,13 +2,15 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.controller.admin.base.AbstractFranchiseeDataPermissionController;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
+import com.xiliulou.electricity.vo.FranchiseeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +34,7 @@ import java.util.List;
  **/
 @Slf4j
 @RestController
-public class JsonAdminElectricityPayParamsController {
+public class JsonAdminElectricityPayParamsController extends AbstractFranchiseeDataPermissionController {
     
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
@@ -71,6 +73,14 @@ public class JsonAdminElectricityPayParamsController {
     @Log(title = "删除支付参数")
     public R delete(@PathVariable("id") Long id) {
         return electricityPayParamsService.delete(id);
+    }
+    
+    
+    
+    @GetMapping(value = "/admin/electricityPayParams/queryFranchisee")
+    public R queryFranchisee() {
+        List<FranchiseeIdNameVO> franchiseeVOS = electricityPayParamsService.queryFranchisee(TenantContextHolder.getTenantId(),checkFranchiseeDataPermission());
+        return R.ok(franchiseeVOS);
     }
     
     
