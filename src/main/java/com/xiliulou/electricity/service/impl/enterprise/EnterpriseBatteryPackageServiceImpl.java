@@ -1029,11 +1029,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (triple.getLeft()) {
             return triple;
         }
-        
+        String md5 = SecureUtil.md5(freeQuery.getRealName() + freeQuery.getIdCard() + freeQuery.getMembercardId());
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
-        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
+        boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,userInfo.getUid(),md5));
         if (Objects.isNull(triple.getRight()) && freeOrderCacheResult) {
-            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()),
+            String result = UriUtils.decode(redisService.get(String.format(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,userInfo.getUid(),md5)),
                     StandardCharsets.UTF_8);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
             result = JsonUtil.fromJson(result, String.class);
@@ -1071,13 +1071,14 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", depositOrderDTO);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(),
+        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,userInfo.getUid(),md5),
                 JsonUtil.toJson(depositOrderDTO.getData()), 300 * 1000L, false);
-        
-        String md5 = SecureUtil.md5(freeQuery.getRealName() + freeQuery.getIdCard() + freeQuery.getMembercardId());
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, userInfo.getUid());
         String val = redisService.get(userKey);
-        redisService.set(userKey,String.format("%s,%s",val,md5),5L, TimeUnit.MINUTES);
+        if (StringUtils.isNotEmpty(val) && !val.contains(md5)){
+            val = String.format("%s,%s",val,md5);
+        }
+        redisService.set(userKey,val ,5L, TimeUnit.MINUTES);
         
         
         return Triple.of(true, null, depositOrderDTO.getData());

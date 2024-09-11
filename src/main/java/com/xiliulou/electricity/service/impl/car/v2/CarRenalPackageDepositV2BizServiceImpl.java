@@ -297,9 +297,9 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         }
         String md5 = SecureUtil.md5(freeDepositUserDTO.getRealName() + freeDepositUserDTO.getIdCard() + freeDepositUserDTO.getPackageId());
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
-        boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
+        boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5));
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid), StandardCharsets.UTF_8);
+            String result = UriUtils.decode(redisService.get(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5)), StandardCharsets.UTF_8);
             result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result from cache for car rental. uid = {}, result = {}", uid, result);
             
@@ -348,12 +348,15 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
         
         log.info("generate free deposit data from pxz for car rental, data = {}", triple.getRight());
-        //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, UriUtils.encode(freeDepositOrderDTO.getData(), StandardCharsets.UTF_8),
+        //保存返回的免押链接信息，5分钟之内不会生成新码
+        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5), UriUtils.encode(freeDepositOrderDTO.getData(), StandardCharsets.UTF_8),
                 300 * 1000L, false);
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
         String val = redisService.get(userKey);
-        redisService.set(userKey,String.format("%s,%s",val,md5),5L, TimeUnit.MINUTES);
+        if (StringUtils.isNotEmpty(val) && !val.contains(md5)){
+            val = String.format("%s,%s",val,md5);
+        }
+        redisService.set(userKey,val ,5L, TimeUnit.MINUTES);
         return freeDepositOrderDTO.getData();
     }
     

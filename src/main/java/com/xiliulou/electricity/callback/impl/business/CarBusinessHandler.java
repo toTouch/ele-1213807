@@ -34,6 +34,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -126,12 +127,16 @@ public class CarBusinessHandler implements BusinessHandler {
                 userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
             }
             //删除5分钟的二维码
-            String key = CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid;
-            if (redisService.hasKey(key)) {
-                redisService.delete(key);
-            }
             String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
-            if (redisService.hasKey(userKey)) {
+            String md5s = redisService.get(userKey);
+            if (ObjectUtils.isNotEmpty(md5s)) {
+                Arrays.stream(md5s.split(","))
+                        .forEach(md5 -> {
+                            String key = String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
+                            if (redisService.hasKey(key)) {
+                                redisService.delete(key);
+                            }
+                        });
                 redisService.delete(userKey);
             }
             log.info("Car/car electronics order no deposit callback completed, order number: {}",order.getOrderId());

@@ -33,9 +33,11 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -144,16 +146,21 @@ public class BatteryBusinessHandler implements BusinessHandler {
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
-            String key = CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid;
-            if (redisService.hasKey(key)) {
-                redisService.delete(key);
-            }
-            String lockKey =CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY+uid;
-            if (redisService.hasKey(lockKey)) {
-                redisService.delete(lockKey);
-            }
+            //删除5分钟的二维码
             String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
-            if (redisService.hasKey(userKey)) {
+            String md5s = redisService.get(userKey);
+            if (ObjectUtils.isNotEmpty(md5s)) {
+                Arrays.stream(md5s.split(","))
+                        .forEach(md5 -> {
+                            String batteryKey = String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
+                            if (redisService.hasKey(batteryKey)) {
+                                redisService.delete(batteryKey);
+                            }
+                            String enterpriseKey = String.format(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
+                            if (redisService.hasKey(enterpriseKey)) {
+                                redisService.delete(enterpriseKey);
+                            }
+                        });
                 redisService.delete(userKey);
             }
             log.info("Battery/battery electronics order no deposit callback completed, order number: {}",order.getOrderId());
