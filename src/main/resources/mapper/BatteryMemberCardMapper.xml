@@ -776,6 +776,9 @@
         service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, installment_service_fee, down_payment
         from t_battery_member_card
         <where>
+            <if test="businessTypes == null">
+                and business_type in (0,1,2,3)
+            </if>
             <if test="businessTypes != null">
                 and business_type in
                 <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
