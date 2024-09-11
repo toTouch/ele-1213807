@@ -423,14 +423,13 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      */
     private void executeOrder(T payConfig, List<ProfitSharingCheckModel> successList, ProfitSharingChecksModel profitSharingChecksModel) {
         
-        // 调用分账
         try {
+            // 调用分账
             this.order(payConfig, successList);
         } finally {
             // 分账后处理
             this.orderPostProcessing(successList, profitSharingChecksModel);
         }
-        
         
     }
     
