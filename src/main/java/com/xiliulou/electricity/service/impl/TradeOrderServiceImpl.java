@@ -540,7 +540,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
                     .channel(payParamConfig.getPaymentChannel()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
             
-            if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
+            if (profitSharingTradeOrderList.size() > 1) {
                 // 支付订单数量大于1 设置为混合支付
                 profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
             }
@@ -973,10 +973,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(payParamConfig.getTenantId())
                     .franchiseeId(payParamConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
-                    .channel(payParamConfig.getPaymentChannel()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
-            
-            if (ObjectUtils.isNotEmpty(orderList) && orderList.size() > 1) {
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
+                    .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+    
+            if (profitSharingTradeOrderList.size() > 1) {
                 // 支付订单数量大于1 设置为混合支付
                 profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
             }

@@ -134,7 +134,6 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
         
         try {
             this.queryBuildProfitSharingOrder(payParams, orderModel);
-            ;
             
             BigDecimal failAmount = orderModel.getFailAmount();
             

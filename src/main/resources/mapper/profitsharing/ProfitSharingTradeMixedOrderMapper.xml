@@ -74,6 +74,7 @@
     <select id="selectListThirdOrderNoByTenantId" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
         select
             r.third_order_no,
+            franchisee_id,
             r.id
         from t_profit_sharing_trade_mixed_order r
         where r.tenant_id = #{tenantId}

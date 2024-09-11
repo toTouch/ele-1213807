@@ -13,7 +13,6 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.profitsharing.ProfitSharingConfigConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigCycleTypeEnum;
@@ -30,11 +29,11 @@ import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingReceiverConfigService;
 import com.xiliulou.electricity.tx.profitsharing.ProfitSharingConfigTxService;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigRemainingVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -285,6 +284,26 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
         return profitSharingConfigMapper.selectByTenantIdAndId(tenantId, id);
     }
     
+    @Override
+    public ProfitSharingConfigRemainingVO queryRemainingScaleLimit(Integer tenantId, Long id) {
+        
+        ProfitSharingConfig profitSharingConfig = profitSharingConfigMapper.selectByTenantIdAndId(tenantId, id);
+        if (Objects.isNull(profitSharingConfig)) {
+            return null;
+        }
+        
+        // 分账比例总和
+        BigDecimal receiverScaleSum = this.getReceiverScaleSum(tenantId, id);
+        
+        ProfitSharingConfigRemainingVO remainingVO = new ProfitSharingConfigRemainingVO();
+        remainingVO.setId(profitSharingConfig.getId());
+        remainingVO.setTenantId(profitSharingConfig.getTenantId());
+        remainingVO.setFranchiseeId(profitSharingConfig.getFranchiseeId());
+        remainingVO.setScaleLimit(profitSharingConfig.getScaleLimit().subtract(receiverScaleSum));
+        
+        return remainingVO;
+    }
+    
     /**
      * 校验分账比例限制总金额
      *
@@ -312,7 +331,25 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
             throw new BizException("最大比例限制不可超过 30%");
         }
         
-        List<ProfitSharingReceiverConfig> configs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(exist.getTenantId(), exist.getId());
+        // 获取接收方比例总和
+        BigDecimal sum = this.getReceiverScaleSum(exist.getTenantId(), exist.getId());
+        
+        if (sum.compareTo(request.getScaleLimit()) > 0) {
+            throw new BizException("分账接收方分账比例之和 必须小于等于 允许比例上限");
+        }
+        
+    }
+    
+    /**
+     * 获取接收方比例总和
+     *
+     * @param tenantId
+     * @param profitSharingConfigId
+     * @author caobotao.cbt
+     * @date 2024/9/9 17:29
+     */
+    private BigDecimal getReceiverScaleSum(Integer tenantId, Long profitSharingConfigId) {
+        List<ProfitSharingReceiverConfig> configs = profitSharingReceiverConfigService.queryListByProfitSharingConfigId(tenantId,profitSharingConfigId);
         
         // 计算累计总比例
         BigDecimal sum = BigDecimal.ZERO;
@@ -321,11 +358,7 @@ public class ProfitSharingConfigServiceImpl implements ProfitSharingConfigServic
                 sum = sum.add(config.getScale());
             }
         }
-        
-        if (sum.compareTo(request.getScaleLimit()) > 0) {
-            throw new BizException("分账接收方分账比例之和 必须小于等于 允许比例上限");
-        }
-        
+        return sum;
     }
     
     

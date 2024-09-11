@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 分账接收方配置表(TProfitSharingReceiverConfig)实体类
@@ -69,6 +70,11 @@ public class ProfitSharingReceiverConfigOptRequest implements Serializable {
      */
     @NotNull(groups = {CreateGroup.class, UpdateGroup.class}, message = "remark不可为空")
     private String remark;
+    
+    /**
+     * 数据权限的加盟商id
+     */
+    private List<Long> dataPermissionFranchiseeIds;
     
 }
 

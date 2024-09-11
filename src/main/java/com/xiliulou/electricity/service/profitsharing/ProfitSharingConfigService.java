@@ -5,6 +5,7 @@ package com.xiliulou.electricity.service.profitsharing;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigOptRequest;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingConfigUpdateStatusOptRequest;
+import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigRemainingVO;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingConfigVO;
 
 import java.util.List;
@@ -38,7 +39,6 @@ public interface ProfitSharingConfigService {
      * @date 2024/8/22 18:24
      */
     List<ProfitSharingConfigVO> queryListByTenantIdAndFranchiseeIds(Integer tenantId, List<Long> franchiseeIds);
-    
     
     
     /**
@@ -113,4 +113,14 @@ public interface ProfitSharingConfigService {
      * @date 2024/8/23 16:37
      */
     ProfitSharingConfig queryById(Integer tenantId, Long id);
+    
+    /**
+     * 查询分账剩余比例
+     *
+     * @param tenantId
+     * @param franchiseeId
+     * @author caobotao.cbt
+     * @date 2024/9/9 17:27
+     */
+    ProfitSharingConfigRemainingVO queryRemainingScaleLimit(Integer tenantId, Long id);
 }
