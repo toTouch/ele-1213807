@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.installment;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_CANCEL_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
@@ -74,6 +76,8 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     private InstallmentTerminatingRecordService installmentTerminatingRecordService;
     
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    private RedisService redisService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -232,6 +236,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         InstallmentRecord installmentRecord = installmentRecordMapper.selectByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
+        }
+        
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, installmentRecord.getUid()), "1", 3*1000L, false)) {
+            return R.fail("301019", "解当前套餐正在签约或取消，请稍候再试");
         }
         
         List<Integer> list = Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN);

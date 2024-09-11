@@ -6,6 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -65,6 +66,7 @@ import com.xiliulou.pay.deposit.fengyun.service.FyAgreementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -82,6 +84,7 @@ import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_FORM_BODY;
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_CANCEL_LOCK;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.AGREEMENT_PAY_QUERY_STATUS_SUCCESS;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
@@ -152,9 +155,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     XllThreadPoolExecutorService initiatingDeductThreadPool;
     
+    InheritableThreadLocal<String> inheritableThreadLocal;
+    
     @PostConstruct
     public void init() {
         initiatingDeductThreadPool = XllThreadPoolExecutors.newFixedThreadPool("INSTALLMENT_INITIATING_DEDUCT", 1, "initiatingDeduct");
+        inheritableThreadLocal = new InheritableThreadLocal<>();
     }
     
     @Override
@@ -326,6 +332,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         Long uid = null;
         try {
             uid = SecurityUtils.getUid();
+            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, uid), "1", 3*1000L, false)) {
+                return R.fail("301019", "解当前套餐正在签约或取消，请稍候再试");
+            }
+            
             InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
                     Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN));
             if (Objects.isNull(installmentRecord)) {
@@ -452,10 +462,16 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         // 尽快给用户完成代扣和套餐绑定，异步发起代扣
+        inheritableThreadLocal.set(MDC.get(CommonConstant.TRACE_ID));
         installmentRecord.setAgreementNo(agreementNo);
         initiatingDeductThreadPool.execute(() -> {
             log.info("回调调试，异步代扣");
-            initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
+            try {
+                MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
+                initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
+            } finally {
+                MDC.clear();
+            }
         });
         
         // 更新签约记录

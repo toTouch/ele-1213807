@@ -712,6 +712,11 @@ public interface CacheConstant {
     String CACHE_INSTALLMENT_CANCEL_SIGN = "installment:cancel_sign";
     
     /**
+     * 签约取消互斥锁
+     */
+    String CACHE_INSTALLMENT_SIGN_CANCEL_LOCK = "installment:sign_cancel_lock:%d";
+    
+    /**
      * 代扣锁
      */
     String CACHE_INSTALLMENT_DEDUCT_LOCK = "installment:deduct_lock:%d";
