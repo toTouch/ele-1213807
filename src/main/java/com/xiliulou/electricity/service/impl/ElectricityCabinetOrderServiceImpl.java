@@ -1340,17 +1340,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             
             // 多次换电拦截
-            if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
-                if (StringUtils.isNotBlank(electricityCabinet.getVersion())
-                        && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                    Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.CHECK.getCode());
-                    if (pair.getLeft()) {
-                        // 返回让前端选择
-                        return Triple.of(true, null, pair.getRight());
-                    }
+            if (StringUtils.isNotBlank(electricityCabinet.getVersion())
+                    && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.CHECK.getCode());
+                if (pair.getLeft()) {
+                    // 返回让前端选择
+                    return Triple.of(true, null, pair.getRight());
                 }
             }
             
+            // 如果超过5分钟或者返回false，下次扫码不进多次换电
             ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
             vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
             return Triple.of(true, null, vo);
@@ -1395,7 +1394,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             // 上一个成功
-            return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, userInfo, code);
+            return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, userInfo);
         } else {
             // 上一个失败
             return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo, code);
@@ -1462,7 +1461,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
-            UserInfo userInfo, Integer code) {
+            UserInfo userInfo) {
         // 上次成功不可能为空
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.error("OrderV3 Error! lastExchangeSuccessHandler.userBindBattery is null, lastOrderId is {}", lastOrder.getOrderId());
@@ -1495,11 +1494,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(cabinetBox) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getNewCellNo())) {
             // 在仓内，分配上一个订单的新仓门
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            // 后台自主开仓
-            if (Objects.equals(code, OrderCheckEnum.ORDER.getCode())) {
-                String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
-                vo.setSessionId(sessionId);
-            }
+            // 如果是换电，才要后台自主开仓
+            String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
+            vo.setSessionId(sessionId);
+            
             return Pair.of(true, vo);
         } else {
             // 没有在仓
@@ -1528,14 +1526,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         //  新仓门开门失败
         if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
-            return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet, userInfo, code);
+            return newCellOpenFail(lastOrder, electricityBattery, vo, cabinet, userInfo);
         }
         
         return Pair.of(false, null);
     }
     
     private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
-            UserInfo userInfo, Integer code) {
+            UserInfo userInfo) {
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
@@ -1571,9 +1569,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
             // 新仓门取电
-            if (Objects.equals(code, OrderCheckEnum.ORDER.getCode())) {
-                vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox.getCellNo()));
-            }
+            vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox.getCellNo()));
            
             return Pair.of(true, vo);
         } else {
@@ -1619,12 +1615,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
             
-            // 获取满电仓
-            Integer cellNo = this.getFullCellHandler(cabinet, userInfo);
-            vo.setCell(cellNo);
-            
-            // 下发取电命令
+            // 只有换电，才去获取满电仓，而选仓取电不走这里
             if (Objects.equals(code,OrderCheckEnum.ORDER.getCode())) {
+                // 获取满电仓
+                Integer cellNo = this.getFullCellHandler(cabinet, userInfo);
+                vo.setCell(cellNo);
                 String sessionId = this.openFullBatteryCellHandler(lastOrder, cabinet, cellNo, userBindingBatterySn, cabinetBox.getCellNo());
                 vo.setSessionId(sessionId);
             }
