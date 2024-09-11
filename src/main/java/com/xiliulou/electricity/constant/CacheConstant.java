@@ -700,4 +700,11 @@ public interface CacheConstant {
      * 柜机仓门配置key
      */
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
+    
+    
+    /**
+     * 免押信息用户key
+     */
+    String FREE_DEPOSIT_USER_INFO_KEY = "free_deposit_user_info:%s";
+ 
 }

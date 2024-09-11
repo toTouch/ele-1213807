@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.HashUtil;
+import cn.hutool.crypto.SecureUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.FreeDepositDelayDTO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.dto.callback.UnfreeFakeParams;
@@ -42,6 +46,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @ClassName: FreeDepositServiceImpl
@@ -78,6 +83,9 @@ public class FreeDepositServiceImpl implements FreeDepositService {
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
+    @Resource
+    RedisService redisService;
+    
     public static final String TRACE_ID = "traceId";
     
     private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("free-deposit-pool", 1, "free-deposit"));
@@ -102,8 +110,15 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.freeDepositUserDTO is null");
             return Triple.of(false, null, null);
         }
-        
         Long uid = freeDepositUserDTO.getUid();
+        
+        // 用户信息不一致生成新的二维码,不能取redis的二维码
+        String md5 = SecureUtil.md5(freeDepositUserDTO.getRealName() + freeDepositUserDTO.getIdCard() + freeDepositUserDTO.getPackageId());
+        String redisFreeUserInfo = redisService.get(String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid));
+        if (!Objects.equals(redisFreeUserInfo, md5)) {
+            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new,newMd5 is {}, lastMd5 is {}, uid is {}", md5, redisFreeUserInfo, uid);
+            return Triple.of(false, null, md5);
+        }
         
         String orderId;
         Long packageId;
@@ -138,11 +153,11 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         }
         
         // 如果都一样，查询是否免押过； 只要有一个不一样，继续新的免押
-        if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
-                || !Objects.equals(packageId, freeDepositUserDTO.getPackageId())) {
-            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new, go on new Free, uid is {}", uid);
-            return Triple.of(false, null, freeDepositOrder);
-        }
+//        if (!Objects.equals(freeDepositOrder.getRealName(), freeDepositUserDTO.getRealName()) || !Objects.equals(freeDepositOrder.getIdCard(), freeDepositUserDTO.getIdCard())
+//                || !Objects.equals(packageId, freeDepositUserDTO.getPackageId())) {
+//            log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new, go on new Free, uid is {}", uid);
+//            return Triple.of(false, null, freeDepositOrder);
+//        }
         
         log.info("FreeDeposit INFO! checkExistSuccessFreeDepositOrder.channel is {}, orderId is {}", freeDepositOrder.getChannel(), orderId);
         
@@ -155,6 +170,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
             log.info("query free deposit status from pxz success! uid = {}, orderId = {}", freeDepositUserDTO.getUid(), orderId);
             return Triple.of(true, "100400", "免押已成功，请勿重复操作");
         }
+        
         
         return Triple.of(false, null, null);
     }

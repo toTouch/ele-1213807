@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -132,6 +133,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -1167,23 +1169,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         insert(freeDepositOrder);
         eleDepositOrderService.insert(eleDepositOrder);
         
-        // 绑定免押订单
-        /*UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
-        userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
-        userBatteryDeposit.setUid(uid);
-        userBatteryDeposit.setDid(eleDepositOrder.getMid());
-        userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
-        userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
-        userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
-        userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
-        userBatteryDeposit.setCreateTime(System.currentTimeMillis());
-        userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-        userBatteryDepositService.insertOrUpdate(userBatteryDeposit);*/
         
         log.info("generate free deposit data from pxz for battery package, data = {}", JsonUtil.toJson(depositOrderDTO));
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, UriUtils.encode(depositOrderDTO.getData(), StandardCharsets.UTF_8),
                 300 * 1000L, false);
+        
+        String md5 = SecureUtil.md5(freeQuery.getRealName() + freeQuery.getIdCard() + freeQuery.getMembercardId());
+        redisService.set(String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY,uid), md5, 5L, TimeUnit.MINUTES);
         
         return Triple.of(true, null, depositOrderDTO.getData());
     }
