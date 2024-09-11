@@ -2043,11 +2043,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         long firstTime = System.currentTimeMillis();
         long lastTime = System.currentTimeMillis() + 3 * 3600000 * 24;
         SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
-        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME);
-        if (StrUtil.isNotBlank(firstTimeStr)) {
-            firstTime = Long.parseLong(firstTimeStr);
-        }
+    
+        // TODO: 2024/9/11 临时代码
+//        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME);
+//        if (StrUtil.isNotBlank(firstTimeStr)) {
+//            firstTime = Long.parseLong(firstTimeStr);
+//        }
         
         redisService.set(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
         
@@ -2078,6 +2079,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             });
             offset += size;
         }
+    }
+    
+    
+    public static void main(String[] args) {
+        System.out.println(DateUtil.format(new Date(1726303200186L),"yyyy-MM-dd HH:mm:ss"));
+        System.out.println(DateUtil.format(new Date(1726303484455L),"yyyy-MM-dd HH:mm:ss"));
     }
     
     @Override
