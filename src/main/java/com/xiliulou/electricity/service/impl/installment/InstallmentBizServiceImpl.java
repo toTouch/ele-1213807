@@ -496,7 +496,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public R<String> handleTerminating(InstallmentRecord installmentRecord) {
-        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_CANCELLED)) {
+        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_CANCELLED) || Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_COMPLETED)) {
             return R.ok();
         }
         

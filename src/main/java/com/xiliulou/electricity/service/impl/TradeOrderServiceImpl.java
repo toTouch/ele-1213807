@@ -449,7 +449,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                    .description("租电押金和租金").uid(user.getUid()).build();
+                    .description("租电租金（含押金）").uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request, null);
             return Triple.of(true, null, resultDTO);

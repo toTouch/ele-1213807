@@ -109,10 +109,6 @@ public class FyInstallmentHandler {
             
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
             
-            if (Objects.equals(deductionPlan.getAmount(), new BigDecimal("0.00"))) {
-                installmentBizService.handleDeductZero(installmentRecord, deductionPlan);
-            }
-            
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
             if (Objects.isNull(fyConfig)) {
                 log.error("DEDUCT TASK ERROR! FyConfig is null, tenantId={}", deductionPlan.getTenantId());
