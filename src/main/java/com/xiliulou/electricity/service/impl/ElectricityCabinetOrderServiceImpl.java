@@ -1863,6 +1863,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
         
+        // 用户未绑定电池
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+        }
+        
         //修改按此套餐的次数
         Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
         if (Boolean.FALSE.equals(modifyResult.getLeft())) {
@@ -1931,6 +1936,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
             log.warn("ORDER WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return Triple.of(false, "300001", "存在滞纳金，请先缴纳");
+        }
+        
+        // 用户未绑定电池
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
         }
         
         //修改按此套餐的次数
@@ -2117,6 +2127,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "ELECTRICITY.100000", "系统异常");
         }
         
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+        }
+        
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
@@ -2128,7 +2143,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
@@ -2195,6 +2209,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
         
+        
         //判断用户押金
         Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, userInfo);
         if (Boolean.FALSE.equals(checkUserDepositResult.getLeft())) {
@@ -2253,6 +2268,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
         
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+        }
         
         //默认是小程序下单
         if (Objects.isNull(orderQuery.getSource())) {
@@ -2266,7 +2285,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
@@ -3027,6 +3046,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+        }
+        
         // 多次扫码处理
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
@@ -3143,6 +3166,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+        }
+        
+        
         // 多次换电拦截
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
@@ -3197,7 +3225,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         commandData.put("phone", userInfo.getPhone());
         
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
-            commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
+            commandData.put("userBindingBatterySn", electricityBattery.getSn());
         }
         
         commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
