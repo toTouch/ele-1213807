@@ -91,6 +91,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 租车套餐押金业务聚合 BizServiceImpl
@@ -294,7 +295,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         if (Boolean.TRUE.equals(useFreeDepositStatusResult.getLeft())) {
             throw new BizException(useFreeDepositStatusResult.getMiddle(), useFreeDepositStatusResult.getRight().toString());
         }
-        
+        String md5 = SecureUtil.md5(freeDepositUserDTO.getRealName() + freeDepositUserDTO.getIdCard() + freeDepositUserDTO.getPackageId());
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid);
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
@@ -304,7 +305,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             
             // 此时代表：在5分钟内用户调用了取消订单的接口且二次申请免押，则需要创建租车会员信息
             if (ObjectUtils.isEmpty(memberTermEntity)) {
-                String md5 = SecureUtil.md5(freeDepositUserDTO.getRealName() + freeDepositUserDTO.getIdCard() + freeDepositUserDTO.getPackageId());
+                
                 FreeDepositOrder freeDepositOrder = freeDepositOrderService.queryUserOrderByHash(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid(),md5);
                 // 查询最后一次的免押订单信息
                 CarRentalPackageDepositPayPo carRentalPackageDepositPayOri = carRentalPackageDepositPayService.selectByOrderNo(freeDepositOrder.getOrderId());
@@ -350,7 +351,9 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + uid, UriUtils.encode(freeDepositOrderDTO.getData(), StandardCharsets.UTF_8),
                 300 * 1000L, false);
-        
+        String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
+        String val = redisService.get(userKey);
+        redisService.set(userKey,String.format("%s,%s",val,md5),5L, TimeUnit.MINUTES);
         return freeDepositOrderDTO.getData();
     }
     

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.HashUtil;
 import cn.hutool.crypto.SecureUtil;
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.hash.MD5Utils;
 import com.xiliulou.core.json.JsonUtil;
@@ -119,7 +120,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
                 Optional.ofNullable(freeDepositUserDTO.getIdCard()).orElse("").trim()+
                 Optional.ofNullable(freeDepositUserDTO.getPackageId()).orElse(-1L));
         String redisFreeUserInfo = redisService.get(String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid));
-        if (!Objects.equals(redisFreeUserInfo, md5)) {
+        if (Objects.isNull(redisFreeUserInfo) || !redisFreeUserInfo.contains(md5)) {
             log.warn("FreeDeposit WARN! checkExistSuccessFreeDepositOrder.userInfo is new,newMd5 is {}, lastMd5 is {}, uid is {}", md5, redisFreeUserInfo, uid);
             return Triple.of(false, null, md5);
         }

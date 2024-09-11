@@ -152,6 +152,10 @@ public class BatteryBusinessHandler implements BusinessHandler {
             if (redisService.hasKey(lockKey)) {
                 redisService.delete(lockKey);
             }
+            String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
+            if (redisService.hasKey(userKey)) {
+                redisService.delete(userKey);
+            }
             log.info("Battery/battery electronics order no deposit callback completed, order number: {}",order.getOrderId());
         }catch (Exception e){
             log.error("battery freeDeposit error!", e);

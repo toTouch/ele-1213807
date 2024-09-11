@@ -1075,7 +1075,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 JsonUtil.toJson(depositOrderDTO.getData()), 300 * 1000L, false);
         
         String md5 = SecureUtil.md5(freeQuery.getRealName() + freeQuery.getIdCard() + freeQuery.getMembercardId());
-        redisService.set(String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, userInfo.getUid()), md5, 5L, TimeUnit.MINUTES);
+        String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, userInfo.getUid());
+        String val = redisService.get(userKey);
+        redisService.set(userKey,String.format("%s,%s",val,md5),5L, TimeUnit.MINUTES);
         
         
         return Triple.of(true, null, depositOrderDTO.getData());

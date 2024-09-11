@@ -130,6 +130,10 @@ public class CarBusinessHandler implements BusinessHandler {
             if (redisService.hasKey(key)) {
                 redisService.delete(key);
             }
+            String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
+            if (redisService.hasKey(userKey)) {
+                redisService.delete(userKey);
+            }
             log.info("Car/car electronics order no deposit callback completed, order number: {}",order.getOrderId());
             return true;
         }catch (Exception e){
