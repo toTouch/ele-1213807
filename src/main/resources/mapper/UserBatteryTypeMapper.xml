@@ -102,5 +102,15 @@
         from t_user_battery_type
         where uid = #{uid}
     </delete>
+    
+    <delete id="deleteByUidAndBatteryTypes">
+        delete
+        from t_user_battery_type
+        where uid = #{uid}
+        and battery_type in
+        <foreach item="item" index="index" collection="batteryTypes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
 </mapper>

@@ -50,4 +50,6 @@ public interface UserBatteryTypeService {
     List<UserBatteryType> listByUid(Long uid);
     
     Integer batchDeleteByIds(List<Long> ids);
+    
+    Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes);
 }

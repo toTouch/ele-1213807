@@ -183,6 +183,11 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     }
     
     @Override
+    public Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes) {
+        return userBatteryTypeMapper.deleteByUidAndBatteryTypes(uid, batteryTypes);
+    }
+    
+    @Override
     public List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo) {
         List<UserBatteryType> list = new ArrayList<>(batteryTypeList.size());
         

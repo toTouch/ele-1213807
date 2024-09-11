@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface MeiTuanRiderMallOrderMapper {
     
-    MeiTuanRiderMallOrder selectByOrderId(@Param("orderId") String orderId, @Param("phone") String phone, @Param("uid") Long uid);
+    MeiTuanRiderMallOrder selectByOrderId(@Param("orderId") String orderId, @Param("phone") String phone, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     List<MeiTuanRiderMallOrder> selectByUid(OrderQuery query);
     

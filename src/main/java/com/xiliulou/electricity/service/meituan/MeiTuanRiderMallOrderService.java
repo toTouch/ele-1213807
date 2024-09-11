@@ -9,7 +9,6 @@ import com.xiliulou.electricity.vo.meituan.OrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author HeYafeng
@@ -18,7 +17,7 @@ import java.util.Map;
  */
 public interface MeiTuanRiderMallOrderService {
     
-    MeiTuanRiderMallOrder queryByOrderId(String orderId, String phone, Long uid);
+    MeiTuanRiderMallOrder queryByOrderId(String orderId, String phone, Long uid, Integer tenantId);
     
     List<OrderVO> listOrders(OrderQuery query);
     

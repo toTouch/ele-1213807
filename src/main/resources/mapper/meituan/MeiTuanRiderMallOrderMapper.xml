@@ -36,7 +36,7 @@
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_order
-        where mei_tuan_order_id = #{orderId}
+        where tenant_id = #{tenantId} and mei_tuan_order_id = #{orderId}
         <if test="phone != null and phone != ''">
             and mei_tuan_account = #{phone}
         </if>
@@ -50,7 +50,7 @@
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_order
-        where tenant_id = #{tenantId} and uid = #{uid} and mei_tuan_order_status != 20
+        where tenant_id = #{tenantId} and mei_tuan_account = #{phone} and mei_tuan_order_status != 20
         <if test="orderId != null and orderId != ''">
             and order_id = #{orderId}
         </if>
