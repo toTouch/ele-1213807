@@ -307,7 +307,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 } else {
                     if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                         log.warn("MeiTuan order redeem fail! userBatteryMemberCard disable,uid={},mid={}", uid, memberCardId);
-                        return Triple.of(false, "100247", "用户套餐冻结中，不允许操作");
+                        return Triple.of(false, "120142", "用户套餐冻结中，不允许操作");
+                    }
+    
+                    if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW, userBatteryMemberCard.getMemberCardStatus())) {
+                        log.warn("MeiTuan order redeem fail! userBatteryMemberCard freeze waiting approve, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
+                        return Triple.of(false, "120143", "用户套餐冻结审核中，不允许操作");
                     }
                     
                     // 是否有滞纳金
