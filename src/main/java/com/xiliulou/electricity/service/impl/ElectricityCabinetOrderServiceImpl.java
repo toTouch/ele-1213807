@@ -1465,6 +1465,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             UserInfo userInfo, Integer code) {
         // 上次成功不可能为空
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
+            log.error("OrderV3 Error! lastExchangeSuccessHandler.userBindBattery is null, lastOrderId is {}", lastOrder.getOrderId());
             throw new CustomBusinessException("上次换电成功，但是用户绑定电池为空");
         }
         
