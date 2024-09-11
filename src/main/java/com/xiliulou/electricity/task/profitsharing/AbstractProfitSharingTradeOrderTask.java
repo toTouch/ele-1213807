@@ -363,8 +363,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             AtomicInteger subAtomicInteger = new AtomicInteger(0);
             profitSharingCheckModel.getProfitSharingDetailsCheckModels().forEach(details -> {
                 ProfitSharingOrderDetail orderDetail = this
-                        .initProfitSharingDetailsCheckModel(sharingOrder,payConfig, profitSharingTradeOrder, details.getProfitSharingReceiverConfig(), details.getProfitSharingAmount(),
-                                subAtomicInteger.getAndIncrement());
+                        .initProfitSharingDetailsCheckModel(sharingOrder, payConfig, profitSharingTradeOrder, details.getProfitSharingReceiverConfig(),
+                                details.getProfitSharingAmount(), subAtomicInteger.getAndIncrement());
                 details.setProfitSharingOrderDetail(orderDetail);
             });
         });
@@ -406,7 +406,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             AtomicInteger subAtomicInteger = new AtomicInteger(0);
             // 构建分账失败明细订单
             ProfitSharingOrderDetail profitSharingOrderDetail = this
-                    .buildErrorProfitSharingOrderDetail(profitSharingOrder,payConfig, profitSharingTradeOrder, detail.getProfitSharingReceiverConfig(), detail.getErrorMsg(),
+                    .buildErrorProfitSharingOrderDetail(profitSharingOrder, payConfig, profitSharingTradeOrder, detail.getProfitSharingReceiverConfig(), detail.getErrorMsg(),
                             ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode(), subAtomicInteger.getAndIncrement());
             detail.setProfitSharingOrderDetail(profitSharingOrderDetail);
         });
@@ -424,10 +424,14 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     private void executeOrder(T payConfig, List<ProfitSharingCheckModel> successList, ProfitSharingChecksModel profitSharingChecksModel) {
         
         // 调用分账
-        this.order(payConfig, successList);
+        try {
+            this.order(payConfig, successList);
+        } finally {
+            // 分账后处理
+            this.orderPostProcessing(successList, profitSharingChecksModel);
+        }
         
-        // 分账后处理
-        this.orderPostProcessing(successList, profitSharingChecksModel);
+        
     }
     
     /**
@@ -456,8 +460,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         profitSharingOrderTxService.update(checkModels, totalProfitSharingAmount, profitSharingChecksModel.getProfitSharingStatistics().getId());
     }
     
-    private ProfitSharingOrderDetail initProfitSharingDetailsCheckModel(ProfitSharingOrder sharingOrder,T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingReceiverConfig receiverConfig,
-            BigDecimal profitSharingAmount, int andIncrement) {
+    private ProfitSharingOrderDetail initProfitSharingDetailsCheckModel(ProfitSharingOrder sharingOrder, T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder,
+            ProfitSharingReceiverConfig receiverConfig, BigDecimal profitSharingAmount, int andIncrement) {
         long timeMillis = System.currentTimeMillis();
         ProfitSharingOrderDetail detail = new ProfitSharingOrderDetail();
         detail.setThirdTradeOrderNo(profitSharingTradeOrder.getThirdOrderNo());
@@ -605,12 +609,11 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
     /**
      * 构建失败明细订单
      *
-     *
      * @author caobotao.cbt
      * @date 2024/8/29 09:11
      */
-    private ProfitSharingOrderDetail buildErrorProfitSharingOrderDetail(ProfitSharingOrder profitSharingOrder,T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder, ProfitSharingReceiverConfig receiverConfig,
-            String failReason, Integer businessType, Integer unfreezeStatus, Integer suffix) {
+    private ProfitSharingOrderDetail buildErrorProfitSharingOrderDetail(ProfitSharingOrder profitSharingOrder, T payConfig, ProfitSharingTradeOrder profitSharingTradeOrder,
+            ProfitSharingReceiverConfig receiverConfig, String failReason, Integer businessType, Integer unfreezeStatus, Integer suffix) {
         long time = System.currentTimeMillis();
         ProfitSharingOrderDetail profitSharingOrderDetail = new ProfitSharingOrderDetail();
         profitSharingOrderDetail.setThirdTradeOrderNo(profitSharingTradeOrder.getThirdOrderNo());
@@ -737,7 +740,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             ProfitSharingOrder profitSharingOrder = this
                     .buildErrorProfitSharingOrder(payConfig, profitSharingTradeOrder, ProfitSharingBusinessTypeEnum.SYSTEM.getCode(), atomicInteger.getAndIncrement());
             ProfitSharingOrderDetail profitSharingOrderDetail = this
-                    .buildErrorProfitSharingOrderDetail(profitSharingOrder,payConfig, profitSharingTradeOrder, null, "分账接收方不存在", ProfitSharingBusinessTypeEnum.SYSTEM.getCode(),
+                    .buildErrorProfitSharingOrderDetail(profitSharingOrder, payConfig, profitSharingTradeOrder, null, "分账接收方不存在", ProfitSharingBusinessTypeEnum.SYSTEM.getCode(),
                             ProfitSharingOrderDetailUnfreezeStatusEnum.PENDING.getCode(), subAtomicInteger.getAndIncrement());
             insertMap.put(profitSharingOrder, profitSharingOrderDetail);
         }
