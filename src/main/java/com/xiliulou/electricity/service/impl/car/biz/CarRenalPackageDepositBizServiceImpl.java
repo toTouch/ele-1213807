@@ -1341,7 +1341,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param depositPayEntity     押金缴纳信息
      * @param compelOffLine        强制线下退押
      */
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
             CarRentalPackageDepositRefundPo depositRefundEntity, BigDecimal refundAmount, CarRentalPackageDepositPayPo depositPayEntity, Integer compelOffLine) {
         
