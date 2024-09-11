@@ -248,12 +248,12 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
                 UserOauthBind userOauthBind = null;
                 if (!CollectionUtils.isEmpty(userOauthBinds)) {
                     // 支付宝用户只会存在一条记录
-                    userOauthBind = userOauthBinds.get(0);
-                    if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
-                        log.error("ALIPAY LOGIN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
-                                userOauthBind.getUid(), existPhone.getRight().getUid());
-                        throw new AuthenticationServiceException("该账户已绑定其他支付宝，请联系客服处理");
-                    }
+//                    userOauthBind = userOauthBinds.get(0);
+//                    if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
+//                        log.error("ALIPAY LOGIN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
+//                                userOauthBind.getUid(), existPhone.getRight().getUid());
+//                        throw new AuthenticationServiceException("该账户已绑定其他支付宝，请联系客服处理");
+//                    }
                     //----
                     // 如果openid不存在,手机号存在,并且传入手机号的openid已经绑定过,则直接拦截
                     List<UserOauthBind> emptyUserList = userOauthBinds.stream().filter(userOauthBindTemp -> StringUtils.isBlank(userOauthBindTemp.getThirdId())).collect(Collectors.toList());
