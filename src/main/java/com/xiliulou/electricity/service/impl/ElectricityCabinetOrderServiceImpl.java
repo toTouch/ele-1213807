@@ -1570,6 +1570,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
+            // 新仓门取电
             if (Objects.equals(code, OrderCheckEnum.ORDER.getCode())) {
                 vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox.getCellNo()));
             }
