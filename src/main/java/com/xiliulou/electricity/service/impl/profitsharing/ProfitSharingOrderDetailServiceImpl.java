@@ -3,34 +3,30 @@ package com.xiliulou.electricity.service.impl.profitsharing;
 import com.google.common.collect.Maps;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.profitsharing.ProfitSharingOrderTypeUnfreezeBO;
-import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderTypeEnum;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderDetailMapper;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingOrderMapper;
 import com.xiliulou.electricity.query.profitsharing.ProfitSharingOrderDetailQueryModel;
 import com.xiliulou.electricity.request.profitsharing.ProfitSharingOrderDetailPageRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderDetailService;
-import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.profitsharing.ProfitSharingOrderDetailVO;
-import com.xiliulou.electricity.vo.profitsharing.ProfitSharingReceiverConfigDetailsVO;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -100,6 +96,11 @@ public class ProfitSharingOrderDetailServiceImpl implements ProfitSharingOrderDe
             } else {
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(profitSharingOrderDetail.getFranchiseeId());
                 profitSharingOrderDetailVO.setProfitSharingOutAccount(Objects.nonNull(franchisee) ? franchisee.getName() : null);
+            }
+            
+            if (Objects.equals(profitSharingOrderDetail.getStatus(), ProfitSharingOrderDetailStatusEnum.FAIL.getCode())) {
+                // 解析分账原因
+                profitSharingOrderDetailVO.setFailReason(Objects.equals(profitSharingOrder.getType(), ProfitSharingOrderTypeEnum.UNFREEZE.getCode()) ? ProfitSharingOrderDetailConstant.profit_fail_unfreeze_reason : ProfitSharingOrderDetailConstant.profit_fail_reason);
             }
             
             resList.add(profitSharingOrderDetailVO);

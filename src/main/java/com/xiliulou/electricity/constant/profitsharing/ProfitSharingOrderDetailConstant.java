@@ -14,4 +14,8 @@ public class ProfitSharingOrderDetailConstant {
     public static final Integer OUT_ACCOUNT_TYPE_DEFAULT = 0;
     
     public static final Integer OUT_ACCOUNT_TYPE_FRANCHISEE = 1;
+    
+    public static final String profit_fail_unfreeze_reason = "微信解冻失败";
+    
+    public static final String profit_fail_reason = "微信分账失败";
 }
