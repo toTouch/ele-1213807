@@ -195,6 +195,19 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             log.error("PROFIT SHARING UNFREEZE ERROR!, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo(), e);
             
             throw new ProfitSharingException(e.getMessage());
+        } catch (Throwable e) {
+            profitSharingOrderUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_COMPLETE.getCode());
+            profitSharingOrderDetailUpdate.setStatus(ProfitSharingOrderStatusEnum.PROFIT_SHARING_FAIL.getCode());
+    
+            String failReason = e.getMessage();
+            if (StringUtils.isNotEmpty(e.getMessage()) && e.getMessage().length() > 400) {
+                failReason = e.getMessage().substring(0, 400);
+            }
+            profitSharingOrderDetailUpdate.setFailReason(failReason);
+    
+            log.error("PROFIT SHARING UNFREEZE ERROR!, thirdTradeOrderNo={}", profitSharingTradeMixedOrder.getThirdOrderNo(), e);
+    
+            throw new ProfitSharingException(e.getMessage());
         } finally {
             profitSharingOrderUpdate.setUpdateTime(System.currentTimeMillis());
             profitSharingOrderDetailUpdate.setUpdateTime(System.currentTimeMillis());
