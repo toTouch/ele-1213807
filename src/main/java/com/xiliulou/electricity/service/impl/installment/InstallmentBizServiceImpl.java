@@ -516,15 +516,17 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             });
         }
         
-        // 更新签约记录，如果是已完成的不更新成已解约
-        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_COMPLETED)) {
-            return R.ok();
-        }
         InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
         installmentRecordUpdate.setId(installmentRecord.getId());
-        installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
-        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         
+        // 更新签约记录，如果是已完成的不更新成已解约
+        if (Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment())) {
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
+        } else {
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
+        }
+        
+        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordService.update(installmentRecordUpdate);
         return R.ok();
     }
