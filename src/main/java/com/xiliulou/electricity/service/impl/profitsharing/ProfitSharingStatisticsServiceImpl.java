@@ -81,7 +81,13 @@ public class ProfitSharingStatisticsServiceImpl implements ProfitSharingStatisti
         }
         
         profitSharingCheckVO.setUseAmount(useAmount);
-        profitSharingCheckVO.setIsExceed(useAmount.compareTo(profitSharingCheckVO.getAmountLimit()) >= 0 ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode());
+        
+        if (profitSharingCheckVO.getAmountLimit().compareTo(BigDecimal.ZERO) <= 0) {
+            // 金额为0 代表不限制
+            profitSharingCheckVO.setIsExceed(YesNoEnum.NO.getCode());
+        } else {
+            profitSharingCheckVO.setIsExceed(useAmount.compareTo(profitSharingCheckVO.getAmountLimit()) >= 0 ? YesNoEnum.YES.getCode() : YesNoEnum.NO.getCode());
+        }
         
         return profitSharingCheckVO;
     }

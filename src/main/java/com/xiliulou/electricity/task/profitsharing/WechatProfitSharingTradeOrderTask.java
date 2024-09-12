@@ -96,9 +96,12 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
                 
             } catch (ProfitSharingException e) {
                 log.warn("WechatProfitSharingTradeOrderTask.order ProfitSharingException:", e);
-                buildError(profitSharingModels, "微信分账失败");
+                buildError(profitSharingModels, e.getMessage());
             } catch (Exception e) {
                 log.warn("WechatProfitSharingTradeOrderTask.order Exception:", e);
+                buildError(profitSharingModels, "微信分账失败");
+            } catch (Throwable t) {
+                log.error("WechatProfitSharingTradeOrderTask.order Throwable:", t);
                 buildError(profitSharingModels, "微信分账失败");
             }
             
@@ -116,6 +119,10 @@ public class WechatProfitSharingTradeOrderTask extends AbstractProfitSharingTrad
      * @date 2024/9/4 17:10
      */
     private void buildError(List<ProfitSharingCheckModel> profitSharingModels, String msg) {
+        
+        if (msg.length() > 400) {
+            msg = msg.substring(0, 400);
+        }
         
         long timeMillis = System.currentTimeMillis();
         
