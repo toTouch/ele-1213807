@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl.car.v2;
 
 import cn.hutool.crypto.SecureUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.hash.MD5Utils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
@@ -91,6 +92,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -295,7 +297,9 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         if (Boolean.TRUE.equals(useFreeDepositStatusResult.getLeft())) {
             throw new BizException(useFreeDepositStatusResult.getMiddle(), useFreeDepositStatusResult.getRight().toString());
         }
-        String md5 = SecureUtil.md5(freeDepositUserDTO.getRealName() + freeDepositUserDTO.getIdCard() + freeDepositUserDTO.getPackageId());
+        String md5 = MD5Utils.digest(Optional.ofNullable(freeDepositUserDTO.getRealName()).orElse("").trim()+
+                Optional.ofNullable(freeDepositUserDTO.getIdCard()).orElse("").trim()+
+                Optional.ofNullable(freeDepositUserDTO.getPackageId()).orElse(-1L));
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5));
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
@@ -344,10 +348,9 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         freeDepositOrder.setChannel(freeDepositOrderDTO.getChannel());
         freeDepositOrder.setPayTransAmt(freeDepositOrder.getTransAmt());
         freeDepositOrder.setPackageId(freeDepositOptReq.getRentalPackageId());
+        log.info("Transaction inventory: md5: {}, free: {}",md5 , JsonUtil.toJson(freeDepositOrder));
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
-        
-        log.info("generate free deposit data from pxz for car rental, data = {}", triple.getRight());
         //保存返回的免押链接信息，5分钟之内不会生成新码
         redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5), UriUtils.encode(freeDepositOrderDTO.getData(), StandardCharsets.UTF_8),
                 300 * 1000L, false);
