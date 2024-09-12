@@ -307,22 +307,22 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result from cache for car rental. uid = {}, result = {}", uid, result);
             
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.queryUserOrderByHash(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid(),md5);
+            // 查询最后一次的免押订单信息
+            CarRentalPackageDepositPayPo carRentalPackageDepositPayOri = carRentalPackageDepositPayService.selectByOrderNo(freeDepositOrder.getOrderId());
+            if (ObjectUtils.isEmpty(carRentalPackageDepositPayOri)) {
+                log.error("t_car_rental_package_deposit_pay not found. uid = {}", uid);
+                throw new BizException("300015", "押金订单状态异常");
+            }
+            CarRentalPackageMemberTermPo memberTermInsertOrUpdateEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage, carRentalPackageDepositPayOri.getOrderNo(),
+                    memberTermEntity);
             // 此时代表：在5分钟内用户调用了取消订单的接口且二次申请免押，则需要创建租车会员信息
             if (ObjectUtils.isEmpty(memberTermEntity)) {
-                
-                FreeDepositOrder freeDepositOrder = freeDepositOrderService.queryUserOrderByHash(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid(),md5);
-                // 查询最后一次的免押订单信息
-                CarRentalPackageDepositPayPo carRentalPackageDepositPayOri = carRentalPackageDepositPayService.selectByOrderNo(freeDepositOrder.getOrderId());
-                if (ObjectUtils.isEmpty(carRentalPackageDepositPayOri)) {
-                    log.error("t_car_rental_package_deposit_pay not found. uid = {}", uid);
-                    throw new BizException("300015", "押金订单状态异常");
-                }
-                
-                CarRentalPackageMemberTermPo memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage, carRentalPackageDepositPayOri.getOrderNo(),
-                        memberTermEntity);
-                carRentalPackageMemberTermService.insert(memberTermInsertEntity);
+                carRentalPackageMemberTermService.insert(memberTermInsertOrUpdateEntity);
+            }else {
+                memberTermInsertOrUpdateEntity.setId(memberTermEntity.getId());
+                carRentalPackageMemberTermService.updateById(memberTermInsertOrUpdateEntity);
             }
-            
             return result;
         }
         
