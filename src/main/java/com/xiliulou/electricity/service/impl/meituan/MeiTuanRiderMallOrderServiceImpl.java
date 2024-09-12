@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
@@ -26,6 +27,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
@@ -44,6 +46,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
@@ -104,6 +107,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private UserInfoService userInfoService;
+    
+    @Resource
+    private UserService userService;
     
     @Resource
     private RedisService redisService;
@@ -276,6 +282,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
             
             Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> pair;
+            
+            // 已缴纳车电一体押金，不可兑换换电套餐
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                log.warn("MeiTuan order redeem fail! user has paid carBattery deposit,uid={}", uid);
+                return Triple.of(false, "120144", "您当前绑定的为车电一体套餐，暂不支持兑换换电卡，请联系客服处理");
+            }
             
             // 已缴纳押金
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -1366,8 +1378,13 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         // 用户不存在：不限制
-        // TODO(heyafeng) 2024/9/10 19:34
-        UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
+        User user = userService.queryByUserPhone(phone, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+        if (Objects.isNull(user)) {
+            return noLimit;
+        }
+        
+        // 用户不存在：不限制
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             return noLimit;
         }
@@ -1400,7 +1417,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
             
             // 老用户不可购买新套餐：限制
-            // TODO(heyafeng) 2024/9/10 19:34
             if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
                 log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
                         timestamp, sign);
