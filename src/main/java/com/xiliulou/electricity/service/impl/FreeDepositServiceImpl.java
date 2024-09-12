@@ -51,6 +51,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.xiliulou.electricity.constant.CacheConstant.UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY;
+
 /**
  * @ClassName: FreeDepositServiceImpl
  * @description:
@@ -204,6 +206,7 @@ public class FreeDepositServiceImpl implements FreeDepositService {
         
         BigDecimal eleRefundAmount = new BigDecimal(query.getAmount()).compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : new BigDecimal(query.getAmount());
         
+        redisService.set(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, query.getOrderId()),query.getOrderId(), 1L , TimeUnit.DAYS);
         // 0元退押处理
         if (eleRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
             final UnfreeFakeParams params = UnfreeFakeParams.builder().orderId(query.getOrderId()).authNO(query.getAuthNO()).channel(query.getChannel())
@@ -215,20 +218,25 @@ public class FreeDepositServiceImpl implements FreeDepositService {
                     Thread.sleep(5 * 1000);
                     freeDepositNotifyService.unfreeFakeNotify(params);
                 } catch (Exception e) {
+                    redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, query.getOrderId()));
                     log.error("FREE REFUND ORDER ERROR! 0 money unfreeFakeNotify is error, orderId is {}", query.getOrderId(), e);
                 }
             });
             
             return Triple.of(true, "", "退款中，请稍后");
         }
-        
-        // 解冻延迟
-        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(query.getOrderId()).build();
-        delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
-        
-        // 免押解冻
-        BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
-        return service.unFreezeDeposit(query);
+        try {
+            // 解冻延迟
+            FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().mdc(MDC.get(TRACE_ID)).orderId(query.getOrderId()).build();
+            delayFreeProducer.sendDelayFreeMessage(dto, MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
+            
+            // 免押解冻
+            BaseFreeDepositService service = applicationContext.getBean(FreeDepositServiceWayEnums.getClassStrByChannel(query.getChannel()), BaseFreeDepositService.class);
+            return service.unFreezeDeposit(query);
+        }catch (Exception e){
+            redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, query.getOrderId()));
+            throw e;
+        }
     }
     
     @Override

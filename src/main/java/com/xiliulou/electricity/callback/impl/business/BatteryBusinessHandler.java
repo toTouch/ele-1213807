@@ -41,6 +41,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.xiliulou.electricity.constant.CacheConstant.UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY;
+
 /**
  * <p>
  * Description: This class is CarBusinessHandler!
@@ -173,6 +175,9 @@ public class BatteryBusinessHandler implements BusinessHandler {
     
     @Override
     public boolean unfree(FreeDepositOrder order) {
+        if (!redisService.hasKey(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()))){
+            return false;
+        }
         try {
             // 更新退款订单
             EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(order.getOrderId());
@@ -232,6 +237,8 @@ public class BatteryBusinessHandler implements BusinessHandler {
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+            
+            redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
         }catch (Exception e){
             log.error("battery unfree error!", e);
             return false;

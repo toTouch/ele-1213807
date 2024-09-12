@@ -37,6 +37,8 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.xiliulou.electricity.constant.CacheConstant.UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY;
+
 /**
  * <p>
  * Description: This class is CarBusinessHandler!
@@ -149,6 +151,9 @@ public class CarBusinessHandler implements BusinessHandler {
     
     @Override
     public boolean unfree(FreeDepositOrder order) {
+        if (!redisService.hasKey(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()))){
+            return false;
+        }
         try {
             log.info("Enter the process of unfree deposit callback for car/car electronics, order number: {}",order.getOrderId());
             CarRentalPackageDepositRefundPo depositRefundEntity = carRentalPackageDepositRefundService.selectLastByDepositPayOrderNo(order.getOrderId());
@@ -181,6 +186,7 @@ public class CarBusinessHandler implements BusinessHandler {
             
             //删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(depositRefundEntity.getUid());
+            redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
             log.info("Car/car electronics order no unfree deposit callback completed, order number: {}",order.getOrderId());
             return true;
         }catch (Exception e){
