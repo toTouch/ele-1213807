@@ -90,4 +90,9 @@ public class MeiTuanOrderRedeemRollBackBO {
      * 用户套餐记录ID
      */
     private Long deleteEleUserOperateRecordMemberCardById;
+    
+    /**
+     * 套餐包ID
+     */
+    private Long deleteUserBatteryMemberCardPackageId;
 }

@@ -509,7 +509,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             log.error("MeiTuan order redeem fail! bindUserMemberCard uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
         } finally {
             rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, null, null, userBatteryMemberCardUpdateById, null,
-                    serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null);
+                    serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null, null);
         }
         
         return Pair.of(memberCardOrder, rollBackBO);
@@ -532,6 +532,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         Long electricityMemberCardOrderById = null;
         Long serviceFeeUserInfoById = null;
         Long eleUserMemberCardOperateRecordById = null;
+        Long userBatteryMemberCardPackageId = null;
         
         try {
             memberCardOrder = new ElectricityMemberCardOrder();
@@ -646,6 +647,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
                 userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
                 
+                // 封装UserBatteryMemberCardPackage回滚数据
+                userBatteryMemberCardPackageId = userBatteryMemberCardPackage.getId();
+                
                 userBatteryMemberCardUpdate.setUid(userInfo.getUid());
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(
                         userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
@@ -742,7 +746,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         } finally {
             rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, rollBackElectricityMemberCardOrder, rollBackUserInfo, userBatteryTypes, null, null, null,
                     rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordById,
-                    insertUserBatteryTypeListForRollBack);
+                    insertUserBatteryTypeListForRollBack, userBatteryMemberCardPackageId);
         }
         
         return Pair.of(memberCardOrder, rollBackBO);
@@ -983,7 +987,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         } finally {
             rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
                     rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
-                    eleUserDepositOperateRecordById, eleUserMemberCardOperateRecordById, null);
+                    eleUserDepositOperateRecordById, eleUserMemberCardOperateRecordById, null, null);
         }
         
         return Pair.of(electricityMemberCardOrder, rollBackBO);
@@ -993,7 +997,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             ElectricityMemberCardOrder rollBackElectricityMemberCardOrder, UserInfo rollBackUserInfo, List<UserBatteryType> userBatteryTypes, Long userBatteryDepositById,
             UserBatteryDeposit rollBackUserBatteryDeposit, Long userBatteryMemberCardUpdateById, UserBatteryMemberCard rollBackUserBatteryMemberCard, Long serviceFeeUserInfoById,
             ServiceFeeUserInfo rollBackServiceFeeUserInfo, Long eleUserDepositOperateRecordById, Long eleUserMemberCardOperateRecordById,
-            List<UserBatteryType> insertUserBatteryTypeList) {
+            List<UserBatteryType> insertUserBatteryTypeList, Long userBatteryMemberCardPackageId) {
         // 封装用户电池型号回滚
         List<UserBatteryType> deleteUserBatteryTypeList = null;
         if (CollectionUtils.isNotEmpty(userBatteryTypes)) {
@@ -1051,6 +1055,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (CollectionUtils.isNotEmpty(insertUserBatteryTypeList)) {
             rollBackBO.setInsertUserBatteryTypeList(insertUserBatteryTypeList);
         }
+        if (Objects.nonNull(userBatteryMemberCardPackageId)) {
+            rollBackBO.setDeleteUserBatteryMemberCardPackageId(userBatteryMemberCardPackageId);
+        }
         
         return rollBackBO;
     }
@@ -1092,31 +1099,35 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             return Boolean.FALSE;
         }
         
+        // 更新订单
+        MeiTuanRiderMallOrder meiTuanRiderMallOrderUpdate = new MeiTuanRiderMallOrder();
+        meiTuanRiderMallOrderUpdate.setId(meiTuanRiderMallOrder.getId());
+        
         // 发货失败
         Integer failReason = deliverRsp.getFailReason();
         if (!deliverRsp.getResult()) {
             if (Objects.nonNull(failReason) && Objects.equals(failReason, VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode())) {
                 // 订单取消导致发货失败，“订单取消”
-                meiTuanRiderMallOrder.setMeiTuanOrderStatus(failReason);
+                meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(failReason);
                 log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuan order canceled, uid={}, orderId={}", uid, orderId);
             }
             
-            meiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
-            meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrder);
+            meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
             return Boolean.FALSE;
         }
         
         // 发货成功
         // 关联套餐订单
-        meiTuanRiderMallOrder.setOrderId(electricityMemberCardOrder.getOrderId());
+        meiTuanRiderMallOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
         // 修改订单状态为“已发货”
-        meiTuanRiderMallOrder.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_DELIVERED.getCode());
+        meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_DELIVERED.getCode());
         // 修改同步对账状态为“已处理”
-        meiTuanRiderMallOrder.setOrderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
-        meiTuanRiderMallOrder.setOrderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_USED.getCode());
-        meiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+        meiTuanRiderMallOrderUpdate.setOrderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
+        meiTuanRiderMallOrderUpdate.setOrderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_USED.getCode());
+        meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
         
-        meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrder);
+        meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
         
         return Boolean.TRUE;
     }
@@ -1268,9 +1279,20 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             return null;
         });
         
+        CompletableFuture<Void> deleteUserBatteryMemberCardPackage = CompletableFuture.runAsync(() -> {
+            Long deleteUserBatteryMemberCardPackageId = rollBackBO.getDeleteUserBatteryMemberCardPackageId();
+            if (Objects.nonNull(deleteUserBatteryMemberCardPackageId)) {
+                userBatteryMemberCardPackageService.deleteById(deleteUserBatteryMemberCardPackageId);
+            }
+        }, threadPool).exceptionally(e -> {
+            log.error("NotifyMeiTuanDeliver warn! asyncRollback fail, rollBack userBatteryMemberCardPackage error!", e);
+            return null;
+        });
+        
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(deleteDepositOrder, deleteMemberCardOrder, deleteUserBatteryType, deleteUserBatteryDeposit,
                 deleteUserBatteryMemberCard, deleteServiceFeeUserInfo, deleteEleUserOperateRecordDeposit, deleteEleUserOperateRecordMemberCard, insertUserBatteryType,
-                rollBackElectricityMemberCardOrder, rollBackUserInfo, rollBackUserBatteryDeposit, rollBackUserBatteryMemberCard, rollBackServiceFeeUserInfo);
+                rollBackElectricityMemberCardOrder, rollBackUserInfo, rollBackUserBatteryDeposit, rollBackUserBatteryMemberCard, rollBackServiceFeeUserInfo,
+                deleteUserBatteryMemberCardPackage);
         
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
