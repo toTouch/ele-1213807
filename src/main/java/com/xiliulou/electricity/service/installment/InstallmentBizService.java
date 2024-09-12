@@ -106,5 +106,5 @@ public interface InstallmentBizService {
      * @param deductionPlan 代扣计划
      * @return 处理结果
      */
-    R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan);
+    R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, InstallmentDeductionRecord installmentDeductionRecord);
 }

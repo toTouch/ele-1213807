@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.installment;
 
+import cn.hutool.core.collection.ListUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -93,6 +95,10 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     @Override
     public R<List<InstallmentRecordVO>> listForPage(InstallmentRecordQuery installmentRecordQuery) {
         List<InstallmentRecord> installmentRecords = installmentRecordMapper.selectPage(installmentRecordQuery);
+        
+        if (CollectionUtils.isEmpty(installmentRecords)) {
+            return R.ok(ListUtil.empty());
+        }
         
         List<InstallmentRecordVO> installmentRecordVos = installmentRecords.parallelStream().map(installmentRecord -> {
             InstallmentRecordVO installmentRecordVO = new InstallmentRecordVO();

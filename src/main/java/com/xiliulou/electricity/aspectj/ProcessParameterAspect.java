@@ -10,12 +10,12 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -29,14 +29,13 @@ import java.util.Objects;
  */
 @Aspect
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class ProcessParameterAspect {
     
-    @Autowired
-    private TenantService tenantService;
+    private final TenantService tenantService;
     
-    @Autowired
-    private UserDataScopeService userDataScopeService;
+    private final UserDataScopeService userDataScopeService;
     
     /**
      * 分页参数size最大值

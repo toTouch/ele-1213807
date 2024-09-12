@@ -603,26 +603,26 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         BigDecimal zeroAmount = new BigDecimal("0.00");
         
         // 生成代扣记录
-        InstallmentDeductionRecord installmentDeductionRecord = new InstallmentDeductionRecord();
-        installmentDeductionRecord.setUid(installmentRecord.getUid());
-        installmentDeductionRecord.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        installmentDeductionRecord.setPayNo(payNo);
-        installmentDeductionRecord.setRepaymentPlanNo(repaymentPlanNo);
-        installmentDeductionRecord.setUserName(installmentRecord.getUserName());
-        installmentDeductionRecord.setMobile(installmentRecord.getMobile());
-        installmentDeductionRecord.setAmount(deductionPlan.getAmount());
-        installmentDeductionRecord.setStatus(Objects.equals(deductionPlan.getAmount(), zeroAmount) ? DEDUCTION_RECORD_STATUS_SUCCESS : DEDUCTION_RECORD_STATUS_INIT);
-        installmentDeductionRecord.setIssue(deductionPlan.getIssue());
-        installmentDeductionRecord.setSubject(null);
-        installmentDeductionRecord.setTenantId(deductionPlan.getTenantId());
-        installmentDeductionRecord.setFranchiseeId(deductionPlan.getFranchiseeId());
-        installmentDeductionRecord.setCreateTime(System.currentTimeMillis());
-        installmentDeductionRecord.setUpdateTime(System.currentTimeMillis());
-        installmentDeductionRecordService.insert(installmentDeductionRecord);
+        InstallmentDeductionRecord deductionRecord = new InstallmentDeductionRecord();
+        deductionRecord.setUid(installmentRecord.getUid());
+        deductionRecord.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        deductionRecord.setPayNo(payNo);
+        deductionRecord.setRepaymentPlanNo(repaymentPlanNo);
+        deductionRecord.setUserName(installmentRecord.getUserName());
+        deductionRecord.setMobile(installmentRecord.getMobile());
+        deductionRecord.setAmount(deductionPlan.getAmount());
+        deductionRecord.setStatus(Objects.equals(deductionPlan.getAmount(), zeroAmount) ? DEDUCTION_RECORD_STATUS_SUCCESS : DEDUCTION_RECORD_STATUS_INIT);
+        deductionRecord.setIssue(deductionPlan.getIssue());
+        deductionRecord.setSubject(null);
+        deductionRecord.setTenantId(deductionPlan.getTenantId());
+        deductionRecord.setFranchiseeId(deductionPlan.getFranchiseeId());
+        deductionRecord.setCreateTime(System.currentTimeMillis());
+        deductionRecord.setUpdateTime(System.currentTimeMillis());
+        installmentDeductionRecordService.insert(deductionRecord);
         
         // 代扣0元
         if (Objects.equals(deductionPlan.getAmount(), zeroAmount)) {
-            handleDeductZero(installmentRecord, deductionPlan);
+            handleDeductZero(installmentRecord, deductionPlan, deductionRecord);
             return Triple.of(true, null, null);
         }
         
@@ -668,7 +668,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         // 报错或调用失败则保存代扣失败的记录
         InstallmentDeductionRecord deductionRecordUpdate = new InstallmentDeductionRecord();
-        deductionRecordUpdate.setId(installmentDeductionRecord.getId());
+        deductionRecordUpdate.setId(deductionRecord.getId());
         deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
         deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentDeductionRecordService.update(deductionRecordUpdate);
@@ -713,11 +713,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         return R.ok();
     }
     
-    public R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan) {
+    public R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, InstallmentDeductionRecord deductionRecord) {
         handleBatteryMemberCard(installmentRecord, deductionPlan, installmentRecord.getUid());
         
         InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
         deductionPlanUpdate.setId(deductionPlan.getId());
+        deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
         deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
         deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
         deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
