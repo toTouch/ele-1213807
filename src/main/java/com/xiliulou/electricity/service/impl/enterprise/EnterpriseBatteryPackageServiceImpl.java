@@ -2471,6 +2471,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 }
             }
         }
+        log.info("query purchased package order end, enterprisePackageOrderVOList = {}", enterprisePackageOrderVOList);
         return Triple.of(true, null, enterprisePackageOrderVOList);
     }
     
