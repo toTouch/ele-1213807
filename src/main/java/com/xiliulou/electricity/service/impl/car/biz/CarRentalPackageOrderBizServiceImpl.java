@@ -2778,7 +2778,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 3. 处理租车套餐会员期限
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         // 待生效的数据，直接删除
-        if (ObjectUtils.isNotEmpty(memberTermEntity) && MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+        if (ObjectUtils.isNotEmpty(memberTermEntity) && MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())
+        && !Objects.equals(PayTypeEnum.EXEMPT.getCode(),depositPayEntity.getPayType())) {
             carRentalPackageMemberTermService.delByUidAndTenantId(tenantId, uid, uid);
         }
         
