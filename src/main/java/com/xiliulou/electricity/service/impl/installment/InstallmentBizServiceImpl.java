@@ -153,9 +153,9 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     private final FreeDepositDataService freeDepositDataService;
     
-    XllThreadPoolExecutorService initiatingDeductThreadPool;
+    private XllThreadPoolExecutorService initiatingDeductThreadPool;
     
-    InheritableThreadLocal<String> inheritableThreadLocal;
+    private InheritableThreadLocal<String> inheritableThreadLocal;
     
     @PostConstruct
     public void init() {
