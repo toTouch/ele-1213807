@@ -1078,7 +1078,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         if (StringUtils.isNotEmpty(val) && !val.contains(md5)){
             val = String.format("%s,%s",val,md5);
         }
-        redisService.set(userKey,val ,5L, TimeUnit.MINUTES);
+        redisService.set(userKey,StringUtils.isEmpty(val)?md5:val ,5L, TimeUnit.MINUTES);
         
         
         return Triple.of(true, null, depositOrderDTO.getData());
