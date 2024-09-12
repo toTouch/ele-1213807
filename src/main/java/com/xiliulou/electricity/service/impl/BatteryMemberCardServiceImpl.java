@@ -841,7 +841,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
         batteryMemberCardUpdate.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
-        batteryMemberCardUpdate.setDownPayment(Objects.nonNull(query.getDownPayment()) ? query.getDownPayment() : null);
+        if (Objects.equals(batteryMemberCardUpdate.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
+            batteryMemberCardUpdate.setDownPayment(Objects.equals(batteryMemberCard.getValidDays() / 30, 1) ? batteryMemberCard.getRentPrice() : query.getDownPayment());
+        }
         
         this.update(batteryMemberCardUpdate);
         
@@ -934,7 +936,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
             batteryMemberCard.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
-            batteryMemberCard.setDownPayment(Objects.nonNull(query.getDownPayment()) ? query.getDownPayment() : null);
+            batteryMemberCard.setDownPayment(Objects.equals(batteryMemberCard.getValidDays() / 30, 1) ? batteryMemberCard.getRentPrice() : query.getDownPayment());
         } else {
             return Triple.of(false, "100107", "业务类型参数不正确");
         }
