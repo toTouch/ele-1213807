@@ -1495,6 +1495,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         GetDeviceStatusResponse.Data data = getDeviceStatusResponse.getData();
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot data:{}",JsonUtil.toJson(data));
         if (Objects.isNull(data)) {
             return false;
         }
