@@ -89,6 +89,9 @@
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
+        <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
+            and tel.external_agreement_no = #{query.externalAgreementNo}
+        </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -157,6 +160,9 @@
         </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+        </if>
+        <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
+            and tel.external_agreement_no = #{query.externalAgreementNo}
         </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in

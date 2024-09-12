@@ -70,4 +70,9 @@ public class MemberCardOrderQuery {
      * 套餐id
      */
     private Long cardId;
+    
+    /**
+     * 请求签约号
+     */
+    private String externalAgreementNo;
 }

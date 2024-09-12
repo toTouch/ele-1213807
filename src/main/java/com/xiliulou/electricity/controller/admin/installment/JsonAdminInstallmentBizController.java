@@ -26,7 +26,7 @@ public class JsonAdminInstallmentBizController {
      * 后台同步签约结果
      */
     @GetMapping("/admin/installment/record/queryStatus")
-    public R querySignStatus(@RequestParam String externalAgreementNo) {
+    public R<String> querySignStatus(@RequestParam String externalAgreementNo) {
         return installmentBizService.querySignStatus(externalAgreementNo);
     }
     
@@ -34,7 +34,7 @@ public class JsonAdminInstallmentBizController {
      * 后台解约
      */
     @GetMapping("/admin/installment/record/terminate")
-    public R terminateRecord(@RequestParam String externalAgreementNo) {
+    public R<String> terminateRecord(@RequestParam String externalAgreementNo) {
         return installmentBizService.terminateRecord(externalAgreementNo);
     }
     

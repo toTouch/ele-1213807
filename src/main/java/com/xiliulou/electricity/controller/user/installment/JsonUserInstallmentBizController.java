@@ -38,7 +38,7 @@ public class JsonUserInstallmentBizController {
      * 用户端同步签约状态
      */
     @GetMapping("/user/Installment/record/queryStatus")
-    public R queryStatus(@RequestParam String externalAgreementNo) {
+    public R<String> queryStatus(@RequestParam String externalAgreementNo) {
         return installmentBizService.querySignStatus(externalAgreementNo);
     }
     

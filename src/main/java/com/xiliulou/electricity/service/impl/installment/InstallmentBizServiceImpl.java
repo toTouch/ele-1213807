@@ -164,15 +164,15 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R querySignStatus(String externalAgreementNo) {
+    public R<String> querySignStatus(String externalAgreementNo) {
         FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(fyConfig)) {
-            return R.fail("301003","签约代扣功能未配置相关信息！请联系客服处理");
+            return R.fail("301003", "签约代扣功能未配置相关信息！请联系客服处理");
         }
         
-        R queried = queryInterfaceForInstallmentRecord(externalAgreementNo, fyConfig);
+        R<Object> queried = queryInterfaceForInstallmentRecord(externalAgreementNo, fyConfig);
         if (!queried.isSuccess()) {
-            return queried;
+            return R.fail("301021", "查询失败");
         }
         
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
@@ -188,7 +188,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R terminateRecord(String externalAgreementNo) {
+    public R<String> terminateRecord(String externalAgreementNo) {
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
@@ -340,7 +340,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         Long uid = null;
         try {
             uid = SecurityUtils.getUid();
-            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, uid), "1", 3*1000L, false)) {
+            if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, uid), "1", 3 * 1000L, false)) {
                 return R.fail("301019", "解当前套餐正在签约或取消，请稍候再试");
             }
             
@@ -411,8 +411,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
                 double score = (double) Instant.now().plus(5, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
                 redisService.zsetAddString(CACHE_INSTALLMENT_CANCEL_SIGN, installmentRecord.getExternalAgreementNo(), score);
-                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), 3L,
-                        TimeUnit.DAYS);
+                redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), 3L, TimeUnit.DAYS);
                 log.info("取消签约定时任务调试，存入请求签约号2，externalAgreementNo={}，score={}", installmentRecord.getExternalAgreementNo(), score);
                 
                 // 扣减次数
@@ -496,7 +495,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public R<String> handleTerminating(InstallmentRecord installmentRecord) {
-        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_CANCELLED) || Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_COMPLETED)) {
+        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_CANCELLED) || Objects.equals(installmentRecord.getStatus(),
+                INSTALLMENT_RECORD_STATUS_COMPLETED)) {
             return R.ok();
         }
         
@@ -596,15 +596,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);
         }
         
-        // 代扣0元
-        if (Objects.equals(deductionPlan.getAmount(), new BigDecimal("0.00"))) {
-            handleDeductZero(installmentRecord, deductionPlan);
-            return Triple.of(true, null, null);
-        }
-        
         // payNo仅有20个字符，用uid加时间秒值不会重复
         String payNo = String.format("%08d", installmentRecord.getUid()) + (System.currentTimeMillis() / 1000);
         String repaymentPlanNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN_AGREEMENT_PAY, installmentRecord.getUid());
+        
+        BigDecimal zeroAmount = new BigDecimal("0.00");
         
         // 生成代扣记录
         InstallmentDeductionRecord installmentDeductionRecord = new InstallmentDeductionRecord();
@@ -615,7 +611,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentDeductionRecord.setUserName(installmentRecord.getUserName());
         installmentDeductionRecord.setMobile(installmentRecord.getMobile());
         installmentDeductionRecord.setAmount(deductionPlan.getAmount());
-        installmentDeductionRecord.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        installmentDeductionRecord.setStatus(Objects.equals(deductionPlan.getAmount(), zeroAmount) ? DEDUCTION_RECORD_STATUS_SUCCESS : DEDUCTION_RECORD_STATUS_INIT);
         installmentDeductionRecord.setIssue(deductionPlan.getIssue());
         installmentDeductionRecord.setSubject(null);
         installmentDeductionRecord.setTenantId(deductionPlan.getTenantId());
@@ -623,6 +619,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentDeductionRecord.setCreateTime(System.currentTimeMillis());
         installmentDeductionRecord.setUpdateTime(System.currentTimeMillis());
         installmentDeductionRecordService.insert(installmentDeductionRecord);
+        
+        // 代扣0元
+        if (Objects.equals(deductionPlan.getAmount(), zeroAmount)) {
+            handleDeductZero(installmentRecord, deductionPlan);
+            return Triple.of(true, null, null);
+        }
         
         try {
             
@@ -730,8 +732,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         return R.ok();
     }
     
-    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord,
-            InstallmentDeductionPlan deductionPlan, Long uid) {
+    private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
@@ -769,7 +770,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     
-    private R queryInterfaceForInstallmentRecord(String externalAgreementNo, FyConfig fyConfig) {
+    private R<Object> queryInterfaceForInstallmentRecord(String externalAgreementNo, FyConfig fyConfig) {
         try {
             FyCommonQuery<FyQuerySignAgreementRequest> commonQuery = new FyCommonQuery<>();
             
