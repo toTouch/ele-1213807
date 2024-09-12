@@ -697,11 +697,58 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
             return batteryDepositTriple;
         }
-        
-        //解绑用户相关信息
-        unbindUserData(userInfo, enterpriseChannelUser);
     
+        //解绑用户相关信息
+        unbindUserDataForFreeDeposit(userInfo, enterpriseChannelUser);
+        
         return Triple.of(true, null, null);
+    }
+    
+    private void unbindUserDataForFreeDeposit(UserInfo userInfo, EnterpriseChannelUser enterpriseChannelUser) {
+        //清除用户租退电、购买套餐记录
+        anotherPayMembercardRecordService.deleteByUid(userInfo.getUid());
+    
+        enterpriseRentRecordService.deleteByUid(userInfo.getUid());
+    
+        enterpriseRentRecordDetailService.removeByUid(userInfo.getUid());
+        
+        //解绑用户绑定信息
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(updateUserInfo);
+    
+        //更新用户套餐订单为已失效
+        electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
+                ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+    
+        userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+    
+        userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+    
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
+        if (Objects.nonNull(insuranceUserInfo)) {
+            insuranceUserInfoService.deleteById(insuranceUserInfo);
+            //更新用户保险订单为已失效
+            insuranceOrderService.updateUseStatusForRefund(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.INVALID);
+        }
+    
+        //退押金解绑用户所属加盟商
+        userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+    
+        //更新用户套餐订单为已失效
+        electricityMemberCardOrderService
+                .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+    
+        //删除用户电池套餐资源包
+        userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
+    
+        //删除用户电池型号
+        userBatteryTypeService.deleteByUid(userInfo.getUid());
+    
+        //删除用户电池服务费
+        serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
     }
     
     private int getRentDayNum(Long beginTime, Long endTime) {
