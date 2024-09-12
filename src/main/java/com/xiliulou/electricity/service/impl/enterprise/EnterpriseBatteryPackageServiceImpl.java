@@ -2502,7 +2502,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
            
             if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || (Objects.nonNull(batteryMemberCard) && !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()))) {
                 ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
-                log.info("query latest enterprise order by uid, uid = {}", enterprisePackageOrderVO.getUid());
                 if (Objects.isNull(electricityMemberCardOrder)) {
                     continue;
                 }
@@ -2514,14 +2513,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 enterprisePackageOrderVO.setPackageExpiredTime(null);
                 enterprisePackageOrderVO.setPayAmount(batteryPackage.getRentPrice());
                 enterprisePackageOrderVO.setBatteryDeposit(batteryPackage.getDeposit());
-    
-                //获取关联押金订单信息
-                EleDepositOrderVO eleDepositOrderVO = eleDepositOrderService.queryByUidAndSourceOrderNo(enterprisePackageOrderVO.getUid(), electricityMemberCardOrder.getOrderId());
-                if (Objects.nonNull(eleDepositOrderVO)) {
-                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
-                } else {
-                    //免押，页面显示为0
-                    enterprisePackageOrderVO.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
+                
+                // 获取用户最近一次企业押金信息
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastEnterpriseDeposit(enterprisePackageOrderVO.getUid());
+                if (Objects.nonNull(eleDepositOrder)) {
+                    enterprisePackageOrderVO.setDepositType(Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT) ? UserBatteryDeposit.DEPOSIT_TYPE_FREE : UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
                 }
     
                 //设置企业代付时间
@@ -2532,14 +2528,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                     enterprisePackageOrderVO.setPackageName(batteryMemberCard.getName());
                     enterprisePackageOrderVO.setPayAmount(batteryMemberCard.getRentPrice());
                 }
-                
     
-                //设置押金
-                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(enterprisePackageOrderVO.getUid());
-                log.info("assignmentForExpiredPackage = {}, uid={}", userBatteryDeposit, enterprisePackageOrderVO.getUid());
-                if (Objects.nonNull(userBatteryDeposit)) {
-                    enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-                    enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
+                // 获取用户最近一次企业押金信息
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastEnterpriseDeposit(enterprisePackageOrderVO.getUid());
+                if (Objects.nonNull(eleDepositOrder)) {
+                    enterprisePackageOrderVO.setBatteryDeposit(eleDepositOrder.getPayAmount());
+                    enterprisePackageOrderVO.setDepositType(Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT) ? UserBatteryDeposit.DEPOSIT_TYPE_FREE : UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
                 }
     
                 //设置套餐购买后企业代付时间

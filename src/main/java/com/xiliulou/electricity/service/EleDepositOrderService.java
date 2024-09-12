@@ -80,4 +80,6 @@ public interface EleDepositOrderService {
     R checkPayParamsDetails(String orderId);
     
     R listSuperAdminPage(EleDepositOrderQuery eleDepositOrderQuery);
+    
+    EleDepositOrder queryLastEnterpriseDeposit(Long uid);
 }

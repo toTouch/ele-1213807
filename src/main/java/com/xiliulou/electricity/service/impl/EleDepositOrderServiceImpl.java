@@ -848,6 +848,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
     
     @Override
+    @Slave
+    public EleDepositOrder queryLastEnterpriseDeposit(Long uid) {
+        return eleDepositOrderMapper.selectLastEnterpriseDeposit(uid);
+    }
+    
+    @Override
     public R queryFranchiseeDeposit(String productKey, String deviceName, Long franchiseeId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
