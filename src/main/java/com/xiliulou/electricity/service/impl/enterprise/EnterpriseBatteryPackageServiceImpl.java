@@ -2499,7 +2499,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //如果当前用户绑定的套餐被解绑或者当前套餐不是企业套餐，则获取最近一笔的企业套餐购买订单
             //重新获取套餐信息，并设置套餐过期时间为空
            
-            if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || !Objects.nonNull(batteryMemberCard) && BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
+            if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || (Objects.nonNull(batteryMemberCard) && !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()))) {
                 ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
                 if (Objects.isNull(electricityMemberCardOrder)) {
                     continue;
