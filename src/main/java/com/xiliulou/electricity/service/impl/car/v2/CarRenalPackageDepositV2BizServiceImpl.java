@@ -205,9 +205,10 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             }
             return freeDepositUserInfoVo;
         }
+        CarRentalPackageDepositPayPo depositPayPo = carRentalPackageDepositPayService.selectLastByUid(tenantId, uid);
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
         if (redisService.hasKey(userKey)){
-            freeDepositUserInfoVo.setApplyCarDepositTime(System.currentTimeMillis());
+            freeDepositUserInfoVo.setApplyCarDepositTime(ObjectUtils.defaultIfNull(depositPayPo.getCreateTime(),0L));
             freeDepositUserInfoVo.setCarDepositAuthStatus(FreeDepositOrder.AUTH_FREEZING);
             return freeDepositUserInfoVo;
         }
