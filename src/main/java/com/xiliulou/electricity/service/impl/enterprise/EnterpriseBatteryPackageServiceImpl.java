@@ -2501,6 +2501,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
            
             if (NumberConstant.ZERO_L.equals(enterprisePackageOrderVO.getPackageId()) || (Objects.nonNull(batteryMemberCard) && !BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()))) {
                 ElectricityMemberCardOrder electricityMemberCardOrder = enterpriseBatteryPackageMapper.selectLatestEnterpriseOrderByUid(enterprisePackageOrderVO.getUid());
+                log.info("query latest enterprise order by uid, uid = {}", enterprisePackageOrderVO.getUid());
                 if (Objects.isNull(electricityMemberCardOrder)) {
                     continue;
                 }
@@ -2534,6 +2535,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
                 //设置押金
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(enterprisePackageOrderVO.getUid());
+                log.info("assignmentForExpiredPackage = {}, uid={}", userBatteryDeposit, enterprisePackageOrderVO.getUid());
                 if (Objects.nonNull(userBatteryDeposit)) {
                     enterprisePackageOrderVO.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
                     enterprisePackageOrderVO.setDepositType(userBatteryDeposit.getDepositType());
