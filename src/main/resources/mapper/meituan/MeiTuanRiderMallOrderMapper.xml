@@ -46,7 +46,7 @@
         limit 1
     </select>
     
-    <select id="selectByUid" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+    <select id="selectByPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>
         from t_mei_tuan_rider_mall_order

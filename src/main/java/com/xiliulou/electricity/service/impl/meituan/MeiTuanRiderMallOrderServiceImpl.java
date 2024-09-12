@@ -161,8 +161,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Slave
     @Override
-    public List<MeiTuanRiderMallOrder> listOrdersByUid(OrderQuery query) {
-        return meiTuanRiderMallOrderMapper.selectByUid(query);
+    public List<MeiTuanRiderMallOrder> listOrdersByPhone(OrderQuery query) {
+        return meiTuanRiderMallOrderMapper.selectByPhone(query);
     }
     
     /**
@@ -361,14 +361,20 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             // 发货失败，执行回滚
             if (!deliverResult) {
                 this.asyncRollback(rollBackBO);
+                log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
+                return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
             }
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
             // 异常，执行回滚
             this.asyncRollback(rollBackBO);
-            
             log.error("MeiTuan order redeem fail! uid={}, meiTuanOrderId={}, e={}", uid, meiTuanOrderId, e);
+            return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
+        } catch (Error e) {
+            // 错误，执行回滚
+            this.asyncRollback(rollBackBO);
+            log.error("MeiTuan order redeem error! uid={}, meiTuanOrderId={}, e={}", uid, meiTuanOrderId, e);
             return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
         } finally {
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY + uid);
@@ -507,6 +513,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! bindUserMemberCard uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
+        } catch (Error e) {
+            log.error("MeiTuan order redeem error! bindUserMemberCard uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
         } finally {
             rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, null, null, userBatteryMemberCardUpdateById, null,
                     serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null, null);
@@ -739,9 +747,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (Objects.nonNull(eleUserMembercardOperateRecord) && Objects.nonNull(eleUserMembercardOperateRecord.getId())) {
                 eleUserMemberCardOperateRecordById = eleUserMembercardOperateRecord.getId().longValue();
             }
-            
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveRenewalUserBatteryMemberCardOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(),
+                    e);
+        } catch (Error e) {
+            log.error("MeiTuan order redeem error! saveRenewalUserBatteryMemberCardOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(),
                     e);
         } finally {
             rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, rollBackElectricityMemberCardOrder, rollBackUserInfo, userBatteryTypes, null, null, null,
@@ -750,6 +760,17 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         return Pair.of(memberCardOrder, rollBackBO);
+    }
+    
+    public static void main(String[] args) {
+        double i = 0L;
+        try {
+            i = 1 / 0;
+        } catch (Exception e) {
+            log.error("error", e);
+        }
+        
+        System.out.println(i);
     }
     
     @Transactional(rollbackFor = Exception.class)
@@ -984,6 +1005,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveUserInfoAndOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
+        } catch (Error e) {
+            log.error("MeiTuan order redeem error! saveUserInfoAndOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
         } finally {
             rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
                     rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
@@ -1313,7 +1336,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         // 根据手机号和租户查下订单，因为拉取的订单可能没有uid
         query.setPhone(userInfo.getPhone());
         
-        List<MeiTuanRiderMallOrder> riderMallOrders = this.listOrdersByUid(query);
+        List<MeiTuanRiderMallOrder> riderMallOrders = this.listOrdersByPhone(query);
         if (CollectionUtils.isEmpty(riderMallOrders)) {
             return Collections.emptyList();
         }

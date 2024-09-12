@@ -21,7 +21,7 @@ public interface MeiTuanRiderMallOrderService {
     
     List<OrderVO> listOrders(OrderQuery query);
     
-    List<MeiTuanRiderMallOrder> listOrdersByUid(OrderQuery query);
+    List<MeiTuanRiderMallOrder> listOrdersByPhone(OrderQuery query);
     
     Triple<Boolean, String, Object> createBatteryMemberCardOrder(OrderQuery query);
     
