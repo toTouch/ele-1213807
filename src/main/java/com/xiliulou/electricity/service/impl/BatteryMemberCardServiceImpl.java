@@ -841,8 +841,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
         batteryMemberCardUpdate.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
-        if (Objects.equals(batteryMemberCardUpdate.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
-            batteryMemberCardUpdate.setDownPayment(Objects.equals(batteryMemberCard.getValidDays() / 30, 1) ? batteryMemberCard.getRentPrice() : query.getDownPayment());
+        if (Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
+            batteryMemberCardUpdate.setDownPayment(Objects.equals(batteryMemberCardUpdate.getValidDays() / 30, 1) ? batteryMemberCardUpdate.getRentPrice() : query.getDownPayment());
         }
         
         this.update(batteryMemberCardUpdate);
