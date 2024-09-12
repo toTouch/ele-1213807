@@ -87,7 +87,7 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             if (Objects.isNull(franchisee)) {
-                log.error("ASSET_INVENTORY ERROR! not found franchise! franchiseId={}", assetInventorySaveOrUpdateRequest.getFranchiseeId());
+                log.warn("ASSET_INVENTORY ERROR! not found franchise! franchiseId={}", assetInventorySaveOrUpdateRequest.getFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
     

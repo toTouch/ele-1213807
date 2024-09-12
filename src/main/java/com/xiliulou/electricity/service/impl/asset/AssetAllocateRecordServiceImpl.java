@@ -178,13 +178,13 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             Integer tenantId = TenantContextHolder.getTenantId();
             Franchisee sourceFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceFranchiseeId());
             if (Objects.isNull(sourceFranchisee)) {
-                log.error("ASSET_ALLOCATE ERROR! not found source franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
+                log.warn("ASSET_ALLOCATE ERROR! not found source franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
             Franchisee targetFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getTargetFranchiseeId());
             if (Objects.isNull(targetFranchisee)) {
-                log.error("ASSET_ALLOCATE ERROR! not found target franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
+                log.warn("ASSET_ALLOCATE ERROR! not found target franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
@@ -194,30 +194,30 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             
             if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type) || Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
                 if (Objects.equals(assetAllocateRecordRequest.getSourceStoreId(), assetAllocateRecordRequest.getTargetStoreId())) {
-                    log.error("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
+                    log.warn("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
                             assetAllocateRecordRequest.getTargetStoreId());
                     return R.fail("300810", "调出门店与调入门店不能相同，请修改");
                 }
                 
                 if (Objects.isNull(assetAllocateRecordRequest.getSourceStoreId())) {
-                    log.error("ASSET_ALLOCATE ERROR! not found source storeId!");
+                    log.warn("ASSET_ALLOCATE ERROR! not found source storeId!");
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
                 if (Objects.isNull(assetAllocateRecordRequest.getTargetStoreId())) {
-                    log.error("ASSET_ALLOCATE ERROR! not found target storeId!");
+                    log.warn("ASSET_ALLOCATE ERROR! not found target storeId!");
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
                 Store sourceStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceStoreId());
                 Store targetStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getTargetStoreId());
                 if (Objects.isNull(sourceStore)) {
-                    log.error("ASSET_ALLOCATE ERROR! not found source store! storeId={}", assetAllocateRecordRequest.getSourceStoreId());
+                    log.warn("ASSET_ALLOCATE ERROR! not found source store! storeId={}", assetAllocateRecordRequest.getSourceStoreId());
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
                 if (Objects.isNull(targetStore)) {
-                    log.error("ASSET_ALLOCATE ERROR! not target store! storeId={}", assetAllocateRecordRequest.getTargetStoreId());
+                    log.warn("ASSET_ALLOCATE ERROR! not target store! storeId={}", assetAllocateRecordRequest.getTargetStoreId());
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
@@ -228,7 +228,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
-                    log.error("ASSET_ALLOCATE ERROR! not found franchisee! franchiseeId={}", targetStore.getFranchiseeId());
+                    log.warn("ASSET_ALLOCATE ERROR! not found franchisee! franchiseeId={}", targetStore.getFranchiseeId());
                     return R.fail("ELECTRICITY.0038", "未找到加盟商");
                 }
                 
@@ -242,7 +242,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             } else {
                 //电池调拨
                 //                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
-                //                    log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
+                //                    log.warn("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
                 //                            assetAllocateRecordRequest.getTargetFranchiseeId());
                 //                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
                 //                }
@@ -291,7 +291,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
         
         if (CollectionUtils.isEmpty(electricityCarList) || electricityCarList.size() != idList.size()) {
-            log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
+            log.warn("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
             return R.fail("300815", "您选择的车辆编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
@@ -303,7 +303,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             //k --> ModelId  v --> List<ElectricityCar>
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(k);
             if (Objects.isNull(electricityCarModel)) {
-                log.error("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
+                log.warn("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
                 return;
             }
             
@@ -374,7 +374,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     private R electricityCabinetMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Integer tenantId, List<Long> idList, Long uid) {
         Franchisee storeFranchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(storeFranchisee)) {
-            log.error("ELECTRICITY_CABINET_MOVE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
+            log.warn("ELECTRICITY_CABINET_MOVE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
@@ -383,7 +383,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idSet);
         
         if (CollectionUtils.isEmpty(electricityCabinetList) || !Objects.equals(idList.size(), electricityCabinetList.size())) {
-            log.error("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
+            log.warn("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
             return R.fail("300816", "您选择的电柜编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
@@ -416,7 +416,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listEnableAllocateBattery(electricityBatteryEnableAllocateRequest);
         if (CollectionUtils.isEmpty(electricityBatteryList) || !Objects.equals(idList.size(), electricityBatteryList.size())) {
-            log.error("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
+            log.warn("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
             return R.fail("300812", "您选择的电池编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         

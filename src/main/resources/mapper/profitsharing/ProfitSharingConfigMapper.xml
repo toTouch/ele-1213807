@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingConfigMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig" id="ProfitSharingConfigMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="payParamId" column="pay_param_id" jdbcType="INTEGER"/>
+        <result property="configStatus" column="config_status" jdbcType="INTEGER"/>
+        <result property="orderType" column="order_type" jdbcType="DECIMAL"/>
+        <result property="amountLimit" column="amount_limit" jdbcType="DECIMAL"/>
+        <result property="profitSharingType" column="profit_sharing_type" jdbcType="INTEGER"/>
+        <result property="scaleLimit" column="scale_limit" jdbcType="DECIMAL"/>
+        <result property="cycleType" column="cycle_type" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <sql id="base_column">
+        id
+        , tenant_id, franchisee_id, pay_param_id, config_status, order_type, amount_limit, profit_sharing_type, scale_limit, cycle_type, del_flag, create_time, update_time    </sql>
+    
+    <sql id="table_name">
+        t_profit_sharing_config
+    </sql>
+    
+    
+    <select id="selectByPayParamsIdAndTenantId"
+        resultMap="ProfitSharingConfigMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0 and tenant_id=#{tenantId} and pay_param_id=#{payParamsId}
+        limit 1
+    </select>
+    <select id="selectByTenantIdAndFranchiseeId"
+        resultMap="ProfitSharingConfigMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0 and tenant_id=#{tenantId} and franchisee_id=#{franchiseeId}
+        limit 1
+    </select>
+    <select id="selectByTenantIdAndId"
+        resultMap="ProfitSharingConfigMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0 and tenant_id=#{tenantId}
+        and id = #{id}
+    </select>
+    <select id="selectListByPayParamsIdsAndTenantId"
+        resultMap="ProfitSharingConfigMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0 and tenant_id=#{tenantId}
+        and pay_param_id in
+        <foreach collection="payParamsIds" item="payParamsId" open="(" close=")" separator=",">
+            #{payParamsId}
+        </foreach>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into<include refid="table_name"/>(tenant_id, franchisee_id, pay_param_id, config_status, order_type, amount_limit, profit_sharing_type, scale_limit, cycle_type,
+        create_time, update_time)
+        values (#{tenantId}, #{franchiseeId}, #{payParamId}, #{configStatus}, #{orderType}, #{amountLimit}, #{profitSharingType}, #{scaleLimit}, #{cycleType},
+        #{createTime}, #{updateTime})
+    </insert>
+    
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update
+        <include refid="table_name"/>
+        <set>
+            <if test="orderType != null">
+                order_type = #{orderType},
+            </if>
+            <if test="amountLimit != null">
+                amount_limit = #{amountLimit},
+            </if>
+            <if test="profitSharingType != null">
+                profit_sharing_type = #{profitSharingType},
+            </if>
+            <if test="scaleLimit != null">
+                scale_limit = #{scaleLimit},
+            </if>
+            <if test="cycleType != null">
+                cycle_type = #{cycleType},
+            </if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateConfigStatusById">
+        update
+        <include refid="table_name"/>
+        set config_status=#{configStatus},
+        update_time=#{updateTime}
+        where id =#{id}
+    </update>
+    
+    <update id="removeById">
+        update
+        <include refid="table_name"/>
+        set update_time=#{updateTime},
+        del_flag=1
+        where id=#{id} and tenant_id=#{tenantId}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from t_profit_sharing_config
+        where id = #{id}
+    </delete>
+
+</mapper>
+

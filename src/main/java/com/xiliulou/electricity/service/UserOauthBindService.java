@@ -15,7 +15,7 @@ import java.util.Set;
  * @since 2020-12-03 09:17:39
  */
 public interface UserOauthBindService {
-
+    
     /**
      * 通过ID查询单条数据从数据库
      *
@@ -23,8 +23,8 @@ public interface UserOauthBindService {
      * @return 实例对象
      */
     UserOauthBind queryByIdFromDB(Long id);
-
-
+    
+    
     /**
      * 新增数据
      *
@@ -32,7 +32,7 @@ public interface UserOauthBindService {
      * @return 实例对象
      */
     UserOauthBind insert(UserOauthBind userOauthBind);
-
+    
     /**
      * 修改数据
      *
@@ -40,48 +40,47 @@ public interface UserOauthBindService {
      * @return 实例对象
      */
     Integer update(UserOauthBind userOauthBind);
-
-
-    UserOauthBind queryOauthByOpenIdAndSource(String openid, int source,Integer tenantId);
+    
+    
+    UserOauthBind queryOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
     
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
-
-    UserOauthBind queryByUserPhone(Long uid, String phone, int source,Integer tenantId);
-
-    Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone,Integer tenantId);
-
+    
+    UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId);
+    
+    Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone, Integer tenantId);
+    
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
-
-     UserOauthBind queryUserOauthBySysId(Long uid,Integer tenantId);
-
+    
+    UserOauthBind queryUserOauthBySysId(Long uid, Integer tenantId);
+    
     List<UserOauthBind> queryListByUid(Long uid);
-
+    
     Boolean deleteById(Long id);
     
     Boolean checkOpenIdByJsCode(String jsCode);
     
-    UserOauthBind selectByUidAndPhone(String phone,Long uid,Integer tenantId);
+    UserOauthBind selectByUidAndPhone(String phone, Long uid, Integer tenantId);
     
     /**
      * 根据手机号、类型、租户查询用户
-     * @param phone 手机号
-     * @param source 类型
+     *
+     * @param phone    手机号
+     * @param source   类型
      * @param tenantId 租户ID
      * @return 绑定集
      */
-    List<UserOauthBind> listUserByPhone(String phone,Integer source,Integer tenantId);
+    List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId);
     
     /**
-     *
      * @param phone
      * @param source
      * @param tenantId
      * @return
-     *
      * @see UserOauthBindService#listUserByPhone(String, Integer, Integer)
      */
     @Deprecated
-    UserOauthBind selectUserByPhone(String phone,Integer source,Integer tenantId);
+    UserOauthBind selectUserByPhone(String phone, Integer source, Integer tenantId);
     
     Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer tenantId);
     
@@ -97,12 +96,25 @@ public interface UserOauthBindService {
     
     /**
      * 根据uid 删除用户绑定信息
+     *
      * @param uid
      * @return
      */
     Integer deleteByUid(Long uid, Integer tenantId);
     
-    UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId,Integer tenantId);
+    UserOauthBind queryOauthByOpenIdAndUid(Long id, String openId, Integer tenantId);
     
     List<UserOauthBind> queryOpenIdListByUidsAndTenantId(List<Long> longs, Integer tenantId);
+    
+    /**
+     * 根据参数获取数量
+     *
+     * @param openId
+     * @param sourceWxPro
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/9/5 20:39
+     */
+    Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId);
+    
 }

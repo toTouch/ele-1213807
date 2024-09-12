@@ -33,4 +33,9 @@ public interface DateFormatConstant {
      * 上个月
      */
     Integer CURRENT_MONTH = 0;
+    
+    /**
+     * 上个月
+     */
+    Integer MONTH_DAYS = 30;
 }

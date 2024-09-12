@@ -34,7 +34,7 @@ public interface CacheConstant {
     /**
      * 微信支付证书缓存（调用微信接口获取）
      */
-    String WECHAT_CERTIFICATE_KEY = "saas_ele:wechat_certificate:V2:%d:%d";
+    String WECHAT_CERTIFICATE_KEY = "saas_ele:wechat_certificate:v3:%d:%d";
     
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
@@ -692,6 +692,30 @@ public interface CacheConstant {
     
     
     /**
+     * 分账配置缓存
+     */
+    String PROFIT_SHARING_PAY_PARAMS_ID_KEY = "saas_ele:profit_sharing:pay_params%d:%d";
+    
+    
+    /**
+     * 分账配置幂等
+     */
+    String PROFIT_SHARING_IDEMPOTENT_KEY = "saas_ele:profit_sharing:idempotent:%d";
+    
+    /**
+     * 分账配置幂等
+     */
+    String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent:%d";
+    
+    
+    
+    /**
+     * 分账统计分布式锁
+     */
+    String PROFIT_SHARING_STATISTICS_LOCK_KEY = "saas_ele:profit_sharing_statistics:lock:%d:%d";
+    
+    
+    /**
      * 柜机仓门配置key
      */
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
@@ -700,3 +724,4 @@ public interface CacheConstant {
     
     String CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY = "cache_mei_tuan_create_battery_member_card_order_lock_key:";
 }
+
