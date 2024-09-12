@@ -9,9 +9,11 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
@@ -22,10 +24,13 @@ import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import lombok.AllArgsConstructor;
@@ -36,7 +41,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY;
 import static com.xiliulou.electricity.constant.CacheConstant.UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY;
 
 /**
@@ -79,6 +86,10 @@ public class CarBusinessHandler implements BusinessHandler {
     
     private final RedisService redisService;
     
+    private final CarRenalPackageDepositV2BizService carRenalPackageDepositV2BizService;
+    
+    private final CarRentalPackageService carRentalPackageService;
+    
     @Override
     public boolean support(Integer type) {
         return !Objects.equals(type, FreeDepositOrder.DEPOSIT_TYPE_BATTERY);
@@ -95,11 +106,26 @@ public class CarBusinessHandler implements BusinessHandler {
             Long uid = depositPayEntity.getUid();
             Integer rentalPackageType = depositPayEntity.getRentalPackageType();
             String depositPayOrderNo = depositPayEntity.getOrderNo();
+            CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(depositPayEntity.getRentalPackageId());
+            if (Objects.isNull(carRentalPackagePo)){
+                log.warn("The car rental package information corresponding to the order number {} does not exist",depositPayOrderNo);
+                return false;
+            }
+            CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+            CarRentalPackageMemberTermPo memberTermPoInsertOrUpdate = carRenalPackageDepositV2BizService.buildCarRentalPackageMemberTerm(order.getTenantId(), order.getUid(),
+                    carRentalPackagePo, order.getOrderId(), memberTermPo);
+            memberTermPoInsertOrUpdate.setStatus(MemberTermStatusEnum.NORMAL.getCode());
+            memberTermPoInsertOrUpdate.setUpdateUid(uid);
             
             // 2. 更新押金缴纳订单数据
             carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.SUCCESS.getCode());
             // 3. 更新租车会员信息状态
-            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), uid);
+            if (Objects.isNull(memberTermPoInsertOrUpdate.getId())){
+                carRentalPackageMemberTermService.insert(memberTermPoInsertOrUpdate);
+            }else {
+                carRentalPackageMemberTermService.updateById(memberTermPoInsertOrUpdate);
+            }
+//            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), uid);
             // 4. 更新用户表押金状态
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
@@ -141,6 +167,8 @@ public class CarBusinessHandler implements BusinessHandler {
                         });
                 redisService.delete(userKey);
             }
+            String freeSuccessKey = String.format(CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY,order.getTenantId() , uid);
+            redisService.set(freeSuccessKey, order.getOrderId(), 1L, TimeUnit.DAYS);
             log.info("Car/car electronics order no deposit callback completed, order number: {}",order.getOrderId());
             return true;
         }catch (Exception e){

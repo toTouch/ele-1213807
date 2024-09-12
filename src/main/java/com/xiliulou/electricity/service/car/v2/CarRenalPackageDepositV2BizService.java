@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.car.v2;
 
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.reqparam.opt.deposit.FreeDepositOptReq;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -85,4 +87,8 @@ public interface CarRenalPackageDepositV2BizService {
      */
     CarRentalPackageDepositPayVo selectUnRefundCarDeposit(Integer tenantId, Long uid);
     
+    
+    
+    CarRentalPackageMemberTermPo buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePo packageEntity, String depositPayOrderNo,
+            CarRentalPackageMemberTermPo memberTermEntity);
 }

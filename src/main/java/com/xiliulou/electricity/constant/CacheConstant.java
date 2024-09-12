@@ -717,6 +717,11 @@ public interface CacheConstant {
      * 免押信息用户key
      */
     String FREE_DEPOSIT_USER_INFO_KEY = "free_deposit_user_info:%s";
+    
+    /**
+     * 免押信息用户key
+     */
+    String CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "car_free_deposit_user_info_lock_key:%s:%s";
  
     
     String UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "un_free_deposit_user_lock_order:%s";
