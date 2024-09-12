@@ -940,7 +940,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(request.getUid());
         // 免押用户 不存在代付记录 则单独进行押金回收
         if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
-            log.info("channel user exit free deposit, uid={}", request.getUid());
             Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid());
             if (!tripleRecycle.getLeft()) {
                 log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
@@ -1328,7 +1327,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(request.getUid());
         // 免押用户 不存在代付记录 则单独进行押金回收
         if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
-            log.info("channel user admin exit free deposit, uid={}", request.getUid());
             Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid());
             if (!tripleRecycle.getLeft()) {
                 log.warn("channel user admin exit recycle Cloud Bean warn,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
@@ -1724,7 +1722,6 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(userInfo.getUid());
             // 免押用户 不存在代付记录 则单独进行押金回收
             if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
-                log.info("channel user admin exit free deposit, uid={}", userInfo.getUid());
                 Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(userInfo.getUid());
                 if (!tripleRecycle.getLeft()) {
                     log.warn("enterprise channel switch user recycle cloud bean warn,uid={}, msg={}", userInfo.getUid(), tripleRecycle.getRight());
