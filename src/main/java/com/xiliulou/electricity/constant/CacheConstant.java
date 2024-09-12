@@ -718,4 +718,6 @@ public interface CacheConstant {
      */
     String FREE_DEPOSIT_USER_INFO_KEY = "free_deposit_user_info:%s";
  
+    
+    String UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "un_free_deposit_user_lock_order:%s";
 }
