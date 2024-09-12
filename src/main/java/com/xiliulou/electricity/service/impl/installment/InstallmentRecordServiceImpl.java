@@ -291,6 +291,9 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
             installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
             
+            if (Objects.equals(installmentRecordVO.getInstallmentNo(), 1)) {
+                return;
+            }
             // 计算剩余每期金额
             installmentRecordVO.setRemainingPrice(InstallmentUtil.calculateSuborderAmount(2, installmentRecord, batteryMemberCard));
         } else {
