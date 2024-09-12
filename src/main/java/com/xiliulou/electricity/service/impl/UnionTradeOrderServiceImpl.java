@@ -604,22 +604,15 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         });
     
         // 处理分账回调
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                for (int i = 0; i < orderTypeList.size(); i++) {
-                    if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
-                        // 处理换电-保险分账
-                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
-                    } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
-                        // 处理换电套餐分账
-                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
-                    }
-                }
-            
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                // 处理换电-保险分账
+                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.INSURANCE.getCode());
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                // 处理换电套餐分账
+                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode());
             }
-        });
-        
+        }
         // 小程序虚拟发货
         if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {
             shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
