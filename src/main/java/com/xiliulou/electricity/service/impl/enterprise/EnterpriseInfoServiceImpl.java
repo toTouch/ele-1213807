@@ -624,7 +624,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
     @Override
     public Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(userInfo) || (Objects.nonNull(TenantContextHolder.getTenantId()) && !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId()))) {
             log.warn("RECYCLE WARN! not found user,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
