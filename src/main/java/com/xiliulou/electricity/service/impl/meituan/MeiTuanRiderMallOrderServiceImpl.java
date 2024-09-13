@@ -2,8 +2,6 @@ package com.xiliulou.electricity.service.impl.meituan;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllThreadPoolExecutorService;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.meituan.MeiTuanOrderRedeemRollBackBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -24,7 +22,6 @@ import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallOrderMapper;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
-import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -74,8 +71,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderService {
-    
-    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MEI-TUAN-ORDER-ROLLBACK-THREAD-POOL", 4, "meiTuanOrderThread:");
     
     @Resource
     private MeiTuanRiderMallOrderMapper meiTuanRiderMallOrderMapper;
@@ -328,8 +323,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     }
                     
                     // 续费套餐
-                    pair = meiTuanOrderRedeemTxService.saveRenewalUserBatteryMemberCardOrder(userInfo, batteryMemberCard, userBatteryMemberCard,
-                            userBindBatteryMemberCard, meiTuanRiderMallOrder, userBindBatteryTypes, memberCardBatteryTypes);
+                    pair = meiTuanOrderRedeemTxService.saveRenewalUserBatteryMemberCardOrder(userInfo, batteryMemberCard, userBatteryMemberCard, userBindBatteryMemberCard,
+                            meiTuanRiderMallOrder, userBindBatteryTypes, memberCardBatteryTypes);
                 }
             } else {
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -468,10 +463,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request) {
+    public LimitTradeVO meiTuanLimitTradeCheck(String providerSkuId, String phone) {
         Integer tenantId = ThirdMallConfigHolder.getTenantId();
-        Long memberCardId = Long.valueOf(request.getProviderSkuId());
-        String phone = request.getAccount();
+        Long memberCardId = Long.valueOf(providerSkuId);
+        
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
         LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();
         

@@ -1,15 +1,23 @@
 package com.xiliulou.electricity.filter;
 
-import com.xiliulou.core.web.R;
+import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.reflect.TypeToken;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.utils.ThirdMallConfigHolder;
-import com.xiliulou.security.utils.ResponseUtil;
+import com.xiliulou.electricity.web.entity.BodyReaderHttpServletRequestWrapper;
 import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;
+import com.xiliulou.thirdmall.entity.meituan.response.JsonR;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import com.xiliulou.thirdmall.util.meituan.MeiTuanRiderMallUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
@@ -23,7 +31,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
@@ -53,48 +61,108 @@ public class ThirdMallCheckFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+        String header = httpServletRequest.getHeader(HttpHeaders.CONTENT_TYPE);
         
         if (!this.requiresAuthentication(httpServletRequest, response)) {
             filterChain.doFilter(httpServletRequest, response);
             return;
         }
         
-        String appId = httpServletRequest.getAttribute(VirtualTradeConstant.APP_ID).toString();
-        String appKey = httpServletRequest.getAttribute(VirtualTradeConstant.TIMESTAMP).toString();
-        String sign = httpServletRequest.getAttribute(VirtualTradeConstant.SIGN).toString();
-        
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(VirtualTradeConstant.TIMESTAMP, httpServletRequest.getAttribute(VirtualTradeConstant.TIMESTAMP));
-        paramMap.put(VirtualTradeConstant.APP_ID, appId);
-        paramMap.put(VirtualTradeConstant.APP_KEY, appKey);
-        paramMap.put(VirtualTradeConstant.ACCOUNT, httpServletRequest.getAttribute(VirtualTradeConstant.ACCOUNT));
-        paramMap.put(VirtualTradeConstant.PROVIDER_SKU_ID, httpServletRequest.getAttribute(VirtualTradeConstant.PROVIDER_SKU_ID));
-    
-        log.info("ThirdMall request param: {}", paramMap);
-        
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
-        if (Objects.isNull(meiTuanRiderMallConfig)) {
-            log.error("ThirdMall request error! meiTuanRiderMallConfig is null, appId={}, appKey={}", appId, appKey);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            ResponseUtil.out(response, R.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc()));
+        String params = null;
+        if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
+            params = JsonUtil.toJson(httpServletRequest.getParameterMap());
+            filterChain.doFilter(httpServletRequest, servletResponse);
+        } else {
+            httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
+            
+            if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
+                params = getRequestBody(httpServletRequest);
+            } else {
+                params = JsonUtil.toJson(httpServletRequest.getParameterMap());
+            }
+            
+            filterChain.doFilter(httpServletRequest, servletResponse);
         }
         
-        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), sign);
-        if (!checkSign) {
-            log.error("ThirdMall request error! checkSign fail, appId={}, appKey={}, sign={}", appId, appKey, sign);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            ResponseUtil.out(response, R.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc()));
-        }
-        
-        ThirdMallConfigHolder.setTenantId(meiTuanRiderMallConfig.getTenantId());
-    
-        log.info("ThirdMall tenantId={}", ThirdMallConfigHolder.getTenantId());
+        Integer tenantId = this.check(params, response);
+        ThirdMallConfigHolder.setTenantId(tenantId);
         
         try {
             filterChain.doFilter(servletRequest, response);
         } finally {
             ThirdMallConfigHolder.clear();
         }
+    }
+    
+    private Integer check(String params, HttpServletResponse response) {
+        Type type = new TypeToken<Map<String, String>>() {
+        }.getType();
+        Map<String, Object> paramMap = JsonUtil.fromJson(params, type);
+        String appId = null;
+        String appKey = null;
+        String sign = null;
+        
+        for (Map.Entry<String, Object> entry : paramMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            
+            if (Objects.nonNull(value)) {
+                if (Objects.equals(VirtualTradeConstant.APP_ID, key)) {
+                    appId = value.toString();
+                } else if (Objects.equals(VirtualTradeConstant.APP_KEY, key)) {
+                    appKey = value.toString();
+                } else if (Objects.equals(VirtualTradeConstant.SIGN, key)) {
+                    sign = value.toString();
+                }
+            }
+        }
+        
+        if (StringUtils.isBlank(appId) || StringUtils.isBlank(appKey) || StringUtils.isBlank(sign)) {
+            log.error("ThirdMallCheckFilter error! appId={}, appKey={}, sign={}", appId, appKey, sign);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getCode(), VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc()));
+        }
+        
+        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
+        if (Objects.isNull(meiTuanRiderMallConfig)) {
+            log.error("ThirdMallCheckFilter error! meiTuanRiderMallConfig is null, appId={}, appKey={}, sign={}", appId, appKey, sign);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getCode(), VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc()));
+        }
+        
+        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), sign);
+        if (!checkSign) {
+            log.error("ThirdMallCheckFilter error! checkSign fail, appId={}, appKey={}, sign={}", appId, appKey, sign);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc()));
+        }
+        
+        return meiTuanRiderMallConfig.getTenantId();
+    }
+    
+    private String getRequestBody(HttpServletRequest request) {
+        int contentLength = request.getContentLength();
+        if (contentLength <= 0) {
+            return "";
+        }
+        try {
+            return IOUtils.toString(request.getReader());
+        } catch (IOException e) {
+            log.error("获取请求体失败", e);
+            return "";
+        }
+    }
+    
+    private void out(HttpServletResponse response, JsonR r) {
+        ObjectMapper mapper = new ObjectMapper();
+        response.setContentType("application/json;charset=UTF-8");
+        
+        try {
+            mapper.writeValue(response.getWriter(), r);
+        } catch (IOException var4) {
+            log.error("");
+        }
+        
     }
     
     private boolean requiresAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse response) {

@@ -114,7 +114,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         Long eleUserMemberCardOperateRecordById = null;
         
         try {
-            BigDecimal deposit = new BigDecimal(0);
+            BigDecimal deposit = batteryMemberCard.getDeposit();
             eleDepositOrder = EleDepositOrder.builder().orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid())).uid(userInfo.getUid())
                     .phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(deposit).status(EleDepositOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId())
@@ -321,7 +321,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             }
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveUserInfoAndOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
-    
+            
             electricityMemberCardOrder = null;
         } finally {
             rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,

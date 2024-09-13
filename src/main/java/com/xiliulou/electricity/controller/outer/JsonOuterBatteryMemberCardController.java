@@ -2,14 +2,15 @@ package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
-import com.xiliulou.electricity.utils.ThirdMallConfigHolder;
 import com.xiliulou.thirdmall.entity.meituan.response.JsonR;
+import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author HeYafeng
@@ -24,9 +25,15 @@ public class JsonOuterBatteryMemberCardController {
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     @PostMapping("/outer/batteryMemberCard/limitTrade")
-    public JsonR meiTuanLimitTradeCheck(@Validated LimitTradeRequest limitTradeRequest) {
-        log.info("meiTuanLimitTradeCheck request:{}, tenantId={}", limitTradeRequest, ThirdMallConfigHolder.getTenantId());
+    public JsonR meiTuanLimitTradeCheck(LimitTradeRequest limitTradeRequest) {
+        String providerSkuId = limitTradeRequest.getProviderSkuId();
+        String phone = limitTradeRequest.getAccount();
+        if (Objects.isNull(providerSkuId) || StringUtils.isBlank(phone)) {
+            log.error("meiTuanLimitTradeCheck error! providerSkuId={}, phone={}", providerSkuId, phone);
+            
+            return JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc());
+        }
         
-        return JsonR.ok(meiTuanRiderMallOrderService.meiTuanLimitTradeCheck(limitTradeRequest));
+        return JsonR.ok(meiTuanRiderMallOrderService.meiTuanLimitTradeCheck(providerSkuId, phone));
     }
 }
