@@ -27,7 +27,7 @@ public class Jt808RetrofitWrapService {
 
     public R<Jt808DeviceInfoVo> getInfo(Jt808GetInfoRequest request){
         if (jt808Configuration.getClose()){
-            return R.ok();
+            return R.ok(new Jt808DeviceInfoVo());
         }
         return jt808RetrofitService.getInfo(request);
     }
