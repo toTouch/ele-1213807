@@ -194,7 +194,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         }
         // 定义返回信息
         FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
-        
+        //这个key代表业务一定是回调成功了，即免押必定是成功的
         String freeSuccessKey = String.format(CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY,tenantId, uid);
         if (redisService.hasKey(freeSuccessKey)){
             String order = redisService.get(freeSuccessKey);
@@ -209,10 +209,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 freeDepositUserInfoVo.setCarDepositAuthStatus(freeDepositOrder.getAuthStatus());
             }
             
+            //免押成功了，删除对于的key，并返回
+            //1.有一种情况未必进入，免押后前端没有调用该接口，就会导致这个key长期持有，此时状态发生改变，也不会进入
             if (Objects.equals(freeDepositOrder.getAuthStatus(),FreeDepositOrder.AUTH_FROZEN)){
                 redisService.delete(freeSuccessKey);
+                return freeDepositUserInfoVo;
             }
-            return freeDepositUserInfoVo;
         }
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
         if (redisService.hasKey(userKey)){
@@ -220,6 +222,10 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             freeDepositUserInfoVo.setApplyCarDepositTime(ObjectUtils.defaultIfNull(depositPayPo.getCreateTime(),0L));
             freeDepositUserInfoVo.setCarDepositAuthStatus(FreeDepositOrder.AUTH_FREEZING);
             return freeDepositUserInfoVo;
+        }
+        //当业务到这里，说明既没有免押成功的，也没有免押中的，此时该用户对应的订单即失效
+        if (redisService.hasKey(freeSuccessKey)){
+            redisService.delete(freeSuccessKey);
         }
         // 查询会员期限信息
         CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
