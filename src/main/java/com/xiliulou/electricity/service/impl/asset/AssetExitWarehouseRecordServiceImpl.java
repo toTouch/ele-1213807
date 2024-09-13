@@ -111,7 +111,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             if (Objects.isNull(franchisee)) {
-                log.error("ASSET_EXIT_WAREHOUSE ERROR! not found franchise! franchiseId={}", assetExitWarehouseSaveRequest.getFranchiseeId());
+                log.warn("ASSET_EXIT_WAREHOUSE ERROR! not found franchise! franchiseId={}", assetExitWarehouseSaveRequest.getFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
@@ -210,7 +210,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             // 根据加盟商查询可退库的电柜
             exitWarehouseCabinetList = electricityCabinetV2Service.listEnableExitWarehouseCabinet(queryModel);
             if (CollectionUtils.isEmpty(exitWarehouseCabinetList)) {
-                log.error("ASSET_EXIT_WAREHOUSE ERROR! electricity not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
+                log.warn("ASSET_EXIT_WAREHOUSE ERROR! electricity not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                 return R.fail("300814", "上传的电柜编码不存在，请检测后操作");
             }
             
@@ -237,7 +237,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             // 根据加盟商查询可退库的电池
             exitWarehouseBatteryList = electricityBatteryService.listEnableExitWarehouseBattery(queryModel);
             if (CollectionUtils.isEmpty(exitWarehouseBatteryList)) {
-                log.error("ASSET_EXIT_WAREHOUSE ERROR! battery not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
+                log.warn("ASSET_EXIT_WAREHOUSE ERROR! battery not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                 return R.fail("300817", "上传的电池编码不存在，请检测后操作");
             }
             
@@ -268,7 +268,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             
             Store store = storeService.queryByIdFromCache(storeId);
             if (Objects.isNull(store)) {
-                log.error("ASSET_EXIT_WAREHOUSE ERROR! not found store! store={}", assetExitWarehouseSaveRequest.getStoreId());
+                log.warn("ASSET_EXIT_WAREHOUSE ERROR! not found store! store={}", assetExitWarehouseSaveRequest.getStoreId());
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
             
@@ -279,7 +279,7 @@ public class AssetExitWarehouseRecordServiceImpl implements AssetExitWarehouseRe
             // 根据加盟商查询可退库的车辆
             exitWarehouseCarList = electricityCarService.listEnableExitWarehouseCar(queryModel);
             if (CollectionUtils.isEmpty(exitWarehouseCarList)) {
-                log.error("ASSET_EXIT_WAREHOUSE ERROR! car not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
+                log.warn("ASSET_EXIT_WAREHOUSE ERROR! car not exist, tenantId={}, franchiseeId={}", tenantId, franchiseeId);
                 return R.fail("300818", "上传的车辆编码不存在，请检测后操作");
             }
             

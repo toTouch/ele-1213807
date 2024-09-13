@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeMixedOrderMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder" id="ProfitSharingTradeMixedOrderMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="thirdMerchantId" column="third_merchant_id" jdbcType="VARCHAR"/>
+        <result property="thirdOrderNo" column="third_order_no" jdbcType="VARCHAR"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="channel" column="channel" jdbcType="VARCHAR"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <sql id="base_column">
+        id
+        , tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,del_flag, create_time, update_time, uid, whether_mixed_pay    </sql>
+    
+    <sql id="table_name">
+        t_profit_sharing_trade_mixed_order
+    </sql>
+    
+    
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into<include refid="table_name"/>(tenant_id, franchisee_id, third_merchant_id, third_order_no, state, amount, channel,create_time, update_time, uid,
+        whether_mixed_pay)
+        values (#{tenantId}, #{franchiseeId}, #{thirdMerchantId}, #{thirdOrderNo},#{state}, #{amount},#{channel}, #{createTime}, #{updateTime}, #{uid}, #{whetherMixedPay})
+    </insert>
+    
+    <update id="updateStatusById">
+        update
+        <include refid="table_name"/>
+        set state = #{state},update_time=#{updateTime}
+        where id =#{id}
+    </update>
+    <update id="updateThirdOrderNoById">
+        update
+        <include refid="table_name"/>
+        set third_order_no = #{thirdOrderNo}, update_time=#{updateTime}
+        where id =#{id}
+    </update>
+    
+    <select id="selectListByParam"
+        resultMap="ProfitSharingTradeMixedOrderMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag = 0 and state = #{state} and id > #{startId}
+        and channel=#{channel}
+        and tenant_id=#{tenantId}
+        <if test="startTime!=null">
+            and create_time > #{startTime}
+        </if>
+        <if test="notNullThirdOrderNo != null">
+            and third_order_no is not null
+        </if>
+        order by id asc
+        limit #{size}
+    </select>
+    
+    <select id="selectByThirdOrderNo"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select
+        <include refid="base_column"/>
+        from t_profit_sharing_trade_mixed_order where third_order_no = #{thirdOrderNo} limit 1
+    </select>
+    
+    <select id="selectListThirdOrderNoByTenantId" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select
+            r.third_order_no,
+            franchisee_id,
+            r.id
+        from t_profit_sharing_trade_mixed_order r
+        where r.tenant_id = #{tenantId}
+          and r.create_time > #{startTime}
+          and r.create_time &lt; #{endTime}
+          and r.id > #{startId}
+          and exists (select 1 from t_profit_sharing_order_detail d where  d.third_trade_order_no = r.third_order_no  and d.unfreeze_status = 0 )
+         limit  #{size}
+    </select>
+    <select id="selectById"
+        resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where id = #{id}
+    </select>
+
+
+</mapper>
+

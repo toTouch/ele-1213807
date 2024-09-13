@@ -7,6 +7,8 @@ import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.List;
+
 /**
  * 租户表(Tenant)表服务接口
  *
@@ -32,4 +34,7 @@ public interface TenantService {
 	R queryCount(TenantQuery tenantQuery);
 
 	Integer querySumCount(TenantQuery tenantQuery);
+    
+    
+    List<Integer> queryIdListByStartId(Integer startId,Integer size);
 }
