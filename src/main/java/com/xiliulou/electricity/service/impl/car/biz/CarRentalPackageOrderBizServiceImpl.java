@@ -120,6 +120,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitWrapService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
@@ -203,7 +204,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private UserBatteryTypeService userBatteryTypeService;
     
     @Resource
-    private Jt808RetrofitService jt808RetrofitService;
+    private Jt808RetrofitWrapService jt808RetrofitService;
     
     @Resource
     private CarRentalOrderService carRentalOrderService;

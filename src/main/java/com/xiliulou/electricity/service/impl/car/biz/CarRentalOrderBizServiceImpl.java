@@ -47,6 +47,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitWrapService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
@@ -87,7 +88,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     private ElectricityConfigService electricityConfigService;
     
     @Resource
-    private Jt808RetrofitService jt808RetrofitService;
+    private Jt808RetrofitWrapService jt808RetrofitService;
     
     @Resource
     private EleBindCarRecordService eleBindCarRecordService;
