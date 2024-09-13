@@ -1341,7 +1341,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param depositPayEntity     押金缴纳信息
      * @param compelOffLine        强制线下退押
      */
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
             CarRentalPackageDepositRefundPo depositRefundEntity, BigDecimal refundAmount, CarRentalPackageDepositPayPo depositPayEntity, Integer compelOffLine) {
         
@@ -1620,7 +1620,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         BasePayConfig config = null;
         try {
             config = payConfigBizService
-                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId());
+                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId(),null);
             if (Objects.isNull(config)) {
                 throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             }

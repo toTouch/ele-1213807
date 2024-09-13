@@ -2080,6 +2080,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     }
     
+    
+    public static void main(String[] args) {
+        System.out.println(DateUtil.format(new Date(1726303200186L),"yyyy-MM-dd HH:mm:ss"));
+        System.out.println(DateUtil.format(new Date(1726303484455L),"yyyy-MM-dd HH:mm:ss"));
+    }
+    
     @Override
     public void systemEnableMemberCardTask() {
         int offset = 0;

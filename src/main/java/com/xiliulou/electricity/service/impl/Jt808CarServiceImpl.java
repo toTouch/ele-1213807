@@ -14,6 +14,7 @@ import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.query.CarControlQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitWrapService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarGpsVo;
@@ -44,7 +45,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
     ElectricityCarService electricityCarService;
     
     @Autowired
-    Jt808RetrofitService jt808RetrofitService;
+    Jt808RetrofitWrapService jt808RetrofitWrapService;
     
     @Resource
     CarAttrMapper carAttrMapper;
@@ -73,7 +74,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
             return Pair.of(false, "车辆sn为空");
         }
 
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(
+        R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.getInfo(
                 new Jt808GetInfoRequest(IdUtil.randomUUID(), carSn));
         if (!result.isSuccess()) {
             log.warn("Jt808 warn! queryDevice error! carSn is {}, result is {}", carSn, result);
@@ -98,7 +99,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
             return Pair.of(false, "车辆sn为空");
         }
         
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(
+        R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.getInfo(
                 new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
         if (!result.isSuccess()) {
             log.warn("Jt808 warn! queryDevice error! carId={},result={}", carId, result);
@@ -245,7 +246,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
             return Triple.of(true, "", "001");
         }
     
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService
+        R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService
                 .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
         if (!result.isSuccess()) {
             log.warn("Jt808 warn! control Car Check! sn={},result={}", electricityCar.getSn(), result);

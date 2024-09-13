@@ -27,36 +27,38 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/admin")
 public class JsonAdminUserOauthBindController extends BaseController {
-	@Autowired
-	UserOauthBindService userOauthBindService;
-
-	@GetMapping("/oauth/list")
-	public R getList(@RequestParam(value = "offset") Integer offset, @RequestParam("size") Integer size,
-			@RequestParam(value = "uid", required = false) Long uid,
-			@RequestParam(value = "thirdId", required = false) String thirdId,
-			@RequestParam(value = "phone", required = false) String phone) {
-		if (offset < 0) {
-			offset = 0;
-		}
-		if (size < 0 || size > 50) {
-			size = 10;
-		}
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		return returnPairResult(userOauthBindService.queryListByCondition(size, offset, uid, thirdId, phone,tenantId));
-	}
-
-	@PreAuthorize(value = "hasAuthority('oauth_bind_modify')")
-	public R modifyOauthBind(@Validated @RequestBody OauthBindQuery oauthBindQuery, BindingResult bindingResult) {
-		if (bindingResult.hasFieldErrors()) {
-			return R.fail("SYSTEM.0002", bindingResult.getFieldError().getDefaultMessage());
-		}
-
-		if (Objects.isNull(oauthBindQuery.getStatus()) && Objects.isNull(oauthBindQuery.getPhone()) && Objects.isNull(oauthBindQuery.getThirdId())) {
-			return R.fail("SYSTEM.0002", "参数错误");
-		}
-		return returnPairResult(userOauthBindService.updateOauthBind(oauthBindQuery));
-	}
+    
+    @Autowired
+    UserOauthBindService userOauthBindService;
+    
+    @GetMapping("/oauth/list")
+    public R getList(@RequestParam(value = "offset") Integer offset, @RequestParam("size") Integer size, @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "thirdId", required = false) String thirdId, @RequestParam(value = "phone", required = false) String phone) {
+        if (offset < 0) {
+            offset = 0;
+        }
+        if (size < 0 || size > 50) {
+            size = 10;
+        }
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        return returnPairResult(userOauthBindService.queryListByCondition(size, offset, uid, thirdId, phone, tenantId));
+    }
+    
+    
+    @PreAuthorize(value = "hasAuthority('oauth_bind_modify')")
+    public R modifyOauthBind(@Validated @RequestBody OauthBindQuery oauthBindQuery, BindingResult bindingResult) {
+        if (bindingResult.hasFieldErrors()) {
+            return R.fail("SYSTEM.0002", bindingResult.getFieldError().getDefaultMessage());
+        }
+        
+        if (Objects.isNull(oauthBindQuery.getStatus()) && Objects.isNull(oauthBindQuery.getPhone()) && Objects.isNull(oauthBindQuery.getThirdId())) {
+            return R.fail("SYSTEM.0002", "参数错误");
+        }
+        return returnPairResult(userOauthBindService.updateOauthBind(oauthBindQuery));
+    }
+    
+    
 }

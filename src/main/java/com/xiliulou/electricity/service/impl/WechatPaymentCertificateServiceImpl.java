@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +20,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.PAYMENT_CERTIFICATE_KEY;
 
@@ -110,6 +120,48 @@ public class WechatPaymentCertificateServiceImpl implements WechatPaymentCertifi
             wechatPaymentCertificate = JsonUtil.fromJson(cache, WechatPaymentCertificate.class);
         }
         return wechatPaymentCertificate;
+    }
+    
+    
+    @Override
+    public List<WechatPaymentCertificate> queryListByTenantIdAndFranchiseeIds(Integer tenantId, List<Long> franchiseeIds) {
+        
+        List<String> cacheKeys = franchiseeIds.stream().map(franchiseeId -> buildCacheKey(tenantId, franchiseeId)).collect(Collectors.toList());
+        List<WechatPaymentCertificate> wechatPaymentCertificates = redisService.multiJsonGet(cacheKeys, WechatPaymentCertificate.class);
+        
+        Map<Long, WechatPaymentCertificate> existCacheMap = Optional.ofNullable(wechatPaymentCertificates).orElse(Collections.emptyList()).stream()
+                .collect(Collectors.toMap(WechatPaymentCertificate::getFranchiseeId, Function.identity(), (k1, k2) -> k1));
+        
+        List<WechatPaymentCertificate> certificates = new ArrayList<>();
+        List<Long> needQueryFranchiseeList = new ArrayList<>();
+        
+        franchiseeIds.forEach(franchiseeId -> {
+            WechatPaymentCertificate wechatPaymentCertificate = existCacheMap.get(franchiseeId);
+            if (Objects.isNull(wechatPaymentCertificate)) {
+                needQueryFranchiseeList.add(franchiseeId);
+            } else {
+                certificates.add(wechatPaymentCertificate);
+            }
+        });
+        
+        if (CollectionUtils.isEmpty(needQueryFranchiseeList)) {
+            return certificates;
+        }
+        
+        List<WechatPaymentCertificate> dbList = wechatPaymentCertificateMapper.selectListByTenantIdAndFranchiseeIds(tenantId, needQueryFranchiseeList);
+        if (CollectionUtils.isEmpty(dbList)) {
+            return certificates;
+        }
+        
+        Map<String, String> cacheSaveMap = Maps.newHashMap();
+        dbList.forEach(certificate -> {
+            cacheSaveMap.put(buildCacheKey(tenantId, certificate.getFranchiseeId()), JsonUtil.toJson(certificate));
+            certificates.add(certificate);
+        });
+        
+        redisService.multiSet(cacheSaveMap);
+        
+        return certificates;
     }
     
     @Override

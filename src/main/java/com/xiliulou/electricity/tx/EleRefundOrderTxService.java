@@ -25,11 +25,6 @@ public class EleRefundOrderTxService {
     private EleRefundOrderService eleRefundOrderService;
     
     
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public void update(EleRefundOrder order) {
-        eleRefundOrderService.update(order);
-    }
-    
     
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void insert(EleRefundOrder eleRefundOrder) {

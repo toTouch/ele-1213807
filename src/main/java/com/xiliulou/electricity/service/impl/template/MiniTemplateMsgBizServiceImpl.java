@@ -166,7 +166,7 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
                     continue;
                 }
                 // 查询配置
-                BasePayConfig config = payConfigBizService.queryPayParams(channel, tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+                BasePayConfig config = payConfigBizService.queryPayParams(channel, tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE,null);
                 if (Objects.isNull(config)) {
                     log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! channel={},tenantId={} BasePayConfig is null", channel, tenantId);
                     continue;

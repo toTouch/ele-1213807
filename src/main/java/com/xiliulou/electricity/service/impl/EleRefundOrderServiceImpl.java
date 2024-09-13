@@ -467,7 +467,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 置于此处为了避免干扰线下退款，将异常抛出是为了回滚避免生成数据错误的订单，避免把数据修改成错误的中间态
         BasePayConfig basePayConfig = null;
         try {
-            basePayConfig = payConfigBizService.queryPayParams(eleDepositOrder.getPaymentChannel(), TenantContextHolder.getTenantId(), eleDepositOrder.getParamFranchiseeId());
+            basePayConfig = payConfigBizService.queryPayParams(eleDepositOrder.getPaymentChannel(), TenantContextHolder.getTenantId(), eleDepositOrder.getParamFranchiseeId(),null);
         } catch (PayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
@@ -480,8 +480,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         try {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
-            eleRefundOrderTxService.update(eleRefundOrderUpdate);
+            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
             
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                     .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
@@ -1225,7 +1225,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 置于此处为了避免干扰线下退款，将异常抛出是为了回滚避免生成数据错误的订单，避免把数据修改成错误的中间态
             BasePayConfig basePayConfig = null;
             try {
-                basePayConfig = payConfigBizService.queryPayParams(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getParamFranchiseeId());
+                basePayConfig = payConfigBizService.queryPayParams(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getParamFranchiseeId(),null);
             } catch (PayException e) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
                 throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");

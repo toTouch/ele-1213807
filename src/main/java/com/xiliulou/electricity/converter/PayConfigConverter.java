@@ -129,7 +129,7 @@ public class PayConfigConverter {
         wechatV3OrderRequest.setNotifyUrl(wechatConfig.getPayCallBackUrl() + model.getTenantId() + "/" + model.getFranchiseeId());
         wechatV3OrderRequest.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
         wechatV3OrderRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
-        
+        wechatV3OrderRequest.setProfitSharing(model.getProfitSharing());
         BasePayRequest<WechatV3OrderRequest> basePayRequest = new BasePayRequest();
         basePayRequest.setChannel(ChannelEnum.WECHAT.getCode());
         basePayRequest.setBizParam(wechatV3OrderRequest);

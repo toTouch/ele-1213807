@@ -673,7 +673,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         BasePayConfig basePayConfig = null;
         try {
             basePayConfig = payConfigBizService.queryPayParams(electricityMemberCardOrder.getPaymentChannel(),electricityMemberCardOrder.getTenantId(),
-                    electricityMemberCardOrder.getParamFranchiseeId());
+                    electricityMemberCardOrder.getParamFranchiseeId(),null);
         }catch (PayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrderInsert.getRefundOrderNo());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
@@ -814,7 +814,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         BasePayConfig basePayConfig = null;
         try {
             basePayConfig = payConfigBizService.queryPayParams(electricityMemberCardOrder.getPaymentChannel(),electricityMemberCardOrder.getTenantId(),
-                    electricityMemberCardOrder.getParamFranchiseeId());
+                    electricityMemberCardOrder.getParamFranchiseeId(),null);
         }catch (PayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
             return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");

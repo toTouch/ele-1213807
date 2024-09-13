@@ -6,7 +6,11 @@ package com.xiliulou.electricity.bo.pay;
 
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.core.base.enums.ChannelEnum;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * description: 支付宝支付配置业务详情
@@ -28,7 +32,7 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
     private String appId;
     
     /**
-     *  收款账号
+     * 收款账号
      */
     private String receivableAccounts;
     
@@ -87,6 +91,18 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
     @Override
     public String getPaymentChannel() {
         return ChannelEnum.ALIPAY.getCode();
+    }
+    
+    @Override
+    public List<ProfitSharingReceiverConfig> getEnableProfitSharingReceiverConfigs() {
+        // TODO: 2024/9/6 支付宝暂时无分账配置
+        return null;
+    }
+    
+    @Override
+    public ProfitSharingConfig getEnableProfitSharingConfig() {
+        // TODO: 2024/9/6 支付宝暂时无分账配置
+        return null;
     }
     
 }

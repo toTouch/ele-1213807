@@ -40,6 +40,7 @@ public interface UserOauthBindService {
     Integer update(UserOauthBind userOauthBind);
     
     
+    
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
     
     UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId);
@@ -47,6 +48,8 @@ public interface UserOauthBindService {
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone, Integer tenantId);
     
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
+    
+    
     
     List<UserOauthBind> queryListByUid(Long uid);
     
@@ -145,4 +148,16 @@ public interface UserOauthBindService {
      * @date 2024/8/7 19:14
      */
     List<UserOauthBind> queryListByUidAndSource(Long uid, Integer source);
+    
+    /**
+     * 根据参数获取数量
+     *
+     * @param openId
+     * @param sourceWxPro
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/9/5 20:39
+     */
+    Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId);
+    
 }

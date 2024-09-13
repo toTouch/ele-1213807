@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.converter.model;
 
+import com.alipay.api.domain.ProfitSharing;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,6 +70,9 @@ public class OrderCreateParamConverterModel {
     
     private Integer tenantId;
     
+    
     private Long franchiseeId;
     
+    
+    private Boolean profitSharing;
 }

@@ -1489,12 +1489,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean deviceIsOnlineForIot(String productKey, String deviceName) {
+        
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot productKey:{},deviceName:{}",productKey,deviceName);
         GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
         if (Objects.isNull(getDeviceStatusResponse)) {
             return false;
         }
         
         GetDeviceStatusResponse.Data data = getDeviceStatusResponse.getData();
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot data:{}",JsonUtil.toJson(data));
         if (Objects.isNull(data)) {
             return false;
         }

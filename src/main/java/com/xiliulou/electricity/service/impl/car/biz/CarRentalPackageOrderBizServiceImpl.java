@@ -120,6 +120,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitWrapService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
@@ -203,7 +204,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private UserBatteryTypeService userBatteryTypeService;
     
     @Resource
-    private Jt808RetrofitService jt808RetrofitService;
+    private Jt808RetrofitWrapService jt808RetrofitWrapService;
     
     @Resource
     private CarRentalOrderService carRentalOrderService;
@@ -545,7 +546,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean refundConfirmation(CarRentalPackageRefundReq carRentalPackageRefundReq) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
@@ -631,7 +631,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param rentRefundEntity
      * @param packageOrderEntity
      */
-    @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundRentOrder(CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo rentRefundEntity, CarRentalPackageOrderPo packageOrderEntity) {
         log.info("save approve refund order flow start, order No = {}, refund amount = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getAmount(),
                 carRentRefundVo.getUid());
@@ -1460,7 +1459,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         BasePayConfig config = null;
         try {
             config = payConfigBizService
-                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId());
+                    .queryPrecisePayParams(electricityTradeOrder.getPaymentChannel(), electricityTradeOrder.getTenantId(), electricityTradeOrder.getPayFranchiseeId(),null);
             if (Objects.isNull(config)) {
                 throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             }
@@ -2590,7 +2589,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             // 车辆锁状态
             if (StringUtils.isNotBlank(electricityCar.getSn())) {
-                R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
+                R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
                 if (result.isSuccess()) {
                     lockType = result.getData().getDoorStatus();
                 }
@@ -2845,7 +2844,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Long userFranchiseeId = ObjectUtils.isEmpty(userInfo.getFranchiseeId()) || MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(userInfo.getFranchiseeId()) ? Long
                     .valueOf(buyOptModel.getFranchiseeId()) : userInfo.getFranchiseeId();
             //            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userFranchiseeId);
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(buyOptModel.getPaymentChannel(), tenantId, userFranchiseeId);
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(buyOptModel.getPaymentChannel(), tenantId, userFranchiseeId,null);
             if (Objects.isNull(payParamConfig)) {
                 throw new BizException("100234", "未配置支付参数");
             }
