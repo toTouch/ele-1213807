@@ -1537,7 +1537,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     freeDepositOrderService.update(freeDepositOrderUpdate);
                 }
             }
-            if (PayTypeEnum.OFF_LINE.getCode().equals(payType)){
+            if (PayTypeEnum.ON_LINE.getCode().equals(payType)){
                 depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
             }
             
