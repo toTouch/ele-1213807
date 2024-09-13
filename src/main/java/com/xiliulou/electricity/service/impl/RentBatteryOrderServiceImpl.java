@@ -264,7 +264,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public RentBatteryOrder insert(RentBatteryOrder rentBatteryOrder) {
         this.rentBatteryOrderMapper.insert(rentBatteryOrder);
         return rentBatteryOrder;

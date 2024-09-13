@@ -232,7 +232,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     private PayConfigBizService payConfigBizService;
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -447,7 +446,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payMemberCardAndInsurance(BatteryMemberCardAndInsuranceQuery query, HttpServletRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
@@ -652,7 +650,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList) {
         if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
             log.error("ELE UNION BATTERY DEPOSIT ORDER ERROR! orderList is empty,uid={}", userInfo.getUid());
@@ -704,7 +701,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payServiceFee(HttpServletRequest request) {
         
         TokenUser user = SecurityUtils.getUserInfo();

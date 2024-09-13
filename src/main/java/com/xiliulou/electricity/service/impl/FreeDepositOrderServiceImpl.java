@@ -713,7 +713,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      * @param freeDepositOrder
      * @param queryOrderRspData
      */
-    @Transactional(rollbackFor = Exception.class)
     public void saveSyncFreeDepositOrderStatusTx(CarRentalPackageDepositPayPo depositPayEntity, FreeDepositOrder freeDepositOrder, PxzQueryOrderRsp queryOrderRspData) {
         Integer tenantId = depositPayEntity.getTenantId();
         Integer franchiseeId = depositPayEntity.getFranchiseeId();
@@ -1336,7 +1335,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> freeBatteryDepositHybridOrderV3(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
