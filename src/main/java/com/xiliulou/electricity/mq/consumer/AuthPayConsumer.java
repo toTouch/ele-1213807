@@ -45,22 +45,25 @@ public class AuthPayConsumer implements RocketMQListener<String> {
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
         
+        log.info("AuthPayConsumer Access Msg INFO! dto is {}", JsonUtil.toJson(dto));
+        
+        
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.warn("AuthPayConsumer WARN! freeDepositOrder is null, orderId is{}", dto.getOrderId());
+            log.warn("AuthPayConsumer WARN! freeDepositOrder is null, orderId is {}", dto.getOrderId());
             return;
         }
         
         FreeDepositAlipayHistory alipayHistory = freeDepositAlipayHistoryService.queryByAuthOrderId(dto.getAuthPayOrderId());
         if (Objects.isNull(alipayHistory)) {
-            log.warn("AuthPayConsumer WARN! alipayHistory is null, orderId is{}", dto.getAuthPayOrderId());
+            log.warn("AuthPayConsumer WARN! alipayHistory is null, orderId is {}", dto.getAuthPayOrderId());
             return;
         }
         
-        log.info("AuthPayConsumer Access Msg INFO! orderId is {}, payStatus is {}", dto.getOrderId(), freeDepositOrder.getPayStatus());
+       
         
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is{}", freeDepositOrder.getPayStatus(), dto.getOrderId());
+            log.info("AuthPayConsumer.status not update! freeDepositOrder.payStatus is {}, orderId is {}", freeDepositOrder.getPayStatus(), dto.getOrderId());
             return;
         }
         

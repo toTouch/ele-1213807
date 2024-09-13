@@ -726,6 +726,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
+        if (refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! refundAmount is over payTransAmt,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100434", "退押失败，超过代扣金额");
+        }
+        
         // 如果存在代扣的免押订单，则不允许退押
         if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
             return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
@@ -1103,6 +1108,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(freeDepositOrder)) {
             log.warn("REFUND ORDER WARN! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        if (Objects.isNull(freeDepositOrder.getPayTransAmt()) || BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! freeDepositOrder.payTransAmt is 0 ,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100434", "剩余可代扣金额超过免押金额");
         }
         
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
