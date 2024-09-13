@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
-
-import java.util.List;
-
 import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * 柜机核心板上报数据(EleCabinetCoreData)表数据库访问层
@@ -15,7 +14,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2022-07-06 14:20:37
  */
 public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData> {
-
+    
     /**
      * 通过ID查询单条数据
      *
@@ -23,7 +22,7 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      * @return 实例对象
      */
     EleCabinetCoreData queryById(Long id);
-
+    
     /**
      * 查询指定行数据
      *
@@ -32,8 +31,8 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      * @return 对象列表
      */
     List<EleCabinetCoreData> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
-
-
+    
+    
     /**
      * 通过实体作为筛选条件查询
      *
@@ -41,7 +40,7 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      * @return 对象列表
      */
     List<EleCabinetCoreData> queryAll(EleCabinetCoreData eleCabinetCoreData);
-
+    
     /**
      * 新增数据
      *
@@ -49,7 +48,7 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      * @return 影响行数
      */
     int insertOne(EleCabinetCoreData eleCabinetCoreData);
-
+    
     /**
      * 修改数据
      *
@@ -57,7 +56,7 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      * @return 影响行数
      */
     int update(EleCabinetCoreData eleCabinetCoreData);
-
+    
     /**
      * 通过主键删除数据
      *
@@ -65,14 +64,17 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      * @return 影响行数
      */
     int deleteById(Long id);
-
+    
     int insertOrUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
-
+    
     List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
     
-    EleCabinetCoreData selectById( @Param("id") Integer id, @Param("tenantId")  Integer tenantId);
-
+    EleCabinetCoreData selectById(@Param("id") Integer id, @Param("tenantId") Integer tenantId);
+    
     EleCabinetCoreData selectByEid(Integer eid);
     
     List<EleCabinetCoreData> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
+    
+    Integer updateByUk(EleCabinetCoreData eleCabinetCoreData);
+    
 }

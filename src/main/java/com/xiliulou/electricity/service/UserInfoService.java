@@ -127,6 +127,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     Triple<Boolean, String, Object> selectUserInfoStatus();
     
+    Triple<Boolean, String, Object> selectUserInfoStatusV2();
+    
     void unBindUserFranchiseeId(Long uid);
     
     Integer isFranchiseeBindUser(Long id, Integer tenantId);

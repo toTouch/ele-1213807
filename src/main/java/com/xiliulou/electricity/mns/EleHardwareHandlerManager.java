@@ -165,29 +165,41 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
             }
-            
-            if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY + electricityCabinet.getId(), "1", 30000L, false)) {
-                log.warn("ELE WARN! device is repeat report status! p={},d={},status={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(),
-                        receiverMessage.getStatus());
+
+            if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId(), String.valueOf(newElectricityCabinet.getOnlineStatus()), 30000L, false)) {
+                String status = redisService.get(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId());
+                //如果redis的status是离线，但是本次状态是在线，发送一条消息通知，并设置redis的status为不存在值,保证下次不在发送消息
+                if (Objects.equals(status, String.valueOf(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)) && Objects.equals(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS, newElectricityCabinet.getOnlineStatus())) {
+                    Long expireTime = redisService.getRedisTemplate().getExpire(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId());
+                    if (Objects.isNull(expireTime) || expireTime == 0) {
+                        expireTime = 1L;
+                    }
+                    redisService.set(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId(), "4", expireTime, TimeUnit.SECONDS);
+                    addOnlineLogAndSendNotifyMessage(receiverMessage, electricityCabinet);
+                }
                 return;
             }
-            
-            EleOnlineLog eleOnlineLog = new EleOnlineLog();
-            eleOnlineLog.setElectricityId(electricityCabinet.getId());
-            eleOnlineLog.setClientIp(receiverMessage.getClientIp());
-            eleOnlineLog.setStatus(receiverMessage.getStatus());
-            eleOnlineLog.setAppearTime(receiverMessage.getTime());
-            eleOnlineLog.setCreateTime(System.currentTimeMillis());
-            eleOnlineLog.setMsg(receiverMessage.getStatus());
-            eleOnlineLogService.insert(eleOnlineLog);
-            
-            //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
-            
-            //TODO 发送MQ通知
-            maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
+
+            addOnlineLogAndSendNotifyMessage(receiverMessage, electricityCabinet);
         });
     }
-    
+
+    private void addOnlineLogAndSendNotifyMessage(ReceiverMessage receiverMessage, ElectricityCabinet electricityCabinet) {
+        EleOnlineLog eleOnlineLog = new EleOnlineLog();
+        eleOnlineLog.setElectricityId(electricityCabinet.getId());
+        eleOnlineLog.setClientIp(receiverMessage.getClientIp());
+        eleOnlineLog.setStatus(receiverMessage.getStatus());
+        eleOnlineLog.setAppearTime(receiverMessage.getTime());
+        eleOnlineLog.setCreateTime(System.currentTimeMillis());
+        eleOnlineLog.setMsg(receiverMessage.getStatus());
+        eleOnlineLogService.insert(eleOnlineLog);
+
+        //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
+
+        //TODO 发送MQ通知
+        maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
+    }
+
     private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time) {
         //租户不发上下线通知
         List<Integer> tenantIdList = tenantConfig.getDisableRobotMessageForTenantId();

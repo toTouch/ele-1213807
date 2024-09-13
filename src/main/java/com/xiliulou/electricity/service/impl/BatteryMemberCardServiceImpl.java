@@ -15,7 +15,9 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -39,7 +41,10 @@ import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -157,6 +162,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     @Autowired
     private InstallmentDeductionPlanService installmentDeductionPlanService;
+    
+    @Resource
+    private PxzConfigService pxzConfigService;
+    
+    @Resource
+    private FyConfigService fyConfigService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -815,6 +826,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100271", "请先下架套餐再进行编辑操作");
         }
         
+        Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
+        if (triple.getLeft()) {
+            return Triple.of(false, triple.getMiddle(), triple.getRight());
+        }
+        
         if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
             return Triple.of(false, "301022", "分期套餐租期不能超过749天");
         }
@@ -907,6 +923,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
+        Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
+        if (triple.getLeft()) {
+            return Triple.of(false, triple.getMiddle(), triple.getRight());
+        }
+        
         // 套餐数量最多150个，仅对换电套餐做限制
         List<Integer> typeList = Arrays.asList(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(),
                 BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
@@ -957,6 +978,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         return Triple.of(true, null, null);
+    }
+    
+    private Triple<Boolean, String, Object> checkFreeDepositConfig(BatteryMemberCardQuery query) {
+        // 免押套餐校验免押配置
+        if (Objects.equals(query.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
+                return Triple.of(true, "100380", "请先完成免押配置，再新增免押套餐");
+            }
+        }
+        return Triple.of(false, null, null);
     }
     
     @Override

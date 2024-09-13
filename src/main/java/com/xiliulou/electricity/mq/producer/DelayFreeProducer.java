@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @ClassName: DelayFreeProducer
@@ -30,20 +31,18 @@ public class DelayFreeProducer {
     /**
      * 默认延迟5分钟
      *
-     * @param orderId
+     * @param dto
      * @param tag
      */
-    public void sendDelayFreeMessage(String orderId, String tag) {
-        log.info("Free Delay Info! sendDelayFreeMessage.order is {}, tag is {}", orderId, tag);
-        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().orderId(orderId).build();
+    public void sendDelayFreeMessage(FreeDepositDelayDTO dto, String tag) {
+        if (Objects.isNull(dto)) {
+            log.warn("Free Delay Warn! dto is null");
+            return;
+        }
+        log.info("Free Delay Info! sendDelayFreeMessage.dto is {}, tag is {}", JsonUtil.toJson(dto), tag);
         String key = "free" + DateUtil.format(DateUtil.date(), ORDER_DATE_FORMAT) + RandomUtil.randomInt(1000, 9999);
         rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
     }
     
-    public void sendDelayFreeMessage(String orderId, String authPayOrderId, String tag) {
-        log.info("FreeAuthPay Delay Info! sendDelayFreeMessage.order is {},authPayOrderId is {} tag is {}", orderId, authPayOrderId, tag);
-        FreeDepositDelayDTO dto = FreeDepositDelayDTO.builder().authPayOrderId(authPayOrderId).orderId(orderId).build();
-        String key = "free" + DateUtil.format(DateUtil.date(), ORDER_DATE_FORMAT) + RandomUtil.randomInt(1000, 9999);
-        rocketMqService.sendSyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(dto), tag, key, 9);
-    }
+    
 }

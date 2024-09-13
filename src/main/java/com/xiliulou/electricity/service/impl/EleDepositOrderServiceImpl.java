@@ -395,11 +395,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
         
+        
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
-//        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
-        // 退款金额为1️剩余代扣金额
-        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+        
+        BigDecimal refundAmount = getRefundAmountV2(eleDepositOrder,freeDepositOrder);
+        
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        
         
         UserInfo updateUserInfo = new UserInfo();
         boolean eleRefund = false;
@@ -531,6 +533,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(eleDepositOrder.getOrderId());
         if (Objects.nonNull(freeDepositAlipayHistory)) {
             refundAmount = eleDepositOrder.getPayAmount().subtract(freeDepositAlipayHistory.getAlipayAmount());
+        }
+        
+        return refundAmount;
+    }
+    
+    private BigDecimal getRefundAmountV2(EleDepositOrder eleDepositOrder, FreeDepositOrder freeDepositOrder) {
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            return eleDepositOrder.getPayAmount();
+        }
+        
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        
+        if (Objects.nonNull(freeDepositOrder)) {
+            return BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
         }
         
         return refundAmount;
@@ -829,6 +845,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }).collect(Collectors.toList());
         
         return R.ok(eleDepositOrderVOS);
+    }
+    
+    @Override
+    @Slave
+    public EleDepositOrder queryLastEnterpriseDeposit(Long uid) {
+        return eleDepositOrderMapper.selectLastEnterpriseDeposit(uid);
     }
     
     @Override

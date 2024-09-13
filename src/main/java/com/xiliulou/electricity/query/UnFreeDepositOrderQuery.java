@@ -41,4 +41,7 @@ public class UnFreeDepositOrderQuery {
      */
     private String amount;
     
+    
+    private String authNO;
+    
 }

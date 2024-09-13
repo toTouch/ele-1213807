@@ -51,27 +51,30 @@ public class PxzParamsAndDispatchHandler implements PxzSupport<Map<String,Object
         String data = (String) callbackContext.getParams().get("body");
         String encrypt = PxzAesUtils.decrypt(data, pxzConfig.getAesKey());
         
-        if (FreeBusinessTypeEnum.FREE.getCode().equals(callbackContext.getBusiness())) {
-            PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
-            log.info("pxz callback params : {}", params);
+        if (FreeBusinessTypeEnum.AUTH_PAY.getCode().equals(callbackContext.getBusiness())) {
+            
+            PxzParams.AuthPay params = JsonUtil.fromJson(encrypt, PxzParams.AuthPay.class);
+            log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
             return CallbackContext.builder()
-                    .business(params.getRequestBody().getAuthStatus())
+                    .business(callbackContext.getBusiness())
                     .channel(callbackContext.getChannel())
                     .params(params)
-                    .tenantId(callbackContext.getTenantId())
                     .next(Boolean.TRUE)
+                    .tenantId(callbackContext.getTenantId())
                     .type(callbackContext.getType())
                     .build();
+            
+            
         }
         
-        PxzParams.AuthPay params = JsonUtil.fromJson(encrypt, PxzParams.AuthPay.class);
-        log.info("pxz callback params : {}", params);
+        PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
+        log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
         return CallbackContext.builder()
-                .business(callbackContext.getBusiness())
+                .business(params.getRequestBody().getAuthStatus())
                 .channel(callbackContext.getChannel())
                 .params(params)
-                .next(Boolean.TRUE)
                 .tenantId(callbackContext.getTenantId())
+                .next(Boolean.TRUE)
                 .type(callbackContext.getType())
                 .build();
         

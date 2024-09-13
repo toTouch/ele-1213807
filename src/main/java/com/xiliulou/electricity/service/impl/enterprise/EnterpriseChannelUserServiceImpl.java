@@ -44,6 +44,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -142,6 +143,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Resource
     private OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
     
     
     @Override
@@ -931,7 +935,29 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+    
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(request.getUid());
+        boolean isMember = false;
+        if (Objects.nonNull(userBatteryDeposit)) {
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+            isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+        }
+        
+        boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(request.getUid());
+        boolean isEnterpriseFreeDepositNoPay = true;
+        // 企业免押用户，且不存在代付记录
+        if (!isMember && Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
+            isEnterpriseFreeDepositNoPay = false;
+        }
+        
+        // 免押用户 不存在代付记录 则单独进行押金回收
+        if (!isEnterpriseFreeDepositNoPay) {
+            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid());
+            if (!tripleRecycle.getLeft()) {
+                log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
+                return tripleRecycle;
+            }
+        } else if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
             Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid());
             if (!tripleRecycle.getLeft()) {
                 log.error("channel user exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
@@ -1158,14 +1184,29 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         List<Long> channelUserIds = new ArrayList<>();
         List<EnterpriseChannelUserExit> addList = new ArrayList<>();
         for (EnterpriseChannelUser item : enterpriseChannelUserList) {
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(request.getUid());
+            
+            boolean isMember = false;
+            if (Objects.nonNull(userBatteryDeposit)) {
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            }
+            
+            boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(request.getUid());
+            boolean isEnterpriseFreeDepositNoPay = true;
+            // 企业免押用户，且不存在代付记录
+            if (!isMember && Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
+                isEnterpriseFreeDepositNoPay = false;
+            }
+            
             // cloudBeanStatus=（云豆状态（0-初始态, 1-未回收, 2-已回收）） 初始态，已回收的
-            if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT) || Objects.equals(item.getCloudBeanStatus(),
+            if ((isEnterpriseFreeDepositNoPay && Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT)) || Objects.equals(item.getCloudBeanStatus(),
                     EnterpriseChannelUser.CLOUD_BEAN_STATUS_RECYCLE)) {
                 channelUserIds.add(item.getId());
             }
             
             // 云豆未回收的
-            if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+            if (Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE) || (!isEnterpriseFreeDepositNoPay && Objects.equals(item.getCloudBeanStatus(), EnterpriseChannelUser.CLOUD_BEAN_STATUS_INIT))) {
                 EnterpriseChannelUserExit exit = new EnterpriseChannelUserExit();
                 exit.setChannelUserId(item.getId());
                 exit.setEnterpriseId(item.getEnterpriseId());
@@ -1295,24 +1336,46 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 检测是否能退出
         Triple<Boolean, String, Object> triple = this.channelUserAdminExitCheck(request, channelUser, tenantId);
         if (!triple.getLeft()) {
-            log.error("channel user admin exit check error, uid={}, msg={}", request.getUid(), triple.getRight());
+            log.warn("channel user admin exit check warn, uid={}, msg={}", request.getUid(), triple.getRight());
             return triple;
         }
     
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(channelUser.getEnterpriseId());
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("channel user admin exit error, uid={}", request.getUid());
+            log.warn("channel user admin exit warn, uid={}", request.getUid());
             return Triple.of(false, "120212", "商户不存在");
         }
         
         request.setEnterpriseId(enterpriseInfo.getId());
         
-        // 云豆回收
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(request.getUid());
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(request.getUid());
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+    
+        boolean isMember = false;
+        if (Objects.nonNull(userBatteryDeposit)) {
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+            isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+        }
+        
+        boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(request.getUid());
+        boolean isEnterpriseFreeDepositNoPay = true;
+        // 企业免押用户，且不存在代付记录
+        if (!isMember && Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
+            isEnterpriseFreeDepositNoPay = false;
+        }
+        
+        // 免押用户 不存在代付记录 则单独进行押金回收
+        if (!isEnterpriseFreeDepositNoPay) {
+            Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(request.getUid());
+            if (!tripleRecycle.getLeft()) {
+                log.warn("channel user admin exit recycle Cloud Bean warn,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
+                return tripleRecycle;
+            }
+        } else if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(channelUser.getCloudBeanStatus(), EnterpriseChannelUser.NO_RECYCLE)) {
+            // 云豆回收
             Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBean(request.getUid());
             if (!tripleRecycle.getLeft()) {
-                log.error("channel user admin exit recycle Cloud Bean error,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
+                log.warn("channel user admin exit recycle Cloud Bean warn,uid={}, msg={}", request.getUid(), tripleRecycle.getRight());
                 return tripleRecycle;
             }
         }
@@ -1691,11 +1754,32 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
     
-            if (Objects.nonNull(userBatteryMemberCard)) {
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            boolean isMember = false;
+            if (Objects.nonNull(userBatteryDeposit)) {
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+            }
+            
+            boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(userInfo.getUid());
+            boolean isEnterpriseFreeDepositNoPay = true;
+            // 企业免押用户，且不存在代付记录
+            if (!isMember && Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
+                isEnterpriseFreeDepositNoPay = false;
+            }
+            
+            // 免押用户 不存在代付记录 则单独进行押金回收
+            if (!isEnterpriseFreeDepositNoPay) {
+                Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(userInfo.getUid());
+                if (!tripleRecycle.getLeft()) {
+                    log.warn("enterprise channel switch user recycle cloud bean warn,uid={}, msg={}", userInfo.getUid(), tripleRecycle.getRight());
+                    return tripleRecycle;
+                }
+            } else if (Objects.nonNull(userBatteryMemberCard)) {
                 // 检测用户能否退出
                 Triple<Boolean, String, Object> tripleCheck = checkUserEnableExit(uid);
                 if (!tripleCheck.getLeft()) {
-                    log.error("enterprise channel switch user check error, uid={},msg={}", userInfo.getUid(), tripleCheck.getRight());
+                    log.warn("enterprise channel switch user check error, uid={},msg={}", userInfo.getUid(), tripleCheck.getRight());
                     return tripleCheck;
                 }
     
@@ -1704,7 +1788,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                     // 回收云豆
                     Triple<Boolean, String, Object> triple = enterpriseInfoService.recycleCloudBean(query.getUid());
                     if (!triple.getLeft()) {
-                        log.error("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
+                        log.warn("enterprise channel switch user recycle cloud bean error, uid={},msg={}", userInfo.getUid(), triple.getRight());
                         return triple;
                     }
                 }

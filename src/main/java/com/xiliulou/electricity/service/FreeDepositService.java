@@ -5,6 +5,7 @@ import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositAuthToPayStatusQuery;
+import com.xiliulou.electricity.query.FreeDepositCancelAuthToPayQuery;
 import com.xiliulou.electricity.query.FreeDepositOrderRequest;
 import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
@@ -64,4 +65,14 @@ public interface FreeDepositService {
      * @return AuthPayStatusBO
      */
     AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query);
+    
+    /**
+     * 取消代扣
+     *
+     * @param query
+     * @return
+     */
+    Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query);
+    
+ 
 }

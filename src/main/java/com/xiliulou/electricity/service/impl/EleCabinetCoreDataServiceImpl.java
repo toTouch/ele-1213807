@@ -6,14 +6,12 @@ import com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper;
 import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 柜机核心板上报数据(EleCabinetCoreData)表服务实现类
@@ -24,26 +22,27 @@ import lombok.extern.slf4j.Slf4j;
 @Service("eleCabinetCoreDataService")
 @Slf4j
 public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService {
+    
     @Resource
     private EleCabinetCoreDataMapper eleCabinetCoreDataMapper;
-
+    
     @Override
     public int insertOrUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
         return eleCabinetCoreDataMapper.insertOrUpdateCabinetCoreData(cabinetCoreData);
     }
-
+    
     @Override
     public List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery) {
         return eleCabinetCoreDataMapper.selectListByQuery(eleCabinetCoreDataQuery);
     }
-
+    
     @Deprecated
     @Slave
     @Override
     public EleCabinetCoreData selectByEleCabinetId(Integer id) {
         return eleCabinetCoreDataMapper.selectById(id, TenantContextHolder.getTenantId());
     }
-
+    
     @Override
     public EleCabinetCoreData selectByEid(Integer eid) {
         return eleCabinetCoreDataMapper.selectByEid(eid);
@@ -53,6 +52,11 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     @Override
     public List<EleCabinetCoreData> listCabinetCoreDataByEids(List<Integer> electricityCabinetIdList) {
         return eleCabinetCoreDataMapper.selectListByEids(electricityCabinetIdList);
+    }
+    
+    @Override
+    public Integer updateByUk(EleCabinetCoreData eleCabinetCoreData) {
+        return eleCabinetCoreDataMapper.updateByUk(eleCabinetCoreData);
     }
     
     /**
@@ -66,7 +70,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     public EleCabinetCoreData queryByIdFromDB(Long id) {
         return this.eleCabinetCoreDataMapper.queryById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -77,8 +81,8 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     public EleCabinetCoreData queryByIdFromCache(Long id) {
         return null;
     }
-
-
+    
+    
     /**
      * 查询多条数据
      *
@@ -90,7 +94,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     public List<EleCabinetCoreData> queryAllByLimit(int offset, int limit) {
         return this.eleCabinetCoreDataMapper.queryAllByLimit(offset, limit);
     }
-
+    
     /**
      * 新增数据
      *
@@ -98,12 +102,11 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public EleCabinetCoreData insert(EleCabinetCoreData eleCabinetCoreData) {
         this.eleCabinetCoreDataMapper.insertOne(eleCabinetCoreData);
         return eleCabinetCoreData;
     }
-
+    
     /**
      * 修改数据
      *
@@ -114,9 +117,9 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EleCabinetCoreData eleCabinetCoreData) {
         return this.eleCabinetCoreDataMapper.update(eleCabinetCoreData);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *

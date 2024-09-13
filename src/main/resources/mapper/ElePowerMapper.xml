@@ -127,7 +127,7 @@
     
     <select id="selectLatestByEid" resultMap="ElePowerMap">
         select
-        sum_power, hour_power, electric_charge
+        sum_power, hour_power, electric_charge, report_time, meter_reading
         from t_ele_power where eid = #{eid} order by id desc limit 1
     </select>
     

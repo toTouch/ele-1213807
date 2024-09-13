@@ -36,6 +36,11 @@ public class UnionPayOrder {
     private Integer tenantId;
     
     /**
+     * 是否分账：true 分账   null, false 不分账
+     */
+    private Boolean profitSharing;
+    
+    /**
      * 商品描述
      */
     private String description;

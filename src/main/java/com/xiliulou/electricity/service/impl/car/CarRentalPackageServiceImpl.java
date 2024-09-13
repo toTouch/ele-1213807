@@ -6,6 +6,9 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.FyConfig;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.DelFlagEnum;
@@ -13,10 +16,13 @@ import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FyConfigService;
+import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
@@ -63,6 +69,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     @Autowired
     private CouponService couponService;
+    
+    @Resource
+    private PxzConfigService pxzConfigService;
+    
+    @Resource
+    private FyConfigService fyConfigService;
     
     /**
      * 根据主键ID查询，不区分是否删除
@@ -270,6 +282,10 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             log.warn("CarRentalPackageService.updateById, Package name already exists.");
             throw new BizException("300022", "套餐名称已存在");
         }
+        
+        // 免押套餐校验免押配置
+        checkFreeDepositConfig(entity.getFreeDeposit());
+        
         // 适配优惠券多张更新
         if (StringUtils.hasText(entity.getCouponArrays()) && !Objects.isNull(oriEntity.getCouponId()) && !entity.getCouponArrays()
                 .contains(String.valueOf(oriEntity.getCouponId()))) {
@@ -315,6 +331,18 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return operateLogDTO;
         });
         return num >= 0;
+    }
+    
+    private void checkFreeDepositConfig(Integer freeDeposit) {
+        if (Objects.equals(freeDeposit, BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
+                throw new BizException("100380", "请先完成免押配置，再新增免押套餐");
+            }
+        }
     }
     
     /**

@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.callback.impl.business;
 
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.callback.BusinessHandler;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -11,6 +13,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -18,19 +21,27 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import static com.xiliulou.electricity.constant.CacheConstant.UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY;
 
 /**
  * <p>
@@ -72,6 +83,12 @@ public class BatteryBusinessHandler implements BusinessHandler {
     
     private final UserInfoGroupDetailService userInfoGroupDetailService;
     
+    private final UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    private final ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    private final RedisService redisService;
+    
     @Override
     public boolean support(Integer type) {
         return Objects.equals(type, FreeDepositOrder.DEPOSIT_TYPE_BATTERY);
@@ -87,16 +104,29 @@ public class BatteryBusinessHandler implements BusinessHandler {
                 return true;
             }
             
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-            if (Objects.isNull(userBatteryDeposit)) {
-                log.warn("handlerFreeDepositSuccess warn! userBatteryDeposit is null, uid is {}", uid);
-                return true;
-            }
-            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+//            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+//            if (Objects.isNull(userBatteryDeposit)) {
+//                log.warn("handlerFreeDepositSuccess warn! userBatteryDeposit is null, uid is {}", uid);
+//                return true;
+//            }
+            
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
             if (Objects.isNull(eleDepositOrder)) {
-                log.warn("handlerFreeDepositSuccess warn! eleDepositOrder is null, orderId is {}", userBatteryDeposit.getOrderId());
+                log.warn("handlerFreeDepositSuccess warn! eleDepositOrder is null, orderId is {}", order.getOrderId());
                 return true;
             }
+            //绑定免押订单
+            UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+            userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setUid(order.getUid());
+            userBatteryDeposit.setDid(eleDepositOrder.getMid());
+            userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
+            userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
             // 更新押金订单状态
             EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
             eleDepositOrderUpdate.setId(eleDepositOrder.getId());
@@ -112,11 +142,30 @@ public class BatteryBusinessHandler implements BusinessHandler {
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfoUpdate);
             
+
             // 绑定电池型号
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
                 userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
             }
+            //删除5分钟的二维码
+            String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
+            String md5s = redisService.get(userKey);
+            if (ObjectUtils.isNotEmpty(md5s)) {
+                Arrays.stream(md5s.split(","))
+                        .forEach(md5 -> {
+                            String batteryKey = String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
+                            if (redisService.hasKey(batteryKey)) {
+                                redisService.delete(batteryKey);
+                            }
+                            String enterpriseKey = String.format(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
+                            if (redisService.hasKey(enterpriseKey)) {
+                                redisService.delete(enterpriseKey);
+                            }
+                        });
+                redisService.delete(userKey);
+            }
+            log.info("Battery/battery electronics order no deposit callback completed, order number: {}",order.getOrderId());
         }catch (Exception e){
             log.error("battery freeDeposit error!", e);
             return false;
@@ -126,9 +175,21 @@ public class BatteryBusinessHandler implements BusinessHandler {
     
     @Override
     public boolean unfree(FreeDepositOrder order) {
+        if (!redisService.hasKey(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()))){
+            return false;
+        }
         try {
             // 更新退款订单
             EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(order.getOrderId());
+            if (Objects.isNull(eleRefundOrder)){
+                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
+                // 生成退款订单
+                eleRefundOrder = EleRefundOrder.builder().orderId(order.getOrderId())
+                        .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, order.getUid())).payAmount(eleDepositOrder.getPayAmount())
+                        .refundAmount(new BigDecimal(order.getPayTransAmt().toString())).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                        .tenantId(eleDepositOrder.getTenantId()).franchiseeId(order.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                eleRefundOrderService.insert(eleRefundOrder);
+            }
             EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -162,11 +223,22 @@ public class BatteryBusinessHandler implements BusinessHandler {
             
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
             
+            // 删除用户电池套餐资源包
+            userBatteryMemberCardPackageService.deleteByUid(userInfo.getUid());
+            
+            // 删除用户电池型号
+            userBatteryTypeService.deleteByUid(userInfo.getUid());
+            
+            // 删除用户电池服务费
+            serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+            
             // 修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+            
+            redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
         }catch (Exception e){
             log.error("battery unfree error!", e);
             return false;

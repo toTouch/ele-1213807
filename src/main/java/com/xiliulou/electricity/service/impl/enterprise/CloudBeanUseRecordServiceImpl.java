@@ -584,7 +584,39 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     enterpriseChannelUserService.updateRenewStatus(query);
                     return;
                 }
-                
+    
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+                boolean isMember = false;
+                if (Objects.nonNull(userBatteryDeposit)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+                    isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
+                }
+    
+                boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(item.getUid());
+                boolean isEnterpriseFreeDepositNoPay = true;
+                // 企业免押用户，且不存在代付记录
+                if (!isMember && Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {
+                    isEnterpriseFreeDepositNoPay = false;
+                }
+    
+                // 免押用户 不存在代付记录 则单独进行押金回收
+                if (!isEnterpriseFreeDepositNoPay) {
+                    Triple<Boolean, String, Object> tripleRecycle = enterpriseInfoService.recycleCloudBeanForFreeDeposit(item.getUid());
+                    if (!tripleRecycle.getLeft()) {
+                        log.warn("channel user exit recycle Cloud Bean error,uid={}, msg={}", item.getUid(), tripleRecycle.getRight());
+                        errorMsg = (String) tripleRecycle.getRight();
+                        userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    } else {
+                        // 修改企业用户为自主续费为退出
+                        EnterpriseChannelUserQuery query = EnterpriseChannelUserQuery.builder().uid(userInfo.getUid()).renewalStatus(EnterpriseChannelUser.RENEWAL_OPEN).build();
+                        enterpriseChannelUserService.updateRenewStatus(query);
+            
+                        // 修改历史退出为成功
+                        userExitMapper.updateById(null, EnterpriseChannelUserExit.TYPE_SUCCESS, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
+                    }
+        
+                    return ;
+                }
                 
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                     log.warn("RECYCLE TASK WARN! ser battery is not return,uid={}", item.getUid());
@@ -600,7 +632,6 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                     log.warn("RECYCLE TASK WARN! user stop member card review,uid={}", item.getUid());
                     return;
                 }
-                
                 
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
                 if (Objects.isNull(batteryMemberCard)) {

@@ -33,4 +33,9 @@ public class FreeDepositDelayDTO implements Serializable {
      * 代扣支付流水号
      */
     private String authPayOrderId;
+    
+    /**
+     * mdc
+     */
+    private String mdc;
 }

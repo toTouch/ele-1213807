@@ -74,7 +74,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         FailureAlarmTaskQueryRequest request = this.getQueryRequest();
         List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(request);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
-            log.error("Hardware Failure CabinetMsg task is empty");
+            log.warn("Hardware Failure CabinetMsg task is empty");
         }
         
         Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId,

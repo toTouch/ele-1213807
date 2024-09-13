@@ -3055,12 +3055,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
         if (!result.getLeft()) {
-            log.error("acsClient link error! errorMsg={}", result.getLeft());
+            log.warn("acsClient link warn! errorMsg={}", result.getLeft());
             return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
         }
         
         if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
-            log.error("Query device is unActive FStatus error!errorMsg={}", result.getRight());
+            log.warn("Query device is unActive status warn!errorMsg={}", result.getRight());
             return R.fail("CUPBOARD.10036", "三元组在线");
         }
         return R.ok();
@@ -5163,7 +5163,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Slave
     public R listSuperAdminPage(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.selectListSuperAdminPage(electricityCabinetQuery);
         if (ObjectUtil.isEmpty(electricityCabinetList)) {

@@ -84,6 +84,8 @@ public interface EleDepositOrderService {
     
     R listSuperAdminPage(EleDepositOrderQuery eleDepositOrderQuery);
     
+    EleDepositOrder queryLastEnterpriseDeposit(Long uid);
+    
     /**
      * 支付押金时，生成押金订单
      */

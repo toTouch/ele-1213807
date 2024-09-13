@@ -10,6 +10,7 @@ import com.xiliulou.electricity.service.FreeDepositOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -36,8 +37,10 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
             log.warn("FreeDepositConsumer.accept.msg is null");
             return;
         }
+        log.info("FreeDepositConsumer Access Msg INFO! msg is {} ", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
+        MDC.put("traceId", dto.getMdc());
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
@@ -45,11 +48,12 @@ public class FreeDepositConsumer implements RocketMQListener<String> {
             return;
         }
         
-        log.info("FreeDepositConsumer Access Msg INFO! orderId is {}, authStatus is {}", dto.getOrderId(), freeDepositOrder.getAuthStatus());
+        log.info("FreeDepositConsumer Access Msg INFO! freeDepositOrder.authStatus is {} , orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
         
-        // 如果是已冻结/超时，则不更新
-        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_TIMEOUT)) {
-            log.info("FreeDepositConsumer INFO! freeDepositOrder.freeStatus is {}, orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
+        // 如果不是 冻结中的，不更新
+        if (!(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE) || Objects.equals(freeDepositOrder.getAuthStatus(),
+                FreeDepositOrder.AUTH_FREEZING))) {
+            log.info("FreeDepositConsumer INFO! freeDepositOrder.status not need update, orderId is {}", dto.getOrderId());
             return;
         }
         

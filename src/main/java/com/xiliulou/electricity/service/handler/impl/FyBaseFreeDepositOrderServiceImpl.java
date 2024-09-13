@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.handler.BaseFreeDepositService;
 import com.xiliulou.pay.deposit.fengyun.constant.FyConstants;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAuthPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHandleFundRsp;
+import com.xiliulou.pay.deposit.fengyun.pojo.response.FyHonourAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryFreezeRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryHandleFundRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyResult;
@@ -50,7 +51,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -71,7 +72,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return null;
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return null;
         }
@@ -96,7 +97,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -108,6 +109,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     public Triple<Boolean, String, Object> authToPay(FreeDepositAuthToPayQuery query) {
         FyResult<FyHandleFundRsp> result = null;
         String orderId = query.getOrderId();
+        String authPayOrderId = query.getAuthPayOrderId();
         try {
             result = fyDepositService.handleFund(buildFyAuthPayRequest(query));
         } catch (Exception e) {
@@ -115,7 +117,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return Triple.of(false, "100401", "免押代扣调用失败！");
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, authPayOrderId);
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
@@ -134,7 +136,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
             return null;
         }
         
-        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId);
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
         if (!resultCheck.getLeft()) {
             return null;
         }
@@ -151,7 +153,21 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
     
     @Override
     public Boolean cancelAuthPay(FreeDepositCancelAuthToPayQuery query) {
-        return false;
+        FyResult<FyHonourAgreementRsp> result = null;
+        String orderId = query.getOrderId();
+        try {
+            result = fyDepositService.honourAgreement(buildHonourAgreementRequest(query));
+        } catch (Exception e) {
+            log.error("FY ERROR! queryAuthToPayStatus fail!  orderId={}", orderId, e);
+            return false;
+        }
+        
+        Triple<Boolean, String, Object> resultCheck = fyResultCheck(result, orderId, null);
+        if (!resultCheck.getLeft()) {
+            return false;
+        }
+        
+        return true;
     }
     
     

@@ -31,4 +31,6 @@ public class FreeDepositFactory {
         }
         throw new CustomBusinessException("免押次数未充值，请联系管理员");
     }
+    
+    
 }

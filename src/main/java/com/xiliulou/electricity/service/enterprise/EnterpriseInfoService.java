@@ -122,4 +122,6 @@ public interface EnterpriseInfoService {
     List<EnterpriseInfo> queryList(Integer tenantId);
     
     void deleteCacheByEnterpriseId(Long enterpriseId);
+    
+    Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid);
 }

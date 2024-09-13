@@ -9,9 +9,10 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.UnFreeDepositOrderBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -42,10 +43,7 @@ import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.mq.producer.DelayFreeProducer;
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.query.FreeDepositOrderStatusQuery;
 import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -69,9 +67,6 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
@@ -82,7 +77,6 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
-import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
@@ -99,7 +93,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -223,7 +216,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     private FreeDepositService freeDepositService;
     
     @Resource
-    private DelayFreeProducer delayFreeProducer;
+    private FreeDepositNotifyService freeDepositNotifyService;
     
     /**
      * 新增数据
@@ -726,14 +719,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
-        if (refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
-            log.warn("FREE DEPOSIT WARN! refundAmount is over payTransAmt,orderId={}", freeDepositOrder.getOrderId());
-            return Triple.of(false, "100434", "退押失败，超过代扣金额");
-        }
-        
-        // 如果存在代扣的免押订单，则不允许退押
-        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
-            return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+        if (!Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
+            // 如果存在代扣的免押订单，则不允许退押
+            if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
+                return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+            }
         }
         
         
@@ -764,6 +755,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(true, "", null);
         }
         
+        if (Objects.nonNull(refundAmount) && refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! refundAmount is over payTransAmt,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100434", "退押失败，超过代扣金额");
+        }
+        
+        
         // 处理电池免押订单退款
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.error("FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
@@ -779,7 +776,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         // 三方解冻
-        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
+        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
                 .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
         if (!triple.getLeft()) {
@@ -804,10 +801,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.update(carRefundOrderUpdate);
         }
-        
-        // 解冻
-        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
-        
         
         return Triple.of(true, "", "退款中，请稍后");
     }
@@ -1119,8 +1112,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "", "免押退款中，请稍后！");
         }
         
+        Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
         // 如果存在代扣的免押订单，则不允许退押
-        if (Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_DEALING)) {
+        if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
             return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
         }
         
@@ -1150,19 +1144,19 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100031", "不能重复退押金");
         }
         
-        // 获取订单代扣信息计算返还金额
-        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
-        
-        
-        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
         
         // 三方解冻
-        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
+        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
                 .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
         Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
         if (!triple.getLeft()) {
             return Triple.of(false, "100406", triple.getRight());
         }
+        
+        // 获取订单代扣信息计算返还金额
+        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+        
+        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
         
         // 更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
@@ -1177,9 +1171,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
-        
-        // 解冻
-        delayFreeProducer.sendDelayFreeMessage(freeDepositOrder.getOrderId(), MqProducerConstant.UN_FREE_DEPOSIT_TAG_NAME);
         
         
         return Triple.of(true, "100413", "免押押金解冻中");

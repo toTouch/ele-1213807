@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.FreeDepositOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -41,8 +42,10 @@ public class UnFreeDepositConsumer implements RocketMQListener<String> {
             log.warn("UnFreeDepositConsumer.accept.msg is null");
             return;
         }
+        log.info("UnFreeDepositConsumer Access Msg INFO! msg is {} ", msg);
         
         FreeDepositDelayDTO dto = JsonUtil.fromJson(msg, FreeDepositDelayDTO.class);
+        MDC.put("traceId", dto.getMdc());
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(dto.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
@@ -52,8 +55,9 @@ public class UnFreeDepositConsumer implements RocketMQListener<String> {
         
         log.info("UnFreeDepositConsumer Access Msg INFO! orderId is {}, authStatus is {}", dto.getOrderId(), freeDepositOrder.getAuthStatus());
         
-        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_TIMEOUT)) {
-            log.info("UnFreeDepositConsumer.status not update! freeDepositOrder.authStatus is {}, orderId is {}", freeDepositOrder.getAuthStatus(), dto.getOrderId());
+        // 如果不是解冻中，返回
+        if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
+            log.info("UnFreeDepositConsumer Info! freeDepositOrder.status not need update!  orderId is {}", dto.getOrderId());
             return;
         }
         
