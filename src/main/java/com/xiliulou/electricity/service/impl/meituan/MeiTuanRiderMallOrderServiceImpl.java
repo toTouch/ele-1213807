@@ -186,6 +186,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120141", "该订单已兑换，请勿重复兑换");
             }
             
+            if (Objects.equals(meiTuanRiderMallOrder.getMeiTuanOrderStatus(), VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode())) {
+                log.warn("MeiTuan order redeem fail! meiTuanOrderId canceled, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
+                return Triple.of(false, "120134", "兑换失败，请联系客服处理");
+            }
+            
             // 套餐ID
             Long memberCardId = meiTuanRiderMallOrder.getPackageId();
             
@@ -334,7 +339,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 pair = meiTuanBatteryMemberCardOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
             }
             
-            if (Objects.isNull(pair)) {
+            if (Objects.isNull(pair) || Objects.isNull(pair.getLeft())) {
                 log.warn("MeiTuan order redeem fail! pair is null, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
                 return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
             }
@@ -407,14 +412,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         // 发货失败
         Integer failReason = deliverRsp.getFailReason();
         if (!deliverRsp.getResult()) {
-            if (Objects.nonNull(failReason) && Objects.equals(failReason, VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode())) {
-                // 订单取消导致发货失败，“订单取消”
-                meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(failReason);
+            if (Objects.nonNull(failReason) && Objects.equals(failReason, VirtualTradeStatusEnum.CANCEL_ED_DELIVER_ERROR.getCode())) {
                 log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuan order canceled, uid={}, orderId={}", uid, orderId);
+                
+                // 订单取消导致发货失败，“订单取消”
+                meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode());
+                meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
             }
-            
-            meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
             return Boolean.FALSE;
         }
         

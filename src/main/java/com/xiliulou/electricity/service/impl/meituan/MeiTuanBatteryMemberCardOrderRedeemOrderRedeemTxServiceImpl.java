@@ -321,6 +321,8 @@ public class MeiTuanBatteryMemberCardOrderRedeemOrderRedeemTxServiceImpl impleme
             }
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveUserInfoAndOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
+    
+            electricityMemberCardOrder = null;
         } finally {
             rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
                     rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
@@ -464,6 +466,8 @@ public class MeiTuanBatteryMemberCardOrderRedeemOrderRedeemTxServiceImpl impleme
             
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! bindUserMemberCard uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
+            
+            memberCardOrder = null;
         } finally {
             rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, null, null, userBatteryMemberCardUpdateById, null,
                     serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null, null);
@@ -569,11 +573,13 @@ public class MeiTuanBatteryMemberCardOrderRedeemOrderRedeemTxServiceImpl impleme
                     electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     
                     // 封装ElectricityMemberCardOrder回滚数据
-                    rollBackElectricityMemberCardOrder = new ElectricityMemberCardOrder();
-                    rollBackElectricityMemberCardOrder.setId(existElectricityMemberCardOrder.getId());
-                    rollBackElectricityMemberCardOrder.setOrderId(userBatteryMemberCard.getOrderId());
-                    rollBackElectricityMemberCardOrder.setUseStatus(existElectricityMemberCardOrder.getUseStatus());
-                    rollBackElectricityMemberCardOrder.setUpdateTime(existElectricityMemberCardOrder.getUpdateTime());
+                    if (Objects.nonNull(existElectricityMemberCardOrder)) {
+                        rollBackElectricityMemberCardOrder = new ElectricityMemberCardOrder();
+                        rollBackElectricityMemberCardOrder.setId(existElectricityMemberCardOrder.getId());
+                        rollBackElectricityMemberCardOrder.setOrderId(userBatteryMemberCard.getOrderId());
+                        rollBackElectricityMemberCardOrder.setUseStatus(existElectricityMemberCardOrder.getUseStatus());
+                        rollBackElectricityMemberCardOrder.setUpdateTime(existElectricityMemberCardOrder.getUpdateTime());
+                    }
                 }
                 
                 // 更新用户电池型号
@@ -700,6 +706,8 @@ public class MeiTuanBatteryMemberCardOrderRedeemOrderRedeemTxServiceImpl impleme
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveRenewalUserBatteryMemberCardOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(),
                     e);
+            
+            memberCardOrder = null;
         } finally {
             rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, rollBackElectricityMemberCardOrder, rollBackUserInfo, userBatteryTypes, null, null, null,
                     rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordById,
