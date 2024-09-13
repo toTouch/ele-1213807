@@ -494,6 +494,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
         
+        log.info("MeiTuanLimitTradeCheck info! userInfoGroups={}, uid={}", userInfoGroups, userInfo.getUid());
+        
         if (CollectionUtils.isNotEmpty(userInfoGroups)) {
             // 自定义用户分组用户不可购买系统分组套餐：限制
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
