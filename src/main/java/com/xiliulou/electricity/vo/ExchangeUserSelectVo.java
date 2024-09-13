@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class ExchangeUserSelectVo {
     
     /**
-     * 是否进入多次换电，1是，0否
+     * 是否进入多次换电，1是，0否，前端根据这个字段判断是否弹窗
      */
     private Integer isEnterMoreExchange;
     

@@ -1303,14 +1303,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100004", "柜机不在线");
         }
         
-        //这里加柜机的缓存，为了限制不同时分配格挡
-        if (!redisService.setNx(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 5 * 1000L, false)) {
-            return Triple.of(false, "100214", "已有其他用户正在使用中，请稍后再试");
-        }
-        
-        if (!redisService.setNx(CacheConstant.ORDER_TIME_UID + user.getUid(), "1", 5 * 1000L, false)) {
-            return Triple.of(false, "100002", "下单过于频繁");
-        }
+       
         
         try {
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
@@ -1349,15 +1342,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             }
             
-            // 如果超过5分钟或者返回false，下次扫码不进多次换电
+            // 如果超过5分钟或者返回false，前端不进行弹窗
             ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
             vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
             return Triple.of(true, null, vo);
         } catch (BizException e) {
             throw new BizException(e.getErrCode(), e.getErrMsg());
-        } finally {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());
         }
     }
     
