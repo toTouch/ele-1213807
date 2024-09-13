@@ -37,7 +37,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
-import com.xiliulou.electricity.service.meituan.MeiTuanBatteryMemberCardOrderRedeemTxService;
+import com.xiliulou.electricity.service.meituan.MeiTuanOrderRedeemTxService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -132,7 +132,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     private FranchiseeService franchiseeService;
     
     @Resource
-    private MeiTuanBatteryMemberCardOrderRedeemTxService meiTuanBatteryMemberCardOrderRedeemTxService;
+    private MeiTuanOrderRedeemTxService meiTuanOrderRedeemTxService;
     
     @Slave
     @Override
@@ -295,7 +295,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
                 if (Objects.isNull(userBatteryMemberCard)) {
                     // 给用户绑定套餐
-                    pair = meiTuanBatteryMemberCardOrderRedeemTxService.bindUserMemberCard(userInfo, batteryMemberCard, meiTuanRiderMallOrder);
+                    pair = meiTuanOrderRedeemTxService.bindUserMemberCard(userInfo, batteryMemberCard, meiTuanRiderMallOrder);
                 } else {
                     if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                         log.warn("MeiTuan order redeem fail! userBatteryMemberCard disable,uid={},mid={}", uid, memberCardId);
@@ -328,7 +328,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     }
                     
                     // 续费套餐
-                    pair = meiTuanBatteryMemberCardOrderRedeemTxService.saveRenewalUserBatteryMemberCardOrder(userInfo, batteryMemberCard, userBatteryMemberCard,
+                    pair = meiTuanOrderRedeemTxService.saveRenewalUserBatteryMemberCardOrder(userInfo, batteryMemberCard, userBatteryMemberCard,
                             userBindBatteryMemberCard, meiTuanRiderMallOrder, userBindBatteryTypes, memberCardBatteryTypes);
                 }
             } else {
@@ -337,7 +337,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
                 }
                 
-                pair = meiTuanBatteryMemberCardOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
+                pair = meiTuanOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
             }
             
             if (Objects.isNull(pair) || Objects.isNull(pair.getLeft())) {
@@ -352,7 +352,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
             // 发货失败，执行回滚
             if (!deliverResult) {
-                meiTuanBatteryMemberCardOrderRedeemTxService.rollback(rollBackBO);
+                meiTuanOrderRedeemTxService.rollback(rollBackBO);
                 log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
             }
@@ -360,7 +360,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             return Triple.of(true, "", null);
         } catch (Exception e) {
             // 异常，执行回滚
-            meiTuanBatteryMemberCardOrderRedeemTxService.rollback(rollBackBO);
+            meiTuanOrderRedeemTxService.rollback(rollBackBO);
             log.error("MeiTuan order redeem fail! uid={}, meiTuanOrderId={}, e={}", uid, meiTuanOrderId, e);
             return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
         } finally {

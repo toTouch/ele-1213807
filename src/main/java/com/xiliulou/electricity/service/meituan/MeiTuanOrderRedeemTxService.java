@@ -15,7 +15,7 @@ import java.util.List;
  * @description
  * @date 2024/9/13 08:59:14
  */
-public interface MeiTuanBatteryMemberCardOrderRedeemTxService {
+public interface MeiTuanOrderRedeemTxService {
     
     Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> saveUserInfoAndOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, MeiTuanRiderMallOrder meiTuanRiderMallOrder);

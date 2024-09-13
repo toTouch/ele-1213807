@@ -26,7 +26,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.meituan.MeiTuanBatteryMemberCardOrderRedeemTxService;
+import com.xiliulou.electricity.service.meituan.MeiTuanOrderRedeemTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class MeiTuanBatteryMemberCardOrderRedeemOrderRedeemTxServiceImpl implements MeiTuanBatteryMemberCardOrderRedeemTxService {
+public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxService {
     
     @Resource
     private UserInfoService userInfoService;

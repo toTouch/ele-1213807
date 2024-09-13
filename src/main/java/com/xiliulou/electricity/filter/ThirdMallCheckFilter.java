@@ -69,6 +69,8 @@ public class ThirdMallCheckFilter implements Filter {
         paramMap.put(VirtualTradeConstant.APP_KEY, appKey);
         paramMap.put(VirtualTradeConstant.ACCOUNT, httpServletRequest.getAttribute(VirtualTradeConstant.ACCOUNT));
         paramMap.put(VirtualTradeConstant.PROVIDER_SKU_ID, httpServletRequest.getAttribute(VirtualTradeConstant.PROVIDER_SKU_ID));
+    
+        log.info("ThirdMall request param: {}", paramMap);
         
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
         if (Objects.isNull(meiTuanRiderMallConfig)) {
@@ -85,6 +87,9 @@ public class ThirdMallCheckFilter implements Filter {
         }
         
         ThirdMallConfigHolder.setTenantId(meiTuanRiderMallConfig.getTenantId());
+    
+        log.info("ThirdMall tenantId={}", ThirdMallConfigHolder.getTenantId());
+        
         try {
             filterChain.doFilter(servletRequest, response);
         } finally {
