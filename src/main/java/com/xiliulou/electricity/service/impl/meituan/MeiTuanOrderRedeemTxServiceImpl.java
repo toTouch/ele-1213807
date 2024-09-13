@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.meituan;
 
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.bo.meituan.MeiTuanOrderRedeemRollBackBO;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
@@ -321,13 +322,12 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             }
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveUserInfoAndOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
-            
-            electricityMemberCardOrder = null;
-        } finally {
-            rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
-                    rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
-                    eleUserDepositOperateRecordById, eleUserMemberCardOperateRecordById, null, null);
+            throw new CustomBusinessException(e.getMessage());
         }
+        
+        rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
+                rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
+                eleUserDepositOperateRecordById, eleUserMemberCardOperateRecordById, null, null);
         
         return Pair.of(electricityMemberCardOrder, rollBackBO);
     }
@@ -409,8 +409,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                     batteryTypeList = batteryTypeList.stream().filter(t -> !userBatteryTypeList.contains(t)).collect(Collectors.toList());
                 }
                 
-                userBatteryTypes = userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo);
-                userBatteryTypeService.batchInsert(userBatteryTypes);
+                if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                    userBatteryTypes = userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo);
+                    userBatteryTypeService.batchInsert(userBatteryTypes);
+                }
             }
             
             serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
@@ -466,12 +468,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! bindUserMemberCard uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(), e);
-            
-            memberCardOrder = null;
-        } finally {
-            rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, null, null, userBatteryMemberCardUpdateById, null,
-                    serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null, null);
+            throw new CustomBusinessException(e.getMessage());
         }
+        rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, null, null, userBatteryMemberCardUpdateById, null,
+                serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordId, null, null);
         
         return Pair.of(memberCardOrder, rollBackBO);
     }
@@ -706,13 +706,11 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! saveRenewalUserBatteryMemberCardOrder uid={}, meiTuanOrderId={}", userInfo.getUid(), meiTuanRiderMallOrder.getMeiTuanOrderId(),
                     e);
-            
-            memberCardOrder = null;
-        } finally {
-            rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, rollBackElectricityMemberCardOrder, rollBackUserInfo, userBatteryTypes, null, null, null,
-                    rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordById,
-                    insertUserBatteryTypeListForRollBack, userBatteryMemberCardPackageId);
+            throw new CustomBusinessException(e.getMessage());
         }
+        rollBackBO = buildRollBackData(null, electricityMemberCardOrderById, rollBackElectricityMemberCardOrder, rollBackUserInfo, userBatteryTypes, null, null, null,
+                rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo, null, eleUserMemberCardOperateRecordById, insertUserBatteryTypeListForRollBack,
+                userBatteryMemberCardPackageId);
         
         return Pair.of(memberCardOrder, rollBackBO);
     }
