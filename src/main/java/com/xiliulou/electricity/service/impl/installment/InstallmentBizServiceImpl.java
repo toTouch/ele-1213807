@@ -409,7 +409,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 
                 // 二维码缓存3天，利用zSet实现延时取消签约，分数为三天后的当前时刻减去2分钟
                 // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
-                double score = (double) Instant.now().plus(5, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
+                double score = (double) Instant.now().plus(7, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
                 redisService.zsetAddString(CACHE_INSTALLMENT_CANCEL_SIGN, installmentRecord.getExternalAgreementNo(), score);
                 redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), 3L, TimeUnit.DAYS);
                 log.info("取消签约定时任务调试，存入请求签约号2，externalAgreementNo={}，score={}", installmentRecord.getExternalAgreementNo(), score);
@@ -601,7 +601,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         log.info("回调调试，代扣开始，deductionPlan={}", deductionPlan);
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             log.info("回调调试，代扣获取锁失败");
-            return Triple.of(false, "301014", "有未完成的解约申请");
+            return Triple.of(false, "301023", "操作频繁，请3秒后再试");
         }
         
         // payNo仅有20个字符，用uid加时间秒值不会重复
