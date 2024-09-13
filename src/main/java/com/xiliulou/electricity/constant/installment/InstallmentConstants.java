@@ -160,4 +160,8 @@ public interface InstallmentConstants {
      */
     String AGREEMENT_PAY_QUERY_STATUS_SUCCESS = "TRADE_SUCCESS";
     
+    /**
+     * 分期套餐最大天数
+     */
+    Integer INSTALLMENT_MAX_VALID_DAYS = 749;
 }

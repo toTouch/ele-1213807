@@ -85,6 +85,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_MAX_VALID_DAYS;
 import static com.xiliulou.electricity.entity.BatteryMemberCard.BUSINESS_TYPE_INSTALLMENT_BATTERY;
 
 /**
@@ -814,6 +815,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100271", "请先下架套餐再进行编辑操作");
         }
         
+        if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
+            return Triple.of(false, "301022", "分期套餐租期不能超过749天");
+        }
+        
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
         batteryMemberCardUpdate.setId(batteryMemberCard.getId());
         batteryMemberCardUpdate.setName(query.getName());
@@ -912,6 +917,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (selectByPageCount(queryCount) >= BatteryMemberCardConstants.MAX_BATTERY_MEMBER_CARD_NUM) {
                 return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
             }
+        }
+        
+        if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
+            return Triple.of(false, "301022", "分期套餐租期不能超过749天");
         }
         
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
