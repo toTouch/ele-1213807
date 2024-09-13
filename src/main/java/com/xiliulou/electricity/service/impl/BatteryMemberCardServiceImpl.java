@@ -832,7 +832,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
-            return Triple.of(false, "301022", "分期套餐租期不能超过749天");
+            return Triple.of(false, "301022", "可分期数最多支持24期，请修改租期");
         }
         
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
@@ -942,7 +942,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
-            return Triple.of(false, "301022", "分期套餐租期不能超过749天");
+            return Triple.of(false, "301022", "可分期数最多支持24期，请修改租期");
         }
         
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
