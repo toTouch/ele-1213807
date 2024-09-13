@@ -290,6 +290,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecordVO.setDownPayment(batteryMemberCard.getDownPayment());
             installmentRecordVO.setRentPrice(batteryMemberCard.getRentPrice());
             installmentRecordVO.setUnpaidAmount(batteryMemberCard.getRentPrice().subtract(installmentRecord.getPaidAmount()));
+            installmentRecordVO.setValidDays(batteryMemberCard.getValidDays());
             
             if (Objects.equals(installmentRecordVO.getInstallmentNo(), 1)) {
                 return;

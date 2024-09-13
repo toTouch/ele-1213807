@@ -72,4 +72,10 @@ public interface InstallmentTerminatingRecordService {
      */
     InstallmentTerminatingRecord queryById(Long id);
     
+    /**
+     * 根据请求签约号查询最新解约记录
+     * @param externalAgreementNo 请求签约号
+     * @return 解约记录
+     */
+    InstallmentTerminatingRecord queryLatestByExternalAgreementNo(String externalAgreementNo);
 }

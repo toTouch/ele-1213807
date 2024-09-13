@@ -77,4 +77,9 @@ public class InstallmentRecordVO extends InstallmentRecord {
      * 解约申请被拒绝的最新的原因
      */
     private String opinion;
+    
+    /**
+     * 套餐租期
+     */
+    private Integer validDays;
 }

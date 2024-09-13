@@ -831,7 +831,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, triple.getMiddle(), triple.getRight());
         }
         
-        if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(batteryMemberCard.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
+        if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
             return Triple.of(false, "301022", "分期套餐租期不能超过749天");
         }
         
@@ -856,6 +856,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardUpdate.setUserInfoGroupIds(Objects.isNull(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
+        batteryMemberCardUpdate.setBusinessType(query.getBusinessType());
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
         } else {

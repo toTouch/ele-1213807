@@ -327,7 +327,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             Triple<Boolean, String, Object> initiatingDeductTriple = initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
             
             if (Objects.nonNull(initiatingDeductTriple)) {
-                return initiatingDeductTriple.getLeft() ? R.ok() : R.fail(initiatingDeductTriple.getMiddle());
+                return initiatingDeductTriple.getLeft() ? R.ok() : R.fail(initiatingDeductTriple.getMiddle(), (String) initiatingDeductTriple.getRight());
             }
         } catch (Exception e) {
             log.error("INSTALLMENT DEDUCT ERROR!", e);
@@ -525,9 +525,17 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         } else {
             installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCELLED);
         }
-        
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordService.update(installmentRecordUpdate);
+        
+        // 更新解约记录
+        InstallmentTerminatingRecord terminatingRecord = installmentTerminatingRecordService.queryLatestByExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
+        terminatingRecordUpdate.setId(terminatingRecord.getId());
+        terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_RELEASE);
+        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentTerminatingRecordService.update(terminatingRecordUpdate);
+        
         return R.ok();
     }
     
@@ -593,7 +601,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         log.info("回调调试，代扣开始，deductionPlan={}", deductionPlan);
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             log.info("回调调试，代扣获取锁失败");
-            return Triple.of(false, "已对该用户执行代扣，请稍候再试", null);
+            return Triple.of(false, "301014", "有未完成的解约申请");
         }
         
         // payNo仅有20个字符，用uid加时间秒值不会重复
@@ -672,7 +680,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
         deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentDeductionRecordService.update(deductionRecordUpdate);
-        return Triple.of(false, "代扣失败", null);
+        return Triple.of(false, "301006", "代扣失败");
     }
     
     @Override

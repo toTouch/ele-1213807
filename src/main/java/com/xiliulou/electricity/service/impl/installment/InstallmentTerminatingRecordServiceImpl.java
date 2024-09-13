@@ -138,4 +138,9 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecordMapper.selectById(id);
     }
     
+    @Override
+    public InstallmentTerminatingRecord queryLatestByExternalAgreementNo(String externalAgreementNo) {
+        return installmentTerminatingRecordMapper.selectLatestByExternalAgreementNo(externalAgreementNo);
+    }
+    
 }
