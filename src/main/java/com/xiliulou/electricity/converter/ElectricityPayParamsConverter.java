@@ -8,12 +8,13 @@ import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRequest;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3CommonRequest;
 import org.springframework.beans.BeanUtils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,18 @@ import java.util.stream.Collectors;
  * @date 2024/6/12 16:51
  */
 public class ElectricityPayParamsConverter {
+    
+    
+    public static WechatProfitSharingCommonRequest optWechatProfitSharingCommonRequest(WechatPayParamsDetails wechatPayParamsDetails){
+        WechatProfitSharingCommonRequest wechatProfitSharingCommonRequest = new WechatProfitSharingCommonRequest();
+        wechatProfitSharingCommonRequest.setAppid(wechatPayParamsDetails.getMerchantMinProAppId());
+        wechatProfitSharingCommonRequest.setMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+        wechatProfitSharingCommonRequest.setCertificateSerialNo(wechatPayParamsDetails.getWechatMerchantCertificateSno());
+        wechatProfitSharingCommonRequest.setPrivateKey(wechatPayParamsDetails.getPrivateKey());
+        wechatProfitSharingCommonRequest.setX509CertificateHashMap(wechatPayParamsDetails.getWechatPlatformCertificateMap());
+        return wechatProfitSharingCommonRequest;
+        
+    }
     
     /**
      * 操作参数转换
@@ -80,4 +93,7 @@ public class ElectricityPayParamsConverter {
                 .privateKey(payParamsDetails.getPrivateKey()).build();
     }
     
+    public static List<WechatPayParamsDetails> qryDoToDetailsList(List<ElectricityPayParams> electricityPayParams) {
+        return Optional.ofNullable(electricityPayParams).orElse(Collections.emptyList()).stream().map(ElectricityPayParamsConverter::qryDoToDetails).collect(Collectors.toList());
+    }
 }

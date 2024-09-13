@@ -133,6 +133,9 @@
         </foreach>
         and tenant_id = #{tenantId}
     </select>
+    <select id="countByThirdIdAndSourceAndTenantId" resultType="java.lang.Integer">
+        select count(1) from t_user_oauth_bind where tenant_id=#{tenantId} and third_id=#{thirdId} and source=#{source}
+    </select>
     
     <delete id="deleteByUid">
         delete from t_user_oauth_bind where uid = #{uid} and tenant_id = #{tenantId}

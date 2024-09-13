@@ -186,9 +186,15 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
+        // 检测用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (ObjectUtils.isEmpty(userInfo)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_user_info. uid is {}", uid);
+            return null;
+        }
         // 定义返回信息
         FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
-        
+        //这个key代表业务一定是回调成功了，即免押必定是成功的
         String freeSuccessKey = String.format(CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY,tenantId, uid);
         if (redisService.hasKey(freeSuccessKey)){
             String order = redisService.get(freeSuccessKey);
@@ -198,21 +204,48 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 return null;
             }
             // 成功返回判定，前端按照时间比对轮询
-            freeDepositUserInfoVo.setApplyCarDepositTime(freeDepositOrder.getCreateTime());
-            freeDepositUserInfoVo.setCarDepositAuthStatus(freeDepositOrder.getAuthStatus());
+            if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(freeDepositOrder.getDepositType()) || FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(freeDepositOrder.getDepositType())) {
+                freeDepositUserInfoVo.setApplyCarDepositTime(freeDepositOrder.getCreateTime());
+                freeDepositUserInfoVo.setCarDepositAuthStatus(freeDepositOrder.getAuthStatus());
+            }
+            
+            //免押成功了，删除对于的key，并返回
+            //1.有一种情况未必进入，免押后前端没有调用该接口，就会导致这个key长期持有，此时状态发生改变，也不会进入
             if (Objects.equals(freeDepositOrder.getAuthStatus(),FreeDepositOrder.AUTH_FROZEN)){
                 redisService.delete(freeSuccessKey);
+                return freeDepositUserInfoVo;
             }
-            return freeDepositUserInfoVo;
         }
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
         if (redisService.hasKey(userKey)){
-            freeDepositUserInfoVo.setApplyCarDepositTime(System.currentTimeMillis());
+            CarRentalPackageDepositPayPo depositPayPo = carRentalPackageDepositPayService.selectLastByUid(tenantId, uid);
+            freeDepositUserInfoVo.setApplyCarDepositTime(ObjectUtils.defaultIfNull(depositPayPo.getCreateTime(),0L));
             freeDepositUserInfoVo.setCarDepositAuthStatus(FreeDepositOrder.AUTH_FREEZING);
             return freeDepositUserInfoVo;
         }
-        
-        return null;
+        //当业务到这里，说明既没有免押成功的，也没有免押中的，此时该用户对应的订单即失效
+        if (redisService.hasKey(freeSuccessKey)){
+            redisService.delete(freeSuccessKey);
+        }
+        // 查询会员期限信息
+        CarRentalPackageMemberTermPo memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_car_rental_package_member_term. uid is {}", uid);
+            return null;
+        }
+        // 查询免押记录信息
+        String depositPayOrderNo = memberTermEntity.getDepositPayOrderNo();
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(depositPayOrderNo);
+        if (ObjectUtils.isEmpty(freeDepositOrder)) {
+            log.warn("CarRenalPackageDepositBizService.queryFreeDepositStatus failed. not found t_free_deposit_order. depositPayOrderNo is {}", depositPayOrderNo);
+            return null;
+        }
+        // 成功返回判定，前端按照时间比对轮询
+        if (FreeDepositOrder.DEPOSIT_TYPE_CAR.equals(freeDepositOrder.getDepositType()) || FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY.equals(freeDepositOrder.getDepositType())) {
+            freeDepositUserInfoVo.setApplyCarDepositTime(freeDepositOrder.getCreateTime());
+            freeDepositUserInfoVo.setCarDepositAuthStatus(freeDepositOrder.getAuthStatus());
+        }
+        return freeDepositUserInfoVo;
     }
     
     /**

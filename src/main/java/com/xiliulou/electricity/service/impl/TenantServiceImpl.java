@@ -416,6 +416,12 @@ public class TenantServiceImpl implements TenantService {
         return tenantMapper.queryCount(tenantQuery);
     }
     
+    @Slave
+    @Override
+    public List<Integer> queryIdListByStartId(Integer startId,Integer size) {
+        return tenantMapper.selectIdListByStartId(startId,size);
+    }
+    
     
     /**
      * 生成新的租户code
