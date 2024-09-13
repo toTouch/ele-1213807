@@ -43,6 +43,7 @@ import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.ThirdMallConfigHolder;
 import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
 import com.xiliulou.thirdmall.config.meituan.MeiTuanRiderMallHostConfig;
@@ -417,7 +418,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 
                 // 订单取消导致发货失败，“订单取消”
                 meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_CANCELED.getCode());
+                // 修改同步对账状态为“已处理”
+                meiTuanRiderMallOrderUpdate.setOrderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
                 meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                
                 meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
             }
             return Boolean.FALSE;
@@ -430,6 +434,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(VirtualTradeStatusEnum.ORDER_STATUS_DELIVERED.getCode());
         // 修改同步对账状态为“已处理”
         meiTuanRiderMallOrderUpdate.setOrderSyncStatus(VirtualTradeStatusEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
+        // 修改订单状态为“已使用”
         meiTuanRiderMallOrderUpdate.setOrderUseStatus(VirtualTradeStatusEnum.ORDER_USE_STATUS_USED.getCode());
         meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
         
@@ -463,10 +468,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request, MeiTuanRiderMallConfig meiTuanRiderMallConfig) {
-        Integer tenantId = meiTuanRiderMallConfig.getTenantId();
-        Long timestamp = request.getTimestamp();
-        String sign = request.getSign();
+    public LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest request) {
+        Integer tenantId = ThirdMallConfigHolder.getTenantId();
         Long memberCardId = Long.valueOf(request.getProviderSkuId());
         String phone = request.getAccount();
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
@@ -496,8 +499,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (CollectionUtils.isNotEmpty(userInfoGroups)) {
             // 自定义用户分组用户不可购买系统分组套餐：限制
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup cannot purchase systemGroup memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
+                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup cannot purchase systemGroup memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
                 return limit;
             }
             
@@ -505,28 +507,24 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
             // 自定义用户分组中没有该用户，不可购买指定套餐：限制
             if (CollectionUtils.isEmpty(userGroupIds)) {
-                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup not contain systemGroup, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId, timestamp,
-                        sign);
+                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup not contain systemGroup, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
                 return limit;
             }
         } else {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                log.warn("MeiTuanLimitTradeCheck warn! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
+                log.warn("MeiTuanLimitTradeCheck warn! SystemGroup cannot purchase useInfoGroup memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
                 return limit;
             }
             
             // 老用户不可购买新套餐：限制
             if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-                log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
+                log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
                 return limit;
             }
             
             // 新用户不可购买续费套餐：限制
             if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
-                log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, uid={}, mid={}, timestamp={}, sign={}", userInfo.getUid(), memberCardId,
-                        timestamp, sign);
+                log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
                 return limit;
             }
         }

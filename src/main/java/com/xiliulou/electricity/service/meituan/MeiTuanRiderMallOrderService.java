@@ -28,6 +28,6 @@ public interface MeiTuanRiderMallOrderService {
     /**
      * 美团骑手商城限制提单校验
      */
-    LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest limitTradeRequest, MeiTuanRiderMallConfig meiTuanRiderMallConfig);
+    LimitTradeVO meiTuanLimitTradeCheck(LimitTradeRequest limitTradeRequest);
     
 }
