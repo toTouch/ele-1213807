@@ -204,7 +204,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private UserBatteryTypeService userBatteryTypeService;
     
     @Resource
-    private Jt808RetrofitWrapService jt808RetrofitService;
+    private Jt808RetrofitWrapService jt808RetrofitWrapService;
     
     @Resource
     private CarRentalOrderService carRentalOrderService;
@@ -2589,7 +2589,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             // 车辆锁状态
             if (StringUtils.isNotBlank(electricityCar.getSn())) {
-                R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
+                R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
                 if (result.isSuccess()) {
                     lockType = result.getData().getDoorStatus();
                 }

@@ -253,7 +253,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     ElectricityCarService electricityCarService;
     
     @Autowired
-    Jt808RetrofitWrapService jt808RetrofitService;
+    Jt808RetrofitWrapService jt808RetrofitWrapService;
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;

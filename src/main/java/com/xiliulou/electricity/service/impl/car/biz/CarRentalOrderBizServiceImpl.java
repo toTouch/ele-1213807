@@ -88,7 +88,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
     private ElectricityConfigService electricityConfigService;
     
     @Resource
-    private Jt808RetrofitWrapService jt808RetrofitService;
+    private Jt808RetrofitWrapService jt808RetrofitWrapService;
     
     @Resource
     private EleBindCarRecordService eleBindCarRecordService;
@@ -1108,7 +1108,7 @@ public class CarRentalOrderBizServiceImpl implements CarRentalOrderBizService {
         retryCount = retryCount > 5 ? 5 : retryCount;
         
         for (int i = 0; i < retryCount; i++) {
-            R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
+            R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
             if (result.isSuccess()) {
                 return true;
             }
