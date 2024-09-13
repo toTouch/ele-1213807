@@ -19,15 +19,15 @@ public class LimitTradeRequest {
     @NotBlank(message = "appKey不能为空")
     private String appKey;
     
-    @NotNull(message = "时间戳不能为空")
+    @NotNull(message = "timestamp不能为空")
     private Long timestamp;
     
     @NotBlank(message = "sign不能为空")
     private String sign;
     
-    @NotBlank(message = "手机号不能为空")
+    @NotBlank(message = "account不能为空")
     private String account;
     
-    @NotNull(message = "套餐ID不能为空")
+    @NotNull(message = "providerSkuId不能为空")
     private String providerSkuId;
 }

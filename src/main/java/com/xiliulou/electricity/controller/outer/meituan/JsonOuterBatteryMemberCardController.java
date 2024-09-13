@@ -9,6 +9,7 @@ import com.xiliulou.thirdmall.entity.meituan.response.JsonR;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import com.xiliulou.thirdmall.util.meituan.MeiTuanRiderMallUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,7 +34,7 @@ public class JsonOuterBatteryMemberCardController {
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     @PostMapping("/outer/batteryMemberCard/limitTrade")
-    public JsonR meiTuanLimitTradeCheck(LimitTradeRequest limitTradeRequest) {
+    public JsonR meiTuanLimitTradeCheck(@Validated LimitTradeRequest limitTradeRequest) {
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(VirtualTradeConstant.TIMESTAMP, limitTradeRequest.getTimestamp());
         paramMap.put(VirtualTradeConstant.APP_ID, limitTradeRequest.getAppId());
