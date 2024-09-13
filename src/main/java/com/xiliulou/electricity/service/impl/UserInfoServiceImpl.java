@@ -69,6 +69,7 @@ import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.request.user.BindBatteryRequest;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -2659,6 +2660,192 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         return UserAccountInfoVO.builder().uid(userInfo.getUid()).userName(userInfo.getName()).phone(userInfo.getPhone())
                 .idNumber(DesensitizationUtil.idCard(userInfo.getIdNumber(), 6, 4)).authStatus(userInfo.getAuthStatus()).build();
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R bindBattery(BindBatteryRequest bindBatteryRequest) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("user bind battery warn! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!redisService.setNx(CacheConstant.CACHE_USER_BIND_BATTERY_LOCK + user.getUid(), "1", 5 * 1000L, false)) {
+            return R.fail(false, "000000", "操作频繁，请稍后再试！");
+        }
+    
+        try {
+            // 租户
+            Integer tenantId = TenantContextHolder.getTenantId();
+    
+            // 查询有没有绑定过电池，区分了绑定与编辑两种操作类型，编辑操作才会退掉已绑定电池，所以对绑定操作在此处做校验进行拦截
+            ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(user.getUid());
+            if (Objects.nonNull(isBindElectricityBattery)) {
+                return R.fail("100032", "该用户已绑定电池");
+            }
+        
+            UserInfo userInfo = queryByUidFromCache(user.getUid());
+            if (Objects.isNull(userInfo) || !Objects.equals(tenantId, userInfo.getTenantId())) {
+                return R.fail("ELECTRICITY.0019", "未找到用户");
+            }
+        
+            // 未实名认证
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.warn("user bind battery warn! user not auth! uid={} ", userInfo.getUid());
+                return R.fail("ELECTRICITY.0041", "未实名认证");
+            }
+        
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                return R.fail("ELECTRICITY.0024", "用户已被禁用");
+            }
+        
+            // 判断是否缴纳押金
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (!(Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) || Objects.equals(userInfo.getCarBatteryDepositStatus(),
+                    YesNoEnum.YES.getCode()))) {
+                log.warn("user bind battery warn! not pay deposit! uid={} ", userInfo.getUid());
+                return R.fail("ELECTRICITY.0042", "未缴纳押金");
+            }
+        
+            Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                // 判断电池滞纳金
+            
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userBatteryMemberCard)) {
+                    log.warn("user bind battery warn! user haven't memberCard uid={}", userInfo.getUid());
+                    return R.fail("100210", "用户未开通套餐");
+                }
+            
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.warn("user bind battery warn! user's member card is stop! uid={}", userInfo.getUid());
+                    return R.fail("100211", "换电套餐停卡审核中");
+                }
+            
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.warn("user bind battery warn! user's member card is stop! uid={}", userInfo.getUid());
+                    return R.fail("100211", "换电套餐已暂停");
+                }
+            
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    log.warn("user bind battery warn! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+                    return R.fail("ELECTRICITY.00121", "套餐不存在");
+                }
+            
+                if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(batteryMemberCard.getBusinessType())) {
+                    orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_ENTERPRISE.getCode();
+                }
+            
+                // 判断用户电池服务费
+                Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
+                        batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+                    log.warn("user bind battery warn! user exist battery service fee,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                }
+            
+                if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
+                        && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+                    log.warn("user bind battery warn! battery memberCard is Expire,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.0023", "套餐已过期");
+                }
+            
+                // 判断车电关联是否可租电
+                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+                if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                    if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+                        try {
+                            if (carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())) {
+                                log.warn("user bind battery warn! user car memberCard expire,uid={}", userInfo.getUid());
+                                return R.fail("100233", "租车套餐已过期");
+                            }
+                        } catch (Exception e) {
+                            log.error("user bind battery error! acquire car memberCard expire result fail,uid={}", userInfo.getUid(), e);
+                        }
+                    }
+                }
+            } else {
+                carRentalPackageMemberTermBizService.verifyMemberSwapBattery(userInfo.getTenantId(), userInfo.getUid());
+            }
+        
+            // 判断电池是否存在，或者已经被绑定
+            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(bindBatteryRequest.getBatterySn());
+            if (Objects.isNull(oldElectricityBattery)) {
+                log.warn("user bind battery warn! not found Battery! batteryName={}", bindBatteryRequest.getBatterySn());
+                return R.fail("ELECTRICITY.0020", "未找到电池");
+            }
+            
+            if (!Objects.equals(oldElectricityBattery.getTenantId(), userInfo.getTenantId())) {
+                log.warn("user bind battery warn! not found Battery! batteryName={}", bindBatteryRequest.getBatterySn());
+                return R.fail("100225", "电池编码不存在");
+            }
+            
+            if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfo.getUid())) {
+                log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
+                return R.fail("100019", "该电池已经绑定用户");
+            }
+        
+            if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
+                        oldElectricityBattery.getFranchiseeId());
+                return R.fail("100371", "电池加盟商与用户加盟商不一致");
+            }
+        
+            // 多型号  绑定电池需要判断电池是否和用户型号一致
+            Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, userInfo);
+            if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
+                return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
+            }
+        
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            Integer update = updateByUid(updateUserInfo);
+        
+            Integer finalOrderType = orderType;
+            DbUtils.dbOperateSuccessThen(update, () -> {
+                // 添加租电池记录
+                RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+                rentBatteryOrder.setUid(userInfo.getUid());
+                rentBatteryOrder.setName(userInfo.getName());
+                rentBatteryOrder.setPhone(userInfo.getPhone());
+                rentBatteryOrder.setElectricityBatterySn(bindBatteryRequest.getBatterySn());
+                rentBatteryOrder.setBatteryDeposit(Objects.isNull(userBatteryDeposit) ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit());
+                rentBatteryOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_BATTERY, user.getUid()));
+                rentBatteryOrder.setStatus(RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS);
+                rentBatteryOrder.setFranchiseeId(userInfo.getFranchiseeId());
+                rentBatteryOrder.setStoreId(userInfo.getStoreId());
+                rentBatteryOrder.setTenantId(userInfo.getTenantId());
+                rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+                rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+                rentBatteryOrder.setType(RentBatteryOrder.TYPE_USER_UNBIND);
+                rentBatteryOrder.setOrderType(finalOrderType);
+                rentBatteryOrderService.insert(rentBatteryOrder);
+            
+                // 修改电池状态
+                ElectricityBattery electricityBattery = new ElectricityBattery();
+                electricityBattery.setId(oldElectricityBattery.getId());
+                electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
+                electricityBattery.setElectricityCabinetId(null);
+                electricityBattery.setElectricityCabinetName(null);
+                electricityBattery.setUid(userInfo.getUid());
+                electricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBattery.setBindTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(electricityBattery);
+            
+                enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
+            
+                // 记录企业用户租电池记录
+                enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+                return null;
+            });
+            return R.ok();
+        } finally {
+            redisService.delete(CacheConstant.CACHE_USER_BIND_BATTERY_LOCK + user.getUid());
+        }
     }
     
 }
