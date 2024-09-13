@@ -347,7 +347,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).id(mid).franchiseeId(franchiseeId).status(status)
-                .businessTypes(businessType == null ? Arrays.asList(BUSINESS_TYPE_BATTERY, BUSINESS_TYPE_INSTALLMENT_BATTERY) : List.of(businessType)).rentType(rentType)
+                .businessTypes(businessType == null ? List.of(BUSINESS_TYPE_BATTERY) : List.of(businessType)).rentType(rentType)
                 .rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL).build();
         
         return R.ok(batteryMemberCardService.selectByPageForMerchant(query));
