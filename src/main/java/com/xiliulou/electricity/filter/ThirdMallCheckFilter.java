@@ -2,6 +2,8 @@ package com.xiliulou.electricity.filter;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
@@ -13,6 +15,7 @@ import com.xiliulou.thirdmall.entity.meituan.response.JsonR;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import com.xiliulou.thirdmall.util.meituan.MeiTuanRiderMallUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.Order;
@@ -32,6 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -43,7 +48,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component("thirdMallCheckFilter")
-@Order(15)
+@Order(11)
 public class ThirdMallCheckFilter implements Filter {
     
     @Resource
@@ -86,28 +91,35 @@ public class ThirdMallCheckFilter implements Filter {
         
         log.info("ThirdMallCheckFilter info! params={}", params);
         
-        Type type = new TypeToken<Map<String, String>>() {
-        }.getType();
-        Map<String, Object> paramMap = JsonUtil.fromJson(params, type);
+        Map<String, Object> paramMap = new HashMap<>();
         String appId = null;
         String appKey = null;
         String sign = null;
-        
-        for (Map.Entry<String, Object> entry : paramMap.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
+        try {
+            Type type = new TypeToken<Map<String, List<String>>>() {
+            }.getType();
+            Map<String, List<String>> paramsMap = new Gson().fromJson(params, type);
             
-            if (Objects.nonNull(value)) {
-                if (Objects.equals(VirtualTradeConstant.APP_ID, key)) {
-                    appId = value.toString();
-                } else if (Objects.equals(VirtualTradeConstant.APP_KEY, key)) {
-                    appKey = value.toString();
-                } else if (Objects.equals(VirtualTradeConstant.SIGN, key)) {
-                    sign = value.toString();
+            for (Map.Entry<String, List<String>> entry : paramsMap.entrySet()) {
+                String key = entry.getKey();
+                List<String> value = entry.getValue();
+                
+                if (CollectionUtils.isNotEmpty(value)) {
+                    if (Objects.equals(VirtualTradeConstant.APP_ID, key)) {
+                        appId = value.get(0);
+                    } else if (Objects.equals(VirtualTradeConstant.APP_KEY, key)) {
+                        appKey = value.get(0);
+                    } else if (Objects.equals(VirtualTradeConstant.SIGN, key)) {
+                        sign = value.get(0);
+                    }
+                    
+                    paramMap.put(key, value.get(0));
                 }
             }
+        } catch (JsonSyntaxException e) {
+            log.error("ThirdMallCheckFilter error! params={}", params, e);
         }
-    
+        
         log.info("ThirdMallCheckFilter info! appId={}, appKey={}, sign={}", appId, appKey, sign);
         
         if (StringUtils.isBlank(appId) || StringUtils.isBlank(appKey) || StringUtils.isBlank(sign)) {
