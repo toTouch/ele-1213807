@@ -503,7 +503,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 更新代扣计划
         InstallmentDeductionPlanQuery deductionPlanQuery = new InstallmentDeductionPlanQuery();
         deductionPlanQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
-        deductionPlanQuery.setStatus(DEDUCTION_PLAN_STATUS_INIT);
+        deductionPlanQuery.setStatuses(Arrays.asList(DEDUCTION_PLAN_STATUS_INIT, DEDUCTION_PLAN_STATUS_FAIL));
         List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listDeductionPlanByAgreementNo(deductionPlanQuery).getData();
         
         if (!CollectionUtils.isEmpty(deductionPlans)) {
