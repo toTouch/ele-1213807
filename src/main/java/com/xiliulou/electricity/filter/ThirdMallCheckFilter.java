@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -48,7 +48,6 @@ import java.util.Objects;
 
 @Slf4j
 @Component("thirdMallCheckFilter")
-@Order(11)
 public class ThirdMallCheckFilter implements Filter {
     
     @Resource
@@ -61,9 +60,16 @@ public class ThirdMallCheckFilter implements Filter {
         this.requiresAuthenticationRequestMatcher = new AntPathRequestMatcher("/outer/batteryMemberCard/**");
     }
     
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        log.info("ThirdMallCheckFilter init!");
+    }
+    
     
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        log.info("ThirdMallCheckFilter doFilter!");
+        
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String header = httpServletRequest.getHeader(HttpHeaders.CONTENT_TYPE);
@@ -76,7 +82,6 @@ public class ThirdMallCheckFilter implements Filter {
         String params;
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
             params = JsonUtil.toJson(httpServletRequest.getParameterMap());
-            filterChain.doFilter(httpServletRequest, servletResponse);
         } else {
             httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
             
@@ -85,8 +90,6 @@ public class ThirdMallCheckFilter implements Filter {
             } else {
                 params = JsonUtil.toJson(httpServletRequest.getParameterMap());
             }
-            
-            filterChain.doFilter(httpServletRequest, servletResponse);
         }
         
         log.info("ThirdMallCheckFilter info! params={}", params);

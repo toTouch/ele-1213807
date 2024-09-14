@@ -26,6 +26,8 @@ public class JsonOuterBatteryMemberCardController {
     
     @PostMapping("/outer/batteryMemberCard/limitTrade")
     public JsonR meiTuanLimitTradeCheck(LimitTradeRequest limitTradeRequest) {
+        log.info("meiTuanLimitTradeCheck request={}", limitTradeRequest);
+        
         String providerSkuId = limitTradeRequest.getProviderSkuId();
         String phone = limitTradeRequest.getAccount();
         if (Objects.isNull(providerSkuId) || StringUtils.isBlank(phone)) {
