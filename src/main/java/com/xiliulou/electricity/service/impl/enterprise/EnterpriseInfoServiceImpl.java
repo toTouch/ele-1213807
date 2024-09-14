@@ -656,42 +656,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             return Triple.of(false, "ELECTRICITY.0019", "企业信息不存在");
         }
     
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(userBatteryMemberCard)) {
-            if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                log.warn("check User Enable Exit! user rent battery,uid={}", uid);
-                return Triple.of(false, "120316", "该用户未退还电池，将影响云豆回收，请联系归还后操作");
-            }
-        
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                log.warn("check User Enable Exit! user stop member card review,uid={}", uid);
-                return Triple.of(false, "100211", "该用户已申请套餐冻结，将影响云豆回收，请联系解除后操作");
-            }
-        
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.warn("check User Enable Exit! member card is disable userId={}", uid);
-                return Triple.of(false, "120314", "该用户套餐已冻结，将影响云豆回收，请联系启用后操作");
-            }
-        
-            if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
-                return Triple.of(true, null, null);
-            }
-        
-            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.isNull(batteryMemberCard)) {
-                log.warn("check User Enable Exit! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
-            }
-        
-            // 判断滞纳金
-            Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                    batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
-            if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-                log.warn("check User Enable Exit! user exist battery service fee,uid={}", userInfo.getUid());
-                return Triple.of(false, "120315", "该用户未缴纳滞纳金，将影响云豆回收，请联系缴纳后操作");
-            }
-        }
-    
         //回收押金
         Triple<Boolean, String, Object> batteryDepositTriple = recycleBatteryDepositV2(userInfo, enterpriseInfo);
         if (Boolean.FALSE.equals(batteryDepositTriple.getLeft())) {
