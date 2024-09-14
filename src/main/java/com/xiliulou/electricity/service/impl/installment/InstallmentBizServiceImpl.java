@@ -536,6 +536,23 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentTerminatingRecordService.update(terminatingRecordUpdate);
         
+        List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.listOrderByExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
+            return R.ok();
+        }
+        
+        electricityMemberCardOrders.parallelStream().forEach(memberCardOrder -> {
+            if (Objects.equals(memberCardOrder.getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+                return;
+            }
+            
+            ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
+            memberCardOrderUpdate.setId(memberCardOrder.getId());
+            memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCEL);
+            memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
+        });
+        
         return R.ok();
     }
     

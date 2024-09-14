@@ -259,18 +259,6 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordMapper.update(installmentRecordUpdate);
         
-        List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.listOrderByExternalAgreementNo(externalAgreementNo);
-        if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
-            return R.ok();
-        }
-        
-        // 取消签约场景下只会有一个套餐子订单，处理集合内的第一个就可以了
-        ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrders.get(0);
-        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
-        memberCardOrderUpdate.setId(memberCardOrder.getId());
-        memberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_CANCEL);
-        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
         return R.ok();
     }
     
