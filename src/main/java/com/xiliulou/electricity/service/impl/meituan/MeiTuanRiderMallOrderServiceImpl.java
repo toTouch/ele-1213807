@@ -191,6 +191,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             Long memberCardId = meiTuanRiderMallOrder.getPackageId();
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
+            
+            log.info("MeiTuan order redeem, batteryMemberCard={}, memberCardId={}", batteryMemberCard, memberCardId);
+            
             if (Objects.isNull(batteryMemberCard) || Objects.isNull(batteryMemberCard.getTenantId()) || !Objects.equals(batteryMemberCard.getTenantId(), tenantId)) {
                 log.warn("MeiTuan order redeem fail! not found batteryMemberCard,uid={}, memberCardId={}", uid, memberCardId);
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
