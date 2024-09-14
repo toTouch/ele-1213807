@@ -332,6 +332,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
                 }
                 
+                if (BigDecimal.ZERO.compareTo(batteryMemberCard.getDeposit()) != 0) {
+                    log.warn("MeiTuan order redeem fail! batteryMemberCard deposit is zero, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
+                    return Triple.of(false, "120145", "该兑换套餐需缴纳押金，无法直接兑换，请联系客服处理");
+                }
+                
                 pair = meiTuanOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
             }
             
@@ -360,7 +365,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY + uid);
         }
     }
-    
     
     private Boolean isBatteryTypeMatched(UserInfo userInfo, List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes) {
         // 用户绑定的电池型号串数

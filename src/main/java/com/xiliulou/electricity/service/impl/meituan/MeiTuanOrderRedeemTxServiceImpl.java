@@ -438,8 +438,8 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
                 
                 // 封装serviceFeeUserInfo回滚数据
-                if (Objects.nonNull(serviceFeeUserInfoInsert) && Objects.nonNull(serviceFeeUserInfoInsert.getId())) {
-                    serviceFeeUserInfoById = serviceFeeUserInfo.getId();
+                if (Objects.nonNull(serviceFeeUserInfoInsert.getId())) {
+                    serviceFeeUserInfoById = serviceFeeUserInfoInsert.getId();
                 }
             }
             
