@@ -46,7 +46,9 @@ public class JsonAdminFyController {
         if (Objects.isNull(userInfo)){
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (!(SecurityUtils.isAdmin() || Objects.equals(userInfo.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() ||
+                Objects.equals(userInfo.getDataType(), User.DATA_TYPE_OPERATE) ||
+                Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
         FyConfig config = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -67,7 +69,9 @@ public class JsonAdminFyController {
         if (Objects.isNull(userInfo)){
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (!(SecurityUtils.isAdmin() || Objects.equals(userInfo.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() ||
+                Objects.equals(userInfo.getDataType(), User.DATA_TYPE_OPERATE) ||
+                Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
         Pair<Boolean, String> result =  fyConfigService.saveOrUpdate(TenantContextHolder.getTenantId(),params);
