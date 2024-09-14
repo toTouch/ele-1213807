@@ -468,8 +468,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     public LimitTradeVO meiTuanLimitTradeCheck(String providerSkuId, String phone) {
         Integer tenantId = ThirdMallConfigHolder.getTenantId();
         Long memberCardId = Long.valueOf(providerSkuId);
-        log.info("meiTuanLimitTradeCheck tenantId={}", tenantId);
-        
         LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
         LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();
         
