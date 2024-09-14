@@ -53,6 +53,11 @@ public class InstallmentTerminatingRecord {
     private Integer packageType;
     
     /**
+     * 来源，0-用户或后台解约，1-代扣完成
+     */
+    private Integer source;
+    
+    /**
      * 已支付金额
      */
     private BigDecimal paidAmount;

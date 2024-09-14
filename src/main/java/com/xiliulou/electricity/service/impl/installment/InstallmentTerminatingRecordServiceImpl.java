@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_SOURCE_CANCEL;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_SOURCE_COMPLETED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.TERMINATING_RECORD_STATUS_INIT;
 
 /**
@@ -123,6 +125,9 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             }
         }
         
+        Integer source = Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment()) ? TERMINATING_RECORD_SOURCE_COMPLETED
+                : TERMINATING_RECORD_SOURCE_CANCEL;
+        
         InstallmentTerminatingRecord installmentTerminatingRecord = new InstallmentTerminatingRecord();
         installmentTerminatingRecord.setUid(installmentRecord.getUid());
         installmentTerminatingRecord.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
@@ -130,6 +135,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         installmentTerminatingRecord.setMobile(installmentRecord.getMobile());
         installmentTerminatingRecord.setPackageId(installmentRecord.getPackageId());
         installmentTerminatingRecord.setPackageType(installmentRecord.getPackageType());
+        installmentTerminatingRecord.setSource(source);
         installmentTerminatingRecord.setPaidAmount(paidAmount);
         installmentTerminatingRecord.setStatus(TERMINATING_RECORD_STATUS_INIT);
         installmentTerminatingRecord.setReason(reason);

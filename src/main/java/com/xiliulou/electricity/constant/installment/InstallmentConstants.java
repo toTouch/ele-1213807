@@ -120,6 +120,16 @@ public interface InstallmentConstants {
     Integer TERMINATING_RECORD_STATUS_RELEASE = 2;
     
     /**
+     * 解约记录来源-用户或后台解约
+     */
+    Integer TERMINATING_RECORD_SOURCE_CANCEL = 0;
+    
+    /**
+     * 解约记录来源-代扣完成
+     */
+    Integer TERMINATING_RECORD_SOURCE_COMPLETED = 1;
+    
+    /**
      * 蜂云成功响应码
      */
     String FY_RESULT_CODE_SUCCESS = "WZF00000";

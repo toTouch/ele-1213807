@@ -3,12 +3,12 @@
 <mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentTerminatingRecordMapper">
     
     <sql id="columnsWithoutId">
-        uid, external_agreement_no, user_name, mobile, package_id, package_type, paid_amount, `status`, reason, opinion,
+        uid, external_agreement_no, user_name, mobile, package_id, package_type, `source`, paid_amount, `status`, reason, opinion,
         auditor_id, tenant_id, franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
-        #{uid}, #{externalAgreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{paidAmount}, #{status}, #{reason}, #{opinion},
+        #{uid}, #{externalAgreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{source}, #{paidAmount}, #{status}, #{reason}, #{opinion},
         #{auditorId}, #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
@@ -71,6 +71,7 @@
         <result property="mobile" column="mobile" jdbcType="VARCHAR"/>
         <result property="packageId" column="package_id" jdbcType="BIGINT"/>
         <result property="packageType" column="package_type" jdbcType="TINYINT"/>
+        <result property="source" column="source" jdbcType="TINYINT"/>
         <result property="paidAmount" column="paid_amount" jdbcType="DECIMAL"/>
         <result property="status" column="status" jdbcType="TINYINT"/>
         <result property="reason" column="reason" jdbcType="TINYINT"/>
@@ -107,6 +108,9 @@
             <if test="packageType != null">
                 package_type = #{packageType},
             </if>
+            <if test="source != null">
+                `source` = #{source},
+            </if>
             <if test="paidAmount != null">
                 paid_amount = #{paidAmount},
             </if>
@@ -142,6 +146,7 @@
         select id, <include refid="columnsWithoutId"/>
         from t_installment_terminating_record
         where tenant_id = #{tenantId}
+            and `source` = 0
             <include refid="ifLabelsForWhere"/>
         order by id desc
         limit #{offset}, #{size}
@@ -151,6 +156,7 @@
         select count(1)
         from t_installment_terminating_record
         where tenant_id = #{tenantId}
+            and `source` = 0
             <include refid="ifLabelsForWhere"/>
     </select>
     
