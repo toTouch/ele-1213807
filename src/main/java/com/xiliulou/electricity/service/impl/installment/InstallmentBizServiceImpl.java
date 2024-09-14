@@ -223,7 +223,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
-        InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, null);
+        InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "后台解约", false);
         installmentTerminatingRecordService.insert(installmentTerminatingRecord);
         
         return terminatingInstallmentRecord(installmentRecord);
@@ -624,7 +624,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             installmentDeductionRecordService.update(deductionRecordUpdate);
             
             if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
-                InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕");
+                InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕", true);
                 installmentTerminatingRecordService.insert(installmentTerminatingRecord);
                 terminatingInstallmentRecord(installmentRecord);
             }
@@ -760,7 +760,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
-        InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, reason);
+        InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, reason, false);
         installmentTerminatingRecordService.insert(installmentTerminatingRecord);
         
         return R.ok();

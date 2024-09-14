@@ -112,7 +112,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     }
     
     @Override
-    public InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason) {
+    public InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason, Boolean completedOrNot) {
         InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
         query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         query.setStatuses(List.of(DEDUCTION_PLAN_STATUS_PAID));
@@ -125,8 +125,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             }
         }
         
-        Integer source = Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment()) ? TERMINATING_RECORD_SOURCE_COMPLETED
-                : TERMINATING_RECORD_SOURCE_CANCEL;
+        Integer source = completedOrNot ? TERMINATING_RECORD_SOURCE_COMPLETED : TERMINATING_RECORD_SOURCE_CANCEL;
         
         InstallmentTerminatingRecord installmentTerminatingRecord = new InstallmentTerminatingRecord();
         installmentTerminatingRecord.setUid(installmentRecord.getUid());

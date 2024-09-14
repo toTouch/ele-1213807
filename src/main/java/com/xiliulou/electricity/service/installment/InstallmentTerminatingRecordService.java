@@ -61,7 +61,7 @@ public interface InstallmentTerminatingRecordService {
      * @param reason 原因
      * @return 返回解约记录
      */
-    InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason);
+    InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason, Boolean completedOrNot);
     
 
     
