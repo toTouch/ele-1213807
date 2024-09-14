@@ -84,8 +84,12 @@ public class ThirdMallCheckFilter implements Filter {
             filterChain.doFilter(httpServletRequest, servletResponse);
         }
         
+        log.info("ThirdMallCheckFilter params={}", params);
+        
         Integer tenantId = this.check(params, response);
         ThirdMallConfigHolder.setTenantId(tenantId);
+        
+        log.info("ThirdMallConfigHolder tenantId={}", ThirdMallConfigHolder.getTenantId());
         
         try {
             filterChain.doFilter(servletRequest, response);
@@ -116,6 +120,8 @@ public class ThirdMallCheckFilter implements Filter {
                 }
             }
         }
+        
+        log.info("ThirdMallCheckFilter params={}, appId={}, appKey={}, sign={}", params, appId, appKey, sign);
         
         if (StringUtils.isBlank(appId) || StringUtils.isBlank(appKey) || StringUtils.isBlank(sign)) {
             log.error("ThirdMallCheckFilter error! appId={}, appKey={}, sign={}", appId, appKey, sign);
