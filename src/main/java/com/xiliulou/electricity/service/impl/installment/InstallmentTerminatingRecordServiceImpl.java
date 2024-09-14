@@ -13,7 +13,7 @@ import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
@@ -52,7 +52,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
-    private UserInfoService userInfoService;
+    private UserService userService;
     
     
     @Override
@@ -89,7 +89,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             
             // 设置审核人名称
             if (Objects.nonNull(installmentTerminatingRecord.getAuditorId())) {
-                vo.setAuditorName(userInfoService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId()).getName());
+                vo.setAuditorName(userService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId()).getName());
             }
             
             return vo;
