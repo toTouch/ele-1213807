@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.meituan;
 
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.meituan.OrderQuery;
+import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
 import com.xiliulou.electricity.vo.meituan.LimitTradeVO;
 import com.xiliulou.electricity.vo.meituan.OrderVO;
 import org.apache.commons.lang3.tuple.Triple;

@@ -574,6 +574,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderVO.setSendCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
             
+            // 美团订单不允许退租
+            if (Objects.equals(electricityMemberCardOrderVO.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+                electricityMemberCardOrderVO.setIsRefund(BatteryMemberCard.NO);
+            }
+            
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrderVO.getMemberCardId());
             electricityMemberCardOrderVO.setRentType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentType());
             electricityMemberCardOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
@@ -916,14 +921,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("DISABLE MEMBER CARD WARN! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
-    
+        
         String orderId = userBatteryMemberCard.getOrderId();
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("DISABLE MEMBER CARD WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderId);
             return R.fail("100281", "电池套餐订单不存在");
         }
-    
+        
         // 美团订单不允许冻结
         if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
             log.warn("DISABLE MEMBER CARD WARN! meiTuan order not allowed to be frozen,uid={},orderNo={}", user.getUid(), orderId);

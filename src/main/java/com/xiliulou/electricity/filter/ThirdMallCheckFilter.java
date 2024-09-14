@@ -68,7 +68,7 @@ public class ThirdMallCheckFilter implements Filter {
             return;
         }
         
-        String params = null;
+        String params;
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
             params = JsonUtil.toJson(httpServletRequest.getParameterMap());
             filterChain.doFilter(httpServletRequest, servletResponse);
@@ -84,21 +84,6 @@ public class ThirdMallCheckFilter implements Filter {
             filterChain.doFilter(httpServletRequest, servletResponse);
         }
         
-        log.info("ThirdMallCheckFilter params={}", params);
-        
-        Integer tenantId = this.check(params, response);
-        ThirdMallConfigHolder.setTenantId(tenantId);
-        
-        log.info("ThirdMallConfigHolder tenantId={}", ThirdMallConfigHolder.getTenantId());
-        
-        try {
-            filterChain.doFilter(servletRequest, response);
-        } finally {
-            ThirdMallConfigHolder.clear();
-        }
-    }
-    
-    private Integer check(String params, HttpServletResponse response) {
         Type type = new TypeToken<Map<String, String>>() {
         }.getType();
         Map<String, Object> paramMap = JsonUtil.fromJson(params, type);
@@ -121,12 +106,11 @@ public class ThirdMallCheckFilter implements Filter {
             }
         }
         
-        log.info("ThirdMallCheckFilter params={}, appId={}, appKey={}, sign={}", params, appId, appKey, sign);
-        
         if (StringUtils.isBlank(appId) || StringUtils.isBlank(appKey) || StringUtils.isBlank(sign)) {
             log.error("ThirdMallCheckFilter error! appId={}, appKey={}, sign={}", appId, appKey, sign);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getCode(), VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc()));
+            return;
         }
         
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
@@ -134,6 +118,7 @@ public class ThirdMallCheckFilter implements Filter {
             log.error("ThirdMallCheckFilter error! meiTuanRiderMallConfig is null, appId={}, appKey={}, sign={}", appId, appKey, sign);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_APP_CONFIG.getCode(), VirtualTradeStatusEnum.FAIL_APP_CONFIG.getDesc()));
+            return;
         }
         
         Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), sign);
@@ -141,9 +126,11 @@ public class ThirdMallCheckFilter implements Filter {
             log.error("ThirdMallCheckFilter error! checkSign fail, appId={}, appKey={}, sign={}", appId, appKey, sign);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc()));
+            return;
         }
         
-        return meiTuanRiderMallConfig.getTenantId();
+        ThirdMallConfigHolder.setTenantId(meiTuanRiderMallConfig.getTenantId());
+        filterChain.doFilter(servletRequest, response);
     }
     
     private String getRequestBody(HttpServletRequest request) {

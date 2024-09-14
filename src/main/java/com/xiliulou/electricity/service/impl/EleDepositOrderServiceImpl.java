@@ -553,11 +553,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-            
-            // 美团订单不允许退租
-            if (Objects.equals(eleDepositOrderVO.getPayType(), EleDepositOrder.MEITUAN_DEPOSIT_PAYMENT)) {
-                eleDepositOrderVO.setRefundFlag(false);
-            }
         });
         
         return R.ok(eleDepositOrderVOS);
