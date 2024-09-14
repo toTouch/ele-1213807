@@ -132,9 +132,10 @@ public class ThirdMallCheckFilter implements Filter {
             return;
         }
         
-        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, meiTuanRiderMallConfig.getSecret(), sign);
+        String secret = meiTuanRiderMallConfig.getSecret();
+        Boolean checkSign = MeiTuanRiderMallUtil.checkSign(paramMap, secret, sign);
         if (!checkSign) {
-            log.error("ThirdMallCheckFilter error! checkSign fail, appId={}, appKey={}, sign={}", appId, appKey, sign);
+            log.error("ThirdMallCheckFilter error! checkSign fail, paramMap={}, sign={}, secret={}", paramMap, sign, secret);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc()));
             return;
