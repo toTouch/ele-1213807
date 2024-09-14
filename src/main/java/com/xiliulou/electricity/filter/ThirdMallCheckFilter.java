@@ -84,6 +84,8 @@ public class ThirdMallCheckFilter implements Filter {
             filterChain.doFilter(httpServletRequest, servletResponse);
         }
         
+        log.info("ThirdMallCheckFilter info! params={}", params);
+        
         Type type = new TypeToken<Map<String, String>>() {
         }.getType();
         Map<String, Object> paramMap = JsonUtil.fromJson(params, type);
@@ -105,6 +107,8 @@ public class ThirdMallCheckFilter implements Filter {
                 }
             }
         }
+    
+        log.info("ThirdMallCheckFilter info! appId={}, appKey={}, sign={}", appId, appKey, sign);
         
         if (StringUtils.isBlank(appId) || StringUtils.isBlank(appKey) || StringUtils.isBlank(sign)) {
             log.error("ThirdMallCheckFilter error! appId={}, appKey={}, sign={}", appId, appKey, sign);
@@ -114,7 +118,9 @@ public class ThirdMallCheckFilter implements Filter {
         }
         
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
+        
         log.info("ThirdMallCheckFilter info! meiTuanRiderMallConfig={}", meiTuanRiderMallConfig);
+        
         if (Objects.isNull(meiTuanRiderMallConfig)) {
             log.error("ThirdMallCheckFilter error! meiTuanRiderMallConfig is null, appId={}, appKey={}, sign={}", appId, appKey, sign);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -129,6 +135,8 @@ public class ThirdMallCheckFilter implements Filter {
             this.out(response, JsonR.fail(VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getCode(), VirtualTradeStatusEnum.FAIL_CHECK_SIGN.getDesc()));
             return;
         }
+        
+        log.info("ThirdMallCheckFilter info! meiTuanRiderMallConfig.getTenantId={}", meiTuanRiderMallConfig.getTenantId());
         
         ThirdMallConfigHolder.setTenantId(meiTuanRiderMallConfig.getTenantId());
         filterChain.doFilter(servletRequest, response);
