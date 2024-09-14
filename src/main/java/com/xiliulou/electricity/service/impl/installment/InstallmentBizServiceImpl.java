@@ -194,6 +194,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("301005", "签约记录不存在");
         }
         
+        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_INIT) || Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
+            return R.ok();
+        }
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             return R.fail("301017", "未退还电池");
@@ -219,9 +223,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, null);
         installmentTerminatingRecordService.insert(installmentTerminatingRecord);
-        terminatingInstallmentRecord(installmentRecord);
         
-        return R.ok();
+        return terminatingInstallmentRecord(installmentRecord);
     }
     
     @Override
@@ -311,6 +314,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             }
             
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(deductionPlan.getExternalAgreementNo());
+            
+            if (Objects.equals(installmentRecord.getInstallmentNo(), installmentRecord.getPaidInstallment())) {
+                return R.fail("301026", "分期套餐已代扣完毕");
+            }
             
             Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(tenant)) {
@@ -578,6 +585,17 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         
         // 代扣成功后其他记录的处理
         if (Objects.nonNull(handlePackageTriple) && handlePackageTriple.getLeft()) {
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            // 若全部代扣完，改为已完成，并且解约
+            if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
+                installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
+            }
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
+            installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(deductionRecord.getAmount()));
+            installmentRecordService.update(installmentRecordUpdate);
+            
             InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
             deductionPlanUpdate.setId(deductionPlan.getId());
             deductionPlanUpdate.setTradeNo(tradeNo);
@@ -592,17 +610,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_SUCCESS);
             deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
             installmentDeductionRecordService.update(deductionRecordUpdate);
-            
-            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
-            installmentRecordUpdate.setId(installmentRecord.getId());
-            // 若全部代扣完，改为已完成，并且解约
-            if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
-                installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_COMPLETED);
-            }
-            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
-            installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
-            installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(deductionRecord.getAmount()));
-            installmentRecordService.update(installmentRecordUpdate);
             
             if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
                 InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕");
@@ -820,7 +827,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         try {
             FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
             if (Objects.isNull(config)) {
-                return R.fail("租户分期配置不存在");
+                return R.fail("301024", "解约功能未配置相关信息！请联系客服处理");
             }
             
             FyCommonQuery<FyReleaseAgreementRequest> commonQuery = new FyCommonQuery<>();
@@ -834,7 +841,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             
             FyResult<FyReleaseAgreementRsp> result = fyAgreementService.releaseAgreement(commonQuery);
             if (!Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
-                return R.fail("解约失败");
+                return R.fail("301025", "解约失败，请联系管理员");
             }
             
             InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
@@ -847,7 +854,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         } catch (Exception e) {
             log.error("TERMINATING INSTALLMENT RECORD ERROR!", e);
         }
-        return R.fail("解约失败");
+        return R.fail("301025", "解约失败，请联系管理员");
     }
     
     private R queryInterfaceForDeductionRecord(String payNo, FyConfig fyConfig, String externalAgreementNo) {
