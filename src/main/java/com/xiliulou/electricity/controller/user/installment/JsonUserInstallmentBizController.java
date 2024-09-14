@@ -50,6 +50,9 @@ public class JsonUserInstallmentBizController {
         return installmentBizService.deduct(id);
     }
     
+    /**
+     * 用户端申请解约
+     */
     @PostMapping("/user/Installment/Terminating/create")
     public R<String> terminatingRecord(@RequestBody @Validated CreateTerminatingRecordQuery query) {
         return installmentBizService.createTerminatingRecord(query.getExternalAgreementNo(), query.getReason());

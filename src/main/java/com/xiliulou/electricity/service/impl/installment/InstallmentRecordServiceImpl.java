@@ -217,21 +217,13 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             return R.ok(installmentRecordVO);
         }
         
-        // 设置有无审核中的解约申请
-        for (InstallmentTerminatingRecord terminatingRecord : terminatingRecords) {
-            if (Objects.equals(TERMINATING_RECORD_STATUS_INIT, terminatingRecord.getStatus())) {
-                installmentRecordVO.setUnderReview(1);
-                break;
-            }
-        }
-        
-        // 展示审核被拒绝的原因
-        for (InstallmentTerminatingRecord terminatingRecord : terminatingRecords) {
-            if (Objects.equals(TERMINATING_RECORD_STATUS_REFUSE, terminatingRecord.getStatus())) {
-                installmentRecordVO.setRefused(1);
-                installmentRecordVO.setOpinion(terminatingRecord.getOpinion());
-                break;
-            }
+        // 设置有无审核中的或被拒绝的解约申请
+        InstallmentTerminatingRecord terminatingRecord = terminatingRecords.get(0);
+        if (Objects.equals(terminatingRecord.getStatus(), TERMINATING_RECORD_STATUS_INIT)) {
+            installmentRecordVO.setUnderReview(1);
+        } else if (Objects.equals(terminatingRecord.getStatus(), TERMINATING_RECORD_STATUS_REFUSE)) {
+            installmentRecordVO.setRefused(1);
+            installmentRecordVO.setOpinion(terminatingRecord.getOpinion());
         }
         
         return R.ok(installmentRecordVO);

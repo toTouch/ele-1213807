@@ -18,6 +18,7 @@ import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -114,7 +115,10 @@ public class FyInstallmentHandler {
                 log.error("DEDUCT TASK ERROR! FyConfig is null, tenantId={}", deductionPlan.getTenantId());
             }
             
-            installmentBizService.initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
+            Triple<Boolean, String, Object> triple = installmentBizService.initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
+            if (!triple.getLeft()) {
+                log.warn("DEDUCT TASK WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+            }
         });
     }
 }

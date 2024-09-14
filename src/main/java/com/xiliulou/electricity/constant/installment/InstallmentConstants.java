@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.constant.installment;
 
 import com.xiliulou.electricity.annotation.ProcessParameter;
-import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 
 /**
  * @Description ...
@@ -123,7 +122,17 @@ public interface InstallmentConstants {
     /**
      * 蜂云成功响应码
      */
-    String FY_SUCCESS_CODE = "WZF00000";
+    String FY_RESULT_CODE_SUCCESS = "WZF00000";
+    
+    /**
+     * 蜂云失败响应码-渠道码错误
+     */
+    String FY_RESULT_CODE_CHANNEL_CODE = "2001";
+    
+    /**
+     * 蜂云失败响应码-余额不足
+     */
+    String FY_RESULT_CODE_INSUFFICIENT_BALANCE = "3001";
     
     /**
      * 蜂云回调业务参数名-bizContent

@@ -95,7 +95,9 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_SUCCESS_CODE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_CHANNEL_CODE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_INSUFFICIENT_BALANCE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_SUCCESS;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
@@ -381,6 +383,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301010", "分期签约次数不足，请充值");
             }
             
+            String packageName = "";
+            if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
+                packageName = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId()).getName();
+            }
+            
             Vars vars = new Vars();
             vars.setUserName(query.getUserName());
             vars.setMobile(query.getMobile());
@@ -388,12 +395,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             vars.setCityName("西安市");
             vars.setDistrictName("未央区");
             
+            String description = "订单编号:%s；套餐名称:%s";
+            
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
             agreementRequest.setChannelFrom(CHANNEL_FROM_H5);
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
             agreementRequest.setMerchantName(tenant.getName());
-            agreementRequest.setServiceName("分期签约");
-            agreementRequest.setServiceDescription("分期签约");
+            agreementRequest.setServiceName(packageName);
+            agreementRequest.setServiceDescription(String.format(description, installmentRecord.getExternalAgreementNo(), packageName));
             agreementRequest.setNotifyUrl(String.format(fengYunConfig.getInstallmentNotifyUrl(), uid));
             agreementRequest.setVars(JsonUtil.toJson(vars));
             
@@ -403,7 +412,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             commonQuery.setFyRequest(agreementRequest);
             FyResult<FySignAgreementRsp> fySignResult = fyAgreementService.signAgreement(commonQuery);
             
-            if (FY_SUCCESS_CODE.equals(fySignResult.getCode())) {
+            if (FY_RESULT_CODE_SUCCESS.equals(fySignResult.getCode())) {
                 
                 // 更新签约记录状态位为待签约，需要与初始化的订单区分开
                 InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
@@ -482,7 +491,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             log.info("回调调试，异步代扣");
             try {
                 MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
-                initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
+                Triple<Boolean, String, Object> triple = initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
+                if (!triple.getLeft()) {
+                    log.warn("SIGN NOTIFY WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+                }
             } finally {
                 MDC.clear();
             }
@@ -658,6 +670,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return Triple.of(true, null, null);
         }
         
+        FyResult<FyAgreementPayRsp> fyAgreementPayRspFyResult = null;
         try {
             
             FyCommonQuery<FyAgreementPayRequest> fyCommonQuery = new FyCommonQuery<>();
@@ -680,12 +693,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             fyCommonQuery.setChannelCode(fyConfig.getChannelCode());
             fyCommonQuery.setFlowNo(repaymentPlanNo + System.currentTimeMillis());
             fyCommonQuery.setFyRequest(request);
-            FyResult<FyAgreementPayRsp> fyAgreementPayRspFyResult = fyAgreementService.agreementPay(fyCommonQuery);
+            fyAgreementPayRspFyResult = fyAgreementService.agreementPay(fyCommonQuery);
             
             log.info("回调调试，代扣结果，fyAgreementPayRspFyResult={}", fyAgreementPayRspFyResult);
             
             // 调用成功
-            if (Objects.equals(FY_SUCCESS_CODE, fyAgreementPayRspFyResult.getCode())) {
+            if (Objects.equals(FY_RESULT_CODE_SUCCESS, fyAgreementPayRspFyResult.getCode())) {
                 return Triple.of(true, null, null);
             }
         } catch (Exception e) {
@@ -704,6 +717,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
         deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentDeductionRecordService.update(deductionRecordUpdate);
+        
+        if (Objects.nonNull(fyAgreementPayRspFyResult) && Objects.equals(FY_RESULT_CODE_CHANNEL_CODE, fyAgreementPayRspFyResult.getCode())) {
+            // 渠道码错误
+            return Triple.of(false, "301027", "请联系管理员检查分期签约配置");
+        } else if (Objects.nonNull(fyAgreementPayRspFyResult) && Objects.equals(FY_RESULT_CODE_INSUFFICIENT_BALANCE, fyAgreementPayRspFyResult.getCode())) {
+            // 余额不足
+            return Triple.of(false, "301028", "支付宝余额不足，代扣失败");
+        }
         return Triple.of(false, "301006", "代扣失败");
     }
     
@@ -814,7 +835,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             commonQuery.setFlowNo(externalAgreementNo + System.currentTimeMillis());
             commonQuery.setFyRequest(request);
             FyResult<FyQuerySignAgreementRsp> result = fyAgreementService.querySignAgreement(commonQuery);
-            if (Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
+            if (Objects.equals(result.getCode(), FY_RESULT_CODE_SUCCESS)) {
                 return R.ok(result.getFyResponse());
             }
         } catch (Exception e) {
@@ -840,7 +861,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             commonQuery.setFyRequest(request);
             
             FyResult<FyReleaseAgreementRsp> result = fyAgreementService.releaseAgreement(commonQuery);
-            if (!Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
+            if (!Objects.equals(result.getCode(), FY_RESULT_CODE_SUCCESS)) {
                 return R.fail("301025", "解约失败，请联系管理员");
             }
             
@@ -869,7 +890,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             commonQuery.setFyRequest(request);
             FyResult<FyQueryAgreementPayRsp> result = fyAgreementService.queryAgreementPay(commonQuery);
             
-            if (Objects.equals(result.getCode(), FY_SUCCESS_CODE)) {
+            if (Objects.equals(result.getCode(), FY_RESULT_CODE_SUCCESS)) {
                 // 传递结果给外部方法校验
                 return R.ok(result.getFyResponse());
             }
