@@ -114,6 +114,7 @@ public class ThirdMallCheckFilter implements Filter {
         }
         
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByConfigFromCache(MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).build());
+        log.info("ThirdMallCheckFilter info! meiTuanRiderMallConfig={}", meiTuanRiderMallConfig);
         if (Objects.isNull(meiTuanRiderMallConfig)) {
             log.error("ThirdMallCheckFilter error! meiTuanRiderMallConfig is null, appId={}, appKey={}, sign={}", appId, appKey, sign);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

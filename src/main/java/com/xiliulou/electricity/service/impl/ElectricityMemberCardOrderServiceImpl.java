@@ -574,16 +574,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderVO.setSendCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
             
-            // 美团订单不允许退租
-            if (Objects.equals(electricityMemberCardOrderVO.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
-                electricityMemberCardOrderVO.setIsRefund(BatteryMemberCard.NO);
-            }
-            
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrderVO.getMemberCardId());
             electricityMemberCardOrderVO.setRentType(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentType());
             electricityMemberCardOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
             electricityMemberCardOrderVO.setIsRefund(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getIsRefund());
             electricityMemberCardOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+            
+            // 美团订单不允许退租
+            if (Objects.equals(electricityMemberCardOrderVO.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+                electricityMemberCardOrderVO.setIsRefund(BatteryMemberCard.NO);
+            }
             
             // 设置优惠券
             List<CouponSearchVo> coupons = new ArrayList<>();
