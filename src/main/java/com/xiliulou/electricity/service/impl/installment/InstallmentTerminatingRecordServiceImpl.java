@@ -88,7 +88,9 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
             }
             
             // 设置审核人名称
-            vo.setAuditorName(userInfoService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId()).getName());
+            if (Objects.nonNull(installmentTerminatingRecord.getAuditorId())) {
+                vo.setAuditorName(userInfoService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId()).getName());
+            }
             
             return vo;
         }).collect(Collectors.toList());
