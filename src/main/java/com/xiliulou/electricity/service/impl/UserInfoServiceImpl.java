@@ -21,6 +21,7 @@ import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -2179,6 +2180,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R userInfoSearch(Long size, Long offset, String name) {
         List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
+        if (ObjectUtils.isNotEmpty(qeury)) {
+            qeury.stream().forEach(userInfoSearchVo -> {
+                String nameAndPhone = userInfoSearchVo.getName() + StringConstant.FORWARD_SLASH + userInfoSearchVo.getPhone();
+                userInfoSearchVo.setNameAndPhone(nameAndPhone);
+            });
+        }
+        
         return R.ok(qeury);
     }
     
@@ -2743,7 +2751,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                 if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                     log.warn("user bind battery warn! user exist battery service fee,uid={}", userInfo.getUid());
-                    return R.fail("ELECTRICITY.100000", "存在电池服务费");
+                    return R.fail("ELECTRICITY.100000", "请先缴纳滞纳金");
                 }
             
                 if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)
@@ -2759,10 +2767,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         try {
                             if (carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())) {
                                 log.warn("user bind battery warn! user car memberCard expire,uid={}", userInfo.getUid());
-                                return R.fail("100233", "租车套餐已过期");
+                                return R.fail("100233", "您的车辆套餐已过期，请先续费车辆套餐");
                             }
                         } catch (Exception e) {
                             log.error("user bind battery error! acquire car memberCard expire result fail,uid={}", userInfo.getUid(), e);
+                            return R.fail("100327", "绑定电池异常!");
                         }
                     }
                 }
@@ -2786,16 +2795,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
                 return R.fail("100019", "该电池已经绑定用户");
             }
+    
+            if (Objects.equals(oldElectricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+                log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
+                return R.fail("100019", "该电池为租借状态，不支持绑定");
+            }
         
             if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
                 log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
                         oldElectricityBattery.getFranchiseeId());
-                return R.fail("100371", "电池加盟商与用户加盟商不一致");
+                return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
             }
         
             // 多型号  绑定电池需要判断电池是否和用户型号一致
             Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, userInfo);
             if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
+                if (Objects.equals(verifyUserBatteryTypeResult.getMiddle(), "100297")) {
+                    return R.fail("100297", "电池型号与用户套餐型号不一致，请检查");
+                }
+                
                 return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
             }
         
