@@ -381,7 +381,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
         
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+        // 判断是否线上押金
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT) || Objects.equals(eleDepositOrder.getPayType(),
+                EleDepositOrder.MEITUAN_DEPOSIT_PAYMENT)) {
             log.warn("ELE DEPOSIT WARN! travel to store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
@@ -822,6 +824,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }).collect(Collectors.toList());
         
         return R.ok(eleDepositOrderVOS);
+    }
+    
+    @Override
+    public Integer deleteById(Long id) {
+        return eleDepositOrderMapper.deleteById(id);
     }
     
     @Override

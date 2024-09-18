@@ -46,4 +46,10 @@ public interface UserBatteryTypeService {
     Triple<Boolean, String, Object> selectUserBatteryTypeByUid(Long uid);
 
     Triple<Boolean, String, Object> modifyUserBatteryType(UserBatteryType userBatteryType);
+    
+    List<UserBatteryType> listByUid(Long uid);
+    
+    Integer batchDeleteByIds(List<Long> ids);
+    
+    Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes);
 }
