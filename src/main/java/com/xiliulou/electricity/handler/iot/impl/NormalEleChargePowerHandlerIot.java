@@ -84,29 +84,20 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
             }
         }
         
+        // 抛掉重复上报的数据，直接发送确认命令
+        Integer exits = elePowerService.exitsByEidAndReportTime(electricityCabinet.getId().longValue(), cabinetPowerReport.getCreateTime());
+        if (Objects.nonNull(exits)) {
+            sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
+            return;
+        }
+        
         ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue());
         // 更换电表优化，更换电表之后sumPower需要继续累计
         double hourPower;
         double sumPower;
         if (Objects.nonNull(lastElePower)) {
-            // 抛掉重复上报的数据，直接发送确认命令
-            if (Objects.equals(cabinetPowerReport.getCreateTime(), lastElePower.getReportTime())) {
-                sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
-                return;
-            }
-            
-            // 处理电表读数上报错误码的场景
-            Double errorCode12 = 12.00;
-            Double errorCode14 = 14.00;
-            if (Objects.equals(cabinetPowerReport.getSumConsumption(), errorCode12) || Objects.equals(cabinetPowerReport.getSumConsumption(), errorCode14)) {
-                sumPower = lastElePower.getSumPower();
-                hourPower = 0.00;
-            } else {
-                // 上报电表读数非错误码时，小时耗电量后端计算，处理上报错误码之后的那一条数据小时耗电量错误的场景
-                double difference = cabinetPowerReport.getSumConsumption() - lastElePower.getMeterReading();
-                hourPower = Math.max(difference, 0.00);
-                sumPower = lastElePower.getSumPower() + hourPower;
-            }
+            hourPower = Math.max(cabinetPowerReport.getPowerConsumption(), 0.00);
+            sumPower = BigDecimal.valueOf(lastElePower.getSumPower()).add(BigDecimal.valueOf(hourPower)).setScale(2, RoundingMode.HALF_UP).doubleValue();
         } else {
             // 第一条上报
             hourPower = cabinetPowerReport.getPowerConsumption();
@@ -129,6 +120,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setUnitPrice(unitPrice);
         power.setElectricCharge(BigDecimal.valueOf(unitPrice).multiply(BigDecimal.valueOf(power.getHourPower())).setScale(2, RoundingMode.HALF_UP).doubleValue());
         power.setMeterReading(cabinetPowerReport.getSumConsumption());
+        power.setOriginalHourPower(cabinetPowerReport.getPowerConsumption());
         
         elePowerService.insertOrUpdate(power);
         
