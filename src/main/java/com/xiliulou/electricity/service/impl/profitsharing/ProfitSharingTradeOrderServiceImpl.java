@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
-import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.mapper.profitsharing.ProfitSharingTradeOrderMapper;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
@@ -54,13 +52,24 @@ public class ProfitSharingTradeOrderServiceImpl implements ProfitSharingTradeOrd
     
     @Override
     @Slave
-    public String queryOrderNoyByThirdOrderNo(String thirdOrderNo) {
-        return profitSharingTradeOrderMapper.selectOrderNoyByThirdOrderNo(thirdOrderNo);
+    public String queryOrderNoByThirdOrderNo(String thirdOrderNo) {
+        return profitSharingTradeOrderMapper.selectOrderNoByThirdOrderNo(thirdOrderNo);
     }
     
     @Override
     public void batchUpdateStatus(List<Long> ids, Integer processState, String remark) {
         profitSharingTradeOrderMapper.batchUpdateStateByIds(ids, processState, System.currentTimeMillis(), remark);
+    }
+    
+    @Override
+    @Slave
+    public List<ProfitSharingTradeOrder> listNotPaySuccessByOrderNo(String orderNo) {
+        return profitSharingTradeOrderMapper.selectListNotPaySuccessByOrderNo(orderNo);
+    }
+    
+    @Override
+    public int batchRemoveByIdList(List<Long> notPayTradeOrderIds) {
+        return profitSharingTradeOrderMapper.batchRemoveByIdList(notPayTradeOrderIds, System.currentTimeMillis());
     }
     
     @Slave

@@ -246,7 +246,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             createFileVO.setSignFieldPositionList(signFieldPositionList);
             
         } catch (Exception e) {
-            log.error("Create File error! create file by template error,uid={},ex={}", userInfo.getUid(), e);
+            log.error("Create File error! create file by template error,uid={}", SecurityUtils.getUid(), e);
             return Triple.of(false, "000110", "根据模板创建文件失败");
             
         } finally {
