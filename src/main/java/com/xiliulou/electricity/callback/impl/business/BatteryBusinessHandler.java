@@ -14,7 +14,7 @@ import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -181,8 +181,13 @@ public class BatteryBusinessHandler implements BusinessHandler {
         try {
             // 更新退款订单
             EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(order.getOrderId());
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
+            if (Objects.isNull(eleDepositOrder)){
+                log.error("battery unfree error error! eleDepositOrder is null, orderId is {}", order.getOrderId());
+                return false;
+            }
+            
             if (Objects.isNull(eleRefundOrder)){
-                EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
                 // 生成退款订单
                 eleRefundOrder = EleRefundOrder.builder().orderId(order.getOrderId())
                         .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, order.getUid())).payAmount(eleDepositOrder.getPayAmount())
@@ -196,6 +201,11 @@ public class BatteryBusinessHandler implements BusinessHandler {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.update(eleRefundOrderUpdate);
+            
+            // 企业套餐免押只需要修改押金退款订单的状态即可 因为云豆回收后下的逻辑已经提前执行了
+            if (Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
+                return true;
+            }
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(order.getUid());
             Long uid = userInfo.getUid();
