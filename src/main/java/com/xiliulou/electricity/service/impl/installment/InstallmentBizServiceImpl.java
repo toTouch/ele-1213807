@@ -492,10 +492,22 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             log.info("回调调试，异步代扣");
             try {
                 MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
-                Triple<Boolean, String, Object> triple = initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
-                if (!triple.getLeft()) {
+                int i = 1;
+                int retryCount = 3;
+                
+                while (i <= retryCount) {
+                    Triple<Boolean, String, Object> triple = initiatingDeduct(deductionPlanList.get(0), installmentRecord, fyConfig);
+                    if (!Objects.equals(triple.getMiddle(), "301028")) {
+                        return;
+                    }
+
                     log.warn("SIGN NOTIFY WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
+                    i += 1;
+                    Thread.sleep(1000L);
                 }
+                
+            } catch (InterruptedException e) {
+                log.error("SIGN NOTIFY ERROR! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(), e);
             } finally {
                 MDC.clear();
             }
@@ -702,6 +714,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             if (Objects.equals(FY_RESULT_CODE_SUCCESS, fyAgreementPayRspFyResult.getCode())) {
                 return Triple.of(true, null, null);
             }
+            
+            log.info("DEDUCT FAIL! uid={}, externalAgreementNo={}, FyResult={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(), fyAgreementPayRspFyResult);
         } catch (Exception e) {
             log.error("INSTALLMENT DEDUCT ERROR!", e);
         }
