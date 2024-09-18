@@ -18,6 +18,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityAppConfig;
@@ -55,6 +56,7 @@ import com.xiliulou.electricity.query.OrderQueryV2;
 import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
+import com.xiliulou.electricity.query.SelectionExchangeCheckQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityAppConfigService;
@@ -1273,89 +1275,85 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     @Override
-    public Triple<Boolean, String, Object> orderV3Check(OrderQueryV3 orderQuery) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ORDER ERROR!  not found user,eid={}", orderQuery.getEid());
-            return Triple.of(false, "100001", "未能找到用户");
+    public Triple<Boolean, String, Object> selectionExchangeCheck(SelectionExchangeCheckQuery exchangeQuery) {
+        // 判断用户信息
+        Long uid = SecurityUtils.getUid();
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        // 校验用户状态
+        Triple<Boolean, String, Object> userStatus = verifyUserStatus(userInfo);
+        if (Boolean.FALSE.equals(userStatus.getLeft())) {
+            return userStatus;
         }
         
-        Triple<Boolean, String, Object> checkExistsOrderResult = checkUserExistsUnFinishOrder(user.getUid());
+        //查询后台开关
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig.getIsSelectionExchange()) || Objects.equals(electricityConfig.getIsSelectionExchange(),
+                SelectionExchageEunm.DISABLE_SELECTION_EXCHANGE.getCode())) {
+            return Triple.of(false, "100551", "选仓换电开关已关闭");
+        }
+        
+        Triple<Boolean, String, Object> checkExistsOrderResult = checkUserExistsUnFinishOrder(userInfo.getUid());
         if (checkExistsOrderResult.getLeft()) {
-            log.warn("ORDER WARN! user exists unFinishOrder! uid={}", user.getUid());
+            log.warn("SelectionExchangeCheck EXCHANGE ORDER WARN! user exists unFinishOrder! uid={}", userInfo.getUid());
             return Triple.of(false, checkExistsOrderResult.getMiddle(), checkExistsOrderResult.getRight());
         }
         
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getEid());
-        if (Objects.isNull(electricityCabinet)) {
-            return Triple.of(false, "100003", "柜机不存在");
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(exchangeQuery.getEid());
+        
+        //校验柜机状态
+        OrderSelectionExchangeQuery query = new OrderSelectionExchangeQuery();
+        query.setEid(exchangeQuery.getEid());
+        Triple<Boolean, String, Object> cabinetStatus = verifyElectricityCabinetStatus(electricityCabinet, query);
+        if (Boolean.FALSE.equals(cabinetStatus.getLeft())) {
+            return cabinetStatus;
         }
         
-        //换电柜是否打烊
-        boolean isBusiness = this.isBusiness(electricityCabinet);
-        if (isBusiness) {
-            return Triple.of(false, "100203", "换电柜已打烊");
+        //校验加盟商
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityCabinet.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.warn("SelectionExchangeCheck EXCHANGE ORDER WARN! not found franchisee,franchiseeId={},uid={}", electricityCabinet.getFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
         
-        //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
-        if (!eleResult) {
-            return Triple.of(false, "100004", "柜机不在线");
+        //柜机加盟商与用户加盟商不一致
+        if (!Objects.equals(franchisee.getId(), userInfo.getFranchiseeId())) {
+            log.warn("SelectionExchangeCheck EXCHANGE ORDER WARN! user fId  is not equal franchiseeId uid={} ,fid={}", userInfo.getUid(), userInfo.getFranchiseeId());
+            return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
         }
         
-       
-        
-        try {
-            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-            if (Objects.isNull(store)) {
-                log.warn("ORDER WARN!  not found store ！uid={},eid={},storeId={}", user.getUid(), electricityCabinet.getId(), electricityCabinet.getStoreId());
-                return Triple.of(false, "100204", "未找到门店");
-            }
-            
-            //校验用户
-            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-            if (Objects.isNull(userInfo)) {
-                log.warn("ORDER WARN! not found user info,uid={} ", user.getUid());
-                return Triple.of(false, "100205", "未找到用户审核信息");
-            }
-            
-            //用户是否可用
-            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.warn("ORDER WARN! user is unUsable,uid={} ", user.getUid());
-                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
-            }
-            
-            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.warn("ORDER WARN! userinfo is UN AUTH! uid={}", user.getUid());
-                return Triple.of(false, "100206", "用户未审核");
-            }
-            
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-            
-            // 多次换电拦截
-            if (StringUtils.isNotBlank(electricityCabinet.getVersion())
-                    && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.CHECK.getCode());
-                if (pair.getLeft()) {
-                    // 返回让前端选择
-                    return Triple.of(true, null, pair.getRight());
-                }
-            }
-            
-            // 如果超过5分钟或者返回false，前端不进行弹窗
-            ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-            vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
-            return Triple.of(true, null, vo);
-        } catch (BizException e) {
-            throw new BizException(e.getErrCode(), e.getErrMsg());
+        //校验门店信息
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if (Objects.isNull(store)) {
+            log.warn("SelectionExchangeCheck EXCHANGE ORDER WARN!  not found store!uid={},eid={},storeId={}", userInfo.getUid(), electricityCabinet.getId(), electricityCabinet.getStoreId());
+            return Triple.of(false, "100204", "未找到门店");
         }
+        
+        //查询用户绑定的电池
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        
+        // 多次换电拦截
+        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).build();
+            Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.CHECK.getCode());
+            if (pair.getLeft()) {
+                return Triple.of(true, null, pair.getRight());
+            }
+        }
+        
+        // 如果超过5分钟或者返回false，前端不进行弹窗
+        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        return Triple.of(true, null, vo);
+        
     }
     
     /**
      * @return Boolean=false继续走正常换电
      */
-    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, OrderQueryV3 orderQueryV3,Integer code) {
-        if (Objects.equals(orderQueryV3.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
+    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+            LessTimeExchangeDTO exchangeDTO, Integer code) {
+        if (Objects.equals(exchangeDTO.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
             log.info("OrderV3 INFO! not same cabinet, normal exchange");
             return Pair.of(false, null);
         }
@@ -1377,8 +1375,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         // 扫码柜机和订单不是同一个柜机进行处理
-        if (!Objects.equals(lastOrder.getElectricityCabinetId(), orderQueryV3.getEid())) {
-            log.warn("OrderV3 WARN! scan eid not equal order eid, orderEid is {}, scanEid is {}", lastOrder.getElectricityCabinetId(), orderQueryV3.getEid());
+        if (!Objects.equals(lastOrder.getElectricityCabinetId(), exchangeDTO.getEid())) {
+            log.warn("OrderV3 WARN! scan eid not equal order eid, orderEid is {}, scanEid is {}", lastOrder.getElectricityCabinetId(), exchangeDTO.getEid());
             return scanCabinetNotEqualOrderCabinetHandler(userInfo, electricityBattery, lastOrder);
         }
         
@@ -3148,7 +3146,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.ORDER.getCode());
+                LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
@@ -3264,12 +3263,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
         }
         
-        
         // 多次换电拦截
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, orderQuery, OrderCheckEnum.ORDER.getCode());
+                
+                LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
+                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());

@@ -11,6 +11,7 @@ import com.xiliulou.electricity.query.OrderQueryV2;
 import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
+import com.xiliulou.electricity.query.SelectionExchangeCheckQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -52,14 +53,14 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     
     
     /**
-     * 短时间内多次换电优化前置拦截
+     * 多次 选仓换电check接口
      *
      * @param orderQuery
      * @return
      */
-    @PostMapping("/user/electricityCabinetOrder/order/check")
-    public R orderV3Check(@RequestBody @Validated OrderQueryV3 orderQuery) {
-        return returnTripleResult(electricityCabinetOrderService.orderV3Check(orderQuery));
+    @PostMapping("/user/electricityCabinetOrder/selectionExchange/check")
+    public R orderV3Check(@RequestBody @Validated SelectionExchangeCheckQuery orderQuery) {
+        return returnTripleResult(electricityCabinetOrderService.selectionExchangeCheck(orderQuery));
     }
     
     /**
