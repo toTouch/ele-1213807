@@ -233,7 +233,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
             serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
             
             // 修改企业用户代付状态为代付过期
-            enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+//            enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
