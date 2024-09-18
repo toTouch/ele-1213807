@@ -1970,7 +1970,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderService.update(freeDepositOrderUpdate);
             
             // 修改退款订单的金额
-            if (Objects.nonNull(freeDepositOrder.getPayTransAmt()) && freeDepositOrder.getPayTransAmt() > 0) {
+            if (Objects.nonNull(freeDepositOrder.getPayTransAmt())) {
                 eleRefundOrderService.updateRefundAmountById(eleRefundOrder.getId(), new BigDecimal(freeDepositOrder.getPayTransAmt()));
             }
     
