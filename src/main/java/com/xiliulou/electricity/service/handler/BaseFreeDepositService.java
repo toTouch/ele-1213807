@@ -61,7 +61,7 @@ public interface BaseFreeDepositService {
     AuthPayStatusBO queryAuthToPayStatus(FreeDepositAuthToPayStatusQuery query);
     
     /**
-     * 取消代扣，目前只有拍小组有
+     * 取消代扣
      *
      * @param query query
      * @return Boolean
