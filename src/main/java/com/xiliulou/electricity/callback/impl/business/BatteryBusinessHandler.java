@@ -184,7 +184,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(order.getOrderId());
             if (Objects.isNull(eleDepositOrder)){
                 log.error("battery unfree error error! eleDepositOrder is null, orderId is {}", order.getOrderId());
-                return false;
+                return true;
             }
             
             if (Objects.isNull(eleRefundOrder)){
