@@ -18,9 +18,7 @@ import java.util.List;
  * @author makejava
  * @since 2020-11-26 10:56:56
  */
-public interface ElectricityCabinetOrderMapper {
-    
-    int insert(ElectricityCabinetOrder o);
+public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCabinetOrder> {
     
     /**
      * 查询指定行数据
