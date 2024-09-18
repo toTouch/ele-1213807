@@ -176,14 +176,9 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     public R queryOrderStatusForShow(@RequestParam("orderId") String orderId) {
         return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShow(orderId));
     }
-    
+  
     /**
-     * 换电柜自助开仓
-     * @param orderSelfOpenCellQuery
-     * @return
-     */
-    /**
-     * 换电过程中取消自助开仓弹窗
+     * 换电前端状态轮循接口
      *
      * @param orderId
      * @return
@@ -193,7 +188,12 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShowV2(orderId));
     }
     
-    //换电柜自助开仓
+    
+    /**
+     * 换电柜自助开仓
+     * @param orderSelfOpenCellQuery
+     * @return
+     */
     @PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
     public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
         return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
