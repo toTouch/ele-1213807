@@ -2178,8 +2178,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Slave
     @Override
-    public R userInfoSearch(Long size, Long offset, String name) {
-        List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
+    public R userInfoSearch(Long size, Long offset, String name, String keyWords) {
+        List<UserInfoSearchVo> qeury = userInfoMapper.userInfoSearch(size, offset, name, TenantContextHolder.getTenantId(), keyWords);
         if (ObjectUtils.isNotEmpty(qeury)) {
             qeury.stream().forEach(userInfoSearchVo -> {
                 String nameAndPhone = userInfoSearchVo.getName() + StringConstant.FORWARD_SLASH + userInfoSearchVo.getPhone();

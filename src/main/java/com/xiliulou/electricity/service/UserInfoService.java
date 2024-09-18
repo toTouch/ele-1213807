@@ -143,7 +143,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryDetailsBatteryInfo(Long uid);
     
-    R userInfoSearch(Long size, Long offset, String name);
+    R userInfoSearch(Long size, Long offset, String name, String keyWords);
     
     R queryEleList(UserInfoQuery userInfoQuery);
     
