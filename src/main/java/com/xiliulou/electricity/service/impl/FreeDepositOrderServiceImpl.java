@@ -975,6 +975,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         request.setIdNumber(freeBatteryDepositQuery.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
+        request.setJumpUrl(freeBatteryDepositQuery.getJumpUrl());
         query.setData(request);
         
         PxzCommonRsp<String> callPxzRsp = null;
@@ -1099,6 +1100,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         request.setIdNumber(freeQuery.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
+        request.setJumpUrl(freeQuery.getJumpUrl());
         query.setData(request);
         
         PxzCommonRsp<String> callPxzRsp = null;

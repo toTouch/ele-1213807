@@ -870,6 +870,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         request.setIdNumber(freeDepositOrder.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
+        request.setJumpUrl(freeDepositOptReq.getJumpUrl());
         query.setData(request);
         PxzCommonRsp<String> callPxzRsp = null;
         try {

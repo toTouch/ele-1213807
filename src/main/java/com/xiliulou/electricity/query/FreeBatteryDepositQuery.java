@@ -26,6 +26,11 @@ public class FreeBatteryDepositQuery {
     
     private Integer model;
     
+    /**
+     * 免押成功后跳转的地址
+     */
+    private String jumpUrl;
+    
     
     
 }
