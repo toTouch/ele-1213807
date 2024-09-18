@@ -1762,7 +1762,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .electricityCabinetId(selectBox.getElectricityCabinetId()).oldCellNo(usableEmptyCellNo.getRight()).newCellNo(Integer.parseInt(selectBox.getCellNo()))
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(ExchangeTypeEnum.SELECTION_EXCHANGE.getCode())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId())
-                .tenantId(TenantContextHolder.getTenantId()).channel(ChannelSourceContextHolder.get()).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+            electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
+        }
         
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         
@@ -1830,7 +1834,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .electricityCabinetId(selectBox.getElectricityCabinetId()).oldCellNo(usableEmptyCellNo.getRight()).newCellNo(Integer.parseInt(selectBox.getCellNo()))
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(ExchangeTypeEnum.SELECTION_EXCHANGE.getCode())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId())
-                .tenantId(TenantContextHolder.getTenantId()).channel(ChannelSourceContextHolder.get()).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
+    
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+            electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
+        }
         
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         
@@ -2035,8 +2043,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .electricityCabinetId(orderQuery.getEid()).oldCellNo(usableEmptyCellNo.getRight()).newCellNo(Integer.parseInt(electricityCabinetBox.getCellNo()))
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(orderQuery.getSource()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId())
-                .channel(ChannelSourceContextHolder.get())
                 .build();
+    
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+            electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
+        }
         
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         
@@ -2180,8 +2191,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .electricityCabinetId(orderQuery.getEid()).oldCellNo(usableEmptyCellNo.getRight()).newCellNo(Integer.parseInt(electricityCabinetBox.getCellNo()))
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(orderQuery.getSource()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId())
-                .channel(ChannelSourceContextHolder.get())
                 .build();
+    
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+            electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
+        }
         
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         
@@ -2965,6 +2979,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(orderQuery.getSource()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId())
                 .build();
+    
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+            electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
+        }
         
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         
@@ -3080,7 +3098,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .electricityCabinetId(orderQuery.getEid()).oldCellNo(usableEmptyCellNo.getRight()).newCellNo(Integer.parseInt(electricityCabinetBox.getCellNo()))
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(orderQuery.getSource()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId())
-                .channel((ChannelSourceContextHolder.get())).build();
+                .build();
+    
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+            electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
+        }
         
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         
