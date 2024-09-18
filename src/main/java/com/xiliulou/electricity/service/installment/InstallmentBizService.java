@@ -107,4 +107,10 @@ public interface InstallmentBizService {
      * @return 处理结果
      */
     R<String> handleDeductZero(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, InstallmentDeductionRecord installmentDeductionRecord);
+    
+    /**
+     * 退押时解约签约记录
+     * @param uid 用户uid
+     */
+    void terminateForReturnDeposit(Long uid);
 }

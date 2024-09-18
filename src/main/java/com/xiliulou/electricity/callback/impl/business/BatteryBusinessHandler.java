@@ -28,6 +28,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.AllArgsConstructor;
@@ -88,6 +89,8 @@ public class BatteryBusinessHandler implements BusinessHandler {
     private final ServiceFeeUserInfoService serviceFeeUserInfoService;
     
     private final RedisService redisService;
+    
+    private final InstallmentBizService installmentBizService;
     
     @Override
     public boolean support(Integer type) {
@@ -237,6 +240,9 @@ public class BatteryBusinessHandler implements BusinessHandler {
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+            
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             
             redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
         }catch (Exception e){

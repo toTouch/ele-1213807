@@ -99,6 +99,7 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_INSUFFICIENT_BALANCE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_SUCCESS;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_COMPLETED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
@@ -784,6 +785,26 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentRecordService.update(installmentRecordUpdate);
         
         return R.ok();
+    }
+    
+    @Override
+    public void terminateForReturnDeposit(Long uid) {
+        InstallmentRecord installmentRecord = installmentRecordService.queryLatestUsingRecordByUid(uid);
+        if (Objects.isNull(installmentRecord) || Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_TERMINATE)) {
+            return;
+        }
+        
+        InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+        installmentRecordUpdate.setId(installmentRecord.getId());
+        
+        if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_INIT) || Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_CANCEL_PAY);
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordService.update(installmentRecordUpdate);
+            return;
+        }
+        
+        terminateRecord(installmentRecord.getExternalAgreementNo());
     }
     
     private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid) {

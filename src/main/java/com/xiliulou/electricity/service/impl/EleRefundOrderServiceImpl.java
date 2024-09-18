@@ -71,6 +71,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -217,6 +218,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     private FreeDepositNotifyService freeDepositNotifyService;
+    
+    @Resource
+    private InstallmentBizService installmentBizService;
     
     /**
      * 新增数据
@@ -378,6 +382,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 // 删除用户分组
                 userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+                
+                // 解约分期签约，如果有的话
+                installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             }
         }
         
@@ -660,6 +667,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+            
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             
             return Triple.of(true, "", "免押解冻成功");
         }
@@ -1022,6 +1032,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+            
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             
             return Triple.of(true, "", null);
         }
@@ -1559,6 +1572,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 // 删除用户分组
                 userInfoGroupDetailService.handleAfterRefundDeposit(uid);
+                
+                // 解约分期签约，如果有的话
+                installmentBizService.terminateForReturnDeposit(userInfo.getUid());
                 
                 return R.ok();
             }
