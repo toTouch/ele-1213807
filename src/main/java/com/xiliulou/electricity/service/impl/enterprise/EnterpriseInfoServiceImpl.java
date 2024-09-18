@@ -1940,6 +1940,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             status = EleRefundOrder.STATUS_REFUND;
         }
+        
         //生成退押订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
@@ -1968,6 +1969,11 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
             
+            // 修改退款订单的金额
+            if (Objects.nonNull(freeDepositOrder.getPayTransAmt()) && freeDepositOrder.getPayTransAmt() > 0) {
+                eleRefundOrderService.updateRefundAmountById(eleRefundOrder.getId(), new BigDecimal(freeDepositOrder.getPayTransAmt()));
+            }
+    
             UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).orderId(freeDepositOrder.getOrderId())
                     .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).authNO(freeDepositOrder.getAuthNo()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
             Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
