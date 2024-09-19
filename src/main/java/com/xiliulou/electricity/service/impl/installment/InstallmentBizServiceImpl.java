@@ -508,7 +508,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
 
                     log.warn("SIGN NOTIFY WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
                     i += 1;
-                    Thread.sleep(1000L);
+                    Thread.sleep(3000L);
                 }
                 
             } catch (InterruptedException e) {
