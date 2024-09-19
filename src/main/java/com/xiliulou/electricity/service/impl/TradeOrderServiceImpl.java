@@ -1057,6 +1057,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return R.fail("301008", "当前有进行中的分期签约，完成或取消当前分期签约后方可续签分期套餐");
             }
             
+            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                log.warn("INSTALLMENT PAY WARN! user not pay deposit,uid={} ", userInfo.getUid());
+                return R.fail("ELECTRICITY.0049", "未缴纳押金");
+            }
+            
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("INSTALLMENT PAY WARN! user is unUsable,uid={}", uid);
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");
@@ -1086,6 +1091,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return R.fail("100308", "未找到用户的第三方授权信息!");
             }
             
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit)) {
+                log.warn("INSTALLMENT PAY WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                return R.fail("ELECTRICITY.0001", "用户信息不存在");
+            }
+            
+            // 是否有正在进行中的退押
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            if (refundCount > 0) {
+                log.warn("INSTALLMENT PAY WARN! have refunding order,uid={}", userInfo.getUid());
+                return R.fail("ELECTRICITY.0047", "电池押金退款中");
+            }
+            
             // 换电与租车-车电一体两种处理均使用以下三个对象接收对应处理的结果
             Triple<Boolean, String, Object> saveOrderAndPayResult = null;
             Triple<Boolean, String, Object> insuranceOrderTriple = null;
@@ -1093,6 +1111,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             Triple<Boolean, String, InstallmentRecord> installmentRecordTriple = null;
             // 分换电与租车做响应的处理
             if (Objects.equals(query.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
+                List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
+                if (CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)) {
+                    log.warn("INSTALLMENT PAY WARN! battery membercard refund review,uid={}", userInfo.getUid());
+                    return R.fail("100018", "套餐租金退款审核中");
+                }
+                
                 // 购买换电套餐
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
                 if (Objects.isNull(batteryMemberCard)) {

@@ -268,10 +268,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             
             return R.ok();
         } else {
+            R<String> terminatingR = terminatingInstallmentRecord(installmentRecord);
+            if (!terminatingR.isSuccess()) {
+                return terminatingR;
+            }
             terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_RELEASE);
             installmentTerminatingRecordService.update(terminatingRecordUpdate);
             
-            return terminatingInstallmentRecord(installmentRecord);
+            return terminatingR;
         }
     }
     
