@@ -39,6 +39,7 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CellTypeEnum;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.OrderCheckEnum;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
@@ -1556,6 +1557,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
+            vo.setCellType(CellTypeEnum.NEW_CELL.getCode());
             // 新仓门取电
             vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox.getCellNo()));
            
@@ -1580,6 +1582,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setOrderId(lastOrder.getOrderId());
         vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
         
+        
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("OrderV3 WARN!oldCellCheckFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
@@ -1602,6 +1605,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
+            vo.setCellType(CellTypeEnum.OLD_CELL.getCode());
             
             // 只有换电，才去获取满电仓，而选仓取电不走这里
             if (Objects.equals(code,OrderCheckEnum.ORDER.getCode())) {

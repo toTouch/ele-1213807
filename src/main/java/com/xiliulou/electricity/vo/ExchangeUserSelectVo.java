@@ -65,7 +65,10 @@ public class ExchangeUserSelectVo {
      */
     private Integer isEnterTakeBattery;
     
-    
+    /**
+     * 仓门类型，1是旧仓门，2是新仓门
+     */
+    private Integer cellType;
     
     
     
