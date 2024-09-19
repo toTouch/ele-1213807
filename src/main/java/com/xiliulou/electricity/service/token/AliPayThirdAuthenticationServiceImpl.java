@@ -185,7 +185,10 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             // exist 和 userOauthBind 都存在
             return this.login(existUserByPhone, userOauthBindByPhone, userOauthBindByOpenId);
             
-        } finally {
+        }catch (Exception e){
+            log.warn("AliPayThirdAuthenticationServiceImpl.registerUserAndLoadUser WARN! Exception:",e);
+            throw new AuthenticationServiceException("系统异常！");
+        }finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }
         
