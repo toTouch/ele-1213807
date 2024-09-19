@@ -1087,7 +1087,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userBatteryDeposit)) {
+            if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus()) && Objects.isNull(userBatteryDeposit)) {
                 log.warn("INSTALLMENT PAY WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
                 return R.fail("ELECTRICITY.0001", "用户信息不存在");
             }
