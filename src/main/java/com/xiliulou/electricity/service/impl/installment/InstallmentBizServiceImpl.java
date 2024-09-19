@@ -902,6 +902,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             
             FyResult<FyReleaseAgreementRsp> result = fyAgreementService.releaseAgreement(commonQuery);
             if (!Objects.equals(result.getCode(), FY_RESULT_CODE_SUCCESS)) {
+                log.info("TERMINATING INSTALLMENT RECORD FAIL! result={}", result);
                 return R.fail("301025", "解约失败，请联系管理员");
             }
             

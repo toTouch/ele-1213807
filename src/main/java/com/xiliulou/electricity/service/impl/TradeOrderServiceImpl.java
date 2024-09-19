@@ -1057,11 +1057,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return R.fail("301008", "当前有进行中的分期签约，完成或取消当前分期签约后方可续签分期套餐");
             }
             
-            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                log.warn("INSTALLMENT PAY WARN! user not pay deposit,uid={} ", userInfo.getUid());
-                return R.fail("ELECTRICITY.0049", "未缴纳押金");
-            }
-            
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.warn("INSTALLMENT PAY WARN! user is unUsable,uid={}", uid);
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");

@@ -29,11 +29,6 @@ public class InstallmentPayQuery {
     private Integer packageType;
     
     /**
-     * 押金缴纳状态，0--未缴纳押金，1--已缴纳押金
-     */
-    private Integer batteryDepositStatus;
-    
-    /**
      * 保险id
      */
     private Integer insuranceId;
