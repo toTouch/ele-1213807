@@ -101,7 +101,10 @@
             resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord">
         select id, <include refid="columnsWithoutId"/>
         from t_installment_deduction_record
-        where external_agreement_no = #{externalAgreementNo}
+        where uid = #{uid}
+            <if test="externalAgreementNo != null and externalAgreementNo != ''">
+                and external_agreement_no = #{externalAgreementNo}
+            </if>
             <if test="status != null">
                 and `status` = #{status}
             </if>

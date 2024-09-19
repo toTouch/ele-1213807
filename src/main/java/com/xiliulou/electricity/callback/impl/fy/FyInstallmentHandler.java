@@ -100,15 +100,16 @@ public class FyInstallmentHandler {
         externalAgreementNos.parallelStream().forEach(externalAgreementNo -> {
             InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryPlanForDeductByAgreementNo(externalAgreementNo);
             
+            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
+            
             InstallmentDeductionRecordQuery query = new InstallmentDeductionRecordQuery();
             query.setExternalAgreementNo(deductionPlan.getExternalAgreementNo());
+            query.setUid(installmentRecord.getUid());
             query.setStatus(DEDUCTION_RECORD_STATUS_INIT);
             List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(query);
             if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
                 return;
             }
-            
-            InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
             if (Objects.isNull(fyConfig)) {

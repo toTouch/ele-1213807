@@ -218,7 +218,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
         recordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        
+        recordQuery.setUid(installmentRecord.getUid());
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
         if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
             return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
@@ -250,7 +250,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
         recordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        
+        recordQuery.setUid(installmentRecord.getUid());
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
         if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
             return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
@@ -315,6 +315,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             InstallmentDeductionRecordQuery query = new InstallmentDeductionRecordQuery();
             query.setExternalAgreementNo(deductionPlan.getExternalAgreementNo());
             query.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+            query.setUid(uid);
             List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(query);
             if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
                 return R.fail("301020", "当前有正在执行中的分期代扣，请稍后再试");
@@ -773,7 +774,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
         recordQuery.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        
+        recordQuery.setUid(installmentRecord.getUid());
         List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
         if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
             return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
