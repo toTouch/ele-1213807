@@ -66,6 +66,17 @@ public class ExchangeUserSelectVo {
     private Integer isEnterTakeBattery;
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**
      * 是否进入多次换电
      */
@@ -99,6 +110,9 @@ public class ExchangeUserSelectVo {
      */
     public static final Integer NOT_SAME_CABINET = 0;
     
+    /**
+     * 是否进入取电逻辑
+     */
     public static final Integer ENTER_TAKE_BATTERY = 1;
     
     
