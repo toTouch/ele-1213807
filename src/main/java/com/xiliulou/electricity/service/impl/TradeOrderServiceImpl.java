@@ -1086,17 +1086,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return R.fail("100308", "未找到用户的第三方授权信息!");
             }
             
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-            if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus()) && Objects.isNull(userBatteryDeposit)) {
-                log.warn("INSTALLMENT PAY WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
-                return R.fail("ELECTRICITY.0001", "用户信息不存在");
-            }
-            
-            // 是否有正在进行中的退押
-            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
-            if (refundCount > 0) {
-                log.warn("INSTALLMENT PAY WARN! have refunding order,uid={}", userInfo.getUid());
-                return R.fail("ELECTRICITY.0047", "电池押金退款中");
+            if (UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userBatteryDeposit)) {
+                    log.warn("INSTALLMENT PAY WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.0001", "用户信息不存在");
+                }
+                
+                // 是否有正在进行中的退押
+                Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+                if (refundCount > 0) {
+                    log.warn("INSTALLMENT PAY WARN! have refunding order,uid={}", userInfo.getUid());
+                    return R.fail("ELECTRICITY.0047", "电池押金退款中");
+                }
             }
             
             // 换电与租车-车电一体两种处理均使用以下三个对象接收对应处理的结果
