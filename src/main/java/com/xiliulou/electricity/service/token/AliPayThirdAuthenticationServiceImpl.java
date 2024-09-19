@@ -166,7 +166,7 @@ public class AliPayThirdAuthenticationServiceImpl implements ThirdAuthentication
             }
             
             //查询当前手机号绑定的openid
-            UserOauthBind userOauthBindByPhone = userOauthBindService.listUserByPhone(loginPhone, UserOauthBind.SOURCE_ALI_PAY, tenantId).stream().findFirst().get();
+            UserOauthBind userOauthBindByPhone = userOauthBindService.listUserByPhone(loginPhone, UserOauthBind.SOURCE_ALI_PAY, tenantId).stream().findFirst().orElse(null);
             
             if (Objects.nonNull(userOauthBindByPhone) && !Objects.equals(existUserByPhone.getUid(), userOauthBindByPhone.getUid())) {
                 // uid 不匹配
