@@ -25,9 +25,11 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.entity.EleUserOperateHistory;
@@ -81,11 +83,13 @@ import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.EleUserOperateHistoryService;
 import com.xiliulou.electricity.service.EleUserOperateRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -375,6 +379,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
+    @Resource
+    ElectricityCabinetOrderService electricityCabinetOrderService;
+    
+    @Resource
+    EleRefundOrderService eleRefundOrderService;
     
     /**
      * 分页查询
@@ -2671,7 +2681,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R bindBattery(BindBatteryRequest bindBatteryRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -2694,7 +2703,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         
             UserInfo userInfo = queryByUidFromCache(user.getUid());
-            if (Objects.isNull(userInfo) || !Objects.equals(tenantId, userInfo.getTenantId())) {
+            if (Objects.isNull(userInfo)) {
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
         
@@ -2715,7 +2724,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 log.warn("user bind battery warn! not pay deposit! uid={} ", userInfo.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
+    
+            // 判断电池是否存在，或者已经被绑定
+            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(bindBatteryRequest.getBatterySn());
+            if (Objects.isNull(oldElectricityBattery)) {
+                log.warn("user bind battery warn! not found Battery! batteryName={}", bindBatteryRequest.getBatterySn());
+                return R.fail("ELECTRICITY.0020", "未找到电池");
+            }
+    
+            if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfo.getUid())) {
+                log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
+                return R.fail("100019", "该电池已经绑定用户");
+            }
+    
+            if (Objects.equals(oldElectricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+                log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
+                return R.fail("100019", "该电池为租借状态，不支持绑定");
+            }
+    
+            if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
+                        oldElectricityBattery.getFranchiseeId());
+                return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
+            }
+    
+            // 多型号  绑定电池需要判断电池是否和用户型号一致
+            Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, userInfo);
+            if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
+                if (Objects.equals(verifyUserBatteryTypeResult.getMiddle(), "100297")) {
+                    return R.fail("100297", "电池型号与用户套餐型号不一致，请检查");
+                }
         
+                return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
+            }
+    
+            //是否有正在退款中的退款
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            if (refundCount > 0) {
+                log.warn("RENT CAR BATTERY WARN! deposit is being refunded,uid={}", userInfo.getUid());
+                return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿租电池");
+            }
+            
             Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 // 判断电池滞纳金
@@ -2759,6 +2808,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     log.warn("user bind battery warn! battery memberCard is Expire,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.0023", "套餐已过期");
                 }
+    
+                //校验是否有退租审核中的订单
+                BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectLatestByMembercardOrderNo(userBatteryMemberCard.getOrderId());
+                if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_AUDIT)) {
+                    log.info("user bind battery warn! battery memberCard is refund,uid={}", userInfo.getUid());
+                    return R.fail( "100282", "租金退款审核中，请等待审核确认后操作");
+                }
             
                 // 判断车电关联是否可租电
                 ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
@@ -2775,48 +2831,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         }
                     }
                 }
-            } else {
-                carRentalPackageMemberTermBizService.verifyMemberSwapBattery(userInfo.getTenantId(), userInfo.getUid());
-            }
-        
-            // 判断电池是否存在，或者已经被绑定
-            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(bindBatteryRequest.getBatterySn());
-            if (Objects.isNull(oldElectricityBattery)) {
-                log.warn("user bind battery warn! not found Battery! batteryName={}", bindBatteryRequest.getBatterySn());
-                return R.fail("ELECTRICITY.0020", "未找到电池");
-            }
-            
-            if (!Objects.equals(oldElectricityBattery.getTenantId(), userInfo.getTenantId())) {
-                log.warn("user bind battery warn! not found Battery! batteryName={}", bindBatteryRequest.getBatterySn());
-                return R.fail("100225", "电池编码不存在");
-            }
-            
-            if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfo.getUid())) {
-                log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
-                return R.fail("100019", "该电池已经绑定用户");
-            }
     
-            if (Objects.equals(oldElectricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-                log.warn("user bind battery warn! battery is bind user! sn={} ", bindBatteryRequest.getBatterySn());
-                return R.fail("100019", "该电池为租借状态，不支持绑定");
-            }
-        
-            if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-                log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
-                        oldElectricityBattery.getFranchiseeId());
-                return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
-            }
-        
-            // 多型号  绑定电池需要判断电池是否和用户型号一致
-            Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, userInfo);
-            if (Boolean.FALSE.equals(verifyUserBatteryTypeResult.getLeft())) {
-                if (Objects.equals(verifyUserBatteryTypeResult.getMiddle(), "100297")) {
-                    return R.fail("100297", "电池型号与用户套餐型号不一致，请检查");
+                //修改按此套餐的次数
+                Triple<Boolean, String, String> modifyResult = electricityCabinetOrderService.checkAndModifyMemberCardCount(userBatteryMemberCard, batteryMemberCard);
+                if (Boolean.FALSE.equals(modifyResult.getLeft())) {
+                    return R.fail(modifyResult.getMiddle(), modifyResult.getRight());
                 }
                 
-                return R.fail(verifyUserBatteryTypeResult.getMiddle(), (String) verifyUserBatteryTypeResult.getRight());
+            } else {
+                carRentalPackageMemberTermBizService.verifyMemberSwapBattery(userInfo.getTenantId(), userInfo.getUid());
+                //修改按此套餐的次数
+                carRentalPackageMemberTermBizService.substractResidue(userInfo.getTenantId(), userInfo.getUid());
+                
             }
-        
+            
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
