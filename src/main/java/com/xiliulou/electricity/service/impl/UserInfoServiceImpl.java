@@ -2693,9 +2693,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
     
         try {
-            // 租户
-            Integer tenantId = TenantContextHolder.getTenantId();
-    
             // 查询有没有绑定过电池，区分了绑定与编辑两种操作类型，编辑操作才会退掉已绑定电池，所以对绑定操作在此处做校验进行拦截
             ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(user.getUid());
             if (Objects.nonNull(isBindElectricityBattery)) {
