@@ -855,7 +855,39 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return;
         }
         
-        terminateRecord(installmentRecord.getExternalAgreementNo());
+        FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+        if (Objects.isNull(config)) {
+            log.error("TERMINATING INSTALLMENT RECORD FOR RETURN DEPOSIT ERROR! no fyConfig, tenantId={}", installmentRecord.getTenantId());
+        }
+        
+        InstallmentTerminatingRecordQuery query = new InstallmentTerminatingRecordQuery();
+        query.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
+        query.setStatus(TERMINATING_RECORD_STATUS_INIT);
+        List<InstallmentTerminatingRecord> records = installmentTerminatingRecordService.listForRecordWithStatus(query);
+        
+        // 根据解约记录做对应的处理
+        InstallmentTerminatingRecord installmentTerminatingRecord;
+        if (CollectionUtils.isEmpty(records)) {
+            installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "后台解约", false);
+            installmentTerminatingRecord.setAuditorId(SecurityUtils.getUid());
+            installmentTerminatingRecordService.insert(installmentTerminatingRecord);
+        } else if (records.size() > 1) {
+            log.error("TERMINATING INSTALLMENT RECORD FOR RETURN DEPOSIT ERROR! terminating record with init more than one. externalAgreementNo={}", installmentRecord.getExternalAgreementNo());
+            return;
+        } else {
+            installmentTerminatingRecord = records.get(0);
+        }
+        
+        R<String> terminatingR = terminatingInstallmentRecord(installmentRecord, config);
+        if (terminatingR.isSuccess()) {
+            return;
+        }
+        
+        InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
+        terminatingRecordUpdate.setId(installmentTerminatingRecord.getId());
+        terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_REFUSE);
+        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentTerminatingRecordService.update(terminatingRecordUpdate);
     }
     
     private Triple<Boolean, String, Object> handleBatteryMemberCard(InstallmentRecord installmentRecord, InstallmentDeductionPlan deductionPlan, Long uid) {
