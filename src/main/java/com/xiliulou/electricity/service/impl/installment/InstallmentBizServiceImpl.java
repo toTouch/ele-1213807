@@ -197,6 +197,17 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return R.fail("301005", "签约记录不存在");
         }
         
+        Integer num = (Integer) eleRefundOrderService.queryCount(
+                EleRefundQuery.builder().uid(installmentRecord.getUid()).statuses(Arrays.asList(EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUND)).build()).getData();
+        if (Objects.nonNull(num) && num > 0) {
+            return R.fail("301013", "有未完成的押金退款");
+        }
+        
+        FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+        if (Objects.isNull(config)) {
+            return R.fail("301024", "解约功能未配置相关信息！请联系客服处理");
+        }
+        
         if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_INIT) || Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
             return R.ok();
         }
@@ -225,9 +236,20 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "后台解约", false);
+        installmentTerminatingRecord.setAuditorId(SecurityUtils.getUid());
         installmentTerminatingRecordService.insert(installmentTerminatingRecord);
         
-        return terminatingInstallmentRecord(installmentRecord);
+        R<String> terminatingR = terminatingInstallmentRecord(installmentRecord, config);
+        if (terminatingR.isSuccess()) {
+            return terminatingR;
+        }
+        
+        InstallmentTerminatingRecord terminatingRecordUpdate = new InstallmentTerminatingRecord();
+        terminatingRecordUpdate.setId(installmentTerminatingRecord.getId());
+        terminatingRecordUpdate.setStatus(TERMINATING_RECORD_STATUS_REFUSE);
+        terminatingRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentTerminatingRecordService.update(terminatingRecordUpdate);
+        return terminatingR;
     }
     
     @Override
@@ -240,6 +262,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(terminatingRecord.getExternalAgreementNo());
         if (Objects.isNull(installmentRecord)) {
             return R.fail("301005", "签约记录不存在");
+        }
+        
+        FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+        if (Objects.isNull(config)) {
+            return R.fail("301024", "解约功能未配置相关信息！请联系客服处理");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
@@ -268,7 +295,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             
             return R.ok();
         } else {
-            R<String> terminatingR = terminatingInstallmentRecord(installmentRecord);
+            R<String> terminatingR = terminatingInstallmentRecord(installmentRecord, config);
             if (!terminatingR.isSuccess()) {
                 return terminatingR;
             }
@@ -642,9 +669,14 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             installmentDeductionRecordService.update(deductionRecordUpdate);
             
             if (Objects.equals(installmentRecord.getInstallmentNo(), deductionRecord.getIssue())) {
+                FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+                if (Objects.isNull(config)) {
+                    log.error("AUTO TERMINATING INSTALLMENT RECORD ERROR! no fyConfig, tenantId={}", installmentRecord.getTenantId());
+                }
+                
                 InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕", true);
                 installmentTerminatingRecordService.insert(installmentTerminatingRecord);
-                terminatingInstallmentRecord(installmentRecord);
+                terminatingInstallmentRecord(installmentRecord, config);
             }
         }
         return R.ok();
@@ -884,13 +916,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         return R.fail("查询失败");
     }
     
-    private R<String> terminatingInstallmentRecord(InstallmentRecord installmentRecord) {
+    private R<String> terminatingInstallmentRecord(InstallmentRecord installmentRecord, FyConfig config) {
         try {
-            FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
-            if (Objects.isNull(config)) {
-                return R.fail("301024", "解约功能未配置相关信息！请联系客服处理");
-            }
-            
             FyCommonQuery<FyReleaseAgreementRequest> commonQuery = new FyCommonQuery<>();
             FyReleaseAgreementRequest request = new FyReleaseAgreementRequest();
             request.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());

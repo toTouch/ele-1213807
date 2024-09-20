@@ -435,14 +435,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.100273", "未查询到支付订单，操作失败，请联系客服处理");
         }
         
-        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
-        recordQuery.setUid(userInfo.getUid());
-        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
-        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
-            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
-        }
-        
         // 校验退款金额
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
@@ -471,6 +463,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         // 修改企业用户代付状态为已过期
@@ -557,14 +557,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
-        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
-        recordQuery.setUid(userInfo.getUid());
-        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
-        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
-            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
-        }
-        
         EleRefundOrder carRefundOrder = null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             carRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
@@ -597,6 +589,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         // 处理电池免押订单退款
@@ -761,15 +761,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
         }
         
-        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
-        recordQuery.setUid(userInfo.getUid());
-        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
-        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
-            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
-        }
-        
-        
         EleRefundOrder carRefundOrder = null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             carRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
@@ -795,6 +786,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         if (Objects.nonNull(refundAmount) && refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
@@ -1288,6 +1287,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 删除用户分组
         userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
         
+        // 解约分期签约，如果有的话
+        installmentBizService.terminateForReturnDeposit(userInfo.getUid());
+        
         return Triple.of(true, "", null);
     }
     
@@ -1576,6 +1578,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(uid);
+            
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             
             // 生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.DEPOSIT_MODEL)

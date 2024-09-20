@@ -819,7 +819,7 @@
     <select id="selectListMemberCardForSort" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
         select id, `name`, create_time, sort_param
         from t_battery_member_card
-        where del_flag = 0 and status = 0 and business_type = 0
+        where del_flag = 0 and status = 0 and business_type in (0, 4)
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
