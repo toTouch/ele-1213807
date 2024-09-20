@@ -36,6 +36,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
+import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
@@ -332,6 +333,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
             
+            if (Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
+                return Triple.of(false, "301029", "请联系管理员升级最新版本小程序");
+            }
+            
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
                 return Triple.of(false, "100275", "电池套餐不可用");
@@ -620,6 +625,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+            }
+            
+            if (Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
+                return Triple.of(false, "301029", "请联系管理员升级最新版本小程序");
             }
             
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
