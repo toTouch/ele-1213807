@@ -723,5 +723,10 @@ public interface CacheConstant {
     String CACHE_MEI_TUAN_RIDER_MALL_CONFIG = "mei_tuan_rider_mall_config:";
     
     String CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY = "cache_mei_tuan_create_battery_member_card_order_lock_key:";
+    
+    /**
+     * 上次推送给第三方的上下线状态
+     */
+    String CABINET_LAST_ONLINE_STATUS = "cabinet_last_online_status：";
 }
 

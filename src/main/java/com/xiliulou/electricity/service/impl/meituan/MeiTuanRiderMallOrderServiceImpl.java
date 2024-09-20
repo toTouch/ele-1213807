@@ -357,6 +357,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
             }
             
+            // 给美团推送用户套餐信息
+            
             return Triple.of(true, "", null);
         } catch (Exception e) {
             log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
@@ -406,6 +408,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         // 更新订单
         MeiTuanRiderMallOrder meiTuanRiderMallOrderUpdate = new MeiTuanRiderMallOrder();
         meiTuanRiderMallOrderUpdate.setId(meiTuanRiderMallOrder.getId());
+        if (Objects.isNull(meiTuanRiderMallOrder.getUid())) {
+            meiTuanRiderMallOrderUpdate.setUid(uid);
+        }
         
         // 发货失败
         Integer failReason = deliverRsp.getFailReason();

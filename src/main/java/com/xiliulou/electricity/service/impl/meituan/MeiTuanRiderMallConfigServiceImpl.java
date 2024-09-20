@@ -4,9 +4,9 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.meituan.MeiTuanConfigConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
+import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallConfigMapper;
 import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -121,7 +121,7 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
     @Override
     public MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsEnableMeiTuanRiderMall(), MeiTuanConfigConstant.DISABLE_MEI_TUAN_RIDER_MALL)) {
+        if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsEnableMeiTuanRiderMall(), MeiTuanRiderMallEnum.DISABLE_MEI_TUAN_RIDER_MALL.getCode())) {
             return null;
         }
         

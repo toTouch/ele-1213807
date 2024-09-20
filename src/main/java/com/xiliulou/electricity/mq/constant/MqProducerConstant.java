@@ -109,10 +109,15 @@ public interface MqProducerConstant {
     /**
      * 站内信所在新项目主题
      */
-    String AUX_MQ_TOPIC_NAME="XILIULOU_SAAS_AUX_TOPIC";
+    String AUX_MQ_TOPIC_NAME = "XILIULOU_SAAS_AUX_TOPIC";
     
     /**
      * 站内信所在新项目主题TAG
      */
-    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME = "SITE_MESSAGE";
+    
+    /**
+     * 第三方商城主题
+     */
+    String THIRD_PARTY_MALL_TOPIC = "third_party_mall_topic";
 }

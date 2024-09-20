@@ -7,9 +7,14 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.*;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallMessageType;
+import com.xiliulou.electricity.event.ThirdPartyMallEvent;
+import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
 import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.service.EleOnlineLogService;
@@ -95,6 +100,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Qualifier("deviceReportRestTemplate")
     RestTemplate restTemplate;
     
+    @Autowired
+    ThirdPartyMallPublish thirdPartyMallPublish;
+    
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
     
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
@@ -165,6 +173,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
             }
+            
+            // 异步推送上下线状态给第三方
+            this.pushOnlineStatusToThird(newElectricityCabinet, electricityCabinet);
 
             if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId(), String.valueOf(newElectricityCabinet.getOnlineStatus()), 30000L, false)) {
                 String status = redisService.get(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId());
@@ -182,6 +193,22 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             addOnlineLogAndSendNotifyMessage(receiverMessage, electricityCabinet);
         });
+    }
+    
+    private void pushOnlineStatusToThird(ElectricityCabinet newElectricityCabinet, ElectricityCabinet electricityCabinet) {
+        Integer eid = electricityCabinet.getId();
+        // 当前第三方的上下线状态（上次推送第三方的上下线状态）
+        String lastOnlineStatus = redisService.get(CacheConstant.CABINET_LAST_ONLINE_STATUS + eid);
+        Integer lastOnlineStatusInt = Objects.isNull(lastOnlineStatus) ? null : Integer.valueOf(lastOnlineStatus);
+        
+        // 本次与上次状态不同才推送
+        Integer onlineStatus = newElectricityCabinet.getOnlineStatus();
+        if (!Objects.equals(onlineStatus, lastOnlineStatusInt)) {
+            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).tenantId(electricityCabinet.getTenantId())
+                    .code(ThirdPartyMallMessageType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.MEI_TUAN_CABINET_STATUS, onlineStatus).build());
+            
+            redisService.set(CacheConstant.CABINET_LAST_ONLINE_STATUS + eid, String.valueOf(onlineStatus));
+        }
     }
 
     private void addOnlineLogAndSendNotifyMessage(ReceiverMessage receiverMessage, ElectricityCabinet electricityCabinet) {
