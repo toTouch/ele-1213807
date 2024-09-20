@@ -9,6 +9,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
@@ -294,7 +295,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Resource
     private FreeDepositService freeDepositService;
     
- 
+    @Resource
+    private FreeDepositConfig freeDepositConfig;
+    
+    
+    
     
     /**
      * 通过ID查询单条数据从DB
@@ -1062,6 +1067,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         request.setIdNumber(freeQuery.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
+        request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 1, userInfo.getTenantId()));
         query.setData(request);
         
         PxzCommonRsp<String> callPxzRsp = null;
