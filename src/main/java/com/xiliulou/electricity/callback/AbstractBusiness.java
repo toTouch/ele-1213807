@@ -79,6 +79,12 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
             log.warn("freeDepositOrder is null, orderId is{}", orderId);
             return failed();
         }
+        
+        if (Objects.equals(FreeDepositOrder.AUTH_UN_FROZEN,freeDepositOrder.getAuthStatus()) ||
+                Objects.equals(FreeDepositOrder.AUTH_FROZEN,freeDepositOrder.getAuthStatus()) ||
+                Objects.equals(PAY_STATUS_DEAL_SUCCESS,freeDepositOrder.getPayStatus())){
+            return success();
+        }
         boolean isSuccess = true;
         if (CollectionUtils.isNotEmpty(businessHandlerList)){
             for (BusinessHandler businessHandler : businessHandlerList) {
