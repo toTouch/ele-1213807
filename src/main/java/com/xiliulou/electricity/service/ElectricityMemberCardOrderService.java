@@ -162,6 +162,8 @@ public interface ElectricityMemberCardOrderService {
     
     List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
     
+    Integer deleteById(Long id);
+    
     /**
      * 生成分期换电套餐订单
      */

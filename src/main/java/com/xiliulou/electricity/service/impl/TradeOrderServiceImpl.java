@@ -1035,7 +1035,33 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
             
-            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId()));
+            List<Long> notPayTradeOrderIds = new ArrayList<>();
+            List<Long> notPayMixedTradeOrderIds = new ArrayList<>();
+    
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> {
+                profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId());
+    
+                // 检测业务单号下是否已经存在了未分账的交易单号
+                List<ProfitSharingTradeOrder> profitSharingTradeOrders = profitSharingTradeOrderService.listNotPaySuccessByOrderNo(profitSharingTradeOrder.getOrderNo());
+                if (ObjectUtils.isEmpty(profitSharingTradeOrders)) {
+                    return;
+                }
+                
+                profitSharingTradeOrders.stream().forEach(item -> {
+                    notPayTradeOrderIds.add(item.getId());
+                    notPayMixedTradeOrderIds.add(item.getProfitSharingMixedOrderId());
+                });
+            });
+    
+            // 删除未支付的分账交易主表
+            if (ObjectUtils.isNotEmpty(notPayTradeOrderIds)) {
+                profitSharingTradeOrderService.batchRemoveByIdList(notPayTradeOrderIds);
+            }
+            
+            // 删除未支付的分账明细
+            if (ObjectUtils.isNotEmpty(notPayMixedTradeOrderIds)) {
+                profitSharingTradeMixedOrderService.batchRemoveByIdList(notPayMixedTradeOrderIds);
+            }
             
             profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
         }

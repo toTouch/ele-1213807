@@ -38,4 +38,6 @@ public interface ServiceFeeUserInfoService {
     List<UserServiceFeeDetail> selectUserBatteryServiceFee();
 
     BigDecimal selectBatteryServiceFeeByUid(Long uid);
+    
+    Integer deleteById(Long id);
 }

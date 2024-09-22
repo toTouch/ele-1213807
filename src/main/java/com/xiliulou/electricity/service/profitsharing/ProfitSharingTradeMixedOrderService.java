@@ -48,4 +48,6 @@ public interface ProfitSharingTradeMixedOrderService {
     int updateThirdOrderNoById(ProfitSharingTradeMixedOrder profitSharingTradeMixedOrderUpdate);
     
     ProfitSharingTradeMixedOrder queryById(Long profitSharingMixedOrderId);
+    
+    int batchRemoveByIdList(List<Long> idList);
 }

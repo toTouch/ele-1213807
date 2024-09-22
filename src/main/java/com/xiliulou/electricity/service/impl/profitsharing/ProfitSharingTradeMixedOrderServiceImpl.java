@@ -61,4 +61,9 @@ public class ProfitSharingTradeMixedOrderServiceImpl implements ProfitSharingTra
     public ProfitSharingTradeMixedOrder queryById(Long profitSharingMixedOrderId) {
         return profitSharingTradeMixedOrderMapper.selectById(profitSharingMixedOrderId);
     }
+    
+    @Override
+    public int batchRemoveByIdList(List<Long> idList) {
+        return profitSharingTradeMixedOrderMapper.batchRemoveByIdList(idList, System.currentTimeMillis());
+    }
 }
