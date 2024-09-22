@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.mapper.profitsharing;
 
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import org.apache.ibatis.annotations.Param;
 
@@ -56,7 +55,10 @@ public interface ProfitSharingTradeOrderMapper {
     
     Integer existsNotRefundByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo, @Param("orderNo") String orderNo);
     
-    String selectOrderNoyByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
+    String selectOrderNoByThirdOrderNo(@Param("thirdOrderNo") String thirdOrderNo);
     
+    List<ProfitSharingTradeOrder> selectListNotPaySuccessByOrderNo(@Param("orderNo") String orderNo);
+    
+    int batchRemoveByIdList(@Param("idList") List<Long> idList,@Param("updateTime") long updateTime);
 }
 

@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.constant;
 
-import org.apache.kafka.common.protocol.types.Field;
-
 public interface CacheConstant {
     
     Long CACHE_EXPIRE_MONTH = 30 * 24 * 3600000L;
@@ -701,7 +699,7 @@ public interface CacheConstant {
     String CACHE_FY_CONFIG = "cache_fy_config:";
     String CACHE_OFFLINE_KEY = "cache_offline_key:";
     String CACHE_OFFLINE_KEY_V2 = "cache_offline_key_v2:";
-
+    
     /**
      * TCP设备session缓存
      */
@@ -736,6 +734,10 @@ public interface CacheConstant {
      * 柜机仓门配置key
      */
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
+    
+    String CACHE_MEI_TUAN_RIDER_MALL_CONFIG = "mei_tuan_rider_mall_config:";
+    
+    String CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY = "cache_mei_tuan_create_battery_member_card_order_lock_key:";
     
     
     /**

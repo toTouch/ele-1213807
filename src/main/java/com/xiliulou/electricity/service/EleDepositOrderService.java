@@ -81,5 +81,7 @@ public interface EleDepositOrderService {
     
     R listSuperAdminPage(EleDepositOrderQuery eleDepositOrderQuery);
     
+    Integer deleteById(Long id);
+    
     EleDepositOrder queryLastEnterpriseDeposit(Long uid);
 }

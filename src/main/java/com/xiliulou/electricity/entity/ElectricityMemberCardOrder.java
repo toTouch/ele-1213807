@@ -75,7 +75,7 @@ public class ElectricityMemberCardOrder {
     private Integer isBindActivity;
     
     /**
-     * 交易方式： 0-线上， 1-线下， 2-企业代付
+     * 交易方式： 0-线上， 1-线下， 2-企业代付 3-美团支付
      */
     private Integer payType;
     
@@ -169,6 +169,9 @@ public class ElectricityMemberCardOrder {
     public static final Integer OFFLINE_PAYMENT = 1;
     
     public static final Integer ENTERPRISE_PAYMENT = 2;
+    
+    public static final Integer MEITUAN_PAYMENT = 3;
+    
     
     //套餐订单来源，1：扫码，2：线上，3：后台
     public static final Integer SOURCE_SCAN = 1;

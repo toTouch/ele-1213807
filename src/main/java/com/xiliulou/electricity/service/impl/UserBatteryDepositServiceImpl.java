@@ -46,18 +46,46 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     public UserBatteryDeposit selectByUidFromDB(Long uid) {
         return this.userBatteryDepositMapper.selectByUid(uid);
     }
-
+    
     /**
      * 删除了的也能查出来
+     *
      * @param uid
      * @return
      */
     @Slave
     @Override
     public UserBatteryDeposit queryByUid(Long uid) {
-        return this.userBatteryDepositMapper.selectOne(new LambdaQueryWrapper<UserBatteryDeposit>().eq(UserBatteryDeposit::getUid,uid));
+        return this.userBatteryDepositMapper.selectOne(new LambdaQueryWrapper<UserBatteryDeposit>().eq(UserBatteryDeposit::getUid, uid));
     }
-
+    
+    @Override
+    public Integer update(UserBatteryDeposit userBatteryDeposit) {
+        Integer update = userBatteryDepositMapper.update(userBatteryDeposit);
+        
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userBatteryDeposit.getUid());
+            clearCache(userBatteryDeposit.getUid());
+        });
+        return update;
+    }
+    
+    @Override
+    public Integer deleteById(Long id) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositMapper.selectById(id);
+        int delete = 0;
+        if (Objects.nonNull(userBatteryDeposit)) {
+            delete = userBatteryDepositMapper.deleteById(id);
+            
+            DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
+                redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userBatteryDeposit.getUid());
+                clearCache(userBatteryDeposit.getUid());
+            });
+        }
+        
+        return delete;
+    }
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -66,8 +94,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
      */
     @Override
     public UserBatteryDeposit selectByUidFromCache(Long uid) {
-        UserBatteryDeposit cacheUserBatteryDeposit = redisService
-                .getWithHash(CacheConstant.CACHE_USER_DEPOSIT + uid, UserBatteryDeposit.class);
+        UserBatteryDeposit cacheUserBatteryDeposit = redisService.getWithHash(CacheConstant.CACHE_USER_DEPOSIT + uid, UserBatteryDeposit.class);
         if (Objects.nonNull(cacheUserBatteryDeposit)) {
             return cacheUserBatteryDeposit;
         }
@@ -92,7 +119,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
     public Integer insert(UserBatteryDeposit userBatteryDeposit) {
         return this.userBatteryDepositMapper.insertOne(userBatteryDeposit);
     }
-
+    
     @Override
     public UserBatteryDeposit insertOrUpdate(UserBatteryDeposit userBatteryDeposit) {
         int insert = this.userBatteryDepositMapper.insertOrUpdate(userBatteryDeposit);
@@ -102,7 +129,7 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         });
         return userBatteryDeposit;
     }
-
+    
     /**
      * 修改数据
      *
@@ -134,15 +161,15 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         });
         return delete;
     }
-
+    
     @Override
     public Integer logicDeleteByUid(Long uid) {
-
+        
         UserBatteryDeposit userBatteryDepositUpdate = new UserBatteryDeposit();
         userBatteryDepositUpdate.setUid(uid);
         userBatteryDepositUpdate.setDelFlag(UserBatteryDeposit.DEL_DEL);
         userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
-
+        
         int update = this.userBatteryDepositMapper.updateByUid(userBatteryDepositUpdate);
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
@@ -150,14 +177,14 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
         });
         return update;
     }
-
+    
     /**
-     *同步车电一体数据
+     * 同步车电一体数据
      *
-     * @param uid 用户uid
-     * @param mid 交押金时押金所属套餐id
-     * @param orderId 押金订单号
-     * @param batteryDeposit  押金金额
+     * @param uid            用户uid
+     * @param mid            交押金时押金所属套餐id
+     * @param orderId        押金订单号
+     * @param batteryDeposit 押金金额
      * @return
      */
     @Override
@@ -185,17 +212,17 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
             result = this.updateByUid(userBatteryDepositUpdate);
         }
-
+        
         return result;
     }
     
-    private void clearCache(Long uid){
+    private void clearCache(Long uid) {
         scheduledExecutor.schedule(() -> {
             if (redisService.hasKey(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
             }
             
-            if(redisService.hasKey(CacheConstant.CACHE_USER_DEPOSIT + uid)){
+            if (redisService.hasKey(CacheConstant.CACHE_USER_DEPOSIT + uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
             }
         }, 1, TimeUnit.SECONDS);
