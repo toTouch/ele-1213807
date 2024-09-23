@@ -402,12 +402,14 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         boolean lookFlag = true;
         
         while (lookFlag) {
+            
             // 1. 查询免押退押订单，退款中
             CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
             qryModel.setOffset(offset);
             qryModel.setSize(size);
             qryModel.setPayType(PayTypeEnum.EXEMPT.getCode());
             qryModel.setRefundState(RefundStateEnum.REFUNDING.getCode());
+            
             List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
             if (CollectionUtils.isEmpty(depositRefundEntityList)) {
                 log.warn("freeDepositRefundHandler, The data is empty and does not need to be processed");
@@ -418,6 +420,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             for (CarRentalPackageDepositRefundPo depositRefundEntity : depositRefundEntityList) {
                 Integer tenantId = depositRefundEntity.getTenantId();
                 
+                FreeDepositOrder depositOrder = freeDepositOrderService.selectByOrderId(depositRefundEntity.getDepositPayOrderNo());
+                if (Objects.isNull(depositOrder) || depositOrder.getCreateTime() > 1727125200000L){
+                    continue;
+                }
                 // 调用第三方查询
                 PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(tenantId);
                 if (ObjectUtils.isEmpty(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
