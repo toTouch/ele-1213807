@@ -8,6 +8,8 @@ import com.xiliulou.storage.config.CdnConfig;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -27,7 +29,8 @@ public class StorageConverter {
     @Resource
     private StorageConfig storageConfig;
     
-    @Resource
+    @Qualifier("aliyunOssService")
+    @Autowired
     private StorageService storageService;
     
     
