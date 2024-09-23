@@ -4,17 +4,21 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FreeDepositDataQuery;
+import com.xiliulou.electricity.query.FreeDepositFyRequest;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
@@ -42,7 +46,7 @@ public class JsonAdminFreeDepositDataController extends BaseController {
         }
 
         if (!SecurityUtils.isAdmin()) {
-            log.error("ELE ERROR! update faceRecognizeData no authority!");
+            log.warn("update faceRecognizeData no authority!");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -63,5 +67,20 @@ public class JsonAdminFreeDepositDataController extends BaseController {
 
         return R.ok(this.freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId()));
     }
-
+    
+    
+    
+    @PostMapping("/admin/freeDepositData/fy/recharge")
+    public R<?> rechargeFY(@RequestBody @Validated FreeDepositFyRequest params){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        Pair<Boolean,String> result = freeDepositDataService.rechargeFY(params);
+        return result.getLeft() ? R.ok() : R.fail(result.getRight());
+    }
 }

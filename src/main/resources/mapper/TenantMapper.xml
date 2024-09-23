@@ -43,7 +43,7 @@
         from t_tenant
         where del_flag=0
         <if test="name != null and name != ''">
-            and name = #{name}
+            and name like concat('%',#{name},'%')
         </if>
         <if test="code != null and code != ''">
             and code = #{code}

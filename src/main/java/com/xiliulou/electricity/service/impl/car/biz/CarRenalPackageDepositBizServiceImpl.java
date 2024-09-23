@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.car.biz;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
@@ -28,6 +29,8 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
+import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
+import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -194,6 +197,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     
     @Autowired
     private SiteMessagePublish siteMessagePublish;
+    
+    @Autowired
+    private FreeDepositConfig freeDepositConfig;
     
     /**
      * 退押审批确认是否强制线下退款
@@ -844,6 +850,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         PxzFreeDepositOrderRequest request = new PxzFreeDepositOrderRequest();
         request.setPhone(freeDepositOrder.getPhone());
         request.setSubject("租车套餐免押");
+        request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 1, tenantId));
         request.setRealName(freeDepositOrder.getRealName());
         request.setIdNumber(freeDepositOrder.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
@@ -870,7 +877,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     freeDepositOrder.getOrderId());
             throw new BizException("100401", callPxzRsp.getRespDesc());
         }
-        
+        freeDepositOrder.setPayTransAmt(freeDepositOrder.getTransAmt());
+        freeDepositOrder.setPackageId(freeDepositOptReq.getRentalPackageId());
+        freeDepositOrder.setChannel(FreeDepositChannelEnum.PXZ.getChannel());
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
         

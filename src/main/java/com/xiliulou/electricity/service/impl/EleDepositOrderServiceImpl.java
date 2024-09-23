@@ -397,9 +397,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
         
+        
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
-        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        
+        BigDecimal refundAmount = getRefundAmountV2(eleDepositOrder,freeDepositOrder);
+        
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        
         
         UserInfo updateUserInfo = new UserInfo();
         boolean eleRefund = false;
@@ -473,10 +477,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleRefundOrderService.insert(eleRefundOrder);
         
-        if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
-                Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
-            freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
-        }
+        // if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
+        //        Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
+        //     freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
+        // }
         
         // 等到后台同意退款
         return R.ok(packageOwe);
@@ -536,6 +540,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return refundAmount;
     }
     
+    private BigDecimal getRefundAmountV2(EleDepositOrder eleDepositOrder, FreeDepositOrder freeDepositOrder) {
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            return eleDepositOrder.getPayAmount();
+        }
+        
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        
+        if (Objects.nonNull(freeDepositOrder)) {
+            return BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+        }
+        
+        return refundAmount;
+    }
+    
     @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
@@ -543,6 +561,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
+            // orderId
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrderVO.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)){
+                eleDepositOrderVO.setPayTransAmt(freeDepositOrder.getPayTransAmt());
+            }
             
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
@@ -829,6 +852,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public Integer deleteById(Long id) {
         return eleDepositOrderMapper.deleteById(id);
+    }
+    
+    @Override
+    @Slave
+    public EleDepositOrder queryLastEnterpriseDeposit(Long uid) {
+        return eleDepositOrderMapper.selectLastEnterpriseDeposit(uid);
     }
     
     @Override

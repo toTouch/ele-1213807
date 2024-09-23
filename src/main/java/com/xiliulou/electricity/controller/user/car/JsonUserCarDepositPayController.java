@@ -10,6 +10,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
+import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -49,6 +50,10 @@ public class JsonUserCarDepositPayController extends BasicController {
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
+    @Resource
+    private CarRenalPackageDepositV2BizService carRenalPackageDepositV2BizService;
+    
+    
     /**
      * 查询免押状态
      *
@@ -62,7 +67,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return R.ok(carRenalPackageDepositBizService.queryFreeDepositStatus(tenantId, user.getUid()));
+        return R.ok(carRenalPackageDepositV2BizService.queryFreeDepositStatus(tenantId, user.getUid()));
     }
     
     /**
@@ -79,7 +84,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return R.ok(carRenalPackageDepositBizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq));
+        return R.ok(carRenalPackageDepositV2BizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq));
     }
     
     /**
@@ -158,7 +163,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, user.getUid()));
+        return R.ok(carRenalPackageDepositV2BizService.selectUnRefundCarDeposit(tenantId, user.getUid()));
     }
     
 }
