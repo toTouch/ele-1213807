@@ -16,7 +16,9 @@ public class ThirdPartyMallMessageDTO implements Serializable {
     
     private static final long serialVersionUID = -3461773846886373949L;
     
-    private String code;
+    private String traceId;
+    
+    private String type;
     
     private Integer tenantId;
     

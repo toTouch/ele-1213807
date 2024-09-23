@@ -21,11 +21,13 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
     
     private static final long serialVersionUID = 3959186933636172577L;
     
+    private String traceId;
+    
     private Integer tenantId;
     
     private ThirdPartyMallEnum mall;
     
-    private ThirdPartyMallMessageType code;
+    private ThirdPartyMallMessageType type;
     
     private final Map<String, Object> context;
     
@@ -36,10 +38,11 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
     
     public ThirdPartyMallMessageDTO toDTO() {
         ThirdPartyMallMessageDTO messageDTO = new ThirdPartyMallMessageDTO();
-        messageDTO.setCode(Optional.ofNullable(this.code).map(ThirdPartyMallMessageType::getCode).orElse(null));
-        messageDTO.setContext(this.context);
-        messageDTO.setMall(Optional.ofNullable(this.mall).map(ThirdPartyMallEnum::getCode).orElse(null));
+        messageDTO.setTraceId(this.traceId);
         messageDTO.setTenantId(this.tenantId);
+        messageDTO.setMall(Optional.ofNullable(this.mall).map(ThirdPartyMallEnum::getCode).orElse(null));
+        messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyMallMessageType::getCode).orElse(null));
+        messageDTO.setContext(this.context);
         return messageDTO;
     }
     
@@ -55,8 +58,13 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
             this.event = new ThirdPartyMallEvent(source, new HashMap<>());
         }
         
-        public ThirdPartyMallEvent.Builder code(ThirdPartyMallMessageType code) {
-            this.event.code = code;
+        public ThirdPartyMallEvent.Builder traceId(String traceId) {
+            this.event.traceId = traceId;
+            return this;
+        }
+        
+        public ThirdPartyMallEvent.Builder type(ThirdPartyMallMessageType type) {
+            this.event.type = type;
             return this;
         }
         
