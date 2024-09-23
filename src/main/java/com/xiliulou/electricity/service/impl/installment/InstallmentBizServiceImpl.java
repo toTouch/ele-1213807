@@ -474,6 +474,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                         .tenantId(installmentRecord.getTenantId().longValue()).addContext("type", RechargeAlarm.AUTH_PAY.getCode()).addContext("count", remaining).build());
                 
                 return R.ok(fySignResult.getFyResponse().getFormBody());
+            } else {
+                log.info("INSTALLMENT SIGN FAIL! uid={}, fySignResult={}", uid, fySignResult);
             }
         } catch (Exception e) {
             log.error("INSTALLMENT SIGN ERROR! uid={}", uid, e);
