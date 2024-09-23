@@ -17,6 +17,7 @@
         <result property="hourPower" column="hour_power" jdbcType="NUMERIC"/>
         <result property="electricCharge" column="electric_charge" jdbcType="NUMERIC"/>
         <result property="meterReading" column="meter_reading" jdbcType="NUMERIC"/>
+        <result property="originalHourPower" column="original_hour_power" jdbcType="NUMERIC"/>
     </resultMap>
 
     <!--查询单个-->
@@ -127,7 +128,7 @@
     
     <select id="selectLatestByEid" resultMap="ElePowerMap">
         select
-        sum_power, hour_power, electric_charge, report_time, meter_reading
+        sum_power, hour_power, electric_charge, report_time, meter_reading, original_hour_power
         from t_ele_power where eid = #{eid} order by id desc limit 1
     </select>
     
@@ -197,7 +198,11 @@
         and report_time &gt;= #{startTime}
         and report_time &lt;= #{endTime}
     </select>
-
+    
+    <select id="exitsByEidAndReportTime" resultType="java.lang.Integer">
+        select 1 from t_ele_power where eid = #{eid} and report_time = #{reportTime} limit 1
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
@@ -208,10 +213,11 @@
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
-                                sum_power, hour_power, electric_charge,unit_price,meter_reading)
+                                sum_power, hour_power, electric_charge,unit_price, meter_reading, original_hour_power)
         values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime},
-                #{type}, #{sumPower}, #{hourPower}, #{electricCharge},#{unitPrice},#{meterReading})
-        on duplicate key update sum_power=#{sumPower},hour_power=#{hourPower},create_time=#{createTime},electric_charge=#{electricCharge}, type =#{type},unit_price=#{unitPrice}
+                #{type}, #{sumPower}, #{hourPower}, #{electricCharge},#{unitPrice}, #{meterReading}, #{originalHourPower})
+        on duplicate key update sum_power=#{sumPower},hour_power=#{hourPower},create_time=#{createTime},electric_charge=#{electricCharge}, type =#{type}, unit_price=#{unitPrice},
+                                meter_reading=#{meterReading}, original_hour_power = #{originalHourPower}
 
     </insert>
 

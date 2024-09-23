@@ -140,7 +140,7 @@ public class UserBizServiceImpl implements UserBizService {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
 
         if (ObjectUtils.isEmpty(userInfo) || !userInfo.getTenantId().equals(tenantId)) {
-            log.error("depositRefundUnbind failed. not found t_user_info or tenantId mismatching. uid is {}, user's tenantId is {}, params tenantId is {}", uid, userInfo.getTenantId(), tenantId);
+            log.error("depositRefundUnbind failed. not found t_user_info or tenantId mismatching. uid is {}, params tenantId is {}", uid, tenantId);
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 

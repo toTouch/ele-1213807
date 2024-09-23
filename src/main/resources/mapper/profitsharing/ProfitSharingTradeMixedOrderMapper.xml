@@ -45,6 +45,16 @@
         where id =#{id}
     </update>
     
+    <update id="batchRemoveByIdList">
+        update
+        <include refid="table_name"/>
+        set del_flag = 1, update_time=#{updateTime}
+        where id in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    
     <select id="selectListByParam"
         resultMap="ProfitSharingTradeMixedOrderMap">
         select
@@ -68,7 +78,7 @@
         resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
         select
         <include refid="base_column"/>
-        from t_profit_sharing_trade_mixed_order where third_order_no = #{thirdOrderNo} limit 1
+        from t_profit_sharing_trade_mixed_order where third_order_no = #{thirdOrderNo} and del_flag = 0 limit 1
     </select>
     
     <select id="selectListThirdOrderNoByTenantId" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
@@ -79,6 +89,8 @@
         from t_profit_sharing_trade_mixed_order r
         where r.tenant_id = #{tenantId}
           and r.create_time > #{startTime}
+          and r.del_flag = 0
+          and r.state = 1
           and r.create_time &lt; #{endTime}
           and r.id > #{startId}
           and exists (select 1 from t_profit_sharing_order_detail d where  d.third_trade_order_no = r.third_order_no  and d.unfreeze_status = 0 )
