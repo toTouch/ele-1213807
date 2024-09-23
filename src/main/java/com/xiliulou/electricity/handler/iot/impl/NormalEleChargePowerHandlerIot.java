@@ -83,6 +83,19 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
                 chargeConfigType = dto.getType();
             }
         }
+
+        // 丢掉异常数据
+        if (cabinetPowerReport.getPowerConsumption() < 0 || Double.valueOf(12.00).equals(cabinetPowerReport.getSumConsumption()) || Double.valueOf(14.00).equals(cabinetPowerReport.getSumConsumption())) {
+            sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
+            return;
+        }
+
+        // 丢掉错误码后一个小时的错误数据
+        BigDecimal lastHourMeterReading = BigDecimal.valueOf(cabinetPowerReport.getSumConsumption()).subtract(BigDecimal.valueOf(cabinetPowerReport.getPowerConsumption()));
+        if (BigDecimal.valueOf(12.00).equals(lastHourMeterReading) || BigDecimal.valueOf(14.00).equals(lastHourMeterReading)) {
+            sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
+            return;
+        }
         
         // 抛掉重复上报的数据，直接发送确认命令
         Integer exits = elePowerService.exitsByEidAndReportTime(electricityCabinet.getId().longValue(), cabinetPowerReport.getCreateTime());
