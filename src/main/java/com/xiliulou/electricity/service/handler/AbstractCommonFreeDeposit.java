@@ -343,6 +343,8 @@ public abstract class AbstractCommonFreeDeposit {
         query.setFlowNo(payQuery.getOrderId());
         query.setFyRequest(request);
         query.setChannelCode(fyConfig.getChannelCode());
+        
+        log.info("FY INFO! FyCancelAuthPayRequest.query is {}", JsonUtil.toJson(query));
         return query;
     }
     

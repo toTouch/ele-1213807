@@ -7,6 +7,7 @@ import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
+import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVo;
@@ -40,6 +41,9 @@ public class JsonUserCarDepositRefundController extends BasicController {
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
     
+    @Resource
+    private CarRenalPackageDepositV2BizService carRenalPackageDepositV2BizService;
+    
     /**
      * 退押申请
      *
@@ -55,7 +59,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return R.ok(carRenalPackageDepositBizService.refundDeposit(tenantId, user.getUid(), depositPayOrderNo));
+        return R.ok(carRenalPackageDepositV2BizService.refundDeposit(tenantId, user.getUid(), depositPayOrderNo));
     }
     
     /**

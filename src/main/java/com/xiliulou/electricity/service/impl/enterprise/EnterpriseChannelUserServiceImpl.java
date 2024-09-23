@@ -1006,12 +1006,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         Long uid = SecurityUtils.getUid();
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO)) {
-            log.error("channel user exit  all  enterprise not exists, uid={}", request.getUid());
+            log.error("channel user exit  all  enterprise not exists, uid={}", uid);
             return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.error("channel user exit  all  enterprise station not exists, uid={}", request.getUid());
+            log.error("channel user exit  all  enterprise station not exists, uid={}", uid);
             return Triple.of(false, "120305", "当前状态无法操作");
         }
         
@@ -1146,12 +1146,12 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         
         EnterpriseInfoVO enterpriseInfoVO = enterpriseInfoService.selectEnterpriseInfoByUid(uid);
         if (Objects.isNull(enterpriseInfoVO) || Objects.isNull(enterpriseInfoVO.getId())) {
-            log.error("channel user exit all enterprise not exists, uid={}", request.getUid());
+            log.warn("channel user exit all enterprise not exists, uid={}", uid);
             return Triple.of(false, "120311", "该用户无法操作");
         }
         
         if (!Objects.equals(enterpriseInfoVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
-            log.error("channel user exit all enterprise station not exists, uid={}", request.getUid());
+            log.warn("channel user exit all enterprise station not exists, uid={}", uid);
             return Triple.of(false, "120305", "当前状态无法操作");
         }
         
@@ -1161,7 +1161,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         enterpriseChannelUser.setRenewalStatus(EnterpriseChannelUser.RENEWAL_CLOSE);
         List<EnterpriseChannelUser> enterpriseChannelUserList = this.enterpriseChannelUserMapper.queryAll(enterpriseChannelUser);
         if (ObjectUtils.isEmpty(enterpriseChannelUserList)) {
-            log.error("channel user exit all user data user is null, uid={}", uid);
+            log.warn("channel user exit all user data user is null, uid={}", uid);
             // 修改站长本身的状态为
             Long id = enterpriseInfoVO.getId();
             EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
@@ -1177,14 +1177,14 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         // 检测用户能否退出
         Triple<Boolean, String, Object> tripleCheck = channelUserExitCheckAll(request);
         if (!tripleCheck.getLeft()) {
-            log.error("channel user exit all check error uid={}, msg={}", request.getUid(), tripleCheck.getRight());
+            log.warn("channel user exit all check warn uid={}, msg={}", uid, tripleCheck.getRight());
             return tripleCheck;
         }
         
         List<Long> channelUserIds = new ArrayList<>();
         List<EnterpriseChannelUserExit> addList = new ArrayList<>();
         for (EnterpriseChannelUser item : enterpriseChannelUserList) {
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(request.getUid());
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
             
             boolean isMember = false;
             if (Objects.nonNull(userBatteryDeposit)) {
@@ -1192,7 +1192,7 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
                 isMember = Objects.equals(eleDepositOrder.getOrderType(), PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode());
             }
             
-            boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(request.getUid());
+            boolean existPayRecord = anotherPayMembercardRecordService.existPayRecordByUid(item.getUid());
             boolean isEnterpriseFreeDepositNoPay = true;
             // 企业免押用户，且不存在代付记录
             if (!isMember && Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !existPayRecord) {

@@ -158,7 +158,7 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         try {
             result = fyDepositService.honourAgreement(buildHonourAgreementRequest(query));
         } catch (Exception e) {
-            log.error("FY ERROR! queryAuthToPayStatus fail!  orderId={}", orderId, e);
+            log.error("FY ERROR! cancelAuthPay fail!  orderId={}", orderId, e);
             return false;
         }
         

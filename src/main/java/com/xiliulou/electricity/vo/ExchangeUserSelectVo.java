@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class ExchangeUserSelectVo {
     
     /**
-     * 是否进入多次换电，1是，0否
+     * 是否进入多次换电，1是，0否，前端根据这个字段判断是否弹窗
      */
     private Integer isEnterMoreExchange;
     
@@ -63,7 +63,22 @@ public class ExchangeUserSelectVo {
     /**
      * 是否进入取电
      */
-    private Integer isEnterTakeBattery ;
+    private Integer isEnterTakeBattery;
+    
+    /**
+     * 仓门类型，1是旧仓门，2是新仓门
+     */
+    private Integer cellType;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     /**
      * 是否进入多次换电
@@ -98,7 +113,11 @@ public class ExchangeUserSelectVo {
      */
     public static final Integer NOT_SAME_CABINET = 0;
     
+    /**
+     * 是否进入取电逻辑
+     */
     public static final Integer ENTER_TAKE_BATTERY = 1;
+    
     
     
 }

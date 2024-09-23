@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.callback.CallbackContext;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.entity.FreeDepositOrder;
+import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,14 @@ public abstract class AbstractBusiness<T> implements CallbackHandler<T> {
         if (Objects.isNull(freeDepositOrder)) {
             log.warn("freeDepositOrder is null, orderId is{}", orderId);
             return failed();
+        }
+        if (Objects.equals(callbackContext.getBusiness(), FreeBusinessTypeEnum.AUTH_PAY.getCode()) && Objects.equals(PAY_STATUS_DEAL_SUCCESS,freeDepositOrder.getPayStatus())){
+            log.warn("freeDepositOrder auth pay is already deal success, orderId is{}", orderId);
+            return success();
+        }else if (!Objects.equals(callbackContext.getBusiness(), FreeBusinessTypeEnum.AUTH_PAY.getCode()) && (Objects.equals(FreeDepositOrder.AUTH_UN_FROZEN,freeDepositOrder.getAuthStatus()) ||
+                Objects.equals(FreeDepositOrder.AUTH_FROZEN,freeDepositOrder.getAuthStatus()))){
+            log.warn("freeDepositOrder is already deal success, orderId is{}", orderId);
+            return success();
         }
         boolean isSuccess = true;
         if (CollectionUtils.isNotEmpty(businessHandlerList)){

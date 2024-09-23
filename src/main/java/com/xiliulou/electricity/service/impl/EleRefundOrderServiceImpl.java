@@ -1915,6 +1915,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return R.ok(eleRefundOrderVOS);
     }
     
+    @Override
+    public Integer updateRefundAmountById(Long id, BigDecimal refundAmount) {
+        return eleRefundOrderMapper.updateRefundAmountById(id, refundAmount, System.currentTimeMillis());
+    }
+    
     @Slave
     @Override
     public EleRefundOrder queryLastByOrderId(String orderId) {
