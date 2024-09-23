@@ -692,7 +692,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     @Override
-    @Klock(name = "warnNoteNotice", keys = {"#warnNoteCallBack.tenantId"}, waitTime = 3, customLockTimeoutStrategy = "createFranchiseeSplitAccountLockFail")
+    @Klock(name = "warnNoteNotice", keys = {"#warnNoteCallBack.tenantId"}, waitTime = 5, customLockTimeoutStrategy = "warnNoteNoticeFail")
     public Triple<Boolean, String, Object> warnNoteNotice(WarnNoteCallBack warnNoteCallBack) {
         log.info("warn note notice info! failure warn sessionId = {}, alarmId={}, tenantId={}, count={}", warnNoteCallBack.getSessionId(), warnNoteCallBack.getAlarmId(),
                 warnNoteCallBack.getTenantId(), warnNoteCallBack.getCount());
@@ -755,6 +755,10 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         }
         
         return Triple.of(true, null, null);
+    }
+    
+    private void warnNoteNoticeFail(WarnNoteCallBack warnNoteCallBack) {
+        log.error("WARN NOTE NOTICE FAIL ERROR, msg = {}", warnNoteCallBack);
     }
     
     private void sendLowerNoteNotice(WarnNoteCallBack warnNoteCallBack, Long noteNum) {
