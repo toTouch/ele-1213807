@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.storage.config.StorageConfig;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,9 @@ public class JsonUserElectricityCabinetFileController {
     @Autowired
     StorageService storageService;
     
+    @Resource
+    StorageConverter storageConverter;
+    
     
     /**
      * 获取文件信息
@@ -58,8 +63,9 @@ public class JsonUserElectricityCabinetFileController {
         List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
             if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-                electricityCabinetFile
-                        .setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                electricityCabinetFile
+//                        .setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                electricityCabinetFile.setUrl(storageConverter.generateUrl(electricityCabinetFile.getName(),System.currentTimeMillis() + 10 * 60 * 1000L));
             }
             electricityCabinetFiles.add(electricityCabinetFile);
         }

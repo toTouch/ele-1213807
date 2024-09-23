@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceRecord;
 import com.xiliulou.electricity.entity.OldCard;
@@ -60,6 +61,10 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    
+    @Autowired
+    StorageConverter storageConverter;
+    
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
 
@@ -148,7 +153,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
 
         for (MaintenanceRecord maintenanceRecord:returnList) {
             if(StringUtil.isNotEmpty(maintenanceRecord.getPic())){
-                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                maintenanceRecord.setPic(storageConverter.generateUrl(maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
             }
         }
 
@@ -165,7 +171,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
 
         for (MaintenanceRecord maintenanceRecord:returnList) {
             if(StringUtil.isNotEmpty(maintenanceRecord.getPic())){
-                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                maintenanceRecord.setPic(storageService.getOssFileUrl(storageConfig.getBucketName(), maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                maintenanceRecord.setPic(storageConverter.generateUrl( maintenanceRecord.getPic(), System.currentTimeMillis() + 10 * 60 * 1000L));
             }
         }
 

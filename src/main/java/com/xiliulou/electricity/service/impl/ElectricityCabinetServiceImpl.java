@@ -39,6 +39,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -364,6 +365,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StorageConfig storageConfig;
     
     @Autowired
+    StorageConverter storageConverter;
+    
+    @Autowired
     EleCommonConfig eleCommonConfig;
     
     @Autowired
@@ -442,6 +446,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
+    @Resource
+    private StorageConverter storageConverter;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -3570,7 +3576,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
             if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
-                cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+                cabinetPhoto.add("https://" + storageConverter.getUrlPrefix() + "/" + electricityCabinetFile.getName());
             }
         }
         return R.ok(cabinetPhoto);
@@ -4543,7 +4549,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                item.setUrl(storageConverter.generateUrl(item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
             }).collect(Collectors.toList());
             
             return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());
