@@ -421,6 +421,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 Integer tenantId = depositRefundEntity.getTenantId();
                 
                 FreeDepositOrder depositOrder = freeDepositOrderService.selectByOrderId(depositRefundEntity.getDepositPayOrderNo());
+                // 如果订单是新版免押产生的则跳过
                 if (Objects.isNull(depositOrder) || depositOrder.getCreateTime() > 1727125200000L){
                     continue;
                 }
