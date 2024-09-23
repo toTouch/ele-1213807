@@ -164,11 +164,7 @@ public class FyInstallmentHandler {
                 "local minScore = ARGV[1]\n" +
                 "local maxScore = ARGV[2]\n" +
                 "local results = redis.call('ZRANGEBYSCORE', key, minScore, maxScore, 'WITHSCORES')\n" +
-                "local members = {}\n" +
-                "for i = 1, #results, 2 do\n" +
-                "   table.insert(members, results[i])\n" +
-                "end\n" +
-                "redis.call('ZREM', key, unpack(members))\n" +
+                "redis.call('ZREMRANGEBYSCORE', key, minScore, maxScore)\n" +
                 "return results";
         
         // 创建 DefaultRedisScript 并设置脚本语言为 Lua
