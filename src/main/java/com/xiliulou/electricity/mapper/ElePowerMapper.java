@@ -94,5 +94,7 @@ public interface ElePowerMapper extends BaseMapper<ElePower> {
     
     List<ElePower> selectListByEids(@Param("eIdList") List<Integer> electricityCabinetIdList);
     
+    Integer exitsByEidAndReportTime(@Param("eid") Long eid, @Param("reportTime") Long reportTime);
+    
     //    void queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId);
 }

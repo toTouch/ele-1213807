@@ -178,6 +178,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      */
     private Double priorityExchangeNorm;
     
+    /**
+     * 是否开启美团骑手商城：0--是 1--否
+     */
+    private Integer isEnableMeiTuanRiderMall;
+    
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;

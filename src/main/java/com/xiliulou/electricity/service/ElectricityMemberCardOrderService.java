@@ -162,4 +162,6 @@ public interface ElectricityMemberCardOrderService {
     R listSuperAdminPage(MemberCardOrderQuery memberCardOrderQuery);
     
     List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime);
+    
+    Integer deleteById(Long id);
 }

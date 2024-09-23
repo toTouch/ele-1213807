@@ -84,12 +84,23 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
             }
         }
         
+        // 抛掉重复上报的数据，直接发送确认命令
+        Integer exits = elePowerService.exitsByEidAndReportTime(electricityCabinet.getId().longValue(), cabinetPowerReport.getCreateTime());
+        if (Objects.nonNull(exits)) {
+            sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
+            return;
+        }
+        
         ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue());
-        double hourPower = cabinetPowerReport.getPowerConsumption() < 0 ? 0 : cabinetPowerReport.getPowerConsumption();
+        // 更换电表优化，更换电表之后sumPower需要继续累计
+        double hourPower;
         double sumPower;
         if (Objects.nonNull(lastElePower)) {
-            sumPower = lastElePower.getSumPower() + hourPower;
+            hourPower = Math.max(cabinetPowerReport.getPowerConsumption(), 0.00);
+            sumPower = BigDecimal.valueOf(lastElePower.getSumPower()).add(BigDecimal.valueOf(hourPower)).setScale(2, RoundingMode.HALF_UP).doubleValue();
         } else {
+            // 第一条上报
+            hourPower = cabinetPowerReport.getPowerConsumption();
             sumPower = cabinetPowerReport.getSumConsumption();
         }
         
@@ -109,25 +120,27 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setUnitPrice(unitPrice);
         power.setElectricCharge(BigDecimal.valueOf(unitPrice).multiply(BigDecimal.valueOf(power.getHourPower())).setScale(2, RoundingMode.HALF_UP).doubleValue());
         power.setMeterReading(cabinetPowerReport.getSumConsumption());
+        power.setOriginalHourPower(cabinetPowerReport.getPowerConsumption());
         
         elePowerService.insertOrUpdate(power);
-
-
+        
+        sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
+    }
+    
+    private void sendConfirmationCommand(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage, CabinetPowerReport cabinetPowerReport) {
         //发送命令确认
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("time", cabinetPowerReport.getCreateTime());
-
+        
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.CALC_ELE_POWER_REPORT_ACK).build();
-
+        
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("NORMAL POWER ERROR! send command error! sessionid:{}", receiverMessage.getSessionId());
         }
-
-
     }
 
 
