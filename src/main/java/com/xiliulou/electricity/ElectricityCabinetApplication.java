@@ -55,7 +55,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFengYun
 @EnableEsign
 @EnableThirdMall
-@EnableScheduling
 @Slf4j
 @ProfitSharingAutoConfiguration
 public class ElectricityCabinetApplication implements CommandLineRunner {
