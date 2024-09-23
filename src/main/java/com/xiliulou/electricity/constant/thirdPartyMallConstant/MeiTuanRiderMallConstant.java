@@ -8,4 +8,6 @@ package com.xiliulou.electricity.constant.thirdPartyMallConstant;
 public interface MeiTuanRiderMallConstant {
     
     String EID = "eid";
+    
+    String ID = "id";
 }

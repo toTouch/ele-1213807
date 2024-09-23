@@ -7,12 +7,17 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.event.ThirdPartyMallEvent;
+import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -67,6 +72,8 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     @Resource
     private BatteryTrackRecordService batteryTrackRecordService;
     
+    @Resource
+    private ThirdPartyMallPublish thirdPartyMallPublish;
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -124,6 +131,11 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             newElectricityCabinetOrder.setSwitchEndTime(eleSelfOPenCellOrderVo.getReportTime());
             newElectricityCabinetOrder.setRemark("新仓门自助开仓");
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
+    
+            // 给第三方推送换电记录
+            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(sessionId).tenantId(electricityCabinet.getTenantId())
+                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.USER_EXCHANGE_RECORD).addContext(MeiTuanRiderMallConstant.ID, newElectricityCabinetOrder.getId())
+                    .build());
             
             // 处理取走电池的相关信息（解绑(包括异常交换)&绑定）
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);

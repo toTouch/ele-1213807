@@ -47,6 +47,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -100,8 +101,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Qualifier("deviceReportRestTemplate")
     RestTemplate restTemplate;
     
-    @Autowired
-    ThirdPartyMallPublish thirdPartyMallPublish;
+    @Resource
+    private ThirdPartyMallPublish thirdPartyMallPublish;
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
     
@@ -174,7 +175,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 electricityCabinetService.update(newElectricityCabinet);
             }
     
-            // 推送给第三方
+            // 给第三方推送柜机上下线状态
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
                 thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
                         .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId())

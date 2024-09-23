@@ -426,11 +426,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     AssetWarehouseService assetWarehouseService;
-    
-    
-    @Autowired
-    ThirdPartyMallPublish thirdPartyMallPublish;
-    
     @Resource
     private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
     
@@ -442,6 +437,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
+    
+    @Resource
+    private ThirdPartyMallPublish thirdPartyMallPublish;
     
     
     /**
@@ -636,8 +634,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
-        
-        // 推送给第三方
+    
+        // 给第三方推送柜机修改
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
                         .type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
@@ -1567,7 +1565,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
     
-        // 推送给第三方
+        // 给第三方推送柜机禁启用状态
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
                         .type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());

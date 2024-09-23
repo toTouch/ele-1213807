@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -24,9 +25,12 @@ import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
+import com.xiliulou.electricity.event.ThirdPartyMallEvent;
+import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -130,6 +134,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     private ExchangeBatterySocService exchangeBatterySocService;
     
+    @Resource
+    private ThirdPartyMallPublish thirdPartyMallPublish;
+    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
     XllThreadPoolExecutorService lineExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("LINE_EXCHANGE_BATTERY_SOC_ANALYZE", 1,
@@ -199,6 +206,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
             }
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
+    
+            // 给第三方推送换电记录
+            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
+                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.USER_EXCHANGE_RECORD).addContext(MeiTuanRiderMallConstant.ID, newElectricityCabinetOrder.getId())
+                    .build());
             
             // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
             log.debug("EXCHANGE ORDER INFO! setNewSelfOpen.setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
