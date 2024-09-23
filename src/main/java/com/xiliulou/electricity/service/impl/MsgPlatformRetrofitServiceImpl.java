@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.aliyun.mns.model.request.queue.SendMessageRequest;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.request.SendMessageRequest;
 import com.xiliulou.electricity.service.MsgPlatformRetrofitService;
 import org.springframework.stereotype.Service;
 

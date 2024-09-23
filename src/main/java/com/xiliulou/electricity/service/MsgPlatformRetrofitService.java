@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.service;
 
-import com.aliyun.mns.model.request.queue.SendMessageRequest;
 import com.github.lianjiatech.retrofit.spring.boot.core.RetrofitClient;
 import com.github.lianjiatech.retrofit.spring.boot.degrade.sentinel.SentinelDegrade;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.request.SendMessageRequest;
 import com.xiliulou.electricity.service.impl.MsgPlatformRetrofitServiceImpl;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
