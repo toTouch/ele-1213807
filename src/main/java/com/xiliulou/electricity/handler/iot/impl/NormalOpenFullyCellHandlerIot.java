@@ -182,12 +182,18 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         cabinetOrderService.update(newElectricityCabinetOrder);
     
         // 给第三方推送换电记录
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.USER_EXCHANGE_RECORD).addContext(MeiTuanRiderMallConstant.ID, newElectricityCabinetOrder.getId())
-                .build());
+        thirdPartyMallPublish.publish(
+                ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
+                        .type(ThirdPartyMallDataType.USER_EXCHANGE_RECORD).addContext(MeiTuanRiderMallConstant.ELECTRICITY_CABINET_ORDER_ID, newElectricityCabinetOrder.getId())
+                        .build());
         
         // 处理取走电池的相关信息（解绑&绑定）
         takeBatteryHandler(openFullCellRsp, cabinetOrder, electricityCabinet);
+    
+        // 给第三方推送用户电池信息
+        thirdPartyMallPublish.publish(
+                ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
+                        .type(ThirdPartyMallDataType.USER_BATTERY).addContext(MeiTuanRiderMallConstant.ELECTRICITY_CABINET_ORDER_ID, newElectricityCabinetOrder.getId()).build());
         
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
         handleExpireMemberCard(openFullCellRsp, cabinetOrder);

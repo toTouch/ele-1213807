@@ -8,6 +8,7 @@ package com.xiliulou.electricity.constant.thirdPartyMallConstant;
 public interface MeiTuanRiderMallConstant {
     
     String EID = "eid";
-    
-    String ID = "id";
+    String ELECTRICITY_CABINET_ORDER_ID = "id";
+    String UID = "uid";
+    String BATTERY_SN = "sn";
 }
