@@ -16,7 +16,7 @@ import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallMessageType;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.event.ThirdPartyMallEvent;
 import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
@@ -181,7 +181,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
             }
-            
+    
             // 异步推送上下线状态给第三方
             this.pushOnlineStatusToThird(newElectricityCabinet, electricityCabinet, receiverMessage.getSessionId());
             
@@ -204,7 +204,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         });
     }
     
-    private void pushOnlineStatusToThird(ElectricityCabinet newElectricityCabinet, ElectricityCabinet electricityCabinet, String sessionId) {
+    private void pushOnlineStatusToThird(ElectricityCabinet newElectricityCabinet, ElectricityCabinet electricityCabinet, String traceId) {
         Integer eid = electricityCabinet.getId();
         // 当前第三方的上下线状态（上次推送第三方的上下线状态）
         String lastOnlineStatus = redisService.get(CacheConstant.CABINET_LAST_ONLINE_STATUS + eid);
@@ -213,9 +213,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         // 本次与上次状态不同才推送
         Integer onlineStatus = newElectricityCabinet.getOnlineStatus();
         if (!Objects.equals(onlineStatus, lastOnlineStatusInt)) {
-            thirdPartyMallPublish.publish(
-                    ThirdPartyMallEvent.builder(this).traceId(sessionId).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                            .type(ThirdPartyMallMessageType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.MEI_TUAN_CABINET_STATUS, onlineStatus).build());
+            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
+                    .type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.MEI_TUAN_CABINET_STATUS, onlineStatus).build());
             
             redisService.set(CacheConstant.CABINET_LAST_ONLINE_STATUS + eid, String.valueOf(onlineStatus));
         }

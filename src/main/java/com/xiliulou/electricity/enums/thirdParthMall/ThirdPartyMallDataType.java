@@ -8,7 +8,7 @@ import lombok.Getter;
  * @date 2024/9/19 11:12:19
  */
 @Getter
-public enum ThirdPartyMallMessageType {
+public enum ThirdPartyMallDataType {
     USER_BATTERY_MEMBER_CARD("USER_BATTERY_MEMBER_CARD", "用户换电套餐"),
     ELE_CABINET("ELE_CABINET", "换电柜"),
     USER_EXCHANGE_RECORD("USER_EXCHANGE_RECORD", "用户换电记录"),
@@ -19,7 +19,7 @@ public enum ThirdPartyMallMessageType {
     
     private final String desc;
     
-    ThirdPartyMallMessageType(String code, String desc) {
+    ThirdPartyMallDataType(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }

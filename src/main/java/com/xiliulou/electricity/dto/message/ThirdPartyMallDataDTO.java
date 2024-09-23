@@ -12,7 +12,7 @@ import java.util.Map;
  * @date 2024/9/19 15:23:09
  */
 @Data
-public class ThirdPartyMallMessageDTO implements Serializable {
+public class ThirdPartyMallDataDTO implements Serializable {
     
     private static final long serialVersionUID = -3461773846886373949L;
     

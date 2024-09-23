@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.event;
 
-import com.xiliulou.electricity.dto.message.ThirdPartyMallMessageDTO;
+import com.xiliulou.electricity.dto.message.ThirdPartyMallDataDTO;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallMessageType;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEvent;
@@ -27,7 +27,7 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
     
     private ThirdPartyMallEnum mall;
     
-    private ThirdPartyMallMessageType type;
+    private ThirdPartyMallDataType type;
     
     private final Map<String, Object> context;
     
@@ -36,12 +36,12 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
         this.context = context;
     }
     
-    public ThirdPartyMallMessageDTO toDTO() {
-        ThirdPartyMallMessageDTO messageDTO = new ThirdPartyMallMessageDTO();
+    public ThirdPartyMallDataDTO toDTO() {
+        ThirdPartyMallDataDTO messageDTO = new ThirdPartyMallDataDTO();
         messageDTO.setTraceId(this.traceId);
         messageDTO.setTenantId(this.tenantId);
         messageDTO.setMall(Optional.ofNullable(this.mall).map(ThirdPartyMallEnum::getCode).orElse(null));
-        messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyMallMessageType::getCode).orElse(null));
+        messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyMallDataType::getCode).orElse(null));
         messageDTO.setContext(this.context);
         return messageDTO;
     }
@@ -63,7 +63,7 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
             return this;
         }
         
-        public ThirdPartyMallEvent.Builder type(ThirdPartyMallMessageType type) {
+        public ThirdPartyMallEvent.Builder type(ThirdPartyMallDataType type) {
             this.event.type = type;
             return this;
         }

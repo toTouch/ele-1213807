@@ -2,7 +2,7 @@ package com.xiliulou.electricity.mq.producer;
 
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.dto.message.ThirdPartyMallMessageDTO;
+import com.xiliulou.electricity.dto.message.ThirdPartyMallDataDTO;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,7 +28,7 @@ public class ThirdPartyMallProducer {
         this.rocketMqService = rocketMqService;
     }
     
-    public void sendMessage(ThirdPartyMallMessageDTO message) {
+    public void sendMessage(ThirdPartyMallDataDTO message) {
         if (Objects.isNull(message)) {
             return;
         }
