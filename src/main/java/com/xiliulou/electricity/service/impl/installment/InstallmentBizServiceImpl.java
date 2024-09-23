@@ -456,12 +456,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
                 installmentRecordService.update(installmentRecordUpdate);
                 
-                // 二维码缓存3天，利用zSet实现延时取消签约，分数为三天后的当前时刻减去2分钟
-                // TODO SJP 自动取消签约时间目前设置5分钟，上线时设置三天后的当前时刻减去2分钟
-                double score = (double) Instant.now().plus(7, ChronoUnit.MINUTES).minus(2, ChronoUnit.MINUTES).toEpochMilli();
+                // 二维码缓存3天，利用zSet实现延时取消签约，分数为三天后的当前时刻减去10分钟
+                double score = (double) Instant.now().plus(3, ChronoUnit.DAYS).minus(10, ChronoUnit.MINUTES).toEpochMilli();
                 redisService.zsetAddString(CACHE_INSTALLMENT_CANCEL_SIGN, installmentRecord.getExternalAgreementNo(), score);
                 redisService.saveWithString(String.format(CACHE_INSTALLMENT_FORM_BODY, uid), fySignResult.getFyResponse().getFormBody(), 3L, TimeUnit.DAYS);
-                log.info("取消签约定时任务调试，存入请求签约号2，externalAgreementNo={}，score={}", installmentRecord.getExternalAgreementNo(), score);
                 
                 // 扣减次数
                 FreeDepositData freeDepositDataUpdate = new FreeDepositData();
@@ -491,15 +489,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
-            log.info("回调调试，获取锁失败");
             return R.ok();
         }
         
         if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_SIGN)) {
-            log.info("回调调试，已签约");
             return R.ok();
         }
-        log.info("回调调试，修改签约记录状态");
         // 更新签约记录状态
         InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
         installmentRecordUpdate.setId(installmentRecord.getId());
@@ -507,7 +502,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentRecordUpdate.setAgreementNo(agreementNo);
         
-        log.info("回调调试，生成还款计划");
         // 生成还款计划
         List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanService.generateDeductionPlan(installmentRecord);
         if (Objects.isNull(deductionPlanList)) {
@@ -523,7 +517,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         inheritableThreadLocal.set(MDC.get(CommonConstant.TRACE_ID));
         installmentRecord.setAgreementNo(agreementNo);
         initiatingDeductThreadPool.execute(() -> {
-            log.info("回调调试，异步代扣");
             try {
                 MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
                 int i = 1;
@@ -552,7 +545,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 保存还款计划
         deductionPlanList.forEach(installmentDeductionPlanService::insert);
         
-        log.info("回调调试，删除缓存");
         // 签约成功，删除签约二维码缓存
         redisService.delete(String.format(CACHE_INSTALLMENT_FORM_BODY, installmentRecord.getUid()));
         
@@ -686,9 +678,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(InstallmentDeductionPlan deductionPlan, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        log.info("回调调试，代扣开始，deductionPlan={}", deductionPlan);
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
-            log.info("回调调试，代扣获取锁失败");
             return Triple.of(false, "301023", "操作频繁，请3秒后再试");
         }
         
@@ -740,14 +730,10 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             request.setProvinceName("陕西省");
             request.setCityName("西安市");
             
-            log.info("回调调试，代扣参数，request={}", request);
-            
             fyCommonQuery.setChannelCode(fyConfig.getChannelCode());
             fyCommonQuery.setFlowNo(repaymentPlanNo + System.currentTimeMillis());
             fyCommonQuery.setFyRequest(request);
             fyAgreementPayRspFyResult = fyAgreementService.agreementPay(fyCommonQuery);
-            
-            log.info("回调调试，代扣结果，fyAgreementPayRspFyResult={}", fyAgreementPayRspFyResult);
             
             // 调用成功
             if (Objects.equals(FY_RESULT_CODE_SUCCESS, fyAgreementPayRspFyResult.getCode())) {

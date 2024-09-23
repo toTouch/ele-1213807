@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.callback.impl.fy;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
@@ -19,13 +21,23 @@ import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.MDC;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.NOTIFY_STATUS_SIGN;
 
@@ -51,18 +63,18 @@ public class FyInstallmentHandler {
     
     private FyConfigService fyConfigService;
     
+    private RedisTemplate<String, String> redisTemplate;
+    
 
     public String signNotify(String bizContent, Long uid) {
         try {
             String decrypt = FyAesUtil.decrypt(bizContent, fengYunConfig.getAesKey());
             InstallmentSignNotifyQuery signNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentSignNotifyQuery.class);
             
-            log.info("回调调试，signNotifyQuery={}", JsonUtil.toJson(signNotifyQuery));
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(signNotifyQuery.getExternalAgreementNo());
             
             R<String> stringR;
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
-                log.info("回调调试，签约回调");
                 stringR = installmentBizService.handleSign(installmentRecord, signNotifyQuery.getAgreementNo());
             } else {
                 // 处理解约成功回调
@@ -121,5 +133,64 @@ public class FyInstallmentHandler {
                 log.warn("DEDUCT TASK WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
             }
         });
+    }
+    
+    public void cancelSign() {
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+        try {
+            double now = System.currentTimeMillis();
+            double min = Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli();
+            
+            Map<String, Double> results = getAndDelete(min, now);
+            if (CollectionUtils.isEmpty(results)) {
+                return;
+            }
+            
+            results.keySet().parallelStream().forEach(externalAgreementNo -> {
+                try {
+                    installmentRecordService.cancel(externalAgreementNo);
+                } catch (Exception e) {
+                    log.error("Installment Cancel Task error! externalAgreementNo={}", externalAgreementNo, e);
+                }
+            });
+        } finally {
+            MDC.clear();
+        }
+    }
+    
+    private Map<String, Double> getAndDelete(double min, double now) {
+        // 定义 Lua 脚本
+        String luaScript = "local key = KEYS[1]\n" +
+                "local minScore = ARGV[1]\n" +
+                "local maxScore = ARGV[2]\n" +
+                "local results = redis.call('ZRANGEBYSCORE', key, minScore, maxScore, 'WITHSCORES')\n" +
+                "local members = {}\n" +
+                "for i = 1, #results, 2 do\n" +
+                "   table.insert(members, results[i])\n" +
+                "end\n" +
+                "redis.call('ZREM', key, unpack(members))\n" +
+                "return results";
+        
+        // 创建 DefaultRedisScript 并设置脚本语言为 Lua
+        RedisScript<List> script = new DefaultRedisScript<>(luaScript, List.class);
+        List<String> results = redisTemplate.execute(script, Collections.singletonList(CACHE_INSTALLMENT_CANCEL_SIGN), String.valueOf(min), String.valueOf(now));
+        
+        if (CollectionUtils.isEmpty(results)) {
+            return null;
+        }
+        
+        String mapKey = null;
+        double mapValue;
+        Map<String, Double> map = new HashMap<>(5);
+        for (int i = 0; i < results.size(); i++) {
+            if ((i + 1) % 2 != 0) {
+                mapKey = results.get(i);
+            } else {
+                mapValue = Double.parseDouble(results.get(i));
+                map.put(mapKey, mapValue);
+            }
+        }
+        
+        return map;
     }
 }
