@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
-import java.util.List;
-
-import com.xiliulou.core.web.R;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCabinetPhysicsOperRecord;
 import com.xiliulou.electricity.vo.ElectricityCabinetPhysicsOperRecordVo;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * (ElectricityCabinetPhysicsOperRecord)表数据库访问层
@@ -83,4 +82,9 @@ public interface ElectricityCabinetPhysicsOperRecordMapper  extends BaseMapper<E
                                            @Param("cellNo") Integer cellNo,
                                            @Param("userName") String userName,
                                            @Param("phone")String phone);
+    
+    Integer existSameCabinetCellSameTimeOpenRecord(@Param("createTime") Long createTime, @Param("electricityCabinetId") Integer electricityCabinetId,
+            @Param("oldCellNo") Integer oldCellNo);
+    
+    Integer existOpenRecordInSameCabinetAndCell(@Param("startTime") Long startTime,@Param("endTime") Long endTime,@Param("eid") Integer eid,@Param("cell") Integer cell);
 }

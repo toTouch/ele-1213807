@@ -132,49 +132,59 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         try {
             Integer type = assetAllocateRecordRequest.getType();
-            Integer status = assetInventoryService.queryInventoryStatusByFranchiseeId(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
-            if (Objects.equals(status, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
-                return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
+            // 盘点盘点状态
+            R inventoryStatus = judgeInventoryStatus(assetAllocateRecordRequest.getSourceFranchiseeId(), type);
+            if (!inventoryStatus.isSuccess()) {
+                return R.fail(inventoryStatus.getErrCode(), inventoryStatus.getErrMsg());
             }
+            
             List<String> exitsSn = new ArrayList<>();
             List<Long> idList = assetAllocateRecordRequest.getIdList();
+            
             //根据sn查询
-            if (Objects.equals(assetAllocateRecordRequest.getSubmitType(),AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)){
+            if (Objects.equals(assetAllocateRecordRequest.getSubmitType(), AssetConstant.ASSET_EXIT_WAREHOUSE_SUBMIT_TYPE_BY_SN)) {
                 List<String> snList = assetAllocateRecordRequest.getSnList();
                 if (CollectionUtils.isEmpty(snList)) {
                     return R.ok();
                 }
+                
                 snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
                 if (snList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                     return R.fail("300811", "资产调拨数量最大限制50条，请修改");
                 }
+                
                 Map<String, Long> map = queryIdBasedOnTypeAndSNCode(assetAllocateRecordRequest);
                 for (String s : snList) {
-                    if (!map.containsKey(s)){
+                    if (!map.containsKey(s)) {
                         exitsSn.add(s);
                     }
                 }
-                if (CollectionUtils.isNotEmpty(exitsSn)){
-                    return R.fail("300832",String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交",String.join(",",exitsSn)));
+                
+                if (CollectionUtils.isNotEmpty(exitsSn)) {
+                    return R.fail("300832", String.format("您输入的编号为[%s]，系统未能找到对应的信息，请您核实并修改后提交", String.join(",", exitsSn)));
                 }
+                
                 idList = ListUtil.toList(map.values());
             }
+            
             if (CollectionUtils.isEmpty(idList)) {
                 return R.ok();
             }
-            if (CollectionUtils.isNotEmpty(idList) && idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
+            
+            if (idList.size() > AssetConstant.ASSET_ALLOCATE_LIMIT_NUMBER) {
                 return R.fail("300811", "资产调拨数量最大限制50条，请修改");
             }
+            
             Integer tenantId = TenantContextHolder.getTenantId();
             Franchisee sourceFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceFranchiseeId());
             if (Objects.isNull(sourceFranchisee)) {
-                log.error("ASSET_ALLOCATE ERROR! not found source franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
+                log.warn("ASSET_ALLOCATE ERROR! not found source franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
             Franchisee targetFranchisee = franchiseeService.queryByIdFromCache(assetAllocateRecordRequest.getTargetFranchiseeId());
             if (Objects.isNull(targetFranchisee)) {
-                log.error("ASSET_ALLOCATE ERROR! not found target franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
+                log.warn("ASSET_ALLOCATE ERROR! not found target franchise! franchiseId={}", assetAllocateRecordRequest.getSourceFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             
@@ -183,32 +193,31 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             }
             
             if (Objects.equals(AssetTypeEnum.ASSET_TYPE_CAR.getCode(), type) || Objects.equals(AssetTypeEnum.ASSET_TYPE_CABINET.getCode(), type)) {
-                
                 if (Objects.equals(assetAllocateRecordRequest.getSourceStoreId(), assetAllocateRecordRequest.getTargetStoreId())) {
-                    log.error("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
+                    log.warn("ASSET_ALLOCATE ERROR! same store! sourceStoreId={}, targetStoreId={}", assetAllocateRecordRequest.getSourceStoreId(),
                             assetAllocateRecordRequest.getTargetStoreId());
                     return R.fail("300810", "调出门店与调入门店不能相同，请修改");
                 }
                 
                 if (Objects.isNull(assetAllocateRecordRequest.getSourceStoreId())) {
-                    log.error("ASSET_ALLOCATE ERROR! not found source storeId!");
+                    log.warn("ASSET_ALLOCATE ERROR! not found source storeId!");
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
                 if (Objects.isNull(assetAllocateRecordRequest.getTargetStoreId())) {
-                    log.error("ASSET_ALLOCATE ERROR! not found target storeId!");
+                    log.warn("ASSET_ALLOCATE ERROR! not found target storeId!");
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
                 Store sourceStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getSourceStoreId());
                 Store targetStore = storeService.queryByIdFromCache(assetAllocateRecordRequest.getTargetStoreId());
                 if (Objects.isNull(sourceStore)) {
-                    log.error("ASSET_ALLOCATE ERROR! not found source store! storeId={}", assetAllocateRecordRequest.getSourceStoreId());
+                    log.warn("ASSET_ALLOCATE ERROR! not found source store! storeId={}", assetAllocateRecordRequest.getSourceStoreId());
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
                 if (Objects.isNull(targetStore)) {
-                    log.error("ASSET_ALLOCATE ERROR! not target store! storeId={}", assetAllocateRecordRequest.getTargetStoreId());
+                    log.warn("ASSET_ALLOCATE ERROR! not target store! storeId={}", assetAllocateRecordRequest.getTargetStoreId());
                     return R.fail("ELECTRICITY.0018", "未找到门店");
                 }
                 
@@ -219,7 +228,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
-                    log.error("ASSET_ALLOCATE ERROR! not found franchisee! franchiseeId={}", targetStore.getFranchiseeId());
+                    log.warn("ASSET_ALLOCATE ERROR! not found franchisee! franchiseeId={}", targetStore.getFranchiseeId());
                     return R.fail("ELECTRICITY.0038", "未找到加盟商");
                 }
                 
@@ -232,21 +241,23 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 }
             } else {
                 //电池调拨
-                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
-                    log.error("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
-                            assetAllocateRecordRequest.getTargetFranchiseeId());
-                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
-                }
+                //                if (Objects.equals(assetAllocateRecordRequest.getSourceFranchiseeId(), assetAllocateRecordRequest.getTargetFranchiseeId())) {
+                //                    log.warn("ASSET_ALLOCATE ERROR! same franchisee! sourceFranchiseeId={}, targetFranchiseeId={}", assetAllocateRecordRequest.getSourceFranchiseeId(),
+                //                            assetAllocateRecordRequest.getTargetFranchiseeId());
+                //                    return R.fail("300809", "调出加盟商与调入加盟商不能相同，请修改");
+                //                }
                 return electricityBatteryMove(assetAllocateRecordRequest, tenantId, idList, uid);
             }
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_ALLOCATE_LOCK + uid);
         }
     }
+    
     /**
      * <p>
-     *    Description: queryIdBasedOnTypeAndSNCode
+     * Description: queryIdBasedOnTypeAndSNCode
      * </p>
+     *
      * @param assetAllocateRecordRequest assetAllocateRecordRequest
      * @return java.util.List<java.lang.Long>
      * <p>Project: AssetAllocateRecordServiceImpl</p>
@@ -254,21 +265,21 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
      * <p>Company: www.xiliulou.com</p>
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/18
-    */
-    private Map<String,Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
+     */
+    private Map<String, Long> queryIdBasedOnTypeAndSNCode(AssetAllocateRecordRequest assetAllocateRecordRequest) {
         List<String> snList = assetAllocateRecordRequest.getSnList().stream().distinct().collect(Collectors.toList());
         Integer type = assetAllocateRecordRequest.getType();
-        Map<String,Long> result = null;
-        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CAR.getCode())){
-            result = electricityCarService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        Map<String, Long> result = null;
+        if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_CAR.getCode())) {
+            result = electricityCarService.listIdsBySnArray(snList, TenantContextHolder.getTenantId(), assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())){
-            result = electricityBatteryService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_BATTERY.getCode())) {
+            result = electricityBatteryService.listIdsBySnArray(snList, TenantContextHolder.getTenantId(), assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (Objects.equals(type,AssetTypeEnum.ASSET_TYPE_CABINET.getCode())){
-            result = electricityCabinetService.listIdsBySnArray(snList,TenantContextHolder.getTenantId(),assetAllocateRecordRequest.getSourceFranchiseeId());
+        if (Objects.equals(type, AssetTypeEnum.ASSET_TYPE_CABINET.getCode())) {
+            result = electricityCabinetService.listIdsBySnArray(snList, TenantContextHolder.getTenantId(), assetAllocateRecordRequest.getSourceFranchiseeId());
         }
-        if (MapUtil.isEmpty(result)){
+        if (MapUtil.isEmpty(result)) {
             return MapUtil.empty();
         }
         return result;
@@ -280,7 +291,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 ElectricityCar.STATUS_NOT_RENT, TenantContextHolder.getTenantId());
         
         if (CollectionUtils.isEmpty(electricityCarList) || electricityCarList.size() != idList.size()) {
-            log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
+            log.warn("ELECTRICITY_CAR_MOVE ERROR! has illegal cars! carIds={}", idList);
             return R.fail("300815", "您选择的车辆编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
@@ -292,7 +303,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
             //k --> ModelId  v --> List<ElectricityCar>
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(k);
             if (Objects.isNull(electricityCarModel)) {
-                log.error("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
+                log.warn("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
                 return;
             }
             
@@ -363,7 +374,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
     private R electricityCabinetMove(AssetAllocateRecordRequest assetAllocateRecordRequest, Store targetStore, Integer tenantId, List<Long> idList, Long uid) {
         Franchisee storeFranchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
         if (Objects.isNull(storeFranchisee)) {
-            log.error("ELECTRICITY_CABINET_MOVE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
+            log.warn("ELECTRICITY_CABINET_MOVE ERROR! not found store's franchisee! franchiseeId={}", targetStore.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
@@ -372,7 +383,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.listByIds(idSet);
         
         if (CollectionUtils.isEmpty(electricityCabinetList) || !Objects.equals(idList.size(), electricityCabinetList.size())) {
-            log.error("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
+            log.warn("ELECTRICITY_CABINET_MOVE ERROR! has illegal cabinet! idList={}", idList);
             return R.fail("300816", "您选择的电柜编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
@@ -405,7 +416,7 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         
         List<ElectricityBatteryVO> electricityBatteryList = electricityBatteryService.listEnableAllocateBattery(electricityBatteryEnableAllocateRequest);
         if (CollectionUtils.isEmpty(electricityBatteryList) || !Objects.equals(idList.size(), electricityBatteryList.size())) {
-            log.error("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
+            log.warn("ELECTRICITY_BATTERY_MOVE ERROR! has illegal battery! idList={}", idList);
             return R.fail("300812", "您选择的电池编码中存在不可调拨的数据，请刷新页面以获取最新状态后再进行操作");
         }
         
@@ -493,7 +504,6 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         AssetAllocateRecordPageQueryModel queryModel = new AssetAllocateRecordPageQueryModel();
         BeanUtil.copyProperties(allocateRecordPageRequest, queryModel);
         queryModel.setTenantId(TenantContextHolder.getTenantId());
-       
         
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
@@ -508,21 +518,22 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
                 BeanUtil.copyProperties(item, assetAllocateRecordVO);
                 assetAllocateRecordVO.setSourceFranchiseeId(item.getOldFranchiseeId());
                 assetAllocateRecordVO.setTargetFranchiseeId(item.getNewFranchiseeId());
+                assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
+                assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
                 
-                Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(item.getOldFranchiseeId());
-                Franchisee newFranchisee = franchiseeService.queryByIdFromCache(item.getNewFranchiseeId());
-                assetAllocateRecordVO.setSourceFranchiseeName(oldFranchisee.getName());
-                assetAllocateRecordVO.setTargetFranchiseeName(newFranchisee.getName());
-                
+                if (Objects.nonNull(item.getOldFranchiseeId())) {
+                    assetAllocateRecordVO.setSourceFranchiseeName(
+                            Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getOldFranchiseeId())).orElse(new Franchisee()).getName());
+                }
+                if (Objects.nonNull(item.getNewFranchiseeId())) {
+                    assetAllocateRecordVO.setTargetFranchiseeName(
+                            Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getNewFranchiseeId())).orElse(new Franchisee()).getName());
+                }
                 if (Objects.nonNull(item.getOldStoreId())) {
-                    Store oldStore = storeService.queryByIdFromCache(item.getOldStoreId());
-                    assetAllocateRecordVO.setSourceStoreId(item.getOldStoreId());
-                    assetAllocateRecordVO.setSourceStoreName(oldStore.getName());
+                    assetAllocateRecordVO.setSourceStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getOldStoreId())).orElse(new Store()).getName());
                 }
                 if (Objects.nonNull(item.getNewStoreId())) {
-                    Store newStore = storeService.queryByIdFromCache(item.getNewStoreId());
-                    assetAllocateRecordVO.setTargetStoreId(item.getNewStoreId());
-                    assetAllocateRecordVO.setTargetStoreName(newStore.getName());
+                    assetAllocateRecordVO.setTargetStoreName(Optional.ofNullable(storeService.queryByIdFromCache(item.getNewStoreId())).orElse(new Store()).getName());
                 }
                 
                 List<AssetAllocateDetailVO> allocateDetailVOList = assetAllocateDetailService.listByPage(item.getOrderNo(), TenantContextHolder.getTenantId());
@@ -557,5 +568,21 @@ public class AssetAllocateRecordServiceImpl implements AssetAllocateRecordServic
         queryModel.setFranchiseeIds(pair.getRight());
         
         return assetAllocateRecordMapper.countTotal(queryModel);
+    }
+    
+    private R judgeInventoryStatus(Long franchiseeId, Integer type) {
+        // 查询盘点状态
+        Integer inventoryStatus = assetInventoryService.queryInventoryStatusByFranchiseeId(franchiseeId, type);
+        if (Objects.equals(inventoryStatus, AssetConstant.ASSET_INVENTORY_STATUS_TAKING)) {
+            if (AssetTypeEnum.ASSET_TYPE_BATTERY.getCode().equals(type)) {
+                return R.fail("300804", "该加盟商电池资产正在进行盘点，请稍后再试");
+            } else if (AssetTypeEnum.ASSET_TYPE_CABINET.getCode().equals(type)) {
+                return R.fail("300805", "该加盟商电柜资产正在进行盘点，请稍后再试");
+            } else {
+                return R.fail("300806", "该加盟商车辆资产正在进行盘点，请稍后再试");
+            }
+        }
+        
+        return R.ok();
     }
 }

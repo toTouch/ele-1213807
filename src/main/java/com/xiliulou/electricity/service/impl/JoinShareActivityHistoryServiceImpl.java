@@ -5,12 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderExcelQuery;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -35,6 +37,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 参与邀请活动记录(JoinShareActivityHistory)表服务实现类
@@ -56,6 +59,9 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	
 	@Autowired
 	UserInfoService userInfoService;
+	
+	@Resource
+	private FranchiseeService franchiseeService;
 
 
 	/**
@@ -116,7 +122,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("joinActivity  ERROR! not found user ");
+			log.warn("joinActivity  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -126,7 +132,18 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
         
         List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
                 .queryList(jsonShareActivityHistoryQuery);
-        return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
+		if (CollectionUtils.isEmpty(joinShareActivityHistoryVOList)) {
+			return R.ok(Collections.emptyList());
+		}
+		
+		List<JoinShareActivityHistoryVO> list = joinShareActivityHistoryVOList.stream().peek(vo -> {
+			Long franchiseeId = vo.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
+		}).collect(Collectors.toList());
+		
+		return R.ok(list);
 	}
 
 	@Slave
@@ -143,7 +160,19 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		
 		List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
 				.queryList(jsonShareActivityHistoryQuery);
-        return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
+		
+		if (CollectionUtils.isEmpty(joinShareActivityHistoryVOList)) {
+			return R.ok(Collections.emptyList());
+		}
+		
+		List<JoinShareActivityHistoryVO> list = joinShareActivityHistoryVOList.stream().peek(joinShareActivityHistoryVO -> {
+			Long franchiseeId = joinShareActivityHistoryVO.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				joinShareActivityHistoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+			}
+		}).collect(Collectors.toList());
+		
+		return R.ok(list);
 	}
 
 	@Override
@@ -244,6 +273,12 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 			if(Objects.nonNull(userInfo)){
 				joinShareActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareActivityHistoryVO.setInviterPhone(userInfo.getPhone());
+			}
+			
+			
+			Long franchiseeId = joinShareActivityHistoryVO.getFranchiseeId();
+			if (Objects.nonNull(franchiseeId)) {
+				joinShareActivityHistoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
 			}
 		}
 

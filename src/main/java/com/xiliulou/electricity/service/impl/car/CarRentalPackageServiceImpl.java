@@ -82,7 +82,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     /**
      * 根据条件查询<br />
-     *
+     * 可带分页
      * @param qryModel 查询条件
      * @return
      */
@@ -153,7 +153,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         
         // 校验能否删除
         if (carRentalPackageOrderService.checkByRentalPackageId(id)) {
-            log.info("CarRentalPackageService.delById, Purchase order record already exists, deletion not allowed. packageId is {}", id);
+            log.warn("CarRentalPackageService.delById, Purchase order record already exists, deletion not allowed. packageId is {}", id);
             throw new BizException("300023", "当前套餐有用户使用，暂不支持删除");
         }
         
@@ -167,7 +167,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     
     /**
      * 条件查询列表<br /> 全表扫描，慎用
-     *
+     * 可带分页
      * @param qryModel 查询模型
      * @return
      */
@@ -254,11 +254,11 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 检测原始套餐状态
         CarRentalPackagePo oriEntity = carRentalPackageMapper.selectById(entity.getId());
         if (oriEntity == null || DelFlagEnum.DEL.getCode().equals(oriEntity.getDelFlag())) {
-            log.info("CarRentalPackageService.updateById, not found car_rental_package. packageId is {}", entity.getId());
+            log.warn("CarRentalPackageService.updateById, not found car_rental_package. packageId is {}", entity.getId());
             throw new BizException("300000", "数据有误");
         }
         if (UpDownEnum.UP.getCode().equals(oriEntity.getStatus())) {
-            log.info("CarRentalPackageService.updateById, The data status is up. packageId is {}", entity.getId());
+            log.warn("CarRentalPackageService.updateById, The data status is up. packageId is {}", entity.getId());
             throw new BizException("300021", "请先下架套餐再进行编辑操作");
         }
         
@@ -267,7 +267,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         
         // 检测唯一
         if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
-            log.info("CarRentalPackageService.updateById, Package name already exists.");
+            log.warn("CarRentalPackageService.updateById, Package name already exists.");
             throw new BizException("300022", "套餐名称已存在");
         }
         // 适配优惠券多张更新
@@ -370,6 +370,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/3/14
      */
+    @Slave
     @Override
     public List<CarRentalPackageSearchVO> queryToSearchByName(CarRentalPackageNameReq rentalPackageNameReq) {
         return this.carRentalPackageMapper.queryToSearchByName(rentalPackageNameReq);
@@ -394,6 +395,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         return carRentalPackageMapper.batchUpdateSortParam(sortParamQueries);
     }
     
+    @Slave
     @Override
     public List<CarRentalPackagePo> listCarRentalPackageForSort() {
         return carRentalPackageMapper.listCarRentalPackageForSort(TenantContextHolder.getTenantId());

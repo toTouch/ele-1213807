@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  * @date 2023/12/27 20:30
  * @desc
  */
-public interface TenantNoteMapper extends BaseMapper<TenantNote> {
+public interface TenantNoteMapper {
     TenantNote selectByTenantId(@Param("tenantId") Integer tenantId);
     
     int reduceNoteNum(TenantNote tenantNote);
@@ -17,4 +17,6 @@ public interface TenantNoteMapper extends BaseMapper<TenantNote> {
     int insertOne(TenantNote addNote);
     
     int addNoteNum(TenantNote addNote);
+    
+    int reduceNoteNumById(TenantNote tenantNote);
 }

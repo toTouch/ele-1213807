@@ -9,16 +9,21 @@ import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -34,6 +39,9 @@ public class JsonAdminCouponIssueOperateRecordController {
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
+    
+    @Resource
+    private UserDataScopeService userDataScopeService;
 
     //列表查询
     @GetMapping(value = "/admin/couponIssueOperateRecord/list")

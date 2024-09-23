@@ -23,18 +23,18 @@ public interface CacheConstant {
     /**
      * 微信支付参数缓存key
      */
-    String ELE_PAY_PARAMS_KEY="saas_ele:pay_params:%d:%d";
+    String ELE_PAY_PARAMS_KEY = "saas_ele:pay_params:%d:%d";
     
     /**
      * 微信支付证书
      */
-    String PAYMENT_CERTIFICATE_KEY="saas_ele:pay_payment_certificate:%d:%d";
+    String PAYMENT_CERTIFICATE_KEY = "saas_ele:pay_payment_certificate:%d:%d";
     
     
     /**
      * 微信支付证书缓存（调用微信接口获取）
      */
-    String WECHAT_CERTIFICATE_KEY="saas_ele:wechat_certificate:%d:%d";
+    String WECHAT_CERTIFICATE_KEY = "saas_ele:wechat_certificate:v3:%d:%d";
     
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
@@ -91,6 +91,8 @@ public interface CacheConstant {
     
     //换电柜开门的前缀
     String ELE_OPERATOR_SESSION_PREFIX = "ele";
+    
+    String OPEN_FULL_CELL = "open_full_cell";
     
     
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
@@ -563,10 +565,17 @@ public interface CacheConstant {
      * 商户扩展属性缓存
      */
     String CACHE_MERCHANT_ATTR = "merchantAttr:";
+    String CACHE_MERCHANT_ATTR_CONFIG = "merchantAttrConfig:";
     /**
      * 返利配置
      */
     String CACHE_REBATE_CONFIG = "rebateConfig:";
+    String CACHE_REBATE_CONFIG_SAVE_LOCK = "cache_rebate_config_save_lock:";
+    String CACHE_REBATE_CONFIG_UPDATE_LOCK = "cache_rebate_config_update_lock:";
+    String CACHE_REBATE_CONFIG_MODIFY_LOCK = "cache_rebate_config_modify_lock:";
+    String CACHE_UPGRADE_CONDITION_UPDATE_LOCK = "cache_upgrade_condition_update_lock:";
+    String CACHE_CHANNEL_SWITCH_STATE_UPDATE_LOCK = "cache_channel_switch_state_update_lock:";
+    String CACHE_INVITATION_CONDITION_UPDATE_LOCK = "cache_invitation_condition_update_lock:";
     
     String CACHE_WECHAT_APPROVE = "cache_wechat_approve";
     
@@ -581,6 +590,8 @@ public interface CacheConstant {
     String CACHE_BATCH_SEND_COUPON = "cache_batch_send_coupon:";
     
     String CACHE_MERCHANT_AREA_SAVE_LOCK = "cache_merchant_area_save_lock:";
+    
+    String CACHE_MERCHANT_LEVEL_UPDATE_LOCK = "cache_merchant_level_update_lock:";
     
     String CACHE_MERCHANT_SCAN_INTO_ACTIVITY_LOCK = "cache_merchant_scan_into_activity_lock:";
     String CACHE_MERCHANT = "cache_merchant:";
@@ -673,10 +684,63 @@ public interface CacheConstant {
     
     
     
+    String CACHE_BATTERY_BATCH_IMPORT_LOCK = "cache_battery_batch_import_lock:";
     
     //角色权限绑定操作
     String ROLE_PERMISSION_OPERATE_KEY = "saas_electricity:role_permission_opt:%s";
     
     //逾期用户备注重复提交锁
     String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
+    
+    
+    String OPEN_FULL_CELL_LIMIT = "open_full_cell_handle_limit:";
+    
+    
+    String ALLOW_SELF_OPEN_CELL_START_TIME = "allow_self_open_cell_start_time:";
+    
+    String VEHICLE_BINDING_IDEMPOTENT_LOCK = "vehicle_binding_idempotent_lock:%s";
+    
+    String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
+    String CACHE_OFFLINE_KEY = "cache_offline_key:";
+    String CACHE_OFFLINE_KEY_V2 = "cache_offline_key_v2:";
+    
+    /**
+     * TCP设备session缓存
+     */
+    String CACHE_CABINET_SN_ONLINE = "device_report:cabinet_online:";
+    
+    
+    /**
+     * 分账配置缓存
+     */
+    String PROFIT_SHARING_PAY_PARAMS_ID_KEY = "saas_ele:profit_sharing:pay_params%d:%d";
+    
+    
+    /**
+     * 分账配置幂等
+     */
+    String PROFIT_SHARING_IDEMPOTENT_KEY = "saas_ele:profit_sharing:idempotent:%d";
+    
+    /**
+     * 分账配置幂等
+     */
+    String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent:%d";
+    
+    
+    
+    /**
+     * 分账统计分布式锁
+     */
+    String PROFIT_SHARING_STATISTICS_LOCK_KEY = "saas_ele:profit_sharing_statistics:lock:%d:%d";
+    
+    
+    /**
+     * 柜机仓门配置key
+     */
+    String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
+    
+    String CACHE_MEI_TUAN_RIDER_MALL_CONFIG = "mei_tuan_rider_mall_config:";
+    
+    String CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY = "cache_mei_tuan_create_battery_member_card_order_lock_key:";
 }
+

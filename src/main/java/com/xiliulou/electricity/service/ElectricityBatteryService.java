@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.query.asset.AssetEnableExitWarehouseQueryModel;
 import com.xiliulou.electricity.request.asset.AssetBatchExitWarehouseRequest;
 import com.xiliulou.electricity.request.asset.BatteryAddRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatteryBatchUpdateFranchiseeRequest;
@@ -135,7 +136,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     Integer batchUpdateFranchiseeId(List<ElectricityBatteryBatchUpdateFranchiseeRequest> batchUpdateFranchiseeRequestList);
     
-    List<ElectricityBatteryVO> listEnableExitWarehouseBattery(Set<Long> idSet, Integer tenantId, Long franchiseeId, Integer stockStatus);
+    List<ElectricityBatteryVO> listEnableExitWarehouseBattery(AssetEnableExitWarehouseQueryModel queryModel);
     
     List<ElectricityBattery> queryListByIdList(List<Long> batteryIdSet);
     

@@ -27,6 +27,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -54,6 +55,7 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -204,6 +206,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private TenantService tenantService;
     
     /**
      * 新增数据
@@ -495,13 +500,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
         //.in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("FREE REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
+            log.warn("FREE REFUND ORDER WARN! eleRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE REFUND ORDER ERROR!userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
+            log.warn("FREE REFUND ORDER WARN!userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
@@ -511,13 +516,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("FREE REFUND ORDER ERROR!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
+            log.warn("FREE REFUND ORDER WARN!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
             return Triple.of(false, "ELECTRICITY.0015", "换电订单不存在");
         }
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+            log.warn("REFUND ORDER WARN! not found freeDepositOrder,uid={}", userInfo.getUid());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -557,20 +562,20 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         // 处理电池免押订单退款
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-            log.error("FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
+            log.warn("FREE REFUND ORDER WARN!depositOrder payType is illegal,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
             return Triple.of(false, "100406", "订单非免押支付");
         }
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
+            log.warn("REFUND ORDER WARN! not found pxzConfig,uid={}", userInfo.getUid());
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         // 如果车电一起免押，检查用户是否归还车辆
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && Objects.equals(userInfo.getCarRentStatus(),
                 UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
+            log.warn("REFUND ORDER WARN! user not return car,uid={}", userInfo.getUid());
             return Triple.of(false, "100253", "用户已绑定车辆");
         }
         
@@ -1172,7 +1177,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 插入修改记录
             EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
-            eleRefundOrderHistory.setRefundOrderNo(generateOrderId(uid));
+            eleRefundOrderHistory.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid));
             eleRefundOrderHistory.setRefundAmount(refundAmount);
             eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
             eleRefundOrderHistory.setTenantId(userInfo.getTenantId());
@@ -1348,6 +1353,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
                 item.setRefundAmount(null);
             }
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
@@ -1528,6 +1536,41 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Integer updateById(EleRefundOrder eleRefundOrderUpdate) {
         return eleRefundOrderMapper.update(eleRefundOrderUpdate);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(EleRefundQuery eleRefundQuery) {
+        List<EleRefundOrderVO> eleRefundOrderVOS = eleRefundOrderMapper.selectListSuperAdminPage(eleRefundQuery);
+        
+        if (CollectionUtils.isEmpty(eleRefundOrderVOS)) {
+            return R.ok(new ArrayList<>());
+        }
+    
+        eleRefundOrderVOS.forEach(item -> {
+            if (Objects.nonNull(item.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
+                item.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+            
+            if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
+                item.setRefundAmount(null);
+            }
+        
+            if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+        
+            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
+            if (Objects.isNull(freeDepositAlipayHistory)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+        
+            item.setIsFreeDepositAliPay(true);
+        });
+        return R.ok(eleRefundOrderVOS);
     }
     
     @Slave

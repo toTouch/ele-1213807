@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.EmailRecipient;
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
@@ -65,6 +66,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public VersionNotification queryByIdFromDB(Integer id) {
         return this.versionNotificationMapper.selectById(id);
@@ -125,17 +127,20 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public Integer insert(VersionNotification versionNotification) {
         return this.versionNotificationMapper.insert(versionNotification);
     }
-    
+
+    @Slave
     @Override
     public List<VersionNotification> queryNotificationList(Long offset, Long size) {
         return this.versionNotificationMapper.queryVersionPage(offset, size);
     }
     
+    @Slave
     @Override
     public R queryNotificationCount() {
         return R.ok(this.versionNotificationMapper.selectCount(null));
     }
     
+    @Slave
     @Override
     public VersionNotification queryCreateTimeMaxTenantNotification() {
         return this.versionNotificationMapper.queryCreateTimeMaxTenantNotification();

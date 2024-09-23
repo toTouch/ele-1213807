@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.warn.EleHardwareWarnMsgMapper">
+    <update id="updateNoteFlagByAlarmId">
+        UPDATE t_ele_hardware_warn_msg
+        SET send_note_flag = 1,update_time = #{updateTime}
+        WHERE alarm_id = #{alarmId}
+    </update>
+    
+    <select id="selectList" resultType="com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgVo">
+        SELECT
+            tenant_id as 'tenantId',
+            cabinet_id as 'cabinetId',
+            count( 1 ) as 'failureWarnNum',
+            '0' as  'type'
+        FROM
+            t_ele_hardware_warn_msg
+        WHERE
+            alarm_time between  #{startTime} and #{endTime}
+        GROUP BY
+            tenant_id,
+            cabinet_id
+    </select>
+    
+    <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg">
+        SELECT
+        t.id,
+        t.cabinet_id,
+        t.tenant_id,
+        t.signal_id,
+        t.alarm_desc,
+        t.alarm_flag,
+        t.alarm_id,
+        t.cell_no,
+        t.sn,
+        t.grade,
+        t.device_type,
+        t.failure_alarm_name,
+        t.tenant_name,
+        t.dev_id,
+        t.recover_time,
+        t.report_time,
+        t.alarm_time,
+        t.create_time,
+        t.cabinet_sn
+        FROM
+        t_ele_hardware_warn_msg t
+        <include refid="filter"/>
+        order by t.alarm_time desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_ele_hardware_warn_msg t
+        <include refid="filter"/>
+    </select>
+    
+    <select id="selectListExport" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnMsgExcelVo">
+        SELECT
+        t.id,
+        t.cabinet_id,
+        t.tenant_id,
+        t.signal_id,
+        t.alarm_desc,
+        t.alarm_flag,
+        t.alarm_id,
+        t.cell_no,
+        t.sn,
+        t.grade,
+        t.device_type,
+        t.failure_alarm_name,
+        t.tenant_name,
+        t.dev_id,
+        t.recover_time,
+        t.report_time,
+        t.alarm_time,
+        t.create_time
+        FROM
+        t_ele_hardware_warn_msg t
+        <include refid="filter"/>
+        order by t.alarm_time desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <sql id="filter">
+        <where>
+            <if test="alarmId != null">
+                t.alarm_id = #{alarmId}
+            </if>
+            
+            <if test="cabinetId != null">
+                t.cabinet_id = #{cabinetId}
+            </if>
+            
+            <if test="sn != null and sn != ''">
+                and t.sn = #{sn}
+            </if>
+            
+            <if test="tenantId != null">
+                and t.tenant_id = #{tenantId}
+            </if>
+            
+            <if test="signalId != null">
+                and t.signal_id = #{signalId}
+            </if>
+            
+            <if test="alarmStartTime != null and alarmEndTime != null">
+                and t.alarm_time BETWEEN #{alarmStartTime} AND  #{alarmEndTime}
+            </if>
+            
+            <if test="alarmFlag != null">
+                and t.alarm_flag  = #{alarmFlag}
+            </if>
+            
+            <if test="signalIdList != null and signalIdList.size() > 0">
+                and t.signal_id in
+                <foreach collection="signalIdList" item="signalId" separator="," open="(" close=")">
+                    #{signalId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    
+    <select id="selectListProportion" resultType="com.xiliulou.electricity.vo.failureAlarm.FailureWarnProportionVo">
+        SELECT
+        signal_id,
+        count(1) as 'count'
+        FROM
+        t_ele_hardware_warn_msg
+        WHERE
+        alarm_time between  #{alarmStartTime} and #{alarmEndTime}
+        AND signal_id in
+        <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
+            #{signalId}
+        </foreach>
+        GROUP BY signal_id
+    </select>
+    
+    <select id="countWarnNum" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            t_ele_hardware_warn_msg t
+        <where>
+            alarm_time between  #{alarmStartTime} and #{alarmEndTime}
+            and signal_id in
+            <foreach collection="signalIdList" separator="," close=")" open="(" item="signalId">
+                #{signalId}
+            </foreach>
+        </where>
+    </select>
+    
+    <select id="existByAlarmId" resultType="java.lang.Integer">
+        select count(1) from t_ele_hardware_warn_msg where alarm_id = #{alarmId} and send_note_flag = 0 LIMIT 1
+    </select>
+</mapper>

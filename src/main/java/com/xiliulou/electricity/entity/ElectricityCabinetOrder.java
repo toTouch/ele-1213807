@@ -102,7 +102,12 @@ public class ElectricityCabinetOrder {
 
     //门店id
     private Long storeId;
-
+    
+    /**
+     * 订单阶段状态
+     */
+    private String orderStatus;
+    
     /**
      * 换电订单生成 0.0
      */
@@ -186,6 +191,7 @@ public class ElectricityCabinetOrder {
      * 换电柜取走满电电池超时 7.1
      */
     public static final String COMPLETE_BATTERY_TAKE_TIMEOUT = "COMPLETE_BATTERY_TAKE_TIMEOUT";
+    
 
 
     //订单取消 11.0
@@ -217,6 +223,13 @@ public class ElectricityCabinetOrder {
      * 订单来源 自助开仓
      */
     public static final Integer ORDER_SOURCE_FOR_SELF_OPEN_CELL = 4;
+    
+    /***
+     * 是否满足自主开仓的新旧仓门常量
+     */
+    public static final Integer OLD_CELL = 0;
+    
+    public static final Integer NEW_CELL = 1;
 
 
 }

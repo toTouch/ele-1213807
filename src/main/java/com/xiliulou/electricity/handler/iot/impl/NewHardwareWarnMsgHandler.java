@@ -70,7 +70,7 @@ public class NewHardwareWarnMsgHandler extends AbstractElectricityIotHandler {
                 .deviceName(electricityCabinet.getDeviceName())
                 .data(dataMap)
                 .command(ElectricityIotConstant.NEW_HARDWARE_WARN_MSG_ACK).build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("HARDWARE WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
         }

@@ -579,4 +579,128 @@
             </foreach>
         </where>
     </select>
+    
+    <sql id="pageFilter">
+        <where>
+            0= 0
+            <if test="query.cardPayCount != null">
+                and tel.pay_count =#{query.cardPayCount}
+            </if>
+            <if test="query.franchiseeId != null">
+                and tel.franchisee_id = #{query.franchiseeId}
+            </if>
+            <if test="query.userName != null and query.userName != ''">
+                and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="query.uid != null">
+                and tel.uid = #{query.uid}
+            </if>
+            <if test="query.phone != null">
+                and tui.phone =#{query.phone}
+            </if>
+            <if test="query.payType != null">
+                and tel.pay_type =#{query.payType}
+            </if>
+            <if test="query.orderId != null">
+                and tel.order_id =#{query.orderId}
+            </if>
+            <if test="query.cardType != null">
+                and tel.member_card_type =#{query.cardType}
+            </if>
+            <if test="query.payType != null">
+                and tel.pay_type =#{query.payType}
+            </if>
+            <if test="query.source != null">
+                and tel.source =#{query.source}
+            </if>
+            <if test="query.useStatus != null">
+                and tel.use_status =#{query.useStatus}
+            </if>
+            <if test="query.refId != null">
+                and tel.ref_id =#{query.refId}
+            </if>
+            <if test="query.cardModel != null">
+                and tel.member_card_model =#{query.cardModel}
+            </if>
+            <if test="query.status != null">
+                and tel.status =#{query.status}
+            </if>
+            <if test="query.tenantId != null">
+                and tel.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.payType != null">
+                and tel.pay_type = #{query.payType}
+            </if>
+            <if test="query.cardId != null">
+                and tel.member_card_id = #{query.cardId}
+            </if>
+            <if test="query.queryStartTime != null">
+                and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+            </if>
+            <if test="query.franchiseeIds != null">
+                and tel.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and tel.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    
+    <sql id="pageColumn">
+            tel.id ,
+            tel.pay_amount ,
+            tel.valid_days ,
+            tel.create_time ,
+            tel.order_id ,
+            tel.status ,
+            tel.user_name ,
+            tel.member_card_type ,
+            tel.max_use_count ,
+            tel.card_name ,
+            tel.franchisee_id ,
+            tel.is_bind_activity ,
+            tel.activity_id ,
+            tel.member_card_model ,
+            tel.pay_type ,
+            tel.pay_count ,
+            tel.coupon_id ,
+            tel.source ,
+            tel.ref_id ,
+            tel.uid,
+            tel.member_card_id ,
+            tel.use_status ,
+            tel.send_coupon_id ,
+            tel.coupon_ids,
+            tui.phone as phone ,
+            tui.name as userName,
+            tel.tenant_id
+    </sql>
+    <select id="selectListSuperAdminPage"
+            resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
+            select
+            <include refid="pageColumn"/>
+           from
+            t_electricity_member_card_order tel
+            LEFT JOIN t_user_info tui on tui.uid = tel.uid
+            <include refid="pageFilter"/>
+            order by tel.id desc
+            limit #{query.offset}, #{query.size}
+ 
+    </select>
+    
+    
+    <select id="selectListByCreateTime" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where
+        create_time &gt;=#{beginTime}
+        and create_time &lt;=#{endTime}
+    </select>
 </mapper>

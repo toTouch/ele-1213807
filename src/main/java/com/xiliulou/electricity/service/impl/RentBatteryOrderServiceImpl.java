@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -33,6 +34,7 @@ import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
@@ -63,6 +65,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -75,6 +78,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -238,12 +242,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     ElectricityCabinetExtraService electricityCabinetExtraService;
     
+
+    @Autowired
+    private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
+    
     /**
      * 吞电池优化版本
      */
     private static final String ELE_CABINET_VERSION = "2.1.7";
     @Autowired
     OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
+    @Resource
+    private TenantService tenantService;
     
     /**
      * 新增数据
@@ -316,7 +327,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         
-        if (!electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName())) {
+        if (!electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern())) {
             log.warn("RENT BATTERY WARN! electricityCabinet is offline,eid={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
@@ -511,7 +522,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         
         return Triple.of(true, null, orderId);
     }
@@ -659,7 +670,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         
         return Triple.of(true, null, orderId);
     }
@@ -705,7 +716,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("RETURN BATTERY WARN! electricityCabinet is offline,electricityCabinetId={}", electricityCabinetId);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
@@ -838,7 +849,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //分配开门格挡
             //Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(electricityCabinet.getId(), electricityCabinet.getVersion());
-            Triple<Boolean, Integer, String> usableEmptyCellNo = findUsableEmptyCellNo(electricityCabinet.getId(), electricityCabinet.getVersion());
+            Triple<Boolean, Integer, String> usableEmptyCellNo = findUsableEmptyCellNo(userInfo.getUid(), electricityCabinet.getId(), electricityCabinet.getVersion());
             
             if ((!usableEmptyCellNo.getLeft()) || Objects.isNull(usableEmptyCellNo.getMiddle())) {
                 log.warn("RETURNBATTERY WARN! electricityCabinet not empty cell,electricityCabinetId={} ", electricityCabinetId);
@@ -904,7 +915,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             //为逾期用户清除备注
             overdueUserRemarkPublish.publish(user.getUid(), OverdueType.BATTERY.getCode(), user.getTenantId());
             return R.ok(orderId);
@@ -917,7 +928,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok();
     }
     
-    private Triple<Boolean, Integer, String> findUsableEmptyCellNo(Integer eid, String version) {
+    private Triple<Boolean, Integer, String> findUsableEmptyCellNo(Long uid, Integer eid, String version) {
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(eid));
         if (Objects.isNull(cabinetExtra)) {
             return Triple.of(false, null, "换电柜异常，不存在的换电柜扩展信息");
@@ -961,6 +972,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (emptyCellList.size() == 1) {
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
             return Triple.of(true, cellNo, null);
+        }
+        
+        // 舒适换电分配空仓
+        Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
+        if (comfortExchangeGetEmptyCellPair.getLeft()) {
+            return Triple.of(true, comfortExchangeGetEmptyCellPair.getRight(), null);
         }
         
         //有多个空格挡  优先分配开门的格挡
@@ -1044,7 +1061,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
@@ -1068,7 +1085,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR)
                     .build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         }
         
         //还电池开门
@@ -1093,7 +1110,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
                     .build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             
         }
         redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId());
@@ -1287,7 +1304,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("导出报表失败！", e);
         }
     }
-    
+    @Slave
     @Override
     public R queryNewStatus(String orderId) {
         Map<String, Object> map = new HashMap<>();
@@ -1439,7 +1456,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         
         for (int i = 0; i < exchangeableList.size(); i++) {
             // 20240614修改：过滤掉电池不符合标准的电池
-            fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee);
+            fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee, electricityCabinet.getFullyCharged());
             if (StringUtils.isBlank(fullBatteryCell)) {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
@@ -1453,7 +1470,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
     }
     
-    private String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee) {
+    @Override
+    public String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee, Double fullyCharged) {
         electricityCabinetBoxList = electricityCabinetBoxList.stream().filter(item -> !checkFullBatteryBoxIsAllocated(item.getElectricityCabinetId().longValue(), item.getCellNo()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
@@ -1471,21 +1489,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
                     .filter(item -> StringUtils.isNotBlank(item.getSn()) && StringUtils.isNotBlank(item.getBatteryType()) && Objects.nonNull(item.getPower())
-                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed())
-                    .collect(Collectors.toList());
+                            && userBatteryTypes.contains(item.getBatteryType())).sorted(Comparator.comparing(ElectricityCabinetBox::getPower, Comparator.reverseOrder())
+                            .thenComparing(item -> item.getBatteryType().substring(item.getBatteryType().length() - 2), Comparator.reverseOrder())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableBoxes)) {
                 log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!usableBoxes is empty,uid={}", userInfo.getUid());
                 return null;
             }
             
-            //如果存在多个电量满电且相同的电池，取串数最大的
-            Double maxPower = usableBoxes.get(0).getPower();
-            electricityCabinetBoxList = usableBoxes.stream().filter(item -> Objects.equals(item.getPower(), maxPower))
-                    .sorted(Comparator.comparing(item -> item.getBatteryType().substring(item.getBatteryType().length() - 2))).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(electricityCabinetBoxList)) {
-                log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!electricityCabinetBoxList is empty,uid={}", userInfo.getUid());
-                return null;
-            }
+            electricityCabinetBoxList = usableBoxes;
         }
         
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
@@ -1495,6 +1506,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return null;
         }
         
+        // 舒适换电
+        Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes, fullyCharged);
+        if (satisfyComfortExchange.getLeft()) {
+            return satisfyComfortExchange.getRight().getCellNo();
+        }
+        
+        return ruleAllotCell(userInfo, usableBoxes);
+    }
+    
+    
+    private static String ruleAllotCell(UserInfo userInfo, List<ElectricityCabinetBox> usableBoxes) {
         //如果存在多个电量满电且相同的电池，取充电器电压最高的
         Double maxPower = usableBoxes.get(0).getPower();
         ElectricityCabinetBox usableCabinetBox = usableBoxes.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).filter(item -> Objects.nonNull(item.getChargeV()))
@@ -1503,7 +1525,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!usableCabinetBox is null,uid={}", userInfo.getUid());
             return null;
         }
-        
         return usableCabinetBox.getCellNo();
     }
     
@@ -1678,7 +1699,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
         if (!eleResult) {
             log.warn("self open cell WARN!  electricityCabinet is offline ！electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
@@ -1796,7 +1817,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             return R.ok(sessionId);
         } catch (Exception e) {
             log.error("order is error" + e);
@@ -1859,6 +1880,36 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return rentBatteryOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(RentBatteryOrderQuery rentBatteryOrderQuery) {
+        List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.selectListSuperAdminPage(rentBatteryOrderQuery);
+        if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
+            return R.ok(new ArrayList<>());
+        }
+        if (ObjectUtil.isNotEmpty(rentBatteryOrderVOList)) {
+            rentBatteryOrderVOList.parallelStream().forEach(e -> {
+                if (Objects.nonNull(e.getTenantId())) {
+                    Tenant tenant = tenantService.queryByIdFromCache(e.getTenantId());
+                    e.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+                }
+                
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+                if (Objects.nonNull(electricityCabinet)) {
+                    e.setElectricityCabinetName(electricityCabinet.getName());
+                }
+            
+                // 设置加盟商名称
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
+                }
+            });
+        }
+    
+        return R.ok(rentBatteryOrderVOList);
     }
     
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {
@@ -1991,5 +2042,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false, "100233", "租车套餐已过期");
         }
         return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell) {
+        return rentBatteryOrderMapper.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
+    }
+    
+    
+    @Override
+    public Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo) {
+        return rentBatteryOrderMapper.existSameCabinetCellSameTimeOpenReturnOrder(createTime, electricityCabinetId, oldCellNo);
     }
 }

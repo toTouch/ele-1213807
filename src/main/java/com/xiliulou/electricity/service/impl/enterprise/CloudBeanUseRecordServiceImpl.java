@@ -4,29 +4,39 @@ import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.enterprisePackage.CloudBeanUseRecordEnterpriseBo;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.enterprise.CloudBeanUseRecordConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.enterprise.*;
+import com.xiliulou.electricity.entity.merchant.Merchant;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.enterprise.CloudBeanUseRecordTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.mapper.enterprise.CloudBeanUseRecordMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMapper;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseChannelUserQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanUseRecordQueryModel;
+import com.xiliulou.electricity.request.enterprise.EnterpriseCloudBeanUseRecordPageRequest;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.enterprise.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanOrderExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
+import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordExcelVO;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import com.xiliulou.storage.service.impl.AliyunOssService;
@@ -35,17 +45,25 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -142,6 +160,12 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     @Resource
     private EnableMemberCardRecordService enableMemberCardRecordService;
     
+    @Resource
+    private FranchiseeService franchiseeService;
+    
+    @Resource
+    private MerchantService merchantService;
+    
     @Override
     public CloudBeanUseRecord queryByIdFromDB(Long id) {
         return this.cloudBeanUseRecordMapper.queryById(id);
@@ -164,6 +188,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return this.cloudBeanUseRecordMapper.deleteById(id) > 0;
     }
     
+    @Slave
     @Override
     public Double selectCloudBeanByEnterpriseIdAndType(Long uid, Integer type) {
         return this.cloudBeanUseRecordMapper.selectCloudBeanByEnterpriseIdAndType(uid, type);
@@ -193,6 +218,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return cloudBeanUseRecords.stream().map(CloudBeanUseRecord::getBeanAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
+    @Slave
     @Override
     public BigDecimal acquireUserCanRecycleCloudBean(Long uid) {
         BigDecimal result = BigDecimal.ZERO;
@@ -312,13 +338,18 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
             // 套餐回收的总的消耗天数大于订单的有效天数则按照有效天数进行云豆回收
             if (totalUseDay > electricityMemberCardOrder.getValidDays()) {
                 totalUseDay = electricityMemberCardOrder.getValidDays();
-                log.info("RECYCLE BATTERY MEMBERCARD INFO!cloud bean use day is error, uid={}, orderId={}", userInfo.getUid(), orderId);
+                log.info("RECYCLE BATTERY MEMBERCARD INFO!cloud bean use day is fault, uid={}, orderId={}", userInfo.getUid(), orderId);
             }
         
             // 订单每天的单价
             BigDecimal price = electricityMemberCardOrder.getPayAmount().divide(BigDecimal.valueOf(electricityMemberCardOrder.getValidDays()), 2, RoundingMode.HALF_UP);
             // 花费金额
             BigDecimal usedAmount = price.multiply(BigDecimal.valueOf(totalUseDay)).setScale(2, RoundingMode.HALF_UP);
+            
+            // 花费的金额大于支付金额则按照支付金额计算
+            if (usedAmount.compareTo(electricityMemberCardOrder.getPayAmount()) == 1) {
+                usedAmount = electricityMemberCardOrder.getPayAmount();
+            }
             // 总的使用的云豆数量
             totalUsedCloudBean = totalUsedCloudBean.add(usedAmount);
         
@@ -530,7 +561,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 String errorMsg = "";
                 
                 if (Objects.isNull(userInfo)) {
-                    log.error("RECYCLE TASK WARN! user Info is null,uid={}", item.getUid());
+                    log.warn("RECYCLE TASK WARN! user Info is null,uid={}", item.getUid());
                     errorMsg = "RECYCLE TASK WARN! user Info is null";
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
@@ -538,7 +569,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 
                 EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(userInfo.getUid());
                 if (Objects.isNull(enterpriseChannelUser)) {
-                    log.error("RECYCLE TASK WARN! channel user Info is null,uid={}", item.getUid());
+                    log.warn("RECYCLE TASK WARN! channel user Info is null,uid={}", item.getUid());
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
@@ -590,8 +621,8 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
                 if (Objects.isNull(enterpriseInfo)) {
-                    log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
-                    errorMsg = "RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo";
+                    log.warn("RECYCLE CLOUD BEAN TASK WARN! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    errorMsg = "RECYCLE CLOUD BEAN TASK WARN! not found enterpriseInfo";
                     userExitMapper.updateById(errorMsg, EnterpriseChannelUserExit.TYPE_FAIL, memberCardChannelExitVo.getChannelUserExitId(), System.currentTimeMillis());
                     return;
                 }
@@ -682,6 +713,218 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return cloudBeanUseRecordMapper.batchInsert(cloudBeanUseRecordList);
     }
     
+    @Override
+    @Slave
+    public List<EnterpriseCloudBeanOrderVO> listByPage(EnterpriseCloudBeanUseRecordPageRequest request) {
+        EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(queryModel);
+    
+        if (ObjectUtils.isEmpty(cloudBeanUseRecordList)) {
+            return Collections.emptyList();
+        }
+    
+        Set<String> orderIdList = new HashSet<>();
+        Set<Long> enterpriseIdList = new HashSet<>();
+        cloudBeanUseRecordList.stream().forEach(item -> {
+            orderIdList.add(item.getRef());
+            enterpriseIdList.add(item.getEnterpriseId());
+        });
+    
+        List<EnterpriseCloudBeanOrder> orderList = enterpriseCloudBeanOrderService.listByOrderIdList(new ArrayList<>(orderIdList));
+        Map<String, Long> operateUidMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(orderList)) {
+            operateUidMap = orderList.stream()
+                    .collect(Collectors.toMap(EnterpriseCloudBeanOrder::getOrderId, EnterpriseCloudBeanOrder::getOperateUid, (item1, item2) -> item1));
+        }
+    
+        List<Merchant> merchantList = merchantService.listByEnterpriseList(new ArrayList<>(enterpriseIdList));
+        Map<Long, String> merchantNameMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantList)) {
+            merchantNameMap = merchantList.stream()
+                    .collect(Collectors.toMap(Merchant::getEnterpriseId, Merchant::getName, (item1, item2) -> item1));
+        }
+    
+        Map<String, Long> finalOperateUidMap = operateUidMap;
+    
+        Map<Long, String> finalMerchantNameMap = merchantNameMap;
+        List<EnterpriseCloudBeanOrderVO> list = cloudBeanUseRecordList.parallelStream().map(item -> {
+            EnterpriseCloudBeanOrderVO enterpriseCloudBeanOrderVO = new EnterpriseCloudBeanOrderVO();
+            BeanUtils.copyProperties(item, enterpriseCloudBeanOrderVO);
+        
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
+            if (Objects.nonNull(enterpriseInfo)) {
+                enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
+                enterpriseCloudBeanOrderVO.setBusinessId(enterpriseInfo.getBusinessId());
+            }
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                enterpriseCloudBeanOrderVO.setFranchiseeName(franchisee.getName());
+            }
+    
+            Long operateUid = finalOperateUidMap.get(item.getRef());
+            if (ObjectUtils.isNotEmpty(operateUid)) {
+                User user = userService.queryByUidFromCache(operateUid);
+                if (Objects.nonNull(user)) {
+                    enterpriseCloudBeanOrderVO.setOperateName(user.getName());
+                }
+            } else if (ObjectUtils.isNotEmpty(finalMerchantNameMap.get(item.getEnterpriseId()))) {
+                enterpriseCloudBeanOrderVO.setOperateName(finalMerchantNameMap.get(item.getEnterpriseId()));
+            }
+        
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            enterpriseCloudBeanOrderVO.setUsername(Objects.isNull(userInfo) ? "" : userInfo.getName());
+        
+            return enterpriseCloudBeanOrderVO;
+        }).collect(Collectors.toList());
+    
+        return list;
+    }
+    
+    @Override
+    @Slave
+    public Integer countTotal(EnterpriseCloudBeanUseRecordPageRequest request) {
+        EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        return cloudBeanUseRecordMapper.countTotal(queryModel);
+    
+    }
+    
+    @Override
+    @Slave
+    public void export(EnterpriseCloudBeanUseRecordPageRequest request, HttpServletResponse response) {
+        EnterpriseCloudBeanUseRecordQueryModel queryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(request, queryModel);
+        
+        //查询出符合条件的租户下的企业名称和id
+        List<CloudBeanUseRecordEnterpriseBo> enterpriseBoList = cloudBeanUseRecordMapper.listForEnterpriseId(queryModel);
+        Map<Long, String> enterpriseNameMap = new HashMap<>();
+        // 过滤企业名称为空的企业，封装为map
+        if (ObjectUtils.isNotEmpty(enterpriseBoList)) {
+            enterpriseNameMap = enterpriseBoList.stream().filter(item -> StringUtils.isNotEmpty(item.getEnterpriseName()))
+                    .collect(Collectors.toMap(CloudBeanUseRecordEnterpriseBo::getEnterpriseId, CloudBeanUseRecordEnterpriseBo::getEnterpriseName, (item1, item2) -> item1));
+        }
+        
+        // 企业如果为空则封装一个空的企业对应的sheet名称
+        if (ObjectUtils.isEmpty(enterpriseNameMap)) {
+            enterpriseNameMap.put(NumberConstant.MINUS_ONE_L, CloudBeanUseRecordConstant.default_sheet_name);
+        }
+        
+        List<Long> enterpriseIdList = new ArrayList<>(enterpriseNameMap.keySet());
+    
+        ExcelWriter excelWriter = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        InputStream stream = null;
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application /vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(CloudBeanUseRecordConstant.export_file_name, StandardCharsets.UTF_8));
+    
+            ClassPathResource classPathResource = new ClassPathResource("excelTemplate" + File.separator + CloudBeanUseRecordConstant.export_template_name);
+            stream = classPathResource.getInputStream();
+            // 把excel流给这个对象，后续可以操作
+            XSSFWorkbook workbook = new XSSFWorkbook(stream);
+            // 设置模板的第一个sheet的名称，名称我们使用合同号
+            workbook.setSheetName(0, enterpriseNameMap.get(enterpriseIdList.get(0)));
+            for (int i = 1; i < enterpriseIdList.size(); i++) {
+                // 剩余的全部复制模板sheet0即可
+                workbook.cloneSheet(0, enterpriseNameMap.get(enterpriseIdList.get(i)));
+            }
+            
+            // 把workbook写到流里
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+            stream = new ByteArrayInputStream(bytes);
+            excelWriter = EasyExcel.write(outputStream).withTemplate(stream).build();
+    
+            Map<Long, String> finalEnterpriseNameMap = enterpriseNameMap;
+            ExcelWriter finalExcelWriter = excelWriter;
+            for (Long enterpriseId : enterpriseIdList) {
+                WriteSheet writeSheet = EasyExcel.writerSheet(finalEnterpriseNameMap.get(enterpriseId)).build();
+                fillData(finalExcelWriter, writeSheet, enterpriseId, queryModel);
+            }
+        } catch (Exception e) {
+            log.error("cloud bean use record export error！", e);
+        } finally {
+            try {
+                if (Objects.nonNull(baos)) {
+                    baos.close();
+                }
+                if (Objects.nonNull(excelWriter)) {
+                    excelWriter.finish();
+                }
+                
+                if (Objects.nonNull(stream)) {
+                    stream.close();
+                }
+            } catch (Exception e) {
+                log.error("cloud bean use record export error！ close stream error", e);
+            }
+           
+        }
+    }
+    
+    private void fillData(ExcelWriter excelWriter, WriteSheet writeSheet, Long enterpriseId, EnterpriseCloudBeanUseRecordQueryModel queryModel) {
+        if (Objects.equals(enterpriseId, NumberConstant.MINUS_ONE_L)) {
+            excelWriter.fill(Collections.emptyList(), writeSheet);
+        }
+    
+        EnterpriseCloudBeanUseRecordQueryModel cloudBeanUseRecordQueryModel = new EnterpriseCloudBeanUseRecordQueryModel();
+        BeanUtils.copyProperties(queryModel, cloudBeanUseRecordQueryModel);
+        cloudBeanUseRecordQueryModel.setEnterpriseId(enterpriseId);
+        Long offset = 0L;
+        Long size = 10L;
+        cloudBeanUseRecordQueryModel.setSize(size);
+        while (true) {
+            cloudBeanUseRecordQueryModel.setOffset(offset);
+            List<CloudBeanUseRecord> cloudBeanUseRecordList = this.cloudBeanUseRecordMapper.selectListByPage(cloudBeanUseRecordQueryModel);
+            if (CollectionUtils.isEmpty(cloudBeanUseRecordList)) {
+                break;
+            }
+            
+            excelWriter.fill(transferExportData(cloudBeanUseRecordList), writeSheet);
+            offset += size;
+        }
+    }
+    
+    private List<CloudBeanUseRecordExcelVO> transferExportData(List<CloudBeanUseRecord> cloudBeanUseRecordList) {
+        List<CloudBeanUseRecordExcelVO> cloudBeanUseRecordExcelVOList = new ArrayList<>();
+        
+        cloudBeanUseRecordList.stream().forEach(item -> {
+            CloudBeanUseRecordExcelVO enterpriseCloudBeanOrderVO = new CloudBeanUseRecordExcelVO();
+            BeanUtils.copyProperties(item, enterpriseCloudBeanOrderVO);
+        
+            EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(item.getEnterpriseId());
+            if (Objects.isNull(enterpriseInfo)) {
+                return;
+            }
+            
+            enterpriseCloudBeanOrderVO.setEnterpriseName(enterpriseInfo.getName());
+        
+            if (Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_ADMIN_RECHARGE) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_RECYCLE) || Objects.equals(
+                    item.getType(), CloudBeanUseRecord.TYPE_PRESENT) || Objects.equals(item.getType(), CloudBeanUseRecord.TYPE_USER_RECHARGE)) {
+                enterpriseCloudBeanOrderVO.setIncomeAndExpend("收入");
+            } else {
+                enterpriseCloudBeanOrderVO.setIncomeAndExpend("支出");
+            }
+        
+            CloudBeanUseRecordTypeEnum typeEnum = BasicEnum.getEnum(item.getType(), CloudBeanUseRecordTypeEnum.class);
+            if (Objects.nonNull(typeEnum)) {
+                enterpriseCloudBeanOrderVO.setType(typeEnum.getDesc());
+            }
+        
+            if (Objects.nonNull(item.getCreateTime())) {
+                enterpriseCloudBeanOrderVO.setCreateTime(DateUtil.format(new Date(item.getCreateTime()), DateFormatConstant.MONTH_DAY_DATE_TIME_FORMAT));
+            }
+    
+            cloudBeanUseRecordExcelVOList.add(enterpriseCloudBeanOrderVO);
+        });
+    
+        return cloudBeanUseRecordExcelVOList;
+    }
     
     private BigDecimal getRealConsumeSum(Map<Integer, BigDecimal> beanAmountMap) {
         BigDecimal sum = BigDecimal.ZERO;
@@ -742,6 +985,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
         return result;
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> cloudBeanOrderDownload(Long beginTime, Long endTime) {
         if (endTime < beginTime || endTime - beginTime > 366 * 24 * 60 * 60 * 1000L) {
@@ -750,13 +994,13 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
     
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(SecurityUtils.getUid());
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
+            log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! not found enterpriseInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100315", "企业配置不存在!");
         }
     
         List<CloudBeanUseRecord> list = cloudBeanUseRecordMapper.selectByTime(beginTime, endTime, enterpriseInfo.getId());
         if (CollectionUtils.isEmpty(list)) {
-            log.error("CLOUD BEAN ORDER DOWNLOAD ERROR ! list is empty,uid={}", SecurityUtils.getUid());
+            log.info("CLOUD BEAN ORDER DOWNLOAD INFO ! list is empty,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100316", "所选时间段内无可用账单数据，无法下载");
         }
     
@@ -935,7 +1179,7 @@ public class CloudBeanUseRecordServiceImpl implements CloudBeanUseRecordService 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseChannelUser.getEnterpriseId());
                 
                 if (Objects.isNull(enterpriseInfo)) {
-                    log.error("RECYCLE CLOUD BEAN TASK ERROR! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
+                    log.warn("RECYCLE CLOUD BEAN TASK WARN! not found enterpriseInfo,enterpriseId={}", enterpriseChannelUser.getEnterpriseId());
                     return;
                 }
                 

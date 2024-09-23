@@ -143,4 +143,10 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      */
     private boolean refundSpecialFlag = false;
     
+    /**
+     * <p>
+     *    Description: 加盟商名称
+     * </p>
+     */
+    private String franchiseeName;
 }

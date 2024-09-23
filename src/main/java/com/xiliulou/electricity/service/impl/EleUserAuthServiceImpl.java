@@ -16,11 +16,15 @@ import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.IdCardCheckService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -90,6 +94,13 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Autowired
     UserAuthMessageService userAuthMessageService;
     
+    @Resource
+    private IdCardCheckService idCardCheckService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
+    
+    
     /**
      * 新增数据
      *
@@ -149,7 +160,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("审核通过，无法修改!");
         }
         
-        Triple<Boolean, String, Object> checkResult = checkIdCardExists(eleUserAuthList);
+        Triple<Boolean, String, Object> checkResult = checkIdCard(tenantId, eleUserAuthList);
         if (!checkResult.getLeft()) {
             return R.fail(ObjectUtils.isEmpty(checkResult.getRight()) ? null : checkResult.getRight().toString(), checkResult.getMiddle());
         }
@@ -210,6 +221,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             sendAuthenticationAuditMessage(userInfo);
         }
         
+        //发送消息到站内信
+        siteMessagePublish.publish(
+                SiteMessageEvent.builder(this).code(SiteMessageType.REAL_NAME_VERIFICATION).notifyTime(System.currentTimeMillis()).tenantId(Long.valueOf(tenantId))
+                        .addContext("name", userInfo.getName()).addContext("uid", oldUserInfo.getUid()).addContext("phone", oldUserInfo.getPhone()).build());
         return R.ok();
     }
     
@@ -229,19 +244,20 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         return result;
     }
     
-    private Triple<Boolean, String, Object> checkIdCardExists(List<EleUserAuth> eleUserAuthList) {
+    
+    private Triple<Boolean, String, Object> checkIdCard(Integer tenantId, List<EleUserAuth> eleUserAuthList) {
         if (CollectionUtils.isEmpty(eleUserAuthList)) {
             return Triple.of(false, "资料项为空", null);
         }
-        
+        String idCard = null;
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
             if (!ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 continue;
             }
-            
+            idCard = eleUserAuth.getValue();
             List<UserInfo> userInfos = userInfoService.queryByIdNumber(eleUserAuth.getValue());
             if (CollectionUtils.isEmpty(userInfos)) {
-                return Triple.of(true, null, null);
+                break;
             }
             
             for (UserInfo userInfo : userInfos) {
@@ -249,10 +265,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                     return Triple.of(false, "身份证信息已存在，请核实后重新提交", 100339);
                 }
             }
-            return Triple.of(true, null, null);
+            break;
         }
-        
-        return Triple.of(true, null, null);
+        // 校验身份证是否符合年龄
+        return idCardCheckService.checkIdNumber(tenantId, idCard);
     }
     
     private void sendAuthenticationAuditMessage(UserInfo userInfo) {
@@ -334,8 +350,8 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
     @Override
     public R selectCurrentEleAuthEntriesList(Long uid) {
-        List<EleUserAuth> eleUserAuths = eleUserAuthMapper
-                .selectList(Wrappers.<EleUserAuth>lambdaQuery().eq(EleUserAuth::getUid, uid).eq(EleUserAuth::getDelFlag, EleUserAuth.DEL_NORMAL));
+        List<EleUserAuth> eleUserAuths = eleUserAuthMapper.selectList(
+                Wrappers.<EleUserAuth>lambdaQuery().eq(EleUserAuth::getUid, uid).eq(EleUserAuth::getDelFlag, EleUserAuth.DEL_NORMAL));
         if (!DataUtil.collectionIsUsable(eleUserAuths)) {
             return R.ok(Collections.emptyList());
         }
@@ -353,7 +369,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         log.info("collect is -->{}", collect);
         return R.ok(collect);
     }
-
+    
     @Override
     public void updateByUid(Long uid, Integer authStatus) {
         eleUserAuthMapper.updateByUid(uid, authStatus, System.currentTimeMillis());

@@ -24,4 +24,8 @@ public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<Ele
     Integer queryCountByOrderId(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 
     Integer insertOffLineEleExchangeOperateHistory(OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory);
+    
+    Integer updateTenantIdByOrderId(@Param("orderId") String orderId, @Param("superAdminTenantId") Integer superAdminTenantId, @Param("updateTime") Long updateTime);
+    
+    ElectricityCabinetOrderOperHistory selectOrderHistoryFinallyFail(@Param("orderId") String orderId);
 }

@@ -336,12 +336,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //查询当前骑手自主续费开关是否关闭，若开启，则无法购买套餐
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(query.getUid());
         if (Objects.isNull(enterpriseChannelUserVO)) {
-            log.error("Not found enterprise channel user for query battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
+            log.warn("Not found enterprise channel user for query battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
             return Triple.of(false, "", "企业骑手信息不存在");
         }
         
         if (RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUserVO.getRenewalStatus())) {
-            log.error("Not found enterprise channel user for query battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
+            log.warn("Not found enterprise channel user for query battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), query.getUid());
             return Triple.of(false, "", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
         }
         
@@ -359,7 +359,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //待添加套餐的用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("Not found userInfo for enterprise channel, uid = {}", query.getUid());
+            log.warn("Not found userInfo for enterprise channel, uid = {}", query.getUid());
             return Triple.of(true, "", Collections.emptyList());
         }
         
@@ -381,7 +381,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(query.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount()) || Objects.equals(
+                userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryVByEnterprise(batteryMemberCardQuery);
             //List<BatteryMemberCardVO> list = batteryMemberCardMapper.selectMembercardBatteryV(batteryMemberCardQuery);
             if (CollectionUtils.isEmpty(list)) {
@@ -421,25 +422,25 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(query.getEnterpriseId());
         
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("Not found enterprise for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
+            log.warn("Not found enterprise for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
             return Triple.of(true, "", Collections.emptyList());
         }
         
         //查询当前骑手自主续费开关是否关闭，若开启，则无法购买套餐
         EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryEnterpriseChannelUser(enterpriseUserId);
         if (Objects.isNull(enterpriseChannelUserVO)) {
-            log.error("Not found enterprise channel user for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
+            log.warn("Not found enterprise channel user for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
             return Triple.of(false, "300064", "企业骑手信息不存在");
         }
         
         if (RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUserVO.getRenewalStatus())) {
-            log.error("Not found enterprise channel user for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
+            log.warn("Not found enterprise channel user for query package by battery V, enterprise id = {}, uid = {}", query.getEnterpriseId(), enterpriseUserId);
             return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(enterpriseInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("Not found franchisee for query package by battery V, uid = {}, franchiseeId = {}", enterpriseUserId, query.getFranchiseeId());
+            log.warn("Not found franchisee for query package by battery V, uid = {}, franchiseeId = {}", enterpriseUserId, query.getFranchiseeId());
             return Triple.of(true, "", Collections.emptyList());
         }
         
@@ -447,15 +448,15 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(query.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         
-        
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
             //新租
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit)&& Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
-            
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
+                    userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
             
             //为了兼容免押后购买套餐
-            if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
+            if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)
+                    && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
                 boolean isMember = false;
                 
                 if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
@@ -480,7 +481,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         } else if (Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //非新租 购买押金套餐
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
+                    userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
             
             boolean isMember = false;
             
@@ -504,7 +506,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //续费
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             if (Objects.isNull(batteryMemberCard)) {
-                log.error("Not found battery member card for query package by battery V, uid = {}, mid = {}", enterpriseUserId, userBatteryMemberCard.getMemberCardId());
+                log.warn("Not found battery member card for query package by battery V, uid = {}, mid = {}", enterpriseUserId, userBatteryMemberCard.getMemberCardId());
                 return Triple.of(true, "", Collections.emptyList());
             }
             
@@ -517,7 +519,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             UserBatteryMemberCardPackageBO userBatteryMemberCardPackageBO = userBatteryMemberCardPackageService.queryEnterprisePackageByUid(query.getUid());
             
-            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals( userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES: null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
+                    userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
             
             // 企业用户并且用户押金为企业代付  押金未换电套餐的押金 但是已经购买了
             if (!isMember) {
@@ -690,7 +693,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         userBatteryDepositVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
         userBatteryDepositVO.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
         userBatteryDepositVO.setBatteryDeposit(BigDecimal.ZERO);
-    
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("query deposit warning, not found userInfo,uid = {}", uid);
@@ -718,19 +721,19 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("check user deposit status error, not found user info,uid={}", uid);
+            log.warn("check user deposit status error, not found user info,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("check user deposit status error, not found userBatteryDeposit,uid={}", uid);
+            log.warn("check user deposit status error, not found userBatteryDeposit,uid={}", uid);
             return Triple.of(true, "", "");
         }
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("check user deposit status error, not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("check user deposit status error, not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -749,13 +752,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("check user deposit status error, not found pxzConfig,uid={}", uid);
+            log.warn("check user deposit status error, not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("check user deposit status error, not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("check user deposit status error, not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
@@ -778,7 +781,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         if (Objects.isNull(pxzQueryOrderRsp)) {
-            log.error("query Pxz error, freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("query Pxz error, freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100402", "免押查询失败！");
         }
         
@@ -788,7 +791,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
         if (Objects.isNull(queryOrderRspData)) {
-            log.error("query Pxz error, freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.warn("query Pxz error, freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100402", "免押查询失败！");
         }
         
@@ -841,19 +844,19 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(freeQuery.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("Free battery deposit error, not found user info! uid={}", freeQuery.getUid());
+            log.warn("Free battery deposit error, not found user info! uid={}", freeQuery.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
         //获取租户免押次数
         FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(freeDepositData)) {
-            log.error("Free battery deposit error, freeDepositData is null,uid={}", freeQuery.getUid());
+            log.warn("Free battery deposit error, freeDepositData is null,uid={}", freeQuery.getUid());
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
         
         if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
-            log.error("Free battery deposit error, freeDepositCapacity already run out,uid={}", freeQuery.getUid());
+            log.warn("Free battery deposit error, freeDepositCapacity already run out,uid={}", freeQuery.getUid());
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
         
@@ -867,15 +870,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             return checkUserCanFreeDepositResult;
         }
         
-        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder()
-                .uid(userInfo.getUid())
-                .realName(freeQuery.getRealName())
-                .phoneNumber(freeQuery.getPhoneNumber())
-                .idCard(freeQuery.getIdCard())
-                .tenantId(TenantContextHolder.getTenantId())
-                .packageId(freeQuery.getMembercardId())
-                .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode())
-                .build();
+        FreeDepositUserDTO freeDepositUserDTO = FreeDepositUserDTO.builder().uid(userInfo.getUid()).realName(freeQuery.getRealName()).phoneNumber(freeQuery.getPhoneNumber())
+                .idCard(freeQuery.getIdCard()).tenantId(TenantContextHolder.getTenantId()).packageId(freeQuery.getMembercardId())
+                .packageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode()).build();
         
         //检查用户是否已经进行过免押操作，且已免押成功
         Triple<Boolean, String, Object> useFreeDepositStatusResult = freeDepositOrderService.checkFreeDepositStatusFromPxz(freeDepositUserDTO, pxzConfig);
@@ -886,7 +883,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid());
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()), StandardCharsets.UTF_8);
+            String result = UriUtils.decode(redisService.get(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid()),
+                    StandardCharsets.UTF_8);
             result = JsonUtil.fromJson(result, String.class);
             log.info("found the free order result for enterprise from cache. uid = {}, result = {}", userInfo.getUid(), result);
             return Triple.of(true, null, result);
@@ -928,7 +926,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         }
         
         if (Objects.isNull(callPxzRsp)) {
-            log.error("Pxz error fot free battery deposit, freeDepositOrder fail! rsp is null! uid={},orderId={}", freeQuery.getUid(), freeDepositOrder.getOrderId());
+            log.warn("Pxz error fot free battery deposit, freeDepositOrder fail! rsp is null! uid={},orderId={}", freeQuery.getUid(), freeDepositOrder.getOrderId());
             return Triple.of(false, "30007456", "免押调用失败！");
         }
         
@@ -954,7 +952,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         log.info("generate free deposit data from pxz for enterprise battery package, data = {}", callPxzRsp);
         //保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(), UriUtils.encode(callPxzRsp.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
+        redisService.saveWithString(CacheConstant.ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY + userInfo.getUid(),
+                UriUtils.encode(callPxzRsp.getData(), StandardCharsets.UTF_8), 300 * 1000L, false);
         
         return Triple.of(true, null, callPxzRsp.getData());
         
@@ -967,12 +966,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         //        }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("Free battery deposit error, user is disable,uid={}", userInfo.getUid());
+            log.warn("Free battery deposit error, user is disable,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("Free battery deposit error, user not auth,uid={}", uid);
+            log.warn("Free battery deposit error, user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
         
@@ -1018,7 +1017,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("current user for enterprise not found");
+            log.warn("current user for enterprise not found");
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业站长");
         }
         
@@ -1031,7 +1030,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         try {
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
             if (Objects.isNull(enterpriseInfo)) {
-                log.error("purchase package by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
+                log.warn("purchase package by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
             }
             query.setFranchiseeId(enterpriseInfo.getFranchiseeId());
@@ -1039,13 +1038,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //检查骑手信息是否属于当前企业
             EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
             if (Objects.isNull(enterpriseChannelUser)) {
-                log.error("purchase package by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+                log.warn("purchase package by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
                 return Triple.of(false, "ELECTRICITY.0001", "骑手未归属于该企业");
             }
             
             //检查骑手自主续费开关
             if (RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())) {
-                log.error("purchase package by enterprise user error, enterprise channel user renew status by self, enterprise id = {}, uid = {}", enterpriseId, uid);
+                log.warn("purchase package by enterprise user error, enterprise channel user renew status by self, enterprise id = {}, uid = {}", enterpriseId, uid);
                 return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
             }
             
@@ -1058,7 +1057,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
-                log.error("purchase package by enterprise user error, not found user, uid = {}", uid);
+                log.warn("purchase package by enterprise user error, not found user, uid = {}", uid);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
             }
             
@@ -1099,7 +1098,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase package by enterprise user error, have refunding order,uid={}", userInfo.getUid());
-                return Triple.of(false,"120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
+                return Triple.of(false, "120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
@@ -1149,11 +1148,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 if (Objects.nonNull(franchiseeInsurance) && Objects.equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
                     //先判断当前用户是否已经购买保险, 用户是否没有保险信息或已过期（是进入）
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-                    if (Objects.isNull(insuranceUserInfo)
-                            || Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                    if (Objects.isNull(insuranceUserInfo) || Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
                             || insuranceUserInfo.getInsuranceExpireTime() < now) {
-                        log.error("purchase package by enterprise user error! not pay insurance! uid={} ", userInfo.getUid());
-                        return  Triple.of(false,"100309", "未购买保险或保险已过期");
+                        log.warn("purchase package by enterprise user error! not pay insurance! uid={} ", userInfo.getUid());
+                        return Triple.of(false, "100309", "未购买保险或保险已过期");
                     }
                 }
             }
@@ -1196,7 +1194,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //判断企业云豆数量是否满足代付金额
             if (enterpriseInfo.getTotalBeanAmount().compareTo(integratedPaAmount) < 0) {
-                log.error("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
+                log.warn("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
                 throw new BizException("300079", "云豆数量不足，请先充值");
             }
             
@@ -1259,10 +1257,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);*/
             
             //MQ处理企业代付订单信息
-            log.info("Async save enterprise user cost record for renewal package. order no = {}, package id = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+            log.info("Async save enterprise user cost record for renewal package. order no = {}, package id = {}", electricityMemberCardOrder.getOrderId(),
+                    electricityMemberCardOrder.getMemberCardId());
             //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
             BigDecimal insuranceAmount = null;
-            if(Objects.nonNull(insuranceOrder)){
+            if (Objects.nonNull(insuranceOrder)) {
                 insuranceAmount = insuranceOrder.getPayAmount();
             }
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, null, insuranceAmount);
@@ -1300,7 +1299,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("current user for enterprise not found");
+            log.warn("current user for enterprise not found");
             return Triple.of(false, "ELECTRICITY.0001", "未找到企业站长");
         }
         
@@ -1313,7 +1312,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         try {
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
             if (Objects.isNull(enterpriseInfo)) {
-                log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
+                log.warn("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
             }
             //设置企业关联的加盟商
@@ -1322,13 +1321,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //检查骑手信息是否属于当前企业
             EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
             if (Objects.isNull(enterpriseChannelUser)) {
-                log.error("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+                log.warn("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
                 return Triple.of(false, "ELECTRICITY.0001", "骑手未归属于该企业");
             }
             
             //检查骑手自主续费开关
             if (RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())) {
-                log.error("purchase package with deposit by enterprise user error, enterprise channel user renew status by self, enterprise id = {}, uid = {}", enterpriseId, uid);
+                log.warn("purchase package with deposit by enterprise user error, enterprise channel user renew status by self, enterprise id = {}, uid = {}", enterpriseId, uid);
                 return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
             }
             
@@ -1391,7 +1390,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 return Triple.of(false, "300084", "该用户未缴纳滞纳金，无法代付，请联系用户处理后操作");
             }
             
-            if(Objects.nonNull(userBatteryMemberCard)){
+            if (Objects.nonNull(userBatteryMemberCard)) {
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
                     return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
@@ -1469,7 +1468,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //判断企业云豆数量是否满足代付金额
             if (enterpriseInfo.getTotalBeanAmount().compareTo(integratedPaAmount) < 0) {
-                log.error("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
+                log.warn("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
                 throw new BizException("300079", "云豆数量不足，请先充值");
             }
             
@@ -1546,7 +1545,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             log.info("Async save enterprise user cost record for purchase package with deposit. order id = {}", electricityMemberCardOrder.getOrderId());
             //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
             BigDecimal insuranceAmount = null;
-            if(Objects.nonNull(insuranceOrder)){
+            if (Objects.nonNull(insuranceOrder)) {
                 insuranceAmount = insuranceOrder.getPayAmount();
             }
             
@@ -1597,7 +1596,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         try {
             EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromDB(enterpriseId);
             if (Objects.isNull(enterpriseInfo)) {
-                log.error("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
+                log.warn("purchase package with deposit by enterprise user error, not found enterprise info, enterprise id = {}", enterpriseId);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到企业信息");
             }
             //设置企业关联的加盟商
@@ -1606,60 +1605,60 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             //检查骑手信息是否属于当前企业
             EnterpriseChannelUserVO enterpriseChannelUser = enterpriseChannelUserService.selectUserByEnterpriseIdAndUid(enterpriseId, uid);
             if (Objects.isNull(enterpriseChannelUser)) {
-                log.error("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+                log.warn("purchase package with deposit by enterprise user error, not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
                 return Triple.of(false, "ELECTRICITY.0001", "骑手未归属于该企业");
             }
             
             //检查骑手自主续费开关
             if (RenewalStatusEnum.RENEWAL_STATUS_BY_SELF.getCode().equals(enterpriseChannelUser.getRenewalStatus())) {
-                log.error("purchase package with deposit by enterprise user error, Not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
+                log.warn("purchase package with deposit by enterprise user error, Not found enterprise channel user, enterprise id = {}, uid = {}", enterpriseId, uid);
                 return Triple.of(false, "300063", "骑手已开启自主续费功能，无法代付套餐，建议您前往骑手详情页进行相关设置");
             }
             
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
-                log.error("purchase Package with free deposit error, not found user info,uid={}", uid);
+                log.warn("purchase Package with free deposit error, not found user info,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
             }
             
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                log.error("purchase Package with free deposit error, not found userInfo,uid={}", uid);
+                log.warn("purchase Package with free deposit error, not found userInfo,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
             }
             
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                log.error("purchase Package with free deposit error, user not auth,uid={}", uid);
+                log.warn("purchase Package with free deposit error, user not auth,uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
     
            /* ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
             if (Objects.isNull(electricityPayParams)) {
-                log.error("purchase Package with free deposit error, not found electricityPayParams,uid={}", uid);
+                log.warn("purchase Package with free deposit error, not found electricityPayParams,uid={}", uid);
                 return Triple.of(false, "100234", "未配置支付参数!");
             }*/
             
             UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.error("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
+                log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
                 return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }
             
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
-                log.error("purchase Package with free deposit error, not found userBatteryDeposit,uid={}", uid);
+                log.warn("purchase Package with free deposit error, not found userBatteryDeposit,uid={}", uid);
                 return Triple.of(false, "100247", "用户信息不存在");
             }
             
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-                log.error("purchase Package with free deposit error, freeDepositOrder is anomaly,uid={}", uid);
+                log.warn("purchase Package with free deposit error, freeDepositOrder is anomaly,uid={}", uid);
                 return Triple.of(false, "100402", "免押失败！");
             }
             
             //获取押金订单
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.isNull(eleDepositOrder)) {
-                log.error("purchase Package with free deposit error, not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+                log.warn("purchase Package with free deposit error, not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
                 return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
             }
             
@@ -1675,12 +1674,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             //判断套餐是否为免押套餐
-            if(!Objects.equals( batteryMemberCard.getFreeDeposite(), BatteryMemberCard.YES)){
+            if (!Objects.equals(batteryMemberCard.getFreeDeposite(), BatteryMemberCard.YES)) {
                 log.warn("FREE DEPOSIT WARN! batteryMemberCard is illegal,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100483", "电池套餐不合法");
             }
             
-            if(Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(),NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(), batteryMemberCard.getFranchiseeId())){
+            if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
+                    batteryMemberCard.getFranchiseeId())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getPackageId());
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
@@ -1696,7 +1696,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 log.warn("purchase Package with free deposit warning, have refunding order,uid={}", userInfo.getUid());
-                return Triple.of(false,"120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
+                return Triple.of(false, "120317", "该用户退押审核中，无法代付，请联系用户处理后操作");
             }
             
             //判断是否存在滞纳金
@@ -1709,7 +1709,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             }
             
             //如果会员表存在信息，则用户并非第一次购买套餐，需要检查是否存在冻结的状况
-            if(Objects.nonNull(userBatteryMemberCard)){
+            if (Objects.nonNull(userBatteryMemberCard)) {
                 if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
                     log.warn("purchase package by enterprise user error, user package was freeze, uid={}, mid={}", userInfo.getUid(), query.getPackageId());
                     return Triple.of(false, "300070", "该用户套餐已冻结，无法代付，请联系用户处理后操作");
@@ -1767,7 +1767,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //判断企业云豆数量是否满足待支付云豆数
             if (enterpriseInfo.getTotalBeanAmount().compareTo(totalPayAmount) < 0) {
-                log.error("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
+                log.warn("purchase Package with free deposit error, not enough total bean amount, enterprise id = {}", enterpriseInfo.getId());
                 throw new BizException("300079", "云豆数量不足，请先充值");
             }
             
@@ -1792,7 +1792,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             totalBeanAmount = totalBeanAmount.subtract(totalPayAmount);
             
             enterpriseInfoService.subtractCloudBean(enterpriseInfo.getId(), totalPayAmount, System.currentTimeMillis());
-            
             
             CloudBeanUseRecord cloudBeanUseRecord = new CloudBeanUseRecord();
             cloudBeanUseRecord.setEnterpriseId(enterpriseInfo.getId());
@@ -1830,11 +1829,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             enterpriseUserCostRecordDTO.setRemark(JsonUtil.toJson(enterpriseUserCostRecordRemarkVO));
             String message = JsonUtil.toJson(enterpriseUserCostRecordDTO);*/
             //MQ处理企业代付订单信息
-            log.info("Async save enterprise user cost record for purchase package with free deposit. order no = {}, member card id = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getMemberCardId());
+            log.info("Async save enterprise user cost record for purchase package with free deposit. order no = {}, member card id = {}", electricityMemberCardOrder.getOrderId(),
+                    electricityMemberCardOrder.getMemberCardId());
             //enterpriseUserCostRecordProducer.sendAsyncMessage(message);
             
             BigDecimal insuranceAmount = null;
-            if(Objects.nonNull(insuranceOrder)){
+            if (Objects.nonNull(insuranceOrder)) {
                 insuranceAmount = insuranceOrder.getPayAmount();
             }
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForPurchasePackage(electricityMemberCardOrder, batteryMemberCard.getDeposit(), insuranceAmount);
@@ -1880,16 +1880,16 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceId);
         
         if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
-            log.error("generate insurance order error, not found member_card by id={},uid={}", insuranceId, userInfo.getUid());
+            log.warn("generate insurance order error, not found member_card by id={},uid={}", insuranceId, userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            log.error("generate insurance order error, member_card is un_usable id={},uid={}", insuranceId, userInfo.getUid());
+            log.warn("generate insurance order error, member_card is un_usable id={},uid={}", insuranceId, userInfo.getUid());
             return Triple.of(false, "100306", "保险已禁用!");
         }
         
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("generate insurance order error, payAmount is null ！franchiseeId={},uid={}", insuranceId, userInfo.getUid());
+            log.warn("generate insurance order error, payAmount is null ！franchiseeId={},uid={}", insuranceId, userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险");
         }
         
@@ -1901,8 +1901,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
                 // .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId())
                 .tenantId(userInfo.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
         
         return Triple.of(true, null, insuranceOrder);
     }
@@ -1921,10 +1920,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, EnterprisePackageOrderQuery query,
             Set<Integer> userCouponIds) {
-        
+    
+        // 多加盟商版本增加：加盟商一致性校验
         //查找计算优惠券
         //计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds);
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds,
+                batteryMemberCard.getFranchiseeId());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
@@ -2347,12 +2348,13 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         return Triple.of(true, null, enterprisePackageOrderVOList);
     }
     
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByEnterpriseId(Long enterpriseId) {
         
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.queryByIdFromCache(enterpriseId);
         if (Objects.isNull(enterpriseInfo)) {
-            log.error("query enterprise info failed by query franchisee, enterpriseId = {}", enterpriseId);
+            log.warn("query enterprise info failed by query franchisee, enterpriseId = {}", enterpriseId);
             return Triple.of(false, "300065", "企业信息不存在");
         }
         Franchisee franchisee = franchiseeService.queryByIdFromCache(enterpriseInfo.getFranchiseeId());
@@ -2434,9 +2436,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //查询当前用户是否已租电池
             UserInfo userInfo = userInfoService.queryByUidFromCache(enterprisePackageOrderVO.getUid());
-            if(Objects.nonNull(userInfo) && UserInfo.BATTERY_RENT_STATUS_YES.equals(userInfo.getBatteryRentStatus())){
+            if (Objects.nonNull(userInfo) && UserInfo.BATTERY_RENT_STATUS_YES.equals(userInfo.getBatteryRentStatus())) {
                 enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
-            }else{
+            } else {
                 enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
             }
             
@@ -2484,9 +2486,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //查询当前用户是否已租电池
             UserInfo userInfo = userInfoService.queryByUidFromCache(enterprisePackageOrderVO.getUid());
-            if(Objects.nonNull(userInfo) && UserInfo.BATTERY_RENT_STATUS_YES.equals(userInfo.getBatteryRentStatus())){
+            if (Objects.nonNull(userInfo) && UserInfo.BATTERY_RENT_STATUS_YES.equals(userInfo.getBatteryRentStatus())) {
                 enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
-            }else{
+            } else {
                 enterprisePackageOrderVO.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
             }
         }

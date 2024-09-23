@@ -185,7 +185,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 List<UserOauthBind> userOauthBinds = userOauthBindService.listUserByPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
                 log.info("userOauthBinds is {}", JsonUtil.toJson(userOauthBinds));
                 if (CollectionUtils.isEmpty(userOauthBinds)) {
-                    log.error("TOKEN ERROR! not find user auth bind info! openId={},userId={}", result.getOpenid(), uidExist);
+                    log.warn("TOKEN WARN! not find user auth bind info! openId={},userId={}", result.getOpenid(), uidExist);
                     throw new UserLoginException("100567", "该账户尚未绑定");
                 }
                 
@@ -198,7 +198,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .filter(userOauthBindTemp -> uidExist.equals(userOauthBindTemp.getUid()) && UserOauthBind.STATUS_UN_BIND.equals(userOauthBindTemp.getStatus())).findFirst()
                             .orElse(null);
                     if (ObjectUtils.isEmpty(userOauthUnBind)) {
-                        log.error("TOKEN ERROR! find user auth bind many ! openId is {}, userId is {}", result.getOpenid(), uidExist);
+                        log.warn("TOKEN WARN! find user auth bind many ! openId is {}, userId is {}", result.getOpenid(), uidExist);
                         throw new UserLoginException("ELECTRICITY.0001", "用户登录异常");
                     }
                     userOauthBindLogin = userOauthUnBind;
@@ -253,7 +253,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     // 如果openid不存在,手机号存在,并且传入手机号的openid已经绑定过,则直接拦截
                     List<UserOauthBind> emptyUserList = userOauthBinds.stream().filter(userOauthBindTemp -> StringUtils.isBlank(userOauthBindTemp.getThirdId())).collect(Collectors.toList());
                     if (CollectionUtils.isEmpty(emptyUserList)) {
-                        log.error("TOKEN ERROR! openId not exists,phone exists and phone third id exist! userId={}", existPhone.getRight().getUid());
+                        log.warn("TOKEN WARN! openId not exists,phone exists and phone third id exist! userId={}", existPhone.getRight().getUid());
                         //  throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
                         throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
                     }
@@ -304,11 +304,12 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 
             }
         } catch (Exception e) {
-            log.error("ELE AUTH ERROR: ", e);
             if (e instanceof UserLoginException) {
-                log.error("该账户已绑定其他微信，请联系客服处理", e);
+                log.warn("该账户已绑定其他微信，请联系客服处理", e);
                 throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
             }
+            
+            log.error("ELE AUTH ERROR: ", e);
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }

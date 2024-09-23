@@ -8,7 +8,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -30,6 +29,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -38,6 +38,9 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
@@ -69,6 +72,7 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreGoodsService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -204,7 +208,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
-
+    
     @Autowired
     BatteryModelService batteryModelService;
     
@@ -246,6 +250,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private TenantService tenantService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
     
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -371,7 +381,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
         
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+        // 判断是否线上押金
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT) || Objects.equals(eleDepositOrder.getPayType(),
+                EleDepositOrder.MEITUAN_DEPOSIT_PAYMENT)) {
             log.warn("ELE DEPOSIT WARN! travel to store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
@@ -395,10 +407,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer tenantId = user.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         // 生成退款订单
-        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid())).payAmount(payAmount).refundAmount(eleRefundAmount)
-                .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId())
-                .memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
+        String generateBusinessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid());
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId()).refundOrderNo(generateBusinessOrderId).payAmount(payAmount)
+                .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
+        
+        // 发送站内信
+        siteMessagePublish.publish(
+                SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.EXCHANGE_BATTERY_AND_RETURN_THE_DEPOSIT)
+                        .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                        .addContext("refundOrderNo", generateBusinessOrderId).addContext("amount", eleRefundAmount.toString()).build());
         
         // 退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -522,10 +540,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-    
-        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
-            eleDepositOrderVO.setRefundFlag(true);
         
+        eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
+            eleDepositOrderVO.setRefundFlag(true);
+            
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
             if (!CollectionUtils.isEmpty(eleRefundOrders)) {
@@ -535,9 +553,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
-            return eleDepositOrderVO;
-        }).collect(Collectors.toList());
-    
+        });
+        
         return R.ok(eleDepositOrderVOS);
     }
     
@@ -778,6 +795,40 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
+    }
+    
+    @Override
+    @Slave
+    public R listSuperAdminPage(EleDepositOrderQuery eleDepositOrderQuery) {
+        List<EleDepositOrderVO> eleDepositOrderVOS = eleDepositOrderMapper.selectListSuperAdminPage(eleDepositOrderQuery);
+        
+        eleDepositOrderVOS.stream().map(eleDepositOrderVO -> {
+            eleDepositOrderVO.setRefundFlag(true);
+            
+            List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
+            // 订单已退押或正在退押中
+            if (!CollectionUtils.isEmpty(eleRefundOrders)) {
+                for (EleRefundOrder e : eleRefundOrders) {
+                    if (EleRefundOrder.STATUS_SUCCESS.equals(e.getStatus()) || EleRefundOrder.STATUS_REFUND.equals(e.getStatus())) {
+                        eleDepositOrderVO.setRefundFlag(false);
+                    }
+                }
+            }
+            
+            if (Objects.nonNull(eleDepositOrderVO.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(eleDepositOrderVO.getTenantId());
+                eleDepositOrderVO.setTenantName(Objects.nonNull(tenant) ? tenant.getName() : null);
+            }
+            
+            return eleDepositOrderVO;
+        }).collect(Collectors.toList());
+        
+        return R.ok(eleDepositOrderVOS);
+    }
+    
+    @Override
+    public Integer deleteById(Long id) {
+        return eleDepositOrderMapper.deleteById(id);
     }
     
     @Override

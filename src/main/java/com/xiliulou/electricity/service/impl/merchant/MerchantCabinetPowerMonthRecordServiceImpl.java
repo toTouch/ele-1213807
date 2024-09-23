@@ -14,7 +14,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPowerRequest;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.excel.CommentWriteHandler;
 import com.xiliulou.electricity.service.excel.HeadContentCellStyle;
-import com.xiliulou.electricity.service.excel.MergeSameRowsStrategy;
+import com.xiliulou.electricity.service.excel.MerchantMergeStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthDetailService;
 import com.xiliulou.electricity.service.merchant.MerchantCabinetPowerMonthRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceService;
@@ -125,16 +125,17 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         }
         
         // 获取场地名称
-        Set<Long> placeIdSet = detailList.stream().filter(Objects::nonNull).map(MerchantCabinetPowerMonthDetailVO::getPlaceId).collect(Collectors.toSet());
+        Set<Long> placeIdSet = detailList.parallelStream().filter(Objects::nonNull).map(MerchantCabinetPowerMonthDetailVO::getPlaceId).collect(Collectors.toSet());
         Map<Long, String> placeNameMap = listPlaceNames(placeIdSet, tenantId);
         
         // startPower或sumPower不为0的数据
-        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.stream()
+        List<MerchantCabinetPowerMonthDetailVO> hasDataDetailList = detailList.parallelStream()
                 .filter(item -> !Objects.equals(item.getStartPower(), NumberConstant.ZERO_D) || !Objects.equals(item.getSumPower(), NumberConstant.ZERO_D))
                 .collect(Collectors.toList());
         
         // 按场地进行分组
-        Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = hasDataDetailList.stream().collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
+        Map<Long, List<MerchantCabinetPowerMonthDetailVO>> placeMap = hasDataDetailList.parallelStream()
+                .collect(Collectors.groupingBy(MerchantCabinetPowerMonthDetailVO::getPlaceId));
         
         placeMap.forEach((placeId, placeDetailList) -> {
             if (CollectionUtils.isEmpty(placeDetailList)) {
@@ -151,6 +152,16 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                 String beginDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getBeginTime());
                 String endDate = DateUtils.getYearAndMonthAndDayByTimeStamps(item.getEndTime());
                 String elePrice;
+                
+                // 查询场地
+                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).monthSumPower(monthSumPower)
+                        .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
+                        .startPower(item.getStartPower()).sumPower(item.getSumPower()).sn(item.getSn()).build();
+                
+                if (ObjectUtils.isNotEmpty(placeNameMap.get(placeId))) {
+                    excelVO.setPlaceName(placeNameMap.get(placeId));
+                }
+                excelVOList.add(excelVO);
                 
                 List<EleChargeConfigCalcDetailDto> chargeConfigList = JsonUtil.fromJsonArray(item.getJsonRule(), EleChargeConfigCalcDetailDto.class);
                 if (CollectionUtils.isEmpty(chargeConfigList)) {
@@ -185,16 +196,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
                     elePrice = elPeekPrice + elOrdinaryPrice + elValleyPrice;
                 }
                 
-                // 查询场地
-                MerchantCabinetPowerMonthExcelVO excelVO = MerchantCabinetPowerMonthExcelVO.builder().monthDate(monthDate).monthSumPower(monthSumPower)
-                        .monthSumCharge(monthSumCharge).endPower(item.getEndPower()).sumCharge(item.getSumCharge()).endTime(endDate).beginTime(beginDate)
-                        .startPower(item.getStartPower()).sumPower(item.getSumPower()).jsonRule(elePrice).sn(item.getSn()).build();
-                
-                if (ObjectUtils.isNotEmpty(placeNameMap.get(placeId))) {
-                    excelVO.setPlaceName(placeNameMap.get(placeId));
-                }
-                
-                excelVOList.add(excelVO);
+                excelVO.setJsonRule(elePrice);
             });
         });
         
@@ -230,7 +232,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             return map;
         }
         
-        int batchSize = 50;
+        int batchSize = 200;
         ArrayList<Long> placeIdList = new ArrayList<>(placeIdSet);
         ListUtils.partition(placeIdList, batchSize).forEach(ids -> {
             List<MerchantPlace> placeList = merchantPlaceService.queryByIdList(ids, tenantId);
@@ -246,6 +248,7 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
         return map;
     }
     
+    @Slave
     @Override
     public void exportExcel(MerchantPowerRequest request, HttpServletResponse response) {
         String fileName = "场地电费出账记录.xlsx";
@@ -254,13 +257,19 @@ public class MerchantCabinetPowerMonthRecordServiceImpl implements MerchantCabin
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            
+            List<MerchantCabinetPowerMonthExcelVO> dataList = getData(request);
+            if (CollectionUtils.isEmpty(dataList)) {
+                return;
+            }
+            
             EasyExcel.write(outputStream, MerchantCabinetPowerMonthExcelVO.class).head(getHeader())
                     // 合并策略：合并相同数据的行。第一个参数表示从哪一行开始进行合并，由于表头占了两行，因此从第2行开始（索引从0开始）
                     // 第二个参数是指定哪些列要进行合并
-                    .registerWriteHandler(new MergeSameRowsStrategy(2, new int[] {0, 1, 2, 3})).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
+                    .registerWriteHandler(new MerchantMergeStrategy(2, dataList.size())).registerWriteHandler(HeadContentCellStyle.myHorizontalCellStyleStrategy())
                     .registerWriteHandler(new CommentWriteHandler(getComments(), "xlsx")).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
                     // 注意：需要先调用registerWriteHandler()再调用sheet()方法才能使合并策略生效！！！
-                    .sheet("场地电费出账记录").doWrite(getData(request));
+                    .sheet("场地电费出账记录").doWrite(dataList);
         } catch (Exception e) {
             log.error("Merchant power exportExcel error!", e);
         }

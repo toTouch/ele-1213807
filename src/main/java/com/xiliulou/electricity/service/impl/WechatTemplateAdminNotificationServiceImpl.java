@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.WechatTemplateAdminNotification;
 import com.xiliulou.electricity.mapper.WechatTemplateAdminNotificationMapper;
@@ -184,6 +185,7 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         return R.ok();
     }
     
+    @Slave
     @Override
     public WechatTemplateAdminNotification queryByTenant(Integer tenantId) {
         WechatTemplateAdminNotification wechatTemplateAdminNotification = redisService
@@ -202,6 +204,7 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         return null;
     }
     
+    @Slave
     @Override
     public R queryList() {
 

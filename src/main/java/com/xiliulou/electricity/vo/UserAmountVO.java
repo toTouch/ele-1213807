@@ -38,5 +38,9 @@ public class UserAmountVO {
     private Integer delFlg;
 
     private String phone;
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 
 }

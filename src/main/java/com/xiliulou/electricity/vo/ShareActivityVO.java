@@ -142,5 +142,13 @@ public class ShareActivityVO {
      */
     private List<BatteryMemberCardVO> carWithBatteryPackages;
     
+    /**
+     * 加盟商Id
+     */
+    private Integer franchiseeId;
     
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 }

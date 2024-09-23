@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ReportManagement;
 import com.xiliulou.electricity.mapper.ReportManagementMapper;
 import com.xiliulou.electricity.query.ReportManagementQuery;
@@ -56,6 +57,7 @@ public class ReportManagementServiceImpl implements ReportManagementService {
      * 查询多条数据
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<ReportManagement> selectByPage(ReportManagementQuery query) {
         List<ReportManagement> reportManagements = this.reportManagementMapper.selectByPage(query);
@@ -71,7 +73,8 @@ public class ReportManagementServiceImpl implements ReportManagementService {
         
         return reportManagements;
     }
-
+    
+    @Slave
     @Override
     public Integer selectByPageCount(ReportManagementQuery query) {
         return this.reportManagementMapper.selectByPageCount(query);

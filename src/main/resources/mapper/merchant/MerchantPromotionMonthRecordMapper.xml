@@ -4,12 +4,17 @@
     <!-- 基础字段 -->
     <sql id="basic_field">
         id
-        , merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark
+        , merchant_count, month_first_total_money, month_renew_total_money, month_total_money, date, tenant_id, del_flag, create_time, update_time, remark, franchisee_id
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantPromotionMonthRecord">
-        select
-        <include refid="basic_field"/>
+        select any_value(id) as id,
+        sum(merchant_count) as merchantCount,
+        sum(month_first_total_money) as monthFirstTotalMoney,
+        sum(month_renew_total_money) as monthRenewTotalMoney,
+        sum(month_total_money) as monthTotalMoney,
+        date as date,
+        any_value(tenant_id) as tenantId
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
@@ -19,15 +24,30 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
+        group by date
         order by date desc
-        <if test="offset != null and size != null">
-            limit #{offset}, #{size}
-        </if>
+        limit #{offset}, #{size}
     </select>
     
     <select id="countTotal" resultType="java.lang.Integer">
         select count(1)
+        from (select any_value(id) as id,
+        sum(merchant_count) as merchantCount,
+        sum(month_first_total_money) as monthFirstTotalMoney,
+        sum(month_renew_total_money) as monthRenewTotalMoney,
+        sum(month_total_money) as monthTotalMoney,
+        date as date,
+        any_value(tenant_id) as tenantId
         from t_merchant_promotion_month_record
         <where>
             del_flag = 0
@@ -37,7 +57,18 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
+        group by date
+        ) a
     </select>
 
 </mapper>

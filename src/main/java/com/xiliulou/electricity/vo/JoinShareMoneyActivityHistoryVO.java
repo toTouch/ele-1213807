@@ -95,7 +95,10 @@ public class JoinShareMoneyActivityHistoryVO {
      * 活动名称
      */
     private String activityName;
-
+    
+    private Long franchiseeId;
+    
+    private String franchiseeName;
 
     //初始化
     public static Integer STATUS_INIT = 1;

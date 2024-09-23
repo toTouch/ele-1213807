@@ -26,7 +26,7 @@ import java.util.List;
 public class AdminUserQuery {
 	@NotNull(message = "uid不能为空", groups = {UpdateGroup.class})
 	private Long uid;
-	@NotBlank(message = "用户名不能为空", groups = {CreateGroup.class})
+	@NotBlank(message = "用户名不能为空", groups = {CreateGroup.class,UpdateGroup.class})
 	private String name;
 	@NotBlank(message = "密码不能为空", groups = {CreateGroup.class})
 	private String password;

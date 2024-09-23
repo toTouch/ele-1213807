@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -16,6 +17,7 @@ import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,9 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
     @Resource
     TenantService tenantService;
     
+    @Resource
+    private ElectricityCabinetService electricityCabinetService;
+    
     @Override
     protected void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         HardwareFailureWarnMsg hardwareFailureWarnMsg = JsonUtil.fromJson(receiverMessage.getOriginContent(), HardwareFailureWarnMsg.class);
@@ -53,7 +58,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         }
         
         List<HardwareFailureWarnMqMsg> list = convertMqMsg(hardwareFailureWarnMsg, electricityCabinet);
-        rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
+        rocketMqService.sendAsyncMsg(MqProducerConstant.FAULT_FAILURE_WARNING_BREAKDOWN, JsonUtil.toJson(list));
         
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("sessionId", receiverMessage.getSessionId());
@@ -63,7 +68,7 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(receiverMessage.getSessionId()).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).data(dataMap).command(ElectricityIotConstant.HARDWARE_FAILURE_WARN_MSG_ACK).build();
-        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (!sendResult.getLeft()) {
             log.error("HARDWARE WARN MSG ERROR! send command error! requestId:{}", receiverMessage.getSessionId());
         }
@@ -84,12 +89,17 @@ public class HardwareFailureWarnMsgHandler extends AbstractElectricityIotHandler
             msg.setSignalId(item.getId());
             msg.setCellNo(item.getBoxId());
             msg.setSn(electricityCabinet.getSn());
+            msg.setCabinetSn(electricityCabinet.getSn());
+            if (StringUtils.isNotEmpty(item.getBatterySn())) {
+                msg.setSn(item.getBatterySn());
+            }
             msg.setBatterySn(item.getBatterySn());
             msg.setDevId(hardwareFailureWarnMsg.getDevId());
             msg.setReportTime(hardwareFailureWarnMsg.getT());
             msg.setTxnNo(hardwareFailureWarnMsg.getTxnNo());
             msg.setTenantName(tenantName);
             msg.setCabinetName(electricityCabinet.getName());
+            msg.setDeviceName(electricityCabinet.getDeviceName());
             list.add(msg);
         });
         return list;
@@ -205,6 +215,11 @@ class HardwareFailureWarnMqMsg {
     private String sn;
     
     /**
+     * 柜机sn
+     */
+    private String cabinetSn;
+    
+    /**
      * 换电柜地址
      */
     private String address;
@@ -273,4 +288,6 @@ class HardwareFailureWarnMqMsg {
      * 故障发生次数
      */
     private Integer occurNum;
+    
+    private String deviceName;
 }

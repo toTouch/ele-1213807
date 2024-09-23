@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.query;
 
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;

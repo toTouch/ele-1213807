@@ -111,4 +111,6 @@ public interface EleRefundOrderService {
     Integer existsRefundOrderByUid(Long uid);
     
     Integer updateById(EleRefundOrder eleRefundOrderUpdate);
+    
+    R listSuperAdminPage(EleRefundQuery eleRefundQuery);
 }

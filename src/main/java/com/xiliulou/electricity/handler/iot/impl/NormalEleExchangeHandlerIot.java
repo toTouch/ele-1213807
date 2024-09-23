@@ -53,6 +53,9 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
                 newElectricityCabinet.setId(eid);
                 newElectricityCabinet.setVersion(receiverMessage.getVersion());
                 
+                //柜机模式修改
+                newElectricityCabinet.setPattern(EleCabinetConstant.ALI_IOT_PATTERN);
+                
                 if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
                     redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());

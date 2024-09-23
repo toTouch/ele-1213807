@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.google.common.collect.Lists;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
@@ -68,7 +69,7 @@ public class PictureServiceImpl implements PictureService {
         return this.pictureMapper.selectByPage(offset, limit);
     }
 
-
+    @Slave
     @Override
     public List<PictureVO> selectByQuery(PictureQuery pictureQuery) {
         List<Picture> pictures = this.pictureMapper.selectByQuery(pictureQuery);

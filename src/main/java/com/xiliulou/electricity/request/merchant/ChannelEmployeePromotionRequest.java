@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author maxiaodong
  * @date 2024/2/21 20:34
@@ -34,4 +36,9 @@ public class ChannelEmployeePromotionRequest {
      * 租户Id
      */
     private Integer tenantId;
+    
+    /**
+     * 加盟商id
+     */
+    private List<Long> franchiseeIdList;
 }

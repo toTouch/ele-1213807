@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureCabinetMsg;
@@ -25,7 +24,6 @@ import com.xiliulou.electricity.vo.failureAlarm.FailureWarnCabinetOverviewVo;
 import com.xiliulou.electricity.vo.failureAlarm.FailureWarnTenantOverviewVo;
 import com.xiliulou.electricity.vo.failureAlarm.TenantOverviewFailureExportVo;
 import com.xiliulou.electricity.vo.failureAlarm.TenantOverviewWarnExportVo;
-import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -76,7 +74,7 @@ public class EleHardwareFailureCabinetMsgServiceImpl implements EleHardwareFailu
         FailureAlarmTaskQueryRequest request = this.getQueryRequest();
         List<EleHardwareFailureWarnMsgVo> failureWarnMsgList = failureWarnMsgService.list(request);
         if (ObjectUtils.isEmpty(failureWarnMsgList)) {
-            log.error("Hardware Failure CabinetMsg task is empty");
+            log.warn("Hardware Failure CabinetMsg task is empty");
         }
         
         Map<Integer, EleHardwareFailureCabinetMsg> cabinetMsgMap = failureWarnMsgList.stream().collect(Collectors.groupingBy(EleHardwareFailureWarnMsgVo::getCabinetId,

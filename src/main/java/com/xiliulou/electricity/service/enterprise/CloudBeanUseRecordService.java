@@ -6,9 +6,12 @@ import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseRentRecord;
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
+import com.xiliulou.electricity.request.enterprise.EnterpriseCloudBeanUseRecordPageRequest;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanUseRecordVO;
+import com.xiliulou.electricity.vo.enterprise.EnterpriseCloudBeanOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -89,4 +92,10 @@ public interface CloudBeanUseRecordService {
     void checkCloudBeanTask();
     
     int batchInsert(List<CloudBeanUseRecord> cloudBeanUseRecordList);
+    
+    List<EnterpriseCloudBeanOrderVO> listByPage(EnterpriseCloudBeanUseRecordPageRequest request);
+    
+    Integer countTotal(EnterpriseCloudBeanUseRecordPageRequest request);
+    
+    void export(EnterpriseCloudBeanUseRecordPageRequest request, HttpServletResponse response);
 }

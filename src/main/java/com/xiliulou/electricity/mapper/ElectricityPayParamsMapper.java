@@ -67,12 +67,21 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
     
     
     /**
-     *
      * 租户+微信商户号查询
+     *
      * @param tenantId
      * @param wechatMerchantId
      * @author caobotao.cbt
      * @date 2024/6/14 14:47
      */
     ElectricityPayParams selectByTenantIdAndWechatMerchantId(@Param("tenantId") Integer tenantId, @Param("wechatMerchantId") String wechatMerchantId);
+    
+    /**
+     * 查询加盟商id
+     *
+     * @author caobotao.cbt
+     * @date 2024/8/22 17:54
+     */
+    List<Long> selectFranchiseeIdsByTenantId(@Param("tenantId") Integer tenantId);
+    
 }

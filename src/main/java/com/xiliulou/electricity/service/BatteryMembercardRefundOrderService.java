@@ -94,4 +94,6 @@ public interface BatteryMembercardRefundOrderService {
     void sendMerchantRebateRefundMQ(Long uid, String orderId);
     
     R checkPayParamsDetails(String orderNo);
+    
+    List<BatteryMembercardRefundOrderVO> listSuperAdminPage(BatteryMembercardRefundOrderQuery query);
 }

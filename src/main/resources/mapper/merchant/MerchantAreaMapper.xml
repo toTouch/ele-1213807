@@ -3,17 +3,17 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantAreaMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, name, del_flag, create_time, update_time, tenant_id, remark
+        id, name, del_flag, create_time, update_time, tenant_id, remark, franchisee_id
     </sql>
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_merchant_area
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            name, del_flag, create_time, update_time, tenant_id, remark
+            name, del_flag, create_time, update_time, tenant_id, remark, franchisee_id
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            #{name}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}
+            #{name}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{franchiseeId}
         </trim>
     </insert>
     
@@ -55,6 +55,17 @@
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
+    
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
         </where>
         order by id desc
         <if test="offset != null and size != null">
@@ -69,6 +80,17 @@
             del_flag = 0 and tenant_id = #{tenantId}
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+    
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
     </select>
@@ -88,8 +110,20 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+        
             <if test="name != null and name != ''">
                 and name like concat('%', concat(#{name}, '%'))
+            </if>
+    
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
             </if>
         </where>
         order by id desc

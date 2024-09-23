@@ -1,7 +1,3 @@
-/**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/27
- */
-
 package com.xiliulou.electricity.config.message;
 
 import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
@@ -39,4 +35,8 @@ public class MessageCenterConfig {
     private Map<Integer, String> messageTemplateCode = new HashMap<>();
     
     
+    /**
+     * 短信提醒模板code
+     */
+    private String lowNoteNoticeMessageTemplateCode;
 }

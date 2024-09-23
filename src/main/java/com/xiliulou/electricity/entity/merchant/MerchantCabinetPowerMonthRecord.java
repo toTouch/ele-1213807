@@ -63,4 +63,9 @@ public class MerchantCabinetPowerMonthRecord {
      */
     private Long updateTime;
     
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
 }

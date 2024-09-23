@@ -161,6 +161,8 @@ public class ElectricityCabinetVO {
      * 柜机供电类型：0--市电，1--反向供电
      */
     private Integer powerType;
+    
+    private Integer pattern;
 
     /**
      * 满电标准
@@ -243,6 +245,8 @@ public class ElectricityCabinetVO {
      * 场地费
      */
     private BigDecimal placeFee;
+    
+    private String tenantName;
 
     //全天
     public static final String ALL_DAY = "-1";

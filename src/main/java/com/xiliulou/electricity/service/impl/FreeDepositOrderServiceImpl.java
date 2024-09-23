@@ -8,6 +8,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.dto.FreeDepositUserDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -32,6 +33,9 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -39,6 +43,12 @@ import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.FreeBatteryDepositHybridOrderQuery;
@@ -83,12 +93,15 @@ import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositAuthToPayOrderQueryRequest;
@@ -123,6 +136,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * (FreeDepositOrder)表服务实现类
@@ -259,6 +274,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
     
+    @Resource
+    private ProfitSharingTradeOrderService profitSharingTradeOrderService;
+    
+    @Resource
+    private ProfitSharingTradeMixedOrderService profitSharingTradeMixedOrderService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -283,13 +304,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      */
     @Slave
     @Override
-    public List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query) {
+    public List<FreeDepositOrderVO> selectByPage(FreeDepositOrderQuery query) {
         List<FreeDepositOrder> freeDepositOrders = this.freeDepositOrderMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(freeDepositOrders)) {
             return Collections.EMPTY_LIST;
         }
+        List<FreeDepositOrderVO> freeDepositOrderVOs = freeDepositOrders.parallelStream().map(item -> {
+            FreeDepositOrderVO freeDepositOrderVO = new FreeDepositOrderVO();
+            BeanUtils.copyProperties(item, freeDepositOrderVO);
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            freeDepositOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            return freeDepositOrderVO;
+        }).collect(Collectors.toList());
         
-        return freeDepositOrders;
+        return freeDepositOrderVOs;
     }
     
     @Slave
@@ -1393,7 +1422,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         WechatPayParamsDetails wechatPayParamsDetails = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId(), queryProfitSharingConfig);
         } catch (WechatPayException e) {
             log.warn("FREE DEPOSIT HYBRID WARN!not found electricityPayParams,uid={}", uid);
             return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
@@ -1509,6 +1540,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("免押租电").uid(uid).build();
+    
+            // 处理分账交易订单
+            dealProfitSharingTradeOrder(rentBatteryMemberCardTriple, rentBatteryInsuranceTriple, wechatPayParamsDetails, batteryMemberCard, unionPayOrder, userInfo, orderList);
+            
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
@@ -1517,6 +1552,83 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+    }
+    
+    private void dealProfitSharingTradeOrder(Triple<Boolean, String, Object> generateMemberCardOrderResult, Triple<Boolean, String, Object> generateInsuranceOrderResult, WechatPayParamsDetails wechatPayParamsDetails,
+            BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {
+        // 判断分账配置是否存在
+        ProfitSharingConfig profitSharingConfig = wechatPayParamsDetails.getProfitSharingConfig();
+        if (Objects.isNull(profitSharingConfig)) {
+            log.info("FREE DEPOSIT HYBRID! profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+        
+        if (Objects.equals(profitSharingConfig.getConfigStatus(), ProfitSharingConfigStatusEnum.CLOSE.getCode())) {
+            log.info("FREE DEPOSIT HYBRID! profit sharing config status is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+        
+        List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
+        
+        // 处理换电套餐
+        boolean batteryPackageOrderPermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
+        if (batteryPackageOrderPermission && Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
+            if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder()
+                        .tenantId(wechatPayParamsDetails.getTenantId()).franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
+                        .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode()).amount(electricityMemberCardOrder.getPayAmount())
+                        .processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(ChannelEnum.WECHAT.getCode()).supportRefund(batteryMemberCard.getIsRefund())
+                        .payTime(electricityMemberCardOrder.getCreateTime()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis())
+                        .refundLimit(batteryMemberCard.getRefundLimit()).build();
+                
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+        
+        // 处理保险
+        boolean insuranceOrderPermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode()) == ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode();
+        if (insuranceOrderPermission && Boolean.TRUE.equals(generateInsuranceOrderResult.getLeft()) && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
+            InsuranceOrder insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
+            if (insuranceOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder()
+                        .tenantId(wechatPayParamsDetails.getTenantId()).franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
+                        .orderNo(insuranceOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
+                        .processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(ChannelEnum.WECHAT.getCode()).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
+                        .payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
+                
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+        
+        // 如果存在符合条件的分账订单，则设置分账标识
+        if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
+            // 设置分账标识  开启分账
+            unionPayOrder.setProfitSharing(true);
+    
+            // 保存分账主表
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                    .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
+                    .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+            
+            if (profitSharingTradeOrderList.size() > 1) {
+                // 支付订单数量大于1 设置为混合支付
+                profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
+            }
+    
+            profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
+    
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId()));
+            // 保存分账明细
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+    
+           
+    
+            
+        }
     }
     
     @Override
@@ -1544,7 +1656,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 
                 PxzQueryOrderRsp queryOrderRspData = (PxzQueryOrderRsp) depositOrderStatusResult.getRight();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-                    log.error("FREE DEPOSIT TASK ERROR!batteryFreeDepositOrder not un_frozen,orderId={},uid={}", entity.getOrderId(), entity.getUid());
                     continue;
                 }
                 
@@ -1610,7 +1721,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, FreeBatteryDepositHybridOrderQuery query,
             ElectricityCabinet electricityCabinet, WechatPayParamsDetails wechatPayParamsDetails) {
         
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(),
+        // 多加盟商版本增加：加盟商一致性校验
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard,
                 CollectionUtils.isEmpty(query.getUserCouponIds()) ? null : new HashSet<>(query.getUserCouponIds()));
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
@@ -1763,7 +1875,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 
                 PxzQueryOrderRsp queryOrderRspData = (PxzQueryOrderRsp) depositOrderStatusResult.getRight();
                 if (!Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-                    log.error("FREE DEPOSIT TASK ERROR!batteryFreeDepositOrder not un_frozen,orderId={},uid={}", eleRefundOrder.getOrderId(), freeDepositOrder.getUid());
                     continue;
                 }
                 

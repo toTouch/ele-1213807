@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.mapper.enterprise;
 
+import com.xiliulou.electricity.bo.enterprisePackage.CloudBeanUseRecordEnterpriseBo;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 
 import java.util.List;
 
 import com.xiliulou.electricity.query.enterprise.CloudBeanUseRecordQuery;
+import com.xiliulou.electricity.query.enterprise.EnterpriseCloudBeanUseRecordQueryModel;
 import com.xiliulou.electricity.vo.enterprise.CloudBeanSumVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -56,4 +58,10 @@ public interface CloudBeanUseRecordMapper extends BaseMapper<CloudBeanUseRecord>
     List<CloudBeanSumVO> selectBeanAmountByEnterpriseId(@Param("enterpriseId") Long enterpriseId);
     
     int batchInsert(@Param("list") List<CloudBeanUseRecord> cloudBeanUseRecordList);
+    
+    List<CloudBeanUseRecord> selectListByPage(EnterpriseCloudBeanUseRecordQueryModel queryModel);
+    
+    Integer countTotal(EnterpriseCloudBeanUseRecordQueryModel queryModel);
+    
+    List<CloudBeanUseRecordEnterpriseBo> listForEnterpriseId(EnterpriseCloudBeanUseRecordQueryModel queryModel);
 }

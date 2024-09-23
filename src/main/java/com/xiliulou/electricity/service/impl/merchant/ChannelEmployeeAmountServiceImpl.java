@@ -32,11 +32,9 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
     @Transactional
     @Override
     public Integer addAmount(BigDecimal amount, Long uid, Long tenantId) {
-        log.info("add amount for channel employee, amount = {}, uid = {}", amount, uid);
         User user = userService.queryByUidFromCache(uid);
         
         if (Objects.isNull(user)) {
-            log.error("add amount by uid error, not found channel employee user, uid = {}", uid);
             //throw new BizException("120008", "渠道员不存在");
             return NumberConstant.ZERO;
         }
@@ -48,7 +46,6 @@ public class ChannelEmployeeAmountServiceImpl implements ChannelEmployeeAmountSe
     @Transactional
     @Override
     public Integer reduceAmount(BigDecimal amount, Long uid, Long tenantId) {
-        log.info("reduce amount for channel employee, amount = {}, uid = {}", amount, uid);
         User user = userService.queryByUidFromCache(uid);
         
         if (Objects.isNull(user)) {

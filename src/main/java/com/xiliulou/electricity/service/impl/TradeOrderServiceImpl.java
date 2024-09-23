@@ -8,6 +8,7 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
@@ -29,8 +30,17 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
+import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
+import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
@@ -72,20 +82,21 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -226,6 +237,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private ProfitSharingTradeOrderService profitSharingTradeOrderService;
+    
+    @Resource
+    private ProfitSharingTradeMixedOrderService profitSharingTradeMixedOrderService;
     
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -423,17 +440,23 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId(), queryProfitSharingConfig);
             
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
                     .description("租电押金").uid(user.getUid()).build();
+            
+            // 处理分账交易订单
+            dealProfitSharingTradeOrder(generateMemberCardOrderResult, generateInsuranceOrderResult, wechatPayParamsDetails, batteryMemberCard, unionPayOrder, userInfo, orderList);
+            
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
             
-        // 友好提示，对用户端不展示错误信息
+            // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         } finally {
@@ -441,6 +464,94 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+    }
+    
+    private void dealProfitSharingTradeOrder(Triple<Boolean, String, Object> generateMemberCardOrderResult, Triple<Boolean, String, Object> generateInsuranceOrderResult, WechatPayParamsDetails wechatPayParamsDetails,
+            BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {
+        // 判断分账配置是否存在
+        ProfitSharingConfig profitSharingConfig = wechatPayParamsDetails.getProfitSharingConfig();
+        if (Objects.isNull(profitSharingConfig)) {
+            log.info("pay battery memberCard profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(),
+                    wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+    
+        if (Objects.equals(profitSharingConfig.getConfigStatus(), ProfitSharingConfigStatusEnum.CLOSE.getCode())) {
+            log.info("pay battery memberCard profit sharing config status is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+    
+        List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
+    
+        // 处理换电套餐
+        boolean batteryPackageOrderPermission =
+                (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
+        if (!batteryPackageOrderPermission) {
+            log.info("pay battery memberCard profit sharing config battery package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        }
+    
+        if (batteryPackageOrderPermission && Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
+            if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                        .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
+                        .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode())
+                        .amount(electricityMemberCardOrder.getPayAmount()).processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode())
+                        .channel(ChannelEnum.WECHAT.getCode()).supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime())
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(batteryMemberCard.getRefundLimit()).build();
+            
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+    
+        // 处理保险
+        boolean insuranceOrderPermission =
+                (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode()) == ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode();
+        if (!insuranceOrderPermission) {
+            log.info("pay battery memberCard profit sharing config insurance package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        }
+    
+        if (insuranceOrderPermission && Boolean.TRUE.equals(generateInsuranceOrderResult.getLeft()) && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
+            InsuranceOrder insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
+            if (insuranceOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                        .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).orderNo(insuranceOrder.getOrderId())
+                        .orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
+                        .processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(ChannelEnum.WECHAT.getCode())
+                        .supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO).payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
+            
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+    
+        // 如果存在符合条件的分账订单，则设置分账标识
+        if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
+            // 设置分账标识  开启分账
+            unionPayOrder.setProfitSharing(true);
+        
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                    .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
+                    .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+            
+            if (profitSharingTradeOrderList.size() > 1) {
+                // 支付订单数量大于1 设置为混合支付
+                profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
+            }
+            
+            // 保存分账主表
+            profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
+    
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId()));
+    
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+        }
     }
     
     @Override
@@ -623,17 +734,23 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId());
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, batteryMemberCard.getFranchiseeId(), queryProfitSharingConfig);
             
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)
                     .description("租电套餐").uid(userInfo.getUid()).build();
+    
+            // 处理分账交易订单
+            dealProfitSharingTradeOrder(generateMemberCardOrderResult, generateInsuranceOrderResult, wechatPayParamsDetails, batteryMemberCard, unionPayOrder, userInfo, orderList);
+            
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
             
-        // 友好提示，对用户端不展示错误信息
+            // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
         } finally {
@@ -642,6 +759,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
+    
     
     /**
      * 处理混合支付总金额为0的场景
@@ -735,8 +853,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("SERVICE FEE WARN! user not auth,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
-            
-            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId());
+    
+            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig = new HashSet<>();
+            queryProfitSharingConfig.add(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG);
+            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, userInfo.getFranchiseeId(), queryProfitSharingConfig);
             if (Objects.isNull(wechatPayParamsDetails)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -777,11 +897,15 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmountList)).payAmount(totalPayAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_SERVUCE_FEE).description("滞纳金")
                     .uid(user.getUid()).build();
+    
+            // 处理分账交易订单
+            dealServiceFeeProfitSharingTradeOrder(orderList, orderTypeList, wechatPayParamsDetails, unionPayOrder, userInfo);
+            
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
                     request);
             return Triple.of(true, null, resultDTO);
             
-        // 友好提示，对用户端不展示错误信息
+            // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
         } finally {
@@ -790,6 +914,119 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
+    }
+    
+    private void dealServiceFeeProfitSharingTradeOrder(List<String> orderList, List<Integer> orderTypeList, WechatPayParamsDetails wechatPayParamsDetails,
+            UnionPayOrder unionPayOrder, UserInfo userInfo) {
+        // 服务费订单为空
+        if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
+            return;
+        }
+        
+        // 判断分账配置是否存在
+        ProfitSharingConfig profitSharingConfig = wechatPayParamsDetails.getProfitSharingConfig();
+        if (Objects.isNull(profitSharingConfig)) {
+            log.info("pay service free profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(),
+                    wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+        
+        if (Objects.equals(profitSharingConfig.getConfigStatus(), ProfitSharingConfigStatusEnum.CLOSE.getCode())) {
+            log.info("pay service free profit sharing config status is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), wechatPayParamsDetails.getTenantId(),
+                    wechatPayParamsDetails.getFranchiseeId());
+            return;
+        }
+        
+        boolean batteryServiceFeePermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode())
+                == ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode();
+        if (!batteryServiceFeePermission) {
+            log.info("pay service free profit sharing config battery service fee permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    wechatPayParamsDetails.getTenantId(), wechatPayParamsDetails.getFranchiseeId());
+        }
+        
+        List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
+        for (int i = 0; i < orderList.size(); i++) {
+            // 过滤掉车的服务费
+            if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.CAR_SLIPPAGE.getCode())) {
+                continue;
+            }
+            
+            // 电池套餐过期服务费 或 电池套餐冻结服务费
+            if (batteryServiceFeePermission && (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode()) || Objects.equals(orderTypeList.get(i),
+                    ServiceFeeEnum.BATTERY_PAUSE.getCode()))) {
+                // 电池套餐服务费订单号
+                String orderId = orderList.get(i);
+                EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(orderId);
+                if (Objects.isNull(eleBatteryServiceFeeOrder)) {
+                    log.info("pay service free profit sharing battery service fee order not find, orderId = {}", orderId);
+                    continue;
+                }
+    
+                // 支付金额大于0元，需要分账, 支付时间为系统当前时间
+                if (eleBatteryServiceFeeOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) >= 0) {
+                    ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                            .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId())
+                            .orderNo(eleBatteryServiceFeeOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode())
+                            .amount(eleBatteryServiceFeeOrder.getPayAmount()).processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode())
+                            .channel(ChannelEnum.WECHAT.getCode()).supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO)
+                            .payTime(System.currentTimeMillis()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                            .uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
+                    
+                    profitSharingTradeOrderList.add(profitSharingTradeOrder);
+                }
+            }
+        }
+    
+        // 如果存在符合条件的分账订单，则设置分账标识
+        if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
+            // 设置分账标识  开启分账
+            unionPayOrder.setProfitSharing(true);
+    
+            // 保存分账主表
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(wechatPayParamsDetails.getTenantId())
+                    .franchiseeId(wechatPayParamsDetails.getFranchiseeId()).thirdMerchantId(wechatPayParamsDetails.getWechatMerchantId()).amount(unionPayOrder.getPayAmount())
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
+                    .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+    
+            if (profitSharingTradeOrderList.size() > 1) {
+                // 支付订单数量大于1 设置为混合支付
+                profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
+            }
+            
+            profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
+            
+            List<Long> notPayTradeOrderIds = new ArrayList<>();
+            List<Long> notPayMixedTradeOrderIds = new ArrayList<>();
+    
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> {
+                profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId());
+    
+                // 检测业务单号下是否已经存在了未分账的交易单号
+                List<ProfitSharingTradeOrder> profitSharingTradeOrders = profitSharingTradeOrderService.listNotPaySuccessByOrderNo(profitSharingTradeOrder.getOrderNo());
+                if (ObjectUtils.isEmpty(profitSharingTradeOrders)) {
+                    return;
+                }
+                
+                profitSharingTradeOrders.stream().forEach(item -> {
+                    notPayTradeOrderIds.add(item.getId());
+                    notPayMixedTradeOrderIds.add(item.getProfitSharingMixedOrderId());
+                });
+            });
+    
+            // 删除未支付的分账交易主表
+            if (ObjectUtils.isNotEmpty(notPayTradeOrderIds)) {
+                profitSharingTradeOrderService.batchRemoveByIdList(notPayTradeOrderIds);
+            }
+            
+            // 删除未支付的分账明细
+            if (ObjectUtils.isNotEmpty(notPayMixedTradeOrderIds)) {
+                profitSharingTradeMixedOrderService.batchRemoveByIdList(notPayMixedTradeOrderIds);
+            }
+            
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+        }
+        
+        
     }
     
     /**
@@ -1032,9 +1269,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, IntegratedPaymentAdd integratedPaymentAdd,
             Set<Integer> userCouponIds, ElectricityCabinet electricityCabinet, ElectricityPayParams electricityPayParams) {
         
+        // 多加盟商版本增加：加盟商一致性校验
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds);
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard, userCouponIds);
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }
@@ -1085,9 +1323,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return Triple.of(false, "ELECTRICITY.100000", acquireUserBatteryServiceFeeResult.getRight());
         }
         
+        // 多加盟商版本增加：加盟商一致性校验
         // 查找计算优惠券
         // 计算优惠后支付金额
-        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard.getRentPrice(), query.getUserCouponIds());
+        Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard, query.getUserCouponIds());
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
             return calculatePayAmountResult;
         }

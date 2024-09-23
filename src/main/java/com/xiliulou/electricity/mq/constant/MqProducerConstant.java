@@ -56,6 +56,8 @@ public interface MqProducerConstant {
      */
     String TOPIC_FAILURE_WARNING_BREAKDOWN = "FAILURE_WARNING_BREAKDOWN_TOPIC";
     
+    String FAULT_FAILURE_WARNING_BREAKDOWN = "FAULT_WARNING_BREAKDOWN_TOPIC";
+    
     
     /**
      * 用户优惠券公用 topic
@@ -85,6 +87,16 @@ public interface MqProducerConstant {
     String BATTERY_MEMBER_CARD_MERCHANT_REBATE_TOPIC = "battery_member_card_merchant_rebate_topic";
     
     /**
+     * 分账交易订单处理
+     */
+    String PROFIT_SHARING_ORDER_TOPIC = "PROFIT_SHARING_ORDER_TOPIC";
+    
+    /**
+     * 分账交易订单退款处理
+     */
+    String PROFIT_SHARING_ORDER_REFUND_TOPIC = "PROFIT_SHARING_ORDER_REFUND_TOPIC";
+    
+    /**
      * <p>
      * Description:
      * </p>
@@ -95,6 +107,16 @@ public interface MqProducerConstant {
      * 电池电压电流变化
      */
     String BATTERY_CHARGE_ATTR_CHANGE_TOPIC = "battery_charge_attr_change_topic";
+    
+    /**
+     * 站内信所在新项目主题
+     */
+    String AUX_MQ_TOPIC_NAME="XILIULOU_SAAS_AUX_TOPIC";
+    
+    /**
+     * 站内信所在新项目主题TAG
+     */
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
     
     
     /**

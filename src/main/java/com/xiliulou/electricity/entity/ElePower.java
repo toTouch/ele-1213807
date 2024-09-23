@@ -59,6 +59,16 @@ public class ElePower {
      * 每小时电费
      */
     private Double electricCharge;
+    
+    /**
+     * 电表实时读数
+     */
+    private Double meterReading;
+    
+    /**
+     * 柜机上报的原始小时耗电量
+     */
+    private Double originalHourPower ;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

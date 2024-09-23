@@ -41,15 +41,16 @@ import java.util.stream.Collectors;
 @Service("elePowerService")
 @Slf4j
 public class ElePowerServiceImpl implements ElePowerService {
+    
     @Resource
     private ElePowerMapper elePowerMapper;
-
+    
     @Autowired
     ElePowerMonthRecordService monthRecordService;
-
+    
     @Autowired
     RedisService redisService;
-
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -60,7 +61,7 @@ public class ElePowerServiceImpl implements ElePowerService {
     public ElePower queryByIdFromDB(Long id) {
         return this.elePowerMapper.queryById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -71,8 +72,8 @@ public class ElePowerServiceImpl implements ElePowerService {
     public ElePower queryByIdFromCache(Long id) {
         return null;
     }
-
-
+    
+    
     /**
      * 查询多条数据
      *
@@ -84,7 +85,7 @@ public class ElePowerServiceImpl implements ElePowerService {
     public List<ElePower> queryAllByLimit(int offset, int limit) {
         return this.elePowerMapper.queryAllByLimit(offset, limit);
     }
-
+    
     /**
      * 新增数据
      *
@@ -97,7 +98,7 @@ public class ElePowerServiceImpl implements ElePowerService {
         this.elePowerMapper.insertOne(elePower);
         return elePower;
     }
-
+    
     /**
      * 修改数据
      *
@@ -108,9 +109,9 @@ public class ElePowerServiceImpl implements ElePowerService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElePower elePower) {
         return this.elePowerMapper.update(elePower);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -122,7 +123,7 @@ public class ElePowerServiceImpl implements ElePowerService {
     public Boolean deleteById(Long id) {
         return this.elePowerMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public int insertOrUpdate(ElePower power) {
         return this.elePowerMapper.insertOrUpdate(power);
@@ -135,31 +136,31 @@ public class ElePowerServiceImpl implements ElePowerService {
         if (!DataUtil.collectionIsUsable(powerList)) {
             return Pair.of(true, Collections.EMPTY_LIST);
         }
-
+        
         List<ElePowerVo> list = powerList.parallelStream().map(e -> {
             ElePowerVo elePowerVo = new ElePowerVo();
             BeanUtil.copyProperties(e, elePowerVo);
             return elePowerVo;
-
+            
         }).collect(Collectors.toList());
         return Pair.of(true, list);
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.elePowerMapper.queryDayList(eid, startTime, endTime, tenantId));
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryMonthList(Long eid, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.elePowerMapper.queryMonthList(eid, startTime, endTime, tenantId));
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryDayDetail(Long eid, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.elePowerMapper.queryDayDetail(eid, startTime, endTime, tenantId));
     }
-
+    
     @Override
     public Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.elePowerMapper.queryMonthDetail(eid, startTime, endTime, tenantId));
@@ -177,13 +178,19 @@ public class ElePowerServiceImpl implements ElePowerService {
         return this.elePowerMapper.selectListByEids(electricityCabinetIdList);
     }
     
+    @Slave
+    @Override
+    public Integer exitsByEidAndReportTime(Long eid, Long reportTime) {
+        return elePowerMapper.exitsByEidAndReportTime(eid, reportTime);
+    }
+    
     @Override
     public void exportList(ElePowerListQuery query, HttpServletResponse response) {
         List<ElePower> elePowers = elePowerMapper.queryPartAttList(query);
         if (!DataUtil.collectionIsUsable(elePowers)) {
             throw new CustomBusinessException("柜机电量为空");
         }
-
+        
         List<ElePowerExcelVo> vos = elePowers.parallelStream().map(e -> {
             ElePowerExcelVo vo = new ElePowerExcelVo();
             vo.setHourPower(e.getHourPower());
@@ -193,7 +200,7 @@ public class ElePowerServiceImpl implements ElePowerService {
             vo.setReportTime(DateUtils.parseTimeToStringDate(e.getReportTime()));
             return vo;
         }).collect(Collectors.toList());
-
+        
         String fileName = "耗电量记录.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -212,5 +219,5 @@ public class ElePowerServiceImpl implements ElePowerService {
     public EleSumPowerVO listByCondition(Long startTime, Long endTime, List<Long> eidList, Integer tenantId) {
         return elePowerMapper.selectListByCondition(startTime, endTime, eidList, tenantId);
     }
-
+    
 }

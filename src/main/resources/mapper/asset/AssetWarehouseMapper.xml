@@ -12,7 +12,8 @@
         del_flag,
         tenant_id,
         create_time,
-        update_time
+        update_time,
+        franchisee_id
     </sql>
     
     <!--新增所有列-->
@@ -27,7 +28,8 @@
             del_flag,
             tenant_id,
             create_time,
-            update_time
+            update_time,
+            franchisee_id
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{name},
@@ -38,7 +40,8 @@
             #{delFlag},
             #{tenantId},
             #{createTime},
-            #{updateTime}
+            #{updateTime},
+            #{franchiseeId}
         </trim>
     </insert>
     
@@ -66,6 +69,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId}
+            </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>
@@ -77,6 +83,15 @@
         <where>
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
@@ -91,6 +106,15 @@
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
             </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
             and tenant_id = #{tenantId} and del_flag = 0
         </where>
     </select>
@@ -102,6 +126,12 @@
             tenant_id = #{tenantId} and del_flag = 0 and status = 0
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         ORDER BY id DESC

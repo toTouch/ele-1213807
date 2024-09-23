@@ -37,6 +37,9 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.SystemDefinitionEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
@@ -65,6 +68,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -86,6 +90,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -186,6 +191,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     
     @Resource
     private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
     
     /**
      * 退押审批确认是否强制线下退款
@@ -821,7 +829,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert = buildCarRentalPackageDepositPayEntity(tenantId, uid, carRentalPackage, YesNoEnum.YES.getCode(),
                 PayTypeEnum.EXEMPT.getCode());
         // 创建免押记录
-        FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq);
+        FreeDepositOrder freeDepositOrder = buildFreeDepositOrderEntity(tenantId, uid, carRentalPackageDepositPayInsert, freeDepositOptReq, carRentalPackage);
         // 创建租车会员信息
         CarRentalPackageMemberTermPo memberTermInsertOrUpdateEntity = buildCarRentalPackageMemberTerm(tenantId, uid, carRentalPackage,
                 carRentalPackageDepositPayInsert.getOrderNo(), memberTermEntity);
@@ -940,7 +948,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @return 免押记录订单
      */
     private FreeDepositOrder buildFreeDepositOrderEntity(Integer tenantId, Long uid, CarRentalPackageDepositPayPo carRentalPackageDepositPayInsert,
-            FreeDepositOptReq freeDepositOptReq) {
+            FreeDepositOptReq freeDepositOptReq, CarRentalPackagePo carRentalPackagePo) {
         Integer depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR;
         if (RentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageDepositPayInsert.getRentalPackageType())) {
             depositType = FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY;
@@ -948,7 +956,8 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         return FreeDepositOrder.builder().uid(uid).authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE).idCard(freeDepositOptReq.getIdCard())
                 .orderId(carRentalPackageDepositPayInsert.getOrderNo()).phone(freeDepositOptReq.getPhoneNumber()).realName(freeDepositOptReq.getRealName())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT).tenantId(tenantId)
-                .transAmt(carRentalPackageDepositPayInsert.getDeposit().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(depositType).build();
+                .transAmt(carRentalPackageDepositPayInsert.getDeposit().doubleValue()).type(FreeDepositOrder.TYPE_ZHIFUBAO).depositType(depositType)
+                .franchiseeId(Long.valueOf(carRentalPackagePo.getFranchiseeId())).build();
     }
     
     /**
@@ -1484,12 +1493,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     
                     // 删除用户分组
                     userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
-                    
-                    // 原始是线上，则不做更改
-                    if (PayTypeEnum.ON_LINE.getCode().equals(depositRefundEntity.getPayType())) {
-                        depositRefundUpdateEntity.setPayType(null);
-                        depositRefundUpdateEntity.setCompelOffLine(null);
-                    }
                 }
                 
                 // 免押
@@ -1672,6 +1675,10 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         // 待审核
         if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
+            // 发送站内信
+            siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_REFUND)
+                    .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                    .addContext("orderNo", refundDepositInsertEntity.getOrderNo()).addContext("amount", refundDepositInsertEntity.getApplyAmount().toString()).build());
         } else if (RefundStateEnum.SUCCESS.getCode().equals(refundDepositInsertEntity.getRefundState())) {
             saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
         }

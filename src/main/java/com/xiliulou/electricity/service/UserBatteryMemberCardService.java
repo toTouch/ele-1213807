@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
@@ -121,4 +122,11 @@ public interface UserBatteryMemberCardService {
     List<UserBatteryMemberCardChannelExitVo> selectExpireExitList(int offset, int size);
     
     Integer queryRenewalNumberByMerchantId(Long id, Integer tenantId);
+    
+    
+    void handleExpireMemberCard(String sesssionId, ElectricityCabinetOrder electricityCabinetOrder);
+    
+    void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId);
+    
+    Integer deleteById(Long id);
 }
