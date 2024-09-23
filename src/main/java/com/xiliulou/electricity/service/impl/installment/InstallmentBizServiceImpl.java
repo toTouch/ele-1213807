@@ -870,7 +870,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 根据解约记录做对应的处理
         InstallmentTerminatingRecord installmentTerminatingRecord;
         if (CollectionUtils.isEmpty(records)) {
-            installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "后台解约", false);
+            installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "退押解约", false);
             installmentTerminatingRecord.setAuditorId(SecurityUtils.getUid());
             installmentTerminatingRecordService.insert(installmentTerminatingRecord);
         } else if (records.size() > 1) {
