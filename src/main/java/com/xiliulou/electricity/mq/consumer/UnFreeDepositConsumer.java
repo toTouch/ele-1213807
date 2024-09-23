@@ -70,6 +70,10 @@ public class UnFreeDepositConsumer implements RocketMQListener<String> {
         
         // 更新退款订单为失败
         EleRefundOrder eleRefundOrder = eleRefundOrderService.selectLatestRefundDepositOrder(freeDepositOrder.getOrderId());
+        if (Objects.isNull(eleRefundOrder)) {
+            log.info("UnFreeDepositConsumer Info! eleRefundOrder is null, orderId is {}", dto.getOrderId());
+            return;
+        }
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
         eleRefundOrderUpdate.setId(eleRefundOrder.getId());
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);

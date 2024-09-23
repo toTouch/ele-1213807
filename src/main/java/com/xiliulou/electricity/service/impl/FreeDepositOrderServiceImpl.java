@@ -1992,6 +1992,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                     continue;
                 }
                 
+                // 为了兼容历史免押没有回调地址，所以小于当前时间才处理
+                if (freeDepositOrder.getCreateTime() > 1727125200000L) {
+                    continue;
+                }
+                
                 // 获取免押解冻结果
                 Triple<Boolean, String, Object> depositOrderStatusResult = this.selectFreeDepositOrderStatus(freeDepositOrder);
                 if (Boolean.FALSE.equals(depositOrderStatusResult.getLeft())) {
