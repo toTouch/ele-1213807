@@ -757,7 +757,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         return Triple.of(true, null, null);
     }
     
-    private void warnNoteNoticeFail(WarnNoteCallBack warnNoteCallBack) {
+    public void warnNoteNoticeFail(WarnNoteCallBack warnNoteCallBack) {
         log.error("WARN NOTE NOTICE FAIL ERROR, msg = {}", warnNoteCallBack);
     }
     
