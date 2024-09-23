@@ -446,8 +446,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
-    @Resource
-    private StorageConverter storageConverter;
     
     /**
      * 根据主键ID集获取柜机基本信息
