@@ -27,6 +27,8 @@
         tel.use_status ,
         tel.send_coupon_id ,
         tel.coupon_ids,
+        tel.external_agreement_no,
+        tel.issue,
         tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
         
@@ -86,6 +88,9 @@
         </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+        </if>
+        <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
+            and tel.external_agreement_no = #{query.externalAgreementNo}
         </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
@@ -156,6 +161,9 @@
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
+        <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
+            and tel.external_agreement_no = #{query.externalAgreementNo}
+        </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -193,7 +201,7 @@
     <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT
         id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status
-        ,refund_status, order_type
+        ,refund_status, order_type, external_agreement_no, issue
         FROM t_electricity_member_card_order
         WHERE uid =#{uid} and member_card_model=0
         <if test="tenantId != null">
@@ -566,7 +574,9 @@
         member_card_id ,
         use_status ,
         send_coupon_id,
-		order_type
+		order_type,
+        external_agreement_no,
+        issue
     </sql>
     
     <select id="selectListByOrderIds" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
@@ -679,7 +689,9 @@
             tel.coupon_ids,
             tui.phone as phone ,
             tui.name as userName,
-            tel.tenant_id
+            tel.tenant_id,
+            tel.external_agreement_no,
+            tel.issue
     </sql>
     <select id="selectListSuperAdminPage"
             resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
@@ -702,5 +714,22 @@
         where
         create_time &gt;=#{beginTime}
         and create_time &lt;=#{endTime}
+    </select>
+    
+    <select id="selectOrderByAgreementNoAndIssue"
+            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where external_agreement_no = #{externalAgreementNo}
+            and issue = #{issue}
+    </select>
+    
+    <select id="selectListOrderByExternalAgreementNo"
+            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select
+        <include refid="column"/>
+        from t_electricity_member_card_order
+        where external_agreement_no = #{externalAgreementNo}
     </select>
 </mapper>

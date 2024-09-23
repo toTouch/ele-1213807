@@ -63,6 +63,11 @@ public class UnionPayOrder {
     // 企业渠道换电套餐
     public static final Integer ORDER_TYPE_ENTERPRISE_PACKAGE = 6;
     
+    /**
+     * 分期套餐服务费
+     */
+    public static final Integer ORDER_TYPE_INSTALLMENT_SERVICE_FEE = 7;
+    
     
     // 保险附加信息
     public static final String ATTACH_INSURANCE_UNION_DEPOSIT = "insurance_union_deposit";

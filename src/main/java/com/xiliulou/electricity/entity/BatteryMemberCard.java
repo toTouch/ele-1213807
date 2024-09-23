@@ -114,10 +114,16 @@ public class BatteryMemberCard {
      * 服务费
      */
     private BigDecimal serviceCharge;
+    
     /**
-     *
+     * 分期套餐服务费
      */
-    //    private Integer type;
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
     
     /**
      * 备注
@@ -194,6 +200,11 @@ public class BatteryMemberCard {
     
     public static final Integer BUSINESS_TYPE_ENTERPRISE = 2;
     
+    /**
+     * 业务类型-分期换电套餐
+     */
+    public static final Integer BUSINESS_TYPE_INSTALLMENT_BATTERY = 4;
+
     //租赁类型 0:不限 1:新租 2:续租
     public static final Integer RENT_TYPE_UNLIMIT = 0;
     

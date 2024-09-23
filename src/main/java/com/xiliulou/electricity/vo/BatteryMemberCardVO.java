@@ -182,4 +182,24 @@ public class BatteryMemberCardVO {
      * 租户id
      */
     private Integer tenantId;
+    
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
+    
+    /**
+     * 分期数
+     */
+    private Integer installmentNo;
+    
+    /**
+     * 分期套餐剩余每期费用
+     */
+    private BigDecimal remainingCost;
 }

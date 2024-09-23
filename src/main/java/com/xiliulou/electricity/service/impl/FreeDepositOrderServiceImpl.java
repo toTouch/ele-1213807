@@ -1654,7 +1654,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 处理支付0元场景
         if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
-            Triple<Boolean, String, Object> result = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            Triple<Boolean, String, Object> result = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }
@@ -1671,7 +1671,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             dealProfitSharingTradeOrder(rentBatteryMemberCardTriple, rentBatteryInsuranceTriple, wechatPayParamsDetails, batteryMemberCard, unionPayOrder, userInfo, orderList);
             
             WechatJsapiOrderResultDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, wechatPayParamsDetails, userOauthBind.getThirdId(),
-                    request);
+                    request, null);
             return Triple.of(true, null, resultDTO);
         } catch (DecoderException | WechatPayException e) {
             log.error("FREE DEPOSIT HYBRID ERROR! wechat v3 order  error! uid={}", uid, e);

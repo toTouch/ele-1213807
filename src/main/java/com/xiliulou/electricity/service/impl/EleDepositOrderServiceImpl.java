@@ -36,6 +36,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -45,6 +46,7 @@ import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
@@ -83,6 +85,8 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -117,6 +121,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
@@ -257,6 +263,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     private SiteMessagePublish siteMessagePublish;
     
+    @Autowired
+    private InstallmentBizService installmentBizService;
+    
+    @Autowired
+    private InstallmentDeductionRecordService installmentDeductionRecordService;
+    
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, orderNo));
@@ -293,6 +305,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.warn("ELE DEPOSIT WARN! return Deposit channel user is disable! uid={}", user.getUid());
             return R.fail("120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         BatteryMemberCard batteryMemberCard = null;
@@ -470,6 +490,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 
                 // 删除用户分组
                 userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+                
+                // 解约分期签约，如果有的话
+                installmentBizService.terminateForReturnDeposit(userInfo.getUid());
                 
                 return R.ok("SUCCESS");
             }
@@ -858,6 +881,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Slave
     public EleDepositOrder queryLastEnterpriseDeposit(Long uid) {
         return eleDepositOrderMapper.selectLastEnterpriseDeposit(uid);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+            ElectricityPayParams electricityPayParams) {
+        // 生成押金独立订单
+        String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(depositOrderId).uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName())
+                .payAmount(batteryMemberCard.getDeposit()).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(EleDepositOrder.ONLINE_PAYMENT)
+                .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0)
+                .paramFranchiseeId(electricityPayParams.getFranchiseeId()).wechatMerchantId(electricityPayParams.getWechatMerchantId()).build();
+        
+        return Triple.of(true, null, eleDepositOrder);
     }
     
     @Override

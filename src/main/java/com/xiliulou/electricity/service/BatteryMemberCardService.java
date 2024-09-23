@@ -57,6 +57,9 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel);
     
+    List<BatteryMemberCardSearchVO> searchV2(BatteryMemberCardQuery query);
+    
+    @Deprecated
     List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
     
     List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query);
@@ -91,6 +94,7 @@ public interface BatteryMemberCardService {
     
     /**
      * 批量修改套餐排序参数
+     *
      * @param sortParamQueries 套餐id、排序参数
      * @return 修改行数
      */
@@ -98,10 +102,13 @@ public interface BatteryMemberCardService {
     
     /**
      * 查询套餐以供后台排序
+     *
      * @param tokenUser ContextHolder中保存的用户信息
      * @return 返回id、name、sortParam、createTime
      */
     List<BatteryMemberCardVO> listMemberCardForSort(TokenUser tokenUser);
     
     List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
+    
+    
 }

@@ -118,6 +118,12 @@
             <if test="query.status != null">
                 and tero.status = #{query.status}
             </if>
+            <if test="query.statuses != null and query.statuses.size > 0">
+                and tero.status in
+                    <foreach collection="query.statuses" open="(" separator="," close=")" item="status">
+                        #{status}
+                    </foreach>
+            </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}
             </if>

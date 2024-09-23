@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -450,6 +451,40 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Override
     public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
         return insuranceOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet,
+            ElectricityPayParams electricityPayParams) {
+        // 查询保险
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceId);
+        
+        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
+            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", insuranceId, userInfo.getUid());
+            return Triple.of(false, "100305", "未找到保险!");
+        }
+        if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
+            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", insuranceId, userInfo.getUid());
+            return Triple.of(false, "100306", "保险已禁用!");
+        }
+        
+        if (Objects.isNull(franchiseeInsurance.getPremium())) {
+            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={},uid={}", insuranceId, userInfo.getUid());
+            return Triple.of(false, "100305", "未找到保险");
+        }
+        
+        // 生成保险独立订单
+        String insuranceOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
+                .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(insuranceOrderId).cid(franchiseeInsurance.getCid())
+                .franchiseeId(franchiseeInsurance.getFranchiseeId()).isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium())
+                .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
+                .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).tenantId(userInfo.getTenantId()).uid(userInfo.getUid())
+                .userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).paramFranchiseeId(electricityPayParams.getFranchiseeId())
+                .wechatMerchantId(electricityPayParams.getWechatMerchantId()).build();
+        
+        return Triple.of(true, null, insuranceOrder);
     }
     
     public String generateOrderId(Long uid) {
