@@ -7,5 +7,5 @@ package com.xiliulou.electricity.constant.thirdPartyMallConstant;
  */
 public interface MeiTuanRiderMallConstant {
     
-    String MEI_TUAN_CABINET_STATUS = "cabinetStatus";
+    String EID = "eid";
 }
