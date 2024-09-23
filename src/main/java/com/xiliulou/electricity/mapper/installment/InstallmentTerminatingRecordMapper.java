@@ -30,4 +30,6 @@ public interface InstallmentTerminatingRecordMapper {
     InstallmentTerminatingRecord selectById(@Param("id") Long id);
     
     InstallmentTerminatingRecord selectLatestByExternalAgreementNo(String externalAgreementNo);
+    
+    List<InstallmentTerminatingRecord> selectListForUserWithStatus(InstallmentTerminatingRecordQuery query);
 }

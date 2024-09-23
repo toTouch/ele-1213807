@@ -78,4 +78,11 @@ public interface InstallmentTerminatingRecordService {
      * @return 解约记录
      */
     InstallmentTerminatingRecord queryLatestByExternalAgreementNo(String externalAgreementNo);
+    
+    /**
+     * 根据状态查询用户的解约申请
+     * @param query 参数
+     * @return 返回解约申请
+     */
+    List<InstallmentTerminatingRecord> listForUserWithStatus(InstallmentTerminatingRecordQuery query);
 }

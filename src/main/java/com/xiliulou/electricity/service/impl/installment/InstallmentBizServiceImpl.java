@@ -221,7 +221,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         query.setUid(installmentRecord.getUid());
         query.setStatuses(List.of(TERMINATING_RECORD_STATUS_INIT));
         
-        List<InstallmentTerminatingRecord> records = installmentTerminatingRecordService.listForRecordWithStatus(query);
+        List<InstallmentTerminatingRecord> records = installmentTerminatingRecordService.listForUserWithStatus(query);
         if (!CollectionUtils.isEmpty(records)) {
             return R.fail("301014", "有未完成的解约申请");
         }

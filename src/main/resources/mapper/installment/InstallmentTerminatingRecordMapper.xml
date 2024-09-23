@@ -190,4 +190,19 @@
         order by id desc
         limit 1
     </select>
+    
+    <select id="selectListForUserWithStatus"
+            resultType="com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_terminating_record
+        <where>
+            uid = #{uid}
+            <if test="statuses != null and statuses.size > 0">
+                and `status` in
+                <foreach collection="statuses" open="(" separator="," close=")" item="status">
+                    #{status}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

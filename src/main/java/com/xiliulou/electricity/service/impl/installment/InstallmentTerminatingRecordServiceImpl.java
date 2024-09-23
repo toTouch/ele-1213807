@@ -156,4 +156,9 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecordMapper.selectLatestByExternalAgreementNo(externalAgreementNo);
     }
     
+    @Override
+    public List<InstallmentTerminatingRecord> listForUserWithStatus(InstallmentTerminatingRecordQuery query) {
+        return installmentTerminatingRecordMapper.selectListForUserWithStatus(query);
+    }
+    
 }
