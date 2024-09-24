@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
@@ -31,6 +32,8 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
+import com.xiliulou.electricity.enums.FreeBusinessTypeEnum;
+import com.xiliulou.electricity.enums.FreeDepositChannelEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -215,6 +218,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     
     @Autowired
     private SiteMessagePublish siteMessagePublish;
+    
+    @Autowired
+    private FreeDepositConfig freeDepositConfig;
     
     /**
      * 退押审批确认是否强制线下退款
@@ -418,12 +424,14 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         boolean lookFlag = true;
         
         while (lookFlag) {
+            
             // 1. 查询免押退押订单，退款中
             CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
             qryModel.setOffset(offset);
             qryModel.setSize(size);
             qryModel.setPayType(PayTypeEnum.EXEMPT.getCode());
             qryModel.setRefundState(RefundStateEnum.REFUNDING.getCode());
+            
             List<CarRentalPackageDepositRefundPo> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
             if (CollectionUtils.isEmpty(depositRefundEntityList)) {
                 log.warn("freeDepositRefundHandler, The data is empty and does not need to be processed");
@@ -434,6 +442,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             for (CarRentalPackageDepositRefundPo depositRefundEntity : depositRefundEntityList) {
                 Integer tenantId = depositRefundEntity.getTenantId();
                 
+                FreeDepositOrder depositOrder = freeDepositOrderService.selectByOrderId(depositRefundEntity.getDepositPayOrderNo());
+                // 如果订单是新版免押产生的则跳过
+                if (Objects.isNull(depositOrder) || depositOrder.getCreateTime() > 1727125200000L){
+                    continue;
+                }
                 // 调用第三方查询
                 PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(tenantId);
                 if (ObjectUtils.isEmpty(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -866,6 +879,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         PxzFreeDepositOrderRequest request = new PxzFreeDepositOrderRequest();
         request.setPhone(freeDepositOrder.getPhone());
         request.setSubject("租车套餐免押");
+        request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 1, tenantId));
         request.setRealName(freeDepositOrder.getRealName());
         request.setIdNumber(freeDepositOrder.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
@@ -893,7 +907,9 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     freeDepositOrder.getOrderId());
             throw new BizException("100401", callPxzRsp.getRespDesc());
         }
-        
+        freeDepositOrder.setPayTransAmt(freeDepositOrder.getTransAmt());
+        freeDepositOrder.setPackageId(freeDepositOptReq.getRentalPackageId());
+        freeDepositOrder.setChannel(FreeDepositChannelEnum.PXZ.getChannel());
         // TX 事务落库
         saveFreeDepositTx(carRentalPackageDepositPayInsert, freeDepositOrder, memberTermInsertOrUpdateEntity);
         

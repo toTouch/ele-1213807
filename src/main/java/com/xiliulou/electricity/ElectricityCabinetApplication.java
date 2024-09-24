@@ -14,10 +14,12 @@ import com.xiliulou.faceid.EnableFaceid;
 import com.xiliulou.feishu.EnableFeishu;
 import com.xiliulou.iot.EnableIot;
 import com.xiliulou.mq.EnableMq;
+import com.xiliulou.pay.EnableFengYun;
 import com.xiliulou.pay.EnableFreeDeposit;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.pay.ProfitSharingAutoConfiguration;
 import com.xiliulou.storage.EnableStorage;
+import com.xiliulou.thirdmall.EnableThirdMall;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
@@ -25,6 +27,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author: eclair
@@ -51,7 +54,9 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableFaceid
 @EnableMq
 @EnableFreeDeposit
+@EnableFengYun
 @EnableEsign
+@EnableThirdMall
 @Slf4j
 @ProfitSharingAutoConfiguration
 public class ElectricityCabinetApplication implements CommandLineRunner {

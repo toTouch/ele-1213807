@@ -130,4 +130,8 @@ public class EleDepositOrderVO {
      */
     private String tenantName;
     
+    /**
+     * 可退款金额
+     */
+    private Double payTransAmt;
 }

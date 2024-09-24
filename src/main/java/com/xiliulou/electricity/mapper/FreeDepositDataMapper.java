@@ -67,4 +67,6 @@ public interface FreeDepositDataMapper extends BaseMapper<FreeDepositData> {
     FreeDepositData selectByTenantId(@Param("tenantId") Integer tenantId);
 
     Integer deductionFreeDepositCapacity(@Param("tenantId") Integer tenantId, @Param("count") Integer count);
+    
+    Integer deductionFyFreeDepositCapacity(@Param("tenantId") Integer tenantId, @Param("count") Integer count);
 }

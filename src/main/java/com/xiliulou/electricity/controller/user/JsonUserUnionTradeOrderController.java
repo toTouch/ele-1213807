@@ -2,9 +2,11 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.ServiceFeePaymentQuery;
+import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
@@ -60,6 +62,15 @@ public class JsonUserUnionTradeOrderController extends BaseController {
     @PostMapping("/user/payServiceFee")
     public R payServiceFee(HttpServletRequest request) {
         return returnTripleResult(tradeOrderService.payServiceFee(request));
+    }
+    
+    /**
+     * 分期套餐混合支付接口
+     */
+    @ProcessParameter
+    @PostMapping("/user/installmentPayment")
+    public R<Object> installmentPayment(@RequestBody InstallmentPayQuery query, HttpServletRequest request) {
+        return tradeOrderService.installmentPayment(query, request);
     }
 }
 

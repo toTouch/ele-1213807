@@ -48,7 +48,13 @@ public class CarRentalPackageDepositRefundVo implements Serializable {
      * 实际退款金额
      */
     private BigDecimal realAmount;
-
+    
+    /**
+     * 剩余可代扣金额
+     */
+    private BigDecimal payTransAmt;
+    
+    
     /**
      * 交易方式
      * <pre>

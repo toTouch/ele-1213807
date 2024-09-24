@@ -44,7 +44,7 @@
         select
         <include refid="base_column"/>
         from t_profit_sharing_trade_order
-        where order_no = #{orderNo}
+        where order_no = #{orderNo} and del_flag = 0
     </select>
     
    
@@ -56,6 +56,16 @@
         update_time=#{updateTime}
         where id in
         <foreach collection="ids" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    
+    <update id="batchRemoveByIdList">
+        update
+        t_profit_sharing_trade_order
+        set del_flag = 1, update_time=#{updateTime}
+        where id in
+        <foreach collection="idList" open="(" close=")" item="id" separator=",">
             #{id}
         </foreach>
     </update>
@@ -80,11 +90,21 @@
     
     <select id="existsNotRefundByThirdOrderNo" resultType="java.lang.Integer">
         select 1 from t_profit_sharing_trade_order where third_order_no = #{thirdOrderNo}  and support_refund = 1
-                                                     and order_no != #{orderNo} limit 1
+                                                     and order_no != #{orderNo} and del_flag = 0 limit 1
     </select>
     
-    <select id="selectOrderNoyByThirdOrderNo" resultType="java.lang.String">
-        select order_no from t_profit_sharing_trade_order where third_order_no = #{thirdOrderNo} limit 1
+    <select id="selectOrderNoByThirdOrderNo" resultType="java.lang.String">
+        select order_no from t_profit_sharing_trade_order where third_order_no = #{thirdOrderNo} and del_flag = 0 limit 1
+    </select>
+    
+    <select id="selectListNotPaySuccessByOrderNo"
+            resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder">
+        select
+            <include refid="base_column"/>
+        from t_profit_sharing_trade_order
+                 where order_no = #{orderNo}
+                   and del_flag = 0
+                   and process_state = 0
     </select>
 
 

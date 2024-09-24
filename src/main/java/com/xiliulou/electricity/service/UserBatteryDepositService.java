@@ -35,9 +35,9 @@ public interface UserBatteryDepositService {
      * @return 实例对象
      */
     Integer insert(UserBatteryDeposit userBatteryDeposit);
-
+    
     UserBatteryDeposit insertOrUpdate(UserBatteryDeposit userBatteryDeposit);
-
+    
     /**
      * 修改数据
      *
@@ -53,14 +53,18 @@ public interface UserBatteryDepositService {
      * @return 是否成功
      */
     Integer deleteByUid(Long uid);
-
-
+    
+    
     Integer logicDeleteByUid(Long uid);
-
+    
     /**
      * 同步车电一体押金数据
      */
     Integer synchronizedUserBatteryDepositInfo(Long uid, Long mid, String orderId, BigDecimal batteryDeposit);
-
+    
     UserBatteryDeposit queryByUid(Long uid);
+    
+    Integer update(UserBatteryDeposit userBatteryDeposit);
+    
+    Integer deleteById(Long id);
 }

@@ -155,4 +155,11 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      * @see ChannelEnum
      */
     private String paymentChannel;
+    
+    /**
+     * <p>
+     *    Description: 剩余可代扣金额
+     * </p>
+    */
+    private BigDecimal payTransAmt;
 }

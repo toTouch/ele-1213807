@@ -96,4 +96,5 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     
     private Integer tenantId;
     
+    private Integer installmentRecordStatus;
 }

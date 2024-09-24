@@ -14,7 +14,9 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeInsuranceCarModelAndBatteryTypeDTO;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.CommonPayOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -154,32 +156,31 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     
     @Slave
     @Override
-    public R queryList(InsuranceOrderQuery insuranceOrderQuery,Boolean isType) {
-        if (!isType){
+    public R queryList(InsuranceOrderQuery insuranceOrderQuery, Boolean isType) {
+        if (!isType) {
             return R.ok(queryListByStatus(insuranceOrderQuery));
         }
         List<InsuranceOrderVO> insuranceOrderVOS = queryListByStatus(insuranceOrderQuery);
-        if (CollectionUtil.isEmpty(insuranceOrderVOS)){
+        if (CollectionUtil.isEmpty(insuranceOrderVOS)) {
             return R.ok(ListUtil.empty());
         }
-        Set<Long> collect = insuranceOrderVOS.stream().map(InsuranceOrderVO::getInsuranceId)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
-        if (CollectionUtil.isEmpty(collect)){
+        Set<Long> collect = insuranceOrderVOS.stream().map(InsuranceOrderVO::getInsuranceId).filter(Objects::nonNull).collect(Collectors.toSet());
+        if (CollectionUtil.isEmpty(collect)) {
             return R.ok(insuranceOrderVOS);
         }
         /*1.t_electricity_car_model -- name 车辆型号表*/
         /*2.t_franchisee_insurance -- car_model_id,simple_battery_type 保险配置表*/
         List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> result = franchiseeInsuranceService.selectListCarModelAndBatteryTypeById(collect);
-        if (CollectionUtil.isEmpty(result)){
+        if (CollectionUtil.isEmpty(result)) {
             return R.ok(insuranceOrderVOS);
         }
         Map<Long, FranchiseeInsuranceCarModelAndBatteryTypeDTO> dtoMap = result.stream().collect(Collectors.toMap(FranchiseeInsuranceCarModelAndBatteryTypeDTO::getId, v -> v));
         for (InsuranceOrderVO i : insuranceOrderVOS) {
-            if (!dtoMap.containsKey(i.getInsuranceId())){
+            if (!dtoMap.containsKey(i.getInsuranceId())) {
                 continue;
             }
             FranchiseeInsuranceCarModelAndBatteryTypeDTO dto = dtoMap.get(i.getInsuranceId());
-            if (Objects.equals(BATTERY_TYPE,dto.getInsuranceType())){
+            if (Objects.equals(BATTERY_TYPE, dto.getInsuranceType())) {
                 i.setBatteryModel(dto.getLabel());
                 continue;
             }
@@ -205,7 +206,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
-        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), tenantId,insuranceOrderAdd.getPaymentChannel());
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), tenantId, insuranceOrderAdd.getPaymentChannel());
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
@@ -239,8 +240,8 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
         
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.nonNull(insuranceUserInfo) && Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.NOT_USE)
-                && insuranceUserInfo.getInsuranceExpireTime() > System.currentTimeMillis()) {
+        if (Objects.nonNull(insuranceUserInfo) && Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.NOT_USE) && insuranceUserInfo.getInsuranceExpireTime() > System
+                .currentTimeMillis()) {
             log.error("CREATE INSURANCE_ORDER ERROR! user have insurance ！uid={}", userInfo.getUid());
             return R.fail("100310", "已购买保险");
         }
@@ -250,10 +251,10 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={}", insuranceOrderAdd.getInsuranceId());
             return R.fail("100305", "未找到保险!");
         }
-    
+        
         BasePayConfig payParamConfig = null;
         try {
-            payParamConfig = payConfigBizService.queryPayParams(insuranceOrderAdd.getPaymentChannel(), tenantId, userInfo.getFranchiseeId(),null);
+            payParamConfig = payConfigBizService.queryPayParams(insuranceOrderAdd.getPaymentChannel(), tenantId, userInfo.getFranchiseeId(), null);
         } catch (PayException e) {
             log.warn("CREATE INSURANCE_ORDER ERROR!not found pay params,uid={}", user.getUid(), e);
             return R.fail("100307", "未配置支付参数!");
@@ -320,9 +321,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder().orderId(orderId).uid(user.getUid()).payAmount(franchiseeInsurance.getPremium())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_INSURANCE).attach(ElectricityTradeOrder.ATTACH_INSURANCE).description("保险收费").tenantId(tenantId).build();
-    
-            BasePayOrderCreateDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParamsV2(commonPayOrder, payParamConfig,
-                    userOauthBind.getThirdId(), request);
+            
+            BasePayOrderCreateDTO resultDTO = electricityTradeOrderService
+                    .commonCreateTradeOrderAndGetPayParamsV2(commonPayOrder, payParamConfig, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (PayException e) {
             log.error("CREATE INSURANCE_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
@@ -458,6 +459,39 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return insuranceOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
+    @Override
+    public Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet, BasePayConfig basePayConfig) {
+        // 查询保险
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceId);
+        
+        if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
+            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", insuranceId, userInfo.getUid());
+            return Triple.of(false, "100305", "未找到保险!");
+        }
+        if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
+            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", insuranceId, userInfo.getUid());
+            return Triple.of(false, "100306", "保险已禁用!");
+        }
+        
+        if (Objects.isNull(franchiseeInsurance.getPremium())) {
+            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={},uid={}", insuranceId, userInfo.getUid());
+            return Triple.of(false, "100305", "未找到保险");
+        }
+        
+        // 生成保险独立订单
+        String insuranceOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
+                .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(insuranceOrderId).cid(franchiseeInsurance.getCid())
+                .franchiseeId(franchiseeInsurance.getFranchiseeId()).isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium())
+                .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
+                .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).tenantId(userInfo.getTenantId()).uid(userInfo.getUid())
+                .userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).paramFranchiseeId(basePayConfig.getFranchiseeId())
+                .wechatMerchantId(basePayConfig.getThirdPartyMerchantId()).paymentChannel(basePayConfig.getPaymentChannel()).build();
+        
+        return Triple.of(true, null, insuranceOrder);
+    }
+    
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid + RandomUtil.randomNumbers(4);
     }
@@ -487,28 +521,13 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         
         //生成保险独立订单
         String insuranceOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
-        InsuranceOrder insuranceOrder = InsuranceOrder.builder()
-                .insuranceId(franchiseeInsurance.getId())
-                .insuranceName(franchiseeInsurance.getName())
-                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY)
-                .orderId(insuranceOrderId)
-                .cid(franchiseeInsurance.getCid())
-                .franchiseeId(franchiseeInsurance.getFranchiseeId())
-                .isUse(InsuranceOrder.NOT_USE)
-                .payAmount(franchiseeInsurance.getPremium())
-                .forehead(franchiseeInsurance.getForehead())
-                .payType(InsuranceOrder.ONLINE_PAY_TYPE)
-                .phone(userInfo.getPhone())
-                .status(InsuranceOrder.STATUS_INIT)
-                .tenantId(userInfo.getTenantId())
-                .storeId(userInfo.getStoreId())
-                .uid(userInfo.getUid())
-                .userName(userInfo.getName())
-                .validDays(franchiseeInsurance.getValidDays())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
-
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
+                .insuranceType(FranchiseeInsurance.INSURANCE_TYPE_BATTERY).orderId(insuranceOrderId).cid(franchiseeInsurance.getCid())
+                .franchiseeId(franchiseeInsurance.getFranchiseeId()).isUse(InsuranceOrder.NOT_USE).payAmount(franchiseeInsurance.getPremium())
+                .forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.ONLINE_PAY_TYPE).phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_INIT)
+                .tenantId(userInfo.getTenantId()).storeId(userInfo.getStoreId()).uid(userInfo.getUid()).userName(userInfo.getName()).validDays(franchiseeInsurance.getValidDays())
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
+        
         return Triple.of(true, "", insuranceOrder);
     }
     

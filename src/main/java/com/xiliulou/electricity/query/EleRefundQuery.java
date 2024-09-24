@@ -26,6 +26,8 @@ public class EleRefundQuery {
      */
     private Integer status;
     
+    private List<Integer> statuses;
+    
     private Long size;
     
     private Long offset;

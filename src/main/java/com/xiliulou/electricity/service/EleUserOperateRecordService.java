@@ -23,4 +23,6 @@ public interface EleUserOperateRecordService extends IService<EleUserOperateReco
     R queryCount(Long uid, Long beginTime, Long enTime, Integer operateModel, Integer operateType);
     
     void asyncHandleUserOperateRecord(EleUserOperateRecord eleUserOperateRecord);
+    
+    Integer deleteById(Long id);
 }

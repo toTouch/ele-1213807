@@ -524,6 +524,28 @@
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
+    <select id="selectLastEnterpriseDeposit" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
+        SELECT
+            id,
+            pay_amount,
+            create_time,
+            update_time,
+            uid,
+            order_id,
+            STATUS,
+            model_type,
+            store_id,
+            source_order_no,
+            pay_type
+        FROM
+            t_ele_deposit_order
+        WHERE
+            STATUS = 1
+          AND uid = #{uid}
+          and order_type = 1
+        order by id desc
+            limit 1
+    </select>
     
     <update id="updatePhoneByUid">
         update t_ele_deposit_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}

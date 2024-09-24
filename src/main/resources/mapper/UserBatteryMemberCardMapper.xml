@@ -335,7 +335,7 @@
         resultType="com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo">
         SELECT
             b.id,
-            b.uid,
+            a.uid,
             b.member_card_id,
             b.order_id,
             b.member_card_expire_time,
@@ -353,7 +353,7 @@
             a.channel_user_id as 'channelUserId'
         FROM
             t_enterprise_channel_user_exit a
-                INNER JOIN t_user_battery_member_card b on b.uid = a.uid
+            left JOIN t_user_battery_member_card b on b.uid = a.uid
         where
             a.del_flag = 0
           and a.type = 0

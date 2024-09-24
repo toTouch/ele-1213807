@@ -111,6 +111,11 @@ public class UserBatteryMemberCardInfoVO {
      * @see RenewalStatusEnum
      */
     private Integer channelUserExit;
+    
+    /**
+     * 交易方式： 0-线上， 1-线下， 2-企业代付 3-美团支付
+     */
+    private Integer payType;
 
     public static final Integer NO = 0;
     public static final Integer YES = 1;

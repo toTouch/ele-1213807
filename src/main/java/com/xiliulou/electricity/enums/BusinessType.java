@@ -96,8 +96,16 @@ public enum BusinessType {
     PROFIT_SHARING_ORDER_UNFREEZE(92),
     // 分账解冻订单：分账单号
     PROFIT_SHARING_ORDER_DETAIL_UNFREEZE(93),
-    ;
     
+    // 分期套餐服务费订单
+    INSTALLMENT_SERVICE_FEE(100),
+    
+    // 分期代扣签约
+    INSTALLMENT_SIGN(101),
+    
+    // 代扣支付
+    INSTALLMENT_SIGN_AGREEMENT_PAY(102);
+
     private final Integer business;
     
     private BusinessType(Integer business) {

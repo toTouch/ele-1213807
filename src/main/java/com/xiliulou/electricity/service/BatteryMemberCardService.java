@@ -57,6 +57,9 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel);
     
+    List<BatteryMemberCardSearchVO> searchV2(BatteryMemberCardQuery query);
+    
+    @Deprecated
     List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
     
     List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query);
@@ -115,4 +118,6 @@ public interface BatteryMemberCardService {
      * @date 2024/8/13 20:20
      */
     List<BatteryMemberCard> queryListByIdList(List<Long> ids);
+    
+    
 }

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,7 +20,8 @@ public interface UnionTradeOrderService {
 
     
     
-    BasePayOrderCreateDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, BasePayConfig payParamConfig, String openId, HttpServletRequest request)
+    BasePayOrderCreateDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, BasePayConfig payParamConfig, String openId, HttpServletRequest request,
+            String externalAgreementNo)
             throws PayException;
 
 
@@ -44,4 +46,8 @@ public interface UnionTradeOrderService {
 
     Pair<Boolean, Object> notifyServiceFee(BaseOrderCallBackResource callBackResource);
     
+    /**
+     * 购买分期套餐回调方法
+     */
+    Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource);
 }

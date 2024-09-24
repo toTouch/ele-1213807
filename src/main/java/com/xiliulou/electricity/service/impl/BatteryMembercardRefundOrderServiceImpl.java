@@ -384,6 +384,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderNo);
                 return Triple.of(false, "100281", "电池套餐订单不存在");
             }
+    
+            // 美团订单不允许退租
+            if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! meiTuan order not allowed refund,uid={},orderNo={}", user.getUid(), orderNo);
+                return Triple.of(false, "120136", "美团订单，不允许退租");
+            }
             
             if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_EXPIRE)) {
                 return Triple.of(false, "100285", "电池套餐已失效");
@@ -521,6 +527,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Triple.of(false, "100281", "电池套餐订单不存在");
+        }
+    
+        // 美团订单不允许退租
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! meiTuan order not allowed refund,uid={},orderNo={}", electricityMemberCardOrder.getUid(), orderNo);
+            return Triple.of(false, "120136", "美团订单，不允许退租");
         }
         
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());

@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
@@ -113,7 +114,9 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)) {
             //云豆充值支付回调
             electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
-        } else {
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INSTALLMENT)) {
+            unionTradeOrderService.notifyInstallmentPayment(callBackResource);
+        }else {
             log.error("WX PAY CALL BACK FAIL!not found attach typeo,rderId={}", orderNo);
         }
     }

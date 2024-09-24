@@ -91,7 +91,7 @@ public class EleDepositOrder {
     private Integer carModelId;
 
     /**
-     * 交易方式 0 线上，1线下，2免押
+     * 交易方式 0 线上，1线下，2免押，3美团支付
      */
     private Integer payType;
 
@@ -138,11 +138,13 @@ public class EleDepositOrder {
     public static final Integer OFFLINE_PAYMENT = 1;
     
     /**
-     * 0 线上，1线下，2免押
+     * 0 线上，1线下，2免押，3美团支付
      */
     public static final Integer ONLINE_DEPOSIT_PAYMENT = 0;
     public static final Integer OFFLINE_DEPOSIT_PAYMENT = 1;
     public static final Integer FREE_DEPOSIT_PAYMENT = 2;
+    public static final Integer MEITUAN_DEPOSIT_PAYMENT = 3;
+    
     
     public static final Integer ORDER_TYPE_COMMON = 0;
     public static final Integer ORDER_TYPE_CHANNEL = 1;

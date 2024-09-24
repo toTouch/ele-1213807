@@ -127,4 +127,6 @@ public interface UserBatteryMemberCardService {
     void handleExpireMemberCard(String sesssionId, ElectricityCabinetOrder electricityCabinetOrder);
     
     void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId);
+    
+    Integer deleteById(Long id);
 }

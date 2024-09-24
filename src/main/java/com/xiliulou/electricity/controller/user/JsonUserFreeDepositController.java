@@ -56,6 +56,14 @@ public class JsonUserFreeDepositController extends BaseController {
     }
     
     /**
+     * 电池免押订单V4（支持拍下租和蜂云）
+     */
+    @PostMapping("/user/free/batteryDeposit/v4")
+    public R freeBatteryDepositOrderV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
+        return returnTripleResult(freeDepositOrderService.freeBatteryDepositOrderV4(query));
+    }
+    
+    /**
      * 电池免押混合支付V3
      */
     @PostMapping("/user/freeBatteryDeposit/hybridOrderV3")
@@ -71,6 +79,15 @@ public class JsonUserFreeDepositController extends BaseController {
     public R freeBatteryDepositOrderStatus() {
         return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatus());
     }
+    
+    /**
+     * 查询电池免押是否成功v2
+     */
+    @GetMapping("/user/free/batteryDeposit/order/status/v2")
+    public R freeBatteryDepositOrderStatusV2() {
+        return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatusV2());
+    }
+    
     
     /**
      * 车辆押金免押的前置检查

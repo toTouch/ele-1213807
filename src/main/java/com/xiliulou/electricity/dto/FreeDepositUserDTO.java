@@ -40,6 +40,7 @@ public class FreeDepositUserDTO {
     
     /**
      * 购买套餐类型
+     *
      * @see PackageTypeEnum
      */
     private Integer packageType;

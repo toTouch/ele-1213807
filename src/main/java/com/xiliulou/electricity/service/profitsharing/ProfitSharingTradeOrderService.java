@@ -32,7 +32,7 @@ public interface ProfitSharingTradeOrderService {
     
     boolean existsNotRefundByThirdOrderNo(String thirdOrderNo, String orderNo);
     
-    String queryOrderNoyByThirdOrderNo(String thirdOrderNo);
+    String queryOrderNoByThirdOrderNo(String thirdOrderNo);
     
     /**
      * 批量更新退款状态
@@ -44,4 +44,8 @@ public interface ProfitSharingTradeOrderService {
      * @date 2024/8/29 11:12
      */
     void batchUpdateStatus(List<Long> ids, Integer processState, String remark);
+    
+    List<ProfitSharingTradeOrder> listNotPaySuccessByOrderNo(String orderNo);
+    
+    int batchRemoveByIdList(List<Long> notPayTradeOrderIds);
 }

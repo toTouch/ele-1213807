@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.constant;
 
-import org.apache.kafka.common.protocol.types.Field;
-
 public interface CacheConstant {
     
     Long CACHE_EXPIRE_MONTH = 30 * 24 * 3600000L;
@@ -515,16 +513,27 @@ public interface CacheConstant {
      * 换电套餐免押订单链接缓存
      */
     String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "battery_free_deposit_order_generate_lock_key:";
-    
+    /**
+     * 换电套餐免押订单链接缓存V2
+     */
+    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "battery_free_deposit_order_generate_lock_key:%s:%s";
     /**
      * 租车套餐免押订单链接缓存
      */
     String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "car_rental_free_deposit_order_generate_lock_key:";
+    /**
+     * 租车套餐免押订单链接缓存V2
+     */
+    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "car_rental_free_deposit_order_generate_lock_key:%s:%s";
     
     /**
      * 企业渠道换电套餐免押订单链接缓存
      */
     String ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY = "enterprise_battery_free_deposit_order_generate_lock_key:";
+    /**
+     * 企业渠道换电套餐免押订单链接缓存V2
+     */
+    String ELE_CACHE_ENTERPRISE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "enterprise_battery_free_deposit_order_generate_lock_key:%s:%s";
     
     /**
      * 用户活跃缓存
@@ -703,9 +712,13 @@ public interface CacheConstant {
     String VEHICLE_BINDING_IDEMPOTENT_LOCK = "vehicle_binding_idempotent_lock:%s";
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
+    
+    String FREE_DEPOSIT_PAY_LOCK = "free_deposit_pay_lock:";
+    
+    String CACHE_FY_CONFIG = "cache_fy_config:";
     String CACHE_OFFLINE_KEY = "cache_offline_key:";
     String CACHE_OFFLINE_KEY_V2 = "cache_offline_key_v2:";
-
+    
     /**
      * TCP设备session缓存
      */
@@ -740,5 +753,58 @@ public interface CacheConstant {
      * 柜机仓门配置key
      */
     String CACHE_ELECTRICITY_CABINET_CELL_CONFIG = "electricity_cabinet_cell_config:";
+    
+    String CACHE_MEI_TUAN_RIDER_MALL_CONFIG = "mei_tuan_rider_mall_config:";
+    
+    String CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY = "cache_mei_tuan_create_battery_member_card_order_lock_key:";
+    
+    
+    /**
+     * 免押信息用户key
+     */
+    String FREE_DEPOSIT_USER_INFO_KEY = "free_deposit_user_info:%s";
+    
+    /**
+     * 免押信息用户key
+     */
+    String CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "car_free_deposit_user_info_lock_key:%s:%s";
+ 
+    
+    String UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "un_free_deposit_user_lock_order:%s";
+    
+    /**
+     * 购买分期套餐签约，缓存签约用的二维码
+     */
+    String CACHE_INSTALLMENT_FORM_BODY = "installment:form_Body:%s";
+    
+    /**
+     * 分期套餐取消签约记录key
+     */
+    String CACHE_INSTALLMENT_CANCEL_SIGN = "installment:cancel_sign";
+    
+    /**
+     * 签约取消互斥锁
+     */
+    String CACHE_INSTALLMENT_SIGN_CANCEL_LOCK = "installment:sign_cancel_lock:%d";
+    
+    /**
+     * 代扣锁
+     */
+    String CACHE_INSTALLMENT_DEDUCT_LOCK = "installment:deduct_lock:%d";
+
+    /**
+     * 分期套餐混合支付锁
+     */
+    String CACHE_INSTALLMENT_PAYMENT_LOCK = "installment:payment_lock:%d";
+
+    /**
+     * 分期套餐签约成功后处理逻辑锁
+     */
+    String CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK = "installment:sign_notify_lock:%d";
+
+    /**
+     * 分期套餐代扣后处理逻辑锁
+     */
+    String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
 }
 

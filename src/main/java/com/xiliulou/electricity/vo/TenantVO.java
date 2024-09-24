@@ -47,6 +47,16 @@ public class TenantVO {
     private Integer faceRecognizeCapacity;
 
     private Integer freeDepositCapacity;
+    
+    /**
+     * 蜂云免押次数
+     */
+    private Integer fyFreeDepositCapacity;
+    
+    /**
+     * 分期签约次数
+     */
+    private Integer byStagesCapacity;
 
     private Integer esignCapacity;
     

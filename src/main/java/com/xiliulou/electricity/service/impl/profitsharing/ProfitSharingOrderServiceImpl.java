@@ -4,7 +4,6 @@ import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.profitsharing.ProfitSharingOrderDetailConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
@@ -108,7 +107,7 @@ public class ProfitSharingOrderServiceImpl implements ProfitSharingOrderService 
             profitSharingOrder.setChannel(ChannelEnum.WECHAT.getCode());
             // 如果不是混合支付，则业务订单号等于换电支付订单号
             if (Objects.equals(profitSharingTradeMixedOrder.getWhetherMixedPay(), ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)) {
-                String orderNo = profitSharingTradeOrderService.queryOrderNoyByThirdOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
+                String orderNo = profitSharingTradeOrderService.queryOrderNoByThirdOrderNo(profitSharingTradeMixedOrder.getThirdOrderNo());
                 profitSharingOrder.setBusinessOrderNo(orderNo);
             }
         

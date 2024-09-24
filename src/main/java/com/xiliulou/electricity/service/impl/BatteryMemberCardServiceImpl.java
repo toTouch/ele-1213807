@@ -15,7 +15,9 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -23,6 +25,8 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
@@ -30,21 +34,26 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.enterprise.EnterprisePackageService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -70,6 +79,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,6 +89,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_MAX_VALID_DAYS;
+import static com.xiliulou.electricity.entity.BatteryMemberCard.BUSINESS_TYPE_INSTALLMENT_BATTERY;
 
 /**
  * (BatteryMemberCard)表服务实现类
@@ -145,7 +158,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     private UserDataScopeServiceImpl userDataScopeService;
     
     @Resource
-    StoreService storeService;
+    private StoreService storeService;
+    
+    @Autowired
+    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    
+    @Resource
+    private PxzConfigService pxzConfigService;
+    
+    @Resource
+    private FyConfigService fyConfigService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -226,6 +248,19 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return delete;
     }
     
+    @Override
+    @Slave
+    public List<BatteryMemberCardSearchVO> searchV2(BatteryMemberCardQuery query) {
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectBySearchV2(query);
+        
+        return list.parallelStream().map(item -> {
+            BatteryMemberCardSearchVO batteryMemberCardVO = new BatteryMemberCardSearchVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+    }
+    
+    @Deprecated
     @Override
     @Slave
     public List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query) {
@@ -363,6 +398,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.nonNull(item.getCouponId())) {
                 Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
                 batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            }
+            
+            // 设置分期套餐期数、剩余每期费用
+            if (Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
+                Integer installmentNo = batteryMemberCardVO.getValidDays() / 30;
+                batteryMemberCardVO.setInstallmentNo(installmentNo);
+                
+                BigDecimal rentPrice = batteryMemberCardVO.getRentPrice();
+                BigDecimal downPayment = batteryMemberCardVO.getDownPayment();
+                batteryMemberCardVO.setRemainingCost(rentPrice.subtract(downPayment).divide(new BigDecimal((installmentNo).toString()), 2, RoundingMode.DOWN));
             }
             
             result.add(batteryMemberCardVO);
@@ -629,6 +674,21 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 dealCouponSearchVo(item.getCouponId(), item.getCouponIds(), batteryMemberCardVO);
             }
             
+            // 设置分期套餐期数、剩余每期费用
+            if (!Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
+                result.add(batteryMemberCardVO);
+                continue;
+            }
+            
+            int installmentNo = batteryMemberCardVO.getValidDays() / 30;
+            batteryMemberCardVO.setInstallmentNo(installmentNo);
+            if (installmentNo > 1) {
+                BigDecimal rentPrice = batteryMemberCardVO.getRentPrice();
+                BigDecimal downPayment = batteryMemberCardVO.getDownPayment();
+                batteryMemberCardVO.setRemainingCost(rentPrice.subtract(downPayment).divide(new BigDecimal(String.valueOf(installmentNo - 1)), 2, RoundingMode.DOWN));
+            } else {
+                batteryMemberCardVO.setRemainingCost(new BigDecimal("0"));
+            }
             result.add(batteryMemberCardVO);
         }
         
@@ -772,6 +832,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100271", "请先下架套餐再进行编辑操作");
         }
         
+        Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
+        if (triple.getLeft()) {
+            return Triple.of(false, triple.getMiddle(), triple.getRight());
+        }
+        
+        if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
+            return Triple.of(false, "301022", "可分期数最多支持24期，请修改租期");
+        }
+        
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
         batteryMemberCardUpdate.setId(batteryMemberCard.getId());
         batteryMemberCardUpdate.setName(query.getName());
@@ -793,10 +862,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardUpdate.setUserInfoGroupIds(Objects.isNull(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
+        batteryMemberCardUpdate.setBusinessType(query.getBusinessType());
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCardUpdate.setCouponIds(null);
         } else {
             batteryMemberCardUpdate.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
+        }
+        batteryMemberCardUpdate.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
+        if (Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
+            batteryMemberCardUpdate.setDownPayment(Objects.equals(batteryMemberCardUpdate.getValidDays() / 30, 1) ? batteryMemberCardUpdate.getRentPrice() : query.getDownPayment());
         }
         
         this.update(batteryMemberCardUpdate);
@@ -856,14 +930,25 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return verifyBatteryMemberCardResult;
         }
         
+        Triple<Boolean, String, Object> triple = checkFreeDepositConfig(query);
+        if (triple.getLeft()) {
+            return Triple.of(false, triple.getMiddle(), triple.getRight());
+        }
+        
         // 套餐数量最多150个，仅对换电套餐做限制
+        List<Integer> typeList = Arrays.asList(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(),
+                BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
         if (Objects.equals(query.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())) {
-            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())
+            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessTypes(typeList)
                     .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
             
             if (selectByPageCount(queryCount) >= BatteryMemberCardConstants.MAX_BATTERY_MEMBER_CARD_NUM) {
                 return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
             }
+        }
+        
+        if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType()) && query.getValidDays() > INSTALLMENT_MAX_VALID_DAYS) {
+            return Triple.of(false, "301022", "可分期数最多支持24期，请修改租期");
         }
         
         BatteryMemberCard batteryMemberCard = new BatteryMemberCard();
@@ -880,11 +965,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCard.setCouponIds(CollectionUtils.isEmpty(query.getCouponIdsTransfer()) ? null : JsonUtil.toJson(query.getCouponIdsTransfer()));
         }
         
-        // 适配企业渠道添加套餐业务
+        // 校验并设置套餐的业务类型，以及相关业务参数
         if (Objects.equals(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(), query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode());
         } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode().equals(query.getBusinessType())) {
             batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode());
+        } else if (BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode().equals(query.getBusinessType())) {
+            batteryMemberCard.setBusinessType(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
+            batteryMemberCard.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
+            batteryMemberCard.setDownPayment(Objects.equals(batteryMemberCard.getValidDays() / 30, 1) ? batteryMemberCard.getRentPrice() : query.getDownPayment());
         } else {
             return Triple.of(false, "100107", "业务类型参数不正确");
         }
@@ -896,6 +985,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         return Triple.of(true, null, null);
+    }
+    
+    private Triple<Boolean, String, Object> checkFreeDepositConfig(BatteryMemberCardQuery query) {
+        // 免押套餐校验免押配置
+        if (Objects.equals(query.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
+                return Triple.of(true, "100380", "请先完成免押配置，再新增免押套餐");
+            }
+        }
+        return Triple.of(false, null, null);
     }
     
     @Override
@@ -945,9 +1048,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setOriginalBatteryModel(query.getBatteryModel());
             query.setBatteryModel(null);
         }
-    
+        
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectListSuperAdminPage(query);
-    
+        
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
@@ -961,14 +1064,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.nonNull(franchisee)) {
                 batteryMemberCardVO.setFranchiseeName(franchisee.getName());
             }
-        
+            
             // 设置电池型号
             if (!item.getBatteryType().isEmpty()) {
-            
+                
                 List<String> originalBatteryModels = item.getBatteryType().stream().map(MemberCardBatteryType::getBatteryType).distinct().collect(Collectors.toList());
                 batteryMemberCardVO.setBatteryModels(batteryModelService.selectShortBatteryType(originalBatteryModels, item.getTenantId()));
             }
-        
+            
             // 设置优惠券
             if (Objects.equals(item.getSendCoupon(), BatteryMemberCard.SEND_COUPON_YES)) {
                 List<CouponSearchVo> coupons = new ArrayList<>();
@@ -979,7 +1082,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 if (StringUtils.isNotBlank(item.getCouponIds())) {
                     couponIdsSet.addAll(JsonUtil.fromJsonArray(item.getCouponIds(), Integer.class));
                 }
-            
+                
                 if (!CollectionUtils.isEmpty(couponIdsSet)) {
                     couponIdsSet.forEach(couponId -> {
                         CouponSearchVo couponSearchVo = new CouponSearchVo();
@@ -993,12 +1096,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
                 batteryMemberCardVO.setCoupons(coupons);
             }
-        
+            
             // 设置用户分组
             if (StringUtils.isNotBlank(item.getUserInfoGroupIds())) {
                 List<SearchVo> userInfoGroups = new ArrayList<>();
                 List<Long> userInfoGroupIds = JsonUtil.fromJsonArray(item.getUserInfoGroupIds(), Long.class);
-            
+                
                 if (CollectionUtils.isNotEmpty(userInfoGroupIds)) {
                     for (Long userInfoGroupId : userInfoGroupIds) {
                         SearchVo searchVo = new SearchVo();
