@@ -26,6 +26,7 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.pay.alipay.exception.AliPayException;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationToken;
 import com.xiliulou.security.bean.SecurityUser;
@@ -92,16 +93,18 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
     
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> hashMap) {
-        
-        String code = get(hashMap, "code");
-        String iv = get(hashMap, "iv");
-        String data = get(hashMap, "data");
-        
-        if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
-            throw new AuthenticationServiceException("操作频繁！请稍后再试！");
-        }
-        
+        String code = null;
         try {
+            TtlTraceIdSupport.set();
+            
+            code = get(hashMap, "code");
+            String iv = get(hashMap, "iv");
+            String data = get(hashMap, "data");
+            
+            if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
+                throw new AuthenticationServiceException("操作频繁！请稍后再试！");
+            }
+            
             Integer tenantId = TenantContextHolder.getTenantId();
             
             AlipayAppConfigBizDetails alipayAppConfig = this.acquireAlipayAppConfig(tenantId);
@@ -117,11 +120,10 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
             
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
+            TtlTraceIdSupport.clear();
         }
         
     }
-    
-    
     
     
     private AlipayAppConfigBizDetails acquireAlipayAppConfig(Integer tenantId) {
@@ -234,7 +236,6 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
         alipayConfig.setSignType(SIGN_TYPE);
         return alipayConfig;
     }
-    
     
     
     @Override
