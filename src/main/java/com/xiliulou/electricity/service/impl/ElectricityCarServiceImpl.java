@@ -49,7 +49,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
-import com.xiliulou.electricity.service.retrofit.Jt808RetrofitWrapService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -111,7 +111,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     UserCarDepositService userCarDepositService;
     
     @Autowired
-    Jt808RetrofitWrapService jt808RetrofitWrapService;
+    Jt808RetrofitService jt808RetrofitService;
     
     @Autowired
     ClickHouseService clickHouseService;
@@ -666,7 +666,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Override
     public Boolean carLockCtrl(String sn, Integer lockType) {
-        R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
         if (!result.isSuccess()) {
             log.warn("Jt808 warn! controlDevice error! carSn={},result={}", sn, result);
             return false;
@@ -751,7 +751,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         retryCount = retryCount > 5 ? 5 : retryCount;
         
         for (int i = 0; i < retryCount; i++) {
-            R<Jt808DeviceInfoVo> result = jt808RetrofitWrapService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
+            R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
             if (result.isSuccess()) {
                 return true;
             }

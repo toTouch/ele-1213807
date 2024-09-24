@@ -118,7 +118,7 @@ import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordSer
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
-import com.xiliulou.electricity.service.retrofit.Jt808RetrofitWrapService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.base.PayServiceDispatcher;
@@ -262,7 +262,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     ElectricityCarService electricityCarService;
     
     @Autowired
-    Jt808RetrofitWrapService jt808RetrofitWrapService;
+    Jt808RetrofitService jt808RetrofitService;
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
