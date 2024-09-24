@@ -38,6 +38,7 @@ import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.template.TemplateConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
+import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;

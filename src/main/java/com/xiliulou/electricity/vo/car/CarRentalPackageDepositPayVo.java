@@ -162,4 +162,5 @@ public class CarRentalPackageDepositPayVo implements Serializable {
      * </p>
     */
     private BigDecimal payTransAmt;
+    
 }

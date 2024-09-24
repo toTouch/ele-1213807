@@ -89,6 +89,8 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -398,8 +400,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         // 判断是否线上押金
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT) || Objects
-                .equals(eleDepositOrder.getPayType(), EleDepositOrder.MEITUAN_DEPOSIT_PAYMENT)) {
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT) || Objects.equals(eleDepositOrder.getPayType(),
+                EleDepositOrder.MEITUAN_DEPOSIT_PAYMENT)) {
             log.warn("ELE DEPOSIT WARN! travel to store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
@@ -413,11 +415,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
         
+        
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
         
         BigDecimal refundAmount = getRefundAmountV2(eleDepositOrder, freeDepositOrder);
         
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        
         
         UserInfo updateUserInfo = new UserInfo();
         boolean eleRefund = false;
