@@ -121,12 +121,6 @@ import java.util.Objects;
 @Service
 public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepositBizService {
     
-    @Resource
-    private ElectricityPayParamsService electricityPayParamsService;
-    
-    @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
-    
     
     @Resource
     private PayConfigBizService payConfigBizService;
@@ -146,8 +140,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     @Resource
     private InsuranceUserInfoService insuranceUserInfoService;
     
-    @Resource(name = "wxRefundPayCarDepositServiceImpl")
-    private RefundPayService refundPayService;
     
     @Resource
     private ElectricityTradeOrderService electricityTradeOrderService;
@@ -173,11 +165,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     @Resource
     private CarRentalPackageService carRentalPackageService;
     
-    @Resource
-    private WechatConfig wechatConfig;
-    
-    @Resource
-    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
