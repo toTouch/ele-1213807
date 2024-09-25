@@ -682,9 +682,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             refundPayService.process(callBackResource);
         }
     
-        if(PayTypeEnum.OFF_LINE.getCode().equals(payType)){
-            updateRentRefundEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
-        }
+//        if(PayTypeEnum.OFF_LINE.getCode().equals(payType)){
+//            updateRentRefundEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+//        }
     
     
         carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
@@ -720,7 +720,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-            updateRentRefundEntity.setPaymentChannel(paymentChannel);
+//            updateRentRefundEntity.setPaymentChannel(paymentChannel);
             carRentalPackageOrderRentRefundTxService.update(updateRentRefundEntity);
             
             // 调用微信支付，进行退款
@@ -1553,7 +1553,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentRefundUpdateEntity.setUpdateUid(apploveUid);
         // 1. 更新退租申请单状态
         rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
-        rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+//        rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
         carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
         
         // 2. 更新会员期限
@@ -1585,9 +1585,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 rentRefundUpdateEntity.setCompelOffLine(YesNoEnum.YES.getCode());
             }
             
-            if (PayTypeEnum.ON_LINE.getCode().equals(payType)){
-                rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
-            }
+//            if (PayTypeEnum.ON_LINE.getCode().equals(payType)){
+//                rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+//            }
             
             // 购买订单时的支付订单号
             String orderNo = packageOrderEntity.getOrderNo();
@@ -1622,7 +1622,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         } else {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
-            rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+//            rentRefundUpdateEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
             
             // 2. 更新会员期限
@@ -2515,7 +2515,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentRefundOrderEntity.setConfineResidue(confineResidue);
         // 设置交易方式
         rentRefundOrderEntity.setPayType(packageOrderEntity.getPayType());
-//        rentRefundOrderEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
+        rentRefundOrderEntity.setPaymentChannel(packageOrderEntity.getPaymentChannel());
         return rentRefundOrderEntity;
     }
     

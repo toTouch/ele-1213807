@@ -65,13 +65,11 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
-import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.wxrefund.RefundPayService;
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
@@ -558,7 +556,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.WX_APPLET,
-                depositAuditFlag, payType, null, uid, null);
+                depositAuditFlag, payType, null, uid, null,depositPayEntity.getPaymentChannel());
         
         // 待审核
         if (RefundStateEnum.PENDING_APPROVAL.getCode().equals(refundDepositInsertEntity.getRefundState())) {
@@ -629,7 +627,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
      * @return
      */
     private CarRentalPackageDepositRefundPo budidCarRentalPackageOrderRentRefund(CarRentalPackageMemberTermPo memberTermEntity, String depositPayOrderNo,
-            SystemDefinitionEnum systemDefinition, boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid, Integer compelOffLine) {
+            SystemDefinitionEnum systemDefinition, boolean depositAuditFlag, Integer payType, BigDecimal refundAmount, Long optUid, Integer compelOffLine,String paymentChannel) {
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = new CarRentalPackageDepositRefundPo();
         refundDepositInsertEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, memberTermEntity.getUid()));
         refundDepositInsertEntity.setUid(memberTermEntity.getUid());
@@ -643,7 +641,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         refundDepositInsertEntity.setRentalPackageType(memberTermEntity.getRentalPackageType());
         // 默认状态，待审核
         refundDepositInsertEntity.setRefundState(RefundStateEnum.PENDING_APPROVAL.getCode());
-        
+        refundDepositInsertEntity.setPaymentChannel(paymentChannel);
         // 设置退款状态
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinition.getCode())) {
             refundDepositInsertEntity.setRealAmount(refundAmount);
@@ -859,7 +857,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.BACKGROUND,
-                false, payType, realAmount, optUid, optModel.getCompelOffLine());
+                false, payType, realAmount, optUid, optModel.getCompelOffLine(),depositPayEntity.getPaymentChannel());
         
         // 退款中（只能是免押）
         if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
@@ -950,7 +948,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         
         // 生成退押申请单
         CarRentalPackageDepositRefundPo refundDepositInsertEntity = budidCarRentalPackageOrderRentRefund(memberTermEntity, depositPayOrderNo, SystemDefinitionEnum.BACKGROUND,
-                false, payType, realAmount, optUid, optModel.getCompelOffLine());
+                false, payType, realAmount, optUid, optModel.getCompelOffLine(),depositPayEntity.getPaymentChannel());
         
         // 待审核
         if (RefundStateEnum.REFUNDING.getCode().equals(refundDepositInsertEntity.getRefundState())) {
