@@ -195,7 +195,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
                 eleRefundOrder = EleRefundOrder.builder().orderId(order.getOrderId())
                         .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, order.getUid())).payAmount(eleDepositOrder.getPayAmount())
                         .refundAmount(new BigDecimal(order.getPayTransAmt().toString())).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                        .tenantId(eleDepositOrder.getTenantId()).franchiseeId(order.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                        .tenantId(eleDepositOrder.getTenantId()).franchiseeId(order.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel()).build();
                 eleRefundOrderService.insert(eleRefundOrder);
             }
             EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();

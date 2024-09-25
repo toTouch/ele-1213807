@@ -477,7 +477,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 拒绝退款
         if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
-            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
+//            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
         }
@@ -520,7 +520,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         try {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
+//            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.update(eleRefundOrderUpdate);
             
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
@@ -537,7 +537,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 提交失败
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
+//        eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
         eleRefundOrderService.update(eleRefundOrderUpdate);
         
         return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
@@ -1047,7 +1047,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                     .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType())
+                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel())
                     .build();
             eleRefundOrderService.insert(eleRefundOrder);
             
@@ -1109,7 +1109,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType())
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel())
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
         
@@ -1250,7 +1250,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel()).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         
@@ -1469,6 +1469,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 生成退款订单
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.insert(eleRefundOrder);
             
             UserInfo updateUserInfo = new UserInfo();
@@ -1524,6 +1525,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 eleRefundOrder.setRefundAmount(refundAmount);
+                eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
                 eleRefundOrderService.insert(eleRefundOrder);
                 
                 UserInfo updateUserInfo = new UserInfo();
@@ -1588,6 +1590,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+                eleDepositOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
                 eleRefundOrderTxService.insert(eleRefundOrder);
                 
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
@@ -1603,6 +1606,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_FAIL);
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.insert(eleRefundOrder);
             return R.fail("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
         }

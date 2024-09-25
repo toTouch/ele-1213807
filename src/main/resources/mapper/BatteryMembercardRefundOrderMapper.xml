@@ -212,9 +212,6 @@
             <if test="storeId != null">
                 store_id = #{storeId},
             </if>
-            <if test="paymentChannel != null and paymentChannel != ''">
-                payment_channel = #{paymentChannel},
-            </if>
         </set>
         where id = #{id}
     </update>

@@ -495,7 +495,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
             batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
-//            batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+            batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
             
             this.insert(batteryMembercardRefundOrderInsert);
@@ -659,6 +659,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
         batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
         
         applicationContext.getBean(BatteryMembercardRefundOrderService.class).insert(batteryMembercardRefundOrderInsert);
@@ -695,7 +696,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         
         try {
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
             
             applicationContext.getBean(BatteryMembercardRefundOrderService.class).handleRefundOrderV2(batteryMembercardRefundOrderInsert, basePayConfig, request);
@@ -709,7 +710,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
-        batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+//        batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         applicationContext.getBean(BatteryMembercardRefundOrderService.class).update(batteryMembercardRefundOrderUpdate);
         
         electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
@@ -761,7 +762,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderUpdate.setMsg(msg);
             batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND);
-            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             this.update(batteryMembercardRefundOrderUpdate);
             
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -784,7 +785,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderUpdate.setMsg(msg);
             batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
-            batteryMembercardRefundOrderUpdate.setPaymentChannel(batteryMembercardRefundOrder.getPaymentChannel());
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(batteryMembercardRefundOrder.getPaymentChannel());
             this.update(batteryMembercardRefundOrderUpdate);
             
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -835,7 +836,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         try {
-            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
             
             batteryMembercardRefundOrder.setRefundAmount(refundAmount);
@@ -847,7 +848,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
-        batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+//        batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         this.update(batteryMembercardRefundOrderUpdate);
         
         electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
