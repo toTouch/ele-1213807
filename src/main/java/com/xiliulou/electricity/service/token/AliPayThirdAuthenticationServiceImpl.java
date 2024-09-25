@@ -120,7 +120,7 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
             
         } catch (Exception e) {
             log.warn("AliPayThirdAuthenticationServiceImpl.registerUserAndLoadUser WARN! Exception:", e);
-            throw new AuthenticationServiceException("系统异常！");
+            throw e;
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
             TtlTraceIdSupport.clear();
