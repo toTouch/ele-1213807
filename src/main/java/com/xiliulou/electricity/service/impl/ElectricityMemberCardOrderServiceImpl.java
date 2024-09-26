@@ -208,6 +208,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK_USERINFO_GROUP_ADMIN;
 import static com.xiliulou.electricity.entity.ElectricityMemberCardOrder.INSTALLMENT_PAYMENT;
 
 /**
@@ -2803,23 +2804,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(query.getUid(), userInfo.getFranchiseeId(),
+                batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
         
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-            
-            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (CollectionUtils.isEmpty(userGroupIds)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        } else {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
+        if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+            return checkTriple;
         }
         
         // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
@@ -3223,22 +3212,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100275", "电池套餐不可用");
         }
         
-        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        // 检查用户与套餐的用户分组是否匹配
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(query.getUid(), userInfo.getFranchiseeId(),
+                batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
         
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (CollectionUtils.isEmpty(userGroupIds)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        } else {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
+        if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+            return checkTriple;
         }
         
         // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买

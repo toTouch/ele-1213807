@@ -122,6 +122,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK_USERINFO_GROUP_ADMIN;
+import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK_USERINFO_GROUP_USER;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_PAYMENT_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
@@ -345,23 +347,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), userInfo.getFranchiseeId(),
+                    batteryMemberCard, CHECK_USERINFO_GROUP_USER);
             
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
-                
-                List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-                userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-                if (CollectionUtils.isEmpty(userGroupIds)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
-            } else {
-                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
+            if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+                return checkTriple;
             }
             
             // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
@@ -649,23 +639,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService.listGroupByUid(
-                    UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), userInfo.getFranchiseeId(),
+                    batteryMemberCard, CHECK_USERINFO_GROUP_USER);
             
-            if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
-                
-                List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-                userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-                if (CollectionUtils.isEmpty(userGroupIds)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
-            } else {
-                if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                    return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
-                }
+            if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+                return checkTriple;
             }
             
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {

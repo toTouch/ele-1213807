@@ -110,5 +110,13 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
     
-    
+    /**
+     * 检查用户与套餐的用户分组是否匹配
+     * @param uid 用户uid
+     * @param franchiseeId 加盟商id
+     * @param memberCard 套餐
+     * @param source 区分用户端与后台
+     * @return 检查结果
+     */
+    Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(Long uid, Long franchiseeId, BatteryMemberCard memberCard, Integer source);
 }

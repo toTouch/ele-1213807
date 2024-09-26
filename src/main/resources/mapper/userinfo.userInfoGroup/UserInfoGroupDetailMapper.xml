@@ -114,6 +114,9 @@
             <if test="tenantId != null">
                 and tuigd.tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeId != null">
+                and tuigd.franchisee_id = #{franchiseeId}
+            </if>
             <if test="franchiseeIds != null and franchiseeIds.size()>0">
                 and tuigd.franchisee_id in
                 <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
