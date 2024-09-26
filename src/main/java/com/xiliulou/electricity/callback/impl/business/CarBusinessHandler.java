@@ -212,8 +212,6 @@ public class CarBusinessHandler implements BusinessHandler {
                 userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
             }
             
-            //删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(depositRefundEntity.getUid());
             redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
             log.info("Car/car electronics order no unfree deposit callback completed, order number: {}",order.getOrderId());
             return true;

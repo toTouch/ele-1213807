@@ -410,37 +410,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     }
     
     @Override
-    public void handleAfterRefundDeposit(Long uid) {
-        boolean depositStatus = userBizService.isBoundDeposit(uid);
-        if (depositStatus) {
-            return;
-        }
-    
-        List<UserInfoGroupNamesBO> groupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).build());
-        Integer delete = 0;
-        if (CollectionUtils.isNotEmpty(groupList)) {
-            delete = this.deleteByUid(uid, null);
-        }
-    
-        if (delete > 0) {
-            AtomicReference<Long> franchiseeId = new AtomicReference<>(NumberConstant.ZERO_L);
-            AtomicReference<Integer> tenantId = new AtomicReference<>(NumberConstant.ZERO);
-        
-            Optional<UserInfo> optionalUserInfo = Optional.ofNullable(userInfoService.queryByUidFromCache(uid));
-            optionalUserInfo.ifPresent(u -> {
-                franchiseeId.set(Objects.isNull(u.getFranchiseeId()) ? NumberConstant.ZERO_L : u.getFranchiseeId());
-                tenantId.set(Objects.isNull(u.getTenantId()) ? NumberConstant.ZERO : u.getTenantId());
-            });
-        
-            String oldGroupIds = groupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
-            UserInfoGroupDetailHistory detail = this.assembleDetailHistory(uid, oldGroupIds, "", uid, franchiseeId.get(), tenantId.get(),
-                    UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_REFUND_DEPOSIT);
-        
-            userInfoGroupDetailHistoryService.insertOne(detail);
-        }
-    }
-    
-    @Override
     public Integer deleteByGroupNo(String groupNo, Integer tenantId) {
         return userInfoGroupDetailMapper.deleteByGroupNo(groupNo, tenantId);
     }

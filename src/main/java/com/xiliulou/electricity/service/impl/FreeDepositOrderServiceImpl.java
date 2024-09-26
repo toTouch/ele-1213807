@@ -2059,9 +2059,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 
                 // 删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(freeDepositOrder.getUid());
-                
-                // 删除用户分组
-                userInfoGroupDetailService.handleAfterRefundDeposit(freeDepositOrder.getUid());
             }
         }
     }

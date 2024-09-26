@@ -388,9 +388,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 // 删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
                 
-                // 删除用户分组
-                userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
-                
                 // 解约分期签约，如果有的话
                 installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             }
@@ -688,9 +685,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
-            
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
             
             // 解约分期签约，如果有的话
             installmentBizService.terminateForReturnDeposit(userInfo.getUid());
@@ -1069,9 +1063,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 修改企业用户代付状态为代付过期
             enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
             
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
-            
             // 解约分期签约，如果有的话
             installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             
@@ -1283,9 +1274,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         // 删除用户电池服务费
         serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
-        
-        // 删除用户分组
-        userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
         
         // 解约分期签约，如果有的话
         installmentBizService.terminateForReturnDeposit(userInfo.getUid());
@@ -1576,9 +1564,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 删除用户电池服务费
             serviceFeeUserInfoService.deleteByUid(uid);
             
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(uid);
-            
             // 解约分期签约，如果有的话
             installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             
@@ -1630,9 +1615,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 // 删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(uid);
-                
-                // 删除用户分组
-                userInfoGroupDetailService.handleAfterRefundDeposit(uid);
                 
                 // 解约分期签约，如果有的话
                 installmentBizService.terminateForReturnDeposit(userInfo.getUid());

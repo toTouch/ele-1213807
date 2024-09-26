@@ -609,8 +609,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
             }
             
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(memberTermEntity.getUid());
         }
     }
     
@@ -1145,8 +1143,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                     
-                    // 删除用户分组
-                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
                 
                 // 线上，调用微信退款
@@ -1246,8 +1242,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                     
-                    // 删除用户分组
-                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
                 
                 // 免押

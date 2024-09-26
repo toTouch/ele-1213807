@@ -515,9 +515,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             freeDepositOrderService.update(freeDepositOrderUpdate);
         }
-        
-        //删除用户分组
-        userInfoGroupDetailService.handleAfterRefundDeposit(depositRefundEntity.getUid());
     }
     
     /**
@@ -1387,9 +1384,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
-                    
-                    // 删除用户分组
-                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
                 
                 // 线上，调用微信退款
@@ -1507,8 +1501,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                     
-                    // 删除用户分组
-                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
                 
                 // 免押
@@ -1738,8 +1730,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
             }
             
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(memberTermEntity.getUid());
         }
     }
     
