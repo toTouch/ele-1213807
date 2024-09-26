@@ -1404,7 +1404,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     }
     
     @Override
-    public Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyInstallmentPayment(BaseOrderCallBackResource callBackResource) {
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();

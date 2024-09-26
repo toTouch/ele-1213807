@@ -58,6 +58,8 @@ public class OrderCallbackDispatcher {
         strategies.put(UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE, param -> unionTradeOrderService.notifyMembercardInsurance(param));
         
         strategies.put(UnionTradeOrder.ATTACH_SERVUCE_FEE, param -> unionTradeOrderService.notifyServiceFee(param));
+    
+        strategies.put(UnionTradeOrder.ATTACH_INSTALLMENT, param -> unionTradeOrderService.notifyInstallmentPayment(param));
     }
     
     /**
