@@ -1371,6 +1371,8 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             log.info("saveApproveRefundDepositOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
         } catch (PayException e) {
             log.error("saveApproveRefundDepositOrderTx failed.", e);
+            // 失败回滚
+            carRentalPackageDepositRefundTxService.update(depositRefundEntity);
             // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
             carRentalPackageMemberTermService.deleteCache(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
             throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
