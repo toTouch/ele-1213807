@@ -1456,7 +1456,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
         eleRefundOrder.setPayType(eleDepositOrder.getPayType());
-        
+        eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         
@@ -1469,7 +1469,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 生成退款订单
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
+//            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.insert(eleRefundOrder);
             
             UserInfo updateUserInfo = new UserInfo();
@@ -1525,7 +1525,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 eleRefundOrder.setRefundAmount(refundAmount);
-                eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
+//                eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
                 eleRefundOrderService.insert(eleRefundOrder);
                 
                 UserInfo updateUserInfo = new UserInfo();
@@ -1590,7 +1590,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-                eleDepositOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
                 eleRefundOrderTxService.insert(eleRefundOrder);
                 
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
