@@ -21,7 +21,7 @@ public interface MsgCenterRetrofitService {
      * @param request  request
      * @return R
      */
-    @POST("/out/init/tenantSubscript")
+    @POST("/xiliulou-msg/out/init/tenantSubscript")
     R initTenantSubscriptMsg(@Body InitTenantSubscriptRequest request);
     
 }
