@@ -736,7 +736,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
             carRentalPackageMemberTermService.deleteCache(tenantId, uid);
             throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
-   qqqqq     }
+        }
     }
     
     private CarRentalPackageOrderPo checkRefundRentCondition(Integer tenantId, Long uid, String packageOrderNo) {
