@@ -729,7 +729,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
             updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
             //            updateRentRefundEntity.setPaymentChannel(paymentChannel);
-            carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity)
+            carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
             
         } catch (PayException e) {
             log.error("save approve refund rentOrderTx failed.", e);
