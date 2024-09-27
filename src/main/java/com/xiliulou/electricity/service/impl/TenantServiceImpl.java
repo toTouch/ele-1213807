@@ -26,6 +26,7 @@ import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
+import com.xiliulou.electricity.request.InitTenantSubscriptRequest;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
@@ -40,6 +41,7 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantLevelService;
+import com.xiliulou.electricity.service.retrofit.MsgCenterRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantVO;
@@ -55,6 +57,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +110,9 @@ public class TenantServiceImpl implements TenantService {
 
     @Resource
     private AssetWarehouseMapper assetWarehouseMapper;
+    
+    @Resource
+    private MsgCenterRetrofitService msgCenterRetrofitService;
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
@@ -268,6 +274,11 @@ public class TenantServiceImpl implements TenantService {
                 .franchiseeId(0L)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
+        
+        initOtherExecutorService.submit(() -> {
+            InitTenantSubscriptRequest subscriptRequest = InitTenantSubscriptRequest.builder().tenantIds(Arrays.asList(tenant.getId())).build();
+            msgCenterRetrofitService.initTenantSubscriptMsg(subscriptRequest);
+        });
         
         return R.ok();
     }
