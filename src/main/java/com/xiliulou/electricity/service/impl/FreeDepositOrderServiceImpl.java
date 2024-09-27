@@ -116,6 +116,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
@@ -1216,8 +1217,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             val = String.format("%s,%s",val,md5);
         }
         redisService.set(userKey,StringUtils.isEmpty(val)?md5:val ,5L, TimeUnit.MINUTES);
-        
-        return Triple.of(true, null, depositOrderDTO.getData());
+    
+        FreeDepositVO freeDepositVO = new FreeDepositVO();
+        freeDepositVO.setQrCode(depositOrderDTO.getData());
+        freeDepositVO.setPath(depositOrderDTO.getPath());
+        freeDepositVO.setExtraData(depositOrderDTO.getExtraData());
+        return Triple.of(true, null, freeDepositVO);
     }
     
     /**

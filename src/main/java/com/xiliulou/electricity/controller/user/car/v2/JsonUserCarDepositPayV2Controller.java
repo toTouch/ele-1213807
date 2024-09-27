@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizServic
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,7 @@ public class JsonUserCarDepositPayV2Controller extends BasicController {
      * @return 生成二维码的网址
      */
     @PostMapping("/pay/createFreeDeposit")
-    public R<String> createFreeDeposit(@RequestBody @Valid FreeDepositOptReq freeDepositOptReq) {
+    public R<FreeDepositVO> createFreeDeposit(@RequestBody @Valid FreeDepositOptReq freeDepositOptReq) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

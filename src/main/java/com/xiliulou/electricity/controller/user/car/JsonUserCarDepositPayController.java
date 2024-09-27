@@ -84,7 +84,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return R.ok(carRenalPackageDepositV2BizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq));
+        return R.ok(carRenalPackageDepositV2BizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq).getQrCode());
     }
     
     /**

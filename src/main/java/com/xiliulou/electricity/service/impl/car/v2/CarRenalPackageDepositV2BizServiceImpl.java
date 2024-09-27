@@ -1,16 +1,13 @@
 package com.xiliulou.electricity.service.impl.car.v2;
 
-import cn.hutool.crypto.SecureUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.hash.MD5Utils;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
@@ -55,7 +52,6 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
-import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
@@ -79,6 +75,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.tx.CarRentalPackageDepositRefundTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
@@ -272,13 +269,13 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
     
     /**
      * 创建免押订单，生成二维码<br /> 创建押金缴纳订单、生成免押记录
-     *
-     * @param tenantId          租户ID
+     *  @param tenantId          租户ID
      * @param uid               C端用户ID
      * @param freeDepositOptReq 免押数据申请
+     * @return
      */
     @Override
-    public String createFreeDeposit(Integer tenantId, Long uid, FreeDepositOptReq freeDepositOptReq) {
+    public FreeDepositVO createFreeDeposit(Integer tenantId, Long uid, FreeDepositOptReq freeDepositOptReq) {
         if (!ObjectUtils.allNotNull(tenantId, uid, freeDepositOptReq, freeDepositOptReq.getRentalPackageId(), freeDepositOptReq.getPhoneNumber(), freeDepositOptReq.getRealName(),
                 freeDepositOptReq.getIdCard())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
@@ -404,7 +401,13 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
             val = String.format("%s,%s",val,md5);
         }
         redisService.set(userKey,StringUtils.isEmpty(val)?md5:val ,5L, TimeUnit.MINUTES);
-        return freeDepositOrderDTO.getData();
+    
+        FreeDepositVO freeDepositVO = new FreeDepositVO();
+        freeDepositVO.setQrCode(freeDepositOrderDTO.getData());
+        freeDepositVO.setPath(freeDepositOrderDTO.getPath());
+        freeDepositVO.setExtraData(freeDepositOrderDTO.getExtraData());
+        
+        return freeDepositVO;
     }
     
     /**
@@ -1051,6 +1054,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
     
                     } catch (PayException e) {
                         log.error("refundDepositCreate failed.", e);
+                        
                         // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
                         carRentalPackageMemberTermService.deleteCache(memberTermEntity.getTenantId(), memberTermEntity.getUid());
                         throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");

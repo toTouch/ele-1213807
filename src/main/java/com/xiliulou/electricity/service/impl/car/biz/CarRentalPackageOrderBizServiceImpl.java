@@ -668,7 +668,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                 refundPayService.process(callBackResource);
             } else {
-                this.onLineRefund(orderNo, carRentRefundVo, updateRentRefundEntity, packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),packageOrderEntity.getPaymentChannel());
+                this.onLineRefund(orderNo, carRentRefundVo, updateRentRefundEntity, packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),packageOrderEntity.getPaymentChannel(),rentRefundEntity);
                 // 直接结束
                 return;
             }
@@ -705,7 +705,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @date 2024/8/15 11:08
      */
     private void onLineRefund(String orderNo, CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo updateRentRefundEntity, Integer tenantId, Long uid,
-            String paymentChannel) {
+            String paymentChannel,CarRentalPackageOrderRentRefundPo originalRentRefundEntity) {
         try {
             // 根据购买订单编码获取当初的支付流水
             ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(orderNo);
@@ -733,6 +733,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
         } catch (PayException e) {
             log.error("save approve refund rentOrderTx failed.", e);
+            carRentalPackageOrderRentRefundTxService.update(originalRentRefundEntity);
             // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
             carRentalPackageMemberTermService.deleteCache(tenantId, uid);
             throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
@@ -1605,7 +1606,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     refundPayService.process(callBackResource);
                 } else {
                     this.onLineRefund(orderNo, carRentRefundVo, rentRefundUpdateEntity, rentRefundEntity.getTenantId(), rentRefundEntity.getUid(),
-                            packageOrderEntity.getPaymentChannel());
+                            packageOrderEntity.getPaymentChannel(),rentRefundEntity);
                     return;
                 }
             } else {
