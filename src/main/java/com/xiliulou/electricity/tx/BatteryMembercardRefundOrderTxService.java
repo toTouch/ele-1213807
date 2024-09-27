@@ -32,7 +32,7 @@ public class BatteryMembercardRefundOrderTxService {
     private ElectricityMemberCardOrderMapper electricityMemberCardOrderMapper;
     
     
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class)
     public void refund(ElectricityMemberCardOrder cardOrder, BatteryMembercardRefundOrder refundOrder) {
         batteryMembercardRefundOrderMapper.update(refundOrder);
         electricityMemberCardOrderMapper.updateById(cardOrder);

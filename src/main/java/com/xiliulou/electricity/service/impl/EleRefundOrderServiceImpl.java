@@ -85,7 +85,6 @@ import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.tx.EleRefundOrderTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
@@ -155,8 +154,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     EleRefundOrderService eleRefundOrderService;
     
-    @Autowired
-    EleRefundOrderTxService eleRefundOrderTxService;
     
     @Autowired
     PayConfigConverter payConfigConverter;
@@ -1590,7 +1587,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-                eleRefundOrderTxService.insert(eleRefundOrder);
+                eleRefundOrderService.insert(eleRefundOrder);
                 
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                         .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();

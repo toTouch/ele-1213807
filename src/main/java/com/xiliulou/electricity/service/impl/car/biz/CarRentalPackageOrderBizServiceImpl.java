@@ -125,7 +125,6 @@ import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.tx.CarRentalPackageOrderRentRefundTxService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -269,8 +268,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Resource
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
     
-    @Resource
-    private CarRentalPackageOrderRentRefundTxService carRentalPackageOrderRentRefundTxService;
     
     @Resource
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
@@ -546,6 +543,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean refundConfirmation(CarRentalPackageRefundReq carRentalPackageRefundReq) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
@@ -631,6 +629,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param rentRefundEntity
      * @param packageOrderEntity
      */
+    @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundRentOrder(CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo rentRefundEntity, CarRentalPackageOrderPo packageOrderEntity) {
         log.info("save approve refund order flow start, order No = {}, refund amount = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getAmount(),
                 carRentRefundVo.getUid());
@@ -668,7 +667,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 callBackResource.setOutRefundNo(carRentRefundVo.getOrderNo());
                 refundPayService.process(callBackResource);
             } else {
-                this.onLineRefund(orderNo, carRentRefundVo, updateRentRefundEntity, packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),packageOrderEntity.getPaymentChannel(),rentRefundEntity);
+                this.onLineRefund(orderNo, carRentRefundVo, updateRentRefundEntity, packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),packageOrderEntity.getPaymentChannel());
                 // 直接结束
                 return;
             }
@@ -705,7 +704,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @date 2024/8/15 11:08
      */
     private void onLineRefund(String orderNo, CarRentRefundVo carRentRefundVo, CarRentalPackageOrderRentRefundPo updateRentRefundEntity, Integer tenantId, Long uid,
-            String paymentChannel,CarRentalPackageOrderRentRefundPo originalRentRefundEntity) {
+            String paymentChannel) {
         try {
             // 根据购买订单编码获取当初的支付流水
             ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(orderNo);
@@ -719,9 +718,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 throw new BizException("300000", "数据有误");
             }
             
-            updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-//            updateRentRefundEntity.setPaymentChannel(paymentChannel);
-            carRentalPackageOrderRentRefundTxService.update(updateRentRefundEntity);
+           
             
             // 调用微信支付，进行退款
             RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
@@ -729,15 +726,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             log.info("save approve refund rentOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
             BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
             log.info("save approve refund rentOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
-            
+    
+            updateRentRefundEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+            //            updateRentRefundEntity.setPaymentChannel(paymentChannel);
+            carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity)
             
         } catch (PayException e) {
             log.error("save approve refund rentOrderTx failed.", e);
-            carRentalPackageOrderRentRefundTxService.update(originalRentRefundEntity);
             // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
             carRentalPackageMemberTermService.deleteCache(tenantId, uid);
             throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
-        }
+   qqqqq     }
     }
     
     private CarRentalPackageOrderPo checkRefundRentCondition(Integer tenantId, Long uid, String packageOrderNo) {
@@ -1606,7 +1605,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     refundPayService.process(callBackResource);
                 } else {
                     this.onLineRefund(orderNo, carRentRefundVo, rentRefundUpdateEntity, rentRefundEntity.getTenantId(), rentRefundEntity.getUid(),
-                            packageOrderEntity.getPaymentChannel(),rentRefundEntity);
+                            packageOrderEntity.getPaymentChannel());
                     return;
                 }
             } else {

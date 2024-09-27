@@ -79,6 +79,6 @@ public class AliPayPostProcessHandlerImpl extends AbstractAliPayPostProcessCallB
      */
     @Override
     public void postProcessAfterAliRefund(AliPayRefundOrderDTO orderDTO) throws AliPayException {
-        rocketMqService.sendAsyncMsg(MqProducerConstant.ALIPAY_REFUND_NOTIFY_TOPIC, JsonUtil.toJson(orderDTO));
+        rocketMqService.sendAsyncMsg(MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, JsonUtil.toJson(orderDTO), null, null, 2);
     }
 }

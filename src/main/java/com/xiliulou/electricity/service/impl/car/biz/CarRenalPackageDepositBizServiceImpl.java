@@ -77,7 +77,6 @@ import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.tx.CarRentalPackageDepositRefundTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
@@ -169,9 +168,6 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
     
-    
-    @Resource
-    private CarRentalPackageDepositRefundTxService carRentalPackageDepositRefundTxService;
     
     @Resource
     private ElectricityConfigService electricityConfigService;
@@ -1196,7 +1192,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, true);
             } else {
                 // 退款中，先落库，在调用退款接口
-                carRentalPackageDepositRefundTxService.saveRefundDepositInfo(refundDepositInsertEntity, memberTermEntity, uid, false);
+                saveRefundDepositInfoTx(refundDepositInsertEntity, memberTermEntity, uid, false);
                 
                 // 线上，调用微信
                 if (PayTypeEnum.ON_LINE.getCode().equals(payType)) {
@@ -1345,7 +1341,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param depositPayEntity     押金缴纳信息
      * @param compelOffLine        强制线下退押
      */
-//    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid,
             CarRentalPackageDepositRefundPo depositRefundEntity, BigDecimal refundAmount, CarRentalPackageDepositPayPo depositPayEntity, Integer compelOffLine) {
         
@@ -1541,16 +1537,16 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                     freeDepositOrderService.update(freeDepositOrderUpdate);
                 }
             }
-//            if (PayTypeEnum.ON_LINE.getCode().equals(payType)){
-//                depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
-//            }
+            //            if (PayTypeEnum.ON_LINE.getCode().equals(payType)){
+            //                depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
+            //            }
             
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
         } else {
             
             // 1. 更新退押申请单状态
             depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
-//            depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
+            //            depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
             carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
             
             // 2. 更新会员期限
@@ -1586,21 +1582,21 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
                 log.warn("saveApproveRefundDepositOrderTx faild. t_electricity_trade_order status is wrong. orderNo is {}", rentalPackageOrderNo);
                 throw new BizException("300000", "数据有误");
             }
-            // 赋值退款单状态：退款中
-            depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
-//            depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
-            //此处新开事物提前提交，解决异步通知订单状态更新先后顺序问题
-            carRentalPackageDepositRefundTxService.update(depositRefundUpdateEntity);
+            
             // 调用微信支付，进行退款
             RefundOrder refundOrder = RefundOrder.builder().orderId(electricityTradeOrder.getOrderNo()).payAmount(electricityTradeOrder.getTotalFee())
                     .refundOrderNo(refundDepositOrderNo).refundAmount(refundAmount).build();
             log.info("saveApproveRefundDepositOrderTx, Call WeChat refund. params is {}", JsonUtil.toJson(refundOrder));
             BasePayOrderRefundDTO wxRefundDto = refund(refundOrder);
             log.info("saveApproveRefundDepositOrderTx, Call WeChat refund. result is {}", JsonUtil.toJson(wxRefundDto));
+    
+            // 赋值退款单状态：退款中
+            depositRefundUpdateEntity.setRefundState(RefundStateEnum.REFUNDING.getCode());
+            //            depositRefundUpdateEntity.setPaymentChannel(depositPayEntity.getPaymentChannel());
+            carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+            
         } catch (PayException e) {
             log.error("saveApproveRefundDepositOrderTx failed.", e);
-            // 失败回滚
-            carRentalPackageDepositRefundTxService.update(depositRefundEntity);
             // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
             carRentalPackageMemberTermService.deleteCache(depositRefundEntity.getTenantId(), depositRefundEntity.getUid());
             throw new BizException("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
