@@ -1222,7 +1222,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         cacheBO.setPath(depositOrderDTO.getPath());
         cacheBO.setExtraData(depositOrderDTO.getExtraData());
         
-        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5),JsonUtil.toJson(cacheBO) ,
+        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5),cacheBO ,
                 300 * 1000L, false);
         
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
