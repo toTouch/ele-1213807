@@ -1406,7 +1406,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Override
     public Pair<Boolean, Object> notifyInstallmentPayment(BaseOrderCallBackResource callBackResource) {
         String tradeOrderNo = callBackResource.getOutTradeNo();
-        String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
         
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
@@ -1448,7 +1447,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         Integer tradeOrderStatus;
-        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+        if (callBackResource.tradeStateIsSuccess()) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
             
             InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
