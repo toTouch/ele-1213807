@@ -122,6 +122,7 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
@@ -442,6 +443,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -2763,6 +2766,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
             
+            // 过滤异常满电仓门
+            Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBatteryCellNos);
+            if (filterFullExceptionCellPair.getLeft()) {
+                return commonGetFullCell(uid, eid, filterFullExceptionCellPair.getRight());
+            }
+            usableBatteryCellNos = filterFullExceptionCellPair.getRight();
+            
+            
             // 舒适换电分配满电仓适配
             Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos, fullyCharged);
             if (comfortExchangeGetFullCellPair.getLeft()) {
@@ -2870,12 +2881,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Pair.of(true, cellNo);
         }
         
+        // 过滤异常的仓内号
+        Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        if (filterEmptyExchangeCellPair.getLeft()) {
+            return Pair.of(true,
+                    Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()));
+        }
+        emptyCellList = filterEmptyExchangeCellPair.getRight();
+        
+        
         // 舒适换电分配空仓
         Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
         if (comfortExchangeGetEmptyCellPair.getLeft()) {
             return comfortExchangeGetEmptyCellPair;
         }
-        
         
         // 有多个空格挡  优先分配开门的格挡
         List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))

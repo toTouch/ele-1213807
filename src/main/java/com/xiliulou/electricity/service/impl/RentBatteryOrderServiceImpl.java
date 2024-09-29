@@ -74,6 +74,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
@@ -245,6 +246,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
+    
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     /**
      * 吞电池优化版本
@@ -974,6 +978,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(true, cellNo, null);
         }
         
+        // 过滤异常的仓内号
+        Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        if (filterEmptyExchangeCellPair.getLeft()) {
+            return Triple.of(true,
+                    Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()), null);
+        }
+        emptyCellList = filterEmptyExchangeCellPair.getRight();
+        
+        
         // 舒适换电分配空仓
         Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
         if (comfortExchangeGetEmptyCellPair.getLeft()) {
@@ -1505,6 +1518,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.info("RENT BATTERY ALLOCATE FULL BATTERY INFO!not found usableBoxes,uid={}", userInfo.getUid());
             return null;
         }
+        
+        // 过滤异常满电仓门
+        Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBoxes);
+        if (filterFullExceptionCellPair.getLeft()) {
+            return ruleAllotCell(userInfo, filterFullExceptionCellPair.getRight());
+        }
+        usableBoxes = filterFullExceptionCellPair.getRight();
         
         // 舒适换电
         Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes, fullyCharged);
