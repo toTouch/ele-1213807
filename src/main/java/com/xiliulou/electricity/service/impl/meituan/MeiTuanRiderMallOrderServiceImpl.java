@@ -369,6 +369,11 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     private Boolean isBatteryTypeMatched(UserInfo userInfo, List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes) {
+        // 如果是标准型号
+        if (CollectionUtils.isEmpty(userBindBatteryTypes) && CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+            return true;
+        }
+        
         // 用户绑定的电池型号串数
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
