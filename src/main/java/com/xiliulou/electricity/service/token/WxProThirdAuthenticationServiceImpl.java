@@ -12,6 +12,7 @@ import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.exception.UserLoginException;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationToken;
@@ -148,6 +149,11 @@ public class WxProThirdAuthenticationServiceImpl extends AbstractThirdAuthentica
             cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
             return new String(cipher.doFinal(encData), "UTF-8");
         }
+    }
+    
+    @Override
+    protected void throwPhoneBindException() {
+        throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
     }
     
     @Override

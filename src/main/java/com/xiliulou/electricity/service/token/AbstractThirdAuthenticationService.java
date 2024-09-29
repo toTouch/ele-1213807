@@ -111,7 +111,7 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
             // 手机号已绑定，未解绑,判定openid是否一致
             if (!Objects.equals(oauthBindByPhone.getThirdId(), loginOpenId)) {
                 //手机号已绑定
-                throw new UserLoginException("100567", "该账户已绑定其他微信，请联系客服处理");
+                this.throwPhoneBindException();
             }
             
             //手机号已绑定，未解绑 ，openid也一致
@@ -127,6 +127,9 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
             TtlTraceIdSupport.clear();
         }
     }
+    
+    protected abstract void throwPhoneBindException();
+    
     
     
     /**

@@ -24,6 +24,7 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.dto.AlipayUserPhoneDTO;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.exception.UserLoginException;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
@@ -240,6 +241,11 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
         return alipayConfig;
     }
     
+    
+    @Override
+    protected void throwPhoneBindException() {
+        throw new UserLoginException("100567", "该账户已绑定其他支付宝，请联系客服处理");
+    }
     
     @Override
     protected Integer getSource() {
