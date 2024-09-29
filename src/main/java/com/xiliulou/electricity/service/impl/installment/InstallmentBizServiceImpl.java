@@ -378,7 +378,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request,,String channelFrom) {
+    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request,String channelFrom) {
         Long uid = null;
         try {
             uid = SecurityUtils.getUid();
