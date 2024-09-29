@@ -226,7 +226,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             
             // 判断套餐用户分组和用户的用户分组是否匹配
             List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(
-                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).franchiseeId(userInfo.getFranchiseeId()).build());
             if (CollectionUtils.isNotEmpty(userInfoGroups)) {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
                     log.warn("MeiTuan order redeem fail! batteryMemberCard down, uid={}, mid={}", uid, memberCardId);
@@ -490,7 +490,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(tenantId).build());
+        List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).franchiseeId(
+                userInfo.getFranchiseeId()).build());
         
         if (CollectionUtils.isNotEmpty(userInfoGroups)) {
             // 自定义用户分组用户不可购买系统分组套餐：限制

@@ -1112,7 +1112,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(Long uid, Long franchiseeId, BatteryMemberCard memberCard, Integer source) {
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(uid).tenantId(TenantContextHolder.getTenantId()).build());
+                UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(franchiseeId).build());
         
         Triple<Boolean, String, Object> triple =
                 BatteryMemberCardConstants.CHECK_USERINFO_GROUP_USER.equals(source) ? Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧")
