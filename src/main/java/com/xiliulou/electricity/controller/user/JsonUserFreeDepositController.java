@@ -5,7 +5,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * @author : eclair
@@ -60,7 +63,28 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @PostMapping("/user/free/batteryDeposit/v4")
     public R freeBatteryDepositOrderV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
-        return returnTripleResult(freeDepositOrderService.freeBatteryDepositOrderV4(query));
+        Triple<Boolean, String, FreeDepositVO> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
+        
+        if (result.getLeft()) {
+            return R.ok(Objects.nonNull(result.getRight()) ? result.getRight().getQrCode() : "");
+        } else {
+            return R.fail(result.getMiddle(), null, result.getRight());
+        }
+    }
+    
+    
+    /**
+     * 电池免押订单V4（支持拍下租和蜂云）
+     */
+    @PostMapping("/user/free/alipayBatteryDeposit/v4")
+    public R alipayBatteryDepositV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
+        Triple<Boolean, String, FreeDepositVO> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
+        
+        if (result.getLeft()) {
+            return R.ok(result.getRight());
+        } else {
+            return R.fail(result.getMiddle(), null, result.getRight());
+        }
     }
     
     /**

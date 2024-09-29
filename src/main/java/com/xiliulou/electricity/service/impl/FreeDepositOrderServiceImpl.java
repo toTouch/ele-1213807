@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.FreeDepositUrlCacheBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
@@ -1125,7 +1126,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      * 生成电池免押订单
      */
     @Override
-    public Triple<Boolean, String, Object> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 freeQuery) {
+    public Triple<Boolean, String, FreeDepositVO> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 freeQuery) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
@@ -1170,10 +1171,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         // 查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5));
         if (Objects.isNull(triple.getRight()) && freeOrderCacheResult) {
-            String result = UriUtils.decode(redisService.get(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5)), StandardCharsets.UTF_8);
-            log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, result);
-            result = JsonUtil.fromJson(result, String.class);
-            return Triple.of(true, null, result);
+            String cache = redisService.get(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid, md5));
+            FreeDepositUrlCacheBO cacheBO = JsonUtil.fromJson(cache, FreeDepositUrlCacheBO.class);
+            String qrCode = UriUtils.decode(cacheBO.getQrCode(), StandardCharsets.UTF_8);
+            FreeDepositVO freeDepositVO = new FreeDepositVO();
+            freeDepositVO.setQrCode(qrCode);
+            freeDepositVO.setPath(cacheBO.getPath());
+            freeDepositVO.setExtraData(cacheBO.getExtraData());
+            
+            log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, JsonUtil.toJson(freeDepositVO));
+            return Triple.of(true, null, freeDepositVO);
         }
         
         Triple<Boolean, String, Object> generateDepositOrderResult = generateBatteryDepositOrderV3(userInfo, freeQuery);
@@ -1208,7 +1215,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         log.info("generate free deposit data from pxz for battery package, data = {}", JsonUtil.toJson(depositOrderDTO));
         // 保存pxz返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5), UriUtils.encode(depositOrderDTO.getData(), StandardCharsets.UTF_8),
+    
+    
+        FreeDepositUrlCacheBO cacheBO = new FreeDepositUrlCacheBO();
+        cacheBO.setQrCode(UriUtils.encode(depositOrderDTO.getData(), StandardCharsets.UTF_8));
+        cacheBO.setPath(depositOrderDTO.getPath());
+        cacheBO.setExtraData(depositOrderDTO.getExtraData());
+        
+        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5),JsonUtil.toJson(cacheBO) ,
                 300 * 1000L, false);
         
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);

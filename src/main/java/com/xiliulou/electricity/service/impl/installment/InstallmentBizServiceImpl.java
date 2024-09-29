@@ -378,7 +378,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request) {
+    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request,,String channelFrom) {
         Long uid = null;
         try {
             uid = SecurityUtils.getUid();
@@ -431,7 +431,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             String description = "订单编号:%s；套餐名称:%s";
             
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
-            agreementRequest.setChannelFrom(CHANNEL_FROM_H5);
+            agreementRequest.setChannelFrom(channelFrom);
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
             agreementRequest.setMerchantName(tenant.getName());
             agreementRequest.setServiceName(packageName);

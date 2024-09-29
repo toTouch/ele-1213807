@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_MINIAPP;
+
 /**
  * @Description ...
  * @Author: SongJP
@@ -31,7 +34,15 @@ public class JsonUserInstallmentBizController {
      */
     @PostMapping("/user/Installment/record/sign")
     public R<String> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
-        return installmentBizService.sign(query, request);
+        return installmentBizService.sign(query, request,CHANNEL_FROM_H5);
+    }
+    
+    /**
+     * 签约接口
+     */
+    @PostMapping("/user/Installment/record/alipaySign")
+    public R<String> alipaySign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
+        return installmentBizService.sign(query, request,CHANNEL_FROM_MINIAPP);
     }
     
     /**
