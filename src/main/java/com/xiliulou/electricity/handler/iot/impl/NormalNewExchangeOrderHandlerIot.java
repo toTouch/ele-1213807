@@ -39,6 +39,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -129,6 +130,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     
     @Autowired
     private ExchangeBatterySocService exchangeBatterySocService;
+    
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
@@ -612,7 +616,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     TimeUnit.MINUTES);
         }
         
-        
+        // 保存异常格挡号
+        exceptionHandlerService.saveExchangeExceptionCell(exchangeOrderRsp.getOrderStatus(), newElectricityCabinetOrder.getElectricityCabinetId(),
+                newElectricityCabinetOrder.getOldCellNo(), newElectricityCabinetOrder.getNewCellNo());
         
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);

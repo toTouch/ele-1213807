@@ -787,5 +787,17 @@ public interface CacheConstant {
      * 分期套餐代扣后处理逻辑锁
      */
     String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+    
+    
+    /**
+     * 异常柜机格挡redis
+     */
+    String EXCEPTION_EMPTY_EID_KEY = "exception_empty_eid:%d";
+    
+    
+    /**
+     * 异常满电仓redis
+     */
+    String EXCEPTION_FULL_EID_KEY = "exception_full_eid:%d";
 }
 

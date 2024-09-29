@@ -44,6 +44,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.TenantService;
@@ -66,6 +67,7 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -169,6 +171,9 @@ public class EleOperateQueueHandler {
     
     @Autowired
     private ExchangeBatterySocService exchangeBatterySocService;
+    
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
     
@@ -285,6 +290,9 @@ public class EleOperateQueueHandler {
                     if (RentBatteryOrder.INIT_DEVICE_USING.equals(finalOpenDTO.getOrderStatus())) {
                         newRentBatteryOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
                     }
+                    
+                    // 保存租退异常格挡
+                    exceptionHandlerService.saveRentReturnExceptionCell(finalOpenDTO.getOrderStatus(), electricityCabinet.getId(), rentBatteryOrder.getCellNo());
                     
                     //取消订单
                     if (finalOpenDTO.getIsNeedEndOrder()) {
