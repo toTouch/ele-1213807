@@ -1126,7 +1126,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      * 生成电池免押订单
      */
     @Override
-    public Triple<Boolean, String, FreeDepositVO> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 freeQuery) {
+    public Triple<Boolean, String, Object> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 freeQuery) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");

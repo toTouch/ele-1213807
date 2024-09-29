@@ -63,10 +63,10 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @PostMapping("/user/free/batteryDeposit/v4")
     public R freeBatteryDepositOrderV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
-        Triple<Boolean, String, FreeDepositVO> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
+        Triple<Boolean, String, Object> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
         
         if (result.getLeft()) {
-            return R.ok(Objects.nonNull(result.getRight()) ? result.getRight().getQrCode() : "");
+            return R.ok(Objects.nonNull(result.getRight()) ? ((FreeDepositVO)result.getRight()).getQrCode() : "");
         } else {
             return R.fail(result.getMiddle(), null, result.getRight());
         }
@@ -78,7 +78,7 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @PostMapping("/user/free/alipayBatteryDeposit/v4")
     public R alipayBatteryDepositV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
-        Triple<Boolean, String, FreeDepositVO> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
+        Triple<Boolean, String, Object> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
         
         if (result.getLeft()) {
             return R.ok(result.getRight());

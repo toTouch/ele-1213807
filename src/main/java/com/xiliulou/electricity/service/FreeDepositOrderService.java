@@ -85,7 +85,7 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> freeBatteryDepositOrderV3(FreeBatteryDepositQueryV3 query);
     
-    Triple<Boolean, String, FreeDepositVO> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 query);
+    Triple<Boolean, String, Object> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 query);
     
     Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig);
 
