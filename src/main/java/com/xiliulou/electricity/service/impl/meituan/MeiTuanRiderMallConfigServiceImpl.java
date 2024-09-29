@@ -3,17 +3,9 @@ package com.xiliulou.electricity.service.impl.meituan;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
-import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.mapper.meituan.MeiTuanRiderMallConfigMapper;
-import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
-import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,42 +25,6 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
     
     @Resource
     private MeiTuanRiderMallConfigMapper meiTuanRiderMallConfigMapper;
-    
-    @Resource
-    private ElectricityConfigService electricityConfigService;
-    
-    @Override
-    public Integer insertOrUpdate(MeiTuanRiderMallConfigRequest meiTuanRiderMallConfigRequest) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        String appId = meiTuanRiderMallConfigRequest.getAppId();
-        String appKey = meiTuanRiderMallConfigRequest.getAppKey();
-        String secret = meiTuanRiderMallConfigRequest.getSecret();
-        
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = queryByTenantIdFromCache(tenantId);
-        if (Objects.isNull(meiTuanRiderMallConfig)) {
-            meiTuanRiderMallConfig = MeiTuanRiderMallConfig.builder().appId(appId).appKey(appKey).secret(secret).tenantId(tenantId).delFlag(CommonConstant.DEL_N)
-                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            Integer insert = meiTuanRiderMallConfigMapper.insert(meiTuanRiderMallConfig);
-            DbUtils.dbOperateSuccessThenHandleCache(insert, i -> {
-                redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + tenantId);
-                redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey);
-            });
-            
-            return insert;
-        }
-        
-        MeiTuanRiderMallConfig updateMeiTuanRiderMallConfig = MeiTuanRiderMallConfig.builder().id(meiTuanRiderMallConfig.getId()).tenantId(tenantId).appId(appId).appKey(appKey)
-                .secret(secret).updateTime(System.currentTimeMillis()).build();
-        
-        Integer update = meiTuanRiderMallConfigMapper.update(updateMeiTuanRiderMallConfig);
-        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
-            redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + tenantId);
-            redisService.delete(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey);
-            
-        });
-        
-        return update;
-    }
     
     @Override
     public MeiTuanRiderMallConfig queryByTenantIdFromCache(Integer tenantId) {
@@ -90,48 +46,6 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
     @Override
     public MeiTuanRiderMallConfig queryByTenantId(Integer tenantId) {
         return meiTuanRiderMallConfigMapper.selectByTenantId(tenantId);
-    }
-    
-    @Slave
-    @Override
-    public MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config) {
-        return meiTuanRiderMallConfigMapper.selectByConfig(config);
-    }
-    
-    @Slave
-    @Override
-    public MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config) {
-        String appId = config.getAppId();
-        String appKey = config.getAppKey();
-        
-        MeiTuanRiderMallConfig cacheConfig = redisService.getWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, MeiTuanRiderMallConfig.class);
-        if (Objects.nonNull(cacheConfig)) {
-            return cacheConfig;
-        }
-        
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = this.queryByConfig(config);
-        if (Objects.isNull(meiTuanRiderMallConfig)) {
-            return null;
-        }
-        
-        redisService.saveWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, meiTuanRiderMallConfig);
-        return meiTuanRiderMallConfig;
-    }
-    
-    @Override
-    public MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId) {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsEnableMeiTuanRiderMall(), MeiTuanRiderMallEnum.DISABLE_MEI_TUAN_RIDER_MALL.getCode())) {
-            return null;
-        }
-        
-        MeiTuanRiderMallConfig meiTuanRiderMallConfig = this.queryByTenantIdFromCache(tenantId);
-        if (Objects.isNull(meiTuanRiderMallConfig) || StringUtils.isEmpty(meiTuanRiderMallConfig.getAppId()) || StringUtils.isEmpty(meiTuanRiderMallConfig.getAppKey())
-                || StringUtils.isEmpty(meiTuanRiderMallConfig.getSecret())) {
-            return null;
-        }
-        
-        return meiTuanRiderMallConfig;
     }
     
 }

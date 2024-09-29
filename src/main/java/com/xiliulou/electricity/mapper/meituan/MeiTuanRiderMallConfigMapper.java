@@ -11,10 +11,4 @@ public interface MeiTuanRiderMallConfigMapper {
     
     MeiTuanRiderMallConfig selectByTenantId(Integer tenantId);
     
-    Integer insert(MeiTuanRiderMallConfig meiTuanRiderMallConfig);
-    
-    Integer update(MeiTuanRiderMallConfig meiTuanRiderMallConfig);
-    
-    MeiTuanRiderMallConfig selectByConfig(MeiTuanRiderMallConfig config);
-    
 }

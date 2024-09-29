@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.meituan;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
-import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
 
 /**
  * @author HeYafeng
@@ -10,15 +9,8 @@ import com.xiliulou.electricity.request.meituan.MeiTuanRiderMallConfigRequest;
  */
 public interface MeiTuanRiderMallConfigService {
     
-    Integer insertOrUpdate(MeiTuanRiderMallConfigRequest meiTuanRiderMallConfigRequest);
-    
     MeiTuanRiderMallConfig queryByTenantIdFromCache(Integer tenantId);
     
     MeiTuanRiderMallConfig queryByTenantId(Integer tenantId);
     
-    MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config);
-    
-    MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config);
-    
-    MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId);
 }
