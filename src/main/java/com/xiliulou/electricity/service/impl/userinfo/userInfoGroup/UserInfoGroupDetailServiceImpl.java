@@ -10,7 +10,6 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserInfoGroupConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -152,8 +150,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Slave
     @Override
-    public Integer countGroupByUid(Long uid) {
-        return userInfoGroupDetailMapper.countGroupByUid(uid);
+    public Integer countGroupByUidAndFranchisee(Long uid, Long franchiseeId) {
+        return userInfoGroupDetailMapper.countGroupByUidAndFranchisee(uid, franchiseeId);
     }
     
     @Slave
@@ -199,7 +197,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
             // 如果没有分组，则删除
             if (CollectionUtils.isEmpty(groupIds)) {
-                List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
+                List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(franchiseeId).build());
                 if (CollectionUtils.isNotEmpty(existGroupList)) {
                     String oldGroupIds = existGroupList.stream().map(g -> g.getGroupId().toString()).collect(Collectors.joining(CommonConstant.STR_COMMA));
                     UserInfoGroupDetailHistory detailHistory = assembleDetailHistory(uid, oldGroupIds, "", operator, userInfo.getFranchiseeId(), tenantId,
@@ -229,7 +227,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 return R.fail("120112", "未找到用户分组");
             }
             
-            List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).tenantId(tenantId).build());
+            List<UserInfoGroupNamesBO> existGroupList = this.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(franchiseeId).build());
             List<Long> intersection = new ArrayList<>(groupIds);
             List<Long> oldGroupIds = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(existGroupList)) {
@@ -371,7 +369,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             List<UserInfoGroupDetail> list = new ArrayList<>();
             // 超限判断
-            Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUid(uid);
+            Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUidAndFranchisee(uid, franchiseeId);
             if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + groupIds.size()) > UserInfoGroupConstant.USER_GROUP_LIMIT)) {
                 return R.fail("120114", "用户绑定的分组数量已达上限10个");
             }

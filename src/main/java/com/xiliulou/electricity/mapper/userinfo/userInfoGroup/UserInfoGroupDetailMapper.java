@@ -29,7 +29,7 @@ public interface UserInfoGroupDetailMapper {
     
     Integer countUserByGroupId(Long id);
     
-    Integer countGroupByUid(Long uid);
+    Integer countGroupByUidAndFranchisee(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId);
     
     Integer deleteByUid(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     

@@ -99,10 +99,11 @@
         where tuig.id = #{id}
     </select>
     
-    <select id="countGroupByUid" resultType="java.lang.Integer">
+    <select id="countGroupByUidAndFranchisee" resultType="java.lang.Integer">
         select count(distinct (group_no))
         from t_user_info_group_detail
         where uid = #{uid}
+            and franchisee_id = #{franchiseeId}
     </select>
     
     <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">

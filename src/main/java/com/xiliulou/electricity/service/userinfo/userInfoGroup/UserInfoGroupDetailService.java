@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailPageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
@@ -28,7 +27,7 @@ public interface UserInfoGroupDetailService {
     
     Integer countUserByGroupId(Long id);
     
-    Integer countGroupByUid(Long uid);
+    Integer countGroupByUidAndFranchisee(Long uid, Long franchiseeId);
     
     List<UserInfoGroupNamesBO> listGroupByUid(UserInfoGroupDetailQuery query);
     
