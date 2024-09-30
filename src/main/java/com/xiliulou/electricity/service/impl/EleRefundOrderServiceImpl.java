@@ -1583,17 +1583,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             
             // 调起退款
             try {
+                RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                        .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
+                
+                eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, null);
                 // 提交成功
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
-                
-                RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
-                        .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
-                
-                eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, null);
-                
                 return R.ok();
             } catch (Exception e) {
                 log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
