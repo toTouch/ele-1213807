@@ -207,7 +207,11 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return userInfoGroupDetailService.update(request, user.getUid());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) && CollectionUtils.isEmpty(request.getGroupIds())) {
+            return R.fail("ELECTRICITY.0066", "未设置用户分组");
+        }
+        
+        return userInfoGroupDetailService.update(request, user);
     }
     
     /**
@@ -225,7 +229,11 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        return userInfoGroupDetailService.bindGroup(request, user.getUid());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) && CollectionUtils.isEmpty(request.getGroupIds())) {
+            return R.fail("ELECTRICITY.0066", "未设置用户分组");
+        }
+        
+        return userInfoGroupDetailService.bindGroup(request, user);
     }
     
     /**

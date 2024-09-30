@@ -251,11 +251,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Resource
     EnterpriseChannelUserService enterpriseChannelUserService;
     
-    @Resource
-    UserInfoGroupDetailService userInfoGroupDetailService;
-    
-    @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
     
     @Resource
     private TenantService tenantService;
