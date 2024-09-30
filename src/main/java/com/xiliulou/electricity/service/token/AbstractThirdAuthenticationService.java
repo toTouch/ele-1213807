@@ -119,7 +119,7 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
             
         } catch (UserLoginException e) {
             log.warn("AbstractThirdAuthenticationService.login UserLoginException:", e);
-            throw e;
+            throw new AuthenticationServiceException(e.getErrMsg());
         } catch (Exception e) {
             log.warn("AbstractThirdAuthenticationService.login Exception:", e);
             throw new AuthenticationServiceException("系统异常！");
