@@ -5,11 +5,13 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailHistoryBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupIdAndNameBO;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.UserInfoGroupConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetailHistory;
 import com.xiliulou.electricity.mapper.userinfo.userInfoGroup.UserInfoGroupDetailHistoryMapper;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailHistoryQuery;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
@@ -45,7 +47,8 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
     @Resource
     private UserInfoGroupService userInfoGroupService;
     
-    ;
+    @Resource
+    private FranchiseeService franchiseeService;
     
     @Override
     public Integer batchInsert(List<UserInfoGroupDetailHistory> detailHistoryList) {
@@ -74,6 +77,11 @@ public class UserInfoGroupDetailHistoryServiceImpl implements UserInfoGroupDetai
             }
             
             bo.setOperatorTime(item.getCreateTime());
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                bo.setFranchiseeName(franchisee.getName());
+            }
             
             return bo;
         }).collect(Collectors.toList());

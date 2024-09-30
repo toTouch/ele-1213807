@@ -174,7 +174,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
                 .uid(uid).build();
         List<UserInfoGroupNamesBO> boList = userInfoGroupDetailService.listGroupByUid(query);
         
-        //BO转化为VO
+        // BO转化为VO
         List<UserInfoGroupNamesVO> result = null;
         if (CollectionUtils.isNotEmpty(boList)) {
             result = boList.stream().map(bo -> {
@@ -228,4 +228,14 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         return userInfoGroupDetailService.bindGroup(request, user.getUid());
     }
     
+    /**
+     * 用户详情页预览用户分组详情
+     * @param uid 要查看的用户uid
+     * @return 查询结果
+     */
+    @GetMapping("/admin/userInfo/userInfoGroupDetail/selectAll")
+    public R<Object> selectAll(@RequestParam(value = "uid") Long uid) {
+        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().uid(uid).build();
+        return userInfoGroupDetailService.selectAll(query);
+    }
 }

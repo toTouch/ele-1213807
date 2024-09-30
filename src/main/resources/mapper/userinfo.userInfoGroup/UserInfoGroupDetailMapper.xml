@@ -107,7 +107,7 @@
     </select>
     
     <select id="selectListGroupByUid" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO">
-        select tuigd.uid as uid, tuigd.group_no as groupNo, tuig.id as groupId, tuig.name as groupName
+        select tuigd.uid as uid, tuigd.group_no as groupNo, tuigd.franchisee_id, tuig.id as groupId, tuig.name as groupName
         from t_user_info_group_detail tuigd
         left join t_user_info_group tuig on tuigd.group_no = tuig.group_no
         <where>

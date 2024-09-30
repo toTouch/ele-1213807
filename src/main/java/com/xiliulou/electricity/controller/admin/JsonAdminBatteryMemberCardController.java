@@ -97,7 +97,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     }
     
     /**
-     * TODO SJP 分期套餐需求上线之后可删除
+     * TODO SJP 分期套餐需求上线之后可删除，9月P0需求期间核对过，仍有调用，继续保留
      */
     @Deprecated
     @GetMapping("/admin/battery/memberCard/search")

@@ -35,9 +35,16 @@ public interface UserInfoGroupDetailService {
     
     R update(UserInfoGroupDetailUpdateRequest request, Long operator);
     
-    R bindGroup(UserInfoBindGroupRequest request, Long operator);
+    R<Object> bindGroup(UserInfoBindGroupRequest request, Long operator);
     
     Integer deleteByUid(Long uid, List<String> groupNoList);
     
     Integer deleteByGroupNo(String groupNo, Integer tenantId);
+    
+    /**
+     * 查询用户全部自定义分组
+     * @param query 请求参数
+     * @return 查询结果
+     */
+    R<Object> selectAll(UserInfoGroupDetailQuery query);
 }
