@@ -14,6 +14,7 @@ import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -4454,6 +4455,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
         electricityMemberCardOrder.setIssue(installmentRecord.getPaidInstallment() + 1);
         electricityMemberCardOrder.setPayType(INSTALLMENT_PAYMENT);
+        // 分期代扣是固定支付宝
+        electricityMemberCardOrder.setPaymentChannel(ChannelEnum.ALIPAY.getCode());
         
         return Triple.of(true, null, electricityMemberCardOrder);
     }

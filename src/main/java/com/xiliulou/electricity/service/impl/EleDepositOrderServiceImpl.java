@@ -93,6 +93,7 @@ import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
@@ -890,7 +891,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .payAmount(batteryMemberCard.getDeposit()).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(EleDepositOrder.ONLINE_PAYMENT)
                 .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0)
-                .paramFranchiseeId(basePayConfig.getFranchiseeId()).wechatMerchantId(basePayConfig.getThirdPartyMerchantId()).paymentChannel(basePayConfig.getPaymentChannel())
+                .paramFranchiseeId(basePayConfig.getFranchiseeId()).wechatMerchantId(basePayConfig.getThirdPartyMerchantId()).paymentChannel(basePayConfig.getPaymentChannel()).paymentChannel(
+                        ChannelSourceContextHolder.get())
                 .build();
         
         return Triple.of(true, null, eleDepositOrder);
