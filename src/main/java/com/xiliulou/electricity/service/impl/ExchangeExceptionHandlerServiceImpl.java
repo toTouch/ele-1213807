@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -37,34 +38,40 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
     @Resource
     private ElectricityCabinetService electricityCabinetService;
     
+    @Resource
+    private ExchangeConfig exchangeConfig;
+    
     
     @Override
     public void saveExchangeExceptionCell(String orderStatus, Integer eid, Integer oldCell, Integer newCell) {
         log.info("SaveExchangeExceptionCell Info! orderStatus is {}, eid is {}, oldCell is {}, newCell is {}", orderStatus, eid, oldCell, newCell);
+        
+        Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
         // 空仓失败
         if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL)) {
             RMapCache<Integer, Integer> mapCache = redisson.getMapCache(String.format(CacheConstant.EXCEPTION_EMPTY_EID_KEY, eid));
-            mapCache.put(oldCell, 1, 5, TimeUnit.MINUTES);
+            mapCache.put(oldCell, 1, exceptionCellSaveTime, TimeUnit.MILLISECONDS);
         }
         // 满电仓失败
         if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
             RMapCache<Integer, Integer> mapCache = redisson.getMapCache(String.format(CacheConstant.EXCEPTION_FULL_EID_KEY, eid));
-            mapCache.put(newCell, 1, 5, TimeUnit.MINUTES);
+            mapCache.put(newCell, 1, exceptionCellSaveTime, TimeUnit.MILLISECONDS);
         }
     }
     
     @Override
     public void saveRentReturnExceptionCell(String orderStatus, Integer eid, Integer cellNo) {
         log.info("SaveRentReturnExceptionCell Info! orderStatus is {}, eid is {}, cellNo is {}", orderStatus, eid, cellNo);
+        Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
         // 空仓(退电)失败
         if (Objects.equals(orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL)) {
             RMapCache<Integer, Integer> mapCache = redisson.getMapCache(String.format(CacheConstant.EXCEPTION_EMPTY_EID_KEY, eid));
-            mapCache.put(cellNo, 1, 5, TimeUnit.MINUTES);
+            mapCache.put(cellNo, 1, exceptionCellSaveTime, TimeUnit.MILLISECONDS);
         }
         // 满电仓(租电)失败
         if (Objects.equals(orderStatus, RentBatteryOrder.RENT_OPEN_FAIL)) {
             RMapCache<Integer, Integer> mapCache = redisson.getMapCache(String.format(CacheConstant.EXCEPTION_FULL_EID_KEY, eid));
-            mapCache.put(cellNo, 1, 5, TimeUnit.MINUTES);
+            mapCache.put(cellNo, 1, exceptionCellSaveTime, TimeUnit.MILLISECONDS);
         }
     }
     
