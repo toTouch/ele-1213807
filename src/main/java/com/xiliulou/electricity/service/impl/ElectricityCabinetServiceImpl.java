@@ -2883,6 +2883,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 过滤异常的仓内号
         Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        // 没有正常仓门，随机获取异常仓门
         if (filterEmptyExchangeCellPair.getLeft()) {
             return Pair.of(true,
                     Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()));

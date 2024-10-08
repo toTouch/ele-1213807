@@ -44,7 +44,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
     
     @Override
     public void saveExchangeExceptionCell(String orderStatus, Integer eid, Integer oldCell, Integer newCell) {
-        log.info("SaveExchangeExceptionCell Info! orderStatus is {}, eid is {}, oldCell is {}, newCell is {}", orderStatus, eid, oldCell, newCell);
+        log.info("SaveExchangeExceptionCell Info! eid is {} , orderStatus is {}, oldCell is {}, newCell is {}", eid, orderStatus, oldCell, newCell);
         
         Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
         // 空仓失败
@@ -61,7 +61,8 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
     
     @Override
     public void saveRentReturnExceptionCell(String orderStatus, Integer eid, Integer cellNo) {
-        log.info("SaveRentReturnExceptionCell Info! orderStatus is {}, eid is {}, cellNo is {}", orderStatus, eid, cellNo);
+        log.info("SaveRentReturnExceptionCell Info! eid is {}, orderStatus is {}, cellNo is {}", eid, orderStatus, cellNo);
+        
         Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
         // 空仓(退电)失败
         if (Objects.equals(orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL)) {
@@ -82,8 +83,8 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
         // 获取柜机异常空仓
         RMapCache<Integer, Integer> mapCache = redisson.getMapCache(String.format(CacheConstant.EXCEPTION_EMPTY_EID_KEY, eid));
         if (mapCache.isEmpty()) {
-            log.info("Exchange Info! filterEmptyExceptionCell.mapCache is null, eid is {}", eid);
-            return Pair.of(false, null);
+            log.info("FilterEmptyExceptionCell Info! redisExceptionEmptyCell is null, eid is {}", eid);
+            return Pair.of(false, emptyList);
         }
         
         List<Integer> exchangeEmptyCellList = CollUtil.newArrayList();
@@ -93,8 +94,12 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
         List<ElectricityCabinetBox> filterExchangeEmptyCellList = emptyList.stream().filter(item -> !exchangeEmptyCellList.contains(Integer.valueOf(item.getCellNo())))
                 .collect(Collectors.toList());
         
+        log.info("FilterEmptyExceptionCell Info! emptyList is {}, filterExchangeEmptyCellList is {}", JsonUtil.toJson(emptyList),
+                CollUtil.isEmpty(filterExchangeEmptyCellList) ? "null" : JsonUtil.toJson(filterExchangeEmptyCellList));
+        
         // 如果剩余空仓为空，则返回随机的异常空仓
         if (CollUtil.isEmpty(filterExchangeEmptyCellList)) {
+            log.info("FilterEmptyExceptionCell Info! filterExchangeEmptyCellList is null, return exchangeEmptyCellList");
             return Pair.of(true, filterExchangeEmptyCellList);
         }
         
@@ -107,20 +112,20 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
     @SuppressWarnings("all")
     public Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCell(List<ElectricityCabinetBox> fullList) {
         if (CollUtil.isEmpty(fullList)) {
-            return Pair.of(false, null);
+            return Pair.of(false, fullList);
         }
         Integer electricityCabinetId = fullList.get(0).getElectricityCabinetId();
         ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(cabinet)) {
-            log.warn("Exchange WARN! FilterFullExceptionCell.cabinet is null, eid is {}", electricityCabinetId);
-            return Pair.of(false, null);
+            log.warn("FilterFullExceptionCell WARN! cabinet is null, eid is {}", electricityCabinetId);
+            return Pair.of(false, fullList);
         }
         
         // 获取柜机异常空仓
         RMapCache<Integer, Integer> fullMapCache = redisson.getMapCache(String.format(CacheConstant.EXCEPTION_FULL_EID_KEY, cabinet.getId()));
         if (fullMapCache.isEmpty()) {
-            log.info("Exchange Info! mapCache is null, eid is {}", cabinet.getId());
-            return Pair.of(false, null);
+            log.info("FilterFullExceptionCell Info! redisExceptionFullCell is null, eid is {}", cabinet.getId());
+            return Pair.of(false, fullList);
         }
         
         List<Integer> exchangeFullCellList = CollUtil.newArrayList();
@@ -130,12 +135,12 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
         List<ElectricityCabinetBox> filterExchangeFullCellList = fullList.stream().filter(item -> !exchangeFullCellList.contains(Integer.valueOf(item.getCellNo())))
                 .collect(Collectors.toList());
         
-        log.info("Exchange Info! fullList is {}, exchangeFullCellList is {}", JsonUtil.toJson(fullList),
+        log.info("FilterFullExceptionCell Info! fullList is {}, exchangeFullCellList is {}", JsonUtil.toJson(fullList),
                 CollUtil.isEmpty(exchangeFullCellList) ? "null" : JsonUtil.toJson(exchangeFullCellList));
         
         // 如果剩余满电仓为空，则返回随机的异常满电仓
         if (CollUtil.isEmpty(filterExchangeFullCellList)) {
-            log.info("Exchange Info! filterExchangeFullCellList is null, eid is {}", cabinet.getId());
+            log.info("FilterFullExceptionCell Info! filterExchangeFullCellList is null, eid is {}", cabinet.getId());
             return Pair.of(true, filterExchangeFullCellList);
         }
         
