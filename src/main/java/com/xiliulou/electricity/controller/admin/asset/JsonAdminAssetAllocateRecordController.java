@@ -2,9 +2,9 @@ package com.xiliulou.electricity.controller.admin.asset;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.request.asset.AssetExitWarehouseRecordRequest;
-import com.xiliulou.electricity.request.asset.AssetExitWarehouseSaveRequest;
-import com.xiliulou.electricity.service.asset.AssetExitWarehouseRecordService;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordPageRequest;
+import com.xiliulou.electricity.request.asset.AssetAllocateRecordRequest;
+import com.xiliulou.electricity.service.asset.AssetAllocateRecordService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
@@ -16,28 +16,28 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Objects;
 
 /**
  * @author HeYafeng
- * @description 资产退库
- * @date 2023/11/23 18:34:30
+ * @description 资产调拨
+ * @date 2023/11/28 09:42:34
  */
-
 @RestController
 @Slf4j
-public class AssetExitWarehouseRecordController {
+public class JsonAdminAssetAllocateRecordController {
     
     @Autowired
-    private AssetExitWarehouseRecordService assetExitWarehouseRecordService;
+    private AssetAllocateRecordService assetAllocateRecordService;
     
     /**
-     * @description 新增退库
+     * @description 新增资产调拨
      * @date 2023/11/21 13:15:41
      * @author HeYafeng
      */
-    @PostMapping("/admin/asset/exit/warehouse/save")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) AssetExitWarehouseSaveRequest assetExitWarehouseSaveRequest) {
+    @PostMapping("/admin/asset/allocate/save")
+    public R save(@RequestBody @Validated(value = CreateGroup.class) AssetAllocateRecordRequest assetAllocateRecordRequest) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.warn("ELE WARN! not found user");
@@ -47,19 +47,19 @@ public class AssetExitWarehouseRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
-        return assetExitWarehouseRecordService.save(assetExitWarehouseSaveRequest, user.getUid());
+        
+        return assetAllocateRecordService.save(assetAllocateRecordRequest, user.getUid());
     }
     
     /**
-     * @description 资产退库数量统计
-     * @param type 退库类型(1-电柜, 2-电池, 3-车辆)
+     * @description 资产调拨数量统计
+     * @param type 调拨资产类型 (1-电柜, 2-电池, 3-车辆)
      * @date 2023/11/21 18:17:54
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/exit/warehouse/pageCount")
-    public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "type", required = false) Integer type) {
+    @GetMapping("/admin/asset/allocate/pageCount")
+    public R pageCount(@RequestParam(value = "orderNo", required = false) String orderNo, @RequestParam(value = "sourceFranchiseeId", required = false) Long sourceFranchiseeId,
+            @RequestParam(value = "targetFranchiseeId", required = false) Long targetFranchiseeId, @RequestParam(value = "type", required = false) Integer type) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.warn("ELE WARN! not found user");
@@ -69,26 +69,23 @@ public class AssetExitWarehouseRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
-        AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest = AssetExitWarehouseRecordRequest
-                .builder()
-                .orderNo(orderNo)
-                .franchiseeId(franchiseeId)
-                .type(type)
-                .build();
         
-        return R.ok(assetExitWarehouseRecordService.countTotal(assetExitWarehouseRecordRequest));
+        
+        AssetAllocateRecordPageRequest allocateRecordPageRequest = AssetAllocateRecordPageRequest.builder().orderNo(orderNo).type(type).sourceFranchiseeId(sourceFranchiseeId)
+                .targetFranchiseeId(targetFranchiseeId).build();
+        return R.ok(assetAllocateRecordService.countTotal(allocateRecordPageRequest));
     }
     
     /**
-     * @description 资产退库分页
-     * @param type 退库类型(1-电柜, 2-电池, 3-车辆)
+     * @description 资产调拨分页
+     * @param type 调拨资产类型 (1-电柜, 2-电池, 3-车辆)
      * @date 2023/11/21 13:15:54
      * @author HeYafeng
      */
-    @GetMapping("/admin/asset/exit/warehouse/page")
+    @GetMapping("/admin/asset/allocate/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "orderNo", required = false) String orderNo,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "type", required = false) Integer type) {
+            @RequestParam(value = "sourceFranchiseeId", required = false) Long sourceFranchiseeId,
+            @RequestParam(value = "targetFranchiseeId", required = false) Long targetFranchiseeId, @RequestParam(value = "type", required = false) Integer type) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -106,17 +103,10 @@ public class AssetExitWarehouseRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-    
-        AssetExitWarehouseRecordRequest assetExitWarehouseRecordRequest = AssetExitWarehouseRecordRequest
-                .builder()
-                .size(size)
-                .offset(offset)
-                .orderNo(orderNo)
-                .franchiseeId(franchiseeId)
-                .type(type)
-                .build();
         
-        return R.ok(assetExitWarehouseRecordService.listByPage(assetExitWarehouseRecordRequest));
+        AssetAllocateRecordPageRequest allocateRecordPageRequest = AssetAllocateRecordPageRequest.builder().orderNo(orderNo).type(type).sourceFranchiseeId(sourceFranchiseeId)
+                .targetFranchiseeId(targetFranchiseeId).size(size).offset(offset).build();
+        return R.ok(assetAllocateRecordService.listByPage(allocateRecordPageRequest));
     }
     
 }

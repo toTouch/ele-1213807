@@ -38,6 +38,10 @@
         where ecu.enterprise_id = #{enterpriseId}
     </select>
     
+    <select id="existPayRecordByUid" resultType="java.lang.Integer">
+        select 1 from t_another_pay_membercard_record where uid = #{uid} limit 1
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_another_pay_membercard_record

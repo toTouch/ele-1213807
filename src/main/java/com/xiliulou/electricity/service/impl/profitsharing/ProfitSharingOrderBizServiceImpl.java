@@ -325,7 +325,9 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
                 
                 profitSharingTradeMixedOrderList.stream().forEach(profitSharingTradeMixedOrder -> {
                     franchiseeIdList.add(profitSharingTradeMixedOrder.getFranchiseeId());
-                    thirdOrderNoList.add(profitSharingTradeMixedOrder.getThirdOrderNo());
+                    if (Objects.nonNull(profitSharingTradeMixedOrder.getThirdOrderNo())) {
+                        thirdOrderNoList.add(profitSharingTradeMixedOrder.getThirdOrderNo());
+                    }
                 });
     
                 List<WechatPayParamsDetails> wechatPayParamsDetails = null;
@@ -353,6 +355,11 @@ public class ProfitSharingOrderBizServiceImpl implements ProfitSharingOrderBizSe
     }
     
     private void dealWithThirdOrderNo(List<String> thirdOrderNoList, Map<Long, WechatPayParamsDetails> wechatPayParamsDetailsMap) {
+        if (CollectionUtils.isEmpty(thirdOrderNoList)) {
+            log.info("deal unfreeze info, thirdOrderNoList is empty");
+            return;
+        }
+        
         // 查询出存在解冻的订单
         List<String> unfreezeByThirdOrderNoList = profitSharingOrderService.listUnfreezeByThirdOrderNo(thirdOrderNoList);
     

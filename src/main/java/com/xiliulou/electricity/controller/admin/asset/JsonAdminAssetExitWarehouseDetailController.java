@@ -21,7 +21,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class AssetExitWarehouseDetailController {
+public class JsonAdminAssetExitWarehouseDetailController {
     
     @Autowired
     private AssetExitWarehouseDetailService assetExitWarehouseDetailService;

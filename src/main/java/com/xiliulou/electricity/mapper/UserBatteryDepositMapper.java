@@ -56,4 +56,6 @@ public interface UserBatteryDepositMapper extends BaseMapper<UserBatteryDeposit>
     int deleteByUid(Long uid);
 
     int insertOrUpdate(UserBatteryDeposit userBatteryDeposit);
+    
+    Integer update(UserBatteryDeposit userBatteryDeposit);
 }

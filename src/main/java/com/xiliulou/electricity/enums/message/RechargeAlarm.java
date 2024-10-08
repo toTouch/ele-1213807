@@ -19,7 +19,8 @@ public enum RechargeAlarm {
     
     SESAME_CREDIT(0, "芝麻信用"),
     FACIAL_VERIFICATION(1, "人脸审核"),
-    ELECTRONIC_SIGNATURE(2, "电子签名");
+    ELECTRONIC_SIGNATURE(2, "电子签名"),
+    AUTH_PAY(4, "分期签约次数");
     
     private final int code;
     

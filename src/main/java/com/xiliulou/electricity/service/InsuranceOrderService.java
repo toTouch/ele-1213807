@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
@@ -80,5 +82,9 @@ public interface InsuranceOrderService {
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
     
-   
+    /**
+     * 生成保险订单
+     */
+    Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet,
+            ElectricityPayParams electricityPayParams);
 }

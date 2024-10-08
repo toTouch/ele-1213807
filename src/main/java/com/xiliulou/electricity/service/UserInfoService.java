@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -127,6 +128,8 @@ public interface UserInfoService extends IService<UserInfo> {
     
     Triple<Boolean, String, Object> selectUserInfoStatus();
     
+    Triple<Boolean, String, Object> selectUserInfoStatusV2();
+    
     void unBindUserFranchiseeId(Long uid);
     
     Integer isFranchiseeBindUser(Long id, Integer tenantId);
@@ -185,6 +188,14 @@ public interface UserInfoService extends IService<UserInfo> {
     List<UserInfo> queryListUserInfoByPhone(String phone);
     
     UserAccountInfoVO selectAccountInfo();
+    
+    /**
+     * 检查用户与换电套餐的分组是否匹配
+     * @param userInfo 用户信息
+     * @param batteryMemberCard 套餐信息
+     * @return 校验结果
+     */
+    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
     
     R bindBattery(BindBatteryRequest bindBatteryRequest);
 }

@@ -16,7 +16,8 @@ public interface UnionTradeOrderService {
     WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder,
                                                                     WechatPayParamsDetails wechatPayParamsDetails,
                                                                     String openId,
-                                                                    HttpServletRequest request) throws WechatPayException;
+                                                                    HttpServletRequest request,
+                                                                    String externalAgreementNo) throws WechatPayException;
 
 
     //集成支付回调
@@ -40,4 +41,8 @@ public interface UnionTradeOrderService {
 
     Pair<Boolean, Object> notifyServiceFee(WechatJsapiOrderCallBackResource callBackResource);
     
+    /**
+     * 购买分期套餐回调方法
+     */
+    Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource);
 }

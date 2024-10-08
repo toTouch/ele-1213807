@@ -42,6 +42,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -113,6 +114,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.mq.service.RocketMqService;
@@ -126,6 +128,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -139,6 +142,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 
 /**
  * @program: XILIULOU
@@ -324,9 +329,15 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Resource
     private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
+    @Autowired
+    private ApplicationContext applicationContext;
+    
+    @Autowired
+    private InstallmentRecordService installmentRecordService;
+    
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
-            HttpServletRequest request) throws WechatPayException {
+            HttpServletRequest request, String externalAgreementNo) throws WechatPayException {
         
         String ip = request.getRemoteAddr();
         UnionTradeOrder unionTradeOrder = new UnionTradeOrder();
@@ -343,6 +354,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
         unionTradeOrder.setParamFranchiseeId(wechatPayParamsDetails.getFranchiseeId());
         unionTradeOrder.setWechatMerchantId(wechatPayParamsDetails.getWechatMerchantId());
+        unionTradeOrder.setExternalAgreementNo(externalAgreementNo);
         baseMapper.insert(unionTradeOrder);
         
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
@@ -455,9 +467,9 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 }
     
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
-       
+            
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
-
+            
             }
         }
         
@@ -718,7 +730,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         // 处理用户端取消支付的问题
-        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())) {
+        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCEL, electricityMemberCardOrder.getStatus())) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         }
         
@@ -898,7 +910,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         }
         
         // 处理用户端取消支付的问题
-        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())) {
+        if (Objects.equals(ElectricityMemberCardOrder.STATUS_CANCEL, electricityMemberCardOrder.getStatus())) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         }
         
@@ -1489,6 +1501,101 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         // 小程序虚拟发货
         shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+        
+        return Pair.of(true, null);
+    }
+    
+    @Override
+    public Pair<Boolean, Object> notifyInstallmentPayment(WechatJsapiOrderCallBackResource callBackResource) {
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+        
+        UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(unionTradeOrder)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found electricity_trade_order trade_order_no={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! electricity_trade_order  status is not init, trade_order_no={}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found userInfo, TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到用户信息");
+        }
+        
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (Objects.isNull(electricityTradeOrderList)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found electricity_trade_order trade_order_no={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(unionTradeOrder.getExternalAgreementNo());
+        if (Objects.isNull(installmentRecord)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN! not found installmentRecord externalAgreementNo={}", unionTradeOrder.getExternalAgreementNo());
+        }
+        
+        String jsonOrderType = unionTradeOrder.getJsonOrderType();
+        List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
+        
+        String jsonOrderId = unionTradeOrder.getJsonOrderId();
+        List<String> orderIdList = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+        
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            log.warn("NOTIFY INSTALLMENT UNION ORDER WARN!NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+        
+        Integer tradeOrderStatus;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+            
+            InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+            installmentRecordUpdate.setId(installmentRecord.getId());
+            installmentRecordUpdate.setStatus(INSTALLMENT_RECORD_STATUS_INIT);
+            installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            installmentRecordService.update(installmentRecordUpdate);
+        } else {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+            log.warn("NOTIFY INSTALLMENT UNION ORDER FAIL,ORDER_NO is {}", tradeOrderNo);
+        }
+        
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
+                Pair<Boolean, Object> manageDepositOrderResult = applicationContext.getBean(UnionTradeOrderServiceImpl.class)
+                        .manageDepositOrder(orderIdList.get(i), tradeOrderStatus);
+                if (!manageDepositOrderResult.getLeft()) {
+                    return manageDepositOrderResult;
+                }
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                Pair<Boolean, Object> manageInsuranceOrderResult = applicationContext.getBean(UnionTradeOrderServiceImpl.class)
+                        .manageInsuranceOrder(orderIdList.get(i), tradeOrderStatus);
+                if (!manageInsuranceOrderResult.getLeft()) {
+                    return manageInsuranceOrderResult;
+                }
+            }
+        }
+        
+        // 系统订单
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
+        unionTradeOrderUpdate.setId(unionTradeOrder.getId());
+        unionTradeOrderUpdate.setStatus(tradeOrderStatus);
+        unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        unionTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(unionTradeOrderUpdate);
+        
+        // 混合支付的子订单
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(tradeOrderStatus);
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
         
         return Pair.of(true, null);
     }

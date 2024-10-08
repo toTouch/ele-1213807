@@ -36,4 +36,18 @@ public class FreeDepositRechargeRecordVO {
     private Long createTime;
 
     private Long updateTime;
+    
+    /**
+     * <p>
+     *    Description: 分期签约次数
+     * </p>
+     */
+    private Integer byStagesCount;
+    
+    /**
+     * <p>
+     *    Description: 0--拍小租，1--蜂云
+     * </p>
+     */
+    private Integer freeType;
 }

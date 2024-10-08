@@ -86,4 +86,6 @@ public interface ElePowerService {
     EleSumPowerVO listByCondition(Long startTime, Long endTime, List<Long> eidList, Integer tenantId);
     
     List<ElePower> listCabinetPowerByEids(List<Integer> electricityCabinetIdList);
+    
+    Integer exitsByEidAndReportTime(Long eid, Long reportTime);
 }
