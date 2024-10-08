@@ -159,6 +159,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     }
     
     @Override
+    @Transactional
     public R update(UserInfoGroupDetailUpdateRequest request, TokenUser operator) {
         Long uid = request.getUid();
         
@@ -181,13 +182,13 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 加盟商用户修改
             if (CollectionUtils.isNotEmpty(request.getGroupIds())) {
-                Franchisee franchisee = franchiseeService.queryByUid(operator.getUid());
+                Franchisee franchisee = getFranchiseeForUser(operator, request.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
                     return R.fail("ELECTRICITY.0038", "未找到加盟商");
                 }
                 
                 Long franchiseeId = franchisee.getId();
-                return ((UserInfoGroupDetailServiceImpl) AopContext.currentProxy()).doUpdate(userInfo, franchiseeId, request.getGroupIds(), operator.getUid());
+                return doUpdate(userInfo, franchiseeId, request.getGroupIds(), operator.getUid());
             }
             
             // 租户修改
@@ -197,7 +198,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     return R.fail("ELECTRICITY.0038", "未找到加盟商");
                 }
                 
-                R<Object> doUpdateResult = ((UserInfoGroupDetailServiceImpl) AopContext.currentProxy()).doUpdate(userInfo, entry.getKey(), entry.getValue(), operator.getUid());
+                R<Object> doUpdateResult = doUpdate(userInfo, entry.getKey(), entry.getValue(), operator.getUid());
                 if (!doUpdateResult.isSuccess()) {
                     return doUpdateResult;
                 }
@@ -226,7 +227,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 加盟商用户绑定
             if (CollectionUtils.isNotEmpty(request.getGroupIds())) {
-                Franchisee franchisee = franchiseeService.queryByUid(operator.getUid());
+                Franchisee franchisee = getFranchiseeForUser(operator, request.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
                     return R.fail("ELECTRICITY.0038", "未找到加盟商");
                 }
@@ -400,12 +401,11 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         // 持久化detail
-        ((UserInfoGroupDetailServiceImpl) AopContext.currentProxy()).handleGroupDetailDb(uid, insertList, existGroupList, addGroupList, oldGroupIds, operatorId, franchiseeId,
+        handleGroupDetailDb(uid, insertList, existGroupList, addGroupList, oldGroupIds, operatorId, franchiseeId,
                 userInfo.getTenantId());
         return R.ok();
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public void handleGroupDetailDb(Long uid, List<UserInfoGroupDetail> insertList, List<UserInfoGroupNamesBO> delGroupList, List<Long> addGroupList, List<Long> oldGroupIds,
             Long operator, Long franchiseeId, Integer tenantId) {
         
@@ -454,5 +454,15 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         return UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
                 .createTime(nowTime).updateTime(nowTime).type(UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER).build();
+    }
+    
+    private Franchisee getFranchiseeForUser(TokenUser operator, Long franchiseeId) {
+        Franchisee franchisee;
+        if (Objects.equals(operator.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchisee = franchiseeService.queryByUid(operator.getUid());
+        } else {
+            franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        }
+        return franchisee;
     }
 }
