@@ -3509,6 +3509,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
                     }
                     // 同步电池会员表数据
+                    //此处删除一次缓存中的数据，否则大事务导致上次删除的缓存未生效，后续刷新除新的缓存
+                    carRentalPackageMemberTermService.deleteCache(tenantId, uid);
                     // 此处二次查询，目的是为了拿在事务缓存中的最新数据
                     CarRentalPackageMemberTermPo memberTermEntityProcessed = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
                     List<CarRentalPackageCarBatteryRelPo> carBatteryRelPos = carRentalPackageCarBatteryRelService.selectByRentalPackageId(
