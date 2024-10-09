@@ -1076,7 +1076,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         request.setIdNumber(freeQuery.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
-        request.setJumpUrl(freeQuery.getJumpUrl());
+//        request.setJumpUrl(freeQuery.getJumpUrl());
         request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 1, userInfo.getTenantId()));
         query.setData(request);
         
@@ -1192,7 +1192,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         // 免押下单
         FreeDepositOrderRequest orderRequest = FreeDepositOrderRequest.builder().uid(uid).tenantId(userInfo.getTenantId()).phoneNumber(freeQuery.getPhoneNumber())
                 .idCard(freeQuery.getIdCard()).payAmount(eleDepositOrder.getPayAmount()).freeDepositOrderId(eleDepositOrder.getOrderId())
-                .realName(freeQuery.getRealName()).subject("电池免押").build();
+                .realName(freeQuery.getRealName()).subject("电池免押").jumpUrl(freeQuery.getJumpUrl()).build();
         Triple<Boolean, String, Object> freeDepositOrderTriple = freeDepositService.freeDepositOrder(orderRequest);
         if (!freeDepositOrderTriple.getLeft() || Objects.isNull(freeDepositOrderTriple.getRight())) {
             return Triple.of(false, freeDepositOrderTriple.getMiddle(), freeDepositOrderTriple.getRight());
