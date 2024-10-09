@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * (UserOauthBind)表服务实现类
@@ -252,6 +253,17 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     public Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId) {
         return userOauthBindMapper.countByThirdIdAndSourceAndTenantId(openId, sourceWxPro,tenantId);
+    }
+    
+    @Override
+    public boolean checkExistBind(Long uid, Integer tenantId) {
+        List<UserOauthBind> userOauthBinds = userOauthBindMapper.selectListByUidAndTenantId(uid, tenantId);
+        if (CollectionUtils.isEmpty(userOauthBinds)){
+            return false;
+        }
+        Optional<UserOauthBind> first = userOauthBinds.stream().filter(o -> StringUtils.isNotBlank(o.getThirdId())).findFirst();
+    
+        return first.isPresent();
     }
     
     @Override

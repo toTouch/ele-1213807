@@ -1764,9 +1764,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase Package with free deposit error, not found electricityPayParams,uid={}", uid);
                 return Triple.of(false, "100234", "未配置支付参数!");
             }*/
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(uid, tenantId,UserOauthBind.SOURCE_WX_PRO);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+    
+            boolean exist = userOauthBindService.checkExistBind(uid, tenantId);
+            if (!exist) {
                 log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
                 return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }

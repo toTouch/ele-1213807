@@ -20,7 +20,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
             @Param("phone") String phone, @Param("tenantId") Integer tenantId);
     
     
-    
     List<UserOauthBind> selectListByUidAndPhone(@Param("phone") String phone, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     /**
@@ -81,7 +80,6 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     List<UserOauthBind> selectByUidAndSource(@Param("uid") Long uid, @Param("source") Integer source);
     
     
-    
-    Integer countByThirdIdAndSourceAndTenantId(@Param("thirdId") String thirdId,@Param("source") Integer source, @Param("tenantId")Integer tenantId);
+    Integer countByThirdIdAndSourceAndTenantId(@Param("thirdId") String thirdId, @Param("source") Integer source, @Param("tenantId") Integer tenantId);
     
 }

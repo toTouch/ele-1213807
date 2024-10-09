@@ -40,7 +40,6 @@ public interface UserOauthBindService {
     Integer update(UserOauthBind userOauthBind);
     
     
-    
     List<UserOauthBind> selectListOauthByOpenIdAndSource(String openid, int source, Integer tenantId);
     
     UserOauthBind queryByUserPhone(Long uid, String phone, int source, Integer tenantId);
@@ -48,7 +47,6 @@ public interface UserOauthBindService {
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone, Integer tenantId);
     
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
-    
     
     
     List<UserOauthBind> queryListByUid(Long uid);
@@ -77,7 +75,6 @@ public interface UserOauthBindService {
      * @return 绑定集
      */
     List<UserOauthBind> listUserByPhone(String phone, Integer source, Integer tenantId);
-    
     
     
     Integer updateOpenIdByUid(String openId, Integer status, Long uid, Integer source, Integer tenantId);
@@ -160,4 +157,14 @@ public interface UserOauthBindService {
      */
     Integer countByThirdIdAndSourceAndTenantId(String openId, Integer sourceWxPro, Integer tenantId);
     
+    
+    /**
+     * 校验用户是否存在
+     *
+     * @param uid
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/10/9 16:34
+     */
+    boolean checkExistBind(Long uid, Integer tenantId);
 }
