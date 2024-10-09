@@ -35,7 +35,7 @@ public class JsonUserInstallmentBizController {
      */
     @PostMapping("/user/Installment/record/sign")
     public R<String> sign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
-        return installmentBizService.sign(query, request,CHANNEL_FROM_H5);
+        return installmentBizService.sign(query, request, CHANNEL_FROM_H5);
     }
     
     /**
@@ -47,9 +47,15 @@ public class JsonUserInstallmentBizController {
         if (!sign.isSuccess() || StringUtils.isBlank(sign.getData())) {
             return sign;
         } else {
+            String data = sign.getData();
             // 去除多余的引号
-            String substring = sign.getData().substring(1, sign.getData().length() - 1);
-            return R.ok(substring);
+            if (data.startsWith("\"") && data.endsWith("\"")) {
+                // 使用 substring 方法去掉开头和结尾的双引号
+                String modifiedData = data.substring(1, data.length() - 1);
+                return R.ok(modifiedData);
+            } else {
+                return sign;
+            }
         }
     }
     
