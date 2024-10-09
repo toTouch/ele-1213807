@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.installment.CreateTerminatingRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +43,14 @@ public class JsonUserInstallmentBizController {
      */
     @PostMapping("/user/Installment/record/alipaySign")
     public R<String> alipaySign(@Validated @RequestBody InstallmentSignQuery query, HttpServletRequest request) {
-        return installmentBizService.sign(query, request,CHANNEL_FROM_MINIAPP);
+        R<String> sign = installmentBizService.sign(query, request, CHANNEL_FROM_MINIAPP);
+        if (!sign.isSuccess() || StringUtils.isBlank(sign.getData())) {
+            return sign;
+        } else {
+            // 去除多余的引号
+            String substring = sign.getData().substring(1, sign.getData().length() - 1);
+            return R.ok(substring);
+        }
     }
     
     /**
