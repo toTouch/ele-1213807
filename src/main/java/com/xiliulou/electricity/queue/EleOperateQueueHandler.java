@@ -287,7 +287,7 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                     lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
                 }
-    
+                
                 if (finalOpenDTO.getIsProcessFail()) {
                     RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
                     //若柜机正在使用中
@@ -304,7 +304,7 @@ public class EleOperateQueueHandler {
                         rentBatteryOrderService.update(newRentBatteryOrder);
                         return;
                     }
-        
+                    
                     //订单状态
                     newRentBatteryOrder.setId(rentBatteryOrder.getId());
                     newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
@@ -313,7 +313,7 @@ public class EleOperateQueueHandler {
                     rentBatteryOrderService.update(newRentBatteryOrder);
                     return;
                 }
-    
+                
                 //订单状态
                 rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                 rentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
@@ -321,7 +321,7 @@ public class EleOperateQueueHandler {
                 if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
                     rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
                 }
-    
+                
                 if (Objects.nonNull(finalOpenDTO.getCellNo())) {
                     rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
                 }
@@ -719,12 +719,16 @@ public class EleOperateQueueHandler {
                 RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             
             checkRentBatteryDoor(rentBatteryOrder);
-    
+            
             // 给第三方推送用户电池信息
             thirdPartyMallPublish.publish(
                     ThirdPartyMallEvent.builder(this).traceId(finalOpenDTO.getSessionId()).tenantId(rentBatteryOrder.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                            .type(ThirdPartyMallDataType.USER_BATTERY).addContext(MeiTuanRiderMallConstant.UID, rentBatteryOrder.getUid())
-                            .addContext(MeiTuanRiderMallConstant.BATTERY_SN, rentBatteryOrder.getElectricityBatterySn()).build());
+                            .type(ThirdPartyMallDataType.PUSH_USER_BATTERY).addContext(MeiTuanRiderMallConstant.RENT_BATTERY_ORDER_ID, rentBatteryOrder.getOrderId()).build());
+            
+            // 给第三方推送用户信息
+            thirdPartyMallPublish.publish(
+                    ThirdPartyMallEvent.builder(this).traceId(finalOpenDTO.getSessionId()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
+                            .type(ThirdPartyMallDataType.PUSH_USER_INFO).addContext(MeiTuanRiderMallConstant.RENT_BATTERY_ORDER_ID, rentBatteryOrder.getOrderId()).build());
             
             if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(), String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);

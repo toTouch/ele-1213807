@@ -635,10 +635,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
     
-        // 给第三方推送柜机修改
+        // 给第三方推送柜机信息
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
+                        .type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
         
         return R.ok();
     }
@@ -769,6 +769,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
+    
+        // 给第三方推送柜机信息
+        thirdPartyMallPublish.publish(
+                ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
+                        .type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
         return R.ok();
     }
     
@@ -1565,10 +1570,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
     
-        // 给第三方推送柜机禁启用状态
+        // 给第三方推送柜机信息
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
+                        .type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
         
         return R.ok();
     }

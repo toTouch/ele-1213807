@@ -9,11 +9,11 @@ import lombok.Getter;
  */
 @Getter
 public enum ThirdPartyMallDataType {
-    USER_BATTERY_MEMBER_CARD("USER_BATTERY_MEMBER_CARD", "用户换电套餐"),
-    ELE_CABINET("ELE_CABINET", "换电柜"),
-    USER_EXCHANGE_RECORD("USER_EXCHANGE_RECORD", "用户换电记录"),
-    USER_BATTERY("USER_EXCHANGE_RECORD", "用户电池"),
-    USER_INFO("USER_INFO", "用户信息");
+    PUSH_USER_BATTERY_MEMBER_CARD("PUSH_USER_BATTERY_MEMBER_CARD", "用户换电套餐"),
+    PUSH_ELE_CABINET("PUSH_PUSH_ELE_CABINET", "换电柜"),
+    PUSH_USER_EXCHANGE_RECORD("PUSH_USER_EXCHANGE_RECORD", "用户换电记录"),
+    PUSH_USER_BATTERY("PUSH_USER_EXCHANGE_RECORD", "用户电池"),
+    PUSH_USER_INFO("PUSH_USER_INFO", "用户信息");
     
     private final String code;
     

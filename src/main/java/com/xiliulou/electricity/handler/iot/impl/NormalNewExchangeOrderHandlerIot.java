@@ -169,7 +169,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder, exchangeOrderRsp);
             
-       
             if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
                 log.warn("EXCHANGE ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
                         electricityCabinetOrder.getUid());
@@ -178,7 +177,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             // 处理失败回退电池套餐次数
             handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
-            
             
             //是否开启异常仓门锁仓
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
@@ -206,11 +204,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
             }
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
-    
+            
             // 给第三方推送换电记录
             thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.USER_EXCHANGE_RECORD).addContext(MeiTuanRiderMallConstant.ELECTRICITY_CABINET_ORDER_ID, newElectricityCabinetOrder.getId())
-                    .build());
+                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
+                    .addContext(MeiTuanRiderMallConstant.ORDER_ID, electricityCabinetOrder.getOrderId()).build());
             
             // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
             log.debug("EXCHANGE ORDER INFO! setNewSelfOpen.setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
@@ -222,11 +220,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             //处理取走电池的相关信息
             handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
-    
+            
             // 给第三方推送用户电池信息
             thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.USER_BATTERY)
-                    .addContext(MeiTuanRiderMallConstant.ELECTRICITY_CABINET_ORDER_ID, newElectricityCabinetOrder.getId()).build());
+                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_USER_BATTERY)
+                    .addContext(MeiTuanRiderMallConstant.ORDER_ID, electricityCabinetOrder.getOrderId()).build());
+            
+            // 给第三方推送用户信息
+            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
+                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_USER_INFO)
+                    .addContext(MeiTuanRiderMallConstant.ORDER_ID, electricityCabinetOrder.getOrderId()).build());
             
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
@@ -402,8 +405,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handleCallBatteryChangeSoc(electricityBattery);
             
         } else {
-            log.warn("EXCHANGE ORDER WARN! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),
-                    exchangeOrderRsp.getOrderId());
+            log.warn("EXCHANGE ORDER WARN! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
         }
         
         BatteryTrackRecord placeatteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName()).setEId(Long.valueOf(electricityCabinet.getId()))
@@ -629,8 +631,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     TimeUnit.MINUTES);
         }
         
-        
-        
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);
     }
@@ -650,10 +650,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     }
     
     private boolean allowNewSelfOpenStatus(String orderStatus) {
-        return (orderStatus.equals(ElectricityCabinetOrder.INIT_OPEN_FAIL)
-                || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
-                || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)
-                || orderStatus.equals(ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) );
+        return (orderStatus.equals(ElectricityCabinetOrder.INIT_OPEN_FAIL) || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) || orderStatus.equals(
+                ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT) || orderStatus.equals(ElectricityCabinetOrder.COMPLETE_OPEN_FAIL));
     }
     
     // TODO: 2022/8/1 异常锁定格挡

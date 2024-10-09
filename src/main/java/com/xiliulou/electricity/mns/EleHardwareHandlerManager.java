@@ -175,10 +175,10 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 electricityCabinetService.update(newElectricityCabinet);
             }
     
-            // 给第三方推送柜机上下线状态
+            // 给第三方推送柜机信息
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
                 thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                        .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId())
+                        .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId())
                         .build());
             }
 
