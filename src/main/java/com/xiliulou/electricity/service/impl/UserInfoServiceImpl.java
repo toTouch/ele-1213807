@@ -134,6 +134,7 @@ import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -3087,6 +3088,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                 rentBatteryOrder.setType(RentBatteryOrder.TYPE_USER_UNBIND);
                 rentBatteryOrder.setOrderType(finalOrderType);
+                rentBatteryOrder.setChannel(ChannelSourceContextHolder.get());
                 rentBatteryOrderService.insert(rentBatteryOrder);
             
                 // 修改电池状态
