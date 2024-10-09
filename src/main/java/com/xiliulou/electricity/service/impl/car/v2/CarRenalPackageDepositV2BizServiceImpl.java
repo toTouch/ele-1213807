@@ -407,7 +407,7 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         
         
         //保存返回的免押链接信息，5分钟之内不会生成新码
-        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5),JsonUtil.toJson(cacheBO),
+        redisService.saveWithString(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5),cacheBO,
                 300 * 1000L, false);
         String userKey = String.format(CacheConstant.FREE_DEPOSIT_USER_INFO_KEY, uid);
         String val = redisService.get(userKey);
