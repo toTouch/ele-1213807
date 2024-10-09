@@ -4,7 +4,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
+import com.xiliulou.electricity.request.user.BindBatteryRequest;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.validator.CreateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 /**
  * 租车记录(TRentCarOrder)表控制层
@@ -28,6 +32,9 @@ public class JsonUserRentBatteryOrderController {
      */
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
+    
+    @Resource
+    private UserInfoService userInfoService;
     
     //租电池
     @PostMapping("/user/rentBattery")
@@ -54,5 +61,9 @@ public class JsonUserRentBatteryOrderController {
         return rentBatteryOrderService.queryNewStatus(orderId);
     }
     
+    @PostMapping("/user/bindBattery")
+    public R bindBattery(@RequestBody BindBatteryRequest bindBatteryRequest) {
+        return userInfoService.bindBattery(bindBatteryRequest);
+    }
     
 }

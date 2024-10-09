@@ -520,7 +520,8 @@ public class JsonAdminUserInfoController extends BaseController {
      * 下拉列表搜索
      */
     @GetMapping(value = "/admin/userInfo/search")
-    public R userInfoSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name) {
+    public R userInfoSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "keyWords", required = false) String keyWords) {
         if (Objects.isNull(size) || size < 0 || size > 20) {
             size = 20L;
         }
@@ -528,7 +529,7 @@ public class JsonAdminUserInfoController extends BaseController {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
-        return userInfoService.userInfoSearch(size, offset, name);
+        return userInfoService.userInfoSearch(size, offset, name, keyWords);
     }
     
     @GetMapping("/admin/userInfo/exportCarRentalExcel")

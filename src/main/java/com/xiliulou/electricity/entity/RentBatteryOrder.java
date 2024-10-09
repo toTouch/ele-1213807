@@ -58,7 +58,7 @@ public class RentBatteryOrder {
      */
     private Integer cellNo;
     /**
-     * 订单类型(1--租电池,2--还电池,3--后台绑电池,4--后台解绑电池)
+     * 订单类型(1--租电池,2--还电池,3--后台绑电池,4--后台解绑电池, 5--用户绑电池)
      */
     private Integer type;
     //订单状态序号
@@ -106,6 +106,8 @@ public class RentBatteryOrder {
     public static final Integer TYPE_WEB_BIND = 3;
 
     public static final Integer TYPE_WEB_UNBIND = 4;
+    
+    public static final Integer TYPE_USER_UNBIND = 5;
 
     /**
      * 订单来源 自助开仓
