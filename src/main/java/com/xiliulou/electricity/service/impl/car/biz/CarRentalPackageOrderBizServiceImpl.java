@@ -3463,12 +3463,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
         }
-        try {
-            Thread.sleep(5*1000);
-            log.info("before after commit waiting 5/s on cache refresh");
-        }catch (Exception ignored){
-        
-        }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
