@@ -104,15 +104,15 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
                 return Pair.of(false, emptyList);
             }
             
-            List<Integer> exchangeEmptyCellList = CollUtil.newArrayList();
-            mapCache.forEach((k, v) -> exchangeEmptyCellList.add(k));
+            List<Integer> exceptionEmptyCellList = CollUtil.newArrayList();
+            mapCache.forEach((k, v) -> exceptionEmptyCellList.add(k));
             
             // 过滤掉异常空仓
-            List<ElectricityCabinetBox> filterExchangeEmptyCellList = emptyList.stream().filter(item -> !exchangeEmptyCellList.contains(Integer.valueOf(item.getCellNo())))
+            List<ElectricityCabinetBox> filterExchangeEmptyCellList = emptyList.stream().filter(item -> !exceptionEmptyCellList.contains(Integer.valueOf(item.getCellNo())))
                     .collect(Collectors.toList());
             
-            log.info("FilterEmptyExceptionCell Info! emptyList is {}, filterExchangeEmptyCellList is {}", JsonUtil.toJson(emptyList),
-                    CollUtil.isEmpty(filterExchangeEmptyCellList) ? "null" : JsonUtil.toJson(filterExchangeEmptyCellList));
+            log.info("FilterEmptyExceptionCell Info! emptyList is {}, exceptionEmptyCellList is {}", JsonUtil.toJson(emptyList),
+                    CollUtil.isEmpty(exceptionEmptyCellList) ? "null" : JsonUtil.toJson(exceptionEmptyCellList));
             
             // 如果剩余空仓为空，则返回随机的异常空仓
             if (CollUtil.isEmpty(filterExchangeEmptyCellList)) {
@@ -151,15 +151,15 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
                 return Pair.of(false, fullList);
             }
             
-            List<Integer> exchangeFullCellList = CollUtil.newArrayList();
-            fullMapCache.forEach((k, v) -> exchangeFullCellList.add(k));
+            List<Integer> exceptionFullCellList = CollUtil.newArrayList();
+            fullMapCache.forEach((k, v) -> exceptionFullCellList.add(k));
             
             // 过滤掉异常满电仓
-            List<ElectricityCabinetBox> filterExchangeFullCellList = fullList.stream().filter(item -> !exchangeFullCellList.contains(Integer.valueOf(item.getCellNo())))
+            List<ElectricityCabinetBox> filterExchangeFullCellList = fullList.stream().filter(item -> !exceptionFullCellList.contains(Integer.valueOf(item.getCellNo())))
                     .collect(Collectors.toList());
             
-            log.info("FilterFullExceptionCell Info! fullList is {}, exchangeFullCellList is {}", JsonUtil.toJson(fullList),
-                    CollUtil.isEmpty(exchangeFullCellList) ? "null" : JsonUtil.toJson(exchangeFullCellList));
+            log.info("FilterFullExceptionCell Info! fullList is {}, exceptionEmptyCellList is {}", JsonUtil.toJson(fullList),
+                    CollUtil.isEmpty(exceptionFullCellList) ? "null" : JsonUtil.toJson(exceptionFullCellList));
             
             // 如果剩余满电仓为空，则返回随机的异常满电仓
             if (CollUtil.isEmpty(filterExchangeFullCellList)) {
