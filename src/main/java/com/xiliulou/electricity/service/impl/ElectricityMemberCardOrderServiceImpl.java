@@ -3608,6 +3608,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         couponIdSet.forEach(couponId -> {
             UserCouponDTO userCouponDTO = new UserCouponDTO();
             userCouponDTO.setCouponId(couponId);
+            userCouponDTO.setPackageId(batteryMemberCard.getId());
             userCouponDTO.setUid(memberCardOrder.getUid());
             userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
             userCouponDTO.setTraceId(IdUtil.simpleUUID());
@@ -3840,7 +3841,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         // 送优惠券
         if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()));
+            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()), null);
         }
         
         return remainingNumber;

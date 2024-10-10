@@ -227,7 +227,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchRelease(Integer id, Long[] uids) {
+    public R batchRelease(Integer id, Long[] uids,Long newActiveId) {
         if (ObjectUtil.isEmpty(uids)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -243,7 +243,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).couponId(coupon.getId())
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(coupon.getTenantId());
+                .tenantId(coupon.getTenantId())
+                .couponType(CouponTypeEnum.REGISTER_ACTIVITIES.getCode())
+                .couponWay(newActiveId);
         
         //优惠券过期时间
         
@@ -607,7 +609,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
-                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId);
+                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
+                                .couponWay(Long.valueOf(activityId));
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -839,7 +842,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             saveCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             saveCoupon.setTenantId(user.getTenantId());
             saveCoupon.setCouponType(CouponTypeEnum.BATCH_RELEASE.getCode());
-            saveCoupon.setCouponWay(String.valueOf(operateUid));
+            saveCoupon.setCouponWay(operateUid);
             userCouponList.add(saveCoupon);
             
             CouponIssueOperateRecord record = CouponIssueOperateRecord.builder().couponId(coupon.getId()).tenantId(user.getTenantId()).createTime(System.currentTimeMillis())
@@ -897,7 +900,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE).couponId(coupon.getId())
                     .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).sourceOrderId(userCouponDTO.getSourceOrderNo());
+                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).couponType(CouponTypeEnum.BUY_PACKAGE.getCode()).couponWay(userCouponDTO.getPackageId()).sourceOrderId(userCouponDTO.getSourceOrderNo());
             
             //优惠券过期时间
             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());

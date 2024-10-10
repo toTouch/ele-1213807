@@ -91,7 +91,7 @@ public class UserCoupon {
     /**
      * 发券方式
      */
-    private String couponWay;
+    private Long couponWay;
     
     /**
      * 加盟商id

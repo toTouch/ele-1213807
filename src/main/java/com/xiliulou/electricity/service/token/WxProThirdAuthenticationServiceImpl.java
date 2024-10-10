@@ -369,7 +369,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 Long[] uids = new Long[1];
                 uids[0] = insert.getUid();
                 log.info("uids is -->{}", uids[0]);
-                userCouponService.batchRelease(newUserActivity.getCouponId(), uids);
+                userCouponService.batchRelease(newUserActivity.getCouponId(), uids, Long.valueOf(newUserActivity.getId()));
             }
         }
         
