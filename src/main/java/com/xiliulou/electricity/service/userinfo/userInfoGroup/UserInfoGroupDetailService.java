@@ -24,6 +24,8 @@ public interface UserInfoGroupDetailService {
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     
+    Integer batchInsert(List<UserInfoGroupDetail> detailList);
+    
     Integer countUserByGroupId(Long id);
     
     Integer countGroupByUidAndFranchisee(Long uid, Long franchiseeId);
@@ -32,9 +34,16 @@ public interface UserInfoGroupDetailService {
     
     List<UserInfoGroupNamesBO> listGroupByUidList(List<Long> uidList);
     
-    R update(UserInfoGroupDetailUpdateRequest request, TokenUser operator);
+    @Deprecated
+    R update(UserInfoGroupDetailUpdateRequest request, Long operator);
     
-    R<Object> bindGroup(UserInfoBindGroupRequest request, TokenUser operator);
+    R updateV2(UserInfoGroupDetailUpdateRequest request, TokenUser operator);
+    
+    R bindGroup(UserInfoBindGroupRequest request, Long operator);
+    
+    R<Object> bindGroupV2(UserInfoBindGroupRequest request, TokenUser operator);
+    
+    Integer deleteByUid(Long uid, List<String> groupNoList);
     
     /**
      * 查询用户全部自定义分组
@@ -43,4 +52,8 @@ public interface UserInfoGroupDetailService {
      * @return 查询结果
      */
     R<Object> selectAll(UserInfoGroupDetailQuery query);
+    
+    Integer deleteForUpdate(Long uid, Long tenantId, Long franchiseeId);
+    
+    List<Long> listFranchiseeForUpdate(Long uid);
 }

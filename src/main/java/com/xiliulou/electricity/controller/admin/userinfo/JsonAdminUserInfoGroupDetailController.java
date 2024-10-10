@@ -195,6 +195,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     /**
      * 编辑
      */
+    @Deprecated
     @PostMapping("/admin/userInfo/userInfoGroupDetail/update")
     public R update(@RequestBody @Validated UserInfoGroupDetailUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -207,16 +208,31 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) && CollectionUtils.isEmpty(request.getGroupIds())) {
-            return R.fail("ELECTRICITY.0066", "未设置用户分组");
+        return userInfoGroupDetailService.update(request, user.getUid());
+    }
+    
+    /**
+     * 编辑
+     */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/updateV2")
+    public R updateV2(@RequestBody @Validated UserInfoGroupDetailUpdateRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return userInfoGroupDetailService.update(request, user);
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return userInfoGroupDetailService.updateV2(request, user);
     }
     
     /**
      * 加入分组
      */
+    @Deprecated
     @PostMapping("/admin/userInfo/userInfoGroupDetail/bindGroup")
     public R bindGroup(@RequestBody @Validated UserInfoBindGroupRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -229,11 +245,25 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) && CollectionUtils.isEmpty(request.getGroupIds())) {
-            return R.fail("ELECTRICITY.0066", "未设置用户分组");
+        return userInfoGroupDetailService.bindGroup(request, user.getUid());
+    }
+    
+    /**
+     * 加入分组
+     */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/bindGroupV2")
+    public R bindGroupV2(@RequestBody @Validated UserInfoBindGroupRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return userInfoGroupDetailService.bindGroup(request, user);
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return userInfoGroupDetailService.bindGroupV2(request, user);
     }
     
     /**

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
@@ -393,5 +394,15 @@ public class JsonAdminFranchiseeController extends BasicController {
         }
 
         return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
+    }
+    
+    @GetMapping("/admin/franchisee/selectFranchiseeForSelf")
+    public R<Franchisee> selectFranchiseeForSelf() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user) || !Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return R.ok(franchiseeService.queryByUid(user.getUid()));
     }
 }

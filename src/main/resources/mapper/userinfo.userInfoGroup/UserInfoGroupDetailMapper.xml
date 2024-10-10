@@ -29,6 +29,16 @@
         delete from t_user_info_group_detail where tenant_id = #{tenantId} and group_no = #{groupNo}
     </delete>
     
+    <delete id="deleteForUpdate">
+        delete from t_user_info_group_detail where uid = #{uid}
+            <if test="tenantId != null">
+               and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+    </delete>
+    
     <select id="selectByUid" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail">
         select
         <include refid="basic_field"/>
@@ -99,6 +109,12 @@
         where tuig.id = #{id}
     </select>
     
+    <select id="countGroupByUid" resultType="java.lang.Integer">
+        select count(distinct (group_no))
+        from t_user_info_group_detail
+        where uid = #{uid}
+    </select>
+    
     <select id="countGroupByUidAndFranchisee" resultType="java.lang.Integer">
         select count(distinct (group_no))
         from t_user_info_group_detail
@@ -145,6 +161,13 @@
             </if>
         </where>
         order by tuigd.update_time, tuigd.id desc
+    </select>
+    
+    <select id="selectListFranchiseeForUpdate" resultType="java.lang.Long">
+        select franchisee_id
+        from t_user_info_group_detail
+        where uid = #{uid}
+            and del_flag = 0
     </select>
 
 </mapper>
