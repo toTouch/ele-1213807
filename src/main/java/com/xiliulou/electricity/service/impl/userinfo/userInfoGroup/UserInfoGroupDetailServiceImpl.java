@@ -24,29 +24,30 @@ import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroup
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupForUserVO;
 import com.xiliulou.security.bean.TokenUser;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -56,20 +57,25 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailService {
     
-    private final UserInfoGroupDetailMapper userInfoGroupDetailMapper;
+    @Resource
+    private UserInfoGroupDetailMapper userInfoGroupDetailMapper;
     
-    private final UserInfoService userInfoService;
+    @Resource
+    private UserInfoService userInfoService;
     
-    private final FranchiseeService franchiseeService;
+    @Resource
+    private FranchiseeService franchiseeService;
     
-    private final UserInfoGroupService userInfoGroupService;
+    @Resource
+    private RedisService redisService;
     
-    private final RedisService redisService;
+    @Resource
+    private UserInfoGroupDetailHistoryService userInfoGroupDetailHistoryService;
     
-    private final UserInfoGroupDetailHistoryService userInfoGroupDetailHistoryService;
+    @Resource
+    private UserInfoGroupBizService userInfoGroupBizService;
     
     
     @Slave
@@ -210,7 +216,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 }
             }
             
-            List<UserInfoGroupBO> groupList = userInfoGroupService.listByIds(groupIds);
+            List<UserInfoGroupBO> groupList = userInfoGroupBizService.listUserInfoGroupByIds(groupIds);
             if (!Objects.equals(groupList.size(), groupIds.size())) {
                 log.warn("Update userInfoGroupDetail error! groupList is empty or size not equal, groupIds={}", groupIds);
                 return R.fail("120112", "未找到用户分组");
@@ -255,7 +261,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 long nowTime = System.currentTimeMillis();
                 
                 List<UserInfoGroupDetail> detailList = groupIds.stream().map(groupId -> {
-                    UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+                    UserInfoGroup userInfoGroup = userInfoGroupBizService.queryUserInfoGroupByIdFromCache(groupId);
                     
                     UserInfoGroupDetail detail = null;
                     if (Objects.nonNull(userInfoGroup)) {
@@ -373,7 +379,12 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 return R.ok();
             }
             
-            for (Long franchiseeId : franchiseeIds) {
+            Set<Long> franchiseeSet = new HashSet<>(franchiseeIds);
+            if (MapUtils.isNotEmpty(franchiseeIdAndGroupIds)) {
+                franchiseeSet.addAll(franchiseeIdAndGroupIds.keySet());
+            }
+            
+            for (Long franchiseeId : franchiseeSet) {
                 if (MapUtils.isNotEmpty(franchiseeIdAndGroupIds) && franchiseeIdAndGroupIds.containsKey(franchiseeId)) {
                     Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
                     if (Objects.isNull(franchisee)) {
@@ -438,7 +449,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             long nowTime = System.currentTimeMillis();
             
             groupIds.forEach(groupId -> {
-                UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+                UserInfoGroup userInfoGroup = userInfoGroupBizService.queryUserInfoGroupByIdFromCache(groupId);
                 if (Objects.nonNull(userInfoGroup)) {
                     UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(uid).franchiseeId(userInfoGroup.getFranchiseeId())
                             .tenantId(tenantId).createTime(nowTime).updateTime(nowTime).operator(operator).build();
@@ -550,7 +561,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     private R<Object> doBind(UserInfo userInfo, Long franchiseeId, List<Long> groupIds, Long operatorId) {
         Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         // 租户校验
         if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             return R.ok();
@@ -560,26 +571,26 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         if (groupIds.size() > UserInfoGroupConstant.USER_GROUP_LIMIT) {
             return R.fail("120114", "用户绑定的分组数量已达上限10个");
         }
-
+        
         List<UserInfoGroupDetail> list = new ArrayList<>();
         // 超限判断
         Integer limitGroupNum = userInfoGroupDetailMapper.countGroupByUidAndFranchisee(userInfo.getUid(), franchiseeId);
         if (Objects.nonNull(limitGroupNum) && ((limitGroupNum + groupIds.size()) > UserInfoGroupConstant.USER_GROUP_LIMIT)) {
             return R.fail("120114", "用户绑定的分组数量已达上限10个");
         }
-
+        
         long nowTime = System.currentTimeMillis();
-
+        
         groupIds.forEach(groupId -> {
-            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+            UserInfoGroup userInfoGroup = userInfoGroupBizService.queryUserInfoGroupByIdFromCache(groupId);
             if (Objects.nonNull(userInfoGroup)) {
                 UserInfoGroupDetail detail = UserInfoGroupDetail.builder().groupNo(userInfoGroup.getGroupNo()).uid(userInfo.getUid()).franchiseeId(franchiseeId).tenantId(tenantId)
                         .createTime(nowTime).updateTime(nowTime).operator(operatorId).build();
-
+                
                 list.add(detail);
             }
         });
-
+        
         if (CollectionUtils.isNotEmpty(list)) {
             Integer integer = userInfoGroupDetailMapper.batchInsert(list);
             if (integer > 0) {
@@ -589,25 +600,11 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                 userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
             }
         }
-
+        
         return R.ok();
     }
     
     private R<Object> doUpdate(UserInfo userInfo, Long franchiseeId, List<Long> groupIds, Long operatorId) {
-        List<UserInfoGroupBO> groupList = userInfoGroupService.listByIds(groupIds);
-        if (!Objects.equals(groupList.size(), groupIds.size())) {
-            log.warn("Update userInfoGroupDetail error! groupList is empty or size not equal, groupIds={}", groupIds);
-            return R.fail("120112", "未找到用户分组");
-        }
-        
-        // 加盟商校验
-        List<UserInfoGroupBO> notSameFranchiseeGroups = groupList.stream().filter(item -> !Objects.equals(item.getFranchiseeId(), franchiseeId)).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(notSameFranchiseeGroups)) {
-            List<Long> differentGroupIds = notSameFranchiseeGroups.stream().map(UserInfoGroupBO::getId).collect(Collectors.toList());
-            log.warn("Update userInfoGroupDetail error! has different franchisee, different groupIds={}", differentGroupIds);
-            return R.fail("120112", "未找到用户分组");
-        }
-        
         Long uid = userInfo.getUid();
         
         // 查询目前已存在的用户分组
@@ -633,7 +630,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         // 如果没有新的分组，则直接保存历史记录并返回
         if (CollectionUtils.isEmpty(groupIds)) {
             if (CollectionUtils.isNotEmpty(existGroupList)) {
-                UserInfoGroupDetailHistory detailHistory = assembleDetailHistoryV2(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA), "", operatorId, franchiseeId, userInfo.getTenantId());
+                UserInfoGroupDetailHistory detailHistory = assembleDetailHistoryV2(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA), "", operatorId, franchiseeId,
+                        userInfo.getTenantId());
                 
                 if (delete > 0) {
                     // 新增历史记录
@@ -643,10 +641,24 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             }
         }
         
+        List<UserInfoGroupBO> groupList = userInfoGroupBizService.listUserInfoGroupByIds(groupIds);
+        if (!Objects.equals(groupList.size(), groupIds.size())) {
+            log.warn("Update userInfoGroupDetail error! groupList is empty or size not equal, groupIds={}", groupIds);
+            return R.fail("120112", "未找到用户分组");
+        }
+        
+        // 加盟商校验
+        List<UserInfoGroupBO> notSameFranchiseeGroups = groupList.stream().filter(item -> !Objects.equals(item.getFranchiseeId(), franchiseeId)).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(notSameFranchiseeGroups)) {
+            List<Long> differentGroupIds = notSameFranchiseeGroups.stream().map(UserInfoGroupBO::getId).collect(Collectors.toList());
+            log.warn("Update userInfoGroupDetail error! has different franchisee, different groupIds={}", differentGroupIds);
+            return R.fail("120112", "未找到用户分组");
+        }
+        
         // 保存新的用户分组
         long nowTime = System.currentTimeMillis();
         List<UserInfoGroupDetail> detailList = groupIds.stream().map(groupId -> {
-            UserInfoGroup userInfoGroup = userInfoGroupService.queryByIdFromCache(groupId);
+            UserInfoGroup userInfoGroup = userInfoGroupBizService.queryUserInfoGroupByIdFromCache(groupId);
             
             UserInfoGroupDetail detail = null;
             if (Objects.nonNull(userInfoGroup)) {
@@ -667,10 +679,10 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         return R.ok();
     }
-
+    
     private UserInfoGroupDetailHistory assembleDetailHistoryV2(Long uid, String oldGroupIds, String newGroupIds, Long operator, Long franchiseeId, Integer tenantId) {
         long nowTime = System.currentTimeMillis();
-
+        
         return UserInfoGroupDetailHistory.builder().uid(uid).oldGroupIds(oldGroupIds).newGroupIds(newGroupIds).operator(operator).franchiseeId(franchiseeId).tenantId(tenantId)
                 .createTime(nowTime).updateTime(nowTime).type(UserInfoGroupConstant.USER_GROUP_HISTORY_TYPE_OTHER).build();
     }

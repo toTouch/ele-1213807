@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.userinfo.userInfoGroup;
 
+import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
+import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail;
 
 import java.util.List;
@@ -26,4 +28,9 @@ public interface UserInfoGroupBizService {
     List<UserInfoGroupNamesBO> listGroupByUidList(List<Long> uidList);
     
     Integer batchInsertGroupDetail(List<UserInfoGroupDetail> detailList);
+    
+    List<UserInfoGroupBO> listUserInfoGroupByIds(List<Long> ids);
+    
+    UserInfoGroup queryUserInfoGroupByIdFromCache(Long id);
+    
 }
