@@ -28,6 +28,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDeta
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.userinfo.userInfoGroup.UserInfoGroupForUserVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -273,7 +274,18 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             }
         }
         
-        return R.ok(map);
+        List<UserInfoGroupForUserVO> userInfoGroupForUserVos = new ArrayList<>();
+        map.forEach((key, value) -> {
+            UserInfoGroupForUserVO userInfoGroupForUserVO = new UserInfoGroupForUserVO();
+            userInfoGroupForUserVO.setFranchiseeId(key);
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(key);
+            userInfoGroupForUserVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            userInfoGroupForUserVO.setUserInfoGroupNames(value);
+            
+            userInfoGroupForUserVos.add(userInfoGroupForUserVO);
+        });
+        
+        return R.ok(userInfoGroupForUserVos);
     }
     
     private R<Object> doBind(UserInfo userInfo, Long franchiseeId, List<Long> groupIds, Long operatorId) {
