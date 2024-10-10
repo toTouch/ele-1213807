@@ -66,7 +66,7 @@ public class JsonUserFreeDepositController extends BaseController {
         Triple<Boolean, String, Object> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
         returnTripleResult(result);
         if (result.getLeft()) {
-            return R.ok(result.getRight());
+            return R.ok(Objects.nonNull(result.getRight()) ? ((FreeDepositVO)result.getRight()).getQrCode() : "");
         } else {
             return  R.fail(result.getMiddle(), null, result.getRight());
         }
