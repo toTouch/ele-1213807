@@ -424,7 +424,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
             HttpServletRequest request) {
     
-        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY,refundOrderNo), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY,refundOrderNo), IdUtil.fastSimpleUUID(), 10 * 1000L, false);
         if (!getLockSuccess) {
             throw new BizException("ELECTRICITY.0034", "操作频繁");
         }
