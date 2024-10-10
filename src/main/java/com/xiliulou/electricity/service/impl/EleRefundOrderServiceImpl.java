@@ -1129,7 +1129,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid, BigDecimal refundAmount) {
+    public Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid, BigDecimal refundMoney) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("REFUND ORDER WARN!userInfo is null,uid={}", uid);
@@ -1185,12 +1185,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100434", "剩余可代扣金额超过免押金额");
         }
         
-        if (Objects.isNull(refundAmount)) {
+        if (Objects.isNull(refundMoney)) {
             log.warn("FREE DEPOSIT WARN! refundAmount is null or refundAmount > payTransAmt ,orderId={}", freeDepositOrder.getOrderId());
             return Triple.of(false, "100437", "退款金额不能为空");
         }
         
-        if (refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
+        if (refundMoney.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
             log.warn("FREE DEPOSIT WARN! refundAmount is null or refundAmount > payTransAmt ,orderId={}", freeDepositOrder.getOrderId());
             return Triple.of(false, "100438", "退款金额不能大于剩余可代扣金额");
         }
