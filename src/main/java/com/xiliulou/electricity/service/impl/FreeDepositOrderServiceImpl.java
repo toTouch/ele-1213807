@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
@@ -113,6 +114,7 @@ import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrd
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
@@ -1167,6 +1169,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return triple;
         }
         String md5 = SecureUtil.md5(freeQuery.getRealName() + freeQuery.getIdCard() + freeQuery.getMembercardId());
+    
+        // TODO: 2024/10/10 兼容历史逻辑 后续删除
+        FreeDepositVO old = this.compatibleOld(triple, uid, md5);
+        if (Objects.nonNull(old)) {
+            return Triple.of(true, null, old);
+        }
         
         // 查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5));
@@ -2427,5 +2435,25 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Map.of();
         }
         return orders.stream().filter(Objects::nonNull).filter(o->Objects.nonNull(o.getPayTransAmt())).collect(Collectors.toMap(FreeDepositOrder::getOrderId, FreeDepositOrder::getPayTransAmt));
+    }
+    
+    private FreeDepositVO compatibleOld(Triple<Boolean, String, Object> triple, Long uid, String md5) {
+        boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD, uid, md5));
+        
+        if (Objects.isNull(triple.getRight()) && freeOrderCacheResult) {
+            String result = UriUtils
+                    .decode(redisService.get(String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD, uid, md5)), StandardCharsets.UTF_8);
+            log.info("found the free order result from cache for battery package. uid = {}, result = {}", uid, result);
+            result = JsonUtil.fromJson(result, String.class);
+            
+            // 如果channel 是支付宝，历史数据无跳转路径
+            if (ChannelEnum.ALIPAY.getCode().equals(ChannelSourceContextHolder.get())){
+                log.warn("FreeDepositOrderServiceImpl.compatibleOld WARN! alipay historical data incompatible");
+            }
+            FreeDepositVO freeDepositVO = new FreeDepositVO();
+            freeDepositVO.setQrCode(result);
+            return freeDepositVO;
+        }
+        return null;
     }
 }

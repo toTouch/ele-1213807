@@ -340,11 +340,18 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         String md5 = MD5Utils.digest(Optional.ofNullable(freeDepositUserDTO.getRealName()).orElse("").trim()+
                 Optional.ofNullable(freeDepositUserDTO.getIdCard()).orElse("").trim()+
                 Optional.ofNullable(freeDepositUserDTO.getPackageId()).orElse(-1L));
+    
+        FreeDepositUrlCacheBO cacheBO = this.compatibleOld(useFreeDepositStatusResult, uid, md5);
+        
+        
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5));
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
-            String cache = redisService.get(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid, md5));
-            FreeDepositUrlCacheBO cacheBO = JsonUtil.fromJson(cache, FreeDepositUrlCacheBO.class);
+            
+            if (Objects.isNull(cacheBO)){
+                String cache = redisService.get(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid, md5));
+                cacheBO = JsonUtil.fromJson(cache, FreeDepositUrlCacheBO.class);
+            }
             
             
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.queryUserOrderByHash(freeDepositUserDTO.getTenantId(), freeDepositUserDTO.getUid(),md5);
@@ -1530,4 +1537,18 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         return depositPayVo;
     }
     
+    
+    private FreeDepositUrlCacheBO compatibleOld(Triple<Boolean, String, Object> triple, Long uid, String md5) {
+        boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD, uid, md5));
+        
+        if (Objects.isNull(triple.getRight()) && freeOrderCacheResult) {
+            String result = UriUtils.decode(redisService.get(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5)), StandardCharsets.UTF_8);
+            result = JsonUtil.fromJson(result, String.class);
+    
+            FreeDepositUrlCacheBO cacheBO = new FreeDepositUrlCacheBO();
+            cacheBO.setQrCode(result);
+            return cacheBO;
+        }
+        return null;
+    }
 }

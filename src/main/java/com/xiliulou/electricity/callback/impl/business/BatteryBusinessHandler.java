@@ -157,6 +157,11 @@ public class BatteryBusinessHandler implements BusinessHandler {
             if (ObjectUtils.isNotEmpty(md5s)) {
                 Arrays.stream(md5s.split(","))
                         .forEach(md5 -> {
+                            // TODO: 2024/10/10 兼容历史数据 后续删除
+                            String batteryKeyOld = String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD, uid, md5);
+                            if (redisService.hasKey(batteryKeyOld)) {
+                                redisService.delete(batteryKeyOld);
+                            }
                             String batteryKey = String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
                             if (redisService.hasKey(batteryKey)) {
                                 redisService.delete(batteryKey);

@@ -517,6 +517,7 @@ public interface CacheConstant {
      * 换电套餐免押订单链接缓存V2
      */
     String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "battery_free_deposit_order_generate_lock_key:v2:%s:%s";
+    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD = "battery_free_deposit_order_generate_lock_key:%s:%s";
     /**
      * 租车套餐免押订单链接缓存
      */
@@ -525,6 +526,7 @@ public interface CacheConstant {
      * 租车套餐免押订单链接缓存V2
      */
     String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "car_rental_free_deposit_order_generate_lock_key:v2:%s:%s";
+    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD = "car_rental_free_deposit_order_generate_lock_key:%s:%s";
     
     /**
      * 企业渠道换电套餐免押订单链接缓存
