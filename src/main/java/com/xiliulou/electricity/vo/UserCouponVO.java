@@ -148,5 +148,16 @@ public class UserCouponVO {
      * 车电一体套餐列表
      */
     private List<BatteryMemberCardVO> carWithBatteryPackages;
-
+    
+    /**
+     * 发券类型
+     */
+    private Integer couponType;
+    
+    /**
+     * 发券方式
+     */
+    private String couponWay;
+    
+    
 }

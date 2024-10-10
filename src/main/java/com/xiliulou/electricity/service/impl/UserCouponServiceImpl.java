@@ -31,6 +31,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -837,6 +838,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             saveCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
             saveCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             saveCoupon.setTenantId(user.getTenantId());
+            saveCoupon.setCouponType(CouponTypeEnum.BATCH_RELEASE.getCode());
+            saveCoupon.setCouponWay(String.valueOf(operateUid));
             userCouponList.add(saveCoupon);
             
             CouponIssueOperateRecord record = CouponIssueOperateRecord.builder().couponId(coupon.getId()).tenantId(user.getTenantId()).createTime(System.currentTimeMillis())
