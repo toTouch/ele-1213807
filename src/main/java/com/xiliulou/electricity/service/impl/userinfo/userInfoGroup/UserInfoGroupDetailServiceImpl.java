@@ -615,12 +615,14 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             oldGroupIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
         }
         
-        // 删除旧绑定数据
-        Integer delete = deleteForUpdate(uid, null, franchiseeId);
+        
         
         // 如果没有新的分组，则直接保存历史记录并返回
         if (CollectionUtils.isEmpty(groupIds)) {
             if (CollectionUtils.isNotEmpty(existGroupList)) {
+                // 删除旧绑定数据
+                Integer delete = deleteForUpdate(uid, null, franchiseeId);
+                
                 UserInfoGroupDetailHistory detailHistory = assembleDetailHistoryV2(uid, StringUtils.join(oldGroupIds, CommonConstant.STR_COMMA), "", operatorId, franchiseeId,
                         userInfo.getTenantId());
                 
@@ -628,8 +630,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
                     // 新增历史记录
                     userInfoGroupDetailHistoryService.batchInsert(List.of(detailHistory));
                 }
-                return R.ok();
             }
+            return R.ok();
         }
         
         List<UserInfoGroupBO> groupList = userInfoGroupBizService.listUserInfoGroupByIds(groupIds);
@@ -654,6 +656,9 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         if (oldGroupIds.equals(groupIds)) {
             return R.ok();
         }
+        
+        // 删除旧绑定数据
+        Integer delete = deleteForUpdate(uid, null, franchiseeId);
         
         // 保存新的用户分组
         long nowTime = System.currentTimeMillis();
