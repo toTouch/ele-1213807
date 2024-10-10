@@ -68,7 +68,8 @@ public class JsonUserFreeDepositController extends BaseController {
         if (result.getLeft()) {
             return R.ok(Objects.nonNull(result.getRight()) ? ((FreeDepositVO)result.getRight()).getQrCode() : "");
         } else {
-            return  R.fail(result.getMiddle(), null, result.getRight());
+            return result.getRight() instanceof String ? R.fail(result.getMiddle(), result.getRight() == null ? "" : result.getRight().toString()) : R.fail(result.getMiddle(),
+                    null, result.getRight());
         }
     }
     
