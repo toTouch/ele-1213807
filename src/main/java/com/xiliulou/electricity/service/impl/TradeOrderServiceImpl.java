@@ -1369,7 +1369,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
                         .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
-                        .paymentChannel(ChannelSourceContextHolder.get()).build();
+//                        .paymentChannel(ChannelSourceContextHolder.get())
+                        .build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
                 // 将滞纳金订单与用户绑定
@@ -1403,7 +1404,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(payParamConfig.getFranchiseeId());
             eleBatteryServiceFeeOrderUpdate.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-            eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
+//            eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
             batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
@@ -1444,7 +1445,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
                         .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
-                        .paymentChannel(ChannelSourceContextHolder.get()).build();
+//                        .paymentChannel(ChannelSourceContextHolder.get())
+                        .build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
                 // 将滞纳金订单与用户绑定
@@ -1475,7 +1477,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
                 eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(payParamConfig.getFranchiseeId());
                 eleBatteryServiceFeeOrderUpdate.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-                eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
+//                eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
                 batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             }
             
@@ -1493,7 +1495,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 eleBatteryServiceFeeOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
                 eleBatteryServiceFeeOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-                eleBatteryServiceFeeOrder.setPaymentChannel(ChannelSourceContextHolder.get());
+//                eleBatteryServiceFeeOrder.setPaymentChannel(ChannelSourceContextHolder.get());
                 batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrder);
                 log.info("BATTERY SERVICE FEE INFO!user exist pauseBatteryServiceFee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             }
