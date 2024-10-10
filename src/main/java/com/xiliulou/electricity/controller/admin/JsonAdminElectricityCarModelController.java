@@ -228,7 +228,7 @@ public class JsonAdminElectricityCarModelController {
      * @return
      */
     @GetMapping("/admin/electricityCarModel/brandAndModel/list")
-    public R queryCarManufacturerNameAndModel(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+    public R queryCarManufacturerNameAndModel(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "franchiseeId",required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -242,7 +242,7 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        ElectricityCarModelQuery carModelQuery = ElectricityCarModelQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).build();
+        ElectricityCarModelQuery carModelQuery = ElectricityCarModelQuery.builder().offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).build();
         
         return R.ok(electricityCarModelService.listCarManufacturerNameAndModel(carModelQuery));
     }
