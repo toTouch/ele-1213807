@@ -148,6 +148,12 @@ public class ElectricityCabinetBoxVO {
      */
     private String batteryTemperature;
     
+    private Long uid;
+    
+    private String userName;
+    
+    private String phone;
+    
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;
 }

@@ -366,7 +366,8 @@
                tbop.battery_charge_a      as batteryChargeA,
                tbop.sum_v                 as sum_v,
                tbop.sum_a                 as sum_a,
-               tbop.battery_core_temp     as batteryTemperature
+               tbop.battery_core_temp     as batteryTemperature,
+               teb.uid as uid
         FROM t_electricity_battery as teb
                  left join t_battery_other_properties as tbop on teb.sn = tbop.battery_name
         WHERE teb.sn = #{sn}

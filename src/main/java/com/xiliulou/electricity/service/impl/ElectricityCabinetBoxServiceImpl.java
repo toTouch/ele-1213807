@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -198,7 +199,14 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 // 租借在仓
                 if (Objects.equals(electricityBatteryVO.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.equals(electricityBatteryVO.getPhysicsStatus(),
                         ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
-                    
+                    if (Objects.isNull(electricityBatteryVO.getUid())) {
+                        log.warn("ListBoxOther Warn! 电池租借在仓，但是uid为空，sn is {}", sn);
+                    } else {
+                        item.setUid(electricityBatteryVO.getUid());
+                        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBatteryVO.getUid());
+                        item.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : null);
+                        item.setPhone(Objects.nonNull(userInfo) ? userInfo.getPhone() : null);
+                    }
                 }
             }
 
