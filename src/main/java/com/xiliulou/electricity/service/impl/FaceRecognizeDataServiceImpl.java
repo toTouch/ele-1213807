@@ -168,18 +168,14 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
             return Triple.of(true, "", null);
         }
 
-        if (recognizeData.getFaceRecognizeCapacity() > 0 && System.currentTimeMillis() - recognizeData.getRechargeTime() < 365 * 24 * 60 * 60 * 1000L) {
-            return Triple.of(false, "100333", "计费周期内不允许重复充值");
-        }
-
-        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        if (recognizeData.getFaceRecognizeCapacity() <= 0) {
-            faceRecognizeCapacity = recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        }
+//        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
+//        if (recognizeData.getFaceRecognizeCapacity() <= 0) {
+//            faceRecognizeCapacity = recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
+//        }
 
         FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
         faceRecognizeDataUpdate.setId(recognizeData.getId());
-        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeCapacity);
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity());
         faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
         faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
 
