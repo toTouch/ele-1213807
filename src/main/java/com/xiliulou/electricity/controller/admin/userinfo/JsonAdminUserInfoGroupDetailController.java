@@ -194,6 +194,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     
     /**
      * 编辑
+     * TODO SJP
      */
     @Deprecated
     @PostMapping("/admin/userInfo/userInfoGroupDetail/update")
@@ -231,6 +232,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     
     /**
      * 加入分组
+     * TODO SJP
      */
     @Deprecated
     @PostMapping("/admin/userInfo/userInfoGroupDetail/bindGroup")

@@ -615,15 +615,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             oldGroupIds = existGroupList.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
         }
         
-        // 升序
-        oldGroupIds.sort(Comparator.comparing(Long::intValue));
-        groupIds.sort(Comparator.comparing(Long::intValue));
-        
-        // 修改前后分组相同，则不新增记录
-        if (oldGroupIds.equals(groupIds)) {
-            return R.ok();
-        }
-        
         // 删除旧绑定数据
         Integer delete = deleteForUpdate(uid, null, franchiseeId);
         
@@ -653,6 +644,15 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             List<Long> differentGroupIds = notSameFranchiseeGroups.stream().map(UserInfoGroupBO::getId).collect(Collectors.toList());
             log.warn("Update userInfoGroupDetail error! has different franchisee, different groupIds={}", differentGroupIds);
             return R.fail("120112", "未找到用户分组");
+        }
+        
+        // 升序
+        oldGroupIds.sort(Comparator.comparing(Long::intValue));
+        groupIds.sort(Comparator.comparing(Long::intValue));
+        
+        // 修改前后分组相同，则不新增记录
+        if (oldGroupIds.equals(groupIds)) {
+            return R.ok();
         }
         
         // 保存新的用户分组

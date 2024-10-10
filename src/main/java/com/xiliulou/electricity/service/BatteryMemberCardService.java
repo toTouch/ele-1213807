@@ -59,9 +59,6 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardSearchVO> searchV2(BatteryMemberCardQuery query);
     
-    @Deprecated
-    List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
-    
     List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query);
     
     Triple<Boolean, String, Object> updateStatus(BatteryMemberCardStatusQuery batteryModelQuery);

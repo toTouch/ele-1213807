@@ -256,19 +256,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }).collect(Collectors.toList());
     }
     
-    @Deprecated
-    @Override
-    @Slave
-    public List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query) {
-        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectBySearch(query);
-        
-        return list.parallelStream().map(item -> {
-            BatteryMemberCardSearchVO batteryMemberCardVO = new BatteryMemberCardSearchVO();
-            BeanUtils.copyProperties(item, batteryMemberCardVO);
-            return batteryMemberCardVO;
-        }).collect(Collectors.toList());
-    }
-    
     @Override
     public List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());

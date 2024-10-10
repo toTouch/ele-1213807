@@ -49,9 +49,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     
     List<BatteryMemberCard> selectBySearchV2(BatteryMemberCardQuery query);
     
-    @Deprecated
-    List<BatteryMemberCard> selectBySearch(BatteryMemberCardQuery query);
-    
     Integer checkMembercardExist(@Param("name") String name, @Param("tenantId") Integer tenantId);
     
     List<BatteryMemberCardAndTypeVO> selectByPageForUser(BatteryMemberCardQuery query);
