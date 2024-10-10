@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -193,6 +194,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 item.setBatteryA(Objects.nonNull(electricityBatteryVO.getBatteryChargeA()) ? electricityBatteryVO.getBatteryChargeA() : 0);
                 item.setBatteryV(Objects.nonNull(electricityBatteryVO.getBatteryV()) ? electricityBatteryVO.getBatteryV() : 0);
                 item.setBatteryTemperature(Objects.nonNull(electricityBatteryVO.getBatteryTemperature()) ? electricityBatteryVO.getBatteryTemperature() : "0.00");
+                
+                // 租借在仓
+                if (Objects.equals(electricityBatteryVO.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.equals(electricityBatteryVO.getPhysicsStatus(),
+                        ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
+                    
+                }
             }
 
             //设置电池短型号
