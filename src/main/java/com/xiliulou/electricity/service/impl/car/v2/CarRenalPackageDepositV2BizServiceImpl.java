@@ -341,16 +341,16 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 Optional.ofNullable(freeDepositUserDTO.getIdCard()).orElse("").trim()+
                 Optional.ofNullable(freeDepositUserDTO.getPackageId()).orElse(-1L));
     
-        FreeDepositUrlCacheBO cacheBO = this.compatibleOld(useFreeDepositStatusResult, uid, md5);
+        FreeDepositUrlCacheBO oldCacheBO = this.compatibleOld(useFreeDepositStatusResult, uid, md5);
         
         
         //查看缓存中的免押链接信息是否还存在，若存在，并且本次免押传入的用户名称和身份证与上次相同，则获取缓存数据并返回
         boolean freeOrderCacheResult = redisService.hasKey(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2,uid,md5));
         if (Objects.isNull(useFreeDepositStatusResult.getRight()) && freeOrderCacheResult) {
             
-            if (Objects.isNull(cacheBO)){
+            if (Objects.isNull(oldCacheBO)){
                 String cache = redisService.get(String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid, md5));
-                cacheBO = JsonUtil.fromJson(cache, FreeDepositUrlCacheBO.class);
+                oldCacheBO = JsonUtil.fromJson(cache, FreeDepositUrlCacheBO.class);
             }
             
             
@@ -370,12 +370,12 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 memberTermInsertOrUpdateEntity.setId(memberTermEntity.getId());
                 carRentalPackageMemberTermService.updateById(memberTermInsertOrUpdateEntity);
             }
-            String qrUri = UriUtils.decode(cacheBO.getQrCode(), StandardCharsets.UTF_8);
+            String qrUri = UriUtils.decode(oldCacheBO.getQrCode(), StandardCharsets.UTF_8);
             
             FreeDepositVO freeDepositVO = new FreeDepositVO();
             freeDepositVO.setQrCode(qrUri);
-            freeDepositVO.setPath(cacheBO.getPath());
-            freeDepositVO.setExtraData(cacheBO.getExtraData());
+            freeDepositVO.setPath(oldCacheBO.getPath());
+            freeDepositVO.setExtraData(oldCacheBO.getExtraData());
             log.info("found the free order result from cache for car rental. uid = {}, result = {}", uid, JsonUtil.toJson(freeDepositVO));
             return freeDepositVO;
         }
