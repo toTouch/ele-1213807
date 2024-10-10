@@ -722,6 +722,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Override
     public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, BigDecimal refundAmount, Integer status, HttpServletRequest request,
             Integer offlineRefund) {
+    
+        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY,refundOrderNo), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
+        
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, refundOrderNo)
                         .eq(BatteryMembercardRefundOrder::getTenantId, TenantContextHolder.getTenantId())
@@ -1132,8 +1138,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
             batteryMembercardRefundOrderVO.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
-            batteryMembercardRefundOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
-            batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+            batteryMembercardRefundOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? 0 : batteryMemberCard.getRentUnit());
+            batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? 0 : batteryMemberCard.getLimitCount());
             batteryMembercardRefundOrderVO.setRentPriceUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentPriceUnit());
             
             return batteryMembercardRefundOrderVO;

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 
 import cn.hutool.core.collection.CollUtil;
@@ -15,6 +16,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
@@ -421,6 +423,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
             HttpServletRequest request) {
+    
+        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY,refundOrderNo), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
         
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())

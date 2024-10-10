@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 
+import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.FreeDepositConfig;
@@ -1294,6 +1296,11 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
             Integer compelOffLine) {
         if (!ObjectUtils.allNotNull(refundDepositOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+    
+        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.APPROVE_REFUND_DEPOSIT_ORDER_LOCK_KEY,refundDepositOrderNo), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
         }
         
         // 退押订单
