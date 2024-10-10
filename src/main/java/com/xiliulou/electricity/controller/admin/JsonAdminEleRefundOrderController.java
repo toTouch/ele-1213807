@@ -211,7 +211,8 @@ public class JsonAdminEleRefundOrderController extends BaseController {
      */
     @PostMapping("/admin/battery/freeDeposit/refund/v2")
     @Log(title = "电池免押后台退押金")
-    public R batteryFreeDepositRefundV2(@RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam("uid") Long uid) {
-        return returnTripleResult(eleRefundOrderService.batteryFreeDepositRefundV2(errMsg, uid));
+    public R batteryFreeDepositRefundV2(@RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam("uid") Long uid,
+            @RequestParam("refundAmount") BigDecimal refundAmount) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepositRefundV2(errMsg, uid, refundAmount));
     }
 }
