@@ -641,6 +641,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
             }
         }
+
+        log.info("查询用户可见套餐调试，userBindBatteryType={}", userBindBatteryType);
         
         List<BatteryMemberCardVO> result = new ArrayList<>();
         for (BatteryMemberCardAndTypeVO item : list) {
@@ -652,6 +654,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType()))
                             .map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
                 }
+
+                log.info("查询用户可见套餐调试，number={}", number);
                 
                 if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
                     if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
