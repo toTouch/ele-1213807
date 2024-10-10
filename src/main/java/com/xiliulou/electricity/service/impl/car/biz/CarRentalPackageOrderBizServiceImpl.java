@@ -2767,8 +2767,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 2. 处理租车套餐押金缴纳订单
         String depositPayOrderNo = carRentalPackageOrderEntity.getDepositPayOrderNo();
         CarRentalPackageDepositPayPo depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
-        if (ObjectUtils.isEmpty(depositPayEntity) || Objects.equals(PayTypeEnum.EXEMPT.getCode(),depositPayEntity.getPayType())) {
+        if (ObjectUtils.isEmpty(depositPayEntity)) {
             throw new BizException("300010", "未找到租车套餐押金缴纳订单");
+        }
+        
+        if (Objects.equals(PayTypeEnum.EXEMPT.getCode(),depositPayEntity.getPayType())) {
+            throw new BizException("301030", "已取消支付");
         }
         
         // 判定押金缴纳订单是否需要更改支付状态
