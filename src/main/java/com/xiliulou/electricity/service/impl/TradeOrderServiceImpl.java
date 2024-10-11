@@ -347,7 +347,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), userInfo.getFranchiseeId(),
+            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), batteryMemberCard.getFranchiseeId(),
                     batteryMemberCard, CHECK_USERINFO_GROUP_USER);
             
             if (Boolean.FALSE.equals(checkTriple.getLeft())) {
@@ -639,7 +639,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), userInfo.getFranchiseeId(),
+            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), batteryMemberCard.getFranchiseeId(),
                     batteryMemberCard, CHECK_USERINFO_GROUP_USER);
             
             if (Boolean.FALSE.equals(checkTriple.getLeft())) {
