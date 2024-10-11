@@ -10,6 +10,7 @@ import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -32,6 +33,7 @@ import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.DeviceReportConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -39,11 +41,13 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.CabinetMoveHistory;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.entity.EleOtaFile;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -78,6 +82,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
@@ -105,6 +110,7 @@ import com.xiliulou.electricity.service.CabinetMoveHistoryService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleDeviceCodeService;
 import com.xiliulou.electricity.service.EleOtaFileService;
 import com.xiliulou.electricity.service.EleOtaUpgradeService;
 import com.xiliulou.electricity.service.EleOtherConfigService;
@@ -441,6 +447,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
+    
+    @Autowired
+    private EleDeviceCodeService eleDeviceCodeService;
     
     
     /**
@@ -5160,6 +5169,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(new RentReturnEditEchoVO(cabinetExtra.getEid(), cabinetExtra.getRentTabType(), cabinetExtra.getReturnTabType(), cabinetExtra.getMinRetainBatteryCount(),
                 cabinetExtra.getMaxRetainBatteryCount()));
+    }
+    
+    @Override
+    public R updateCabinetPattern(EleCabinetPatternQuery query) {
+        //判断三元组是否在设备列表中存在,若不存在，新增
+        if (Objects.isNull(eleDeviceCodeService.existsDeviceName(query.getDeviceName()))) {
+            long time = System.currentTimeMillis();
+            EleDeviceCode deviceCode = new EleDeviceCode();
+            deviceCode.setProductKey(query.getProductKey());
+            deviceCode.setDeviceName(query.getDeviceName());
+            deviceCode.setSecret(SecureUtil.hmacMd5(query.getProductKey() + query.getDeviceName()).digestHex(String.valueOf(time)));
+            deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
+            deviceCode.setRemark("");
+            deviceCode.setDelFlag(CommonConstant.DEL_N);
+            deviceCode.setCreateTime(time);
+            deviceCode.setUpdateTime(time);
+            eleDeviceCodeService.insert(deviceCode);
+        }
+        
+        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
+        if (Objects.isNull(otherSetting) || org.apache.commons.lang3.StringUtils.isBlank(otherSetting.getApiAddress())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("apiAddress", otherSetting.getApiAddress());
+        params.put("iotConnectMode", query.getPattern());
+        
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(query.getProductKey());
+        commandQuery.setDeviceName(query.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+        return this.sendCommandToEleForOuter(commandQuery);
     }
     
     @Override
