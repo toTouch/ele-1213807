@@ -177,7 +177,11 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
             return Triple.of(false, "100488", "设备不存在");
         }
         
-        deleteById(id, deviceCode.getProductKey(), deviceCode.getDeviceName());
+        EleDeviceCode deviceCodeUpdate =new EleDeviceCode();
+        deviceCodeUpdate.setDelFlag(CommonConstant.DEL_Y);
+        deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        updateById(deviceCodeUpdate, deviceCode.getProductKey(), deviceCode.getDeviceName());
         return Triple.of(true, null, null);
     }
     
