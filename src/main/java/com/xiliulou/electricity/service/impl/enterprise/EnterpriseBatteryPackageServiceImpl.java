@@ -1209,11 +1209,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, not found pay params,uid={}", userInfo.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
             }*/
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(userInfo.getUid(), tenantId,UserOauthBind.SOURCE_WX_PRO);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("purchase package by enterprise user error, not found user oauth bind or third id is null,uid={}", userInfo.getUid());
-                return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
+    
+            boolean exist = userOauthBindService.checkExistBind(uid, tenantId);
+            if (!exist) {
+                log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
+                return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }
             
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -1479,11 +1479,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package with deposit by enterprise user warn, user is rent deposit,uid={} ", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
             }
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(userInfo.getUid(), tenantId,UserOauthBind.SOURCE_WX_PRO);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("purchase package with deposit by enterprise user warn, not found user oauth bind or third id is null,uid={}", userInfo.getUid());
-                return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
+    
+            boolean exist = userOauthBindService.checkExistBind(uid, tenantId);
+            if (!exist) {
+                log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
+                return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
