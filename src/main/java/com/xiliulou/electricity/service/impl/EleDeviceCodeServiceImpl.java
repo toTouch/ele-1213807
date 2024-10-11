@@ -10,7 +10,9 @@ import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.mapper.EleDeviceCodeMapper;
 import com.xiliulou.electricity.query.EleDeviceCodeInsertQuery;
+import com.xiliulou.electricity.query.EleDeviceCodeOuterQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeQuery;
+import com.xiliulou.electricity.query.EleDeviceCodeRegisterQuery;
 import com.xiliulou.electricity.service.EleDeviceCodeService;
 import com.xiliulou.electricity.utils.DbUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -179,6 +181,28 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
         return Triple.of(true, null, null);
     }
     
+    @Override
+    public Triple<Boolean, String, Object> deviceRegister(EleDeviceCodeRegisterQuery query) {
+        for (EleDeviceCodeOuterQuery entity : query.getDeviceNames()) {
+            if (Objects.nonNull(applicationContext.getBean(EleDeviceCodeService.class).existsDeviceName(entity.getDeviceName()))) {
+                return Triple.of(false, "100487", "设备编号已存在:" + entity.getDeviceName());
+            }
+        }
+        
+        eleDeviceCodeMapper.batchInsert(buildEleDeviceCodeList(query));
+        return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> deviceInfo(EleDeviceCodeOuterQuery query) {
+        EleDeviceCode deviceCode = this.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(deviceCode)) {
+            return Triple.of(false, "100488", "设备不存在");
+        }
+        
+        return Triple.of(true, null, deviceCode);
+    }
+    
     private List<EleDeviceCode> buildEleDeviceCode(EleDeviceCodeQuery query) {
         return query.getDeviceNames().stream().map(item -> {
             long time = System.currentTimeMillis();
@@ -188,6 +212,22 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
             deviceCode.setSecret(SecureUtil.hmacMd5(eleCommonConfig.getProductKey() + item).digestHex(String.valueOf(time)));
             deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
             deviceCode.setRemark(item.getRemark());
+            deviceCode.setDelFlag(CommonConstant.DEL_N);
+            deviceCode.setCreateTime(time);
+            deviceCode.setUpdateTime(time);
+            return deviceCode;
+        }).collect(Collectors.toList());
+    }
+    
+    private List<EleDeviceCode> buildEleDeviceCodeList(EleDeviceCodeRegisterQuery query) {
+        return query.getDeviceNames().stream().map(item -> {
+            long time = System.currentTimeMillis();
+            EleDeviceCode deviceCode = new EleDeviceCode();
+            deviceCode.setProductKey(eleCommonConfig.getProductKey());
+            deviceCode.setDeviceName(item.getDeviceName());
+            deviceCode.setSecret(SecureUtil.hmacMd5(eleCommonConfig.getProductKey() + item).digestHex(String.valueOf(time)));
+            deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
+            deviceCode.setRemark("");
             deviceCode.setDelFlag(CommonConstant.DEL_N);
             deviceCode.setCreateTime(time);
             deviceCode.setUpdateTime(time);

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class EleDeviceCodeQuery {
     private Long size;
     private Long offset;
     
-    @NotBlank(message = "id不能为空", groups = UpdateGroup.class)
+    @NotNull(message = "id不能为空", groups = UpdateGroup.class)
     private Long id;
     
     private String productKey;
