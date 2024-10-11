@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserEleOnlineLogMapper">
-    <insert id="insert" parameterType="com.xiliulou.electricity.device.business.entity.UserEleOnlineLog" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.UserEleOnlineLog" useGeneratedKeys="true" keyProperty="id">
         insert into t_user_ele_on_line_log(eid, client_ip, status, msg, appear_time, create_time)
         values (#{eid}, #{clientIp}, #{status}, #{msg}, #{appearTime}, #{createTime})
     </insert>
