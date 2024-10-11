@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserEleOnlineLogMapper">
     <insert id="insert" parameterType="com.xiliulou.electricity.entity.UserEleOnlineLog" useGeneratedKeys="true" keyProperty="id">
-        insert into t_user_ele_on_line_log(eid, client_ip, status, msg, appear_time, create_time)
+        insert into t_user_ele_online_log(eid, client_ip, status, msg, appear_time, create_time)
         values (#{eid}, #{clientIp}, #{status}, #{msg}, #{appearTime}, #{createTime})
     </insert>
 
@@ -10,7 +10,7 @@
         SELECT
         a.id, a.eid as eleId, a.client_ip, a.status, a.msg, a.appear_time,a.create_time, b.`name`
         FROM
-        t_user_ele_on_line_log a
+        t_user_ele_online_log a
         LEFT JOIN t_electricity_cabinet b ON a.eid = b.id
         <where>
             a.eid = #{eleId}
@@ -24,7 +24,7 @@
     </select>
 
     <select id="queryOnlineLogCount" resultType="integer">
-        select count(1) from t_user_ele_on_line_log a
+        select count(1) from t_user_ele_online_log a
         <where>
                     a.eid = #{eleId}
             <if test="type != null and type != ''">
