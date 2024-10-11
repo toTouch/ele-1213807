@@ -8,15 +8,19 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.entity.EleDeviceCode;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleDeviceCodeMapper;
 import com.xiliulou.electricity.query.EleDeviceCodeInsertQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeOuterQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeRegisterQuery;
 import com.xiliulou.electricity.service.EleDeviceCodeService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.EleDeviceCodeVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -47,6 +51,9 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     
     @Autowired
     private RedisService redisService;
+    
+    @Autowired
+    private ElectricityCabinetService electricityCabinetService;
     
     @Slave
     @Override
@@ -125,15 +132,44 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
         return this.eleDeviceCodeMapper.existsDeviceName(deviceName);
     }
     
-    @Slave
+    //    @Slave
     @Override
-    public List<EleDeviceCode> listByPage(EleDeviceCodeQuery eleDeviceCode) {
+    public List<EleDeviceCodeVO> listByPage(EleDeviceCodeQuery eleDeviceCode) {
         List<EleDeviceCode> eleDeviceCodes = this.eleDeviceCodeMapper.selectByPage(eleDeviceCode);
         if (CollectionUtils.isEmpty(eleDeviceCodes)) {
             return Collections.EMPTY_LIST;
         }
         
-        return eleDeviceCodes;
+        return eleDeviceCodes.stream().map(item -> {
+            EleDeviceCodeVO eleDeviceCodeVO = new EleDeviceCodeVO();
+            BeanUtils.copyProperties(item, eleDeviceCodeVO);
+            
+            int onlineStatus = checkDeviceOnlineStatus(item);
+            eleDeviceCodeVO.setOnlineStatus(onlineStatus);
+            
+            return eleDeviceCodeVO;
+        }).collect(Collectors.toList());
+    }
+    
+    private int checkDeviceOnlineStatus(EleDeviceCode item) {
+        int onlineStatus = EleCabinetConstant.STATUS_OFFLINE;
+        
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(item.getProductKey(), item.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return onlineStatus;
+        }
+        
+        onlineStatus = electricityCabinetService.deviceIsOnline(item.getProductKey(), item.getDeviceName(), electricityCabinet.getPattern()) ? EleCabinetConstant.STATUS_ONLINE
+                : EleCabinetConstant.STATUS_OFFLINE;
+        if (!Objects.equals(item.getOnlineStatus(), onlineStatus)) {
+            EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
+            deviceCodeUpdate.setId(item.getId());
+            deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
+            deviceCodeUpdate.setOnlineStatus(onlineStatus);
+            updateById(deviceCodeUpdate, item.getProductKey(), item.getDeviceName());
+        }
+        
+        return onlineStatus;
     }
     
     @Slave
@@ -177,7 +213,7 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
             return Triple.of(false, "100488", "设备不存在");
         }
         
-        EleDeviceCode deviceCodeUpdate =new EleDeviceCode();
+        EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
         deviceCodeUpdate.setDelFlag(CommonConstant.DEL_Y);
         deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
         

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.query.EleDeviceCodeOuterQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeRegisterQuery;
+import com.xiliulou.electricity.vo.EleDeviceCodeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public interface EleDeviceCodeService {
     
     EleDeviceCode queryBySnFromCache(String productKey, String deviceName);
     
-    List<EleDeviceCode> listByPage(EleDeviceCodeQuery eleDeviceCode);
+    List<EleDeviceCodeVO> listByPage(EleDeviceCodeQuery eleDeviceCode);
     
     int insert(EleDeviceCode eleDeviceCode);
     
