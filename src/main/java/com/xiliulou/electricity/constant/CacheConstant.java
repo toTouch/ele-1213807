@@ -787,5 +787,11 @@ public interface CacheConstant {
      * 分期套餐代扣后处理逻辑锁
      */
     String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+
+    /**
+     * 用户设备状态缓存
+     */
+    String CACHE_USER_DEVICE_STATUS = "d_stat:";
+
 }
 

@@ -61,4 +61,9 @@ public interface MqConsumerConstant {
     String FREE_DEPOSIT_CONSUMER_GROUP = "free_deposit_group";
     String UN_FREE_DEPOSIT_CONSUMER_GROUP = "un_free_deposit_group";
     String AUTH_PAY_CONSUMER_GROUP = "auth_pay_group";
+
+    /**
+     * 用户设备在线日志 consumer group
+     */
+    String USER_DEVICE_STATUS_CONSUMER_GROUP = "user_device_status_consumer";
 }

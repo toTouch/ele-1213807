@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * 优惠券规则表(TEleOnLineLog)表服务接口
+ * 
  *
  * @author makejava
  * @since 2022-08-16 09:28:22
