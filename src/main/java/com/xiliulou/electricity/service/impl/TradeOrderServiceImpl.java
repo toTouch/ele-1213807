@@ -347,18 +347,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), batteryMemberCard.getFranchiseeId(),
+            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
                     batteryMemberCard, CHECK_USERINFO_GROUP_USER);
             
             if (Boolean.FALSE.equals(checkTriple.getLeft())) {
                 return checkTriple;
-            }
-            
-            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-                log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(),
-                        integratedPaymentAdd.getMemberCardId());
-                return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
             
             // 获取扫码柜机
@@ -639,7 +632,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 判断套餐用户分组和用户的用户分组是否匹配
-            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo.getUid(), batteryMemberCard.getFranchiseeId(),
+            Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
                     batteryMemberCard, CHECK_USERINFO_GROUP_USER);
             
             if (Boolean.FALSE.equals(checkTriple.getLeft())) {
@@ -649,12 +642,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100275", "电池套餐不可用");
-            }
-            
-            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-                log.warn("PAY MEMBER CARD AND INSURANCE WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), query.getMemberId());
-                return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
             
             List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());

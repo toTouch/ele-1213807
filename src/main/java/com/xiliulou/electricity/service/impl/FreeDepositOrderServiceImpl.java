@@ -151,6 +151,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK_USERINFO_GROUP_ADMIN;
+
 /**
  * (FreeDepositOrder)表服务实现类
  *
@@ -1582,11 +1584,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
-        // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("FREE BATTERY DEPOSIT HYBRID ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(),
-                    query.getMemberCardId());
-            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+        // 判断套餐用户分组和用户的用户分组是否匹配
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
+                batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
+        
+        if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+            return checkTriple;
         }
         
         // 是否有正在进行中的退押

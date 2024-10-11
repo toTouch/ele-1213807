@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 门店表(TStore)表控制层
@@ -397,12 +398,19 @@ public class JsonAdminFranchiseeController extends BasicController {
     }
     
     @GetMapping("/admin/franchisee/selectFranchiseeForSelf")
-    public R<Franchisee> selectFranchiseeForSelf() {
+    public R<List<Franchisee>> selectFranchiseeForSelf() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user) || !Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+            return R.fail("ELECTRICITY.0001", "非加盟商用户");
         }
         
-        return R.ok(franchiseeService.queryByUid(user.getUid()));
+        // 管理员可能会有绑定多个加盟商的情况
+        List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        List<Franchisee> franchiseeList = franchiseeIds.stream().map(franchiseeId -> franchiseeService.queryByIdFromCache(franchiseeId)).collect(Collectors.toList());
+        return R.ok(franchiseeList);
     }
 }

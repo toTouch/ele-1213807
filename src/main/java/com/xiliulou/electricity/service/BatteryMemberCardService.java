@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
@@ -109,11 +110,11 @@ public interface BatteryMemberCardService {
     
     /**
      * 检查用户与套餐的用户分组是否匹配
-     * @param uid 用户uid
+     * @param userInfo 用户
      * @param franchiseeId 加盟商id
      * @param memberCard 套餐
      * @param source 区分用户端与后台
      * @return 检查结果
      */
-    Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(Long uid, Long franchiseeId, BatteryMemberCard memberCard, Integer source);
+    Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(UserInfo userInfo, Long franchiseeId, BatteryMemberCard memberCard, Integer source);
 }

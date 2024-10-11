@@ -1064,9 +1064,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(Long uid, Long franchiseeId, BatteryMemberCard memberCard, Integer source) {
+    public Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(UserInfo userInfo, Long franchiseeId, BatteryMemberCard memberCard, Integer source) {
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(franchiseeId).build());
+                UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).franchiseeId(franchiseeId).build());
         
         Triple<Boolean, String, Object> triple =
                 BatteryMemberCardConstants.CHECK_USERINFO_GROUP_USER.equals(source) ? Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧")
@@ -1085,6 +1085,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         } else {
             if (Objects.equals(memberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 return triple;
+            }
+            
+            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(memberCard.getRentType())) {
+                log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), memberCard.getId());
+                return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
         }
         
