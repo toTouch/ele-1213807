@@ -55,6 +55,8 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
     
+    private final EleDeviceCodeService eleDeviceCodeService = applicationContext.getBean(EleDeviceCodeService.class);
+    
     @Slave
     @Override
     public EleDeviceCode queryByIdFromDB(Long id) {
@@ -181,7 +183,7 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     @Override
     public Triple<Boolean, String, Object> save(EleDeviceCodeQuery query) {
         for (EleDeviceCodeInsertQuery entity : query.getDeviceNames()) {
-            if (Objects.nonNull(applicationContext.getBean(EleDeviceCodeService.class).existsDeviceName(entity.getDeviceName()))) {
+            if (Objects.nonNull(eleDeviceCodeService.existsDeviceName(entity.getDeviceName()))) {
                 return Triple.of(false, "100487", "设备编号已存在:" + entity.getDeviceName());
             }
         }
@@ -224,7 +226,7 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     @Override
     public Triple<Boolean, String, Object> deviceRegister(EleDeviceCodeRegisterQuery query) {
         for (EleDeviceCodeOuterQuery entity : query.getDeviceNames()) {
-            if (Objects.nonNull(applicationContext.getBean(EleDeviceCodeService.class).existsDeviceName(entity.getDeviceName()))) {
+            if (Objects.nonNull(eleDeviceCodeService.existsDeviceName(entity.getDeviceName()))) {
                 return Triple.of(false, "100487", "设备编号已存在:" + entity.getDeviceName());
             }
         }
