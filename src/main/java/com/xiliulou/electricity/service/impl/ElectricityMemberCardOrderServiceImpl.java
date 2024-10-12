@@ -158,6 +158,7 @@ import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.electricity.utils.InstallmentUtil;
@@ -1085,8 +1086,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(
-                userBatteryMemberCard.getRemainingNumber())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects
+                .isNull(userBatteryMemberCard.getRemainingNumber())) {
             log.warn("ENABLE MEMBER CARD warn! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
@@ -1108,8 +1109,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
         
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(
-                userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects
+                .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
             log.warn("ENABLE MEMBER CARD warn! member card not disable userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户未停卡");
         }
@@ -2095,29 +2096,52 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    public void batteryMemberCardExpireReminder() {
+    public void batteryMemberCardExpireReminder(BatteryMemberCardExpireReminderTask.TaskParam param) {
         if (!redisService.setNx(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK, "ok", 120000L, false)) {
             log.warn("batteryMemberCardExpireReminder in execution...");
             return;
         }
         
+        if (null == param.getSize()) {
+            param.setSize(300);
+        }
+        
+        if (CollectionUtils.isNotEmpty(param.getTenantIds())) {
+            param.getTenantIds().forEach(tid -> batteryMemberCardExpireReminderByTenant(tid, param.getSize()));
+            return;
+        }
+        
+        Integer startTenantId = 0;
+        while (true) {
+            // 查询租户
+            List<Integer> queryTenantIds = tenantService.queryIdListByStartId(startTenantId, param.getSize());
+            
+            if (CollectionUtils.isEmpty(queryTenantIds)) {
+                break;
+            }
+            startTenantId = queryTenantIds.get(queryTenantIds.size() - 1);
+            
+            // 根据租户处理
+            queryTenantIds.forEach(tid -> this.batteryMemberCardExpireReminderByTenant(tid, param.getSize()));
+        }
+        
+        
+    }
+    
+    private void batteryMemberCardExpireReminderByTenant(Integer tenantId, Integer size) {
         int offset = 0;
-        int size = 300;
+        
         Date date = new Date();
+        // 当前时间
         long firstTime = System.currentTimeMillis();
+        // 往后3天
         long lastTime = System.currentTimeMillis() + 3 * 3600000 * 24;
+        
         SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
-//        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME);
-//        if (StrUtil.isNotBlank(firstTimeStr)) {
-//            firstTime = Long.parseLong(firstTimeStr);
-//        }
-        
-//        redisService.set(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
         
         while (true) {
             
-            List<UserBatteryMemberCard> memberCards = userBatteryMemberCardService.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+            List<UserBatteryMemberCard> memberCards = userBatteryMemberCardService.batteryMemberCardExpire(tenantId, offset, size, firstTime, lastTime);
             if (CollectionUtils.isEmpty(memberCards)) {
                 return;
             }
@@ -2130,11 +2154,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Map<Long, BatteryMemberCard> idMap = batteryMemberCards.stream().collect(Collectors.toMap(BatteryMemberCard::getId, v -> v, (k1, k2) -> k1));
             
             memberCards.parallelStream().forEach(item -> {
-                if (!idMap.containsKey(item.getMemberCardId())){
-                    log.warn("ElectricityMemberCardOrderServiceImpl.batteryMemberCardExpireReminder WARN! id:{}, memberCardId:{} , not exist!",item.getId(),item.getMemberCardId());
+                if (!idMap.containsKey(item.getMemberCardId())) {
+                    log.warn("ElectricityMemberCardOrderServiceImpl.batteryMemberCardExpireReminder WARN! id:{}, memberCardId:{} , not exist!", item.getId(),
+                            item.getMemberCardId());
                     return;
                 }
-    
+                
                 BatteryMemberCard batteryMemberCard = idMap.get(item.getMemberCardId());
                 
                 date.setTime(item.getMemberCardExpireTime());
@@ -2146,8 +2171,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     
     public static void main(String[] args) {
-        System.out.println(DateUtil.format(new Date(1726303200186L),"yyyy-MM-dd HH:mm:ss"));
-        System.out.println(DateUtil.format(new Date(1726303484455L),"yyyy-MM-dd HH:mm:ss"));
+        System.out.println(DateUtil.format(new Date(1726303200186L), "yyyy-MM-dd HH:mm:ss"));
+        System.out.println(DateUtil.format(new Date(1726303484455L), "yyyy-MM-dd HH:mm:ss"));
     }
     
     @Override

@@ -261,9 +261,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                         .eq(UserBatteryMemberCard::getDelFlag, UserBatteryMemberCard.DEL_NORMAL));
     }
     
+    @Slave
     @Override
-    public List<UserBatteryMemberCard> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
-        return userBatteryMemberCardMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+    public List<UserBatteryMemberCard> batteryMemberCardExpire(Integer tenantId, Integer offset, Integer size, Long firstTime, Long lastTime) {
+        return userBatteryMemberCardMapper.batteryMemberCardExpire(tenantId,offset, size, firstTime, lastTime);
     }
     
     
