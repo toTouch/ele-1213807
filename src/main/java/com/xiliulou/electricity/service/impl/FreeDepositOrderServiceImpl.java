@@ -1508,6 +1508,43 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return Triple.of(true, null, freeDepositUserInfoVo);
     }
     
+    
+    @Override
+    public Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusAliPay() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("FREE DEPOSIT WARN! not found user info,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        FreeDepositOrder freeDepositOrder = freeDepositOrderMapper.selectUpDateByUid(uid);
+        if (Objects.isNull(freeDepositOrder)) {
+            log.warn("FREE DEPOSIT WARN! not found freeDepositOrder,uid ={}", uid);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        // 如果已冻结  直接返回
+        FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
+            return Triple.of(true, null, freeDepositUserInfoVo);
+        }
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(freeDepositOrder.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.warn("FREE DEPOSIT WARN! not found eleDepositOrder! uid={},orderId={}", uid, freeDepositOrder.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
+        return Triple.of(true, null, freeDepositUserInfoVo);
+    }
+    
     @Override
     public Triple<Boolean, String, Object> freeBatteryDepositHybridOrderV3(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
