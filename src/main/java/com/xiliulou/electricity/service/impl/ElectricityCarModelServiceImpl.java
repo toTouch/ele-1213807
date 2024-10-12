@@ -8,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -25,6 +27,7 @@ import com.xiliulou.electricity.vo.asset.CarManufacturerNameAndModelVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +69,9 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     UserCarService userCarService;
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    private AssertPermissionService assertPermissionService;
 
     /**
      * 根据主键ID进行更新
@@ -532,6 +538,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     
     @Override
     public List<CarManufacturerNameAndModelVo> listCarManufacturerNameAndModel(ElectricityCarModelQuery electricityCarModelQuery) {
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()) {
+            return new ArrayList<>();
+        }
+        
+        electricityCarModelQuery.setFranchiseeIds(pair.getRight());
         List<ElectricityCarModel> carModelList = electricityCarModelMapper.selectListManufactureNameAndModel(electricityCarModelQuery);
         if (CollectionUtils.isEmpty(carModelList)) {
             return Lists.newArrayList();
