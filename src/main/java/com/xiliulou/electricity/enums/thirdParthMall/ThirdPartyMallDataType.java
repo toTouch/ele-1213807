@@ -9,6 +9,7 @@ import lombok.Getter;
  */
 @Getter
 public enum ThirdPartyMallDataType {
+    NOTIFY_MEI_TUAN_DELIVER("NOTIFY_MEI_TUAN_DELIVER", "通知美团发货"),
     PUSH_USER_BATTERY_MEMBER_CARD("PUSH_USER_BATTERY_MEMBER_CARD", "用户换电套餐"),
     PUSH_ELE_CABINET("PUSH_PUSH_ELE_CABINET", "换电柜"),
     PUSH_USER_EXCHANGE_RECORD("PUSH_USER_EXCHANGE_RECORD", "用户换电记录"),

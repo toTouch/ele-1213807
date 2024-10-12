@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo.meituan;
+package com.xiliulou.electricity.vo.thirdPartyMall;
 
 import lombok.Data;
 

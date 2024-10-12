@@ -49,4 +49,12 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
                 .addContext(MeiTuanRiderMallConstant.EID, eid).build());
     }
+    
+    @Override
+    public void asyncPushUserMemberCardToThird(Integer mallType, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType) {
+        thirdPartyMallPublish.publish(
+                ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY_MEMBER_CARD)
+                        .addContext(MeiTuanRiderMallConstant.UID, uid).addContext(MeiTuanRiderMallConstant.ORDER_ID, mtOrderId)
+                        .addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
+    }
 }

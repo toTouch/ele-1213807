@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallOrderMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id
+        , mei_tuan_order_id, mei_tuan_order_time, mei_tuan_order_status, mei_tuan_actually_pay_price, mei_tuan_virtual_recharge_type, mei_tuan_account, mei_tuan_sku_id, coupon, order_id, order_sync_status, order_use_status, package_id, package_type, uid, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <update id="update">
+        update t_mei_tuan_rider_mall_order
+        <set>
+            <if test="meiTuanOrderStatus != null">
+                mei_tuan_order_status = #{meiTuanOrderStatus},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="orderSyncStatus != null">
+                order_sync_status = #{orderSyncStatus},
+            </if>
+            <if test="orderUseStatus != null">
+                order_use_status = #{orderUseStatus},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <update id="updateStatusByOrderId">
+        update t_mei_tuan_rider_mall_order
+        set order_use_status = #{orderUseStatus},
+            update_time      = #{updateTime}
+        where tenant_id = #{tenantId}
+          and order_id = #{orderId}
+    </update>
+    
+    <select id="selectByMtOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+        select
+        <include refid="basic_field"/>
+        from t_mei_tuan_rider_mall_order
+        where tenant_id = #{tenantId} and mei_tuan_order_id = #{orderId}
+        <if test="phone != null and phone != ''">
+            and mei_tuan_account = #{phone}
+        </if>
+        <if test="uid != null and uid != 0">
+            and uid = #{uid}
+        </if>
+        order by id desc limit 1
+    </select>
+    
+    <select id="selectByOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+        select
+        <include refid="basic_field"/>
+        from t_mei_tuan_rider_mall_order
+        where tenant_id = #{tenantId} and uid = #{uid} and order_id = #{orderId}
+        order by id desc limit 1
+    </select>
+    
+    <select id="selectByPhone" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
+        select
+        <include refid="basic_field"/>
+        from t_mei_tuan_rider_mall_order
+        where tenant_id = #{tenantId} and mei_tuan_account = #{phone}
+        <if test="orderId != null and orderId != ''">
+            and order_id = #{orderId}
+        </if>
+        order by order_use_status asc, mei_tuan_order_time desc
+        limit #{offset}, #{size}
+    </select>
+
+</mapper>

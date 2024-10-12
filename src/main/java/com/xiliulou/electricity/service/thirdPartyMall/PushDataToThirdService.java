@@ -15,4 +15,6 @@ public interface PushDataToThirdService {
     void asyncPushBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType);
     
     void asyncPushCabinetToThird(Integer mallType, String traceId, Integer tenantId, Long eid);
+    
+    void asyncPushUserMemberCardToThird(Integer mallType, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType);
 }

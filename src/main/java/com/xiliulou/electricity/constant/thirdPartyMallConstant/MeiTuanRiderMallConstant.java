@@ -11,6 +11,9 @@ public interface MeiTuanRiderMallConstant {
     String ORDER_TYPE = "orderType";
     String EID = "eid";
     
+    String UID = "uid";
+    
     Integer EXCHANGE_ORDER = 1;
     Integer RENT_ORDER = 2;
+    Integer MEI_TUAN_ORDER = 3;
 }
