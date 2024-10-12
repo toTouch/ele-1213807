@@ -15,7 +15,7 @@ public class UserEleOnlineLogVO {
     /**
      * 换电柜id
      */
-    private Integer eleId;
+    private Integer electricityId;
 
     /**
      * 客户端IP

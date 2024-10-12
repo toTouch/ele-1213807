@@ -21,7 +21,7 @@ public interface UserEleOnlineLogMapper extends BaseMapper<UserEleOnlineLog>{
     int insert(UserEleOnlineLog userEleOnlineLog);
 
     
-    @Select("SELECT eid, status FROM t_user_ele_online_log WHERE eid = #{id} ORDER BY id DESC LIMIT 1")
+    @Select("SELECT electricity_id, status FROM t_user_ele_online_log WHERE electricity_id = #{id} ORDER BY id DESC LIMIT 1")
     UserEleOnlineLog queryLastLog(Integer id);
 
 

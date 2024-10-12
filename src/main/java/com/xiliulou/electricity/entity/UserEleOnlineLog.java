@@ -26,7 +26,7 @@ public class UserEleOnlineLog {
     /**
      * 换电柜id
      */
-    private Integer eid;
+    private Integer electricityId;
 
     /**
      * 客户端IP
