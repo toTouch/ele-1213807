@@ -12,8 +12,10 @@ import com.xiliulou.electricity.dto.thirdMallParty.MtDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -29,14 +31,15 @@ import com.xiliulou.electricity.request.thirdPartyMall.NotifyMeiTuanDeliverReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.ThirdPartyMallRetrofitService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanOrderRedeemTxService;
@@ -82,9 +85,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     private UserInfoService userInfoService;
     
     @Resource
-    private UserService userService;
-    
-    @Resource
     private RedisService redisService;
     
     @Resource
@@ -128,6 +128,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private ThirdPartyMallRetrofitService thirdPartyMallRetrofitService;
+    
+    @Resource
+    private ElectricityCabinetOrderService electricityCabinetOrderService;
+    
+    @Resource
+    private RentBatteryOrderService rentBatteryOrderService;
     
     @Slave
     @Override
@@ -489,6 +495,39 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     @Override
     public Integer updateStatusByOrderId(MeiTuanRiderMallOrder meiTuanRiderMallOrder) {
         return meiTuanRiderMallOrderMapper.updateStatusByOrderId(meiTuanRiderMallOrder);
+    }
+    
+    @Override
+    public Boolean isMtOrder(Long uid, String orderId, Integer orderType) {
+        // orderId为换电订单
+        if (Objects.equals(MeiTuanRiderMallConstant.EXCHANGE_ORDER, orderType)) {
+            ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
+            if (Objects.isNull(electricityCabinetOrder)) {
+                return false;
+            }
+        }
+        
+        // orderId为租电订单
+        if (Objects.equals(MeiTuanRiderMallConstant.RENT_ORDER, orderType)) {
+            RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
+            if (Objects.isNull(rentBatteryOrder)) {
+                return false;
+            }
+        }
+        
+        // 当前绑定的套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return false;
+        }
+        
+        // 判断使用的订单是否美团订单
+        MeiTuanRiderMallOrder meiTuanRiderMallOrder = this.queryByOrderId(userBatteryMemberCard.getOrderId(), uid, userBatteryMemberCard.getTenantId());
+        if (Objects.isNull(meiTuanRiderMallOrder)) {
+            return false;
+        }
+        
+        return true;
     }
     
 }

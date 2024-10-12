@@ -6,6 +6,7 @@ import com.github.lianjiatech.retrofit.spring.boot.interceptor.Intercept;
 import com.xiliulou.electricity.request.thirdPartyMall.NotifyMeiTuanDeliverReq;
 import com.xiliulou.electricity.service.retrofit.fallback.ThirdPartyMallRetrofitServiceImpl;
 import com.xiliulou.electricity.dto.thirdMallParty.MtDTO;
+import com.xiliulou.electricity.service.retrofit.interceptor.MeituanServiceInterceptor;
 import retrofit2.http.Body;
 import retrofit2.http.HeaderMap;
 import retrofit2.http.POST;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @RetrofitClient(serviceId = "xiliulou-thirdmall", fallback = ThirdPartyMallRetrofitServiceImpl.class)
 @SentinelDegrade(count = 3, enable = true, timeWindow = 15, grade = 2)
+@Intercept(handler = MeituanServiceInterceptor.class)
 public interface ThirdPartyMallRetrofitService {
     
     @POST("/inner/meiTuan/notifyDeliver")

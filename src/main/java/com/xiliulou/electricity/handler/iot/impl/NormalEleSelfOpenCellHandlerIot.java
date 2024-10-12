@@ -131,14 +131,14 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             
             // 给第三方推送换电记录
             pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), sessionId, electricityCabinet.getTenantId(),
-                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER);
+                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
             
             // 处理取走电池的相关信息（解绑(包括异常交换)&绑定）
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);
             
             // 给第三方推送用户电池信息和用户信息
             pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), sessionId, electricityCabinetOrder.getTenantId(),
-                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER);
+                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
             
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(), electricityCabinetOrder);

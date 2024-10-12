@@ -720,7 +720,7 @@ public class EleOperateQueueHandler {
             
             // 给第三方推送用户电池信息和用户信息
             pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
-                    rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER);
+                    rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER, rentBatteryOrder.getUid());
             
             if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(), String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);

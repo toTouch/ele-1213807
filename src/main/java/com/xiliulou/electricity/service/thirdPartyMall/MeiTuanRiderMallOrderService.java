@@ -25,4 +25,6 @@ public interface MeiTuanRiderMallOrderService {
     
     Integer updateStatusByOrderId(MeiTuanRiderMallOrder meiTuanRiderMallOrder);
     
+    Boolean isMtOrder(Long uid, String orderId, Integer orderType);
+    
 }

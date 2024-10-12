@@ -6,9 +6,9 @@ package com.xiliulou.electricity.service.thirdPartyMall;
  */
 public interface PushDataToThirdService {
     
-    void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid);
     
-    void asyncPushUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType);
+    void asyncPushUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid);
     
     void asyncPushUserToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType);
     

@@ -4,6 +4,7 @@ import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMall
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.event.ThirdPartyMallEvent;
 import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +21,28 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     @Resource
     private ThirdPartyMallPublish thirdPartyMallPublish;
     
+    @Resource
+    private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
     @Override
-    public void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
-                .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
+    public void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
+        Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
+        // 判断使用的订单是否美团订单
+        if (mtOrder) {
+            thirdPartyMallPublish.publish(
+                    ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
+                            .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
+        }
     }
     
     @Override
-    public void asyncPushUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        this.asyncPushBatteryToThird(mallType, traceId, tenantId, orderId, orderType);
-        this.asyncPushUserToThird(mallType, traceId, tenantId, orderId, orderType);
+    public void asyncPushUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
+        Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
+        // 判断使用的订单是否美团订单
+        if (mtOrder) {
+            this.asyncPushBatteryToThird(mallType, traceId, tenantId, orderId, orderType);
+            this.asyncPushUserToThird(mallType, traceId, tenantId, orderId, orderType);
+        }
     }
     
     @Override
