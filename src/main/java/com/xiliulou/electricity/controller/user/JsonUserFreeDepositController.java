@@ -108,6 +108,13 @@ public class JsonUserFreeDepositController extends BaseController {
         return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatusV2());
     }
     
+    /**
+     * 查询支付宝电池免押
+     */
+    @GetMapping("/user/free/batteryDeposit/alipay/order/status")
+    public R freeBatteryDepositAlipayOrderStatus() {
+        return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatusAliPay());
+    }
     
     /**
      * 车辆押金免押的前置检查
