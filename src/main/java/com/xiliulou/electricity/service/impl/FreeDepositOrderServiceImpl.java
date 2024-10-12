@@ -1531,6 +1531,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         // 如果已冻结  直接返回
         FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            freeDepositUserInfoVo.setApplyBatteryDepositTime(freeDepositOrder.getCreateTime());
             freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
             return Triple.of(true, null, freeDepositUserInfoVo);
         }
@@ -1541,6 +1542,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
+        freeDepositUserInfoVo.setApplyBatteryDepositTime(freeDepositOrder.getCreateTime());
         freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
         return Triple.of(true, null, freeDepositUserInfoVo);
     }
