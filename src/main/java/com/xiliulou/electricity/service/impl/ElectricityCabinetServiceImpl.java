@@ -37,7 +37,6 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
-import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -72,10 +71,7 @@ import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.event.ThirdPartyMallEvent;
-import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -145,6 +141,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -426,6 +423,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     AssetWarehouseService assetWarehouseService;
+    
     @Resource
     private MerchantPlaceFeeRecordService merchantPlaceFeeRecordService;
     
@@ -439,7 +437,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
     @Resource
-    private ThirdPartyMallPublish thirdPartyMallPublish;
+    private PushDataToThirdService pushDataToThirdService;
     
     
     /**
@@ -634,11 +632,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
-    
+        
         // 给第三方推送柜机信息
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
         
         return R.ok();
     }
@@ -769,11 +766,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
-    
+        
         // 给第三方推送柜机信息
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
+        
         return R.ok();
     }
     
@@ -1569,11 +1566,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
-    
+        
         // 给第三方推送柜机信息
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(TtlTraceIdSupport.get()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId()).build());
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
         
         return R.ok();
     }

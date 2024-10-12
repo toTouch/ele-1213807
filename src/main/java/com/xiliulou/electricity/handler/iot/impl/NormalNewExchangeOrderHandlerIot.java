@@ -27,10 +27,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.event.ThirdPartyMallEvent;
-import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -49,6 +46,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -135,7 +133,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     private ExchangeBatterySocService exchangeBatterySocService;
     
     @Resource
-    private ThirdPartyMallPublish thirdPartyMallPublish;
+    private PushDataToThirdService pushDataToThirdService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
@@ -206,9 +204,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
             // 给第三方推送换电记录
-            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
-                    .addContext(MeiTuanRiderMallConstant.ORDER_ID, electricityCabinetOrder.getOrderId()).build());
+            pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
+                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER);
             
             // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
             log.debug("EXCHANGE ORDER INFO! setNewSelfOpen.setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
@@ -221,15 +218,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             //处理取走电池的相关信息
             handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
             
-            // 给第三方推送用户电池信息
-            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_USER_BATTERY)
-                    .addContext(MeiTuanRiderMallConstant.ORDER_ID, electricityCabinetOrder.getOrderId()).build());
-            
-            // 给第三方推送用户信息
-            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                    .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_USER_INFO)
-                    .addContext(MeiTuanRiderMallConstant.ORDER_ID, electricityCabinetOrder.getOrderId()).build());
+            // 给第三方推送用户电池信息和用户信息
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(),
+                    electricityCabinetOrder.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER);
             
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);

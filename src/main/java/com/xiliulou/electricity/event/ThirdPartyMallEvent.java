@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.event;
 
 import com.xiliulou.electricity.dto.message.ThirdPartyMallDataDTO;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
@@ -25,7 +24,7 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
     
     private Integer tenantId;
     
-    private ThirdPartyMallEnum mall;
+    private Integer mall;
     
     private ThirdPartyMallDataType type;
     
@@ -40,7 +39,7 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
         ThirdPartyMallDataDTO messageDTO = new ThirdPartyMallDataDTO();
         messageDTO.setTraceId(this.traceId);
         messageDTO.setTenantId(this.tenantId);
-        messageDTO.setMall(Optional.ofNullable(this.mall).map(ThirdPartyMallEnum::getCode).orElse(null));
+        messageDTO.setMall(this.mall);
         messageDTO.setType(Optional.ofNullable(this.type).map(ThirdPartyMallDataType::getCode).orElse(null));
         messageDTO.setContext(this.context);
         return messageDTO;
@@ -68,7 +67,7 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
             return this;
         }
         
-        public ThirdPartyMallEvent.Builder mall(ThirdPartyMallEnum mall) {
+        public ThirdPartyMallEvent.Builder mall(Integer mall) {
             this.event.mall = mall;
             return this;
         }

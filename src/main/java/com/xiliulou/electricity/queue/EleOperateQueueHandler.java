@@ -33,10 +33,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.event.ThirdPartyMallEvent;
-import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -59,6 +56,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -177,7 +175,7 @@ public class EleOperateQueueHandler {
     private ExchangeBatterySocService exchangeBatterySocService;
     
     @Resource
-    private ThirdPartyMallPublish thirdPartyMallPublish;
+    private PushDataToThirdService pushDataToThirdService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
     
@@ -720,15 +718,9 @@ public class EleOperateQueueHandler {
             
             checkRentBatteryDoor(rentBatteryOrder);
             
-            // 给第三方推送用户电池信息
-            thirdPartyMallPublish.publish(
-                    ThirdPartyMallEvent.builder(this).traceId(finalOpenDTO.getSessionId()).tenantId(rentBatteryOrder.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                            .type(ThirdPartyMallDataType.PUSH_USER_BATTERY).addContext(MeiTuanRiderMallConstant.RENT_BATTERY_ORDER_ID, rentBatteryOrder.getOrderId()).build());
-            
-            // 给第三方推送用户信息
-            thirdPartyMallPublish.publish(
-                    ThirdPartyMallEvent.builder(this).traceId(finalOpenDTO.getSessionId()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                            .type(ThirdPartyMallDataType.PUSH_USER_INFO).addContext(MeiTuanRiderMallConstant.RENT_BATTERY_ORDER_ID, rentBatteryOrder.getOrderId()).build());
+            // 给第三方推送用户电池信息和用户信息
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
+                    rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER);
             
             if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(), String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);

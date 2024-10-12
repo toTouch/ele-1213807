@@ -20,10 +20,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.event.ThirdPartyMallEvent;
-import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -35,6 +32,7 @@ import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordSer
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -100,7 +98,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
     
     @Resource
-    private ThirdPartyMallPublish thirdPartyMallPublish;
+    private PushDataToThirdService pushDataToThirdService;
     
     XllThreadPoolExecutorService openFullBatteryExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPEN_FULL_BATTERY_SOC_ANALYZE", 1,
             "open-full-battery-soc-pool-thread");
@@ -182,23 +180,15 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         cabinetOrderService.update(newElectricityCabinetOrder);
         
         // 给第三方推送换电记录
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD).addContext(MeiTuanRiderMallConstant.ORDER_ID, cabinetOrder.getOrderId()).build());
+        pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
+                cabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER);
         
         // 处理取走电池的相关信息（解绑&绑定）
         takeBatteryHandler(openFullCellRsp, cabinetOrder, electricityCabinet);
         
-        // 给第三方推送用户电池信息
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.PUSH_USER_BATTERY).addContext(MeiTuanRiderMallConstant.ORDER_ID, cabinetOrder.getOrderId()).build());
-    
-        // 给第三方推送用户信息
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(sessionId).tenantId(electricityCabinet.getTenantId()).mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL)
-                        .type(ThirdPartyMallDataType.PUSH_USER_INFO).addContext(MeiTuanRiderMallConstant.ORDER_ID, cabinetOrder.getOrderId())
-                        .build());
+        // 给第三方推送用户电池信息和用户信息
+        pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
+                cabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER);
         
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
         handleExpireMemberCard(openFullCellRsp, cabinetOrder);

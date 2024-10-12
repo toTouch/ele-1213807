@@ -6,21 +6,22 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.TenantConfig;
-import com.xiliulou.electricity.constant.*;
-import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DeviceReportConstant;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
-import com.xiliulou.electricity.event.ThirdPartyMallEvent;
-import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
 import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.service.EleOnlineLogService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.Ipv4Util;
 import com.xiliulou.feishu.config.FeishuConfig;
@@ -41,7 +42,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
@@ -102,7 +107,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     RestTemplate restTemplate;
     
     @Resource
-    private ThirdPartyMallPublish thirdPartyMallPublish;
+    private PushDataToThirdService pushDataToThirdService;
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
     
@@ -174,18 +179,19 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
                 electricityCabinetService.update(newElectricityCabinet);
             }
-    
+            
             // 给第三方推送柜机信息
+            // TODO(heyafeng) 2024/10/11 20:01 上下线机制？
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
-                thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(receiverMessage.getSessionId()).tenantId(electricityCabinet.getTenantId())
-                        .mall(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).addContext(MeiTuanRiderMallConstant.EID, electricityCabinet.getId())
-                        .build());
+                pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
+                        electricityCabinet.getId().longValue());
             }
-
+            
             if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId(), String.valueOf(newElectricityCabinet.getOnlineStatus()), 30000L, false)) {
                 String status = redisService.get(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId());
                 //如果redis的status是离线，但是本次状态是在线，发送一条消息通知，并设置redis的status为不存在值,保证下次不在发送消息
-                if (Objects.equals(status, String.valueOf(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)) && Objects.equals(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS, newElectricityCabinet.getOnlineStatus())) {
+                if (Objects.equals(status, String.valueOf(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS)) && Objects.equals(
+                        ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS, newElectricityCabinet.getOnlineStatus())) {
                     Long expireTime = redisService.getRedisTemplate().getExpire(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId());
                     if (Objects.isNull(expireTime) || expireTime == 0) {
                         expireTime = 1L;
@@ -195,11 +201,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 }
                 return;
             }
-
+            
             addOnlineLogAndSendNotifyMessage(receiverMessage, electricityCabinet);
         });
     }
-
+    
     private void addOnlineLogAndSendNotifyMessage(ReceiverMessage receiverMessage, ElectricityCabinet electricityCabinet) {
         EleOnlineLog eleOnlineLog = new EleOnlineLog();
         eleOnlineLog.setElectricityId(electricityCabinet.getId());
@@ -209,13 +215,13 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         eleOnlineLog.setCreateTime(System.currentTimeMillis());
         eleOnlineLog.setMsg(receiverMessage.getStatus());
         eleOnlineLogService.insert(eleOnlineLog);
-
+        
         //            feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
-
+        
         //TODO 发送MQ通知
         maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
     }
-
+    
     private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time) {
         //租户不发上下线通知
         List<Integer> tenantIdList = tenantConfig.getDisableRobotMessageForTenantId();
