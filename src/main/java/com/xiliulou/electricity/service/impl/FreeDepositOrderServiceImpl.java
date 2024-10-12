@@ -1475,10 +1475,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
         
+        FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.info("FREE DEPOSIT INFO! not found userBatteryDeposit,uid={}", uid);
-            return Triple.of(true, "", "");
+            return Triple.of(true, null, freeDepositUserInfoVo);
         }
         
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
@@ -1488,7 +1489,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         // 如果已冻结  直接返回
-        FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
+        
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
             freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
             freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
