@@ -2108,12 +2108,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         long lastTime = System.currentTimeMillis() + 3 * 3600000 * 24;
         SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         
-        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME);
-        if (StrUtil.isNotBlank(firstTimeStr)) {
-            firstTime = Long.parseLong(firstTimeStr);
-        }
+//        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME);
+//        if (StrUtil.isNotBlank(firstTimeStr)) {
+//            firstTime = Long.parseLong(firstTimeStr);
+//        }
         
-        redisService.set(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
+//        redisService.set(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
         
         while (true) {
             
