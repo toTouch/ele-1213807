@@ -8,7 +8,6 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.entity.EleDeviceCode;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleDeviceCodeMapper;
 import com.xiliulou.electricity.query.EleDeviceCodeInsertQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeOuterQuery;
@@ -144,32 +143,8 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
             EleDeviceCodeVO eleDeviceCodeVO = new EleDeviceCodeVO();
             BeanUtils.copyProperties(item, eleDeviceCodeVO);
             
-            int onlineStatus = checkDeviceOnlineStatus(item);
-            eleDeviceCodeVO.setOnlineStatus(onlineStatus);
-            
             return eleDeviceCodeVO;
         }).collect(Collectors.toList());
-    }
-    
-    private int checkDeviceOnlineStatus(EleDeviceCode item) {
-        int onlineStatus = EleCabinetConstant.STATUS_OFFLINE;
-        
-//        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(item.getProductKey(), item.getDeviceName());
-//        if (Objects.isNull(electricityCabinet)) {
-//            return onlineStatus;
-//        }
-        
-        onlineStatus = electricityCabinetService.deviceIsOnlineForTcp(item.getProductKey(), item.getDeviceName()) ? EleCabinetConstant.STATUS_ONLINE
-                : EleCabinetConstant.STATUS_OFFLINE;
-        if (!Objects.equals(item.getOnlineStatus(), onlineStatus)) {
-            EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
-            deviceCodeUpdate.setId(item.getId());
-            deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
-            deviceCodeUpdate.setOnlineStatus(onlineStatus);
-            updateById(deviceCodeUpdate, item.getProductKey(), item.getDeviceName());
-        }
-        
-        return onlineStatus;
     }
     
     @Slave
