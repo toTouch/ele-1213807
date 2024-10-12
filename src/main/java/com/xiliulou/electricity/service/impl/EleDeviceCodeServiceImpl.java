@@ -154,12 +154,12 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     private int checkDeviceOnlineStatus(EleDeviceCode item) {
         int onlineStatus = EleCabinetConstant.STATUS_OFFLINE;
         
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(item.getProductKey(), item.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            return onlineStatus;
-        }
+//        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(item.getProductKey(), item.getDeviceName());
+//        if (Objects.isNull(electricityCabinet)) {
+//            return onlineStatus;
+//        }
         
-        onlineStatus = electricityCabinetService.deviceIsOnline(item.getProductKey(), item.getDeviceName(), electricityCabinet.getPattern()) ? EleCabinetConstant.STATUS_ONLINE
+        onlineStatus = electricityCabinetService.deviceIsOnlineForTcp(item.getProductKey(), item.getDeviceName()) ? EleCabinetConstant.STATUS_ONLINE
                 : EleCabinetConstant.STATUS_OFFLINE;
         if (!Objects.equals(item.getOnlineStatus(), onlineStatus)) {
             EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
@@ -214,6 +214,7 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
         }
         
         EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
+        deviceCodeUpdate.setId(deviceCode.getId());
         deviceCodeUpdate.setDelFlag(CommonConstant.DEL_Y);
         deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
         
