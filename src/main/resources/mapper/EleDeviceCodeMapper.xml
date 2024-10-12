@@ -43,6 +43,23 @@
         where product_key = #{productKey} and device_name = #{deviceName} and del_flag = 0
     </select>
     
+    <select id="selectListDeviceInfo" resultMap="EleDeviceCodeMap">
+        select id,
+               product_key,
+               device_name,
+               secret,
+               online_status,
+               remark,
+               del_flag,
+               create_time,
+               update_time
+        from t_ele_device_code
+        where product_key = #{productKey} and del_flag = 0 and device_name in
+        <foreach collection="deviceNames" item="deviceName" open="(" close=")" separator=",">
+            #{deviceName}
+        </foreach>
+    </select>
+    
     <select id="selectByPage" resultMap="EleDeviceCodeMap">
         select
         id, product_key, device_name, secret, online_status, remark, create_time, update_time

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.query.EleDeviceCodeOuterQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeQuery;
@@ -47,4 +46,6 @@ public interface EleDeviceCodeService {
     Triple<Boolean, String, Object> deviceRegister(EleDeviceCodeRegisterQuery query);
     
     Triple<Boolean, String, Object> deviceInfo(EleDeviceCodeOuterQuery query);
+    
+    Triple<Boolean, String, Object> queryListDeviceInfo(EleDeviceCodeRegisterQuery query);
 }

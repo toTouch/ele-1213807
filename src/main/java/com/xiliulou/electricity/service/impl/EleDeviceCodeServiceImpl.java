@@ -219,6 +219,12 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
         return Triple.of(true, null, deviceCode);
     }
     
+    @Slave
+    @Override
+    public Triple<Boolean, String, Object> queryListDeviceInfo(EleDeviceCodeRegisterQuery query) {
+        return eleDeviceCodeMapper.selectListDeviceInfo(query.getDeviceNameSet(), query.getProductKey());
+    }
+    
     private List<EleDeviceCode> buildEleDeviceCode(EleDeviceCodeQuery query) {
         return query.getDeviceNames().stream().map(item -> {
             long time = System.currentTimeMillis();

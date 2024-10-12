@@ -2,10 +2,12 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.query.EleDeviceCodeQuery;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * (EleDeviceCode)
@@ -32,5 +34,7 @@ public interface EleDeviceCodeMapper {
     int batchInsert(List<EleDeviceCode> eleDeviceCodes);
     
     EleDeviceCode selectBySn(@Param("productKey") String productKey, @Param("deviceName") String deviceName);
+    
+    Triple<Boolean, String, Object> selectListDeviceInfo(@Param("deviceNames") Set<String> deviceNames, @Param("productKey") String productKey);
 }
 

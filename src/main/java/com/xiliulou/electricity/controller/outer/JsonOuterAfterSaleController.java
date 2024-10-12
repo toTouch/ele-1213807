@@ -5,6 +5,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleDeviceCodeOuterQuery;
 import com.xiliulou.electricity.query.EleDeviceCodeRegisterQuery;
 import com.xiliulou.electricity.service.EleDeviceCodeService;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -23,8 +25,13 @@ public class JsonOuterAfterSaleController extends BaseController {
     private EleDeviceCodeService eleDeviceCodeService;
     
     @PostMapping(value = "/outer/afterSale/device/register")
-    public R deviceRegister(@RequestBody @Validated EleDeviceCodeRegisterQuery query) {
+    public R deviceRegister(@RequestBody @Validated(value = CreateGroup.class) EleDeviceCodeRegisterQuery query) {
         return returnTripleResult(eleDeviceCodeService.deviceRegister(query));
+    }
+    
+    @PostMapping(value = "/outer/afterSale/device/info/batch")
+    public R batchDeviceInfo(@RequestBody @Validated(value = UpdateGroup.class) EleDeviceCodeRegisterQuery query) {
+        return returnTripleResult(eleDeviceCodeService.queryListDeviceInfo(query));
     }
     
     @PostMapping(value = "/outer/afterSale/device/info")
