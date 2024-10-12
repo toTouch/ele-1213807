@@ -61,8 +61,16 @@ public class FreeDepositUserInfoVo {
      * 缴纳车辆电池押金的时间
      */
     private Long applyCarBatteryDepositTime;
+    
+    /**
+     * 是否是免押
+     */
+    private Integer isFreeDeposit;
 
 
     public static final Integer FREE_DEPOSIT_CLOSE = 0;
     public static final Integer FREE_DEPOSIT_OPEN = 1;
+    
+    
+    public static final Integer FREE_DEPOSIT_ORDER = 1;
 }

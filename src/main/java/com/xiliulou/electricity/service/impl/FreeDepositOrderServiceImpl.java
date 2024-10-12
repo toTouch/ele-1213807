@@ -1542,6 +1542,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
         
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            freeDepositUserInfoVo.setIsFreeDeposit(FreeDepositUserInfoVo.FREE_DEPOSIT_ORDER);
+        }
         freeDepositUserInfoVo.setApplyBatteryDepositTime(freeDepositOrder.getCreateTime());
         freeDepositUserInfoVo.setBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
         return Triple.of(true, null, freeDepositUserInfoVo);
