@@ -69,7 +69,7 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
 
     // Handle offline status
     private void handleOfflineStatus(UserEleOnlineLog eleOnlineLog)  {
-        String userDeviceStatus = redisService.get(CacheConstant.CACHE_USER_DEVICE_STATUS + eleOnlineLog.getEid());
+        String userDeviceStatus = redisService.get(CacheConstant.CACHE_USER_DEVICE_STATUS + eleOnlineLog.getElectricityId());
         if (StrUtil.isEmpty(userDeviceStatus)) {
             return;
         }
@@ -91,7 +91,7 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
 
     // Send device notification
     private void sendDeviceNotification(UserEleOnlineLog eleOnlineLog) {
-        ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(eleOnlineLog.getEid());
+        ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(eleOnlineLog.getElectricityId());
         maintenanceUserNotifyConfigService.sendDeviceNotifyMq(cabinet, eleOnlineLog.getStatus(),
                 eleOnlineLog.getAppearTime());
     }
