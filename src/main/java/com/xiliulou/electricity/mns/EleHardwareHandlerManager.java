@@ -103,7 +103,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Autowired
     UserEleOnlineLogService userEleOnlineLogService;
 
-
     @Autowired
     private RocketMqService rocketMqService;
 
@@ -185,7 +184,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 electricityCabinetService.update(newElectricityCabinet);
             }
 
-            addOnlineLogAndHandleUserOnlineLogMessage(receiverMessage, electricityCabinet);
+            addOnlineLogAndHandleUserOnlineLogMessage(receiverMessage, newElectricityCabinet);
         });
     }
 
@@ -214,22 +213,29 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         if (Objects.isNull(lastUserEleOnlineLog)) {
             // 如果没有记录，代表表里是第一条信息，则直接发送
             shouldSendMessage = true;
-        // 如果上一次是离线，并且这一次是上线，则发送MQ
-        } else if (Objects.equals(electricityCabinet.getOnlineStatus(), ElectricityCabinet.STATUS_ONLINE)
-                && Objects.equals(lastUserEleOnlineLog.getStatus(), ElectricityCabinet.STATUS_OFFLINE)) {
-            shouldSendMessage = true;
-        } else if (Objects.equals(electricityCabinet.getOnlineStatus(), ElectricityCabinet.STATUS_OFFLINE)) {
-            shouldSendMessage = true;
-            delayType = 6;// 离线延迟2分钟
+        } else {
+            boolean isCurrentlyOnline = Objects.equals(electricityCabinet.getOnlineStatus(), ElectricityCabinet.STATUS_ONLINE);
+            boolean wasOffline = Objects.equals(lastUserEleOnlineLog.getStatus(), CommonConstant.STATUS_OFFLINE);
+
+            if (isCurrentlyOnline && wasOffline) {
+                // 如果上一次是离线，并且这一次是上线，则发送MQ
+                shouldSendMessage = true;
+            } else if (!isCurrentlyOnline) {
+                // 如果这一次是离线状态，无论上一次是什么状态，都发送MQ，并延迟2分钟
+                shouldSendMessage = true;
+                delayType = 6; // 离线延迟2分钟
+            }
         }
 
         if (shouldSendMessage) {
-            rocketMqService.sendAsyncMsg(MqProducerConstant.USER_DEVICE_STATUS_TOPIC, JsonUtil.toJson(eleOnlineLog), null, null, delayType);
+            rocketMqService.sendAsyncMsg(MqProducerConstant.USER_DEVICE_STATUS_TOPIC, JsonUtil.toJson(eleOnlineLog),
+                    null, null, delayType);
         }
-        
+
         // 发送MQ通知
-        // maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet, receiverMessage.getStatus(),
-        //         receiverMessage.getTime());·
+        // maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet,
+        // receiverMessage.getStatus(),
+        // receiverMessage.getTime());·
     }
 
     public Pair<Boolean, String> sendCommandToEleForTcp(HardwareCommandQuery query) {
