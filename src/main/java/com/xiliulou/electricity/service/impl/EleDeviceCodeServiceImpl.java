@@ -221,7 +221,7 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     
     @Slave
     @Override
-    public Triple<Boolean, String, Object> queryListDeviceInfo(EleDeviceCodeRegisterQuery query) {
+    public List<EleDeviceCode> queryListDeviceInfo(EleDeviceCodeRegisterQuery query) {
         return eleDeviceCodeMapper.selectListDeviceInfo(query.getDeviceNameSet(), query.getProductKey());
     }
     

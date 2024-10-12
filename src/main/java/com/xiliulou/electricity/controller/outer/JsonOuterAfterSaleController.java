@@ -31,7 +31,7 @@ public class JsonOuterAfterSaleController extends BaseController {
     
     @PostMapping(value = "/outer/afterSale/device/info/batch")
     public R batchDeviceInfo(@RequestBody @Validated(value = UpdateGroup.class) EleDeviceCodeRegisterQuery query) {
-        return returnTripleResult(eleDeviceCodeService.queryListDeviceInfo(query));
+        return R.ok(eleDeviceCodeService.queryListDeviceInfo(query));
     }
     
     @PostMapping(value = "/outer/afterSale/device/info")

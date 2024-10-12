@@ -47,5 +47,5 @@ public interface EleDeviceCodeService {
     
     Triple<Boolean, String, Object> deviceInfo(EleDeviceCodeOuterQuery query);
     
-    Triple<Boolean, String, Object> queryListDeviceInfo(EleDeviceCodeRegisterQuery query);
+   List<EleDeviceCode> queryListDeviceInfo(EleDeviceCodeRegisterQuery query);
 }

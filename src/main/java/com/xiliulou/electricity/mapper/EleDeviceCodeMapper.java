@@ -35,6 +35,6 @@ public interface EleDeviceCodeMapper {
     
     EleDeviceCode selectBySn(@Param("productKey") String productKey, @Param("deviceName") String deviceName);
     
-    Triple<Boolean, String, Object> selectListDeviceInfo(@Param("deviceNames") Set<String> deviceNames, @Param("productKey") String productKey);
+    List<EleDeviceCode> selectListDeviceInfo(@Param("deviceNames") Set<String> deviceNames, @Param("productKey") String productKey);
 }
 
