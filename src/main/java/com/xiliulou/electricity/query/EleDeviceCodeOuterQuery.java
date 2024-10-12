@@ -18,4 +18,6 @@ public class EleDeviceCodeOuterQuery {
     
     @NotBlank(message = "deviceName不能为空")
     private String deviceName;
+    
+    private String deviceSecret;
 }

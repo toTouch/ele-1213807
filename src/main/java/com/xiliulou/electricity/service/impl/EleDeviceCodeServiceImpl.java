@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.EleDeviceCodeVO;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -247,7 +248,8 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
             EleDeviceCode deviceCode = new EleDeviceCode();
             deviceCode.setProductKey(eleCommonConfig.getProductKey());
             deviceCode.setDeviceName(item.getDeviceName());
-            deviceCode.setSecret(SecureUtil.hmacMd5(eleCommonConfig.getProductKey() + item).digestHex(String.valueOf(time)));
+            deviceCode.setSecret(StringUtils.isBlank(item.getDeviceSecret()) ? SecureUtil.hmacMd5(eleCommonConfig.getProductKey() + item).digestHex(String.valueOf(time))
+                    : item.getDeviceSecret());
             deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
             deviceCode.setRemark("");
             deviceCode.setDelFlag(CommonConstant.DEL_N);
