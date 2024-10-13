@@ -2,8 +2,6 @@ package com.xiliulou.electricity.request.thirdPartyMall;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * @author HeYafeng
  * @description 美团骑手商城配置信息
@@ -12,12 +10,9 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class MeiTuanRiderMallConfigRequest {
     
-    @NotBlank(message = "appId不能为空")
     private String appId;
     
-    @NotBlank(message = "appKey不能为空")
     private String appKey;
     
-    @NotBlank(message = "secret不能为空")
     private String secret;
 }
