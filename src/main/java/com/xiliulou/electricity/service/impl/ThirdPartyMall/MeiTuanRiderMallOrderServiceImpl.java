@@ -425,9 +425,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     .vpRechargeStatus(MeiTuanRiderMallEnum.VP_RECHARGE_STATUS_SUCCESS.getCode()).vpComboStartTime(userBatteryMemberCard.getOrderEffectiveTime() / 1000)
                     .vpComboEndTime(userBatteryMemberCard.getOrderExpireTime() / 1000).build();
             
-            MtDTO<?> notifyMeiTuanDeliverVOMeiTuanR = thirdPartyMallRetrofitService.notifyMeiTuanDeliver(headers, notifyMeiTuanDeliverReq);
-            if (Objects.isNull(notifyMeiTuanDeliverVOMeiTuanR)) {
-                log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, notifyMeiTuanDeliverVOMeiTuanR is null, uid={}, orderId={}", uid, orderId);
+            MtDTO<?> meiTuanR = thirdPartyMallRetrofitService.notifyMeiTuanDeliver(headers, notifyMeiTuanDeliverReq);
+            if (Objects.isNull(meiTuanR)) {
+                log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuanR is null, uid={}, orderId={}", uid, orderId);
             }
             
             // 更新订单
@@ -438,8 +438,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             }
             
             // 发货失败
-            if (!notifyMeiTuanDeliverVOMeiTuanR.isSuccess()) {
-                if (Objects.equals(notifyMeiTuanDeliverVOMeiTuanR.getErrCode(), MtDTO.CANCEL_FAILED)) {
+            if (!meiTuanR.isSuccess()) {
+                if (Objects.equals(meiTuanR.getErrCode(), MtDTO.CANCEL_FAILED)) {
                     log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuan order canceled, uid={}, orderId={}", uid, orderId);
                     
                     // 订单取消导致发货失败，“订单取消”
@@ -523,11 +523,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         // 判断使用的订单是否美团订单
         MeiTuanRiderMallOrder meiTuanRiderMallOrder = this.queryByOrderId(userBatteryMemberCard.getOrderId(), uid, userBatteryMemberCard.getTenantId());
-        if (Objects.isNull(meiTuanRiderMallOrder)) {
-            return false;
-        }
-        
-        return true;
+        return !Objects.isNull(meiTuanRiderMallOrder);
     }
     
 }

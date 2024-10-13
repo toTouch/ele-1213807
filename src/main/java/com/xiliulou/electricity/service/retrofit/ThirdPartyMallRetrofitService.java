@@ -23,6 +23,6 @@ import java.util.Map;
 @Intercept(handler = MeituanServiceInterceptor.class)
 public interface ThirdPartyMallRetrofitService {
     
-    @POST("/inner/meiTuan/notifyDeliver")
+    @POST("/third-mall/inner/meiTuan/notifyDeliver")
     MtDTO notifyMeiTuanDeliver(@HeaderMap Map<String, String> headers, @Body NotifyMeiTuanDeliverReq notifyMeiTuanDeliverReq);
 }
