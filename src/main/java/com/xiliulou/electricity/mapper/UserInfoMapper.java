@@ -179,4 +179,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     List<UserInfo> selectListByUids(@Param("uidList") List<Long> uidList, @Param("tenantId") Integer tenantId);
     
     List<UserInfo> selectListUserInfoByPhone(@Param("phone") String phone);
+    
+    Integer updatePayCountByUid(UserInfo userInfo);
 }

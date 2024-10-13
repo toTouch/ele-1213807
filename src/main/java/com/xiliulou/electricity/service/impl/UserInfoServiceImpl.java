@@ -3086,6 +3086,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
+    public Integer updatePayCountByUid(UserInfo userInfo) {
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+        Integer result = this.userInfoMapper.updatePayCountByUid(userInfo);
+        redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+        
+        return result;
+    }
+    
+    @Override
     public Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard) {
         // 判断套餐用户分组和用户的用户分组是否匹配
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(

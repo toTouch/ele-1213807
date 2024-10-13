@@ -198,4 +198,6 @@ public interface UserInfoService extends IService<UserInfo> {
     Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
     
     R bindBattery(BindBatteryRequest bindBatteryRequest);
+    
+    Integer updatePayCountByUid(UserInfo userInfo);
 }

@@ -789,7 +789,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         
         UserInfo updateUserInfo = rollBackBO.getRollBackUserInfo();
         if (Objects.nonNull(updateUserInfo)) {
-            userInfoService.updateByUid(updateUserInfo);
+            userInfoService.updatePayCountByUid(updateUserInfo);
         }
         
         UserBatteryDeposit updateUserBatteryDeposit = rollBackBO.getRollBackUserBatteryDeposit();
