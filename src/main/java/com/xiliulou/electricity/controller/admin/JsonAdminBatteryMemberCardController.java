@@ -34,10 +34,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.entity.BatteryMemberCard.BUSINESS_TYPE_BATTERY;
+import static com.xiliulou.electricity.entity.BatteryMemberCard.BUSINESS_TYPE_INSTALLMENT_BATTERY;
 
 /**
  * @author zzlong
@@ -63,6 +67,39 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     /**
      * 搜索
      */
+    @PostMapping("/admin/battery/memberCard/search")
+    public R page(@RequestBody BatteryMemberCardQuery query) {
+        if (query.getSize() < 0 || query.getSize() > 50) {
+            query.setSize(10L);
+        }
+        
+        if (query.getOffset() < 0) {
+            query.setOffset(0L);
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+        
+        query.setTenantId(TenantContextHolder.getTenantId());
+        query.setFranchiseeIds(franchiseeIds);
+        query.setDelFlag(BatteryMemberCard.DEL_NORMAL);
+        
+        return R.ok(batteryMemberCardService.searchV2(query));
+    }
+    
+    /**
+     * TODO SJP 分期套餐需求上线之后可删除
+     */
+    @Deprecated
     @GetMapping("/admin/battery/memberCard/search")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "status", required = false) Integer status,
@@ -88,9 +125,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
-                .delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name).catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0)
-                .build();
+                .franchiseeIds(franchiseeIds).delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name)
+                .catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0).build();
         
         return R.ok(batteryMemberCardService.search(query));
     }
@@ -141,8 +177,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).id(mid).franchiseeId(franchiseeId)
-                .status(status).businessType(businessType == null ? 0 : businessType).rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL)
-                .franchiseeIds(franchiseeIds).batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
+                .status(status).businessTypes(businessType == null ? Arrays.asList(BUSINESS_TYPE_BATTERY, BUSINESS_TYPE_INSTALLMENT_BATTERY) : List.of(businessType))
+                .rentType(rentType).rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL).franchiseeIds(franchiseeIds).batteryModel(batteryModel)
+                .userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
         
         return R.ok(batteryMemberCardService.selectByPage(query));
     }
@@ -183,8 +220,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             }
         }
         
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(franchiseeId).status(status).businessType(businessType == null ? 0 : businessType)
-                .rentType(rentType).rentUnit(rentUnit).name(name).tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).franchiseeIds(franchiseeIds)
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(franchiseeId).status(status)
+                .businessTypes(businessType == null ? Arrays.asList(BUSINESS_TYPE_BATTERY, BUSINESS_TYPE_INSTALLMENT_BATTERY) : List.of(businessType)).rentType(rentType)
+                .rentUnit(rentUnit).name(name).tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).franchiseeIds(franchiseeIds)
                 .batteryModel(batteryModel).userInfoGroupId(Objects.nonNull(userGroupId) ? userGroupId.toString() : null).build();
         
         return R.ok(batteryMemberCardService.selectByPageCount(query));
@@ -309,8 +347,8 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).id(mid).franchiseeId(franchiseeId).status(status)
-                .businessType(businessType == null ? BatteryMemberCard.BUSINESS_TYPE_BATTERY : businessType).rentType(rentType).rentUnit(rentUnit).name(name)
-                .delFlag(BatteryMemberCard.DEL_NORMAL).build();
+                .businessTypes(businessType == null ? List.of(BUSINESS_TYPE_BATTERY) : List.of(businessType)).rentType(rentType)
+                .rentUnit(rentUnit).name(name).delFlag(BatteryMemberCard.DEL_NORMAL).build();
         
         return R.ok(batteryMemberCardService.selectByPageForMerchant(query));
     }

@@ -83,4 +83,8 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     List<ElectricityMemberCardOrderVO> selectListSuperAdminPage(@Param("query") MemberCardOrderQuery memberCardOrderQuery);
     
     List<ElectricityMemberCardOrder> selectListByCreateTime(@Param("beginTime") Long buyStartTime,@Param("endTime")  Long buyEndTime);
+    
+    ElectricityMemberCardOrder selectOrderByAgreementNoAndIssue(@Param("externalAgreementNo") String externalAgreementNo, @Param("issue") Integer issue);
+    
+    List<ElectricityMemberCardOrder> selectListOrderByExternalAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
 }

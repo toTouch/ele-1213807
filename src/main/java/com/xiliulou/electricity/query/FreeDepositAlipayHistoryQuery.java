@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.query;
 
 import lombok.Data;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -19,6 +18,8 @@ public class FreeDepositAlipayHistoryQuery {
     
     private String orderId;
     
+    private String authPayOrderId;
+    
     private String userName;
     
     private String phone;
@@ -32,8 +33,17 @@ public class FreeDepositAlipayHistoryQuery {
     private Long endTime;
     
     private Integer tenantId;
-
+    
+    private Long franchiseeId;
+    
+    private Long uid;
+    
     private List<Long> franchiseeIds;
-
+    
     private List<Long> storeIds;
+    
+    /**
+     * 代扣状态
+     */
+    private Integer payStatus;
 }

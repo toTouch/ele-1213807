@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.task;
 
+import cn.hutool.core.util.IdUtil;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +26,15 @@ public class CloudBeanRecycleExitTask extends IJobHandler {
     
     @Override
     public ReturnT<String> execute(String s) throws Exception {
-        log.info("xxl-job cloud bean recycle exit task");
+        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
         
+        log.info("xxl-job cloud bean recycle exit task start");
         try {
             cloudBeanUseRecordService.recycleCloudBeanExitTask();
         } catch (Exception e) {
-            log.error("xxl-job cloud bean recycle exit task", e);
+            log.error("xxl-job cloud bean recycle exit task error", e);
+        } finally {
+            MDC.clear();
         }
         
         log.info("xxl-job cloud bean recycle exit task end");

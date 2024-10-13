@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,7 +10,9 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -34,6 +37,7 @@ import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
@@ -41,6 +45,8 @@ import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.query.UnFreeDepositOrderQuery;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
@@ -51,6 +57,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FreeDepositAlipayHistoryService;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.FreeDepositService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.PxzConfigService;
@@ -62,13 +69,12 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -91,7 +97,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,6 +108,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务实现类
@@ -209,6 +216,19 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Resource
     private TenantService tenantService;
+    
+    
+    @Resource
+    private FreeDepositService freeDepositService;
+    
+    @Resource
+    private FreeDepositNotifyService freeDepositNotifyService;
+    
+    @Resource
+    private InstallmentBizService installmentBizService;
+    
+    @Resource
+    private InstallmentDeductionRecordService installmentDeductionRecordService;
     
     /**
      * 新增数据
@@ -370,6 +390,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 // 删除用户分组
                 userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+                
+                // 解约分期签约，如果有的话
+                installmentBizService.terminateForReturnDeposit(userInfo.getUid());
             }
         }
         
@@ -440,6 +463,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         // 修改企业用户代付状态为已过期
@@ -560,6 +591,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(true, "", null);
         }
         
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
         // 处理电池免押订单退款
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.warn("FREE REFUND ORDER WARN!depositOrder payType is illegal,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
@@ -653,6 +692,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
             
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
+            
             return Triple.of(true, "", "免押解冻成功");
         }
         
@@ -676,7 +718,133 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         return Triple.of(true, "", "退款中，请稍后");
     }
-
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> batteryFreeDepostRefundAuditV2(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid) {
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
+                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                        .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+        
+        if (Objects.isNull(eleRefundOrder)) {
+            log.error("FREE REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
+            return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("FREE REFUND ORDER ERROR!userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("FREE REFUND ORDER ERROR!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
+            return Triple.of(false, "ELECTRICITY.0015", "换电订单不存在");
+        }
+        
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        if (!Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
+            // 如果存在代扣的免押订单，则不允许退押
+            if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
+                return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+            }
+        }
+        
+        EleRefundOrder carRefundOrder = null;
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            carRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
+                    .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId()).eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                    .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+            
+            if (Objects.nonNull(carRefundOrder) && Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+                EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
+                carRefundOrderUpdate.setId(carRefundOrder.getId());
+                carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+                eleRefundOrderService.update(carRefundOrderUpdate);
+            }
+        }
+        
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+        eleRefundOrderUpdate.setErrMsg(errMsg);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        // 拒绝退款
+        if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            return Triple.of(true, "", null);
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
+        if (Objects.nonNull(refundAmount) && refundAmount.compareTo(BigDecimal.ZERO) != 0 && refundAmount.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! refundAmount is over payTransAmt,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100434", "退押失败，超过代扣金额");
+        }
+        
+        
+        // 处理电池免押订单退款
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            log.error("FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
+            return Triple.of(false, "100406", "订单非免押支付");
+        }
+        
+        
+        // 如果车电一起免押，检查用户是否归还车辆
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && Objects.equals(userInfo.getCarRentStatus(),
+                UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
+            return Triple.of(false, "100253", "用户已绑定车辆");
+        }
+        
+        // 三方解冻
+        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
+                .subject("电池押金解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
+        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
+        if (!triple.getLeft()) {
+            return Triple.of(false, "100406", triple.getRight());
+        }
+        
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+        
+        // 更新退款订单
+        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderService.update(eleRefundOrderUpdate);
+        
+        if (Objects.nonNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
+            carRefundOrderUpdate.setId(carRefundOrder.getId());
+            carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+            carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(carRefundOrderUpdate);
+        }
+        
+        return Triple.of(true, "", "退款中，请稍后");
+    }
     /**
      * 电池免押退押金
      *
@@ -739,6 +907,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(freeDepositOrder)) {
             log.warn("REFUND ORDER WARN! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
@@ -896,6 +1072,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
             
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
+            
             return Triple.of(true, "", null);
         }
         
@@ -912,6 +1091,147 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
         eleRefundOrderService.insert(eleRefundOrder);
+        
+        return Triple.of(true, "100413", "免押押金解冻中");
+    }
+    
+    
+    
+    /**
+     * 电池免押退押金
+     *
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("REFUND ORDER WARN!userInfo is null,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 设置企业信息
+        EnterpriseChannelUserVO enterpriseChannelUserVO = enterpriseChannelUserService.queryUserRelatedEnterprise(userInfo.getUid());
+        if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
+            log.warn("ELE DEPOSIT WARN! battery free deposit refund channel user is disable! uid={}", userInfo.getUid());
+            return Triple.of(false, "120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("REFUND ORDER WARN! user is disable! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.warn("REFUND ORDER WARN! user is not rent deposit,uid={}", uid);
+            return Triple.of(false, "100238", "未缴纳押金");
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("REFUND ORDER WARN! user membercard is disable,uid={}", uid);
+            return Triple.of(false, "100211", "用户套餐已暂停！");
+        }
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.warn("REFUND ORDER WARN! disable member card is reviewing,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.100003", "套餐暂停正在审核中");
+        }
+        
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.warn("REFUND ORDER WARN! not return battery,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
+        }
+        
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("REFUND ORDER WARN！userBatteryDeposit is null,uid={}", uid);
+            return Triple.of(false, "100247", "用户电池押金信息不存在");
+        }
+        
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            log.warn("REFUND ORDER WARN! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        if (Objects.isNull(freeDepositOrder.getPayTransAmt()) || BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! freeDepositOrder.payTransAmt is 0 ,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100434", "剩余可代扣金额超过免押金额");
+        }
+        
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
+            return Triple.of(false, "", "免押退款中，请稍后！");
+        }
+        
+        Integer payingByOrderId = freeDepositAlipayHistoryService.queryPayingByOrderId(freeDepositOrder.getOrderId());
+        // 如果存在代扣的免押订单，则不允许退押
+        if (!Objects.equals(payingByOrderId, NumberConstant.ZERO)) {
+            return Triple.of(false, "100426", "当前有正在执行中的免押代扣，无法退押");
+        }
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.warn("REFUND ORDER WARN! not found eleDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        // 企业渠道订单暂不支持退押
+        if (PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode().equals(eleDepositOrder.getOrderType())) {
+            log.warn("REFUND ORDER WARN! deposit order is enterprise channel, can't refund deposit, uid={}, orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100032", "企业渠道订单暂不支持退押,请联系企业负责人");
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return Triple.of(false, "301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
+        if (refundCount > 0) {
+            return Triple.of(false, "100018", "押金退款审核中");
+        }
+        
+        List<EleRefundOrder> refundOrders = eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userBatteryDeposit.getOrderId())
+                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId()).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT)
+                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
+        
+        if (!CollectionUtils.isEmpty(refundOrders)) {
+            log.warn("REFUND ORDER WARN! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100031", "不能重复退押金");
+        }
+        
+        
+        // 三方解冻
+        UnFreeDepositOrderQuery query = UnFreeDepositOrderQuery.builder().channel(freeDepositOrder.getChannel()).authNO(freeDepositOrder.getAuthNo()).orderId(freeDepositOrder.getOrderId())
+                .subject("电池免押解冻").tenantId(freeDepositOrder.getTenantId()).uid(freeDepositOrder.getUid()).amount(freeDepositOrder.getPayTransAmt().toString()).build();
+        Triple<Boolean, String, Object> triple = freeDepositService.unFreezeDeposit(query);
+        if (!triple.getLeft()) {
+            return Triple.of(false, "100406", triple.getRight());
+        }
+        
+        // 获取订单代扣信息计算返还金额
+        BigDecimal refundAmount = BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+        
+        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
+        
+        // 更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+        
+        // 生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
+                .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+        eleRefundOrderService.insert(eleRefundOrder);
+        
         
         return Triple.of(true, "100413", "免押押金解冻中");
     }
@@ -966,6 +1286,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         // 删除用户分组
         userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
+        
+        // 解约分期签约，如果有的话
+        installmentBizService.terminateForReturnDeposit(userInfo.getUid());
         
         return Triple.of(true, "", null);
     }
@@ -1169,6 +1492,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
         
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!org.springframework.util.CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
+        }
+        
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
                 log.warn("battery deposit OffLine Refund WARN ,refundAmount > payAmount uid={}", uid);
@@ -1248,6 +1579,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 删除用户分组
             userInfoGroupDetailService.handleAfterRefundDeposit(uid);
             
+            // 解约分期签约，如果有的话
+            installmentBizService.terminateForReturnDeposit(userInfo.getUid());
+            
             // 生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                     .operateContent(EleUserOperateRecord.REFUND_DEPOSIT_CONTENT).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(user.getUid()).uid(uid)
@@ -1299,6 +1633,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 // 删除用户分组
                 userInfoGroupDetailService.handleAfterRefundDeposit(uid);
+                
+                // 解约分期签约，如果有的话
+                installmentBizService.terminateForReturnDeposit(userInfo.getUid());
                 
                 return R.ok();
             }
@@ -1357,13 +1694,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(item.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                item.setPayTransAmt(freeDepositOrder.getPayTransAmt());
+            }
+           
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
             
-            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
-            if (Objects.isNull(freeDepositAlipayHistory)) {
+            List<FreeDepositAlipayHistory> freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryListByOrderId(item.getOrderId());
+            if (CollUtil.isEmpty(freeDepositAlipayHistory)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
@@ -1562,8 +1904,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 return;
             }
         
-            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
-            if (Objects.isNull(freeDepositAlipayHistory)) {
+            List<FreeDepositAlipayHistory> freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryListByOrderId(item.getOrderId());
+            if (CollUtil.isEmpty(freeDepositAlipayHistory)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
@@ -1571,6 +1913,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             item.setIsFreeDepositAliPay(true);
         });
         return R.ok(eleRefundOrderVOS);
+    }
+    
+    @Override
+    public Integer updateRefundAmountById(Long id, BigDecimal refundAmount) {
+        return eleRefundOrderMapper.updateRefundAmountById(id, refundAmount, System.currentTimeMillis());
     }
     
     @Slave

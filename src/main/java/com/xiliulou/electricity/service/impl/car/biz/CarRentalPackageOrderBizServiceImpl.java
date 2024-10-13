@@ -2771,6 +2771,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("300010", "未找到租车套餐押金缴纳订单");
         }
         
+        if (Objects.equals(PayTypeEnum.EXEMPT.getCode(),depositPayEntity.getPayType())) {
+            throw new BizException("301030", "已取消支付");
+        }
+        
         // 判定押金缴纳订单是否需要更改支付状态
         if (ObjectUtil.equal(PayStateEnum.UNPAID.getCode(), depositPayEntity.getPayState())) {
             carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.CANCEL.getCode());
@@ -3460,10 +3464,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
         }
-        
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
+                log.info("enter method after commit");
                 // 8. 处理分账
                 DivisionAccountOrderDTO divisionAccountOrderDTO = new DivisionAccountOrderDTO();
                 divisionAccountOrderDTO.setOrderNo(buyOrderNo);
@@ -3504,6 +3508,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userBatteryDepositService.synchronizedUserBatteryDepositInfo(uid, null, depositPayEntity.getOrderNo(), depositPayEntity.getDeposit());
                     }
                     // 同步电池会员表数据
+                    //此处删除一次缓存中的数据，否则大事务导致上次删除的缓存未生效，后续刷新除新的缓存
+                    carRentalPackageMemberTermService.deleteCache(tenantId, uid);
                     // 此处二次查询，目的是为了拿在事务缓存中的最新数据
                     CarRentalPackageMemberTermPo memberTermEntityProcessed = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
                     List<CarRentalPackageCarBatteryRelPo> carBatteryRelPos = carRentalPackageCarBatteryRelService.selectByRentalPackageId(

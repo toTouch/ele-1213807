@@ -10,6 +10,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptMo
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositRefundQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -24,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,8 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
     
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
     /**
      * 退押审批确认是否强制线下退款
      *
@@ -191,6 +195,10 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
         
+        List<String> orderIds = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getDepositPayOrderNo).collect(Collectors.toList());
+        
+        Map<String, Double> payTransAmtMap = freeDepositOrderService.selectPayTransAmtByOrderIdsToMap(orderIds);
+        
         // 模型转换，封装返回
         List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
             
@@ -205,6 +213,12 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
             if (!franchiseeMap.isEmpty()){
                 depositRefundVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositRefundEntity.getFranchiseeId()), new Franchisee()).getName());
             }
+            
+            if (payTransAmtMap.containsKey(depositRefundEntity.getDepositPayOrderNo())){
+                BigDecimal payTransAmt = Objects.isNull(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo()))?depositRefundEntity.getRealAmount():BigDecimal.valueOf(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo()));
+                depositRefundVO.setPayTransAmt(payTransAmt);
+            }
+            
             return depositRefundVO;
         }).collect(Collectors.toList());
         

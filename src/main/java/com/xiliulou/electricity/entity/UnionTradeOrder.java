@@ -75,6 +75,11 @@ public class UnionTradeOrder {
      */
     private String wechatMerchantId;
     
+    /**
+     * 请求签约号，唯一
+     */
+    private String externalAgreementNo;
+    
     public static final Integer STATUS_INIT = 0;
     
     public static final Integer STATUS_SUCCESS = 1;
@@ -118,4 +123,8 @@ public class UnionTradeOrder {
      */
     public static final String ATTACH_SERVUCE_FEE = "serviceFee";
     
+    /**
+     * 购买分期套餐
+     */
+    public static final String ATTACH_INSTALLMENT = "installment";
 }
