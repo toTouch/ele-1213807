@@ -31,7 +31,7 @@ public class ThirdPartyMallSubscriber {
             log.warn("ThirdPartyMallSubscriber warn, thirdPartyMallEvent is null");
             return;
         }
-        thirdPartyMallProducer.sendMessage(event.toDTO());
+        thirdPartyMallProducer.sendMessage(event);
         if (log.isDebugEnabled()) {
             log.debug("A thirdPartyMall message has been sent to the queue : {}", event);
         }

@@ -73,6 +73,15 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     }
     
     @Override
+    public void asyncPushCabinetStatusToThird(Integer mallType, String traceId, Integer tenantId, Long eid, Integer delayLevel) {
+        log.info("asyncPushCabinetStatusToThird params: mallType={}, traceId={}, tenantId={}, eid={}", mallType, traceId, tenantId, eid);
+        
+        thirdPartyMallPublish.publish(
+                ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).delayLevel(delayLevel)
+                        .addContext(MeiTuanRiderMallConstant.EID, eid).build());
+    }
+    
+    @Override
     public void asyncPushUserMemberCardToThird(Integer mallType, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType) {
         log.info("asyncPushUserMemberCardToThird params: mallType={}, traceId={}, tenantId={}, uid={}, mtOrderId={}, orderType={}", mallType, traceId, tenantId, uid, mtOrderId,
                 orderType);

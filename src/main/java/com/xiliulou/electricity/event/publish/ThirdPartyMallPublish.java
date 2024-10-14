@@ -27,8 +27,6 @@ public class ThirdPartyMallPublish {
     }
     
     public void publish(ThirdPartyMallEvent event) {
-        log.info("Publish third party mall event={}", event);
-        
         CompletableFuture.runAsync(() -> {
             applicationEventPublisher.publishEvent(event);
         }, threadPool).exceptionally(e -> {

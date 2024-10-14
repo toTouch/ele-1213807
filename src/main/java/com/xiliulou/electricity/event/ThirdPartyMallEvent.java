@@ -30,6 +30,8 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
     
     private final Map<String, Object> context;
     
+    private Integer delayLevel;
+    
     public ThirdPartyMallEvent(Object source, Map<String, Object> context) {
         super(source);
         this.context = context;
@@ -77,8 +79,14 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
             return this;
         }
         
+        
         public ThirdPartyMallEvent.Builder addContext(String key, Object value) {
             this.event.context.put(key, ObjectUtils.defaultIfNull(value, ""));
+            return this;
+        }
+        
+        public ThirdPartyMallEvent.Builder delayLevel(Integer delayLevel) {
+            this.event.delayLevel = delayLevel;
             return this;
         }
         

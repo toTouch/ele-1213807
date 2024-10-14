@@ -2,7 +2,7 @@ package com.xiliulou.electricity.mq.producer;
 
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.dto.message.ThirdPartyMallDataDTO;
+import com.xiliulou.electricity.event.ThirdPartyMallEvent;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,10 +28,9 @@ public class ThirdPartyMallProducer {
         this.rocketMqService = rocketMqService;
     }
     
-    public void sendMessage(ThirdPartyMallDataDTO message) {
-        log.info("ThirdPartyMallProducer.sendMessage, message is {}", message);
-        
+    public void sendMessage(ThirdPartyMallEvent message) {
         if (Objects.isNull(message)) {
+            log.warn("ThirdPartyMallProducer error! message is null");
             return;
         }
         
@@ -41,8 +40,9 @@ public class ThirdPartyMallProducer {
         }
         
         try {
-            String json = JsonUtil.toJson(message);
-            Pair<Boolean, String> pair = rocketMqService.sendSyncMsg(THIRD_PARTY_MALL_TOPIC, json);
+            String json = JsonUtil.toJson(message.toDTO());
+            int delayLevel = Objects.isNull(message.getDelayLevel()) ? 0 : message.getDelayLevel();
+            Pair<Boolean, String> pair = rocketMqService.sendSyncMsg(THIRD_PARTY_MALL_TOPIC, json, "", "", delayLevel);
             if (!pair.getLeft()) {
                 log.error("ThirdPartyMallProducer error! failed send message to the queue because: {}", Optional.ofNullable(pair.getRight()).orElse(""));
                 return;

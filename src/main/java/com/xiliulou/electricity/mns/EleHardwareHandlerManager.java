@@ -182,8 +182,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             
             // 给第三方推送柜机信息
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
-                pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
-                        electricityCabinet.getId().longValue());
+                pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(),
+                        electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null);
             }
             
             if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId(), String.valueOf(newElectricityCabinet.getOnlineStatus()), 30000L, false)) {
