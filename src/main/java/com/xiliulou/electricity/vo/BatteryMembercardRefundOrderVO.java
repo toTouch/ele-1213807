@@ -93,5 +93,9 @@ public class BatteryMembercardRefundOrderVO {
     private Integer tenantId;
     
     private String tenantName;
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 
 }

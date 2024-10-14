@@ -27,6 +27,7 @@
         tel.use_status ,
         tel.send_coupon_id ,
         tel.coupon_ids,
+        tel.payment_channel,
         tel.external_agreement_no,
         tel.issue,
         tui.phone as phone , tui.name as userName from
@@ -104,6 +105,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.paymentChannel != null and query.paymentChannel != ''">
+            and tel.payment_channel = #{query.paymentChannel}
+        </if>
         order by tel.id desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -164,6 +168,9 @@
         <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
             and tel.external_agreement_no = #{query.externalAgreementNo}
         </if>
+        <if test="query.externalAgreementNo != null and query.externalAgreementNo != ''">
+            and tel.external_agreement_no = #{query.externalAgreementNo}
+        </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -181,6 +188,9 @@
         </if>
         <if test="query.cardPayCount != null">
             and tel.pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.paymentChannel != null and query.paymentChannel != ''">
+            and tel.payment_channel = #{query.paymentChannel}
         </if>
     </select>
     
@@ -201,7 +211,7 @@
     <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         SELECT
         id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source,coupon_id,use_status
-        ,refund_status, order_type, external_agreement_no, issue
+        ,refund_status, order_type ,payment_channel, external_agreement_no, issue
         FROM t_electricity_member_card_order
         WHERE uid =#{uid} and member_card_model=0
         <if test="tenantId != null">
@@ -327,6 +337,7 @@
                max_use_count,
                card_name,
                pay_type,
+               payment_channel,
                create_time,
                update_time
         from t_electricity_member_card_order
@@ -574,6 +585,7 @@
         member_card_id ,
         use_status ,
         send_coupon_id,
+        payment_channel,
 		order_type,
         external_agreement_no,
         issue

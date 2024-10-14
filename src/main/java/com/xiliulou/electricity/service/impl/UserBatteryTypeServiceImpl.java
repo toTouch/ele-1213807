@@ -65,13 +65,11 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(UserBatteryType userBatteryType) {
         return this.userBatteryTypeMapper.update(userBatteryType);
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userBatteryTypeMapper.deleteById(id) > 0;
     }
@@ -207,7 +205,6 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateUserBatteryType(ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo) {
         Set<String> totalBatteryTypes = new HashSet<>();
         
@@ -240,7 +237,6 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
      * @param batteryTypes 套餐包含的电池型号列表
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void synchronizedUserBatteryType(Long uid, Integer tenantId, List<String> batteryTypes) {
         Set<String> totalBatteryTypes = new HashSet<>();
         

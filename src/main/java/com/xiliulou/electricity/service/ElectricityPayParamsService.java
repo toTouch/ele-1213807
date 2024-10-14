@@ -15,8 +15,6 @@ import java.util.Set;
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
     
     
-    R getTenantId(String appId);
-    
     /**
      * 上传支付证书
      *
@@ -28,9 +26,6 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     
     
     ElectricityPayParams selectTenantId(String appId);
-    
-    @Deprecated
-    Triple<Boolean, String, Object> queryByMerchantAppId(String appId);
     
     
     /**
@@ -130,7 +125,6 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @date 2024/8/26 10:10
      */
     ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId);
-    
     
     
 }

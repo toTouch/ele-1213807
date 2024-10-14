@@ -22,12 +22,13 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="paymentChannel" column="payment_channel" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMembercardRefundOrderMap">
         select
-          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, pay_type, create_time, update_time, tenant_id, franchisee_id, store_id
+          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, pay_type, create_time, update_time, tenant_id, franchisee_id, store_id,payment_channel
         from t_battery_membercard_refund_order
         where id = #{id}
     </select>
@@ -52,7 +53,8 @@
         bmro.tenant_id,
         bmro.franchisee_id,
         bmro.store_id,
-        bmc.rent_type
+        bmc.rent_type,
+        bmro.payment_channel
         from t_battery_membercard_refund_order bmro left join t_battery_member_card bmc on bmc.id=bmro.mid
         <where>
             <if test="uid != null">
@@ -93,6 +95,9 @@
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="paymentChannel != null and paymentChannel != ''">
+                and bmro.payment_channel = #{paymentChannel,jdbcType=VARCHAR}
             </if>
         </where>
         order by bmro.id desc
@@ -142,6 +147,9 @@
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="paymentChannel != null and paymentChannel != ''">
+                and bmro.payment_channel = #{paymentChannel,jdbcType=VARCHAR}
             </if>
         </where>
     </select>

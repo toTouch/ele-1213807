@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,11 +51,18 @@ public class JsonOuterElectricityConfigController extends BaseController {
         return R.ok(electricityConfigService.getTenantConfig(appId));
     }
     
+    /**
+     * 根据支付宝小程序appId获取tenantId及租户配置信息  ALI_PAY--支付宝，WX_PRO--微信
+     */
+    @GetMapping(value = "/outer/queryTenantConfig")
+    public R tenantConfigForAliPay(@RequestParam("appId") String appId, @RequestParam("appType") String appType) {
+        return R.ok(electricityConfigService.queryTenantConfigByAppId(appId, appType));
+    }
     
     @Deprecated
     @GetMapping(value = "/outer/merchant/minPro/config")
     public R merchantMinProConfig(@RequestParam("appId") String appId) {
-        return returnTripleResult(electricityPayParamsService.queryByMerchantAppId(appId));
+        return returnTripleResult(Triple.of(true,null,null));
     }
     
     /**

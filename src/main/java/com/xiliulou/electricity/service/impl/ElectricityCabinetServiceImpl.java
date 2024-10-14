@@ -39,6 +39,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -362,6 +363,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     StorageConfig storageConfig;
+    
+    @Autowired
+    StorageConverter storageConverter;
     
     @Autowired
     EleCommonConfig eleCommonConfig;
@@ -1489,12 +1493,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean deviceIsOnlineForIot(String productKey, String deviceName) {
+        
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot productKey:{},deviceName:{}",productKey,deviceName);
         GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
         if (Objects.isNull(getDeviceStatusResponse)) {
             return false;
         }
         
         GetDeviceStatusResponse.Data data = getDeviceStatusResponse.getData();
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot data:{}",JsonUtil.toJson(data));
         if (Objects.isNull(data)) {
             return false;
         }
@@ -3367,8 +3374,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 用户总数
         CompletableFuture<Void> userCount = CompletableFuture.runAsync(() -> {
-            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
-            homePageUserAnalysisVo.setUserCount(count);
+//            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
+            homePageUserAnalysisVo.setUserCount(0);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -3567,7 +3574,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
             if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
-                cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+                cabinetPhoto.add("https://" + storageConverter.getUrlPrefix() + "/" + electricityCabinetFile.getName());
             }
         }
         return R.ok(cabinetPhoto);
@@ -4540,7 +4547,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                item.setUrl(storageConverter.generateUrl(item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
             }).collect(Collectors.toList());
             
             return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());

@@ -110,5 +110,14 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
     
+    /**
+     * 根据id批量查询
+     *
+     * @param ids
+     * @author caobotao.cbt
+     * @date 2024/8/13 20:20
+     */
+    List<BatteryMemberCard> queryListByIdList(List<Long> ids);
+    
     
 }

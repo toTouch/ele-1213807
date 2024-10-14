@@ -3,6 +3,7 @@ package com.xiliulou.electricity;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.xiliulou.cache.redis.EnableRedis;
 import com.xiliulou.clickhouse.EnableCH;
+import com.xiliulou.core.alipay.EnableAlipayTemplate;
 import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
 import com.xiliulou.core.sms.EnableSms;
 import com.xiliulou.core.wp.EnableWeChatTemplate;
@@ -43,11 +44,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
-@EnablePay(isOpenNewWechatV3 = true)
+@EnablePay(isOpenNewWechatV3 = true, isOpenAlipay = true)
 @EnableXllXxlJob
 @EnableSms
 @EnableCH
 @EnableWeChatTemplate
+@EnableAlipayTemplate
 @EnableFeishu
 @EnableFaceid
 @EnableMq

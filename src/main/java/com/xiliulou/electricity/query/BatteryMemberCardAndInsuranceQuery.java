@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,4 +35,9 @@ public class BatteryMemberCardAndInsuranceQuery {
     
     //优惠券
     private Set<Integer> userCouponIds;
+    
+    /**
+     * 支付渠道 WECHAT-微信支付,ALIPAY-支付宝
+     */
+    private String paymentChannel ;
 }

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
@@ -78,6 +79,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Autowired
     StorageConfig storageConfig;
     
+    @Resource
+    StorageConverter storageConverter;
+    
     @Autowired
     ElectricityConfigService electricityConfigService;
     
@@ -109,6 +113,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         this.eleUserAuthMapper.insert(eleUserAuth);
         return eleUserAuth;
     }
+    
+    @Override
+    public Integer batchInsert(List<EleUserAuth> list) {
+        return this.eleUserAuthMapper.batchInsert(list);
+    }
+    
     
     /**
      * 修改数据
@@ -355,7 +365,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO) || e.getEntryId()
                     .equals(EleAuthEntry.ID_SELF_PHOTO)) {
                 if (StringUtils.isNotEmpty(e.getValue())) {
-                    e.setValue("https://" + storageConfig.getUrlPrefix() + "/" + e.getValue());
+                    e.setValue("https://" + storageConverter.getUrlPrefix() + "/" + e.getValue());
                 }
                 
             }

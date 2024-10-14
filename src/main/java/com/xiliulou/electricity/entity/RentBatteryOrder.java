@@ -91,6 +91,12 @@ public class RentBatteryOrder {
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
+    
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String channel;
 
     //租电池
     public static final Integer TYPE_USER_RENT = 1;

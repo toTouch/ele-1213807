@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -92,5 +94,6 @@ public interface EleDepositOrderService {
      * 支付押金时，生成押金订单
      */
     Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
-            ElectricityPayParams electricityPayParams);
+            BasePayConfig basePayConfig);
+    
 }

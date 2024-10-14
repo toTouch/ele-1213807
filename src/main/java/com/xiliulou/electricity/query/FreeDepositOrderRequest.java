@@ -53,6 +53,6 @@ public class FreeDepositOrderRequest {
      */
     private String subject;
     
-    
+    private String jumpUrl;
     
 }

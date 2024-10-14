@@ -91,4 +91,10 @@ public class InsuranceOrderVO {
      * 电池型号
      */
     private String simpleBatteryType;
+    
+    
+    /**
+     * 支付渠道 WECHAT-微信支付,ALIPAY-支付宝
+     */
+    private String paymentChannel ;
 }

@@ -91,7 +91,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(UserBatteryMemberCardPackage userBatteryMemberCardPackage) {
         return this.userBatteryMemberCardPackageMapper.update(userBatteryMemberCardPackage);
     }
@@ -103,7 +102,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
      * @return 是否成功
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userBatteryMemberCardPackageMapper.deleteById(id) > 0;
     }

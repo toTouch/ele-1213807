@@ -15,18 +15,16 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
+import com.xiliulou.electricity.service.wxrefund.RefundPayService;
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -36,7 +34,7 @@ import java.util.UUID;
  **/
 @Slf4j
 @Service("wxRefundPayCarRentServiceImpl")
-public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
+public class RefundPayCarRentServiceImpl implements RefundPayService {
 
     @Resource
     private UserCouponService userCouponService;
@@ -63,7 +61,7 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+    public void process(BaseOrderRefundCallBackResource callBackResource) {
         log.info("WxRefundPayCarRentServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outRefundNo = callBackResource.getOutRefundNo();
         String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
@@ -101,8 +99,8 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
                 throw new BizException("300000", "数据有误");
             }
 
-            // 微信退款状态
-            Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
+            // 退款状态
+            Integer refundState = callBackResource.converterTradeState(RefundStateEnum.SUCCESS.getCode(), RefundStateEnum.FAILED.getCode());
 
             long nowTime = System.currentTimeMillis();
             // 更新退款单数据
@@ -246,6 +244,6 @@ public class WxRefundPayCarRentServiceImpl implements WxRefundPayService {
      */
     @Override
     public String getOptType() {
-        return WxRefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode();
+        return RefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode();
     }
 }

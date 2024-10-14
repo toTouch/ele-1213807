@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.UserBatteryMemberCard" id="UserBatteryMemberCardMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
@@ -19,18 +19,34 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!-- 基础字段 -->
     <sql id="selectUserBatteryMemberCard">
-       	select   id, uid, member_card_id, order_id, member_card_expire_time, order_expire_time,order_effective_time, remaining_number, order_remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,card_pay_count  from t_user_battery_member_card
+        select id,
+               uid,
+               tenant_id,
+               member_card_id,
+               order_id,
+               member_card_expire_time,
+               order_expire_time,
+               order_effective_time,
+               remaining_number,
+               order_remaining_number,
+               member_card_status,
+               disable_member_card_time,
+               del_flag,
+               create_time,
+               update_time,
+               card_pay_count
+        from t_user_battery_member_card
     </sql>
-
+    
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserBatteryMemberCardMap">
         <include refid="selectUserBatteryMemberCard"/>
         where uid = #{uid}
     </select>
-
+    
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="UserBatteryMemberCardMap">
         <include refid="selectUserBatteryMemberCard"/>
@@ -70,20 +86,23 @@
             </if>
         </where>
     </select>
-
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery_member_card(uid, member_card_id,order_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time,  del_flag, create_time, update_time,tenant_id,card_pay_count)
-        values (#{uid}, #{memberCardId},#{orderId}, #{memberCardExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime},  #{delFlag}, #{createTime}, #{updateTime},#{tenantId},#{cardPayCount})
+        insert into t_user_battery_member_card(uid, member_card_id, order_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag,
+                                               create_time, update_time, tenant_id, card_pay_count)
+        values (#{uid}, #{memberCardId}, #{orderId}, #{memberCardExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime}, #{delFlag}, #{createTime},
+                #{updateTime}, #{tenantId}, #{cardPayCount})
     </insert>
-
+    
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery_member_card(uid, member_card_id,order_id, member_card_expire_time, order_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,tenant_id,card_pay_count)
-        values (#{uid}, #{memberCardId}, #{orderId}, #{memberCardExpireTime}, #{orderExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime}, #{delFlag}, #{createTime}, #{updateTime},#{tenantId},#{cardPayCount})
-        on duplicate key
-        update member_card_id=#{memberCardId}, order_id=#{orderId}, member_card_expire_time=#{memberCardExpireTime}, order_expire_time=#{orderExpireTime} ,remaining_number=#{remainingNumber}, member_card_status=#{memberCardStatus}, disable_member_card_time=#{disableMemberCardTime},  del_flag=#{delFlag}, update_time=#{updateTime},tenant_id=#{tenantId},card_pay_count=#{cardPayCount}
+        insert into t_user_battery_member_card(uid, member_card_id, order_id, member_card_expire_time, order_expire_time, remaining_number, member_card_status,
+                                               disable_member_card_time, del_flag, create_time, update_time, tenant_id, card_pay_count)
+        values (#{uid}, #{memberCardId}, #{orderId}, #{memberCardExpireTime}, #{orderExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime}, #{delFlag},
+                #{createTime}, #{updateTime}, #{tenantId}, #{cardPayCount}) on duplicate key
+        update member_card_id=#{memberCardId}, order_id=#{orderId}, member_card_expire_time=#{memberCardExpireTime}, order_expire_time=#{orderExpireTime} ,remaining_number=#{remainingNumber}, member_card_status=#{memberCardStatus}, disable_member_card_time=#{disableMemberCardTime}, del_flag=#{delFlag}, update_time=#{updateTime},tenant_id=#{tenantId},card_pay_count=#{cardPayCount}
     </insert>
-
+    
     <!--通过主键修改数据-->
     <update id="updateByUid">
         update t_user_battery_member_card
@@ -133,44 +152,71 @@
         </set>
         where uid = #{uid}
     </update>
-
+    
     <update id="deductionExpireTime">
-        update t_user_battery_member_card set member_card_expire_time = member_card_expire_time-#{time},update_time = #{updateTime}  where uid = #{uid}
+        update t_user_battery_member_card
+        set member_card_expire_time = member_card_expire_time - #{time},
+            update_time             = #{updateTime}
+        where uid = #{uid}
     </update>
     
     <update id="unbindMembercardInfoByUid">
         update t_user_battery_member_card
-        set
-            member_card_id = #{memberCardId},
-            order_id = #{orderId},
-            member_card_expire_time = #{memberCardExpireTime},
-            order_expire_time = #{orderExpireTime},
-            order_effective_time = #{orderEffectiveTime},
-            order_remaining_number = #{orderRemainingNumber},
-            remaining_number = #{remainingNumber},
-            member_card_status = #{memberCardStatus},
+        set member_card_id           = #{memberCardId},
+            order_id                 = #{orderId},
+            member_card_expire_time  = #{memberCardExpireTime},
+            order_expire_time        = #{orderExpireTime},
+            order_effective_time     = #{orderEffectiveTime},
+            order_remaining_number   = #{orderRemainingNumber},
+            remaining_number         = #{remainingNumber},
+            member_card_status       = #{memberCardStatus},
             disable_member_card_time = #{disableMemberCardTime},
-            update_time = #{updateTime}
-        where uid = #{uid} and del_flag =0
+            update_time              = #{updateTime}
+        where uid = #{uid}
+          and del_flag = 0
     </update>
-
+    
     <!--通过主键删除-->
     <delete id="deleteByUid">
-        delete from t_user_battery_member_card where uid = #{uid}
+        delete
+        from t_user_battery_member_card
+        where uid = #{uid}
     </delete>
-
+    
     <update id="minCount">
-        update t_user_battery_member_card set remaining_number=remaining_number-1,order_remaining_number=order_remaining_number-1 where id=#{id} and remaining_number>0 and del_flag=0
+        update t_user_battery_member_card
+        set remaining_number=remaining_number - 1,
+            order_remaining_number=order_remaining_number - 1
+        where id = #{id}
+          and remaining_number > 0
+          and del_flag = 0
     </update>
-
+    
     <update id="minCountForOffLineEle">
-        update t_user_battery_member_card set remaining_number=remaining_number-1 where id=#{id}  and del_flag=0
+        update t_user_battery_member_card
+        set remaining_number=remaining_number - 1
+        where id = #{id}
+          and del_flag = 0
     </update>
-
+    
     <update id="plusCount">
-        update t_user_battery_member_card set remaining_number=remaining_number+1 , order_remaining_number=order_remaining_number+1 where uid=#{uid} and del_flag=0
+        update t_user_battery_member_card
+        set remaining_number=remaining_number + 1,
+            order_remaining_number=order_remaining_number + 1
+        where uid = #{uid}
+          and del_flag = 0
     </update>
-
+    
+    
+    <select id="batteryMemberCardExpire" resultMap="UserBatteryMemberCardMap">
+        <include refid="selectUserBatteryMemberCard"/>
+        where del_flag = 0
+        and tenant_id=#{tenantId}
+        and member_card_expire_time &gt; #{firstTime}
+        and member_card_expire_time &lt;= #{lastTime}
+        limit #{offset}, #{size}
+    </select>
+    
     <update id="updateByUidForDisableCard">
         update t_user_battery_member_card
         <set>
@@ -205,47 +251,45 @@
         </set>
         where uid = #{uid}
     </update>
-
-
-    <select id="batteryMemberCardExpire" resultType="com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery">
-        select  fui.id, temc.name, fui.member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id, temc.franchisee_id
-                from t_user_battery_member_card fui
-                left join t_user_info ui on fui.uid = ui.uid
-                left join t_user_oauth_bind uob on uob.uid = ui.uid
-                left join t_electricity_member_card temc on fui.member_card_id=temc.id
-                where fui.del_flag = 0
-                and fui.member_card_expire_time &gt; #{firstTime}
-                and fui.member_card_expire_time &lt;= #{lastTime}
-                limit #{offset}, #{size}
-    </select>
-
+    
     <select id="carMemberCardExpire" resultType="com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery">
-        select  fui.id, emc.name as card_name, fui.rent_car_member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id
-                from t_franchisee_user_info fui
-                left join t_user_info ui on fui.user_info_id = ui.id
-                left join t_user_oauth_bind uob on uob.uid = ui.uid
-                left join t_electricity_member_card emc on fui.rent_car_card_id = emc.id
-                where fui.del_flag = 0
-                and fui.rent_car_member_card_expire_time &gt; #{firstTime}
-                and fui.rent_car_member_card_expire_time &lt;= #{lastTime}
-                limit #{offset}, #{size}
+        select fui.id, emc.name as card_name, fui.rent_car_member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id
+        from t_franchisee_user_info fui
+                 left join t_user_info ui on fui.user_info_id = ui.id
+                 left join t_user_oauth_bind uob on uob.uid = ui.uid
+                 left join t_electricity_member_card emc on fui.rent_car_card_id = emc.id
+        where fui.del_flag = 0
+          and fui.rent_car_member_card_expire_time &gt; #{firstTime}
+          and fui.rent_car_member_card_expire_time &lt;= #{lastTime} limit #{offset}
+            , #{size}
     </select>
-
+    
     <select id="queryMemberCardExpireUser" resultType="com.xiliulou.electricity.vo.FailureMemberCardVo">
         select tubmc.member_card_expire_time
-        ,tubmc.uid,tubmc.tenant_id,tub.battery_type,tud.battery_deposit,tui.franchisee_id
-        from t_user_battery_member_card tubmc left join t_user_battery tub on tubmc.uid=tub.uid left join
-        t_user_battery_deposit tud on tubmc.uid=tud.uid
-        left join t_user_info tui on tubmc.uid=tui.uid
-        where tubmc.member_card_expire_time &lt;= #{nowTime} or tubmc.remaining_number &lt;= 0
-        limit #{offset},#{size}
+             , tubmc.uid
+             , tubmc.tenant_id
+             , tub.battery_type
+             , tud.battery_deposit
+             , tui.franchisee_id
+        from t_user_battery_member_card tubmc
+                 left join t_user_battery tub on tubmc.uid = tub.uid
+                 left join
+             t_user_battery_deposit tud on tubmc.uid = tud.uid
+                 left join t_user_info tui on tubmc.uid = tui.uid
+        where tubmc.member_card_expire_time &lt;= #{nowTime}
+           or tubmc.remaining_number &lt;= 0
+            limit #{offset}
+            , #{size}
     </select>
-
-
+    
+    
     <select id="checkUserByMembercardId" resultType="Integer">
-        select 1 from t_user_battery_member_card where del_flag=0 and member_card_id=#{membercardId} LIMIT 1
+        select 1
+        from t_user_battery_member_card
+        where del_flag = 0
+          and member_card_id = #{membercardId} LIMIT 1
     </select>
-
+    
     <select id="selectByList" resultMap="UserBatteryMemberCardMap">
         <include refid="selectUserBatteryMemberCard"/>
         where uid = #{uid}
@@ -253,49 +297,50 @@
     </select>
     
     <select id="selectExpireList" resultMap="UserBatteryMemberCardMap">
-        SELECT
-            id,
-            uid,
-            member_card_id,
-            order_id,
-            member_card_expire_time,
-            order_expire_time,
-            order_effective_time,
-            remaining_number,
-            order_remaining_number,
-            member_card_status,
-            disable_member_card_time,
-            del_flag,
-            create_time,
-            update_time,
-            card_pay_count
-        FROM
-            t_user_battery_member_card c
+        SELECT id,
+               uid,
+               member_card_id,
+               order_id,
+               member_card_expire_time,
+               order_expire_time,
+               order_effective_time,
+               remaining_number,
+               order_remaining_number,
+               member_card_status,
+               disable_member_card_time,
+               del_flag,
+               create_time,
+               update_time,
+               card_pay_count
+        FROM t_user_battery_member_card c
         where c.member_card_expire_time &lt;= #{memberCardExpireTime}
-          and not EXISTS (
+          and not EXISTS(
             select 1 from t_enterprise_channel_user_exit b where b.uid = c.uid and b.type != 1
         )
-            limit #{offset},#{size}
+            limit #{offset}
+            , #{size}
     </select>
-
+    
     <select id="selectUseableList" resultMap="UserBatteryMemberCardMap">
-        select
-        ubmc.uid,
-        ubmc.order_id,
-        ubmc.member_card_id,
-        ubmc.member_card_expire_time,
-        ubmc.order_expire_time,
-        ubmc.remaining_number,
-        ubmc.member_card_status,
-        ubmc.disable_member_card_time,
-        ubmc.card_pay_count
+        select ubmc.uid,
+               ubmc.order_id,
+               ubmc.member_card_id,
+               ubmc.member_card_expire_time,
+               ubmc.order_expire_time,
+               ubmc.remaining_number,
+               ubmc.member_card_status,
+               ubmc.disable_member_card_time,
+               ubmc.card_pay_count
         from t_user_battery_member_card ubmc
-        left join t_user_info tui on tui.uid=ubmc.uid
-        where tui.battery_deposit_status=1 and tui.del_flag=0 and ubmc.member_card_status=0
-        limit #{offset},#{size}
+                 left join t_user_info tui on tui.uid = ubmc.uid
+        where tui.battery_deposit_status = 1
+          and tui.del_flag = 0
+          and ubmc.member_card_status = 0
+            limit #{offset}
+            , #{size}
     </select>
-
-
+    
+    
     <select id="selectUseableListByTenantIds" resultMap="UserBatteryMemberCardMap">
         select
         ubmc.uid,
@@ -320,47 +365,42 @@
     </select>
     
     <select id="selectRenewalNumberByMerchantId" resultType="integer">
-        SELECT
-            count( 1 ) from
-            (SELECT 1
-             FROM
-                 t_user_info_extra uie
-                     LEFT JOIN t_electricity_member_card_order emco ON uie.uid = emco.uid
-                     LEFT JOIN t_battery_membercard_refund_order bmro ON (emco.order_id)=(bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
-             WHERE
-                 uie.merchant_id = #{merchantId}  and  uie.tenant_id =#{tenantId} and
-                 emco.pay_count > 1
-               AND emco.STATUS = 1
-               AND (bmro.status is null or bmro.status != 4)
-             GROUP BY	uie.uid) a
+        SELECT count(1)
+        from (SELECT 1
+              FROM t_user_info_extra uie
+                       LEFT JOIN t_electricity_member_card_order emco ON uie.uid = emco.uid
+                       LEFT JOIN t_battery_membercard_refund_order bmro ON (emco.order_id) = (bmro.member_card_order_no collate utf8mb4_0900_ai_ci)
+              WHERE uie.merchant_id = #{merchantId}
+                and uie.tenant_id = #{tenantId}
+                and emco.pay_count > 1
+                AND emco.STATUS = 1
+                AND (bmro.status is null or bmro.status != 4)
+              GROUP BY uie.uid) a
     </select>
     
     <select id="selectExpireExitList"
         resultType="com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo">
-        SELECT
-            b.id,
-            a.uid,
-            b.member_card_id,
-            b.order_id,
-            b.member_card_expire_time,
-            b.order_expire_time,
-            b.order_effective_time,
-            b.remaining_number,
-            b.order_remaining_number,
-            b.member_card_status,
-            b.disable_member_card_time,
-            b.del_flag,
-            b.create_time,
-            b.update_time,
-            b.card_pay_count,
-            a.id as 'channelUserExitId',
-            a.channel_user_id as 'channelUserId'
-        FROM
-            t_enterprise_channel_user_exit a
-            left JOIN t_user_battery_member_card b on b.uid = a.uid
-        where
-            a.del_flag = 0
+        SELECT b.id,
+               a.uid,
+               b.member_card_id,
+               b.order_id,
+               b.member_card_expire_time,
+               b.order_expire_time,
+               b.order_effective_time,
+               b.remaining_number,
+               b.order_remaining_number,
+               b.member_card_status,
+               b.disable_member_card_time,
+               b.del_flag,
+               b.create_time,
+               b.update_time,
+               b.card_pay_count,
+               a.id as 'channelUserExitId', a.channel_user_id as 'channelUserId'
+        FROM t_enterprise_channel_user_exit a
+                 left JOIN t_user_battery_member_card b on b.uid = a.uid
+        where a.del_flag = 0
           and a.type = 0
-            limit #{offset},#{size}
+            limit #{offset}
+            , #{size}
     </select>
 </mapper>
