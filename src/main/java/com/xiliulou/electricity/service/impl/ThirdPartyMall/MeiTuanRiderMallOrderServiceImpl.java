@@ -433,7 +433,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             // 更新订单
             MeiTuanRiderMallOrder meiTuanRiderMallOrderUpdate = new MeiTuanRiderMallOrder();
             meiTuanRiderMallOrderUpdate.setId(meiTuanRiderMallOrder.getId());
-            if (Objects.isNull(meiTuanRiderMallOrder.getUid())) {
+            if (Objects.isNull(meiTuanRiderMallOrder.getUid()) || Objects.equals(meiTuanRiderMallOrder.getUid(), NumberConstant.ZERO_L)) {
                 meiTuanRiderMallOrderUpdate.setUid(uid);
             }
             
