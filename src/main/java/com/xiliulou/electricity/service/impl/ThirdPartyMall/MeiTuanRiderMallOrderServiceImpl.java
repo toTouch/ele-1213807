@@ -180,7 +180,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             // 校验是否开启美团商城
             MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(tenantId);
             if (Objects.isNull(meiTuanRiderMallConfig)) {
-                log.warn("MeiTuan order redeem fail! not found meiTuanRiderMallConfig, uid={}, tenantId={}", uid, tenantId);
+                log.warn("MeiTuan order redeem fail! meiTuan switch closed or not found meiTuanRiderMallConfig, uid={}, tenantId={}", uid, tenantId);
                 return Triple.of(false, "120134", "兑换失败，请联系客服处理");
             }
             
