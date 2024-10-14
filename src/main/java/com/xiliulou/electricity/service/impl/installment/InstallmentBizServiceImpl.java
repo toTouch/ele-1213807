@@ -383,7 +383,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         try {
             uid = SecurityUtils.getUid();
             if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, uid), "1", 3 * 1000L, false)) {
-                return R.fail("301019", "解当前套餐正在签约或取消，请稍候再试");
+                return R.fail("301019", "当前套餐正在签约或取消，请稍候再试");
             }
             
             InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
