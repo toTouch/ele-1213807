@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.crypto.SecureUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.query.EleDeviceCodeRegisterQuery;
 import com.xiliulou.electricity.service.EleDeviceCodeService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDeviceCodeVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -156,6 +158,10 @@ public class EleDeviceCodeServiceImpl implements EleDeviceCodeService {
     
     @Override
     public Triple<Boolean, String, Object> save(EleDeviceCodeQuery query) {
+        if (!redisService.setNx(CacheConstant.CACHE_DEVICE_CODE_LOCK + SecurityUtils.getUid().toString(), "1", 3000L, false)) {
+            return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+        }
+        
         for (EleDeviceCodeInsertQuery entity : query.getDeviceNames()) {
             if (Objects.nonNull(applicationContext.getBean(EleDeviceCodeService.class).existsDeviceName(entity.getDeviceName()))) {
                 return Triple.of(false, "100487", "设备编号已存在:" + entity.getDeviceName());

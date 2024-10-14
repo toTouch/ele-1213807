@@ -70,6 +70,8 @@ public interface CacheConstant {
     
     //下单加锁缓存
     String ORDER_ELE_ID = "order_lock_ele_id:";
+    //新增设备加锁
+    String CACHE_DEVICE_CODE_LOCK = "device_code_lock:";
     
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
