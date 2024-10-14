@@ -157,7 +157,13 @@ public class UserCouponVO {
     /**
      * 发券方式
      */
-    private String couponWay;
+    private Long couponWay;
     
     
+    /**
+     * 发券方式区分类型
+     * 当发券方式为套餐：1为电，2为车；
+     * 当发卷方式为活动：1是返券，2是注册活动
+     */
+    private Integer couponWayDiffType;
 }

@@ -113,6 +113,12 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.couponType != null ">
+                and tuc.coupon_type = #{query.couponType}
+            </if>
+            <if test="query.couponWay != null ">
+                and tc.coupon_way = #{query.couponWay}
+            </if>
         </where>
         ORDER BY tuc.update_time DESC, tuc.id ASC
         <if test="query.offset != null and query.size != null">
@@ -185,6 +191,12 @@
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.couponType != null ">
+                and tuc.coupon_type = #{query.couponType}
+            </if>
+            <if test="query.couponWay != null ">
+                and tc.coupon_way = #{query.couponWay}
             </if>
         </where>
     </select>
