@@ -22,6 +22,9 @@
             <if test="orderUseStatus != null">
                 order_use_status = #{orderUseStatus},
             </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>

@@ -3,11 +3,11 @@ package com.xiliulou.electricity.service.retrofit.interceptor;
 
 import com.github.lianjiatech.retrofit.spring.boot.interceptor.BasePathMatchInterceptor;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -37,8 +37,9 @@ public class MeituanServiceInterceptor extends BasePathMatchInterceptor {
     
     @Override
     protected Response doIntercept(Chain chain) throws IOException {
+        log.info("MeituanServiceInterceptor");
         Request request = chain.request();
-        Request.Builder builder = request.newBuilder().addHeader(CommonConstant.TRACE_ID, MDC.get(CommonConstant.TRACE_ID));
+        Request.Builder builder = request.newBuilder().addHeader(CommonConstant.TRACE_ID, TtlTraceIdSupport.get());
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (Objects.isNull(requestAttributes)) {
             return chain.proceed(builder.build());
@@ -53,6 +54,7 @@ public class MeituanServiceInterceptor extends BasePathMatchInterceptor {
             headers.put(headerName, servletRequest.getHeader(headerName));
         });
         builder.headers(Headers.of(headers));
+        log.info("MeituanServiceInterceptor headers:{}", headers);
         return chain.proceed(builder.build());
     }
 }
