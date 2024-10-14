@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.query.ShareActivityQuery;
+import com.xiliulou.electricity.query.ShareAndUserActivityQuery;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -51,4 +53,6 @@ public interface ShareActivityMapper extends BaseMapper<ShareActivity>{
     int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
     
     List<ShareActivity> selectOnlineActivity(@Param("tenantId") Integer tenantId);
+    
+    List<ShareAndUserActivityVO> listShareAndUserActivity(ShareAndUserActivityQuery query);
 }

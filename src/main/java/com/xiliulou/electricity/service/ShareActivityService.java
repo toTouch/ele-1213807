@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
+import com.xiliulou.electricity.query.ShareAndUserActivityQuery;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -74,4 +76,6 @@ public interface ShareActivityService {
     R<?> removeById(Long id, List<Long> franchiseeIds);
     
     ShareActivity queryOnlineActivity(Integer tenantId, Long franchiseeId);
+    
+    List<ShareAndUserActivityVO> listShareAndUserActivity(ShareAndUserActivityQuery query);
 }

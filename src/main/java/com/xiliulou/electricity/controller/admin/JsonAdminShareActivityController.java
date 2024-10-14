@@ -15,6 +15,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
+import com.xiliulou.electricity.query.ShareAndUserActivityQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -375,5 +376,21 @@ public class JsonAdminShareActivityController extends BaseController {
         }
     
         return shareActivityService.removeById(id, franchiseeIds);
+    }
+    
+    
+    /**
+     * 获取活动和用户活动列表
+     *
+     * @return R
+     */
+    @PostMapping(value = "/admin/shareActivity/listShareAndUserActivity")
+    public R listShareAndUserActivity(@RequestBody ShareAndUserActivityQuery query) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(shareActivityService.listShareAndUserActivity(query));
     }
 }

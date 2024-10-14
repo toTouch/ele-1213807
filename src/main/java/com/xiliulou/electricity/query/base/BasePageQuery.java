@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.constant;
+package com.xiliulou.electricity.query.base;
 
 import lombok.Data;
 

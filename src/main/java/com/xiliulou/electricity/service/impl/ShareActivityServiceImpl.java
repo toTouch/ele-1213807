@@ -34,6 +34,7 @@ import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
+import com.xiliulou.electricity.query.ShareAndUserActivityQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponService;
@@ -60,6 +61,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponMemberCardVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityVO;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
@@ -1157,5 +1159,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         return null;
     }
     
+    @Override
+    public List<ShareAndUserActivityVO> listShareAndUserActivity(ShareAndUserActivityQuery query) {
+        return shareActivityMapper.listShareAndUserActivity(query);
+    }
 }
 
