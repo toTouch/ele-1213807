@@ -117,7 +117,7 @@
                 and tuc.coupon_type = #{query.couponType}
             </if>
             <if test="query.couponWay != null ">
-                and tc.coupon_way = #{query.couponWay}
+                and tuc.coupon_way = #{query.couponWay}
             </if>
         </where>
         ORDER BY tuc.update_time DESC, tuc.id ASC
@@ -196,7 +196,7 @@
                 and tuc.coupon_type = #{query.couponType}
             </if>
             <if test="query.couponWay != null ">
-                and tc.coupon_way = #{query.couponWay}
+                and tuc.coupon_way = #{query.couponWay}
             </if>
         </where>
     </select>
