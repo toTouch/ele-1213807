@@ -13,7 +13,7 @@ public enum ThirdPartyMallDataType {
     PUSH_USER_BATTERY_MEMBER_CARD("PUSH_USER_BATTERY_MEMBER_CARD", "用户换电套餐"),
     PUSH_ELE_CABINET("PUSH_ELE_CABINET", "换电柜"),
     PUSH_USER_EXCHANGE_RECORD("PUSH_USER_EXCHANGE_RECORD", "用户换电记录"),
-    PUSH_USER_BATTERY("PUSH_USER_EXCHANGE_RECORD", "用户电池"),
+    PUSH_USER_BATTERY("PUSH_USER_BATTERY", "用户电池"),
     PUSH_USER_INFO("PUSH_USER_INFO", "用户信息");
     
     private final String code;

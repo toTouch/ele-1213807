@@ -37,7 +37,6 @@ public class MeituanServiceInterceptor extends BasePathMatchInterceptor {
     
     @Override
     protected Response doIntercept(Chain chain) throws IOException {
-        log.info("MeituanServiceInterceptor");
         Request request = chain.request();
         Request.Builder builder = request.newBuilder().addHeader(CommonConstant.TRACE_ID, TtlTraceIdSupport.get());
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
@@ -54,7 +53,6 @@ public class MeituanServiceInterceptor extends BasePathMatchInterceptor {
             headers.put(headerName, servletRequest.getHeader(headerName));
         });
         builder.headers(Headers.of(headers));
-        log.info("MeituanServiceInterceptor headers:{}", headers);
         return chain.proceed(builder.build());
     }
 }

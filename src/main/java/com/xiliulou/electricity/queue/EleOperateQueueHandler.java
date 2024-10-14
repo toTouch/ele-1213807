@@ -57,6 +57,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -719,7 +720,7 @@ public class EleOperateQueueHandler {
             checkRentBatteryDoor(rentBatteryOrder);
             
             // 给第三方推送用户电池信息和用户信息
-            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), rentBatteryOrder.getTenantId(),
                     rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER, rentBatteryOrder.getUid());
             
             if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {

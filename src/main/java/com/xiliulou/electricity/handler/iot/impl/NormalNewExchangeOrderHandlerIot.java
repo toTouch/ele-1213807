@@ -47,6 +47,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -204,7 +205,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
             // 给第三方推送换电记录
-            pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
+            pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
                     electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
             
             // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
@@ -219,8 +220,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
             
             // 给第三方推送用户电池信息和用户信息
-            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(),
-                    electricityCabinetOrder.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinetOrder.getTenantId(),
+                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
             
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
