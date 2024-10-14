@@ -21,8 +21,4 @@ public class BatteryAndCarMemberCardVO {
      */
     private String name;
     
-    /**
-     * 套餐类型 1 - 换电， 2 - 租车
-     */
-    private Integer type;
 }

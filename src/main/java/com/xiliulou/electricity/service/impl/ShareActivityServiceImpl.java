@@ -1161,6 +1161,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     
     @Override
     public List<ShareAndUserActivityVO> listShareAndUserActivity(ShareAndUserActivityQuery query) {
+        query.setTenantId(TenantContextHolder.getTenantId());
         return shareActivityMapper.listShareAndUserActivity(query);
     }
 }

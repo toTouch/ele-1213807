@@ -245,7 +245,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(coupon.getTenantId())
                 .couponType(CouponTypeEnum.REGISTER_ACTIVITIES.getCode())
-                .couponWay(newActiveId);
+                .couponWay(newActiveId)
+                .couponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_TWO);
         
         //优惠券过期时间
         
@@ -610,7 +611,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                 .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                .couponWay(Long.valueOf(activityId));
+                                .couponWay(Long.valueOf(activityId))
+                                .couponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_ONE);;
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -647,7 +649,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                 .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                .couponWay(Long.valueOf(activityId));
+                                .couponWay(Long.valueOf(activityId))
+                                .couponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_ONE);
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -901,7 +904,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE).couponId(coupon.getId())
                     .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).couponType(CouponTypeEnum.BUY_PACKAGE.getCode()).couponWay(userCouponDTO.getPackageId()).sourceOrderId(userCouponDTO.getSourceOrderNo());
+                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).couponType(CouponTypeEnum.BUY_PACKAGE.getCode()).couponWay(userCouponDTO.getPackageId())
+                    .couponWayDiffType(userCouponDTO.getCouponWayDiffType()).sourceOrderId(userCouponDTO.getSourceOrderNo());
             
             //优惠券过期时间
             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());

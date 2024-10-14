@@ -15,8 +15,4 @@ public class ShareAndUserActivityVO {
     
     private String name;
     
-    /**
-     * 类型，1：分享，2：用户注册
-     */
-    private Integer type;
 }

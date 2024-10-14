@@ -117,15 +117,15 @@
           and tenant_id = #{tenantId}
     </select>
     <select id="listShareAndUserActivity" resultType="com.xiliulou.electricity.vo.ShareAndUserActivityVO">
-        SELECT id, name, type
-        from (SELECT id, name,1 as 'type'
+        SELECT id, name
+        from (SELECT id, name
         from t_share_activity
         where tenant_id = #{tenantId} and del_flag = 0
         <if test="name != null and name != ''">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
         union all
-        SELECT id, name,'2' as 'type'
+        SELECT id, name
         from t_new_user_activity
         where tenant_id = #{tenantId} and del_flag = 0
         <if test="name != null and name != ''">

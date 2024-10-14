@@ -94,6 +94,13 @@ public class UserCoupon {
     private Long couponWay;
     
     /**
+     * 发券方式区分类型
+     * 当发券方式为套餐：1为电，2为车；
+     * 当发卷方式为活动：1是返券，2是注册活动
+     */
+    private Integer couponWayDiffType;
+    
+    /**
      * 加盟商id
      */
     private Integer franchiseeId;
@@ -164,4 +171,14 @@ public class UserCoupon {
     
     //核销人
     public static final Long INITIALIZE_THE_VERIFIER=-1L;
+    
+    /**
+     * 套餐：1为电 活动：1为邀请返券
+     */
+    public static final Integer COUPON_WAY_DIFF_TYPE_ONE = 1;
+    
+    /**
+     * 套餐：2为车 活动：2为注册活动
+     */
+    public static final Integer COUPON_WAY_DIFF_TYPE_TWO = 2;
 }

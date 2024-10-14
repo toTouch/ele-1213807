@@ -48,7 +48,7 @@
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tc.franchisee_id as franchiseeId,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages,
-        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay',
+        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay',tuc.coupon_way_diff_type as 'couponWayDiffType'
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id

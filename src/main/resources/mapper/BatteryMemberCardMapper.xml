@@ -900,15 +900,15 @@
     </select>
     
     <select id="listBatteryAndCarMember" resultType="com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO">
-        SELECT id, name, type
-        from (SELECT id, name,1 as 'type'
+        SELECT id, name
+        from (SELECT id, name
         from t_battery_member_card
         where tenant_id = #{tenantId} and del_flag = 0
         <if test="name != null and name != ''">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
         union all
-        SELECT id, name,'2' as 'type'
+        SELECT id, name
         from t_car_rental_package
         where tenant_id = #{tenantId} and del_flag = 0
         <if test="name != null and name != ''">

@@ -3612,6 +3612,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userCouponDTO.setUid(memberCardOrder.getUid());
             userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
             userCouponDTO.setTraceId(IdUtil.simpleUUID());
+            userCouponDTO.setCouponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_ONE);
             userCouponService.asyncSendCoupon(userCouponDTO);
         });
         
