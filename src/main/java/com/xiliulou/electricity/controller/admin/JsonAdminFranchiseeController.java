@@ -398,7 +398,7 @@ public class JsonAdminFranchiseeController extends BasicController {
     }
     
     @GetMapping("/admin/franchisee/selectFranchiseeForSelf")
-    public R<List<Franchisee>> selectFranchiseeForSelf() {
+    public R<Franchisee> selectFranchiseeForSelf() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user) || !Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             return R.fail("ELECTRICITY.0001", "非加盟商用户");
@@ -407,10 +407,10 @@ public class JsonAdminFranchiseeController extends BasicController {
         // 管理员可能会有绑定多个加盟商的情况
         List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         if (CollectionUtils.isEmpty(franchiseeIds)) {
-            return R.ok(Collections.emptyList());
+            return R.ok();
         }
         
         List<Franchisee> franchiseeList = franchiseeIds.stream().map(franchiseeId -> franchiseeService.queryByIdFromCache(franchiseeId)).collect(Collectors.toList());
-        return R.ok(franchiseeList);
+        return R.ok(franchiseeList.get(0));
     }
 }
