@@ -3491,6 +3491,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userCouponDTO.setSourceOrderNo(buyOrderNo);
                         userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
                         userCouponDTO.setCouponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_TWO);
+                        userCouponDTO.setPackageId(memberTermEntity.getRentalPackageId());
                         userCouponService.asyncSendCoupon(userCouponDTO);
                     }
                 }
