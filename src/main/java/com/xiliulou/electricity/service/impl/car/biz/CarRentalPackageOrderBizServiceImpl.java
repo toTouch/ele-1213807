@@ -372,7 +372,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 购买套餐编码
         String orderNo = rentRefundEntity.getRentalPackageOrderNo();
         CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
-        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode()
+        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.RETURNED.getCode()
                 .equals(packageOrderEntity.getUseState())) {
             throw new BizException("300000", "数据有误");
         }
@@ -1381,7 +1381,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 购买套餐编码
         String orderNo = rentRefundEntity.getRentalPackageOrderNo();
         CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
-        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode()
+        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.RETURNED.getCode()
                 .equals(packageOrderEntity.getUseState())) {
             log.warn("approveRefundRentOrder failed. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
             throw new BizException("300000", "数据有误");
@@ -1428,7 +1428,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 购买套餐编码
         String orderNo = rentRefundEntity.getRentalPackageOrderNo();
         CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
-        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.EXPIRED.getCode().equals(packageOrderEntity.getUseState()) || UseStateEnum.RETURNED.getCode()
+        if (ObjectUtils.isEmpty(packageOrderEntity) || UseStateEnum.RETURNED.getCode()
                 .equals(packageOrderEntity.getUseState())) {
             log.warn("approve refund rentOrder failed. not find t_car_rental_package_order or status error. orderNo is {}", orderNo);
             throw new BizException("300000", "数据有误");
