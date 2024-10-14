@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -40,6 +41,7 @@ public class EleDeviceCodeQuery {
     private Integer onlineStatus;
     
     @NotBlank(message = "备注不能为空", groups = UpdateGroup.class)
+    @Length(min = 1, max = 50,message = "参数不合法")
     private String remark;
     
     private Integer delFlag;
