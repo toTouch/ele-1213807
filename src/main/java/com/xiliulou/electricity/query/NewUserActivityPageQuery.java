@@ -4,13 +4,13 @@ import com.xiliulou.electricity.query.base.BasePageQuery;
 import lombok.Data;
 
 /**
- * @ClassName: ShareAndUserActivityQuery
+ * @ClassName: NewUserActivityPageQuery
  * @description:
  * @author: renhang
- * @create: 2024-10-14 09:46
+ * @create: 2024-10-14 16:40
  */
 @Data
-public class ShareAndUserActivityQuery extends BasePageQuery {
+public class NewUserActivityPageQuery extends BasePageQuery {
     
     private Integer tenantId;
     

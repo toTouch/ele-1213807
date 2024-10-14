@@ -4,7 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
-import com.xiliulou.electricity.query.ShareAndUserActivityQuery;
+import com.xiliulou.electricity.query.ShareActivityPageQuery;
 import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -77,5 +77,5 @@ public interface ShareActivityService {
     
     ShareActivity queryOnlineActivity(Integer tenantId, Long franchiseeId);
     
-    List<ShareAndUserActivityVO> listShareAndUserActivity(ShareAndUserActivityQuery query);
+    List<ShareAndUserActivityVO> listShareActivity(ShareActivityPageQuery query);
 }

@@ -32,9 +32,9 @@ import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ShareActivityPageQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
-import com.xiliulou.electricity.query.ShareAndUserActivityQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponService;
@@ -1160,9 +1160,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     }
     
     @Override
-    public List<ShareAndUserActivityVO> listShareAndUserActivity(ShareAndUserActivityQuery query) {
+    public List<ShareAndUserActivityVO> listShareActivity(ShareActivityPageQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
-        return shareActivityMapper.listShareAndUserActivity(query);
+        return shareActivityMapper.listShareActivity(query);
     }
 }
 
