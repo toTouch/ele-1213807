@@ -262,11 +262,12 @@
     
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
-        discount_type, tenant_id, name, verified_uid, franchisee_id)
+        discount_type, tenant_id, name, verified_uid, franchisee_id,coupon_type, coupon_way, coupon_way_diff_type)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.uid}, #{item.phone}, #{item.couponId}, #{item.deadline}, #{item.createTime}, #{item.updateTime},
-            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid}, #{item.franchiseeId})
+            #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid}, #{item.franchiseeId}
+            ,#{item.couponType},#{item.couponWay}, #{item.couponWayDiffType})
         </foreach>
 
     </insert>
