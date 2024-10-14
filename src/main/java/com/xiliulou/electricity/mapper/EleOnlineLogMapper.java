@@ -17,9 +17,9 @@ public interface EleOnlineLogMapper extends BaseMapper<EleOnlineLog>{
     
     
     List<ELeOnlineLogVO> queryOnlineLogList(@Param("size") Integer size, @Param("offset") Integer offset,
-            @Param("type") String type, @Param("eleId") Integer eleId, @Param("tenantId") Integer tenantId);
+            @Param("type") String type, @Param("electricityId") Integer eleId, @Param("tenantId") Integer tenantId);
 
 
-    Integer queryOnlineLogCount(@Param("type") String type, @Param("eleId") Integer eleId);
+    Integer queryOnlineLogCount(@Param("type") String type, @Param("electricityId") Integer eleId);
 
 }

@@ -26,10 +26,10 @@ public interface UserEleOnlineLogMapper extends BaseMapper<UserEleOnlineLog>{
 
 
     List<UserEleOnlineLog> queryOnlineLogList(@Param("size") Integer size, @Param("offset") Integer offset,
-            @Param("type") String type, @Param("eleId") Integer eleId, @Param("tenantId") Integer tenantId);
+            @Param("type") String type, @Param("electricityId") Integer electricityId, @Param("tenantId") Integer tenantId);
 
 
-    Integer queryOnlineLogCount(@Param("type") String type, @Param("eleId") Integer eleId);
+    Integer queryOnlineLogCount(@Param("type") String type, @Param("electricityId") Integer eleId);
 
 
 }
