@@ -33,6 +33,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
@@ -96,6 +97,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
@@ -338,6 +340,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    
+    @Autowired
+    private FreeDepositOrderService freeDepositOrderService;
     
     
     public static final Integer ELE = 0;
@@ -2773,7 +2778,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         if (Objects.equals(PayTypeEnum.EXEMPT.getCode(),depositPayEntity.getPayType())) {
-            throw new BizException("301030", "已取消支付");
+            FreeDepositOrder depositOrder = freeDepositOrderService.selectByOrderId(depositPayOrderNo);
+            if (ObjectUtils.isEmpty(depositOrder)) {
+                throw new BizException("300010", "未找到租车套餐押金缴纳订单");
+            }
+            if (!(Objects.equals(depositOrder.getAuthStatus(),FreeDepositOrder.AUTH_FROZEN)
+                    || Objects.equals(depositOrder.getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)
+                    || Objects.equals(depositOrder.getAuthStatus(),FreeDepositOrder.AUTH_TIMEOUT)
+                    )){
+                log.warn("FreeDepositOrder status is abnormal,uid={}",depositOrder.getUid());
+                throw new BizException("301030", "已取消支付");
+            }
+            
         }
         
         // 判定押金缴纳订单是否需要更改支付状态
