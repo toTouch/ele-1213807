@@ -6,6 +6,7 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.BatteryMemberCardConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -383,6 +385,19 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         return R.ok(batteryMemberCardService.listMemberCardForSort(tokenUser));
+    }
+    
+    
+    /**
+     * 根据套餐名称搜索套餐(包含电、车)
+     */
+    @PostMapping("/admin/battery/memberCard/listBatteryAndCarMember")
+    public R<List<BatteryAndCarMemberCardVO>> listBatteryAndCarMember(@RequestBody BatteryCarMemberListQuery query) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser) || Objects.isNull(userService.queryByUidFromCache(tokenUser.getUid()))) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(batteryMemberCardService.listBatteryAndCarMember(query));
     }
     
 }

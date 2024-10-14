@@ -898,5 +898,25 @@
         order by tbmc.status, tbmc.sort_param desc
         limit #{offset}, #{size}
     </select>
+    
+    <select id="listBatteryAndCarMember" resultType="com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO">
+        SELECT id, name
+        from (SELECT id, name
+        from t_battery_member_card
+        where tenant_id = #{tenantId}
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        union all
+        SELECT id, name
+        from t_car_rental_package
+        where tenant_id = #{tenantId}
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        ) u
+        limit #{offset}
+        , #{size}
+    </select>
 
 </mapper>

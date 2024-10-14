@@ -31,6 +31,7 @@ import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
@@ -60,6 +61,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
@@ -1210,5 +1212,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<BatteryAndCarMemberCardVO> listBatteryAndCarMember(BatteryCarMemberListQuery query) {
+        query.setTenantId(TenantContextHolder.getTenantId());
+        return batteryMemberCardMapper.listBatteryAndCarMember(query);
     }
 }
