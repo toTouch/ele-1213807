@@ -29,9 +29,17 @@ public class ThirdPartyMallProducer {
     }
     
     public void sendMessage(ThirdPartyMallDataDTO message) {
+        log.info("ThirdPartyMallProducer.sendMessage, message is {}", message);
+        
         if (Objects.isNull(message)) {
             return;
         }
+        
+        if (Objects.isNull(message.getTenantId())) {
+            log.warn("ThirdPartyMallProducer error! tenantId is null");
+            return;
+        }
+        
         try {
             String json = JsonUtil.toJson(message);
             Pair<Boolean, String> pair = rocketMqService.sendSyncMsg(THIRD_PARTY_MALL_TOPIC, json);

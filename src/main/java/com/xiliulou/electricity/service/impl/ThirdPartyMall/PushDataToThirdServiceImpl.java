@@ -6,6 +6,7 @@ import com.xiliulou.electricity.event.ThirdPartyMallEvent;
 import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -15,6 +16,7 @@ import javax.annotation.Resource;
  * @description 推送数据给第三方
  * @date 2024/10/12 09:18:27
  */
+@Slf4j
 @Service
 public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
@@ -26,6 +28,8 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
+        log.info("asyncPushExchangeToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}, uid={}", mallType, traceId, tenantId, orderId, orderType, uid);
+        
         Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
@@ -37,6 +41,9 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
+        log.info("asyncPushUserAndBatteryToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}, uid={}", mallType, traceId, tenantId, orderId, orderType,
+                uid);
+        
         Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
@@ -59,12 +66,17 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushCabinetToThird(Integer mallType, String traceId, Integer tenantId, Long eid) {
+        log.info("asyncPushCabinetToThird params: mallType={}, traceId={}, tenantId={}, eid={}", mallType, traceId, tenantId, eid);
+        
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
                 .addContext(MeiTuanRiderMallConstant.EID, eid).build());
     }
     
     @Override
     public void asyncPushUserMemberCardToThird(Integer mallType, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType) {
+        log.info("asyncPushUserMemberCardToThird params: mallType={}, traceId={}, tenantId={}, uid={}, mtOrderId={}, orderType={}", mallType, traceId, tenantId, uid, mtOrderId,
+                orderType);
+        
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY_MEMBER_CARD)
                         .addContext(MeiTuanRiderMallConstant.UID, uid).addContext(MeiTuanRiderMallConstant.ORDER_ID, mtOrderId)

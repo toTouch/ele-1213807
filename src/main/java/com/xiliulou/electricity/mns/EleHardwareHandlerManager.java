@@ -181,7 +181,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             }
             
             // 给第三方推送柜机信息
-            // TODO(heyafeng) 2024/10/11 20:01 上下线机制？
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
                 pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
                         electricityCabinet.getId().longValue());
