@@ -154,6 +154,14 @@ public class ElectricityCabinetBoxVO {
     
     private String phone;
     
-    public static final Integer EXCHANGE_YES=0;
-    public static final Integer EXCHANGE_NO=1;
+    /**
+     * 是否已租，1为租借在仓
+     */
+    private Integer isBatteryRentInCell;
+    
+    public static final Integer EXCHANGE_YES = 0;
+    
+    public static final Integer EXCHANGE_NO = 1;
+    
+    public static final Integer BATTERY_RENT_IN_CELL = 1;
 }

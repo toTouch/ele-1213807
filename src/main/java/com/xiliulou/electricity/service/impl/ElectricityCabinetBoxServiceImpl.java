@@ -202,6 +202,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     if (Objects.isNull(electricityBatteryVO.getUid())) {
                         log.warn("ListBoxOther Warn! 电池租借在仓，但是uid为空，sn is {}", sn);
                     } else {
+                        item.setIsBatteryRentInCell(ElectricityCabinetBoxVO.BATTERY_RENT_IN_CELL);
                         item.setUid(electricityBatteryVO.getUid());
                         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBatteryVO.getUid());
                         item.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : null);
