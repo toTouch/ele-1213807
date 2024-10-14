@@ -24,6 +24,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponActivityPackage;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
@@ -43,6 +44,7 @@ import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -134,6 +136,9 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
     
+    @Autowired
+    private NewUserActivityService newUserActivityService;
+    
     /**
      * 根据ID集查询用户优惠券信息
      *
@@ -220,9 +225,40 @@ public class UserCouponServiceImpl implements UserCouponService {
             if (Objects.nonNull(franchiseeId)) {
                 u.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
+            getCouponWayDetails(u);
         });
         //******************************查询核销人结束************************************/
         return R.ok(userCouponList);
+    }
+    
+    private void getCouponWayDetails(UserCouponVO vo){
+        Integer couponType = vo.getCouponType();
+        if (Objects.isNull(couponType)){
+            return;
+        }
+        Long couponWay = vo.getCouponWay();
+        if (Objects.equals(couponType, CouponTypeEnum.BATCH_RELEASE.getCode())){
+            User user = userService.queryByUidFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(user) ? null : user.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.BUY_PACKAGE.getCode())){
+            // 电
+            if (Objects.equals(vo.getCouponWayDiffType(),UserCoupon.COUPON_WAY_DIFF_TYPE_ONE)){
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponWay);
+                vo.setCouponWayDetails(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getName());
+            }else {
+                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(couponWay);
+                vo.setCouponWayDetails(Objects.isNull(carRentalPackagePo) ? null : carRentalPackagePo.getName());
+            }
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())){
+            ShareActivity shareActivity = shareActivityService.queryByIdFromCache(couponWay.intValue());
+            vo.setCouponWayDetails(Objects.isNull(shareActivity) ? null : shareActivity.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.REGISTER_ACTIVITIES.getCode())){
+            NewUserActivity newUserActivity = newUserActivityService.queryByIdFromCache(couponWay.intValue());
+            vo.setCouponWayDetails(Objects.isNull(newUserActivity) ? null : newUserActivity.getName());
+        }
     }
     
     @Override

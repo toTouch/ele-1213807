@@ -159,6 +159,10 @@ public class UserCouponVO {
      */
     private Long couponWay;
     
+    /**
+     * 发券方式描述
+     */
+    private String couponWayDetails;
     
     /**
      * 发券方式区分类型
