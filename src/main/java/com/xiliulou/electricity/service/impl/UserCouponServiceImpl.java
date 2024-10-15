@@ -262,7 +262,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchRelease(Integer id, Long[] uids,Long newActiveId) {
+    public R batchRelease(Integer id, Long[] uids, Long newActiveId) {
         if (ObjectUtil.isEmpty(uids)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
