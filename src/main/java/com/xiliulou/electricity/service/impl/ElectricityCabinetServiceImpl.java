@@ -767,10 +767,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
         
-        // 给第三方推送柜机信息
-        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
-                electricityCabinet.getId().longValue());
-        
         return R.ok();
     }
     
