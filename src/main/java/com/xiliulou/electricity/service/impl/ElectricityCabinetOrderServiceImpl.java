@@ -1269,6 +1269,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100206", "用户未审核");
             }
             
+            //电子签署拦截
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(user.getUid(), Long.valueOf(user.getTenantId()));
+                if (Objects.isNull(eleUserEsignRecord)) {
+                    return Triple.of(false, "100329", "请先完成电子签名");
+                }
+            }
+            
             
             //查询用户绑定的电池列表
             List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -1747,6 +1756,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Triple<Boolean, String, Object> cabinetStatus = verifyElectricityCabinetStatus(electricityCabinet, exchangeQuery);
         if (Boolean.FALSE.equals(cabinetStatus.getLeft())) {
             return cabinetStatus;
+        }
+        
+        //电子签署拦截
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+            EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(userInfo.getUid(), Long.valueOf(userInfo.getTenantId()));
+            if (Objects.isNull(eleUserEsignRecord)) {
+                return Triple.of(false, "100329", "请先完成电子签名");
+            }
         }
         
         //校验加盟商
