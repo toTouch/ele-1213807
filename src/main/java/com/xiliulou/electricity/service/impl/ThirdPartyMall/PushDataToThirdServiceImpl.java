@@ -32,6 +32,7 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
                 orderType, uid);
         
         Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
+        log.info("Is mtOrder={}", mtOrder);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
             this.asyncPushExchangeToThird(mallType, traceId, tenantId, orderId, orderType);
@@ -46,6 +47,7 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
                 uid);
         
         Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
+        log.info("Is mtOrder={}", mtOrder);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
             this.asyncPushBatteryToThird(mallType, traceId, tenantId, orderId, orderType);
