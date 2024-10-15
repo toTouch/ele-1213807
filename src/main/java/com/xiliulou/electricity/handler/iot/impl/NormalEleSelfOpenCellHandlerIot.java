@@ -6,6 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -27,6 +28,7 @@ import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -129,16 +131,8 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             newElectricityCabinetOrder.setRemark("新仓门自助开仓");
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
-            // 给第三方推送换电记录
-            pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), sessionId, electricityCabinet.getTenantId(),
-                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
-            
             // 处理取走电池的相关信息（解绑(包括异常交换)&绑定）
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);
-            
-            // 给第三方推送用户电池信息和用户信息
-            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), sessionId, electricityCabinetOrder.getTenantId(),
-                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
             
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(), electricityCabinetOrder);
@@ -249,6 +243,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
                 .setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
+        // 给第三方推送换电记录/用户信息/电池信息
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
+                electricityCabinet.getTenantId(), cabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, cabinetOrder.getUid());
     }
     
     

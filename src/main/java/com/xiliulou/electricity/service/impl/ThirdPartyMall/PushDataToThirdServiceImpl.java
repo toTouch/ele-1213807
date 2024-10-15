@@ -27,15 +27,16 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     @Override
-    public void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
-        log.info("asyncPushExchangeToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}, uid={}", mallType, traceId, tenantId, orderId, orderType, uid);
+    public void asyncPushExchangeAndUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
+        log.info("asyncPushExchangeAndUserAndBatteryToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}, uid={}", mallType, traceId, tenantId, orderId,
+                orderType, uid);
         
         Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
-            thirdPartyMallPublish.publish(
-                    ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
-                            .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
+            this.asyncPushExchangeToThird(mallType, traceId, tenantId, orderId, orderType);
+            this.asyncPushBatteryToThird(mallType, traceId, tenantId, orderId, orderType);
+            this.asyncPushUserToThird(mallType, traceId, tenantId, orderId, orderType);
         }
     }
     
@@ -53,31 +54,31 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     }
     
     @Override
+    public void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
+        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
+                .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
+    }
+    
+    @Override
     public void asyncPushUserToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        log.info("asyncPushUserToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}", mallType, traceId, tenantId, orderId, orderType);
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_INFO)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
     public void asyncPushBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        log.info("asyncPushBatteryToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}", mallType, traceId, tenantId, orderId, orderType);
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
     public void asyncPushCabinetToThird(Integer mallType, String traceId, Integer tenantId, Long eid) {
-        log.info("asyncPushCabinetToThird params: mallType={}, traceId={}, tenantId={}, eid={}", mallType, traceId, tenantId, eid);
-        
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
                 .addContext(MeiTuanRiderMallConstant.EID, eid).build());
     }
     
     @Override
     public void asyncPushCabinetStatusToThird(Integer mallType, String traceId, Integer tenantId, Long eid, Integer delayLevel) {
-        log.info("asyncPushCabinetStatusToThird params: mallType={}, traceId={}, tenantId={}, eid={}", mallType, traceId, tenantId, eid);
-        
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).delayLevel(delayLevel)
                         .addContext(MeiTuanRiderMallConstant.EID, eid).build());
@@ -85,9 +86,6 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushUserMemberCardToThird(Integer mallType, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType) {
-        log.info("asyncPushUserMemberCardToThird params: mallType={}, traceId={}, tenantId={}, uid={}, mtOrderId={}, orderType={}", mallType, traceId, tenantId, uid, mtOrderId,
-                orderType);
-        
         thirdPartyMallPublish.publish(
                 ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY_MEMBER_CARD)
                         .addContext(MeiTuanRiderMallConstant.UID, uid).addContext(MeiTuanRiderMallConstant.ORDER_ID, mtOrderId)

@@ -203,10 +203,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             }
             electricityCabinetOrderService.update(newElectricityCabinetOrder);
             
-            // 给第三方推送换电记录
-            pushDataToThirdService.asyncPushExchangeToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(), electricityCabinet.getTenantId(),
-                    electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
-            
             // 新自主开仓的开始时间（上一次换电成功，进行2次扫码）
             log.debug("EXCHANGE ORDER INFO! setNewSelfOpen.setRedis, orderId is {}, time is {}", electricityCabinetOrder.getOrderId(), System.currentTimeMillis());
             redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), String.valueOf(System.currentTimeMillis()), 5L,
@@ -217,10 +213,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             //处理取走电池的相关信息
             handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
-            
-            // 给第三方推送用户电池信息和用户信息
-            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(),
-                    electricityCabinetOrder.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
             
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(exchangeOrderRsp, electricityCabinetOrder);
@@ -409,8 +401,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId()).setUid(userInfo.getUid())
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
-        
-        
+    
+        // 给第三方推送换电记录/用户信息/电池信息
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
+                electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
     }
     
     /**
