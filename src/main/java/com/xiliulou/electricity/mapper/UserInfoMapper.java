@@ -76,8 +76,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     Integer isFranchiseeBindUser(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
     
     List<UserInfo> queryByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
-    
-    Integer verifyIdNumberExist(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
+
+    Integer existsByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
     
     List<UserInfoSearchVo> userInfoSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("tenantId") Integer tenantId,@Param("keyWords") String keyWords);
     

@@ -77,6 +77,7 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     
     /**
      * 查询套餐以供后台排序
+     *
      * @param query 查询条件
      * @return 用于排序的套餐简单信息
      */
@@ -85,4 +86,14 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     List<BatteryMemberCardAndTypeVO> selectListSuperAdminPage(BatteryMemberCardQuery query);
     
     List<BatteryAndCarMemberCardVO> listBatteryAndCarMember(BatteryCarMemberListQuery query);
+    
+    /**
+     * 根据id查询
+     *
+     * @param ids
+     * @author caobotao.cbt
+     * @date 2024/8/13 20:18
+     */
+    List<BatteryMemberCard> selectListByIds(@Param("ids") List<Long> ids);
+    
 }

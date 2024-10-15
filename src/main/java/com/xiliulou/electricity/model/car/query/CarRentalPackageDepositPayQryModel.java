@@ -115,4 +115,9 @@ public class CarRentalPackageDepositPayQryModel implements Serializable {
      * 门店ID集
      */
     private List<Integer> storeIdList;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }

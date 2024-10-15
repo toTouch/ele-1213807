@@ -42,42 +42,54 @@ public class PxzParamsAndDispatchHandler implements PxzSupport<Map<String,Object
     
     @Override
     public CallbackContext<?> handler(CallbackContext<Map<String, Object>> callbackContext) {
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(callbackContext.getTenantId());
-        if (Objects.isNull(pxzConfig)){
-            log.warn("no information on free deposit configuration found: tenant[{}]", callbackContext.getTenantId());
-            return null;
-        }
-        
-        String data = (String) callbackContext.getParams().get("body");
-        String encrypt = PxzAesUtils.decrypt(data, pxzConfig.getAesKey());
-        
-        if (FreeBusinessTypeEnum.AUTH_PAY.getCode().equals(callbackContext.getBusiness())) {
+        try {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(callbackContext.getTenantId());
+            if (Objects.isNull(pxzConfig)){
+                log.warn("no information on free deposit configuration found: tenant[{}]", callbackContext.getTenantId());
+                return null;
+            }
             
-            PxzParams.AuthPay params = JsonUtil.fromJson(encrypt, PxzParams.AuthPay.class);
+            String data = (String) callbackContext.getParams().get("body");
+            String encrypt = PxzAesUtils.decrypt(data, pxzConfig.getAesKey());
+            
+            if (FreeBusinessTypeEnum.AUTH_PAY.getCode().equals(callbackContext.getBusiness())) {
+                
+                PxzParams.AuthPay params = JsonUtil.fromJson(encrypt, PxzParams.AuthPay.class);
+                if (Objects.isNull(params) || Objects.isNull(params.getRequestBody())){
+                    log.warn("pxz callback {} params is illegal : {}",callbackContext.getBusiness(), encrypt);
+                    return null;
+                }
+                log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
+                return CallbackContext.builder()
+                        .business(callbackContext.getBusiness())
+                        .channel(callbackContext.getChannel())
+                        .params(params)
+                        .next(Boolean.TRUE)
+                        .tenantId(callbackContext.getTenantId())
+                        .type(callbackContext.getType())
+                        .build();
+                
+                
+            }
+            
+            PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
+            if (Objects.isNull(params) || Objects.isNull(params.getRequestBody())){
+                log.warn("pxz callback {} params is illegal : {}",callbackContext.getBusiness(), encrypt);
+                return null;
+            }
             log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
             return CallbackContext.builder()
-                    .business(callbackContext.getBusiness())
+                    .business(params.getRequestBody().getAuthStatus())
                     .channel(callbackContext.getChannel())
                     .params(params)
-                    .next(Boolean.TRUE)
                     .tenantId(callbackContext.getTenantId())
+                    .next(Boolean.TRUE)
                     .type(callbackContext.getType())
                     .build();
-            
-            
+        }catch (Exception e){
+            log.error("decrypt params : {} error",callbackContext.getParams() , e);
+            return null;
         }
-        
-        PxzParams.FreeDepositOrUnfree params = JsonUtil.fromJson(encrypt, PxzParams.FreeDepositOrUnfree.class);
-        log.info("pxz callback {} params : {}",callbackContext.getBusiness(), params);
-        return CallbackContext.builder()
-                .business(params.getRequestBody().getAuthStatus())
-                .channel(callbackContext.getChannel())
-                .params(params)
-                .tenantId(callbackContext.getTenantId())
-                .next(Boolean.TRUE)
-                .type(callbackContext.getType())
-                .build();
-        
     }
     
 }

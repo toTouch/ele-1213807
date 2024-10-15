@@ -9,7 +9,7 @@
         teco.old_electricity_battery_sn,
         teco.new_electricity_battery_sn, teco.old_cell_no, teco.new_cell_no, teco.status, teco.payment_method,
         teco.source, teco.remark, teco.switch_begin_time,
-        teco.switch_end_time, teco.create_time, teco.update_time, teco.franchisee_id
+        teco.switch_end_time, teco.create_time, teco.update_time, teco.franchisee_id,teco.channel
         from t_electricity_cabinet_order teco
         <where>
             <if test="query.orderId != null and query.orderId != ''">
@@ -71,6 +71,9 @@
             </if>
             <if test="query.franchiseeId != null">
                 and teco.franchisee_id = #{query.franchiseeId}
+            </if>
+            <if test="query.channel != null and query.channel != ''">
+                and teco.channel = #{query.channel}
             </if>
         </where>
         order by teco.create_time desc
@@ -141,6 +144,9 @@
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.channel != null and query.channel != ''">
+                and teco.channel = #{query.channel}
             </if>
         </where>
     </select>

@@ -67,7 +67,6 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void postProcessAfterWechatPay(WechatV3OrderCallBackRequest wechatV3OrderCallBackQuery) {
         WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
         if (Objects.isNull(resource)) {
@@ -97,31 +96,28 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
             return;
         }
         
-        if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
-            electricityTradeOrderService.notifyDepositOrder(callBackResource);
-        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)) {
-            electricityTradeOrderService.notifyBatteryServiceFeeOrder(callBackResource);
-        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT)) {
-            electricityTradeOrderService.notifyRentCarDepositOrder(callBackResource);
-        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)) {
-            electricityTradeOrderService.notifyRentCarMemberOrder(callBackResource);
-        } else if (Objects.equals(callBackResource.getAttach(), CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc())) {
+        if (Objects.equals(callBackResource.getAttach(), CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc())) {
             // 租车套餐购买订单回调
             electricityTradeOrderService.notifyCarRenalPackageOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_INSURANCE)) {
+            //保险支付回调
             electricityTradeOrderService.notifyInsuranceOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)) {
+            //换电套餐押金支付回调
             unionTradeOrderService.notifyIntegratedPayment(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_MEMBERCARD_INSURANCE)) {
+            //换电套餐续费回调
             unionTradeOrderService.notifyMembercardInsurance(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_SERVUCE_FEE)) {
+            //滞纳金支付回调
             unionTradeOrderService.notifyServiceFee(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_CLOUD_BEAN_RECHARGE)) {
+            //云豆充值支付回调
             electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INSTALLMENT)) {
             unionTradeOrderService.notifyInstallmentPayment(callBackResource);
         }else {
-            electricityTradeOrderService.notifyMemberOrder(callBackResource);
+            log.error("WX PAY CALL BACK FAIL!not found attach typeo,rderId={}", orderNo);
         }
     }
     
@@ -154,12 +150,6 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
         }
         
         WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
-        
-        //幂等加锁
-        String orderNo = callBackResource.getOutTradeNo();
-        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-            return;
-        }
         
         eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
     }

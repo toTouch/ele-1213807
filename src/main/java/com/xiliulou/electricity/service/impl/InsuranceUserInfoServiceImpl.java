@@ -92,7 +92,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus, Integer type) {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -422,7 +421,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public int deleteById(InsuranceUserInfo insuranceUserInfo) {
         int delete = baseMapper.deleteById(insuranceUserInfo.getId());
         
@@ -462,7 +460,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R insertUserBatteryInsurance(InsuranceUserInfoQuery query) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -566,7 +563,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R editUserInsuranceInfo(InsuranceUserInfoQuery query) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -635,7 +631,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R renewalUserBatteryInsurance(InsuranceUserInfoQuery query) {
         
         TokenUser user = SecurityUtils.getUserInfo();

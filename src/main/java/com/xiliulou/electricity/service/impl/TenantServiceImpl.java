@@ -433,7 +433,11 @@ public class TenantServiceImpl implements TenantService {
         }
         return genTenantCode();
     }
-
+    
+    
+    public static void main(String[] args) {
+        System.out.println(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
+    }
 
 
 }

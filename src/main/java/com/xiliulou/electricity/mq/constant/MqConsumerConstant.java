@@ -55,6 +55,12 @@ public interface MqConsumerConstant {
      */
     String BATTERY_CHARGE_ATTR_CHANGE_GROUP = "battery_charge_attr_change_group";
     
+    
+    /**
+     * 支付宝退款异步通知 consumer group
+     */
+    String ALIPAY_REFUND_NOTIFY_GROUP = "alipay_refund_notify_group";
+    
     /**
      * 使用同一topic,不同tag,为保证订阅消息一致性，免押、解冻、代扣使用不同消费者组
      */

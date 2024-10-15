@@ -270,18 +270,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     }
     
     
-    @Override
-    public R getTenantId(String appId) {
-        // TODO: 2024/6/17 web未找到对应的调用页面,暂时兼容愿逻辑
-        //        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
-        List<ElectricityPayParams> electricityPayParams = baseMapper
-                .selectList(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
-        if (CollectionUtils.isEmpty(electricityPayParams)) {
-            return R.fail("ELECTRICITY.00101", "找不到租户");
-        }
-        return R.ok(electricityPayParams.get(0).getTenantId());
-    }
-    
     
     @Override
     public R uploadFile(MultipartFile file, Integer type, Long franchiseeId) {
@@ -356,28 +344,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return electricityPayParams.get(0);
     }
     
-    @Deprecated
-    @Override
-    public Triple<Boolean, String, Object> queryByMerchantAppId(String appId) {
-        /*ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantAppletId, appId));
-        if (Objects.isNull(electricityPayParams)) {
-            return Triple.of(false, null, "未能发现相关的商户小程序配置");
-        }
-        
-        Integer tenantId = electricityPayParams.getTenantId();
-        ElectricityMerchantProConfigVO vo = new ElectricityMerchantProConfigVO();
-        vo.setTenantId(tenantId);
-        
-        // 获取租户编码
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        vo.setTenantCode(ObjectUtils.isNotEmpty(tenant) ? tenant.getCode() : null);
-        
-        // 获取客服电话
-        String servicePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        vo.setServicePhone(servicePhone);*/
-        
-        return Triple.of(true, null, null);
-    }
     
     @Override
     public ElectricityPayParams queryCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
