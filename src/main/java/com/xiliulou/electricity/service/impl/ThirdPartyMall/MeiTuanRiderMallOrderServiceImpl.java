@@ -421,9 +421,13 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             Map<String, String> headers = new HashMap<>();
             headers.put("traceId", TtlTraceIdSupport.get());
             
-            NotifyMeiTuanDeliverReq notifyMeiTuanDeliverReq = NotifyMeiTuanDeliverReq.builder().tenantId(config.getTenantId()).orderId(orderId).coupon(orderId)
-                    .vpRechargeStatus(MeiTuanRiderMallEnum.VP_RECHARGE_STATUS_SUCCESS.getCode()).vpComboStartTime(userBatteryMemberCard.getOrderEffectiveTime() / 1000)
-                    .vpComboEndTime(userBatteryMemberCard.getOrderExpireTime() / 1000).build();
+            NotifyMeiTuanDeliverReq notifyMeiTuanDeliverReq = new NotifyMeiTuanDeliverReq();
+            notifyMeiTuanDeliverReq.setTenantId(config.getTenantId());
+            notifyMeiTuanDeliverReq.setOrderId(orderId);
+            notifyMeiTuanDeliverReq.setCoupon(orderId);
+            notifyMeiTuanDeliverReq.setVpRechargeStatus(MeiTuanRiderMallEnum.VP_RECHARGE_STATUS_SUCCESS.getCode());
+            notifyMeiTuanDeliverReq.setVpComboStartTime(userBatteryMemberCard.getOrderEffectiveTime() / 1000);
+            notifyMeiTuanDeliverReq.setVpComboEndTime(userBatteryMemberCard.getOrderExpireTime() / 1000);
             
             MtDTO<?> meiTuanR = thirdPartyMallRetrofitService.notifyMeiTuanDeliver(headers, notifyMeiTuanDeliverReq);
             if (Objects.isNull(meiTuanR)) {
