@@ -28,11 +28,7 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushExchangeAndUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
-        log.info("asyncPushExchangeAndUserAndBatteryToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}, uid={}", mallType, traceId, tenantId, orderId,
-                orderType, uid);
-        
-        Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
-        log.info("Is mtOrder={}", mtOrder);
+        Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
             this.asyncPushExchangeToThird(mallType, traceId, tenantId, orderId, orderType);
@@ -43,11 +39,7 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
-        log.info("asyncPushUserAndBatteryToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}, uid={}", mallType, traceId, tenantId, orderId, orderType,
-                uid);
-        
-        Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid, orderId, orderType);
-        log.info("Is mtOrder={}", mtOrder);
+        Boolean mtOrder = meiTuanRiderMallOrderService.isMtOrder(uid);
         // 判断使用的订单是否美团订单
         if (mtOrder) {
             this.asyncPushBatteryToThird(mallType, traceId, tenantId, orderId, orderType);

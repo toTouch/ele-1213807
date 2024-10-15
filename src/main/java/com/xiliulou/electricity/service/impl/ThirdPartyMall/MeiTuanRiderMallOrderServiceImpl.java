@@ -504,7 +504,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     }
     
     @Override
-    public Boolean isMtOrder(Long uid, String orderId, Integer orderType) {
+    public Boolean isMtOrder(Long uid) {
         // 当前绑定的套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
@@ -513,7 +513,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         
         // 判断使用的订单是否美团订单
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
-        return !Objects.isNull(electricityMemberCardOrder) && Objects.equals(electricityMemberCardOrder.getOrderType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT);
+        return Objects.nonNull(electricityMemberCardOrder) && Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT);
     }
     
     @Override
