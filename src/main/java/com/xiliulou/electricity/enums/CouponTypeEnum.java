@@ -12,9 +12,10 @@ import lombok.Getter;
 public enum CouponTypeEnum {
     
     BATCH_RELEASE(1, "批量发放"),
-    BUY_PACKAGE(2, "购买套餐"),
-    INVITE_COUPON_ACTIVITIES(3, "邀请返券活动"),
-    REGISTER_ACTIVITIES(4, "注册活动"),
+    BATTERY_BUY_PACKAGE(2, "购买套餐（电）"),
+    CAR_BUY_PACKAGE(3, "购买套餐（车）"),
+    INVITE_COUPON_ACTIVITIES(4, "邀请返券活动"),
+    REGISTER_ACTIVITIES(5, "注册活动"),
     ;
     
     private final Integer code;

@@ -72,6 +72,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -3612,7 +3613,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userCouponDTO.setUid(memberCardOrder.getUid());
             userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
             userCouponDTO.setTraceId(IdUtil.simpleUUID());
-            userCouponDTO.setCouponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_ONE);
+            userCouponDTO.setCouponType(CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode());
             userCouponService.asyncSendCoupon(userCouponDTO);
         });
         

@@ -237,25 +237,24 @@ public class UserCouponServiceImpl implements UserCouponService {
             return;
         }
         Long couponWay = vo.getCouponWay();
-        if (Objects.equals(couponType, CouponTypeEnum.BATCH_RELEASE.getCode())){
+        if (Objects.equals(couponType, CouponTypeEnum.BATCH_RELEASE.getCode())) {
             User user = userService.queryByUidFromCache(couponWay);
             vo.setCouponWayDetails(Objects.isNull(user) ? null : user.getName());
         }
-        if (Objects.equals(couponType, CouponTypeEnum.BUY_PACKAGE.getCode())){
-            // 电
-            if (Objects.equals(vo.getCouponWayDiffType(),UserCoupon.COUPON_WAY_DIFF_TYPE_ONE)){
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponWay);
-                vo.setCouponWayDetails(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getName());
-            }else {
-                CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(couponWay);
-                vo.setCouponWayDetails(Objects.isNull(carRentalPackagePo) ? null : carRentalPackagePo.getName());
-            }
+        // 电
+        if (Objects.equals(couponWay, CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode())) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getName());
         }
-        if (Objects.equals(couponType, CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())){
+        if (Objects.equals(couponWay, CouponTypeEnum.CAR_BUY_PACKAGE.getCode())) {
+            CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(carRentalPackagePo) ? null : carRentalPackagePo.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())) {
             ShareActivity shareActivity = shareActivityService.queryByIdFromCache(couponWay.intValue());
             vo.setCouponWayDetails(Objects.isNull(shareActivity) ? null : shareActivity.getName());
         }
-        if (Objects.equals(couponType, CouponTypeEnum.REGISTER_ACTIVITIES.getCode())){
+        if (Objects.equals(couponType, CouponTypeEnum.REGISTER_ACTIVITIES.getCode())) {
             NewUserActivity newUserActivity = newUserActivityService.queryByIdFromCache(couponWay.intValue());
             vo.setCouponWayDetails(Objects.isNull(newUserActivity) ? null : newUserActivity.getName());
         }
@@ -281,8 +280,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(coupon.getTenantId())
                 .couponType(CouponTypeEnum.REGISTER_ACTIVITIES.getCode())
-                .couponWay(newActiveId)
-                .couponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_TWO);
+                .couponWay(newActiveId);
         
         //优惠券过期时间
         
@@ -647,8 +645,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                 .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                .couponWay(Long.valueOf(activityId))
-                                .couponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_ONE);;
+                                .couponWay(Long.valueOf(activityId));
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -685,8 +682,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                 .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                .couponWay(Long.valueOf(activityId))
-                                .couponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_ONE);
+                                .couponWay(Long.valueOf(activityId));
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -940,8 +936,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE).couponId(coupon.getId())
                     .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).couponType(CouponTypeEnum.BUY_PACKAGE.getCode()).couponWay(userCouponDTO.getPackageId())
-                    .couponWayDiffType(userCouponDTO.getCouponWayDiffType()).sourceOrderId(userCouponDTO.getSourceOrderNo());
+                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).couponType(userCouponDTO.getCouponType()).couponWay(userCouponDTO.getPackageId())
+                    .sourceOrderId(userCouponDTO.getSourceOrderNo());
             
             //优惠券过期时间
             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());

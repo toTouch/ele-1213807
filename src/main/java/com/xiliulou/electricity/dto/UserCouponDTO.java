@@ -35,8 +35,6 @@ public class UserCouponDTO {
      */
     private Long packageId;
     
-    /**
-     * 发券方式区分类型,1是电，2为车
-     */
-    private Integer couponWayDiffType;
+    
+    private Integer couponType;
 }

@@ -62,7 +62,7 @@ public class UserCouponQuery {
     /**
      * 发券类型
      */
-    private Integer couponType;
+    private List<Integer> couponType;
     
     /**
      * 发券方式

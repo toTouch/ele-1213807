@@ -48,7 +48,7 @@
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tc.franchisee_id as franchiseeId,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages,
-        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay',tuc.coupon_way_diff_type as 'couponWayDiffType'
+        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay'
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id
@@ -113,8 +113,11 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.couponType != null ">
-                and tuc.coupon_type = #{query.couponType}
+            <if test="query.couponType != null and query.couponType.size()>0">
+                and tuc.coupon_type in
+                <foreach collection="query.couponType" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.couponWay != null ">
                 and tuc.coupon_way = #{query.couponWay}
@@ -192,8 +195,11 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.couponType != null ">
-                and tuc.coupon_type = #{query.couponType}
+            <if test="query.couponType != null and query.couponType.size()>0">
+                and tuc.coupon_type in
+                <foreach collection="query.couponType" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.couponWay != null ">
                 and tuc.coupon_way = #{query.couponWay}
@@ -262,12 +268,12 @@
     
     <insert id="batchInsert"  keyProperty="id" useGeneratedKeys="true">
         insert into t_user_coupon(uid, phone, coupon_id, deadline, create_time, update_time, status, source, del_flag,
-        discount_type, tenant_id, name, verified_uid, franchisee_id,coupon_type, coupon_way, coupon_way_diff_type)
+        discount_type, tenant_id, name, verified_uid, franchisee_id,coupon_type, coupon_way)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.uid}, #{item.phone}, #{item.couponId}, #{item.deadline}, #{item.createTime}, #{item.updateTime},
             #{item.status}, #{item.source}, #{item.delFlag}, #{item.discountType}, #{item.tenantId},#{item.name},#{item.verifiedUid}, #{item.franchiseeId}
-            ,#{item.couponType},#{item.couponWay}, #{item.couponWayDiffType})
+            ,#{item.couponType},#{item.couponWay})
         </foreach>
 
     </insert>

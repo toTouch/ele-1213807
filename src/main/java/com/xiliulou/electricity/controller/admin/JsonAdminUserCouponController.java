@@ -52,7 +52,7 @@ public class JsonAdminUserCouponController {
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "discountType", required = false) Integer discountType, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "superposition", required = false) Integer superposition, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "couponType", required = false) Integer couponType,
+            @RequestParam(value = "couponType", required = false) List<Integer> couponType,
             @RequestParam(value = "couponWay", required = false) Long couponWay
             ) {
         if (size < 0 || size > 50) {
@@ -98,7 +98,7 @@ public class JsonAdminUserCouponController {
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "discountType", required = false) Integer discountType,
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "superposition", required = false) Integer superposition,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "couponType", required = false) Integer couponType,
+            @RequestParam(value = "couponType", required = false) List<Integer> couponType,
             @RequestParam(value = "couponWay", required = false) Long couponWay) {
         
         TokenUser user = SecurityUtils.getUserInfo();

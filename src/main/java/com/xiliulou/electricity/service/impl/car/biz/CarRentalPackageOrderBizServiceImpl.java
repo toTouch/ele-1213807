@@ -53,6 +53,7 @@ import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CallBackEnums;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
@@ -3490,7 +3491,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userCouponDTO.setUid(uid);
                         userCouponDTO.setSourceOrderNo(buyOrderNo);
                         userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
-                        userCouponDTO.setCouponWayDiffType(UserCoupon.COUPON_WAY_DIFF_TYPE_TWO);
+                        userCouponDTO.setCouponType(CouponTypeEnum.CAR_BUY_PACKAGE.getCode());
                         userCouponDTO.setPackageId(memberTermEntity.getRentalPackageId());
                         userCouponService.asyncSendCoupon(userCouponDTO);
                     }
