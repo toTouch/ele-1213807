@@ -40,6 +40,7 @@ import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -180,12 +181,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 electricityCabinetService.update(newElectricityCabinet);
             }
             
-            // 给第三方推送柜机信息
-            if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
-                pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(),
-                        electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null);
-            }
-            
             if (!redisService.setNx(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId(), String.valueOf(newElectricityCabinet.getOnlineStatus()), 30000L, false)) {
                 String status = redisService.get(CacheConstant.CACHE_OFFLINE_KEY_V2 + electricityCabinet.getId());
                 //如果redis的status是离线，但是本次状态是在线，发送一条消息通知，并设置redis的status为不存在值,保证下次不在发送消息
@@ -202,6 +197,12 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             }
             
             addOnlineLogAndSendNotifyMessage(receiverMessage, electricityCabinet);
+            
+            // 给第三方推送柜机信息
+            if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
+                pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
+                        electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null);
+            }
         });
     }
     
