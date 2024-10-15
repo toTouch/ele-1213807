@@ -27,4 +27,5 @@ public interface MeiTuanRiderMallOrderService {
     
     Boolean isMtOrder(Long uid, String orderId, Integer orderType);
     
+    void updatePhone(String oldPhone, String newPhone, Integer tenantId);
 }

@@ -534,4 +534,13 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return !Objects.isNull(electricityMemberCardOrder) && Objects.equals(electricityMemberCardOrder.getOrderType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT);
     }
     
+    @Override
+    public void updatePhone(String oldPhone, String newPhone, Integer tenantId) {
+        if (Objects.isNull(tenantId) || Objects.isNull(oldPhone) || Objects.isNull(newPhone)) {
+            return;
+        }
+        
+        meiTuanRiderMallOrderMapper.updatePhone(oldPhone, newPhone, tenantId);
+    }
+    
 }

@@ -43,6 +43,13 @@
           and order_id = #{orderId}
     </update>
     
+    <update id="updatePhone">
+        update t_mei_tuan_rider_mall_order
+        set mei_tuan_account = #{newPhone}
+        where tenant_id = #{tenantId}
+          and mei_tuan_account = #{oldPhone}
+    </update>
+    
     <select id="selectByMtOrderId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder">
         select
         <include refid="basic_field"/>

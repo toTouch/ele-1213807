@@ -22,4 +22,6 @@ public interface MeiTuanRiderMallOrderMapper {
     MeiTuanRiderMallOrder selectByOrderId(@Param("orderId") String orderId, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     Integer updateStatusByOrderId(MeiTuanRiderMallOrder meiTuanRiderMallOrder);
+    
+    Integer updatePhone(@Param("oldPhone") String oldPhone, @Param("newPhone") String newPhone, @Param("tenantId") Integer tenantId);
 }
