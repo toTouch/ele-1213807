@@ -122,6 +122,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -3413,6 +3414,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         return null;
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList) {
+        return electricityCabinetOrderMapper.selectListByOrderIdList(exchangeOrderIdList);
     }
     
     /**

@@ -8,10 +8,15 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.warn.EleHardWareWarnMsgConstant;
 import com.xiliulou.electricity.entity.EleHardwareFailureWarnMsg;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.FailureAlarm;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.warn.EleHardwareWarnMsg;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmDeviceTypeEnum;
 import com.xiliulou.electricity.enums.failureAlarm.FailureAlarmGradeEnum;
@@ -26,8 +31,11 @@ import com.xiliulou.electricity.queryModel.failureAlarm.WarnMsgPageQueryModel;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareFailureWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.EleHardwareWarnMsgPageRequest;
 import com.xiliulou.electricity.request.failureAlarm.FailureAlarmTaskQueryRequest;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FailureAlarmService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.warn.EleHardwareWarnMsgService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.failureAlarm.EleHardwareFailureWarnMsgPageVo;
@@ -54,10 +62,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +90,15 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
     
     @Resource
     private FailureAlarmMapper failureAlarmMapper;
+    
+    @Resource
+    private RentBatteryOrderService rentBatteryOrderService;
+    
+    @Resource
+    private UserInfoService userInfoService;
+    
+    @Resource
+    private ElectricityCabinetOrderService electricityCabinetOrderService;
     
     @Slave
     @Override
@@ -108,6 +127,41 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
         if (ObjectUtils.isEmpty(list)) {
             return R.ok(Collections.emptyList());
         }
+    
+        Set<String> returnOrderIdList= new HashSet<>();
+        Set<String> exchangeOrderIdList= new HashSet<>();
+    
+        list.stream().forEach(item -> {
+            // 骗锁订单id
+            if (Objects.equals(item.getSignalId(), EleHardWareWarnMsgConstant.LOCK_DECEPTION_SIGNAL_ID) && StringUtils.isNotEmpty(item.getOrderId())) {
+                if (item.getOrderId().startsWith(String.valueOf(BusinessType.EXCHANGE_BATTERY.getBusiness()))) {
+                    // 换电订单
+                    exchangeOrderIdList.add(item.getSignalId());
+                } else {
+                    // 租退订单
+                    returnOrderIdList.add(item.getSignalId());
+                }
+            }
+        });
+    
+        List<RentBatteryOrder> rentBatteryOrderList = new ArrayList<>();
+        if (ObjectUtils.isNotEmpty(returnOrderIdList)) {
+            rentBatteryOrderList = rentBatteryOrderService.listByOrderIdList(returnOrderIdList);
+        }
+    
+        List<ElectricityCabinetOrder> exchangeOrderList = new ArrayList<>();
+        if (ObjectUtils.isNotEmpty(exchangeOrderIdList)) {
+            exchangeOrderList = electricityCabinetOrderService.listByOrderIdList(exchangeOrderIdList);
+        }
+    
+        Map<String, Long> orderIdAndUidMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(rentBatteryOrderList)) {
+            rentBatteryOrderList.stream().forEach(item -> orderIdAndUidMap.put(item.getOrderId(), item.getUid()));
+        }
+    
+        if (ObjectUtils.isNotEmpty(exchangeOrderList)) {
+            exchangeOrderList.stream().forEach(item -> orderIdAndUidMap.put(item.getOrderId(), item.getUid()));
+        }
         
         Integer type = FailureAlarmTypeEnum.FAILURE_ALARM_TYPE_WARING.getCode();
         
@@ -133,15 +187,30 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
             FailureAlarm failureAlarm = failureAlarmService.queryFromCacheBySignalId(vo.getSignalId());
             if (Objects.nonNull(failureAlarm) && Objects.equals(failureAlarm.getType(), finalType)) {
                 String signalName = failureAlarm.getSignalName();
-                Map<String, String> descMap = map.get(failureAlarm.getSignalId());
-                if (ObjectUtils.isEmpty(descMap)) {
-                    descMap = getDescMap(failureAlarm.getEventDesc());
-                    map.put(failureAlarm.getSignalId(), descMap);
-                }
                 
-                if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
-                    signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
+                if (Objects.equals(item.getSignalId(), EleHardWareWarnMsgConstant.LOCK_DECEPTION_SIGNAL_ID)) {
+                    // 资产丢失风险告警特殊处理
+                    UserInfo userInfo = userInfoService.queryByUidFromCache(orderIdAndUidMap.get(item.getOrderId()));
+                    String name = "";
+                    String phone = "";
+                    if (Objects.nonNull(userInfo)) {
+                        name = userInfo.getName();
+                        phone = userInfo.getPhone();
+                    }
+    
+                    signalName = String.format(EleHardWareWarnMsgConstant.LOCK_DECEPTION_FAILURE_NAME, failureAlarm.getSignalName(), name, phone, item.getOrderId());
+                } else {
+                    Map<String, String> descMap = map.get(failureAlarm.getSignalId());
+                    if (ObjectUtils.isEmpty(descMap)) {
+                        descMap = getDescMap(failureAlarm.getEventDesc());
+                        map.put(failureAlarm.getSignalId(), descMap);
+                    }
+    
+                    if (ObjectUtils.isNotEmpty(descMap.get(vo.getAlarmDesc()))) {
+                        signalName = signalName + CommonConstant.STR_COMMA + descMap.get(vo.getAlarmDesc());
+                    }
                 }
+               
                 
                 vo.setFailureAlarmName(signalName);
                 vo.setGrade(failureAlarm.getGrade());

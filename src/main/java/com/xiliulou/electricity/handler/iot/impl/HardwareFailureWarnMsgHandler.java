@@ -290,4 +290,9 @@ class HardwareFailureWarnMqMsg {
     private Integer occurNum;
     
     private String deviceName;
+    
+    /**
+     * 租退订单id
+     */
+    private String orderId;
 }

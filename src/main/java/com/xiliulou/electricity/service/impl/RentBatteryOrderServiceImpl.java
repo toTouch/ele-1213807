@@ -133,6 +133,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -1519,6 +1520,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         return ruleAllotCell(userInfo, usableBoxes);
+    }
+    
+    @Override
+    @Slave
+    public List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList) {
+        return rentBatteryOrderMapper.selectListByOrderIdList(returnOrderIdList);
     }
     
     
