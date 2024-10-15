@@ -136,10 +136,10 @@ public class EleHardwareWarnMsgServiceImpl implements EleHardwareWarnMsgService 
             if (Objects.equals(item.getSignalId(), EleHardWareWarnMsgConstant.LOCK_DECEPTION_SIGNAL_ID) && StringUtils.isNotEmpty(item.getOrderId())) {
                 if (item.getOrderId().startsWith(String.valueOf(BusinessType.EXCHANGE_BATTERY.getBusiness()))) {
                     // 换电订单
-                    exchangeOrderIdList.add(item.getSignalId());
+                    exchangeOrderIdList.add(item.getOrderId());
                 } else {
                     // 租退订单
-                    returnOrderIdList.add(item.getSignalId());
+                    returnOrderIdList.add(item.getOrderId());
                 }
             }
         });
