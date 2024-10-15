@@ -23,6 +23,7 @@ import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetail
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoBindGroupRequest;
 import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupDetailUpdateRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +79,8 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     @Resource
     private UserInfoGroupBizService userInfoGroupBizService;
     
+    @Resource
+    private UserDataScopeService userDataScopeService;
     
     @Slave
     @Override
@@ -363,10 +367,15 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             
             // 加盟商用户修改
             if (Objects.equals(operator.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-                Franchisee franchisee = franchiseeService.queryByUid(operator.getUid());
+                List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(operator.getUid());
+                if (CollectionUtils.isEmpty(franchiseeIds)) {
+                    return R.fail("ELECTRICITY.0038", "未找到加盟商");
+                }
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeIds.get(0));
                 if (Objects.isNull(franchisee)) {
                     return R.fail("ELECTRICITY.0038", "未找到加盟商");
                 }
+                
                 Long franchiseeId = franchisee.getId();
                 List<Long> groupIds = MapUtils.isEmpty(franchiseeIdAndGroupIds) ? null : franchiseeIdAndGroupIds.get(franchiseeId);
                 
