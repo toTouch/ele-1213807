@@ -32,6 +32,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
@@ -134,6 +135,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Resource
     private RentBatteryOrderService rentBatteryOrderService;
+    
+    @Resource
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Slave
     @Override
@@ -526,8 +530,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         // 判断使用的订单是否美团订单
-        MeiTuanRiderMallOrder meiTuanRiderMallOrder = this.queryByOrderId(userBatteryMemberCard.getOrderId(), uid, userBatteryMemberCard.getTenantId());
-        return !Objects.isNull(meiTuanRiderMallOrder);
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        return !Objects.isNull(electricityMemberCardOrder) && Objects.equals(electricityMemberCardOrder.getOrderType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT);
     }
     
 }
