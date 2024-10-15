@@ -54,12 +54,14 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushUserToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
+        log.info("asyncPushUserToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}", mallType, traceId, tenantId, orderId, orderType);
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_INFO)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
     public void asyncPushBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
+        log.info("asyncPushBatteryToThird params: mallType={}, traceId={}, tenantId={}, orderId={}, orderType={}", mallType, traceId, tenantId, orderId, orderType);
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }

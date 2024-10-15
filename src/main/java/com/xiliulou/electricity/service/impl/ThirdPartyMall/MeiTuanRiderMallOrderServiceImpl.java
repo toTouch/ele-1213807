@@ -12,10 +12,8 @@ import com.xiliulou.electricity.dto.thirdMallParty.MtDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -507,22 +505,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     
     @Override
     public Boolean isMtOrder(Long uid, String orderId, Integer orderType) {
-        // orderId为换电订单
-        if (Objects.equals(MeiTuanRiderMallConstant.EXCHANGE_ORDER, orderType)) {
-            ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
-            if (Objects.isNull(electricityCabinetOrder)) {
-                return false;
-            }
-        }
-        
-        // orderId为租电订单
-        if (Objects.equals(MeiTuanRiderMallConstant.RENT_ORDER, orderType)) {
-            RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByOrderId(orderId);
-            if (Objects.isNull(rentBatteryOrder)) {
-                return false;
-            }
-        }
-        
         // 当前绑定的套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {

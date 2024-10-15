@@ -42,6 +42,7 @@ public class ThirdPartyMallProducer {
         try {
             String json = JsonUtil.toJson(message.toDTO());
             int delayLevel = Objects.isNull(message.getDelayLevel()) ? 0 : message.getDelayLevel();
+            log.info("ThirdPartyMallProducer send message={}, delayLevel={}", json, delayLevel);
             Pair<Boolean, String> pair = rocketMqService.sendSyncMsg(THIRD_PARTY_MALL_TOPIC, json, "", "", delayLevel);
             if (!pair.getLeft()) {
                 log.error("ThirdPartyMallProducer error! failed send message to the queue because: {}", Optional.ofNullable(pair.getRight()).orElse(""));
