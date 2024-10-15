@@ -242,11 +242,11 @@ public class UserCouponServiceImpl implements UserCouponService {
             vo.setCouponWayDetails(Objects.isNull(user) ? null : user.getName());
         }
         // 电
-        if (Objects.equals(couponWay, CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode())) {
+        if (Objects.equals(couponType, CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode())) {
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponWay);
             vo.setCouponWayDetails(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getName());
         }
-        if (Objects.equals(couponWay, CouponTypeEnum.CAR_BUY_PACKAGE.getCode())) {
+        if (Objects.equals(couponType, CouponTypeEnum.CAR_BUY_PACKAGE.getCode())) {
             CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(couponWay);
             vo.setCouponWayDetails(Objects.isNull(carRentalPackagePo) ? null : carRentalPackagePo.getName());
         }
