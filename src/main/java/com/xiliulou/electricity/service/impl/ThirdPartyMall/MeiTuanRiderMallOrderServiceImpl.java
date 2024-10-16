@@ -510,6 +510,12 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (Objects.isNull(userBatteryMemberCard)) {
             return false;
         }
+    
+        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(userBatteryMemberCard.getTenantId());
+        if (Objects.isNull(meiTuanRiderMallConfig)) {
+            log.warn("The tenant meiTuanConfig switch off, tenantId={}", userBatteryMemberCard.getTenantId());
+            return false;
+        }
         
         // 判断使用的订单是否美团订单
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());

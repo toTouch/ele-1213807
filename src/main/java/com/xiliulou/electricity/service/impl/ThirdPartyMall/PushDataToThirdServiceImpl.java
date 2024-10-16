@@ -108,7 +108,7 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
         
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(electricityCabinet.getTenantId());
         if (Objects.isNull(meiTuanRiderMallConfig)) {
-            log.warn("The cabinet tenant meiTuanConfig switch off, eid={}", eid);
+            log.warn("The tenant meiTuanConfig switch off, tenantId={}", electricityCabinet.getTenantId());
             return false;
         }
         
