@@ -193,15 +193,14 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 return Triple.of(false, "120131", "未能查询到该美团订单号码，请稍后再试");
             }
             
-            if (Objects.equals(meiTuanRiderMallOrder.getOrderUseStatus(), MeiTuanRiderMallEnum.ORDER_USE_STATUS_USED.getCode()) || Objects.equals(
-                    meiTuanRiderMallOrder.getOrderUseStatus(), MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode())) {
+            if (!Objects.equals(meiTuanRiderMallOrder.getOrderUseStatus(), MeiTuanRiderMallEnum.ORDER_USE_STATUS_UNUSED.getCode())) {
                 log.warn("MeiTuan order redeem fail! meiTuanOrderId used, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120141", "该订单已兑换，请勿重复兑换");
             }
             
             if (Objects.equals(meiTuanRiderMallOrder.getMeiTuanOrderStatus(), MeiTuanRiderMallEnum.ORDER_STATUS_CANCELED.getCode())) {
                 log.warn("MeiTuan order redeem fail! meiTuanOrderId canceled, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
-                return Triple.of(false, "120134", "兑换失败，请联系客服处理");
+                return Triple.of(false, "120148", "兑换失败，请联系客服处理");
             }
             
             // 套餐ID
