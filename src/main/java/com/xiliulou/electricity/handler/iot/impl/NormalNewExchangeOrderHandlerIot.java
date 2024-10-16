@@ -401,9 +401,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId()).setUid(userInfo.getUid())
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
-    
+        
         // 给第三方推送换电记录/用户信息/电池信息
-        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), exchangeOrderRsp.getSessionId(),
                 electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
     }
     

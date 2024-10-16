@@ -5,6 +5,7 @@ import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,7 +16,7 @@ import java.util.Optional;
  * @date 2024/9/19 13:56:42
  */
 @Getter
-public class ThirdPartyMallEvent {
+public class ThirdPartyMallEvent implements Serializable {
     
     private static final long serialVersionUID = 3959186933636172577L;
     

@@ -730,8 +730,8 @@ public class EleOperateQueueHandler {
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
             
             // 给第三方推送用户电池信息和用户信息
-            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
-                    rentBatteryOrder.getTenantId(), rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER, rentBatteryOrder.getUid());
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
+                    rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER, rentBatteryOrder.getUid());
         }
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),

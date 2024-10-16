@@ -40,7 +40,6 @@ import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -200,7 +199,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             
             // 给第三方推送柜机上下线状态
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
-                pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
+                pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), receiverMessage.getSessionId(),
                         electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null);
             }
         });
