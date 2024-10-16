@@ -69,10 +69,10 @@ public class JsonMerchantController extends BaseController {
      * @param endTime   结束时间
      * @return 用户分析
      */
-    @GetMapping("/admin/merchant/promotionFee/statistic/user")
+    @GetMapping("/admin/super/promotionFee/statistic/user")
     public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime
-            , Integer userType) {
+            , @RequestParam(value = "userType", required = false) Integer userType) {
         
         return merchantPromotionFeeService.statisticUserV2(type, uid, beginTime, endTime, userType);
     }
@@ -86,10 +86,10 @@ public class JsonMerchantController extends BaseController {
      * @param endTime   结束时间
      * @return 用户分析
      */
-    @GetMapping("/admin/merchant/promotionFee/statistic/user1")
+    @GetMapping("/admin/super/promotionFee/statistic/user1")
     public R promotionFeeStatisticAnalysisUser1(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime
-            , Integer userType) {
+            , @RequestParam(value = "userType", required = false) Integer userType) {
         
         return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime, userType);
     }
