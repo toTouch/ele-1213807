@@ -108,4 +108,30 @@ public class MeiTuanRiderMallConfigServiceImpl implements MeiTuanRiderMallConfig
         return meiTuanRiderMallConfig;
     }
     
+    @Slave
+    @Override
+    public MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config) {
+        return meiTuanRiderMallConfigMapper.selectByConfig(config);
+    }
+    
+    @Slave
+    @Override
+    public MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config) {
+        String appId = config.getAppId();
+        String appKey = config.getAppKey();
+        
+        MeiTuanRiderMallConfig cacheConfig = redisService.getWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, MeiTuanRiderMallConfig.class);
+        if (Objects.nonNull(cacheConfig)) {
+            return cacheConfig;
+        }
+        
+        MeiTuanRiderMallConfig meiTuanRiderMallConfig = this.queryByConfig(config);
+        if (Objects.isNull(meiTuanRiderMallConfig)) {
+            return null;
+        }
+        
+        redisService.saveWithHash(CacheConstant.CACHE_MEI_TUAN_RIDER_MALL_CONFIG + appId + appKey, meiTuanRiderMallConfig);
+        return meiTuanRiderMallConfig;
+    }
+    
 }

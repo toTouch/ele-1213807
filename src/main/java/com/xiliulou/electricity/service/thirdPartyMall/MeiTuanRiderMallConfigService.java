@@ -18,4 +18,8 @@ public interface MeiTuanRiderMallConfigService {
     
     MeiTuanRiderMallConfig checkEnableMeiTuanRiderMall(Integer tenantId);
     
+    MeiTuanRiderMallConfig queryByConfig(MeiTuanRiderMallConfig config);
+    
+    MeiTuanRiderMallConfig queryByConfigFromCache(MeiTuanRiderMallConfig config);
+    
 }

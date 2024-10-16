@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -29,16 +30,15 @@ import com.xiliulou.electricity.request.thirdPartyMall.NotifyMeiTuanDeliverReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.retrofit.ThirdPartyMallRetrofitService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanOrderRedeemTxService;
@@ -49,6 +49,9 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDeta
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.ThirdMallConfigHolder;
+import com.xiliulou.electricity.vo.thirdPartyMall.LimitTradeVO;
+import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -129,13 +132,10 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     private ThirdPartyMallRetrofitService thirdPartyMallRetrofitService;
     
     @Resource
-    private ElectricityCabinetOrderService electricityCabinetOrderService;
-    
-    @Resource
-    private RentBatteryOrderService rentBatteryOrderService;
-    
-    @Resource
     private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Resource
+    private UserService userService;
     
     @Slave
     @Override
@@ -523,6 +523,70 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         meiTuanRiderMallOrderMapper.updatePhone(oldPhone, newPhone, tenantId);
+    }
+    
+    @Override
+    public LimitTradeVO meiTuanLimitTradeCheck(String providerSkuId, String phone) {
+        Integer tenantId = ThirdMallConfigHolder.getTenantId();
+        Long memberCardId = Long.valueOf(providerSkuId);
+        LimitTradeVO noLimit = LimitTradeVO.builder().limitResult(Boolean.FALSE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_NO.getCode()).build();
+        LimitTradeVO limit = LimitTradeVO.builder().limitResult(Boolean.TRUE).limitType(VirtualTradeStatusEnum.LIMIT_TYPE_OLD_USER.getCode()).build();
+        
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
+        // 套餐不存在：不限制
+        if (Objects.isNull(batteryMemberCard)) {
+            return noLimit;
+        }
+        
+        // 用户不存在：不限制
+        User user = userService.queryByUserPhone(phone, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+        if (Objects.isNull(user)) {
+            return noLimit;
+        }
+        
+        // 用户不存在：不限制
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            return noLimit;
+        }
+        
+        // 判断套餐用户分组和用户的用户分组是否匹配
+        List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(tenantId).build());
+        
+        if (CollectionUtils.isNotEmpty(userInfoGroups)) {
+            // 自定义用户分组用户不可购买系统分组套餐：限制
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
+                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup cannot purchase systemGroup memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+                return limit;
+            }
+            
+            List<Long> userGroupIds = userInfoGroups.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
+            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
+            // 自定义用户分组中没有该用户，不可购买指定套餐：限制
+            if (CollectionUtils.isEmpty(userGroupIds)) {
+                log.warn("MeiTuanLimitTradeCheck warn! UseInfoGroup not contain systemGroup, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+                return limit;
+            }
+        } else {
+            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
+                log.warn("MeiTuanLimitTradeCheck warn! SystemGroup cannot purchase useInfoGroup memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+                return limit;
+            }
+        }
+        
+        // 老用户不可购买新套餐：限制
+        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+            log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+            return limit;
+        }
+        
+        // 新用户不可购买续费套餐：限制
+        if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
+            log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+            return limit;
+        }
+        
+        return noLimit;
     }
     
 }

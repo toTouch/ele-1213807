@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.thirdPartyMall;
 
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
+import com.xiliulou.electricity.vo.thirdPartyMall.LimitTradeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -28,4 +29,9 @@ public interface MeiTuanRiderMallOrderService {
     Boolean isMtOrder(Long uid);
     
     void updatePhone(String oldPhone, String newPhone, Integer tenantId);
+    
+    /**
+     * 美团骑手商城限制提单校验
+     */
+    LimitTradeVO meiTuanLimitTradeCheck(String providerSkuId, String phone);
 }
