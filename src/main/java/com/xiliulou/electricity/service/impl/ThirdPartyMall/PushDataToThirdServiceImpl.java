@@ -1,15 +1,20 @@
 package com.xiliulou.electricity.service.impl.ThirdPartyMall;
 
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import com.xiliulou.electricity.event.ThirdPartyMallEvent;
 import com.xiliulou.electricity.event.publish.ThirdPartyMallPublish;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author HeYafeng
@@ -25,6 +30,12 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
+    @Resource
+    private ElectricityCabinetService electricityCabinetService;
+    
+    @Resource
+    private MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
     
     @Override
     public void asyncPushExchangeAndUserAndBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType, Long uid) {
@@ -67,15 +78,19 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushCabinetToThird(Integer mallType, String traceId, Integer tenantId, Long eid) {
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
-                .addContext(MeiTuanRiderMallConstant.EID, eid).build());
+        if (isMtCabinet(eid.intValue())) {
+            thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
+                    .addContext(MeiTuanRiderMallConstant.EID, eid).build());
+        }
     }
     
     @Override
     public void asyncPushCabinetStatusToThird(Integer mallType, String traceId, Integer tenantId, Long eid, Integer delayLevel) {
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).delayLevel(delayLevel)
-                        .addContext(MeiTuanRiderMallConstant.EID, eid).build());
+        if (isMtCabinet(eid.intValue())) {
+            thirdPartyMallPublish.publish(
+                    ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).delayLevel(delayLevel)
+                            .addContext(MeiTuanRiderMallConstant.EID, eid).build());
+        }
     }
     
     @Override
@@ -83,5 +98,21 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
         thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY_MEMBER_CARD)
                 .addContext(MeiTuanRiderMallConstant.UID, uid).addContext(MeiTuanRiderMallConstant.ORDER_ID, mtOrderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType)
                 .build());
+    }
+    
+    private Boolean isMtCabinet(Integer eid) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet)) {
+            return false;
+        }
+        
+        MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(electricityCabinet.getTenantId());
+        if (Objects.isNull(meiTuanRiderMallConfig)) {
+            log.warn("The cabinet tenant meiTuanConfig switch off, eid={}", eid);
+            return false;
+        }
+        
+        return true;
+        
     }
 }
