@@ -49,6 +49,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -283,10 +285,14 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         
-        int updateResult = electricityConfigMapper.update(electricityConfig);
-        if (updateResult > 0) {
-            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
-        }
+        electricityConfigMapper.update(electricityConfig);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // 清理缓存
+                redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+            }
+        });
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }

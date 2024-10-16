@@ -385,7 +385,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                             .equals(batteryMemberCard.getBusinessType())) {
                         enterpriseChannelUserService.updatePaymentStatusByUid(item.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
                     }
-    
+                    
                     // 如果当前套餐是美团订单，则更新美团订单状态为已失效
                     MeiTuanRiderMallOrder meiTuanRiderMallOrder = meiTuanRiderMallOrderService.queryByOrderId(item.getOrderId(), item.getUid(), item.getTenantId());
                     if (Objects.nonNull(meiTuanRiderMallOrder)) {

@@ -432,6 +432,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             notifyMeiTuanDeliverReq.setVpComboEndTime(userBatteryMemberCard.getOrderExpireTime() / 1000);
             
             MtDTO<?> meiTuanR = thirdPartyMallRetrofitService.notifyMeiTuanDeliver(headers, notifyMeiTuanDeliverReq);
+            log.info("NotifyMeiTuanDeliver meiTuanR={}", meiTuanR);
             if (Objects.isNull(meiTuanR)) {
                 log.warn("NotifyMeiTuanDeliver warn! notifyMeiTuanDeliver fail, meiTuanR is null, uid={}, orderId={}", uid, orderId);
             }

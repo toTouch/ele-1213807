@@ -288,7 +288,8 @@
         ubmc.remaining_number,
         ubmc.member_card_status,
         ubmc.disable_member_card_time,
-        ubmc.card_pay_count
+        ubmc.card_pay_count,
+        ubmc.tenant_id
         from t_user_battery_member_card ubmc
         left join t_user_info tui on tui.uid=ubmc.uid
         where tui.battery_deposit_status=1 and tui.del_flag=0 and ubmc.member_card_status=0
