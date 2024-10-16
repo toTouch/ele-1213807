@@ -393,6 +393,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                         updateMeiTuanRiderMallOrder.setOrderId(item.getOrderId());
                         updateMeiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
                         updateMeiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+                        updateMeiTuanRiderMallOrder.setTenantId(item.getTenantId());
                         meiTuanRiderMallOrderService.updateStatusByOrderId(updateMeiTuanRiderMallOrder);
                     }
                 }

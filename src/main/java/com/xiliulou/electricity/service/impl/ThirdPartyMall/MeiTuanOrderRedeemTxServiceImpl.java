@@ -195,10 +195,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 userBatteryDepositService.update(userBatteryDeposit);
                 
                 // 封装UserBatteryDeposit回滚
-                rollBackUserBatteryDeposit = UserBatteryDeposit.builder().uid(userBatteryDeposit.getUid()).orderId(userBatteryDeposit.getOrderId()).did(userBatteryDeposit.getDid())
-                        .batteryDeposit(userBatteryDeposit.getBatteryDeposit()).applyDepositTime(userBatteryDeposit.getApplyDepositTime())
-                        .depositType(userBatteryDeposit.getDepositType()).delFlag(userBatteryDeposit.getDelFlag()).updateTime(userBatteryDeposit.getUpdateTime())
-                        .depositModifyFlag(userBatteryDeposit.getDepositModifyFlag()).beforeModifyDeposit(userBatteryDeposit.getBeforeModifyDeposit()).build();
+                rollBackUserBatteryDeposit = UserBatteryDeposit.builder().uid(existUserBatteryDeposit.getUid()).orderId(existUserBatteryDeposit.getOrderId()).did(existUserBatteryDeposit.getDid())
+                        .batteryDeposit(existUserBatteryDeposit.getBatteryDeposit()).applyDepositTime(existUserBatteryDeposit.getApplyDepositTime())
+                        .depositType(existUserBatteryDeposit.getDepositType()).delFlag(existUserBatteryDeposit.getDelFlag()).updateTime(existUserBatteryDeposit.getUpdateTime())
+                        .depositModifyFlag(existUserBatteryDeposit.getDepositModifyFlag()).beforeModifyDeposit(existUserBatteryDeposit.getBeforeModifyDeposit()).build();
             } else {
                 userBatteryDeposit.setCreateTime(System.currentTimeMillis());
                 userBatteryDepositService.insert(userBatteryDeposit);
@@ -593,6 +593,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                         updateMeiTuanRiderMallOrder.setOrderId(userBatteryMemberCard.getOrderId());
                         updateMeiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
                         updateMeiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+                        updateMeiTuanRiderMallOrder.setTenantId(userInfo.getTenantId());
                         meiTuanRiderMallOrderService.updateStatusByOrderId(updateMeiTuanRiderMallOrder);
                     }
                 }
