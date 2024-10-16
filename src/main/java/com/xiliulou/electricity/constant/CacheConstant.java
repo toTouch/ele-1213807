@@ -820,5 +820,11 @@ public interface CacheConstant {
     
     
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
+
+    /**
+     * 用户设备状态缓存
+     */
+    String CACHE_USER_DEVICE_STATUS = "d_stat:";
+
 }
 
