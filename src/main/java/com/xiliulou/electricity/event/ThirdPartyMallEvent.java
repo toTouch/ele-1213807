@@ -4,7 +4,6 @@ import com.xiliulou.electricity.dto.message.ThirdPartyMallDataDTO;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallDataType;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.context.ApplicationEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.Optional;
  * @date 2024/9/19 13:56:42
  */
 @Getter
-public class ThirdPartyMallEvent extends ApplicationEvent {
+public class ThirdPartyMallEvent {
     
     private static final long serialVersionUID = 3959186933636172577L;
     
@@ -32,8 +31,7 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
     
     private Integer delayLevel;
     
-    public ThirdPartyMallEvent(Object source, Map<String, Object> context) {
-        super(source);
+    public ThirdPartyMallEvent(Map<String, Object> context) {
         this.context = context;
     }
     
@@ -47,16 +45,16 @@ public class ThirdPartyMallEvent extends ApplicationEvent {
         return messageDTO;
     }
     
-    public static ThirdPartyMallEvent.Builder builder(Object source) {
-        return new ThirdPartyMallEvent.Builder(source);
+    public static ThirdPartyMallEvent.Builder builder() {
+        return new ThirdPartyMallEvent.Builder();
     }
     
     public static class Builder {
         
         private final ThirdPartyMallEvent event;
         
-        public Builder(Object source) {
-            this.event = new ThirdPartyMallEvent(source, new HashMap<>());
+        public Builder() {
+            this.event = new ThirdPartyMallEvent(new HashMap<>());
         }
         
         public ThirdPartyMallEvent.Builder traceId(String traceId) {

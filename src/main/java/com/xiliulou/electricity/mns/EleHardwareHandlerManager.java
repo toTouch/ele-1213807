@@ -198,7 +198,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             
             addOnlineLogAndSendNotifyMessage(receiverMessage, electricityCabinet);
             
-            // 给第三方推送柜机信息
+            // 给第三方推送柜机上下线状态
             if (!Objects.equals(electricityCabinet.getOnlineStatus(), newElectricityCabinet.getOnlineStatus())) {
                 pushDataToThirdService.asyncPushCabinetStatusToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), MDC.get(CommonConstant.TRACE_ID),
                         electricityCabinet.getTenantId(), electricityCabinet.getId().longValue(), null);

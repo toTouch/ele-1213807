@@ -49,40 +49,39 @@ public class PushDataToThirdServiceImpl implements PushDataToThirdService {
     
     @Override
     public void asyncPushExchangeToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
+        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_EXCHANGE_RECORD)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
     public void asyncPushUserToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_INFO)
+        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_INFO)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
     public void asyncPushBatteryToThird(Integer mallType, String traceId, Integer tenantId, String orderId, Integer orderType) {
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY)
+        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY)
                 .addContext(MeiTuanRiderMallConstant.ORDER_ID, orderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
     }
     
     @Override
     public void asyncPushCabinetToThird(Integer mallType, String traceId, Integer tenantId, Long eid) {
-        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
+        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET)
                 .addContext(MeiTuanRiderMallConstant.EID, eid).build());
     }
     
     @Override
     public void asyncPushCabinetStatusToThird(Integer mallType, String traceId, Integer tenantId, Long eid, Integer delayLevel) {
         thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).delayLevel(delayLevel)
+                ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_ELE_CABINET).delayLevel(delayLevel)
                         .addContext(MeiTuanRiderMallConstant.EID, eid).build());
     }
     
     @Override
     public void asyncPushUserMemberCardToThird(Integer mallType, String traceId, Integer tenantId, Long uid, String mtOrderId, Integer orderType) {
-        thirdPartyMallPublish.publish(
-                ThirdPartyMallEvent.builder(this).traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY_MEMBER_CARD)
-                        .addContext(MeiTuanRiderMallConstant.UID, uid).addContext(MeiTuanRiderMallConstant.ORDER_ID, mtOrderId)
-                        .addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType).build());
+        thirdPartyMallPublish.publish(ThirdPartyMallEvent.builder().traceId(traceId).tenantId(tenantId).mall(mallType).type(ThirdPartyMallDataType.PUSH_USER_BATTERY_MEMBER_CARD)
+                .addContext(MeiTuanRiderMallConstant.UID, uid).addContext(MeiTuanRiderMallConstant.ORDER_ID, mtOrderId).addContext(MeiTuanRiderMallConstant.ORDER_TYPE, orderType)
+                .build());
     }
 }
