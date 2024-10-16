@@ -88,7 +88,7 @@
         from t_ele_device_code
         <where>
             <if test="deviceName != null and deviceName != ''">
-                and device_name = #{deviceName}
+                and device_name like concat(#{deviceName,jdbcType=VARCHAR},'%')
             </if>
             <if test="secret != null and secret != ''">
                 and secret = #{secret}
