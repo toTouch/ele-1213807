@@ -389,9 +389,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                     // 如果当前套餐是美团订单，则更新美团订单状态为已失效
                     MeiTuanRiderMallOrder meiTuanRiderMallOrder = meiTuanRiderMallOrderService.queryByOrderId(item.getOrderId(), item.getUid(), item.getTenantId());
                     if (Objects.nonNull(meiTuanRiderMallOrder)) {
-                        meiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
-                        meiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
-                        meiTuanRiderMallOrderService.updateStatusByOrderId(meiTuanRiderMallOrder);
+                        MeiTuanRiderMallOrder updateMeiTuanRiderMallOrder = new MeiTuanRiderMallOrder();
+                        updateMeiTuanRiderMallOrder.setOrderId(item.getOrderId());
+                        updateMeiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
+                        updateMeiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+                        meiTuanRiderMallOrderService.updateStatusByOrderId(updateMeiTuanRiderMallOrder);
                     }
                 }
                 

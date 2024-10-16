@@ -589,9 +589,11 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                     MeiTuanRiderMallOrder oldMeiTuanOrder = meiTuanRiderMallOrderService.queryByOrderId(userBatteryMemberCard.getOrderId(), userInfo.getUid(),
                             userInfo.getTenantId());
                     if (Objects.nonNull(oldMeiTuanOrder)) {
-                        oldMeiTuanOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
-                        oldMeiTuanOrder.setUpdateTime(System.currentTimeMillis());
-                        meiTuanRiderMallOrderService.updateStatusByOrderId(meiTuanRiderMallOrder);
+                        MeiTuanRiderMallOrder updateMeiTuanRiderMallOrder = new MeiTuanRiderMallOrder();
+                        updateMeiTuanRiderMallOrder.setOrderId(userBatteryMemberCard.getOrderId());
+                        updateMeiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
+                        updateMeiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+                        meiTuanRiderMallOrderService.updateStatusByOrderId(updateMeiTuanRiderMallOrder);
                     }
                 }
                 
