@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Description ...
@@ -10,6 +12,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderForBatteryDTO {
     
     private String orderId;
