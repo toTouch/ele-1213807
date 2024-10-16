@@ -111,7 +111,7 @@ public class MerchantJoinRecord {
     private Integer modifyInviter;
     
     /**
-     * 创建日期 yyyy-MM-dd
+     * 参与开始日期 yyyy-MM-dd
      */
     private String monthDate;
     
