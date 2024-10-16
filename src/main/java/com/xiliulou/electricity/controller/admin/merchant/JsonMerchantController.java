@@ -12,6 +12,7 @@ import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
+import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -55,6 +56,43 @@ public class JsonMerchantController extends BaseController {
     
     @Resource
     private UserDataScopeService userDataScopeService;
+    
+    @Resource
+    private MerchantPromotionFeeService merchantPromotionFeeService;
+    
+    /**
+     * 用户分析
+     *
+     * @param type      用户类型
+     * @param uid       用户uid
+     * @param beginTime 开始时间
+     * @param endTime   结束时间
+     * @return 用户分析
+     */
+    @GetMapping("/admin/merchant/promotionFee/statistic/user")
+    public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime
+            , Integer userType) {
+        
+        return merchantPromotionFeeService.statisticUserV2(type, uid, beginTime, endTime, userType);
+    }
+    
+    /**
+     * 用户分析
+     *
+     * @param type      用户类型
+     * @param uid       用户uid
+     * @param beginTime 开始时间
+     * @param endTime   结束时间
+     * @return 用户分析
+     */
+    @GetMapping("/admin/merchant/promotionFee/statistic/user1")
+    public R promotionFeeStatisticAnalysisUser1(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
+            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime
+            , Integer userType) {
+        
+        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime, userType);
+    }
     
     /**
      * 查询商户升级条件

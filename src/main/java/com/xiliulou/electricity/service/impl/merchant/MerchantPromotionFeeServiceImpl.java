@@ -380,6 +380,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             long endOfDayTimestamp = DateUtils.getEndOfDayTimestamp(startTime);
             
             if (Objects.nonNull(dtoList)) {
+                // 渠道员推广费带商户条件搜索
                 scanCodeNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, null, dtoList);
                 purchaseNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, MerchantJoinRecordConstant.STATUS_SUCCESS, dtoList);
                 renewalNum = buildRenewalNum(type, uid, startTime, endOfDayTimestamp, dtoList);
