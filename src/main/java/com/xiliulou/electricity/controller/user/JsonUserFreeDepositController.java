@@ -4,7 +4,10 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * @author : eclair
@@ -59,7 +63,24 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @PostMapping("/user/free/batteryDeposit/v4")
     public R freeBatteryDepositOrderV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
-        return returnTripleResult(freeDepositOrderService.freeBatteryDepositOrderV4(query));
+        Triple<Boolean, String, Object> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
+        returnTripleResult(result);
+        if (result.getLeft()) {
+            return R.ok(Objects.nonNull(result.getRight()) ? ((FreeDepositVO)result.getRight()).getQrCode() : "");
+        } else {
+            return result.getRight() instanceof String ? R.fail(result.getMiddle(), result.getRight() == null ? "" : result.getRight().toString()) : R.fail(result.getMiddle(),
+                    null, result.getRight());
+        }
+    }
+    
+    
+    /**
+     * 电池免押订单V4（支持拍下租和蜂云）
+     */
+    @PostMapping("/user/free/alipayBatteryDeposit/v4")
+    public R alipayBatteryDepositV4(@RequestBody @Validated FreeBatteryDepositQueryV3 query) {
+        Triple<Boolean, String, Object> result = freeDepositOrderService.freeBatteryDepositOrderV4(query);
+        return returnTripleResult(result);
     }
     
     /**
@@ -67,6 +88,7 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @PostMapping("/user/freeBatteryDeposit/hybridOrderV3")
     public R freeBatteryDepositHybridOrderV3(@RequestBody @Validated FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
+        query.setPaymentChannel(ChannelSourceContextHolder.get());
         return returnTripleResult(freeDepositOrderService.freeBatteryDepositHybridOrderV3(query, request));
     }
     
@@ -86,6 +108,13 @@ public class JsonUserFreeDepositController extends BaseController {
         return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatusV2());
     }
     
+    /**
+     * 查询支付宝电池免押
+     */
+    @GetMapping("/user/free/batteryDeposit/alipay/order/status")
+    public R freeBatteryDepositAlipayOrderStatus() {
+        return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatusAliPay());
+    }
     
     /**
      * 车辆押金免押的前置检查

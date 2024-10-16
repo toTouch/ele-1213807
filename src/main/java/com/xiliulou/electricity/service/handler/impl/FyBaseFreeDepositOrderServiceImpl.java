@@ -55,8 +55,9 @@ public class FyBaseFreeDepositOrderServiceImpl extends AbstractCommonFreeDeposit
         if (!resultCheck.getLeft()) {
             return resultCheck;
         }
-        
-        FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.FY.getChannel()).data(result.getFyResponse().getQrCode()).build();
+        Object extraData = result.getFyResponse().getExtraData();
+        FreeDepositOrderDTO dto = FreeDepositOrderDTO.builder().channel(FreeDepositChannelEnum.FY.getChannel()).data(result.getFyResponse().getQrCode())
+                .extraData(Objects.isNull(extraData) ? "" : extraData.toString()).path(result.getFyResponse().getPath()).build();
         
         return Triple.of(true, null, dto);
     }

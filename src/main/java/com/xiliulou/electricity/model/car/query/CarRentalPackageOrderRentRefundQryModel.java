@@ -127,4 +127,9 @@ public class CarRentalPackageOrderRentRefundQryModel implements Serializable {
      * 退款订单编号集
      */
     private List<String> orderNoList;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }

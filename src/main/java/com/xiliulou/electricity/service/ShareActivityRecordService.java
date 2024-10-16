@@ -13,17 +13,17 @@ import javax.servlet.http.HttpServletResponse;
  * @since 2021-07-14 09:45:04
  */
 public interface ShareActivityRecordService {
-
-
-      /**
+    
+    
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
     ShareActivityRecord queryByIdFromDB(Long id);
-
-
+    
+    
     /**
      * 新增数据
      *
@@ -31,7 +31,7 @@ public interface ShareActivityRecordService {
      * @return 实例对象
      */
     ShareActivityRecord insert(ShareActivityRecord shareActivityRecord);
-
+    
     /**
      * 修改数据
      *
@@ -42,19 +42,27 @@ public interface ShareActivityRecordService {
     
     
     R generateSharePicture(Integer activityId, String page, String envVersion);
-
-
-	ShareActivityRecord queryByUid(Long uid,Integer activityId);
-
-
-    void addCountByUid(Long uid, Integer activityId);
-
-    void reduceAvailableCountByUid(Long uid, Integer count, Integer activityId);
-
-	R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
-
-	R queryCount(ShareActivityRecordQuery shareActivityRecordQuery);
     
-    void shareActivityRecordExportExcel(ShareActivityRecordQuery shareActivityRecordQuery,
-            HttpServletResponse response);
+    
+    ShareActivityRecord queryByUid(Long uid, Integer activityId);
+    
+    
+    void addCountByUid(Long uid, Integer activityId);
+    
+    void reduceAvailableCountByUid(Long uid, Integer count, Integer activityId);
+    
+    R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
+    
+    R queryCount(ShareActivityRecordQuery shareActivityRecordQuery);
+    
+    void shareActivityRecordExportExcel(ShareActivityRecordQuery shareActivityRecordQuery, HttpServletResponse response);
+    
+    /**
+     * 二维码生成参数获取
+     *
+     * @param activityId
+     * @author caobotao.cbt
+     * @date 2024/7/31 15:00
+     */
+    R getQrCodeShareParam(Integer activityId);
 }

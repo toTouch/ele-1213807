@@ -20,16 +20,14 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
+import com.xiliulou.electricity.service.wxrefund.RefundPayService;
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * 微信退款-租车押金退款 ServiceImpl
@@ -38,7 +36,7 @@ import java.util.Objects;
  **/
 @Slf4j
 @Service("wxRefundPayCarDepositServiceImpl")
-public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
+public class RefundPayCarDepositServiceImpl implements RefundPayService {
 
     @Resource
     private UserBatteryDepositService userBatteryDepositService;
@@ -78,7 +76,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      * @param callBackResource
      */
     @Override
-    public void process(WechatJsapiRefundOrderCallBackResource callBackResource) {
+    public void process(BaseOrderRefundCallBackResource callBackResource) {
         log.info("WxRefundPayCarDepositServiceImpl.process params is {}", JsonUtil.toJson(callBackResource));
         String outRefundNo = callBackResource.getOutRefundNo();
         String redisLockKey = WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + outRefundNo;
@@ -116,7 +114,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
             }
 
             // 微信退款状态
-            Integer refundState = StringUtils.isNotBlank(callBackResource.getRefundStatus()) && Objects.equals(callBackResource.getRefundStatus(), "SUCCESS") ? RefundStateEnum.SUCCESS.getCode() : RefundStateEnum.FAILED.getCode();
+            Integer refundState = callBackResource.converterTradeState(RefundStateEnum.SUCCESS.getCode(), RefundStateEnum.FAILED.getCode());
 
             // 构建押金退款订单表更新实体信息
             CarRentalPackageDepositRefundPo depositRefundUpdateEntity = buildDepositRefundEntity(depositRefundEntity, refundState);
@@ -138,7 +136,7 @@ public class WxRefundPayCarDepositServiceImpl implements WxRefundPayService {
      */
     @Override
     public String getOptType() {
-        return WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode();
+        return RefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode();
     }
 
     /**

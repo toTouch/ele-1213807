@@ -49,5 +49,9 @@ public class EleEsignConstant {
     public static final Integer SIGN_FLOW_COMPONENT_TYPE_TEXT = 1;
     
     public static final Integer SIGN_FLOW_COMPONENT_TYPE_AREA = 6;
+    
+    
+    
+    public static final String ALIPAY_AVAILABLE_SIGN_CLIENT_TYPES="1";
 
 }

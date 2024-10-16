@@ -31,7 +31,7 @@
         t_electricity_pay_params
     </sql>
     
-    <!--查询单个-->
+    
     <select id="selectListByTenantIdAndFranchiseeIds" resultMap="ElectricityPayParamsMap">
         select
         <include refid="base_column"/>

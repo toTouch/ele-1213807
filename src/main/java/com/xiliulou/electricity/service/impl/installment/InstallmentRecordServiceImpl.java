@@ -237,7 +237,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         }
         
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, installmentRecord.getUid()), "1", 3*1000L, false)) {
-            return R.fail("301019", "解当前套餐正在签约或取消，请稍候再试");
+            return R.fail("301019", "当前套餐正在签约或取消，请稍候再试");
         }
         
         List<Integer> list = Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN);

@@ -21,9 +21,10 @@ public interface CarRentalOrderBizService {
      * 用户还车申请
      * @param tenantId 租户ID
      * @param uid 用户UID
+     * @param channel ${@link com.xiliulou.core.base.enums.ChannelEnum}
      * @return true(成功)、false(失败)
      */
-    boolean refundCarOrderApply(Integer tenantId, Long uid);
+    boolean refundCarOrderApply(Integer tenantId, Long uid, String channel);
 
     /**
      * 用户扫码绑定车辆
@@ -32,9 +33,10 @@ public interface CarRentalOrderBizService {
      * @param uid 用户UID
      * @param carSn 车辆SN码
      * @param optUid 操作用户UID
+     * @param channel ${@link com.xiliulou.core.base.enums.ChannelEnum}
      * @return true(成功)、false(失败)
      */
-    boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid);
+    boolean bindingCarByQR(Integer tenantId, Integer franchiseeId, Long uid, String carSn, Long optUid, String channel);
 
     /**
      * 解绑用户车辆

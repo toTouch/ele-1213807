@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
+import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
+import com.xiliulou.pay.base.exception.PayException;
+import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,31 +22,29 @@ public interface ElectricityTradeOrderService {
      *
      * @param callBackResource
      */
-    Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyCarRenalPackageOrder(BaseOrderCallBackResource callBackResource);
     
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder, WechatPayParamsDetails wechatPayParamsDetails, String openId,
             HttpServletRequest request) throws WechatPayException;
     
     
-    //月卡回调
-    Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
-    
-    
-    //押金支付回调
-    Pair<Boolean, Object> notifyDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
-    
-    //电池服务费支付回调
-    Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource);
-    
-    //租车押金支付回调
-    Pair<Boolean, Object> notifyRentCarDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
-    
-    //租车月卡回调
-    Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
+    /**
+     * 通用生成订单，调起支付 V2
+     *
+     * @param commonPayOrder
+     * @param payConfig
+     * @param openId
+     * @param request
+     * @return
+     * @author caobotao.cbt
+     * @date 2024/7/18 19:20
+     */
+    BasePayOrderCreateDTO commonCreateTradeOrderAndGetPayParamsV2(CommonPayOrder commonPayOrder, BasePayConfig payConfig, String openId, HttpServletRequest request)
+            throws PayException;
     
     //保险回调
-    Pair<Boolean, Object> notifyInsuranceOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyInsuranceOrder(BaseOrderCallBackResource callBackResource);
     
     /**
      * 云豆充值回调
@@ -51,7 +52,7 @@ public interface ElectricityTradeOrderService {
      * @param callBackResource
      * @return
      */
-    Pair<Boolean, Object> notifyCloudBeanRechargeOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyCloudBeanRechargeOrder(BaseOrderCallBackResource callBackResource);
     
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
     

@@ -103,7 +103,13 @@ public interface MqProducerConstant {
      * 电池电压电流变化
      */
     String BATTERY_CHARGE_ATTR_CHANGE_TOPIC = "battery_charge_attr_change_topic";
-
+    
+    
+    /**
+     * 支付宝退款结果异步通知
+     */
+    String ALIPAY_REFUND_NOTIFY_TOPIC = "alipay_refund_notify_topic";
+    
     /**
      * 站内信所在新项目主题
      */

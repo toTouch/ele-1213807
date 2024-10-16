@@ -13,6 +13,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>
@@ -56,6 +57,10 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
             log.info("found the free order params from fy. bizContent = {}, params = {}", o, decrypt);
             if (FreeBusinessTypeEnum.FREE.getCode().equals(callbackContext.getBusiness())){
                 FyParams.FreeDeposit fyParams = JsonUtil.fromJson(decrypt, FyParams.FreeDeposit.class);
+                if (Objects.isNull(fyParams)){
+                    log.warn("pxz callback {} params is illegal : {}",callbackContext.getBusiness(), decrypt);
+                    return null;
+                }
                 return CallbackContext.builder()
                         .business(callbackContext.getBusiness())
                         .channel(callbackContext.getChannel())
@@ -66,6 +71,10 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
                         .build();
             }
             FyParams.AuthPayOrUnfree fyParams = JsonUtil.fromJson(decrypt, FyParams.AuthPayOrUnfree.class);
+            if (Objects.isNull(fyParams)){
+                log.warn("pxz callback {} params is illegal : {}",callbackContext.getBusiness(), decrypt);
+                return null;
+            }
             return CallbackContext.builder()
                     .business(BUSINESS_MAP.get(fyParams.getTradeType()))
                     .channel(callbackContext.getChannel())
@@ -75,7 +84,7 @@ public class FyParamsAndDispatchHandler implements FySupport<Map<String,Object>>
                     .type(callbackContext.getType())
                     .build();
         } catch (Exception e) {
-            log.error("decrypt params error", e);
+            log.error("decrypt params : {} error",callbackContext.getParams() , e);
             return null;
         }
     }

@@ -3,20 +3,17 @@ package com.xiliulou.electricity.service.impl;
 import com.google.common.collect.Lists;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.mapper.PictureMapper;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.PictureQuery;
-import com.xiliulou.electricity.query.StorePictureQuery;
 import com.xiliulou.electricity.service.PictureService;
-import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -38,14 +36,20 @@ import java.util.stream.Collectors;
 @Service("pictureService")
 @Slf4j
 public class PictureServiceImpl implements PictureService {
+    
     @Autowired
     private PictureMapper pictureMapper;
+    
     @Autowired
     StorageConfig storageConfig;
+    
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
-
+    
+    @Resource
+    private StorageConverter storageConverter;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -56,7 +60,7 @@ public class PictureServiceImpl implements PictureService {
     public Picture selectByIdFromDB(Long id) {
         return this.pictureMapper.selectById(id);
     }
-
+    
     /**
      * 查询多条数据
      *
@@ -68,7 +72,7 @@ public class PictureServiceImpl implements PictureService {
     public List<Picture> selectByPage(int offset, int limit) {
         return this.pictureMapper.selectByPage(offset, limit);
     }
-
+    
     @Slave
     @Override
     public List<PictureVO> selectByQuery(PictureQuery pictureQuery) {
@@ -76,7 +80,7 @@ public class PictureServiceImpl implements PictureService {
         if (CollectionUtils.isEmpty(pictures)) {
             return Collections.EMPTY_LIST;
         }
-
+        
         return pictureParseVO(pictures);
     }
     
@@ -88,23 +92,24 @@ public class PictureServiceImpl implements PictureService {
         }
         return pictures;
     }
-
+    
     @Override
     public List<PictureVO> pictureParseVO(List<Picture> pictures) {
         try {
             return pictures.parallelStream().map(item -> {
                 PictureVO pictureVO = new PictureVO();
                 BeanUtils.copyProperties(item, pictureVO);
-                pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
+                //                pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
+                pictureVO.setPictureOSSUrl(storageConverter.assembleUrl(item.getPictureUrl()));
                 return pictureVO;
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("ELE ERROR! get store picture error",e);
+            log.error("ELE ERROR! get store picture error", e);
         }
-
+        
         return Collections.EMPTY_LIST;
     }
-
+    
     /**
      * 新增数据
      *
@@ -117,7 +122,7 @@ public class PictureServiceImpl implements PictureService {
         this.pictureMapper.insertOne(picture);
         return picture;
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer batchInsert(List<Picture> pictures) {
@@ -126,7 +131,7 @@ public class PictureServiceImpl implements PictureService {
         }
         return this.pictureMapper.batchInsert(pictures);
     }
-
+    
     /**
      * 修改数据
      *
@@ -138,7 +143,7 @@ public class PictureServiceImpl implements PictureService {
     public Integer update(Picture picture) {
         return this.pictureMapper.update(picture);
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -150,7 +155,7 @@ public class PictureServiceImpl implements PictureService {
     public Boolean deleteById(Long id) {
         return this.pictureMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public int deleteByBusinessId(Long id) {
         return this.pictureMapper.deleteByBusinessId(id);
@@ -165,20 +170,20 @@ public class PictureServiceImpl implements PictureService {
     public List<Picture> selectByByBusinessId(Long id) {
         return this.pictureMapper.selectByByBusinessId(id);
     }
-
+    
     @Override
     public Integer savePictureCallBack(CallBackQuery callBackQuery) {
         if (Objects.isNull(callBackQuery.getOtherId())) {
             return NumberConstant.ZERO;
         }
-
+        
         //删除车辆型号图片
         PictureQuery pictureQuery = PictureQuery.builder().tenantId(TenantContextHolder.getTenantId()).imgType(callBackQuery.getFileType()).businessId(callBackQuery.getOtherId())
                 .build();
         this.deleteByBusinessIdImgType(pictureQuery);
-
+        
         List<Picture> list = Lists.newArrayList();
-
+        
         List<String> pictureNameList = callBackQuery.getFileNameList();
         for (int i = 0; i < pictureNameList.size(); i++) {
             Picture picture = new Picture();
@@ -193,9 +198,9 @@ public class PictureServiceImpl implements PictureService {
             picture.setUpdateTime(System.currentTimeMillis());
             list.add(picture);
         }
-
+        
         //保存车辆型号图片
         return this.batchInsert(list);
     }
-
+    
 }

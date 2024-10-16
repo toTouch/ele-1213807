@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -145,6 +146,12 @@ public class ElectricityMemberCardOrder {
      * 微信商户号
      */
     private String wechatMerchantId;
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
     
     /**
      * 请求签约号，唯一

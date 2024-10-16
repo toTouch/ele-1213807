@@ -149,4 +149,9 @@ public class CarRentalPackageOrderSlippageVo implements Serializable {
      * 门店名称
      */
     private String storeName;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }

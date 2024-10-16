@@ -110,6 +110,11 @@ public class DetailsUserInfoVo {
     private Integer bindWX;
     
     /**
+     * 是否可解绑微信 0：不可解绑 1：可解绑
+     */
+    private Integer bindAlipay;
+    
+    /**
      * 邀请人是否可被修改 0：可修改 1：不可修改
      */
     private Integer canModifyInviter;

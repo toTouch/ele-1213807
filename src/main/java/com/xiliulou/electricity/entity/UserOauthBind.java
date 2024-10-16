@@ -68,11 +68,20 @@ public class UserOauthBind {
 	public static final Integer SOURCE_WX = 1;
 	//小程序
 	public static final Integer SOURCE_WX_PRO = 2;
+	//支付宝
+	public static final Integer SOURCE_ALI_PAY = 3;
 	
 	// 微信不可解绑
 	public static final Integer STATUS_UN_BIND_VX = 0;
 	
 	// 微信可解绑
 	public static final Integer STATUS_BIND_VX = 1;
+	
+	
+	// 支付宝不可解绑
+	public static final Integer STATUS_UN_BIND_ALIPAY = 0;
+	
+	// 支付宝可解绑
+	public static final Integer STATUS_BIND_ALIPAY = 1;
 
 }

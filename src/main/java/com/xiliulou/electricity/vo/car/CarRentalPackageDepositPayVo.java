@@ -151,9 +151,16 @@ public class CarRentalPackageDepositPayVo implements Serializable {
     private String franchiseeName;
     
     /**
+     * 支付渠道
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
+    
+    /**
      * <p>
      *    Description: 剩余可代扣金额
      * </p>
     */
     private BigDecimal payTransAmt;
+    
 }

@@ -287,7 +287,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         rebateRecordService.insert(rebateRecord);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public void handleMemberCardRentRefund(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(batteryMemberCardMerchantRebate.getOrderId());
@@ -393,7 +392,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
      *
      * @param rebateRecord
      */
-    @Transactional(rollbackFor = Exception.class)
     public void handleExcessRebateRecord(RebateRecord rebateRecord, BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
         //获取差额记录
         List<RebateRecord> excessList = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());

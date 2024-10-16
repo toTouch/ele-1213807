@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -129,6 +130,13 @@ public class InsuranceOrder {
      * 微信商户号
      */
     private String wechatMerchantId;
+    
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
 
     //保险状态 3.0重新定义  0：未出险  1：已出险  2：已过期  3：已失效
     public static final Integer NOT_USE = 0;

@@ -61,7 +61,7 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "oldElectricityBatterySn", required = false) String oldElectricityBatterySn,
-            @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn) {
+            @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn,@RequestParam(value = "channel" , required = false) String channel) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -108,7 +108,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .eid(eid).beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId())
                 .batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn)
-                .franchiseeId(franchiseeId).build();
+                .franchiseeId(franchiseeId).channel(channel).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
     
@@ -182,7 +182,7 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName, @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "batterySn", required = false) String batterySn, @RequestParam(value = "oldElectricityBatterySn", required = false) String oldElectricityBatterySn,
-            @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn) {
+            @RequestParam(value = "newElectricityBatterySn", required = false) String newElectricityBatterySn,@RequestParam(value = "channel" , required = false) String channel) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -209,7 +209,8 @@ public class JsonAdminElectricityCabinetOrderController {
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().orderId(orderId).phone(phone).status(status).eid(eid)
                 .beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).franchiseeIds(franchiseeIds).storeIds(storeIds).source(source)
                 .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid).tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn).build();
+                .franchiseeId(franchiseeId).batterySn(batterySn).oldElectricityBatterySn(oldElectricityBatterySn).newElectricityBatterySn(newElectricityBatterySn)
+                .channel(channel).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
     

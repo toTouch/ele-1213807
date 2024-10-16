@@ -101,4 +101,9 @@ public class CarRentalPackageDepositRefundQryReq implements Serializable {
      * 创建时间截止
      */
     private Long createTimeEnd;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }
