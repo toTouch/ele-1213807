@@ -28,4 +28,6 @@ public interface MeiTuanOrderRedeemTxService {
             List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes);
     
     void rollback(MeiTuanOrderRedeemRollBackBO rollBackBO);
+    
+    void rollbackClearCache(Long uid);
 }

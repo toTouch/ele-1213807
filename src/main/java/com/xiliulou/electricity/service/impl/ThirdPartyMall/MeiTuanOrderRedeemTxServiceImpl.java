@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.ThirdPartyMall;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.electricity.bo.meituan.MeiTuanOrderRedeemRollBackBO;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -93,6 +95,9 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
     
     @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
+    @Resource
+    private RedisService redisService;
     
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -195,9 +200,10 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 userBatteryDepositService.update(userBatteryDeposit);
                 
                 // 封装UserBatteryDeposit回滚
-                rollBackUserBatteryDeposit = UserBatteryDeposit.builder().uid(existUserBatteryDeposit.getUid()).orderId(existUserBatteryDeposit.getOrderId()).did(existUserBatteryDeposit.getDid())
-                        .batteryDeposit(existUserBatteryDeposit.getBatteryDeposit()).applyDepositTime(existUserBatteryDeposit.getApplyDepositTime())
-                        .depositType(existUserBatteryDeposit.getDepositType()).delFlag(existUserBatteryDeposit.getDelFlag()).updateTime(existUserBatteryDeposit.getUpdateTime())
+                rollBackUserBatteryDeposit = UserBatteryDeposit.builder().uid(existUserBatteryDeposit.getUid()).orderId(existUserBatteryDeposit.getOrderId())
+                        .did(existUserBatteryDeposit.getDid()).batteryDeposit(existUserBatteryDeposit.getBatteryDeposit())
+                        .applyDepositTime(existUserBatteryDeposit.getApplyDepositTime()).depositType(existUserBatteryDeposit.getDepositType())
+                        .delFlag(existUserBatteryDeposit.getDelFlag()).updateTime(existUserBatteryDeposit.getUpdateTime())
                         .depositModifyFlag(existUserBatteryDeposit.getDepositModifyFlag()).beforeModifyDeposit(existUserBatteryDeposit.getBeforeModifyDeposit()).build();
             } else {
                 userBatteryDeposit.setCreateTime(System.currentTimeMillis());
@@ -814,6 +820,14 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         if (Objects.nonNull(userBatteryMemberCardPackageId)) {
             userBatteryMemberCardPackageService.deleteById(userBatteryMemberCardPackageId);
         }
+    }
+    
+    @Override
+    public void rollbackClearCache(Long uid) {
+        redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
+        redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
+        redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + uid);
+        redisService.delete(CacheConstant.CACHE_USER_INFO + uid);
     }
     
     private MeiTuanOrderRedeemRollBackBO buildRollBackData(Long eleDepositOrderById, Long electricityMemberCardOrderById,
