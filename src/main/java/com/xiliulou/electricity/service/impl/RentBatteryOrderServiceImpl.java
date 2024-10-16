@@ -390,7 +390,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //电子签署拦截
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
-                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryUserEsignRecordFromDB(user.getUid(), Long.valueOf(user.getTenantId()));
+                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryEsignFinishedRecordByUser(user.getUid(), Long.valueOf(user.getTenantId()));
                 if (Objects.isNull(eleUserEsignRecord)) {
                     return R.fail("100329", "请先完成电子签名");
                 }
