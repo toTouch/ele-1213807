@@ -5013,7 +5013,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 校验柜机Id
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
-        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("100003", "柜机不存在");
+        }
+        
+        if(!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())){
             return R.fail("100003", "柜机不存在");
         }
         
