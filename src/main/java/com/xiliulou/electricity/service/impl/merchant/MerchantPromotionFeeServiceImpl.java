@@ -548,6 +548,10 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             renewalVO.setStatisticTime(monthDateStr);
             renewalVOList.add(renewalVO);
         }
+    
+        userVO.setPurchaseVOList(purchaseVOList);
+        userVO.setScanCodeVOList(scanCodeVOList);
+        userVO.setRenewalVOList(renewalVOList);
         
         return R.ok(userVO);
     }
