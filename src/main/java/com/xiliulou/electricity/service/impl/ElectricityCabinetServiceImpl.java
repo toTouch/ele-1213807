@@ -975,8 +975,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public Triple<Boolean, String, Object> updateOnlineStatus(Long id) {
         ElectricityCabinet electricityCabinet = this.queryByIdFromCache(id.intValue());
-        if (Objects.isNull(electricityCabinet) || !Objects.equals(TenantContextHolder.getTenantId(), electricityCabinet.getTenantId())) {
+        if (Objects.isNull(electricityCabinet)) {
             return Triple.of(false, "100003", "柜机不存在");
+        }
+        
+        if(!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())){
+            return Triple.of(false,"100003", "柜机不存在");
         }
         
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
