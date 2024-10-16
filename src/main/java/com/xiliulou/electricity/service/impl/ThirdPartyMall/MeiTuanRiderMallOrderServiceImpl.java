@@ -371,7 +371,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             if (!deliverResult) {
                 meiTuanOrderRedeemTxService.rollback(rollBackBO);
                 log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
-                return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
+                return Triple.of(false, "120146", "订单兑换失败，请联系客服处理");
             }
             
             // 给第三方推送用户套餐信息
@@ -380,8 +380,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
-            log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
-            return Triple.of(false, "120139", "订单兑换失败，请联系客服处理");
+            log.error("MeiTuan order redeem error! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId, e);
+            return Triple.of(false, "120147", "订单兑换失败，请联系客服处理");
         } finally {
             redisService.delete(CacheConstant.CACHE_MEI_TUAN_CREATE_BATTERY_MEMBER_CARD_ORDER_LOCK_KEY + uid);
         }
@@ -510,7 +510,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (Objects.isNull(userBatteryMemberCard)) {
             return false;
         }
-    
+        
         MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.checkEnableMeiTuanRiderMall(userBatteryMemberCard.getTenantId());
         if (Objects.isNull(meiTuanRiderMallConfig)) {
             log.warn("The tenant meiTuanConfig switch off, tenantId={}", userBatteryMemberCard.getTenantId());
