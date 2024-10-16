@@ -72,7 +72,7 @@
         tui.name as userName,
         tui.phone as phone
         from t_invitation_activity_record iar
-        left join t_user_info tui on tui.uid=iar.uid
+        left join t_user_info tui on tui.uid=iar.uid and tui.del_flag=0
         left join t_invitation_activity tia on tia.id = iar.activity_id
         <where>
             <if test="userName != null and userName != ''">
