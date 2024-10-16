@@ -30,6 +30,7 @@ import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordSer
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -279,7 +280,8 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(cabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
-            
+            // 保存电池被取走对应的订单，供后台租借状态电池展示
+            OrderForBatteryUtil.save(cabinetOrder, null);
         } else {
             log.error("normalOpenFullyCellHandlerIot error! takeBattery is null!uid={},sessionId={},orderId={}", userInfo.getUid(), openFullCellRsp.getSessionId(),
                     openFullCellRsp.getOrderId());
@@ -326,6 +328,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             newElectricityBattery.setGuessUid(null);
         }
         
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+        
         electricityBatteryService.updateBatteryUser(newElectricityBattery);
     }
     
@@ -358,6 +363,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
+        
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(placeBattery.getSn());
     }
     
     

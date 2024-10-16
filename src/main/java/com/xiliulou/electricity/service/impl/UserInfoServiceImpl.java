@@ -138,6 +138,7 @@ import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
@@ -1260,6 +1261,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
                     rentBatteryOrder.setOrderType(orderType);
                     rentBatteryOrderService.insert(rentBatteryOrder);
+                    
+                    // 删除redis中保存的租电订单或换电订单
+                    OrderForBatteryUtil.delete(isBindElectricityBattery.getSn());
                 }
             }
             
@@ -1315,6 +1319,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 
                 // 记录企业用户租电池记录
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+                
+                // 保存电池被取走对应的订单，供后台租借状态电池展示
+                OrderForBatteryUtil.save(null, rentBatteryOrder);
                 
                 try {
                     // 发送操作记录
@@ -1506,6 +1513,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -3106,6 +3115,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
                 // 记录企业用户租电池记录
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+                
+                // 保存电池被取走对应的订单，供后台租借状态电池展示
+                OrderForBatteryUtil.save(null, rentBatteryOrder);
+                
                 return null;
             });
             return R.ok();

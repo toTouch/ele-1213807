@@ -55,6 +55,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -494,6 +495,9 @@ public class EleOperateQueueHandler {
                     newElectricityBattery.setElectricityCabinetName(null);
                     newElectricityBattery.setBorrowExpireTime(null);
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                    
+                    // 删除redis中保存的租电订单或换电订单
+                    OrderForBatteryUtil.delete(electricityBattery.getSn());
                 }
                 
                 //放入电池改为在仓
@@ -510,6 +514,9 @@ public class EleOperateQueueHandler {
                         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                         newElectricityBattery.setBorrowExpireTime(null);
                         electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                        
+                        // 删除redis中保存的租电订单或换电订单
+                        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
                     }
                 }
                 
@@ -643,6 +650,9 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
             }
             
             //电池改为在用
@@ -663,6 +673,9 @@ public class EleOperateQueueHandler {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinetOrder.getElectricityCabinetId(), String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L,
                         TimeUnit.DAYS);
             }
+            
+            // 保存电池被取走对应的订单，供后台租借状态电池展示
+            OrderForBatteryUtil.save(electricityCabinetOrder, null);
         }
     }
     
@@ -777,6 +790,9 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            
+            // 删除redis中保存的租电订单或换电订单
+            OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
         }
         
         //电池改为在用
@@ -800,6 +816,8 @@ public class EleOperateQueueHandler {
             operateBatterSocThreadPool.execute(() -> handlerUserTakeBatterySoc(userInfo, electricityBattery.getSn(), electricityBattery.getPower()));
         }
         
+        // 保存电池被取走对应的订单，供后台租借状态电池展示
+        OrderForBatteryUtil.save(null, rentBatteryOrder);
     }
     
     
@@ -908,6 +926,9 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+                
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(electricityBattery.getSn());
             }
         }
         
@@ -933,6 +954,8 @@ public class EleOperateQueueHandler {
                     
                 }
                 
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
             }
             
         }

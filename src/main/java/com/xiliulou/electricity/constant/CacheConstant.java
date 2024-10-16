@@ -820,5 +820,10 @@ public interface CacheConstant {
     
     
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
+    
+    /**
+     * 保存租借状态的电池对应的订单
+     */
+    String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
 }
 

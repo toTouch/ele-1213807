@@ -47,6 +47,7 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.electricity.vo.OperateMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -238,6 +239,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             oldElectricityBatteryUpdate.setBorrowExpireTime(null);
             oldElectricityBatteryUpdate.setBindTime(offlineOrderMessage.getEndTime());
             electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
+            
+            // 删除redis中保存的租电订单或换电订单
+            OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
         }
         
         // 归还电池soc
@@ -295,6 +299,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                     newBattery.setGuessUid(null);
                 }
                 
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(electricityBattery.getSn());
+                
                 newBattery.setUpdateTime(System.currentTimeMillis());
                 newBattery.setElectricityCabinetId(null);
                 newBattery.setElectricityCabinetName(null);
@@ -319,6 +326,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             // 取走电池soc
             offLineExchangeBatterSocThreadPool.execute(
                     () -> handlerUserTakeBatterySoc(user.getUid(), offlineOrderMessage.getNewElectricityBatterySn(), offlineOrderMessage.getTakeBatterySoc()));
+            
+            // 保存电池被取走对应的订单，供后台租借状态电池展示
+            OrderForBatteryUtil.save(electricityCabinetOrder, null);
         }
         
     }
