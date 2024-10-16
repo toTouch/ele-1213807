@@ -116,4 +116,9 @@ public class WithdrawRecordVO {
      * 审核员名称
      */
     private String auditorName;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 }

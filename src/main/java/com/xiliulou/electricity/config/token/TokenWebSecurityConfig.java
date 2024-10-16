@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.service.token.AliPayThirdAuthenticationServiceImpl;
 import com.xiliulou.electricity.service.token.LoginSuccessPostProcessor;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
@@ -16,6 +17,7 @@ import com.xiliulou.security.authentication.JwtTokenManager;
 import com.xiliulou.security.authentication.TokenLogoutHandler;
 import com.xiliulou.security.authentication.thirdauth.CustomThirdAuthAuthenticationFilter;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationServiceFactory;
+import com.xiliulou.security.authentication.thirdauth.alipay.ThirdAliPayAuthenticationProvider;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationProvider;
 import com.xiliulou.security.config.TokenConfig;
 import com.xiliulou.security.constant.TokenConstant;
@@ -50,6 +52,10 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private UserDetailsService userDetailsService;
 	@Autowired
 	private WxProThirdAuthenticationServiceImpl wxProThirdAuthenticationService;
+	
+	@Autowired
+	private AliPayThirdAuthenticationServiceImpl aliPayThirdAuthenticationService;
+	
 	@Autowired
 	RedisService redisService;
 	@Autowired
@@ -90,8 +96,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		//增加第三方授权的service
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_WX_PRO, wxProThirdAuthenticationService);
-
-
+		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_ALI_PAY, aliPayThirdAuthenticationService);
 	}
 
 	@Override
@@ -101,6 +106,6 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider());
+		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider()).authenticationProvider(new ThirdAliPayAuthenticationProvider());
 	}
 }

@@ -109,7 +109,6 @@ public class ElectricityConfig {
      */
     private Integer freeDepositType;
     
-
     
     /**
      * 是否迁移加盟商 1--关闭 2--开启
@@ -127,6 +126,7 @@ public class ElectricityConfig {
      * 是否启用0元退押审核 (0--是 1--否)
      */
     private Integer isZeroDepositAuditEnabled;
+    
     /**
      * 是否打开车电关联 0--是 1--否
      */
@@ -167,20 +167,43 @@ public class ElectricityConfig {
      */
     private Integer wxCustomer;
     
+    
     /**
-     *  柜机少电比例
+     * 打开支付宝客服 0-是 1-否
+     */
+    private Integer alipayCustomer;
+    
+    
+    /**
+     * 柜机少电比例
      */
     private BigDecimal lowChargeRate;
     
     /**
-     *  柜机多电比例
+     * 柜机多电比例
      */
     private BigDecimal fullChargeRate;
     
     /**
-     * 柜机少电多电配置标准:1-统一配置 2-单个柜机配置
+     * 柜机少电多电配置标准:0-统一配置 1-单个柜机配置
      */
     private Integer chargeRateType;
+    
+    /**
+     * 是否舒适换电，默认0关闭，1是开启
+     */
+    private Integer isComfortExchange;
+    
+    /**
+     * 优先换电标准
+     */
+    private Double priorityExchangeNorm;
+    
+    /**
+     * 是否开启美团骑手商城：0--是 1--否
+     */
+    private Integer isEnableMeiTuanRiderMall;
+    
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
@@ -189,7 +212,9 @@ public class ElectricityConfig {
     //人工审核
     //实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
     public static Integer MANUAL_REVIEW = 0;
+    
     public static Integer AUTO_REVIEW = 1;
+    
     public static Integer FACE_REVIEW = 2;
     
     
@@ -241,8 +266,11 @@ public class ElectricityConfig {
      * 免押押金类型，0：缴纳押金，1：电池免押金，2：租车免押金，3：车辆电池免押金
      */
     public static Integer FREE_DEPOSIT_TYPE_DEFAULT = 0;
+    
     public static Integer FREE_DEPOSIT_TYPE_BATTERY = 1;
+    
     public static Integer FREE_DEPOSIT_TYPE_CAR = 2;
+    
     public static Integer FREE_DEPOSIT_TYPE_ALL = 3;
     
     /**
@@ -262,34 +290,45 @@ public class ElectricityConfig {
     /**
      * 0元退押审核 0--是 1--否
      */
-    public static Integer ENABLE_ZERO_DEPOSIT_AUDIT=0;
+    public static Integer ENABLE_ZERO_DEPOSIT_AUDIT = 0;
     
-    public static Integer DISABLE_ZERO_DEPOSIT_AUDIT=1;
+    public static Integer DISABLE_ZERO_DEPOSIT_AUDIT = 1;
     
     /**
      * 是否允许租电 0--是  1--否
      */
-    public static  Integer ALLOW_RENT_ELE=0;
-    public static  Integer NOT_ALLOW_RENT_ELE=1;
+    public static Integer ALLOW_RENT_ELE = 0;
+    
+    public static Integer NOT_ALLOW_RENT_ELE = 1;
     
     /**
      * 是否允许退电 0--是  1--否
      */
-    public static  Integer ALLOW_RETURN_ELE=0;
-    public static  Integer NOT_ALLOW_RETURN_ELE=1;
+    public static Integer ALLOW_RETURN_ELE = 0;
+    
+    public static Integer NOT_ALLOW_RETURN_ELE = 1;
     
     
     /**
      * 冻结套餐强制资产开关 0--是 1--否
      */
     public static Integer ALLOW_FREEZE_ASSETS = 0;
+    
     public static Integer NOT_ALLOW_FREEZE_ASSETS = 1;
-
+    
     /**
      * 打开微信客服 0-是 1-否
      */
     public static Integer OPEN_WX_CUSTOMER = 0;
+    
     public static Integer CLOSE_WX_CUSTOMER = 1;
+    
+    
+    /**
+     * 打开支付宝客服 0-是 1-否
+     */
+    public static Integer OPEN_ALIPAY_CUSTOMER = 0;
+    public static Integer CLOSE_ALIPAY_CUSTOMER = 1;
     
     /**
      * 柜机少电多电配置标准:0-统一配置
@@ -300,5 +339,14 @@ public class ElectricityConfig {
      * 柜机少电多电配置标准:1-单个柜机配置
      */
     public static Integer CHARGE_RATE_TYPE_SINGLE = 1;
-
+    
+    /**
+     * 舒适换电打开
+     */
+    public static Integer COMFORT_EXCHANGE = 0;
+    
+    /**
+     * 舒适换电关闭
+     */
+    public static Integer NOT_COMFORT_EXCHANGE = 1;
 }

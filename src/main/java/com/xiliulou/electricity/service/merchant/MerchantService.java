@@ -28,13 +28,13 @@ public interface MerchantService {
     
     void deleteCache(MerchantDeleteCacheDTO merchantDeleteCacheDTO);
     
-    Triple<Boolean, String, Object> remove(Long id);
+    Triple<Boolean, String, Object> remove(Long id, List<Long> franchiseeIds);
     
     Integer countTotal(MerchantPageRequest merchantPageRequest);
     
     List<MerchantVO> listByPage(MerchantPageRequest merchantPageRequest);
     
-    Triple<Boolean, String, Object> queryById(Long id);
+    Triple<Boolean, String, Object> queryById(Long id, List<Long> franchiseeIdList);
     
     Merchant queryByIdFromCache(Long id);
     
@@ -67,4 +67,6 @@ public interface MerchantService {
     void deleteCacheForRepairEnterprise(List<Long> enterpriseIds, List<Long> merchantIds);
     
     Pair<Boolean, Object> unbindOpenId(MerchantUnbindReq params);
+    
+    List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList);
 }

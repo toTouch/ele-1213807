@@ -20,6 +20,10 @@ public class ElectricityBatteryDataQuery {
     private String sn;
     
     /**
+     * sn码 列表
+     */
+    private List<String> sns;
+    /**
      * 电池物理状态 0：在仓，1：不在仓
      */
     private Integer physicsStatus;
@@ -27,7 +31,7 @@ public class ElectricityBatteryDataQuery {
     /**
      * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
      */
-    private Integer businessStatus;
+    private List<Integer> businessStatus;
     
     
     private Integer tenantId;

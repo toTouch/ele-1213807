@@ -3,12 +3,17 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantCabinetPowerMonthRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, date, place_count, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time
+        id
+        , date, place_count, month_sum_power, month_sum_charge, tenant_id, del_flag, create_time, update_time, franchisee_id
     </sql>
     
     <select id="selectListByPage" resultType="com.xiliulou.electricity.vo.merchant.MerchantCabinetPowerMonthRecordVO">
-        select
-        <include refid="basic_field"/>
+        select any_value(id) as id,
+        date as date,
+        sum(place_count) as placeCount,
+        sum(month_sum_power) as monthSumPower,
+        sum(month_sum_charge) as monthSumCharge,
+        any_value(tenant_id) as tenantId
         from t_merchant_cabinet_power_month_record
         <where>
             del_flag = 0
@@ -18,7 +23,17 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
+        group by date
         order by date desc
         <if test="offset != null and size != null">
             limit #{offset}, #{size}
@@ -27,6 +42,12 @@
     
     <select id="countTotal" resultType="java.lang.Integer">
         select count(1)
+        from (select any_value(id) as id,
+        date as date,
+        sum(place_count) as placeCount,
+        sum(month_sum_power) as monthSumPower,
+        sum(month_sum_charge) as monthSumCharge,
+        any_value(tenant_id) as tenantId
         from t_merchant_cabinet_power_month_record
         <where>
             del_flag = 0
@@ -36,6 +57,17 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
+        group by date
+        ) a
     </select>
 </mapper>

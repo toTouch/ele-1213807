@@ -5,16 +5,15 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ElectricityPayParamsService extends IService<ElectricityPayParams> {
     
-    
-    
-    R getTenantId(String appId);
     
     /**
      * 上传支付证书
@@ -27,9 +26,6 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     
     
     ElectricityPayParams selectTenantId(String appId);
-    
-    @Deprecated
-    Triple<Boolean, String, Object> queryByMerchantAppId(String appId);
     
     
     /**
@@ -59,6 +55,19 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      */
     ElectricityPayParams queryPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId);
     
+    
+    /**
+     * 根据租户id + 加盟商id集合查询缓存<br/>
+     * <p>
+     * 精确查询配置,传入的franchiseeId是什么，就查询franchiseeId对应的配置。
+     * </p>
+     *
+     * @param tenantId
+     * @param franchiseeIds
+     * @author caobotao.cbt
+     * @date 2024/6/18 09:19
+     */
+    List<ElectricityPayParams> queryListPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Set<Long> franchiseeIds);
     
     /**
      * 新增
@@ -95,4 +104,27 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @date 2024/6/12 18:09
      */
     List<ElectricityPayParamsVO> queryByTenantId(Integer tenantId);
+    
+    /**
+     * 聚合租户加盟商
+     *
+     * @param tenantId
+     * @param dataPermissionFranchiseeIds
+     * @return
+     * @author caobotao.cbt
+     * @date 2024/8/22 17:52
+     */
+    List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId, List<Long> dataPermissionFranchiseeIds);
+    
+    /**
+     * 根据租户id+商户号查询
+     *
+     * @param tenantId
+     * @param wechatMerchantId
+     * @author caobotao.cbt
+     * @date 2024/8/26 10:10
+     */
+    ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId);
+    
+    
 }

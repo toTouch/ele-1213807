@@ -42,4 +42,6 @@ public class JsonShareMoneyActivityHistoryQuery {
     private List<Long> franchiseeIds;
 
     private List<Long> storeIds;
+    
+    private Long franchiseeId;
 }

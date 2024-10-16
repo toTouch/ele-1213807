@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
@@ -45,6 +46,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -157,7 +159,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                        @RequestParam(value = "areaId", required = false) Long areaId,
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "sn", required = false) String sn) {
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -215,6 +218,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .deviceName(deviceName)
                 .idList(idList)
                 .sn(sn)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
@@ -238,7 +242,8 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                         @RequestParam(value = "modelId", required = false) Integer modelId,
             @RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName,
-            @RequestParam(value = "version", required = false) String version) {
+            @RequestParam(value = "version", required = false) String version,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         // 数据权校验
         Triple<List<Long>, List<Long>, Boolean> permissionTriple = checkPermission();
@@ -287,6 +292,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
                 .productKey(productKey)
                 .deviceName(deviceName)
                 .version(version)
+                .franchiseeId(franchiseeId)
                 .build();
 
         return electricityCabinetService.queryCount(electricityCabinetQuery);
@@ -446,7 +452,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
                 .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_UNLOCK_CABINET).build();
         
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         //删除缓存
         redisService.delete(CacheConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
         
@@ -928,7 +934,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
@@ -959,10 +965,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-        
         return returnTripleResult(electricityCabinetService.listTransferCabinetModel(cabinetModelRequest));
     }
     
@@ -977,7 +979,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
@@ -1026,8 +1028,6 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.batchEditRentReturn(rentReturnQuery);
     }
     
-    
-    
     /**
      * 运维端编辑租退标准回显
      */
@@ -1035,5 +1035,40 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     public R rentReturnEditEchoByDeviceName(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return electricityCabinetService.rentReturnEditEchoByDeviceName(productKey, deviceName);
     }
+    
+    /**
+     * 修改柜机模式
+     */
+//    @PostMapping(value = "/admin/electricityCabinet/batchUpdateCabinetPattern")
+//    public R batchUpdateCabinetPattern(@RequestBody @Validated ElectricityCabinetBatchEditRentReturnQuery rentReturnQuery) {
+//
+//    }
+    
+    /**
+     * 修改柜机模式
+     */
+    @PostMapping(value = "/admin/electricityCabinet/updateCabinetPattern")
+    public R updateCabinetPattern(@RequestBody @Validated EleCabinetPatternQuery query) {
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
+        if (Objects.isNull(otherSetting) || StringUtils.isBlank(otherSetting.getApiAddress())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("apiAddress", otherSetting.getApiAddress());
+        params.put("iotConnectMode", query.getPattern());
+        
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(query.getProductKey());
+        commandQuery.setDeviceName(query.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+        return electricityCabinetService.sendCommandToEleForOuter(commandQuery);
+    }
+    
     
 }

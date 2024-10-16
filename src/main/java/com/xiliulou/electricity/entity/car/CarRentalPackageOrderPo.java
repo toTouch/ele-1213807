@@ -14,6 +14,7 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -231,6 +232,12 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
      * 支付加盟商ID
      */
     private Long payFranchiseeId;
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
     
     public List<Long> getCouponIds() {
         Set<Long> result = new HashSet<>();

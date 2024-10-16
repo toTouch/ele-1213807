@@ -22,13 +22,16 @@ import com.xiliulou.electricity.request.asset.AssetInventorySaveOrUpdateRequest;
 import com.xiliulou.electricity.request.asset.ElectricityBatterySnSearchRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.asset.AssetInventoryDetailService;
 import com.xiliulou.electricity.service.asset.AssetInventoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.asset.AssetInventoryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +69,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     @Autowired
     private FranchiseeService franchiseeService;
     
+    @Autowired
+    private AssertPermissionService assertPermissionService;
+    
     @Override
     public R save(AssetInventorySaveOrUpdateRequest assetInventorySaveOrUpdateRequest, Long operator) {
         
@@ -80,34 +87,39 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
     
             Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
             if (Objects.isNull(franchisee)) {
-                log.error("ASSET_INVENTORY ERROR! not found franchise! franchiseId={}", assetInventorySaveOrUpdateRequest.getFranchiseeId());
+                log.warn("ASSET_INVENTORY ERROR! not found franchise! franchiseId={}", assetInventorySaveOrUpdateRequest.getFranchiseeId());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
     
             // tenantId校验
-            if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
+            if (!Objects.equals(franchisee.getTenantId(), tenantId)) {
                 return R.ok();
             }
             
             // 默认资产类型是电池,获取查询电池数量
             ElectricityBatteryQuery electricityBatteryQuery = ElectricityBatteryQuery.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
             Object data = electricityBatteryService.queryCount(electricityBatteryQuery).getData();
-            
+    
             // 生成资产盘点订单
-            AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo).franchiseeId(franchiseeId)
-                    .type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetConstant.ASSET_INVENTORY_STATUS_TAKING).inventoriedTotal(NumberConstant.ZERO)
-                    .pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator).tenantId(tenantId)
-                    .delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-            
+            Integer insert = NumberConstant.ZERO;
+            if (Objects.nonNull(data) && (Integer) data > NumberConstant.ZERO) {
+                AssetInventorySaveOrUpdateQueryModel assetInventorySaveOrUpdateQueryModel = AssetInventorySaveOrUpdateQueryModel.builder().orderNo(orderNo)
+                        .franchiseeId(franchiseeId).type(AssetTypeEnum.ASSET_TYPE_BATTERY.getCode()).status(AssetConstant.ASSET_INVENTORY_STATUS_TAKING)
+                        .inventoriedTotal(NumberConstant.ZERO).pendingTotal((Integer) data).finishTime(assetInventorySaveOrUpdateRequest.getFinishTime()).operator(operator)
+                        .tenantId(tenantId).delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        
+                insert = assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel);
+            }
+    
             //异步记录
-            if ((Integer) data > NumberConstant.ZERO) {
+            if (insert > NumberConstant.ZERO) {
                 ElectricityBatterySnSearchRequest snSearchRequest = ElectricityBatterySnSearchRequest.builder().tenantId(tenantId).franchiseeId(franchiseeId).build();
                 executorService.execute(() -> {
                     assetInventoryDetailService.asyncBatteryProcess(snSearchRequest, orderNo, operator);
                 });
             }
             
-            return R.ok(assetInventoryMapper.insertOne(assetInventorySaveOrUpdateQueryModel));
+            return R.ok(insert);
         } finally {
             redisService.delete(CacheConstant.CACHE_ASSET_INVENTORY_LOCK + operator);
         }
@@ -122,6 +134,13 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         
         List<AssetInventoryVO> rspList = Collections.emptyList();
         
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return Collections.emptyList();
+        }
+        assetInventoryQueryModel.setFranchiseeIds(pair.getRight());
+        
         List<AssetInventoryBO> assetInventoryBOList = assetInventoryMapper.selectListByFranchiseeId(assetInventoryQueryModel);
         if (CollectionUtils.isNotEmpty(assetInventoryBOList)) {
             rspList = assetInventoryBOList.stream().map(item -> {
@@ -129,8 +148,9 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
                 AssetInventoryVO assetInventoryVO = new AssetInventoryVO();
                 BeanUtils.copyProperties(item, assetInventoryVO);
                 
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-                assetInventoryVO.setFranchiseeName(franchisee.getName());
+                if (Objects.nonNull(item.getFranchiseeId())) {
+                    assetInventoryVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(item.getFranchiseeId())).orElse(new Franchisee()).getName());
+                }
                 
                 return assetInventoryVO;
             }).collect(Collectors.toList());
@@ -150,6 +170,13 @@ public class AssetInventoryServiceImpl implements AssetInventoryService {
         AssetInventoryQueryModel assetInventoryQueryModel = new AssetInventoryQueryModel();
         BeanUtils.copyProperties(assetInventoryRequest, assetInventoryQueryModel);
         assetInventoryQueryModel.setTenantId(TenantContextHolder.getTenantId());
+        
+        // 加盟商权限
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return NumberConstant.ZERO;
+        }
+        assetInventoryQueryModel.setFranchiseeIds(pair.getRight());
         
         return assetInventoryMapper.countTotal(assetInventoryQueryModel);
     }

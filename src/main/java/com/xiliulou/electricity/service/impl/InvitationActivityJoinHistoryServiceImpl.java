@@ -1,29 +1,25 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jpay.util.StringUtils;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.request.activity.InvitationActivityAnalysisRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
-import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.FinalJoinInvitationActivityHistoryVO;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import com.xiliulou.electricity.vo.activity.InvitationActivityAnalysisAdminVO;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +50,8 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     private InvitationActivityJoinHistoryMapper invitationActivityJoinHistoryMapper;
     @Autowired
     private UserInfoService userInfoService;
-    @Autowired
-    private AssertPermissionService assertPermissionService;
+    @Resource
+    private FranchiseeService franchiseeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -143,13 +139,6 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     @Slave
     public List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
-        if (!triple.getRight()){
-            return new ArrayList<>();
-        }
-        query.setFranchiseeIds(triple.getLeft());
-        query.setStoreIds(triple.getMiddle());
-        
         List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectUserHistoryByPage(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
@@ -160,7 +149,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             item.setUserName(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getName());
             item.setPhone(Objects.isNull(userInfo) ? StringUtils.EMPTY : userInfo.getPhone());
-            
+    
+            Long franchiseeId = item.getFranchiseeId();
+            if (Objects.nonNull(franchiseeId)) {
+                item.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
         }).collect(Collectors.toList());
 
     }
@@ -168,13 +161,6 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     @Slave
     public Integer selectByPageCount(InvitationActivityJoinHistoryQuery query) {
-        Triple<List<Long>, List<Long>, Boolean> triple = assertPermissionService.assertPermissionByTriple(SecurityUtils.getUserInfo());
-        if (!triple.getRight()){
-            return NumberConstant.ZERO;
-        }
-        query.setFranchiseeIds(triple.getLeft());
-        query.setStoreIds(triple.getMiddle());
-        
         return invitationActivityJoinHistoryMapper.selectByPageCount(query);
     }
     

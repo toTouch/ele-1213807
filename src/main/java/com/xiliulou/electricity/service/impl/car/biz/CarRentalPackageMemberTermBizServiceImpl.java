@@ -230,7 +230,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
      * @return true(成功)、false(失败)
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public boolean substractResidue(Integer tenantId, Long uid) {
         
         // 查询会员当前信息
@@ -282,8 +281,10 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             return false;
         }
         
-        if (now >= memberTermEntity.getDueTimeTotal() || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine())
-                && memberTermEntity.getResidue() <= 0L)) {
+        
+        if ((RenalPackageConfineEnum.NO.getCode().equals(memberTermEntity.getRentalPackageConfine()) && Objects.nonNull(memberTermEntity.getDueTimeTotal())
+                && now >= memberTermEntity.getDueTimeTotal()) || (RenalPackageConfineEnum.NUMBER.getCode().equals(memberTermEntity.getRentalPackageConfine()) && Objects.nonNull(
+                memberTermEntity.getResidue()) && memberTermEntity.getResidue() <= 0L)) {
             return true;
         }
         
@@ -826,7 +827,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         }
                         
                         // 判定构建逾期订单
-                        // TODO 为了测试，更改为10分钟，实际值 DAY_MILLISECOND
                         Long expireTime = memberTermEntity.getDueTime() + TimeConstant.DAY_MILLISECOND;
                         if (nowTime >= expireTime) {
                             slippageEntityInsert = buildCarRentalPackageOrderSlippage(memberTermEntity.getUid(), memberTermEntity, expireTime);
@@ -835,6 +835,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                                 continue;
                             }
                         }
+                        
                     } else {
                         // 二次保底确认
                         CarRentalPackageMemberTermPo oriMemberTermEntity = carRentalPackageMemberTermService.selectById(memberTermEntity.getId());
@@ -953,6 +954,10 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             // 更新对应的因冻结的产生的逾期订单记录
             carRentalPackageOrderSlippageService.updateById(slippageFreezeEntity);
         }
+        
+        // 更改原订单状态
+        carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null, null);
+        
         if (ObjectUtils.isNotEmpty(packageOrderEntityNew)) {
             // 覆盖会员期限信息
             CarRentalPackageMemberTermPo memberTermEntityUpdate = new CarRentalPackageMemberTermPo();
@@ -991,9 +996,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             
             carRentalPackageMemberTermService.updateById(memberTermEntityUpdate);
             
-            // 更改原订单状态及新订单状态
-            carRentalPackageOrderService.updateUseStateByOrderNo(oriRentalPackageOrderNo, UseStateEnum.EXPIRED.getCode(), null, null);
-            // TODO 此处有一个小坑，正常逻辑来讲，需要传入使用时间，需要注意
+            // 更改原订单状态及新订单状态, 此处有一个小坑，正常逻辑来讲，需要传入使用时间，需要注意
             carRentalPackageOrderService.updateUseStateByOrderNo(packageOrderEntityNew.getOrderNo(), UseStateEnum.IN_USE.getCode(), null, null);
             
             // 车电一体，同步电池那边的数据

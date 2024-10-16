@@ -57,6 +57,8 @@ public class ShareMoneyActivityVO {
      * 加盟商Id
      */
     private Integer franchiseeId;
+    
+    private String franchiseeName;
 
     /**
      * 租户

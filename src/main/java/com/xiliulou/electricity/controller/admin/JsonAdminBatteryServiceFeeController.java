@@ -122,7 +122,8 @@ public class JsonAdminBatteryServiceFeeController {
                        @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
                        @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd,
                        @RequestParam(value = "orderByServiceFeeGenerateTime", required = false) Integer orderByServiceFeeGenerateTime,
-                       @RequestParam(value = "orderByPayTime", required = false) Integer orderByPayTime) {
+                       @RequestParam(value = "orderByPayTime", required = false) Integer orderByPayTime,
+                       @RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -170,6 +171,7 @@ public class JsonAdminBatteryServiceFeeController {
                 .payTimeEnd(payTimeEnd)
                 .orderByServiceFeeGenerateTime(orderByServiceFeeGenerateTime)
                 .orderByPayTime(orderByPayTime)
+                .paymentChannel(paymentChannel)
                 .build();
 
         return eleBatteryServiceFeeOrderService.queryList(batteryServiceFeeQuery);
@@ -189,7 +191,8 @@ public class JsonAdminBatteryServiceFeeController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "payTimeBegin", required = false) Long payTimeBegin,
-                        @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd) {
+                        @RequestParam(value = "payTimeEnd", required = false) Long payTimeEnd,
+                        @RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -227,6 +230,7 @@ public class JsonAdminBatteryServiceFeeController {
                 .phone(phone)
                 .payTimeBegin(payTimeBegin)
                 .payTimeEnd(payTimeEnd)
+                .paymentChannel(paymentChannel)
                 .build();
 
         return eleBatteryServiceFeeOrderService.queryCount(batteryServiceFeeQuery);

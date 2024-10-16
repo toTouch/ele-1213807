@@ -17,6 +17,7 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -88,7 +89,7 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
         UserOperateRecord record = new UserOperateRecord();
         record.setCommand(request.getOperateMsg());
         record.setOperateType(request.getOperateType());
-        record.setDeviceName(electricityCabinet.getName());
+        record.setDeviceName(StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
         record.setData(MapUtil.of("cell_list", array));
         OperateLogDTO dto = OperateLogDTO.ofStatic();
         if (!Objects.isNull(electricityCabinet.getTenantId())) {

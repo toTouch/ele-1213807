@@ -91,6 +91,8 @@ public interface EnterpriseInfoService {
     
     Triple<Boolean, String, Object> recycleBatteryDeposit(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
     
+    Triple<Boolean, String, Object> recycleBatteryDepositV2(UserInfo userInfo, EnterpriseInfo enterpriseInfo);
+    
     List<EnterprisePurchasedPackageResultVO> queryPurchasedPackageCount(EnterprisePurchaseOrderQuery query);
     
     Integer updateAllRenewalStatus(EnterpriseInfoQuery enterpriseInfoQuery);
@@ -120,4 +122,6 @@ public interface EnterpriseInfoService {
     List<EnterpriseInfo> queryList(Integer tenantId);
     
     void deleteCacheByEnterpriseId(Long enterpriseId);
+    
+    Triple<Boolean, String, Object> recycleCloudBeanForFreeDeposit(Long uid);
 }

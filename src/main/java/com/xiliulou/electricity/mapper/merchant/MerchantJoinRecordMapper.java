@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.merchant.MerchantJoinRecordQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantJoinUserQueryMode;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionDataDetailQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionScanCodeQueryModel;
+import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
@@ -71,6 +72,10 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     Integer countEmployeeScanCodeSuccessNum(@Param("uidList") List<Long> employeeIdList, @Param("startTime") Long startTime, @Param("endTime") Long endTime,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId, @Param("channelEmployeeUid") Long channelEmployeeUid);
+    
+    List<MerchantJoinRecord> selectListScanCodeRecordPage(MerchantScanCodeRecordPageRequest request);
+    
+    Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest request);
     
     List<MerchantStatisticsUserVO> selectListSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
     

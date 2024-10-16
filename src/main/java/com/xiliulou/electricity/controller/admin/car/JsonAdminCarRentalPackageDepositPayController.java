@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
@@ -10,6 +11,8 @@ import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositPayQryReq;
+import com.xiliulou.electricity.service.FreeDepositDataService;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -21,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,6 +43,9 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
+    
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
 
     /**
      * 根据订单编号同步免押状态
@@ -83,20 +90,24 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         if (CollectionUtils.isEmpty(depositPayEntityList)) {
             return R.ok(Collections.emptyList());
         }
-
+        
+        Set<Long> franchiseeIds = depositPayEntityList.stream().filter(Objects::nonNull).mapToLong(CarRentalPackageDepositPayPo::getFranchiseeId).boxed().collect(Collectors.toSet());
 
         // 获取辅助业务信息（用户信息）
         Set<Long> uids = depositPayEntityList.stream().map(CarRentalPackageDepositPayPo::getUid).collect(Collectors.toSet());
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
+        
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIds);
 
         // 查询对应的退款单
         List<String> depositPayOrderNoList = depositPayEntityList.stream().map(CarRentalPackageDepositPayPo::getOrderNo).distinct().collect(Collectors.toList());
         List<CarRentalPackageDepositRefundPo> depositRefundPos = carRentalPackageDepositRefundService.selectRefundableByDepositPayOrderNoList(depositPayOrderNoList);
         Map<String, CarRentalPackageDepositRefundPo> refundPoMap = depositRefundPos.stream().collect(Collectors.toMap(CarRentalPackageDepositRefundPo::getDepositPayOrderNo, Function.identity(), (k1, k2) -> k2));
-
-
+        
+        Map<String, Double> payTransAmtMap = freeDepositOrderService.selectPayTransAmtByOrderIdsToMap(depositPayOrderNoList);
         // 模型转换，封装返回
         List<CarRentalPackageDepositPayVo> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
             CarRentalPackageDepositPayVo depositPayVO = new CarRentalPackageDepositPayVo();
@@ -129,6 +140,14 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
 
             if (refundPoMap.containsKey(depositPayEntity.getOrderNo()) && refundPoMap.get(depositPayEntity.getOrderNo()).getCreateUid() == 0L && PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
                 depositPayVO.setRefundSpecialFlag(true);
+            }
+            
+            if (!franchiseeMap.isEmpty()){
+                depositPayVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositPayEntity.getFranchiseeId()), new Franchisee()).getName());
+            }
+            
+            if (payTransAmtMap.containsKey(depositPayEntity.getOrderNo())){
+                depositPayVO.setPayTransAmt(BigDecimal.valueOf(payTransAmtMap.get(depositPayEntity.getOrderNo())));
             }
             return depositPayVO;
         }).collect(Collectors.toList());

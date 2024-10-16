@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * @author HeYafeng
@@ -21,4 +24,8 @@ public class MerchantPowerRequest {
     private long offset;
     
     private String monthDate;
+    
+    private List<Long> franchiseeIds;
+    
+    private Long franchiseeId;
 }

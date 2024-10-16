@@ -4,10 +4,14 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
+import com.xiliulou.electricity.query.OpenFullCellQuery;
 import com.xiliulou.electricity.query.OrderQueryV2;
+import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
+import com.xiliulou.electricity.query.SelectionExchangeCheckQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -47,6 +51,29 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.orderV2(orderQuery));
     }
     
+    
+    /**
+     * 多次 选仓换电check接口
+     *
+     * @param orderQuery
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/selectionExchange/check")
+    public R orderV3Check(@RequestBody @Validated SelectionExchangeCheckQuery orderQuery) {
+        return returnTripleResult(electricityCabinetOrderService.selectionExchangeCheck(orderQuery));
+    }
+    
+    /**
+     * 短时间内多次换电优化
+     *
+     * @param orderQuery
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/order/v3")
+    public R orderV3(@RequestBody @Validated OrderQueryV3 orderQuery) {
+        return returnTripleResult(electricityCabinetOrderService.orderV3(orderQuery));
+    }
+    
     /**
      * 选仓换电
      *
@@ -58,6 +85,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return returnTripleResult(electricityCabinetOrderService.orderSelectionExchange(exchangeQuery));
     }
     
+    /**
+     * 选仓换电取电流程
+     *
+     * @param exchangeQuery
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/order/selectionExchange/takeBattery")
+    public R orderSelectionExchangeTakeBattery(@RequestBody @Validated OrderSelectionExchangeQuery exchangeQuery) {
+        return returnTripleResult(electricityCabinetOrderService.orderSelectionExchangeTakeBattery(exchangeQuery));
+    }
+    
     //换电柜再次开门
     @Deprecated
     @PostMapping("/user/electricityCabinetOrder/openDoor")
@@ -65,7 +103,15 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         return electricityCabinetOrderService.openDoor(openDoorQuery);
     }
     
-    //换电柜订单查询
+    /**
+     * 换电柜订单查询，本次修改了小程序的自主开仓逻辑
+     * 经前端查询，其他接口没有用到自主开仓，为了优化速度，所以更换了底层方法
+     * @param size
+     * @param offset
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     @GetMapping("/user/electricityCabinetOrder/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -89,8 +135,11 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
         
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().offset(offset).size(size).beginTime(beginTime).endTime(endTime)
                 .uid(user.getUid()).tenantId(tenantId).build();
-        return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+        return electricityCabinetOrderService.queryListv2(electricityCabinetOrderQuery);
     }
+    
+    
+   
     
     //换电柜订单量
     @GetMapping("/user/electricityCabinetOrder/count")
@@ -127,11 +176,37 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     public R queryOrderStatusForShow(@RequestParam("orderId") String orderId) {
         return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShow(orderId));
     }
+  
+    /**
+     * 换电前端状态轮循接口
+     *
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/user/order/status/show/v2")
+    public R queryOrderStatusForShowV2(@RequestParam("orderId") String orderId) {
+        return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShowV2(orderId));
+    }
     
-    //换电柜自助开仓
+    
+    /**
+     * 换电柜自助开仓
+     * @param orderSelfOpenCellQuery
+     * @return
+     */
     @PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
     public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
         return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
+    }
+    
+    /**
+     * 短时间多次换电进行自主开仓
+     * @param query
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/lessExchangeSelfOpenCell")
+    public R lessExchangeSelfOpenCell(@RequestBody @Validated LessExchangeSelfOpenCellQuery query) {
+        return electricityCabinetOrderService.lessExchangeSelfOpenCell(query);
     }
     
     //查看开门结果
@@ -149,6 +224,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
     @GetMapping("/user/electricityCabinet/bluetooth/check")
     public R bluetoothExchangeCheck(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return returnTripleResult(electricityCabinetOrderService.bluetoothExchangeCheck(productKey, deviceName));
+    }
+    
+    
+    /**
+     * todo 打开满电仓取电接口，为快捷换电预留
+     * @param query
+     * @return
+     */
+    @PostMapping("/user/electricityCabinetOrder/openFullCell")
+    public R openFullCell(@RequestBody @Validated OpenFullCellQuery query) {
+        return electricityCabinetOrderService.openFullCell(query);
     }
     
 }

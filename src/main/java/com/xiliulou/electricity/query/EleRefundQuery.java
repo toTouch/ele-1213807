@@ -26,6 +26,8 @@ public class EleRefundQuery {
      */
     private Integer status;
     
+    private List<Integer> statuses;
+    
     private Long size;
     
     private Long offset;
@@ -75,6 +77,11 @@ public class EleRefundQuery {
      * 退款单号
      */
     private String refundOrderNo;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
     
     
 }

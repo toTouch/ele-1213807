@@ -40,6 +40,9 @@
     <update id="update">
         update t_ele_refund_order set status = #{status},update_time = #{updateTime} where id = #{id}
     </update>
+    <update id="updateRefundAmountById">
+        update t_ele_refund_order set refund_amount = #{refundAmount}, update_time = #{updateTime} where id = #{id}
+    </update>
     
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
@@ -48,7 +51,8 @@
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
         tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
         memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
-        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType
+        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType, tedo.franchisee_id,
+        tero.payment_channel as paymentChannel
         from t_ele_refund_order as tero
         left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
@@ -68,7 +72,7 @@
                 and tero.tenant_id = #{query.tenantId}
             </if>
             <if test="query.payType != null">
-                and tedo.pay_type = #{query.payType}
+                and tero.pay_type = #{query.payType}
             </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}
@@ -96,6 +100,9 @@
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and tero.payment_channel = #{query.paymentChannel}
             </if>
         </where>
         order by tero.update_time desc
@@ -115,6 +122,12 @@
             <if test="query.status != null">
                 and tero.status = #{query.status}
             </if>
+            <if test="query.statuses != null and query.statuses.size > 0">
+                and tero.status in
+                    <foreach collection="query.statuses" open="(" separator="," close=")" item="status">
+                        #{status}
+                    </foreach>
+            </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}
             </if>
@@ -131,7 +144,7 @@
                 and tero.tenant_id = #{query.tenantId}
             </if>
             <if test="query.payType != null">
-                and tedo.pay_type = #{query.payType}
+                and tero.pay_type = #{query.payType}
             </if>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
                 and tero.refund_order_no = #{query.refundOrderNo}
@@ -150,6 +163,9 @@
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and tero.payment_channel = #{query.paymentChannel}
             </if>
         </where>
     </select>
@@ -291,5 +307,74 @@
             status=4
           and order_id= #{orderId}
         ORDER BY id DESC limit 1
+    </select>
+    
+    <sql id="column">
+        tero.id as id, tero.refund_order_no as refundOrderNo, tero.order_id as orderId, tero.pay_amount as payAmount,
+        tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
+        tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
+        memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
+        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType,tero.tenant_id
+    </sql>
+    
+    <sql id="pageFilter">
+        <where>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tero.order_id = #{query.orderId}
+            </if>
+            <if test="query.status != null">
+                and tero.status = #{query.status}
+            </if>
+            <if test="query.beginTime != null">
+                and tero.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and tero.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.tenantId != null">
+                and tero.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.payType != null">
+                and tedo.pay_type = #{query.payType}
+            </if>
+            <if test="query.orderType != null">
+                and tedo.order_type = #{query.orderType}
+            </if>
+            <if test="query.uid != null">
+                and tedo.uid = #{query.uid}
+            </if>
+            <if test="query.refundOrderType != null">
+                and tero.refund_order_type = #{query.refundOrderType}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and tedo.phone = #{query.phone}
+            </if>
+            <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
+                and tero.refund_order_no = #{query.refundOrderNo}
+            </if>
+        
+            <if test="query.storeIds != null">
+                and tedo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.franchiseeIds != null">
+                and tedo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    
+    <select id="selectListSuperAdminPage" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
+        select
+        <include refid="column"/>
+        from t_ele_refund_order as tero
+        left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
+        <include refid="pageFilter"/>
+        order by tero.update_time desc
+        limit #{query.offset}, #{query.size}
     </select>
 </mapper>

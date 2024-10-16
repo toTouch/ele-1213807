@@ -127,4 +127,12 @@ public class CarRentalPackageOrderSlippagePo extends BasicCarPo {
      * 支付加盟商ID
      */
     private Long payFranchiseeId;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    
+    
+    
 }

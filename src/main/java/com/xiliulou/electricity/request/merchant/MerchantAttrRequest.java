@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author zzlong
@@ -18,6 +19,9 @@ import javax.validation.constraints.Min;
 @AllArgsConstructor
 @Builder
 public class MerchantAttrRequest {
+    
+    @NotNull(message = "加盟商不能为空")
+    private Long franchiseeId;
     
     /**
      * 邀请时效

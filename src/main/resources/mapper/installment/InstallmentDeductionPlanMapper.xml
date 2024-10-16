@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentDeductionPlanMapper">
+    
+    <sql id="columnsWithoutId">
+        external_agreement_no, pay_no, trade_no, issue, amount, package_id, package_type, rent_time, deduct_time, payment_time, `status`, tenant_id,
+        franchisee_id, create_time, update_time
+    </sql>
+    
+    <sql id="fieldsWithoutId">
+        #{externalAgreementNo}, #{payNo}, #{tradeNo}, #{issue}, #{amount}, #{packageId}, #{packageType}, #{rentTime}, #{deductTime}, #{paymentTime}, #{status},
+        #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
+    </sql>
+    
+    <sql id="ifLabelsForWhere">
+        <if test="externalAgreementNo != null and externalAgreementNo != ''">
+            and external_agreement_no = #{externalAgreementNo}
+        </if>
+        <if test="payNo != null and payNo != ''">
+            and pay_no = #{payNo}
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and trade_no = #{tradeNo}
+        </if>
+        <if test="issue != null">
+            and issue = #{issue}
+        </if>
+        <if test="amount != null">
+            and amount = #{amount}
+        </if>
+        <if test="packageId != null">
+            and package_id = #{packageId}
+        </if>
+        <if test="packageType != null">
+            and package_type = #{packageType}
+        </if>
+        <if test="rentTime != null">
+            and rent_time = #{rentTime}
+        </if>
+        <if test="deductTime != null">
+            and deduct_time = #{deductTime}
+        </if>
+        <if test="paymentTime != null">
+            and payment_time = #{paymentTime}
+        </if>
+        <if test="status != null">
+            and `status` = #{status}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test="createTime != null">
+            and create_time = #{createTime}
+        </if>
+        <if test="updateTime != null">
+            and update_time = #{updateTime}
+        </if>
+    </sql>
+    
+    <resultMap id="installmentDeductionPlanMap" type="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="externalAgreementNo" column="external_agreement_no" jdbcType="VARCHAR"/>
+        <result property="payNo" column="pay_no" jdbcType="VARCHAR"/>
+        <result property="tradeNo" column="trade_no" jdbcType="VARCHAR"/>
+        <result property="issue" column="issue" jdbcType="INTEGER"/>
+        <result property="amount" column="amount" jdbcType="DECIMAL"/>
+        <result property="packageId" column="package_id" jdbcType="BIGINT"/>
+        <result property="packageType" column="package_type" jdbcType="TINYINT"/>
+        <result property="rentTime" column="rent_time" jdbcType="TINYINT"/>
+        <result property="deductTime" column="deduct_time" jdbcType="BIGINT"/>
+        <result property="paymentTime" column="payment_time" jdbcType="BIGINT"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <select id="selectListDeductionPlanByAgreementNo" resultMap="installmentDeductionPlanMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where external_agreement_no = #{externalAgreementNo}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="statuses != null and statuses.size > 0">
+                and status in
+                <foreach collection="statuses" open="(" separator="," close=")" item="status">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="endTime != null">
+                and deduct_time &lt;= #{endTime}
+            </if>
+    </select>
+    
+    <select id="selectListExternalAgreementNoForDeduct" resultType="java.lang.String">
+        select external_agreement_no
+        from t_installment_deduction_plan
+        where deduct_time &lt;= #{time}
+            and `status` in (0,2)
+        group by external_agreement_no
+    </select>
+    
+    <select id="selectPlanForDeductByAgreementNo"
+            resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where external_agreement_no = #{externalAgreementNo}
+            and `status` in (0,2)
+        order by issue
+        limit 1
+    </select>
+    
+    <select id="selectByAgreementNoAndIssue"
+            resultMap="installmentDeductionPlanMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where external_agreement_no = #{agreementNo}
+            and issue = #{issue}
+    </select>
+    
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where id = #{id}
+    </select>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_installment_deduction_plan(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
+    </insert>
+    
+    <update id="update">
+        update t_installment_deduction_plan
+        <set>
+            <if test="externalAgreementNo != null and externalAgreementNo != ''">
+                external_agreement_no = #{externalAgreementNo},
+            </if>
+            <if test="payNo != null and payNo != ''">
+                pay_no = #{payNo},
+            </if>
+            <if test="tradeNo != null and tradeNo != ''">
+                trade_no = #{tradeNo},
+            </if>
+            <if test="issue != null">
+                issue = #{issue},
+            </if>
+            <if test="amount != null">
+                amount = #{amount},
+            </if>
+            <if test="packageId != null">
+                package_id = #{packageId},
+            </if>
+            <if test="packageType != null">
+                package_type = #{packageType},
+            </if>
+            <if test="rentTime != null">
+                rent_time = #{rentTime},
+            </if>
+            <if test="deductTime != null">
+                deduct_time = #{deductTime},
+            </if>
+            <if test="paymentTime != null">
+                payment_time = #{paymentTime},
+            </if>
+            <if test="status != null">
+                `status` = #{status},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

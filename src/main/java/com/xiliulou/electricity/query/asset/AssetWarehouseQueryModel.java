@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query.asset;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author HeYafeng
  * @description 库房model
@@ -29,4 +31,5 @@ public class AssetWarehouseQueryModel {
     
     private Long offset;
     
+    private List<Long> franchiseeIds;
 }

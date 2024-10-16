@@ -11,6 +11,7 @@
         <result property="protectionTimeUnit" column="protection_time_unit" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -19,35 +20,33 @@
     <!--查询单个-->
     <select id="selectById" resultMap="MerchantAttrMap">
         select
-          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, tenant_id, create_time, update_time
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, status, del_flag, franchisee_id, tenant_id, create_time, update_time
         from t_merchant_attr
         where id = #{id}
     </select>
     
     <select id="selectByTenantId" resultMap="MerchantAttrMap">
-        select id,
-               upgrade_condition,
-               invitation_valid_time,
-               valid_time_unit,
-               invitation_protection_time,
-               protection_time_unit,
-               status,
-               tenant_id,
-               del_flag,
-               create_time,
-               update_time
+        select
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit,status, tenant_id, del_flag, franchisee_id, create_time, update_time
         from t_merchant_attr
         where tenant_id = #{tenantId}
     </select>
     
+    <select id="selectByFranchiseeId" resultMap="MerchantAttrMap">
+        select
+          id, upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, status, tenant_id, del_flag, franchisee_id, create_time, update_time
+        from t_merchant_attr
+        where franchisee_id = #{franchiseeId}
+    </select>
+    
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into t_merchant_attr(upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, tenant_id, create_time, update_time)
-        values (#{upgradeCondition}, #{invitationValidTime}, #{validTimeUnit}, #{invitationProtectionTime}, #{protectionTimeUnit}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_merchant_attr(upgrade_condition, invitation_valid_time, valid_time_unit, invitation_protection_time, protection_time_unit, del_flag, franchisee_id, tenant_id, create_time, update_time)
+        values (#{upgradeCondition}, #{invitationValidTime}, #{validTimeUnit}, #{invitationProtectionTime}, #{protectionTimeUnit}, #{delFlag}, #{franchiseeId}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
     
     <!--通过主键修改数据-->
-    <update id="updateByTenantId">
+    <update id="updateByFranchiseeId">
         update t_merchant_attr
         <set>
             <if test="upgradeCondition != null">
@@ -78,12 +77,12 @@
                 update_time = #{updateTime},
             </if>
         </set>
-        where tenant_id = #{tenantId}
+        where franchisee_id = #{franchiseeId}
     </update>
     
     <!--通过主键删除-->
-    <delete id="deleteByTenantId">
-        delete from t_merchant_attr where tenant_id = #{tenantId}
+    <delete id="deleteByFranchiseeId">
+        delete from t_merchant_attr where franchisee_id = #{franchiseeId}
     </delete>
 
 </mapper>

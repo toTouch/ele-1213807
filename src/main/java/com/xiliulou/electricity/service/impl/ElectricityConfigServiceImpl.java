@@ -10,7 +10,9 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
+import com.xiliulou.electricity.constant.meituan.MeiTuanConfigConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
+import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -18,10 +20,12 @@ import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
+import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -31,13 +35,17 @@ import com.xiliulou.electricity.service.FaceRecognizeDataService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.template.TemplateConfigService;
+import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
+import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,7 +106,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Autowired
     EleEsignConfigService eleEsignConfigService;
     
-    
+    @Autowired
+    AlipayAppConfigService alipayAppConfigService;
+    @Resource
+    MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
@@ -134,41 +145,41 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
-//        String franchiseeMoveDetail = null;
-//        //若开启了迁移加盟商
-//        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-//            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
-//                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
-//                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
-//            }
-//
-//            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
-//
-//            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
-//            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-//
-//            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
-//            if (!verifyFranchiseeResult.getLeft()) {
-//                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
-//            }
-//
-//            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
-//            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
-//            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
-//            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
-//            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
-//            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
-//            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
-//
-//            //将旧加盟商下套餐迁移到新加盟商
-//            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
-//
-//            //将旧加盟商下保险迁移到新加盟商
-//            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
-//
-//            //将旧加盟商下的车辆型号迁移到新加盟商下
-//            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
-//        }
+        //        String franchiseeMoveDetail = null;
+        //        //若开启了迁移加盟商
+        //        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
+        //            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
+        //                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
+        //                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
+        //            }
+        //
+        //            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
+        //
+        //            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
+        //            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
+        //
+        //            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
+        //            if (!verifyFranchiseeResult.getLeft()) {
+        //                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
+        //            }
+        //
+        //            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
+        //            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
+        //            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
+        //            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
+        //            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
+        //            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
+        //            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
+        //
+        //            //将旧加盟商下套餐迁移到新加盟商
+        //            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
+        //
+        //            //将旧加盟商下保险迁移到新加盟商
+        //            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
+        //
+        //            //将旧加盟商下的车辆型号迁移到新加盟商下
+        //            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
+        //        }
         
         //若开启免押
         if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(),
@@ -188,7 +199,29 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
-        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
+        // 若开启美团骑手商城
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall(), MeiTuanConfigConstant.ENABLE_MEI_TUAN_RIDER_MALL)) {
+            MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            if (Objects.isNull(meiTuanRiderMallConfig) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppId()) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppKey())
+                    || StringUtils.isBlank(meiTuanRiderMallConfig.getSecret())) {
+                return R.fail("120130", "美团骑手商城功能未配置相关信息,请检查");
+            }
+        }
+        
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.isNull(
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm())) {
+            return R.fail("100668", "优先换电标准不能为空");
+        }
+        
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsComfortExchange(), ElectricityConfig.COMFORT_EXCHANGE) && Objects.nonNull(
+                electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm()) && (
+                Double.compare(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm(), ElectricityConfigAddAndUpdateQuery.MIN_NORM) < 0
+                        || Double.compare(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm(), ElectricityConfigAddAndUpdateQuery.MAX_NORM) > 0)) {
+            return R.fail("100669", "电量标准须满足50-100");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         ElectricityConfig oldElectricityConfig = new ElectricityConfig();
         BeanUtil.copyProperties(electricityConfig, oldElectricityConfig, CopyOptions.create().ignoreNullValue().ignoreError());
         if (Objects.isNull(electricityConfig)) {
@@ -207,20 +240,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsSelectionExchange(electricityConfigAddAndUpdateQuery.getIsSelectionExchange());
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
-            //electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
             electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
-//            electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
-//            electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
             electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
             electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
             electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
             electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
-            //electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
-            //electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
             electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
             electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
             electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+            electricityConfig.setAlipayCustomer(electricityConfigAddAndUpdateQuery.getAlipayCustomer());
+            electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
+            electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
+            electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -246,20 +278,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
         electricityConfig.setIsSelectionExchange(electricityConfigAddAndUpdateQuery.getIsSelectionExchange());
         electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
-        //electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
         electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
-//        electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
-//        electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
         electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
         electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
         electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
         electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
-        //electricityConfig.setAllowRentEle(electricityConfigAddAndUpdateQuery.getAllowRentEle());
-        //electricityConfig.setAllowReturnEle(electricityConfigAddAndUpdateQuery.getAllowReturnEle());
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
         electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
         electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+        electricityConfig.setAlipayCustomer(electricityConfigAddAndUpdateQuery.getAlipayCustomer());
+        electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
+        electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
+        electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
@@ -366,7 +397,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
         
         //获取租户模板id
-        List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, ChannelEnum.WECHAT.getCode());
         tenantConfigVO.setTemplateConfigList(templateConfigList);
         
         //获取客服电话
@@ -375,14 +406,57 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         
         return tenantConfigVO;
     }
-
+    
+    @Override
+    public TenantConfigVO queryTenantConfigByAppId(String appId, String appType) {
+        TenantConfigVO tenantConfigVO = new TenantConfigVO();
+    
+        Integer tenantId = null;
+        String channel =null;
+        if (TokenConstant.THIRD_AUTH_WX_PRO.equals(appType)) {
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
+            if (Objects.isNull(electricityPayParams)) {
+                log.warn("ELE WARN! not found tenant,appId={}", appId);
+                return tenantConfigVO;
+            }
+        
+            tenantId = electricityPayParams.getTenantId();
+            channel = ChannelEnum.WECHAT.getCode();
+        }
+    
+        if (TokenConstant.THIRD_AUTH_ALI_PAY.equals(appType)) {
+            List<AlipayAppConfig> alipayAppConfigs = alipayAppConfigService.queryListByAppId(appId);
+            if (CollectionUtils.isEmpty(alipayAppConfigs)) {
+                log.warn("ELE WARN! not found alipayAppConfig,appId={}", appId);
+                return tenantConfigVO;
+            }
+        
+            tenantId = alipayAppConfigs.stream().findFirst().get().getTenantId();
+            channel = ChannelEnum.ALIPAY.getCode();
+        }
+    
+        //获取租户配置信息
+        ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
+        BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+    
+        //获取租户模板id
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId,channel);
+        tenantConfigVO.setTemplateConfigList(templateConfigList);
+    
+        //获取客服电话
+        String servicePhone = userService.selectServicePhone(tenantId);
+        tenantConfigVO.setServicePhone(servicePhone);
+    
+        return tenantConfigVO;
+    }
+    
     @Override
     public Triple<Boolean, String, Object> editWxCustomer(ElectricityConfigWxCustomerQuery electricityConfigAddAndUpdateQuery) {
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
             return Triple.of(false, null, "未找到租户配置信息");
         }
-
+        
         ElectricityConfig updateElectricityConfig = new ElectricityConfig();
         updateElectricityConfig.setId(electricityConfig.getId());
         updateElectricityConfig.setTenantId(TenantContextHolder.getTenantId());
@@ -407,8 +481,10 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setUpdateTime(System.currentTimeMillis());
         Integer updateResult = electricityConfigMapper.updateWxCuStatusByTenantId(electricityConfig);
         if (updateResult > 0) {
-            if (Objects.isNull(config) || Objects.isNull(config.getWxCustomer()) || !Objects.equals(config.getWxCustomer(),electricityConfig.getWxCustomer())){
-                operateRecordUtil.record(MapUtil.of("wxCustomer", ObjectUtils.defaultIfNull(config.getWxCustomer(),Objects.equals(electricityConfig.getWxCustomer(), YesNoEnum.YES.getCode()) ? YesNoEnum.NO.getCode() : YesNoEnum.YES.getCode())), MapUtil.of("wxCustomer",status));
+            if (Objects.isNull(config) || Objects.isNull(config.getWxCustomer()) || !Objects.equals(config.getWxCustomer(), electricityConfig.getWxCustomer())) {
+                operateRecordUtil.record(MapUtil.of("wxCustomer", ObjectUtils.defaultIfNull(config.getWxCustomer(),
+                                Objects.equals(electricityConfig.getWxCustomer(), YesNoEnum.YES.getCode()) ? YesNoEnum.NO.getCode() : YesNoEnum.YES.getCode())),
+                        MapUtil.of("wxCustomer", status));
             }
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }

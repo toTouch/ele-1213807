@@ -16,7 +16,16 @@
     
     <!-- 基础字段 -->
     <sql id="selectBoxOtherProperties">
-       	select   id, electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, lock_status_change_time, create_time, update_time        from t_box_other_properties
+        select id,
+               electricity_cabinet_id,
+               cell_no,
+               del_flag,
+               remark,
+               lock_reason,
+               lock_status_change_time,
+               create_time,
+               update_time
+        from t_box_other_properties
     </sql>
     
     <!--查询单个-->
@@ -65,10 +74,17 @@
         </where>
     </select>
     
+    <select id="existsByUk" resultType="java.lang.Integer">
+        select 1
+        from t_box_other_properties
+        where electricity_cabinet_id = #{electricityCabinetId}
+          and cell_no = #{cellNo} limit 1
+    </select>
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_box_other_properties(electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, lock_status_change_time, create_time, update_time)
-        values (#{electricityCabinetId}, #{cellNo}, #{delFlag}, #{remark}, #{lockReason}, #{lockStatusChangeTime},#{createTime}, #{updateTime})
+        values (#{electricityCabinetId}, #{cellNo}, #{delFlag}, #{remark}, #{lockReason}, #{lockStatusChangeTime}, #{createTime}, #{updateTime})
     </insert>
     
     <!--新增所有列-->
@@ -134,9 +150,36 @@
         where id = #{id}
     </update>
     
+    <update id="updateByUk">
+        update t_box_other_properties
+        <set>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="lockReason != null">
+                lock_reason = #{lockReason},
+            </if>
+            <if test="lockStatusChangeTime != null">
+                lock_status_change_time = #{lockStatusChangeTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where electricity_cabinet_id = #{electricityCabinetId} and cell_no = #{cellNo}
+    </update>
+    
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_box_other_properties where id = #{id}
+        delete
+        from t_box_other_properties
+        where id = #{id}
     </delete>
 
 </mapper>

@@ -98,6 +98,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.StringConstant.SPACE;
+
 /**
  * (User)表服务实现类
  *
@@ -294,6 +296,9 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public User queryByUserName(String username) {
+        if (StringUtils.isBlank(username)) {
+            return null;
+        }
         return this.userMapper.queryByUserName(username);
         //        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
     }
@@ -301,7 +306,8 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public User queryByUserNameAndTenantId(String username, Integer tenantId) {
-        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
+        return this.userMapper.selectOne(
+                new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId).last("limit 1"));
     }
     
     @Override
@@ -324,6 +330,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, null, "手机号已存在");
         }
         
+        adminUserQuery.setName(adminUserQuery.getName().replaceAll(SPACE, ""));
         User userNameExists = queryByUserName(adminUserQuery.getName());
         if (Objects.nonNull(userNameExists)) {
             return Triple.of(false, null, "用户名已存在");
@@ -568,7 +575,7 @@ public class UserServiceImpl implements UserService {
                 return Pair.of(false, "手机号已存在！无法修改!");
             }
         }
-        
+        adminUserQuery.setName(adminUserQuery.getName().replaceAll(SPACE, ""));
         if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
             User nameUser = queryByUserName(adminUserQuery.getName());
             if (Objects.nonNull(nameUser) && !Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
@@ -921,7 +928,8 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
-        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
+        return this.userMapper.queryCount(null, null, null, null, startTime, endTime, tenantId);
+//        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
     
     @Override
@@ -936,12 +944,13 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "USER.0001", "登陆用户不合法，无法操作！");
         }
         
-        if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.DATA_TYPE_OPERATE, userInfo.getDataType())) {
+        if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.DATA_TYPE_OPERATE, userInfo.getDataType()) && !Objects.equals(
+                User.DATA_TYPE_FRANCHISEE, userInfo.getDataType())) {
             return Triple.of(false, "AUTH.0002", "没有权限操作！");
         }
         
         User user = queryByUidFromCache(uid);
-        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+        if (Objects.isNull(user) || !(User.TYPE_USER_NORMAL_WX_PRO.equals(user.getUserType()))) {
             return Triple.of(false, "USER.0001", "没有此用户！无法删除");
         }
         
@@ -949,14 +958,18 @@ public class UserServiceImpl implements UserService {
             return Triple.of(true, null, null);
         }
         
-        Integer checkBatteryResult = electricityBatteryService.isUserBindBattery(uid, user.getTenantId());
-        if (!Objects.isNull(checkBatteryResult)) {
-            return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还电池");
+        UserInfo userRentInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userRentInfo)) {
+            log.warn("ELE WARN! not found userInfo,uid={} ", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
         
-        Integer checkCarResult = electricityCarService.isUserBindCar(uid, user.getTenantId());
-        if (!Objects.isNull(checkCarResult)) {
-            return Triple.of(false, "100253", "用户已租车辆，请先退还车辆");
+        if (Objects.equals(userRentInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return Triple.of(false, "ELECTRICITY.0045", "用户已租电池，请先退还后再删除");
+        }
+        
+        if (Objects.equals(userRentInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            return Triple.of(false, "100253", "用户已租车辆，请先退还后再删除");
         }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
@@ -1099,12 +1112,12 @@ public class UserServiceImpl implements UserService {
         updateUser.setRefId(query.getSourceId());
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
-    
+        
         int update = this.userMapper.updateUserByUid(updateUser);
         if (update > 0) {
             redisService.delete(CacheConstant.CACHE_USER_UID + query.getUid());
         }
-    
+        
         return update;
     }
     

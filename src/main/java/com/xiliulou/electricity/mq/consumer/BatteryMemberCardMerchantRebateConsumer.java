@@ -172,7 +172,7 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(userInfo.getTenantId());
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(electricityMemberCardOrder.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("REBATE CONSUMER WARN!not found merchantAttr by tenant,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
@@ -282,10 +282,15 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             rebateRecord.setChannelerRebate(BigDecimal.ZERO);
         }
         
+        //若渠道员与商户的返利差额都为0  则不生成返利差额记录
+        if (BigDecimal.ZERO.compareTo(rebateRecord.getChannelerRebate()) == 0 && BigDecimal.ZERO.compareTo(rebateRecord.getMerchantRebate()) == 0) {
+            log.info("MERCHANT MODIFY CONSUMER INFO!balance is zero,uid={}", rebateRecord.getUid());
+            return;
+        }
+        
         rebateRecordService.insert(rebateRecord);
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public void handleMemberCardRentRefund(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByRefundOrderNo(batteryMemberCardMerchantRebate.getOrderId());
@@ -392,7 +397,6 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
      *
      * @param rebateRecord
      */
-    @Transactional(rollbackFor = Exception.class)
     public void handleExcessRebateRecord(RebateRecord rebateRecord, BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
         //获取差额记录
         List<RebateRecord> excessList = rebateRecordService.queryByOriginalOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());

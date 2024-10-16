@@ -7,9 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public class ChannelEmployeeRequest {
      * 渠道员姓名
      */
     @Size(min = 1, max = 30, message = "员工名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
-    @NotEmpty(message = "姓名不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotBlank(message = "姓名不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
     
     /**
@@ -82,5 +81,12 @@ public class ChannelEmployeeRequest {
     private Integer size;
     
     private List<Long> idList;
+    
+    /**
+     * 登录用户绑定的加盟商id
+     */
+    private List<Long> bindFranchiseeIdList;
+    
+    private List<Long> franchiseeIdList;
     
 }

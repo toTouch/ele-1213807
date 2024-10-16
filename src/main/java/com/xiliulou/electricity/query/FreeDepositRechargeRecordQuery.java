@@ -27,4 +27,6 @@ public class FreeDepositRechargeRecordQuery {
     private Long startTime;
 
     private Long endTime;
+    
+    private Integer freeType;
 }

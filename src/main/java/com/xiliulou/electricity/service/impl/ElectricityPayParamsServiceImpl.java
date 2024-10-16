@@ -14,7 +14,6 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
@@ -23,13 +22,14 @@ import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
+import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
+import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,10 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,8 +61,6 @@ import static com.xiliulou.electricity.constant.MultiFranchiseeConstant.DEFAULT_
 @Slf4j
 public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayParamsMapper, ElectricityPayParams> implements ElectricityPayParamsService {
     
-    @Autowired
-    private TenantService tenantService;
     
     @Autowired
     private FranchiseeService franchiseeService;
@@ -86,6 +83,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Autowired
     private ElectricityPayParamsTxService electricityPayParamsTxService;
     
+    
+    @Resource
+    private ProfitSharingConfigService profitSharingConfigService;
     
     @Override
     public R insert(ElectricityPayParamsRequest request) {
@@ -205,6 +205,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return R.failMsg("默认配置不可删除");
         }
         
+        // 逻辑删除分账配置：
+        profitSharingConfigService.removeByPayParamId(tenantId, payParams.getId());
+        
         // 逻辑删除
         electricityPayParamsTxService.delete(id, tenantId);
         
@@ -228,17 +231,44 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     }
     
     
+    @Slave
     @Override
-    public R getTenantId(String appId) {
-        // TODO: 2024/6/17 web未找到对应的调用页面,暂时兼容愿逻辑
-        //        ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
-        List<ElectricityPayParams> electricityPayParams = baseMapper
-                .selectList(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
-        if (CollectionUtils.isEmpty(electricityPayParams)) {
-            return R.fail("ELECTRICITY.00101", "找不到租户");
+    public List<FranchiseeIdNameVO> queryFranchisee(Integer tenantId, List<Long> dataPermissionFranchiseeIds) {
+        List<Long> franchiseeIds = baseMapper.selectFranchiseeIdsByTenantId(tenantId);
+        // 过滤掉默认加盟商
+        franchiseeIds = Optional.ofNullable(franchiseeIds).orElse(Collections.emptyList()).stream().filter(v -> !MultiFranchiseeConstant.DEFAULT_FRANCHISEE.equals(v)).distinct()
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return Collections.emptyList();
         }
-        return R.ok(electricityPayParams.get(0).getTenantId());
+        
+        if (CollectionUtils.isNotEmpty(dataPermissionFranchiseeIds)) {
+            franchiseeIds = franchiseeIds.stream().filter(v -> dataPermissionFranchiseeIds.contains(v)).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return Collections.emptyList();
+            }
+            
+        }
+        
+        List<Franchisee> franchisees = franchiseeService.queryByIds(franchiseeIds, tenantId);
+        if (CollectionUtils.isEmpty(franchisees)) {
+            return Collections.emptyList();
+        }
+        
+        return franchisees.stream().map(franchisee -> {
+            FranchiseeIdNameVO franchiseeVO = new FranchiseeIdNameVO();
+            franchiseeVO.setId(franchisee.getId());
+            franchiseeVO.setName(franchisee.getName());
+            return franchiseeVO;
+        }).collect(Collectors.toList());
     }
+    
+    @Slave
+    @Override
+    public ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId) {
+        return baseMapper.selectByTenantIdAndWechatMerchantId(tenantId, wechatMerchantId);
+    }
+    
     
     
     @Override
@@ -314,28 +344,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         return electricityPayParams.get(0);
     }
     
-    @Deprecated
-    @Override
-    public Triple<Boolean, String, Object> queryByMerchantAppId(String appId) {
-        /*ElectricityPayParams electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantAppletId, appId));
-        if (Objects.isNull(electricityPayParams)) {
-            return Triple.of(false, null, "未能发现相关的商户小程序配置");
-        }
-        
-        Integer tenantId = electricityPayParams.getTenantId();
-        ElectricityMerchantProConfigVO vo = new ElectricityMerchantProConfigVO();
-        vo.setTenantId(tenantId);
-        
-        // 获取租户编码
-        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
-        vo.setTenantCode(ObjectUtils.isNotEmpty(tenant) ? tenant.getCode() : null);
-        
-        // 获取客服电话
-        String servicePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        vo.setServicePhone(servicePhone);*/
-        
-        return Triple.of(true, null, null);
-    }
     
     @Override
     public ElectricityPayParams queryCacheByTenantIdAndFranchiseeId(Integer tenantId, Long franchiseeId) {
@@ -366,6 +374,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return null;
         }
         return electricityPayParamsList.get(0);
+    }
+    
+    @Override
+    public List<ElectricityPayParams> queryListPreciseCacheByTenantIdAndFranchiseeId(Integer tenantId, Set<Long> franchiseeIds) {
+        return this.queryFromCacheList(tenantId, franchiseeIds);
     }
     
     /**

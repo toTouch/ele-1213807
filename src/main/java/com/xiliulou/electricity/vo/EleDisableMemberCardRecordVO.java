@@ -131,6 +131,11 @@ public class EleDisableMemberCardRecordVO {
     
     private Long franchiseeId;
     
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+    
     private Long storeId;
     
     /**
@@ -152,4 +157,9 @@ public class EleDisableMemberCardRecordVO {
      * 审核员名称
      */
     private String auditorName;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
 }

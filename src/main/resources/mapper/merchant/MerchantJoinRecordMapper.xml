@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.merchant.MerchantJoinRecordMapper">
     <!-- 基础字段 -->
     <sql id="basic_field">
-        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark, modify_inviter
+        id, merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag, create_time, update_time, tenant_id, remark, modify_inviter,franchisee_id,package_id,package_type,order_id, success_time
     </sql>
     
     <!--新增所有列-->
@@ -11,11 +11,11 @@
         insert into t_merchant_join_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
             merchant_id, channel_employee_uid, place_id, inviter_uid, inviter_type, join_uid, start_time, expired_time, status, protection_time, protection_status, del_flag,
-            create_time, update_time, tenant_id, remark, modify_inviter, month_date
+            create_time, update_time, tenant_id, remark, modify_inviter, franchisee_id, success_time, month_date
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{merchantId}, #{channelEmployeeUid}, #{placeId}, #{inviterUid}, #{inviterType}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{protectionTime},
-            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{modifyInviter}, #{monthDate}
+            #{protectionStatus}, #{delFlag}, #{createTime}, #{updateTime}, #{tenantId}, #{remark}, #{modifyInviter}, #{franchiseeId}, #{successTime}, #{monthDate}
         </trim>
     </insert>
     
@@ -103,6 +103,15 @@
             <if test="status != null">
                 and status = #{status}
             </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="franchiseeId" index="index" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
         </where>
     </sql>
     
@@ -120,6 +129,7 @@
         FROM
         t_merchant_join_record
         <include refid="pageFilter"/>
+        order by success_time desc, id desc
         limit #{offset}, #{size}
     </select>
     
@@ -421,6 +431,97 @@
         ) a
     </select>
     
+    
+    
+    <select id="selectListScanCodeRecordPage" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        SELECT
+        <include refid="basic_field"/>
+        FROM
+        t_merchant_join_record
+        <where>
+            modify_inviter = 0
+            <if test="uids != null and uids.size()>0">
+                and join_uid in
+                <foreach collection="uids" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="orderIdList != null and orderIdList.size()>0">
+                and order_id in
+                <foreach collection="orderIdList" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scanTimeStart != null">
+                and start_time >= #{scanTimeStart}
+            </if>
+            <if test="scanTimeEnd != null">
+                and start_time &lt;= #{scanTimeEnd}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds!=null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countScanCodeRecord" resultType="integer">
+        SELECT
+        count(1)
+        FROM
+        t_merchant_join_record
+        <where>
+            modify_inviter = 0
+            <if test="uids != null and uids.size()>0">
+                and join_uid in
+                <foreach collection="uids" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="orderIdList != null and orderIdList.size()>0">
+                and order_id in
+                <foreach collection="orderIdList" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scanTimeStart != null">
+                and start_time >= #{scanTimeStart}
+            </if>
+            <if test="scanTimeEnd != null">
+                and start_time &lt;= #{scanTimeEnd}
+            </if>
+            <if test="merchantId != null">
+                and merchant_id = #{merchantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds!=null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ) a
+    </select>
+    
     <select id="selectListSuccessJoinNumByCondition"
         resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
         select month_date, count(distinct(join_uid)) as 'scanCodeCount' from t_merchant_join_record
@@ -547,7 +648,6 @@
         </where>
         group by month_date
     </select>
-
 </mapper>
 
 

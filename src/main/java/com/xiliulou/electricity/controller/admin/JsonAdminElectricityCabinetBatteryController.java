@@ -237,7 +237,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setWarehouseId(warehouseId);
         
         //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
-        if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
+        if (Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)) {
             electricityBatteryQuery.setBindStatus(bindStatus);
         }
         return electricityBatteryService.queryCount(electricityBatteryQuery);
@@ -254,6 +254,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
             @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "model", required = false) String model,
+            @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
             @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
             @RequestParam(value = "warehouseId", required = false) Long warehouseId,
@@ -281,12 +283,14 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setModel(model);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setStockStatus(stockStatus);
         electricityBatteryQuery.setWarehouseId(warehouseId);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
+        electricityBatteryQuery.setBindStatus(bindStatus);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
     
@@ -300,7 +304,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
             @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "model", required = false) String model,
+            @RequestParam(value = "bindStatus", required = false) Integer bindStatus,
             @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
+            @RequestParam(value = "stockStatus", required = false) Integer stockStatus,
+            @RequestParam(value = "warehouseId", required = false) Long warehouseId,
             @RequestParam(value = "businessStatus", required = false) Integer businessStatus) {
         
         //租户
@@ -324,14 +332,18 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
+    
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setModel(model);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
-        electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
+        electricityBatteryQuery.setStockStatus(stockStatus);
+        electricityBatteryQuery.setWarehouseId(warehouseId);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
+        electricityBatteryQuery.setBindStatus(bindStatus);
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
     
@@ -360,7 +372,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
             return R.ok();
         }
         

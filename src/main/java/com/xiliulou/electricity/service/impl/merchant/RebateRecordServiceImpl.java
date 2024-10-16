@@ -82,6 +82,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
     @Autowired
     private MerchantUserAmountService merchantUserAmountService;
     
+    @Slave
     @Override
     public RebateRecord queryById(Long id) {
         return this.rebateRecordMapper.selectById(id);
@@ -175,6 +176,7 @@ public class RebateRecordServiceImpl implements RebateRecordService {
         return this.rebateRecordMapper.selectRebatedByUid(uid, memberCardId, merchantId, currentLevel);
     }
     
+    @Slave
     @Override
     public Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId) {
         return this.rebateRecordMapper.existsExpireRebateRecordByOriginalOrderId(originalOrderId);

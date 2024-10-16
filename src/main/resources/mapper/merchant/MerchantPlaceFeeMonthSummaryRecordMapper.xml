@@ -17,6 +17,15 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+           <if test="type != null">
+                and type = #{type}
+           </if>
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
         </where>
         order by month_date desc
         <if test="offset != null and size != null">
@@ -34,6 +43,15 @@
         </if>
         <if test="tenantId != null and tenantId != ''">
             and tenant_id = #{tenantId}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+            and franchisee_id in
+            <foreach collection="franchiseeIdList" item="franchiseeId" close=")" open="(" separator=",">
+                #{franchiseeId}
+            </foreach>
         </if>
     
     </select>

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity.merchant;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -109,6 +110,30 @@ public class MerchantJoinRecord {
      * 邀请人是否被修改：0-未修改（旧的记录），1-已修改（新的记录）
      */
     private Integer modifyInviter;
+    
+    /**
+     * 加盟商ID
+     */
+    private Long franchiseeId;
+    
+    /**
+     * 套餐ID
+     */
+    private Long packageId;
+    
+    /**
+     * 套餐类型
+     *
+     * @see PackageTypeEnum
+     */
+    private Integer packageType;
+    
+    private String orderId;
+    
+    /**
+     * 邀请成功时间
+     */
+    private Long successTime;
     
     /**
      * 参与开始日期 yyyy-MM-dd

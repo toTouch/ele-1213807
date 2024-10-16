@@ -63,7 +63,7 @@ public interface UserCouponService {
     
     R queryMyCoupon(List<Integer> statusList, List<Integer> typeList);
     
-    R queryMyCoupons(List<Integer> statusList, List<Integer> typeList);
+    R queryMyCoupons(List<Integer> statusList, List<Integer> typeList, Long franchiseeId);
     
     R getShareCoupon(Integer activityId, Integer couponId);
     

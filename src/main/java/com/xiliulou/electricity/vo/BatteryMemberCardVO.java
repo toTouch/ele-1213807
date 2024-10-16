@@ -172,4 +172,34 @@ public class BatteryMemberCardVO {
      * 分组类型，0-系统分组，1-用户分组。
      */
     private Integer groupType;
+    
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+    
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
+    
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
+    
+    /**
+     * 分期数
+     */
+    private Integer installmentNo;
+    
+    /**
+     * 分期套餐剩余每期费用
+     */
+    private BigDecimal remainingCost;
 }

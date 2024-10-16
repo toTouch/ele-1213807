@@ -88,6 +88,9 @@
         <if test="query.authType !=null">
             and tui.auth_type =#{query.authType}
         </if>
+        <if test="query.idNumber != null and query.idNumber != ''">
+            and tui.id_number = #{query.idNumber}
+        </if>
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2,3)
         </if>
@@ -103,7 +106,10 @@
                 #{id}
             </foreach>
         </if>
-        order by tui.create_time desc
+        order by case tui.auth_status
+                    when 0 then 0
+                    else 1
+                 end, tui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -647,6 +653,9 @@
         <if test="query.authType !=null">
             and tui.auth_type =#{query.authType}
         </if>
+        <if test="query.idNumber != null and query.idNumber != ''">
+            and tui.id_number = #{query.idNumber}
+        </if>
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2,3)
         </if>
@@ -852,17 +861,26 @@
       from t_user_info
       where del_flag = 0 and id_number = #{idNumber} and tenant_id = #{tenantId}
   </select>
-
-
-    <select id="verifyIdNumberExist" resultType="Integer">
-      SELECT 1  FROM t_user_info WHERE del_flag = 0 AND id_number = #{idNumber} AND tenant_id = #{tenantId} LIMIT 1
+    
+    
+    <select id="existsByIdNumber" resultType="Integer">
+        SELECT 1
+        FROM t_user_info
+        WHERE del_flag = 0
+          and auth_status = 2
+          AND id_number = #{idNumber}
+          AND tenant_id = #{tenantId} LIMIT 1
     </select>
     
     <select id="userInfoSearch" resultType="com.xiliulou.electricity.vo.UserInfoSearchVo">
-        select id, uid, name FROM t_user_info
+        select id, uid, name, phone FROM t_user_info
         WHERE del_flag = 0 and auth_status=2 and tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             and name like concat('%', #{name}, '%')
+        </if>
+        
+        <if test="keyWords != null and keyWords != ''">
+            and (name like concat('%', #{keyWords}, '%') or phone like concat('%', #{keyWords}, '%'))
         </if>
         order by id
         limit #{offset}, #{size}
@@ -1207,8 +1225,11 @@
     </select>
     <select id="selectListByUidList" resultType="com.xiliulou.electricity.entity.UserInfo">
         SELECT
-            name,
-            uid
+        name,
+        uid,
+        phone,
+        del_flag,
+        update_time
         FROM
         t_user_info
         <where>
@@ -1231,4 +1252,9 @@
         update t_user_info set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
     
+    <select id="selectListUserInfoByPhone" resultType="com.xiliulou.electricity.entity.UserInfo">
+        select
+        <include refid="all_field"/>
+        from t_user_info where phone =#{phone}
+    </select>
 </mapper>

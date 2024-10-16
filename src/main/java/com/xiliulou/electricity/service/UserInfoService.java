@@ -2,15 +2,16 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.user.BindBatteryRequest;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
-import com.xiliulou.electricity.vo.UserInfoDetailVO;
+import com.xiliulou.electricity.vo.userinfo.UserAccountInfoVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
@@ -127,13 +128,15 @@ public interface UserInfoService extends IService<UserInfo> {
     
     Triple<Boolean, String, Object> selectUserInfoStatus();
     
+    Triple<Boolean, String, Object> selectUserInfoStatusV2();
+    
     void unBindUserFranchiseeId(Long uid);
     
     Integer isFranchiseeBindUser(Long id, Integer tenantId);
     
     List<UserInfo> queryByIdNumber(String value);
     
-    Integer verifyIdNumberExist(String idNumber, Integer tenantId);
+    Integer existsByIdNumber(String idNumber, Integer tenantId);
     
     R queryDetailsBasicInfo(Long uid);
     
@@ -143,7 +146,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryDetailsBatteryInfo(Long uid);
     
-    R userInfoSearch(Long size, Long offset, String name);
+    R userInfoSearch(Long size, Long offset, String name, String keyWords);
     
     R queryEleList(UserInfoQuery userInfoQuery);
     
@@ -173,11 +176,26 @@ public interface UserInfoService extends IService<UserInfo> {
     
     /**
      * <p>
-     *    Description: 强制用户下线
+     * Description: 强制用户下线
      * </p>
+     *
      * @param userOauthBinds userOauthBinds
-    */
+     */
     void clearUserOauthBindToken(List<UserOauthBind> userOauthBinds, String clientId);
     
     List<UserInfo> listByUids(List<Long> uidList, Integer tenantId);
+    
+    List<UserInfo> queryListUserInfoByPhone(String phone);
+    
+    UserAccountInfoVO selectAccountInfo();
+    
+    /**
+     * 检查用户与换电套餐的分组是否匹配
+     * @param userInfo 用户信息
+     * @param batteryMemberCard 套餐信息
+     * @return 校验结果
+     */
+    Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
+    
+    R bindBattery(BindBatteryRequest bindBatteryRequest);
 }

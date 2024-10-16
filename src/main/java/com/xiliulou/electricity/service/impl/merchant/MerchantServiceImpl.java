@@ -30,7 +30,6 @@ import com.xiliulou.electricity.entity.merchant.MerchantPlaceCabinetBind;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceMap;
 import com.xiliulou.electricity.entity.merchant.MerchantUserAmount;
 import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserHistoryMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseCloudBeanOrderMapper;
 import com.xiliulou.electricity.mapper.merchant.MerchantMapper;
@@ -93,7 +92,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -180,9 +178,6 @@ public class MerchantServiceImpl implements MerchantService {
     private MerchantChannelEmployeeBindHistoryService merchantChannelEmployeeBindHistoryService;
     
     @Resource
-    private EnterpriseChannelUserHistoryMapper enterpriseChannelUserHistoryMapper;
-    
-    @Resource
     private EnterpriseChannelUserMapper enterpriseChannelUserMapper;
     
     @Resource
@@ -210,6 +205,12 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
+    
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getBindFranchiseeIdList()) && !merchantSaveRequest.getBindFranchiseeIdList().contains(merchantSaveRequest.getFranchiseeId())) {
+            log.info("merchant save info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getName(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeIdList());
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
         
         // 检测商户名称是否存在用户表中
         User user = userService.queryByUserName(merchantSaveRequest.getName());
@@ -244,6 +245,11 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantLevel merchantLevel = merchantLevelService.queryById(merchantSaveRequest.getMerchantGradeId());
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             return Triple.of(false, "120204", "商户等级不存在");
+        }
+        
+        
+        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), merchantLevel.getFranchiseeId())) {
+            return Triple.of(false, "120241", "商户等级的加盟商和选中的加盟商不一致");
         }
         
         // 检测渠道员是否存在
@@ -531,6 +537,18 @@ public class MerchantServiceImpl implements MerchantService {
             return Triple.of(false, "120212", "商户不存在");
         }
         
+        // 判断修改的加盟商是否有改变
+        if (!Objects.equals(merchantSaveRequest.getFranchiseeId(), merchant.getFranchiseeId())) {
+            log.info("merchant update info, franchisee not allow change id={}, franchiseeId={}, updateFranchiseeId={}", merchantSaveRequest.getId(), merchant.getFranchiseeId(), merchantSaveRequest.getFranchiseeId());
+            return Triple.of(false, "120239", "商户加盟商不允许修改");
+        }
+        
+        // 检测选中的加盟商和当前登录加盟商是否一致
+        if (ObjectUtils.isNotEmpty(merchantSaveRequest.getBindFranchiseeIdList()) && !merchantSaveRequest.getBindFranchiseeIdList().contains(merchantSaveRequest.getFranchiseeId())) {
+            log.info("merchant update info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", merchantSaveRequest.getId(), merchantSaveRequest.getFranchiseeId(), merchantSaveRequest.getBindFranchiseeIdList());
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
+        }
+        
         // 判断邀请权限和站点代付权限是否都没有选中
         if (Objects.equals(merchantSaveRequest.getInviteAuth(), MerchantConstant.DISABLE) && Objects.equals(merchantSaveRequest.getEnterprisePackageAuth(),
                 MerchantConstant.DISABLE)) {
@@ -566,6 +584,11 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(merchantLevel) || !Objects.equals(merchantLevel.getTenantId(), tenantId)) {
             return Triple.of(false, "120204", "商户等级不存在");
         }
+        
+        if (Objects.nonNull(merchantSaveRequest.getFranchiseeId()) && !Objects.equals(merchantSaveRequest.getFranchiseeId(), merchantLevel.getFranchiseeId())) {
+            return Triple.of(false, "120241", "商户等级的加盟商和选中的加盟商不一致");
+        }
+        
         // 检测渠道员是否存在
         if (Objects.nonNull(merchantSaveRequest.getChannelEmployeeUid())) {
             ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(merchantSaveRequest.getChannelEmployeeUid());
@@ -875,12 +898,17 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Transactional
     @Override
-    public Triple<Boolean, String, Object> remove(Long id) {
+    public Triple<Boolean, String, Object> remove(Long id, List<Long> bindFranchiseeIdList) {
         // 检测商户是否存在
         Integer tenantId = TenantContextHolder.getTenantId();
         Merchant merchant = this.merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
             return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        if (ObjectUtils.isNotEmpty(bindFranchiseeIdList) && !bindFranchiseeIdList.contains(merchant.getFranchiseeId())) {
+            log.info("merchant delete info, franchisee is not different id={}, franchiseeId={}, bindFranchiseeId={}", id, merchant.getFranchiseeId(), bindFranchiseeIdList);
+            return Triple.of(false, "120240", "当前加盟商无权限操作");
         }
         
         // 判断商户的余额：t_merchant_user_amount：balance
@@ -1199,11 +1227,16 @@ public class MerchantServiceImpl implements MerchantService {
     
     @Slave
     @Override
-    public Triple<Boolean, String, Object> queryById(Long id) {
+    public Triple<Boolean, String, Object> queryById(Long id, List<Long> franchiseeIdList) {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         Merchant merchant = merchantMapper.selectById(id);
         if (Objects.isNull(merchant) || !Objects.equals(merchant.getTenantId(), tenantId)) {
+            return Triple.of(false, "120212", "商户不存在");
+        }
+        
+        if (ObjectUtils.isNotEmpty(franchiseeIdList) && !franchiseeIdList.contains(merchant.getFranchiseeId())) {
+            log.info("MERCHANT QUERY INFO! franchisee is not different, id={}, franchiseeId={}", "商户不存在", id, franchiseeIdList);
             return Triple.of(false, "120212", "商户不存在");
         }
         
@@ -1246,7 +1279,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         //查询openid
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchant.getUid(), merchant.getTenantId());
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchant.getUid(), merchant.getTenantId(),UserOauthBind.SOURCE_WX_PRO);
         if (!Objects.isNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())){
             vo.setOpenId(userOauthBind.getThirdId());
         }
@@ -1319,6 +1352,7 @@ public class MerchantServiceImpl implements MerchantService {
         return merchant;
     }
     
+    @Slave
     @Override
     public List<Merchant> queryByChannelEmployeeUid(Long channelEmployeeId) {
         return merchantMapper.selectByChannelEmployeeUid(channelEmployeeId);
@@ -1388,6 +1422,7 @@ public class MerchantServiceImpl implements MerchantService {
         return integer;
     }
     
+    @Slave
     @Override
     public MerchantUserVO queryMerchantUserDetail() {
         User user = userService.queryByUidFromCache(SecurityUtils.getUid());
@@ -1469,8 +1504,8 @@ public class MerchantServiceImpl implements MerchantService {
                 log.error("repair enterprise error, merchant enterprise is exists,id={}", enterpriseInfo.getId());
                 return;
             }
-            
-            List<MerchantLevel> merchantLevels = merchantLevelService.listByTenantId(tenantId);
+    
+            List<MerchantLevel> merchantLevels = merchantLevelService.listByFranchiseeId(tenantId, enterpriseInfo.getFranchiseeId());
             Long levelId = NumberConstant.ZERO_L;
             if (ObjectUtils.isNotEmpty(merchantLevels)) {
                 MerchantLevel merchantLevel = merchantLevels.stream().sorted(Comparator.comparing(MerchantLevel::getLevel).reversed()).findFirst().orElse(null);
@@ -1494,7 +1529,7 @@ public class MerchantServiceImpl implements MerchantService {
             merchantSaveRequest.setEnterprisePackageAuth(0);
             merchantSaveRequest.setPurchaseAuthority(0);
             merchantSaveRequest.setAutoUpGrade(0);
-            merchantSaveRequest.setMerchantGradeId(levelId);
+//            merchantSaveRequest.setMerchantGradeId(levelId);
             merchantSaveRequest.setEnterpriseId(enterpriseInfo.getId());
             
             // 为该企业创建商户
@@ -1573,6 +1608,18 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(userOauthBind)) {
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
+        
+        // 检测用户所属的商户是否存在
+        Merchant merchant = this.queryByUid(userOauthBind.getUid());
+        if (Objects.isNull(merchant)) {
+            return Pair.of(false,"解绑商户不存在,请联系客服处理");
+        }
+        
+        if (ObjectUtils.isNotEmpty(params.getBindFranchiseeIdList()) && !params.getBindFranchiseeIdList().contains(merchant.getFranchiseeId())) {
+            log.info("merchant un bind open id info, franchisee is not different uid={}, franchiseeId={}, bindFranchiseeId={}", userOauthBind.getUid(), merchant.getFranchiseeId(), params.getBindFranchiseeIdList());
+            return Pair.of(false,  "当前加盟商无权限操作");
+        }
+    
         boolean delete = userOauthBindService.deleteById(userOauthBind.getId());
         if (delete){
             // 强制下线
@@ -1581,6 +1628,12 @@ public class MerchantServiceImpl implements MerchantService {
             return Pair.of(true, "解绑成功");
         }
         return Pair.of(false, "解绑失败,请联系客服处理");
+    }
+    
+    @Override
+    @Slave
+    public List<Merchant> listByEnterpriseList(List<Long> enterpriseIdList) {
+        return merchantMapper.listByEnterpriseList(enterpriseIdList);
     }
     
     @Slave

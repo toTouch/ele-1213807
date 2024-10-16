@@ -59,7 +59,8 @@ public class JoinShareMoneyActivityRecord {
     * 租户id
     */
     private Integer tenantId;
-
+    
+    private Long franchiseeId;
 
     //初始化
     public static Integer STATUS_INIT = 1;

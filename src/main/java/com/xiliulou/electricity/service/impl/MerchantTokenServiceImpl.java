@@ -171,7 +171,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 Integer tenantId = tenant.getId();
                 
                 // 查看是否有绑定的第三方信息,如果没有绑定创建一个
-                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = wxProThirdAuthenticationService.checkOpenIdExists(openid, tenantId);
+                Pair<Boolean, List<UserOauthBind>> thirdOauthBindList = this.checkOpenIdExists(openid, tenantId);
                 if (!thirdOauthBindList.getLeft()) {
                     List<UserOauthBind> userOauthBindByUidList = userOauthBindService.queryListByUid(e.getUid());
                     if (CollectionUtils.isNotEmpty(userOauthBindByUidList) && userOauthBindByUidList.stream().anyMatch(n -> !openid.equals(n.getThirdId()))) {
@@ -184,7 +184,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                             .status(UserOauthBind.STATUS_BIND).build();
                     userOauthBindService.insert(oauthBind);
                 } else {
-                    UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(e.getUid(), tenantId);
+                    UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(e.getUid(), tenantId,UserOauthBind.SOURCE_WX_PRO);
                     
                     if (ObjectUtils.isNotEmpty(userOauthBind) && !openid.equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
@@ -225,6 +225,12 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + merchantLoginRequest.getCode());
         }
         
+    }
+    
+    private Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
+        List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid,
+                UserOauthBind.SOURCE_WX_PRO, tenantId);
+        return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);
     }
     
     private UserBindBusinessDTO checkUserBindingBusiness(User user) {

@@ -115,11 +115,13 @@ public class BatteryMemberCardQuery {
     private List<Integer> rentTypes;
     
     /**
-     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐
+     * 套餐业务类型：0，换电套餐；1，车电一体套餐, 2. 企业渠道换电套餐；4，分期套餐
      *
      * @see BatteryMemberCardBusinessTypeEnum
      */
     private Integer businessType;
+    
+    private List<Integer> businessTypes;
     
     private List<Long> idList;
     
@@ -154,18 +156,17 @@ public class BatteryMemberCardQuery {
     private Integer groupType;
     
     /**
-     * 不分型号
+     * 是否需要查询企业套餐数据，0-否，1-是
      */
-    public static final String REGARDLESS_OF_MODEL = "0";
-
-    /**
-     * 套餐最大赠送优惠券数
-     */
-    public static final Integer MAX_COUPON_NO = 6;
-
-    /**
-     * 套餐绑定最大用户分组数
-     */
-    public static final Integer MAX_USER_INFO_GROUP_NO = 10;
+    private Integer catchEnterprise;
     
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
 }

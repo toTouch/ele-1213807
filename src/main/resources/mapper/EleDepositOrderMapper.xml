@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
         select
-        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
+        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid, edo.payment_channel,
         edo.order_id, edo.status, edo.name, edo.phone, f.name as franchiseeName,
         edo.deposit_type,edo.pay_type, edo.order_type, s.name as store_name
         from t_ele_deposit_order edo
@@ -64,6 +64,9 @@
             <if test="query.orderType != null">
                 and edo.order_type = #{query.orderType}
             </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and edo.payment_channel = #{query.paymentChannel}
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
@@ -74,7 +77,7 @@
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
         edo.order_id, edo.status, edo.name, edo.phone, ts.name as storeName,tecm.name as carModel,
-        edo.deposit_type, edo.order_type, edo.pay_type
+        edo.deposit_type, edo.order_type, edo.pay_type, edo.payment_channel
         from t_ele_deposit_order edo
         left join t_store ts on edo.store_id=ts.id
         left join t_electricity_car_model tecm on edo.car_model_id=tecm.id
@@ -126,6 +129,9 @@
             </if>
             <if test="query.storeName != null and query.storeName != ''">
                 and ts.name like concat('%', #{query.storeName}, '%')
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and edo.payment_channel = #{query.paymentChannel}
             </if>
         </where>
         order by edo.create_time desc
@@ -194,13 +200,16 @@
             <if test="query.orderType != null">
                 and edo.order_type = #{query.orderType}
             </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and edo.payment_channel = #{query.paymentChannel}
+            </if>
         </where>
     </select>
 
 
     <select id="queryListForUser" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
         select
-        edo.id, edo.pay_amount, ero.create_time, ero.update_time, edo.uid,
+        edo.id, edo.pay_amount, ero.create_time, ero.update_time, edo.uid,edo.payment_channel,
         edo.order_id, ero.status, edo.name, edo.phone, f.name as franchiseeName,
         ero.refund_amount as refundAmount,ero.err_msg as errMsg, s.name as store_name
         from t_ele_deposit_order edo
@@ -314,7 +323,7 @@
 
 
     <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
-        select id,pay_amount,create_time,update_time,uid,order_id,status,model_type,store_id,pay_type from t_ele_deposit_order
+        select id,pay_amount,create_time,update_time,uid,order_id,status,model_type,store_id,pay_type,payment_channel from t_ele_deposit_order
         where status=1 and uid=#{uid}  ORDER BY id DESC limit 1
     </select>
 
@@ -430,6 +439,7 @@
                model_type,
                store_id,
                source_order_no,
+               payment_channel,
                pay_type
         from t_ele_deposit_order
         <where>
@@ -440,6 +450,101 @@
            
         </where>
         ORDER BY id DESC limit 1
+    </select>
+    
+    <sql id="column">
+        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
+        edo.order_id, edo.status, edo.name, edo.phone, f.name as franchiseeName,
+        edo.deposit_type,edo.pay_type, edo.order_type, s.name as store_name,edo.tenant_id
+    </sql>
+    
+    <sql id="pageFilter">
+        <where>
+            <if test="query.orderId != null and query.orderId != ''">
+                and edo.order_id = #{query.orderId}
+            </if>
+            <if test="query.status != null">
+                and edo.status = #{query.status}
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and edo.name = #{query.name}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and edo.phone = #{query.phone}
+            </if>
+            <if test="query.beginTime != null">
+                and edo.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and edo.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.tenantId != null">
+                and edo.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.franchiseeIds != null">
+                and edo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.uid != null">
+                and edo.uid = #{query.uid}
+            </if>
+            <if test="query.franchiseeName != null and query.franchiseeName != ''">
+                and f.name = #{query.franchiseeName}
+            </if>
+            <if test="query.depositType != null">
+                and edo.deposit_type = #{query.depositType}
+            </if>
+            <if test="query.payType != null">
+                and edo.pay_type = #{query.payType}
+            </if>
+            <if test="query.storeIds != null">
+                and edo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeName != null and query.storeName != ''">
+                and s.name like concat('%', #{query.storeName}, '%')
+            </if>
+            <if test="query.orderType != null">
+                and edo.order_type = #{query.orderType}
+            </if>
+        </where>
+    </sql>
+    
+    <select id="selectListSuperAdminPage" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
+        select
+            <include refid="column"/>
+        from t_ele_deposit_order edo
+        left join t_franchisee f on f.id = edo.franchisee_id
+        left join t_store s on edo.store_id= s.id
+        <include refid="pageFilter"/>
+        order by edo.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+    <select id="selectLastEnterpriseDeposit" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
+        SELECT
+            id,
+            pay_amount,
+            create_time,
+            update_time,
+            uid,
+            order_id,
+            STATUS,
+            model_type,
+            store_id,
+            source_order_no,
+            pay_type
+        FROM
+            t_ele_deposit_order
+        WHERE
+            STATUS = 1
+          AND uid = #{uid}
+          and order_type = 1
+        order by id desc
+            limit 1
     </select>
     
     <update id="updatePhoneByUid">

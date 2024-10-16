@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.entity.Tenant;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @Data
 @Builder
 public class UserActiveInfoQuery {
-
+    
     private Long uid;
     
     private String userName;
@@ -33,8 +34,15 @@ public class UserActiveInfoQuery {
     private Integer tenantId;
     
     private Long limitTime;
-
+    
     private List<Long> franchiseeIds;
-
+    
     private List<Long> storeIds;
+    
+    private Tenant tenant;
+    
+    /**
+     * 是否绑定电池：0-未绑定 1-绑定
+     */
+    private Integer isBoundBattery;
 }

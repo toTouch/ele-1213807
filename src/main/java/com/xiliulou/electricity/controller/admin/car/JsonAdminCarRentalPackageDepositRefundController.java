@@ -3,12 +3,14 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPo;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositRefundQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
+import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -23,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,8 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
     
+    @Resource
+    private FreeDepositOrderService freeDepositOrderService;
     /**
      * 退押审批确认是否强制线下退款
      *
@@ -181,8 +186,18 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         // 获取辅助业务信息（用户信息）
         Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getUid).collect(Collectors.toSet());
         
+        //获取辅助业务信息（加盟商）
+        Set<Long> franchiseeIdList = depositRefundEntityList.stream().filter(depositRefundPo -> Objects.nonNull(depositRefundPo.getFranchiseeId())).mapToLong(CarRentalPackageDepositRefundPo::getFranchiseeId).boxed().collect(Collectors.toSet());
+        
+        //加盟商信息
+        Map<Long, Franchisee> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIdList);
+        
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
+        
+        List<String> orderIds = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPo::getDepositPayOrderNo).collect(Collectors.toList());
+        
+        Map<String, Double> payTransAmtMap = freeDepositOrderService.selectPayTransAmtByOrderIdsToMap(orderIds);
         
         // 模型转换，封装返回
         List<CarRentalPackageDepositRefundVo> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
@@ -194,6 +209,14 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
                 UserInfo userInfo = userInfoMap.getOrDefault(depositRefundEntity.getUid(), new UserInfo());
                 depositRefundVO.setUserRelName(userInfo.getName());
                 depositRefundVO.setUserPhone(userInfo.getPhone());
+            }
+            if (!franchiseeMap.isEmpty()){
+                depositRefundVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(depositRefundEntity.getFranchiseeId()), new Franchisee()).getName());
+            }
+            
+            if (payTransAmtMap.containsKey(depositRefundEntity.getDepositPayOrderNo())){
+                BigDecimal payTransAmt = Objects.isNull(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo()))?depositRefundEntity.getRealAmount():BigDecimal.valueOf(payTransAmtMap.get(depositRefundEntity.getDepositPayOrderNo()));
+                depositRefundVO.setPayTransAmt(payTransAmt);
             }
             
             return depositRefundVO;

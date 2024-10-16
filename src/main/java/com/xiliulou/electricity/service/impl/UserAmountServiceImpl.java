@@ -3,11 +3,13 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserAmountMapper;
 import com.xiliulou.electricity.query.UserAmountQuery;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -16,6 +18,7 @@ import com.xiliulou.electricity.vo.UserAmountVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.electricity.query.UserAmountQueryModel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +46,9 @@ public class UserAmountServiceImpl implements UserAmountService {
 
 	@Autowired
 	UserAmountHistoryService userAmountHistoryService;
+	
+	@Resource
+	private FranchiseeService franchiseeService;
 
 	@Override
 	@Slave
@@ -115,7 +122,22 @@ public class UserAmountServiceImpl implements UserAmountService {
 	@Override
 	@Slave
 	public R queryList(UserAmountQuery userAmountQuery) {
-		List<UserAmountVO> userAmountVOList=userAmountMapper.queryList(userAmountQuery);
+		List<UserAmountVO> userAmountVOList = userAmountMapper.queryList(userAmountQuery);
+		if (ObjectUtils.isEmpty(userAmountVOList)) {
+			return R.ok(Collections.emptyList());
+		}
+		
+		userAmountVOList.forEach(userAmountVO -> {
+			if (Objects.isNull(userAmountVO.getFranchiseeId())) {
+				return;
+			}
+			
+			Franchisee franchisee = franchiseeService.queryByIdFromCache(userAmountVO.getFranchiseeId());
+			if (Objects.nonNull(franchisee)) {
+				userAmountVO.setFranchiseeName(franchisee.getName());
+			}
+		});
+		
 		return R.ok(userAmountVOList);
 	}
 

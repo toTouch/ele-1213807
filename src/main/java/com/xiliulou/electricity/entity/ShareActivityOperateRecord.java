@@ -55,6 +55,11 @@ public class ShareActivityOperateRecord {
      * 修改时间
      */
     private Long updateTime;
+    
+    /**
+     * 加盟商Id
+     */
+    private Integer franchiseeId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

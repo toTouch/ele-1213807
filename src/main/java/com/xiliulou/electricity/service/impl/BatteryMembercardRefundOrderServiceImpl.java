@@ -9,24 +9,25 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
-import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.converter.PayConfigConverter;
+import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.dto.DivisionAccountOrderDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.RentRefundAuditMessageNotify;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -39,6 +40,10 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
+import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.event.SiteMessageEvent;
+import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
@@ -49,11 +54,11 @@ import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -63,27 +68,27 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
+import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.tx.BatteryMembercardRefundOrderTxService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderDetailVO;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
 import com.xiliulou.mq.service.RocketMqService;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
-import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
+import com.xiliulou.pay.base.PayServiceDispatcher;
+import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
+import com.xiliulou.pay.base.exception.PayException;
+import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -119,7 +124,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     UserInfoService userInfoService;
     
     @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
+    PayConfigBizService payConfigBizService;
     
     @Autowired
     UserOauthBindService userOauthBindService;
@@ -129,6 +134,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Resource
+    private BatteryMembercardRefundOrderTxService batteryMembercardRefundOrderTxService;
     
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
@@ -157,6 +165,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     WechatConfig wechatConfig;
     
+    @Resource
+    private PayConfigConverter payConfigConverter;
+    
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
     
@@ -175,19 +186,23 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     private FranchiseeServiceImpl franchiseeService;
     
-    @Resource
-    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
     
     @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
+    private PayServiceDispatcher payServiceDispatcher;
+    
     
     @Resource
     private ApplicationContext applicationContext;
     
+    @Resource
+    private TenantService tenantService;
+    
+    @Autowired
+    private SiteMessagePublish siteMessagePublish;
+    
     @Override
-    public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, WechatPayParamsDetails wechatPayParamsDetails,
-            HttpServletRequest request) throws WechatPayException {
-        
+    public BasePayOrderRefundDTO handleRefundOrderV2(BatteryMembercardRefundOrder batteryMembercardRefundOrder, BasePayConfig basePayConfig,
+            HttpServletRequest request) throws PayException {
         // 看不懂  抄的退电池押金 @See EleRefundOrderServiceImpl#commonCreateRefundOrder()
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
         String tradeOrderNo = null;
@@ -198,7 +213,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
         total = batteryMembercardRefundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue();
-        
+    
         if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
             UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
             if (Objects.nonNull(unionTradeOrder)) {
@@ -206,21 +221,27 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
             }
         }
-        
+    
+        OrderRefundParamConverterModel model = new OrderRefundParamConverterModel();
+    
+    
+    
         // 退款
-        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
-        wechatV3RefundRequest.setRefundId(batteryMembercardRefundOrder.getRefundOrderNo());
-        wechatV3RefundRequest.setOrderId(tradeOrderNo);
-        wechatV3RefundRequest.setReason("退款");
-        wechatV3RefundRequest.setNotifyUrl(
-                wechatConfig.getBatteryRentRefundCallBackUrl() + wechatPayParamsDetails.getTenantId() + "/" + wechatPayParamsDetails.getFranchiseeId());
-        wechatV3RefundRequest.setRefund(batteryMembercardRefundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundRequest.setTotal(total);
-        wechatV3RefundRequest.setCurrency("CNY");
-        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+        model.setRefundId(batteryMembercardRefundOrder.getRefundOrderNo());
+        model.setOrderId(tradeOrderNo);
+        model.setReason("退款");
+        model.setRefund(batteryMembercardRefundOrder.getRefundAmount());
+        model.setPayConfig(basePayConfig);
+        model.setTotal(total);
+        model.setRefundType(RefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode());
+        model.setTenantId(basePayConfig.getTenantId());
+        model.setFranchiseeId(basePayConfig.getFranchiseeId());
+        BasePayRequest basePayRequest = payConfigConverter
+                .converterOrderRefund(model);
+    
+        log.info("WECHAT INFO! wechatv3 refund query={}", JsonUtil.toJson(basePayRequest));
+        return payServiceDispatcher.refund(basePayRequest);
         
-        log.info("WECHAT INFO! wechatv3 refund query={}", JsonUtil.toJson(wechatV3RefundRequest));
-        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
     }
     
     @Override
@@ -244,6 +265,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
             batteryMembercardRefundOrderVO.setRentPriceUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentPriceUnit());
             
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            batteryMembercardRefundOrderVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+            
             return batteryMembercardRefundOrderVO;
         }).collect(Collectors.toList());
     }
@@ -265,7 +289,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryMembercardRefundOrder batteryMembercardRefundOrder) {
         return this.batteryMembercardRefundOrderMapper.update(batteryMembercardRefundOrder);
     }
@@ -289,7 +312,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.batteryMembercardRefundOrderMapper.deleteById(id) > 0;
     }
@@ -308,7 +330,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefund(String orderNo) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -323,7 +344,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         try {
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), TenantContextHolder.getTenantId());
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(user.getUid(), TenantContextHolder.getTenantId(), ChannelSourceContextHolder.get());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN!not found userOauthBind,uid={}", user.getUid());
                 return Triple.of(false, "", "未找到用户的第三方授权信息!");
@@ -362,6 +383,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", user.getUid(), orderNo);
                 return Triple.of(false, "100281", "电池套餐订单不存在");
+            }
+    
+            // 美团订单不允许退租
+            if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! meiTuan order not allowed refund,uid={},orderNo={}", user.getUid(), orderNo);
+                return Triple.of(false, "120136", "美团订单，不允许退租");
             }
             
             if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_EXPIRE)) {
@@ -452,12 +479,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), user.getUid());
                 return Triple.of(false, "100294", "退租金额不合法");
             }
-            
+            String generateBusinessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid());
             BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
             batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
             batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
-            batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+            batteryMembercardRefundOrderInsert.setRefundOrderNo(generateBusinessOrderId);
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
             batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
@@ -468,6 +495,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
             batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+            batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
             
             this.insert(batteryMembercardRefundOrderInsert);
@@ -480,6 +508,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             // 发送退租审核通知
             sendAuditNotify(userInfo);
+            // 发送站内信
+            siteMessagePublish.publish(
+                    SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.REPLACING_THE_BATTERY_AND_TERMINATING_THE_LEASE)
+                            .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
+                            .addContext("refundOrderNo", generateBusinessOrderId).build());
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY + user.getUid());
         }
@@ -488,13 +521,18 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request, Integer offlineRefund) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Triple.of(false, "100281", "电池套餐订单不存在");
+        }
+    
+        // 美团订单不允许退租
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.MEITUAN_PAYMENT)) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! meiTuan order not allowed refund,uid={},orderNo={}", electricityMemberCardOrder.getUid(), orderNo);
+            return Triple.of(false, "120136", "美团订单，不允许退租");
         }
         
         List<UserCoupon> userCoupons = userCouponService.selectListBySourceOrderId(electricityMemberCardOrder.getOrderId());
@@ -621,6 +659,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
         batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
         
         applicationContext.getBean(BatteryMembercardRefundOrderService.class).insert(batteryMembercardRefundOrderInsert);
@@ -641,29 +680,29 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        
-        WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+        BasePayConfig basePayConfig = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                    electricityMemberCardOrder.getParamFranchiseeId());
-        }catch (WechatPayException e) {
+            basePayConfig = payConfigBizService.queryPayParams(electricityMemberCardOrder.getPaymentChannel(),electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId(),null);
+        }catch (PayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrderInsert.getRefundOrderNo());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        if (Objects.isNull(basePayConfig)) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrderInsert.getRefundOrderNo());
             throw new BizException("100307", "未配置支付参数!");
         }
         
         try {
-            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
-            applicationContext.getBean(BatteryMembercardRefundOrderService.class).handleRefundOrder(batteryMembercardRefundOrderInsert, wechatPayParamsDetails, request);
-            
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-            applicationContext.getBean(BatteryMembercardRefundOrderService.class).update(batteryMembercardRefundOrderUpdate);
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+            batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
             
-            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
-            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+            applicationContext.getBean(BatteryMembercardRefundOrderService.class).handleRefundOrderV2(batteryMembercardRefundOrderInsert, basePayConfig, request);
+            
+            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
+            
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
@@ -671,6 +710,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
+//        batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         applicationContext.getBean(BatteryMembercardRefundOrderService.class).update(batteryMembercardRefundOrderUpdate);
         
         electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
@@ -680,9 +720,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String msg, BigDecimal refundAmount, Integer status, HttpServletRequest request,
             Integer offlineRefund) {
+    
+        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY,refundOrderNo), IdUtil.fastSimpleUUID(), 10 * 1000L, false);
+        if (!getLockSuccess) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
+        
         BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, refundOrderNo)
                         .eq(BatteryMembercardRefundOrder::getTenantId, TenantContextHolder.getTenantId())
@@ -723,6 +768,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderUpdate.setMsg(msg);
             batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND);
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
             this.update(batteryMembercardRefundOrderUpdate);
             
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -745,6 +791,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderUpdate.setMsg(msg);
             batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(batteryMembercardRefundOrder.getPaymentChannel());
             this.update(batteryMembercardRefundOrderUpdate);
             
             ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -769,7 +816,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleBatteryOnlineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder,
             ElectricityMemberCardOrder electricityMemberCardOrder, BigDecimal refundAmount, String msg, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
@@ -781,29 +827,26 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        
-        WechatPayParamsDetails wechatPayParamsDetails = null;
+    
+        BasePayConfig basePayConfig = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                    electricityMemberCardOrder.getParamFranchiseeId());
-        }catch (WechatPayException e) {
+            basePayConfig = payConfigBizService.queryPayParams(electricityMemberCardOrder.getPaymentChannel(),electricityMemberCardOrder.getTenantId(),
+                    electricityMemberCardOrder.getParamFranchiseeId(),null);
+        }catch (PayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
             return Triple.of(false, "PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        if (Objects.isNull(basePayConfig)) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", batteryMembercardRefundOrder.getRefundOrderNo());
             return Triple.of(false, "100307", "未配置支付参数!");
         }
         
         try {
+//            batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
+            batteryMembercardRefundOrderTxService.refund(electricityMemberCardOrderUpdate,batteryMembercardRefundOrderUpdate);
+            
             batteryMembercardRefundOrder.setRefundAmount(refundAmount);
-            this.handleRefundOrder(batteryMembercardRefundOrder, wechatPayParamsDetails, request);
-            
-            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
-            this.update(batteryMembercardRefundOrderUpdate);
-            
-            electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_REFUNDING);
-            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+            this.handleRefundOrderV2(batteryMembercardRefundOrder, basePayConfig, request);
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
@@ -811,6 +854,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_FAIL);
+//        batteryMembercardRefundOrderUpdate.setPaymentChannel(electricityMemberCardOrder.getPaymentChannel());
         this.update(batteryMembercardRefundOrderUpdate);
         
         electricityMemberCardOrderUpdate.setRefundStatus(ElectricityMemberCardOrder.REFUND_STATUS_FAIL);
@@ -819,7 +863,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
     }
     
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(UserBatteryMemberCard userBatteryMemberCard, BatteryMembercardRefundOrder batteryMembercardRefundOrder,
             ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo, BigDecimal refundAmount, String msg) {
         if (Objects.equals(userBatteryMemberCard.getOrderId(), electricityMemberCardOrder.getOrderId())) {
@@ -1053,6 +1096,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         refundOrderDetailVO.setLimitCount(batteryMemberCard.getLimitCount());
         assignOtherAttr(refundOrderDetailVO, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
         
+        if (Objects.isNull(refundOrderDetailVO.getRemainingNumber())){
+            refundOrderDetailVO.setRemainingNumber(0L);
+        }
+    
+        if (Objects.isNull(refundOrderDetailVO.getRemainingTime())){
+            refundOrderDetailVO.setRemainingTime(0L);
+        }
+        
         return Triple.of(true, null, refundOrderDetailVO);
     }
     
@@ -1063,14 +1114,44 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             log.warn("CHECK PAY PARAMS DETAILS WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return R.fail("100281", "电池套餐订单不存在");
         }
+        boolean configConsistency = payConfigBizService
+                .checkConfigConsistency(electricityMemberCardOrder.getPaymentChannel(), electricityMemberCardOrder.getTenantId(), electricityMemberCardOrder.getParamFranchiseeId(),
+                        electricityMemberCardOrder.getWechatMerchantId());
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(electricityMemberCardOrder.getTenantId(),
-                electricityMemberCardOrder.getParamFranchiseeId());
-        if (Objects.isNull(electricityPayParams) || !Objects.equals(electricityMemberCardOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId())
-                || !Objects.equals(electricityMemberCardOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
+        if (!configConsistency) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
+    }
+    
+    @Override
+    @Slave
+    public List<BatteryMembercardRefundOrderVO> listSuperAdminPage(BatteryMembercardRefundOrderQuery query) {
+        List<BatteryMembercardRefundOrder> list = this.batteryMembercardRefundOrderMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        
+        return list.parallelStream().map(item -> {
+            BatteryMembercardRefundOrderVO batteryMembercardRefundOrderVO = new BatteryMembercardRefundOrderVO();
+            BeanUtils.copyProperties(item, batteryMembercardRefundOrderVO);
+            
+            if (Objects.nonNull(item.getTenantId())) {
+                Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
+                batteryMembercardRefundOrderVO.setTenantName(Objects.isNull(tenant) ? null : tenant.getName());
+            }
+            
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            batteryMembercardRefundOrderVO.setName(Objects.isNull(userInfo) ? "" : userInfo.getName());
+            
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
+            batteryMembercardRefundOrderVO.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
+            batteryMembercardRefundOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentUnit());
+            batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+            batteryMembercardRefundOrderVO.setRentPriceUnit(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getRentPriceUnit());
+            
+            return batteryMembercardRefundOrderVO;
+        }).collect(Collectors.toList());
     }
     
     private void assignOtherAttr(BatteryMembercardRefundOrderDetailVO refundOrderDetailVO, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard,

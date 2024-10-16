@@ -5,11 +5,14 @@ import com.xiliulou.electricity.entity.FreeDepositOrder;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.FreeDepositOrderVO;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * (FreeDepositOrder)表服务接口
@@ -32,7 +35,7 @@ public interface FreeDepositOrderService {
      *
      * @return 对象列表
      */
-    List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query);
+    List<FreeDepositOrderVO> selectByPage(FreeDepositOrderQuery query);
 
     /**
      * 新增数据
@@ -60,6 +63,10 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatus();
     
+    Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusV2();
+    
+    Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusAliPay();
+    
     Integer selectByPageCount(FreeDepositOrderQuery query);
     
     Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt, String remark);
@@ -80,6 +87,8 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> freeBatteryDepositOrderV3(FreeBatteryDepositQueryV3 query);
     
+    Triple<Boolean, String, Object> freeBatteryDepositOrderV4(FreeBatteryDepositQueryV3 query);
+    
     Triple<Boolean, String, Object> checkFreeDepositStatusFromPxz(FreeDepositUserDTO freeDepositUserDTO, PxzConfig pxzConfig);
 
     Triple<Boolean, String, Object> freeBatteryDepositHybridOrderV3(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
@@ -95,4 +104,12 @@ public interface FreeDepositOrderService {
      * @return 影响行数
      */
     Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
+    Triple<Boolean, String, Object> freeDepositTrilateralPay(String orderId, BigDecimal payTransAmt, String remark);
+    
+    Map<String,Double> selectPayTransAmtByOrderIdsToMap(List<String> orderId);
+    
+    Triple<Boolean, String, Object> syncAuthPayStatus(String orderId,String authPayOrderId);
+    
+    FreeDepositOrder queryUserOrderByHash(Integer tenantId, Long uid, String md5);
 }

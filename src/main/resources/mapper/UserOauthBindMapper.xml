@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserOauthBindMapper">
-
-
+    
+    
     <select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         select
         id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone, `tenant_id`
@@ -24,107 +24,121 @@
         order by create_time desc
         limit #{offset}, #{size}
     </select>
-
-    <select id="queryUserOauthBySysId" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-                SELECT
-                 id,
-                 uid,
-                 source,
-                 third_id,
-                 third_nick,
-                 access_token,
-                 refresh_token,
-                 status,
-                 phone,
-                 create_time,
-                 update_time,
-                 `tenant_id`
-                FROM
-                t_user_oauth_bind
-                WHERE
-                uid = #{uid} and tenant_id=#{tenantId}
-
-    </select>
     
-    <select id="selectByUidAndPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        SELECT
-            id,
-            uid,
-            source,
-            third_id,
-            third_nick,
-            access_token,
-            refresh_token,
-            status,
-            phone,
-            create_time,
-            update_time,
-            `tenant_id`
-        FROM
-            t_user_oauth_bind
-        WHERE
-            uid = #{uid} and tenant_id=#{tenantId} and phone=#{phone}
+    <select id="selectListByUidAndPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE uid = #{uid}
+          and tenant_id = #{tenantId}
+          and phone = #{phone}
     </select>
     
     <!-- 根据手机号、类型、租户查询用户 -->
     <select id="selectListUserByPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        SELECT
-            id,
-            uid,
-            source,
-            third_id,
-            third_nick,
-            access_token,
-            refresh_token,
-            status,
-            phone,
-            create_time,
-            update_time,
-            `tenant_id`
-        FROM
-            t_user_oauth_bind
-        WHERE
-            phone=#{phone}  and tenant_id=#{tenantId} and source=#{source}
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE phone = #{phone}
+          and tenant_id = #{tenantId}
+          and source = #{source}
     </select>
     
-    <!-- 废弃不用，替代方案：selectListUserByPhone -->
-    <select id="selectUserByPhone" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        SELECT
-            id,
-            uid,
-            source,
-            third_id,
-            third_nick,
-            access_token,
-            refresh_token,
-            status,
-            phone,
-            create_time,
-            update_time,
-            `tenant_id`
-        FROM
-            t_user_oauth_bind
-        WHERE
-            phone=#{phone}  and tenant_id=#{tenantId} and source=#{source}
-    </select>
     
     <update id="updateOpenIdByUid">
-        update t_user_oauth_bind set third_id=#{openId}, status =#{status},update_time=#{updateTime} where uid=#{uid} and tenant_id=#{tenantId}
+        update t_user_oauth_bind
+        set third_id=#{openId},
+            status =#{status},
+            update_time=#{updateTime}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
+          and source=#{source}
     </update>
     
     <update id="updatePhoneByUid">
-        update t_user_oauth_bind set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
+        update t_user_oauth_bind
+        set phone=#{newPhone},
+            update_time=#{updateTime}
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
     </update>
     
     <select id="selectListOauthByOpenIdAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        select
-        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone, `tenant_id`
-        from t_user_oauth_bind where third_id = #{openId} and source=#{source} and tenant_id = #{tenantId}
+        select id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               create_time,
+               update_time,
+               phone,
+               `tenant_id`
+        from t_user_oauth_bind
+        where third_id = #{openId}
+          and source = #{source}
+          and tenant_id = #{tenantId}
     </select>
+    
+    <select id="selectOneByOpenIdAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        select id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               create_time,
+               update_time,
+               phone,
+               `tenant_id`
+        from t_user_oauth_bind
+        where third_id = #{openId}
+          and source = #{source}
+          and tenant_id = #{tenantId}
+        order by id desc limit 1
+    </select>
+    
     <select id="queryOauthByOpenIdAndUid" resultType="com.xiliulou.electricity.entity.UserOauthBind">
-        select
-        id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone, `tenant_id`
-        from t_user_oauth_bind where third_id = #{openId} and uid=#{id} and tenant_id = #{tenantId}
+        select id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               create_time,
+               update_time,
+               phone,
+               `tenant_id`
+        from t_user_oauth_bind
+        where third_id = #{openId}
+          and uid = #{id}
+          and tenant_id = #{tenantId}
     </select>
     <select id="selectOpenIdListByUidsAndTenantId" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         select uid,third_id from t_user_oauth_bind where uid in
@@ -133,9 +147,68 @@
         </foreach>
         and tenant_id = #{tenantId}
     </select>
+    <select id="selectListByUidAndTenantId" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE uid = #{uid}
+          and tenant_id = #{tenantId}
+    </select>
+    <select id="selectByUidAndTenantIdAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE uid = #{uid}
+          and tenant_id = #{tenantId}
+          and source = #{source} limit 1
+    </select>
+    <select id="selectByUidAndSource" resultType="com.xiliulou.electricity.entity.UserOauthBind">
+        SELECT id,
+               uid,
+               source,
+               third_id,
+               third_nick,
+               access_token,
+               refresh_token,
+               status,
+               phone,
+               create_time,
+               update_time,
+               `tenant_id`
+        FROM t_user_oauth_bind
+        WHERE uid = #{uid}
+          and source = #{source}
+    </select>
+    <select id="countByThirdIdAndSourceAndTenantId" resultType="java.lang.Integer">
+        select count(1) from t_user_oauth_bind where tenant_id=#{tenantId} and third_id=#{thirdId} and source=#{source}
+    </select>
+
     
     <delete id="deleteByUid">
-        delete from t_user_oauth_bind where uid = #{uid} and tenant_id = #{tenantId}
+        delete
+        from t_user_oauth_bind
+        where uid = #{uid}
+          and tenant_id = #{tenantId}
     </delete>
 
 </mapper>

@@ -36,6 +36,11 @@ public class UnionPayOrder {
     private Integer tenantId;
     
     /**
+     * 是否分账：true 分账   null, false 不分账
+     */
+    private Boolean profitSharing;
+    
+    /**
      * 商品描述
      */
     private String description;
@@ -57,6 +62,11 @@ public class UnionPayOrder {
     
     // 企业渠道换电套餐
     public static final Integer ORDER_TYPE_ENTERPRISE_PACKAGE = 6;
+    
+    /**
+     * 分期套餐服务费
+     */
+    public static final Integer ORDER_TYPE_INSTALLMENT_SERVICE_FEE = 7;
     
     
     // 保险附加信息

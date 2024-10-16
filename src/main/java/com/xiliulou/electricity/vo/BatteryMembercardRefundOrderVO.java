@@ -84,5 +84,18 @@ public class BatteryMembercardRefundOrderVO {
     private Integer rentUnit;
 
     private BigDecimal rentPriceUnit;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
+    
+    private Integer tenantId;
+    
+    private String tenantName;
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 
 }

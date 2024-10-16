@@ -244,6 +244,10 @@
             `del_flag` = 0
             <include refid="where_field"/>
         </where>
+        <if test=" offset != null and size != null">
+            LIMIT #{offset}, #{size}
+        </if>
+    
     </select>
     
     <!-- 条件查询分页 -->

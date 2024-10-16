@@ -1,62 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.TenantMapper">
-
-
-	<!--通过实体作为筛选条件查询-->
-	<select id="queryAll" resultType="com.xiliulou.electricity.vo.TenantVO">
-		select
-		tt.id,
-		tt.name,
-		tt.code,
-		tt.status,
-		tt.del_flag,
-		tt.create_time,
-		tt.update_time,
-		tt.expire_time,
-		tfrd.face_recognize_capacity,
-		tecd.esign_capacity
-		from t_tenant tt
-		left join t_face_recognize_data tfrd on tt.id=tfrd.tenant_id
-		left join t_esign_capacity_data tecd on tt.id=tecd.tenant_id
-		where tt.del_flag=0
-		<if test="name != null and name != ''">
-			and tt.name like concat('%',#{name},'%')
-		</if>
-		<if test="code != null and code != ''">
-			and tt.code = #{code}
-		</if>
-		<if test="status != null">
-			and tt.status = #{status}
-		</if>
-		<if test="beginTime != null">
-			and tt.create_time &gt;=#{beginTime}
-		</if>
-		<if test="endTime != null">
-			and tt.create_time &lt;=#{endTime}
-		</if>
-		order by tt.expire_time
-		limit #{offset}, #{size}
-	</select>
-	<select id="queryCount" resultType="java.lang.Integer">
-		select count(1)
-		from t_tenant
-		where del_flag=0
-		<if test="name != null and name != ''">
-			and name = #{name}
-		</if>
-		<if test="code != null and code != ''">
-			and code = #{code}
-		</if>
-		<if test="status != null">
-			and status = #{status}
-		</if>
-		<if test="beginTime != null">
-			and create_time &gt;=#{beginTime}
-		</if>
-		<if test="endTime != null">
-			and create_time &lt;=#{endTime}
-		</if>
-	</select>
+    
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultType="com.xiliulou.electricity.vo.TenantVO">
+        select
+        tt.id,
+        tt.name,
+        tt.code,
+        tt.status,
+        tt.del_flag,
+        tt.create_time,
+        tt.update_time,
+        tt.expire_time,
+        tfrd.face_recognize_capacity,
+        tecd.esign_capacity
+        from t_tenant tt
+        left join t_face_recognize_data tfrd on tt.id=tfrd.tenant_id
+        left join t_esign_capacity_data tecd on tt.id=tecd.tenant_id
+        where tt.del_flag=0
+        <if test="name != null and name != ''">
+            and tt.name like concat('%',#{name},'%')
+        </if>
+        <if test="code != null and code != ''">
+            and tt.code = #{code}
+        </if>
+        <if test="status != null">
+            and tt.status = #{status}
+        </if>
+        <if test="beginTime != null">
+            and tt.create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and tt.create_time &lt;=#{endTime}
+        </if>
+        order by tt.expire_time
+        limit #{offset}, #{size}
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_tenant
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="code != null and code != ''">
+            and code = #{code}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+    </select>
+    <select id="selectIdListByStartId" resultType="java.lang.Integer">
+        select id
+        from t_tenant
+        where del_flag = 0
+          and id > #{startId}
+        order by id asc
+            limit #{size}
+    </select>
 
 </mapper>

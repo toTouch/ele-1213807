@@ -8,7 +8,6 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,6 +52,15 @@ public class JsonUserUserInfoController extends BaseController {
         return returnTripleResult(userInfoService.selectUserInfoStatus());
     }
     
+    
+    /**
+     * 小程序首页 用户状态(新),适配新的免押代扣
+     */
+    @GetMapping(value = "/user/userInfoStatus/v2")
+    public R selectUserInfoStatusV2() {
+        return returnTripleResult(userInfoService.selectUserInfoStatusV2());
+    }
+    
     /**
      * 登录成功回调
      */
@@ -71,6 +79,14 @@ public class JsonUserUserInfoController extends BaseController {
     @GetMapping("/user/checkUserThirdId")
     public R checkUserThirdId(@RequestParam(value = "jsCode", required = true) String jsCode) {
         return R.ok(userOauthBindService.checkOpenIdByJsCode(jsCode));
+    }
+    
+    /**
+     * 小程序首页-账号管理
+     */
+    @GetMapping("/user/accountInfo")
+    public R userAccountInfo() {
+        return R.ok(userInfoService.selectAccountInfo());
     }
     
 }

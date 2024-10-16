@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -48,4 +49,9 @@ public class FreeBatteryDepositHybridOrderQuery {
     
     // 优惠券
     private List<Integer> userCouponIds;
+    
+    /**
+     * 支付渠道 WECHAT-微信支付,ALIPAY-支付宝
+     */
+    private String paymentChannel;
 }

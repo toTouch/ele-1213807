@@ -60,5 +60,6 @@ public interface FaceRecognizeUserRecordService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
-
+    
+    Integer updateByUidAndCertifyId(FaceRecognizeUserRecord faceRecognizeUserRecordUpdate);
 }

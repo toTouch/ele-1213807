@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -30,7 +30,7 @@ public class MerchantSaveRequest {
      * 商户名称
      */
     @Size(max = 10, message = "商户名称字数超出最大限制10字")
-    @NotEmpty(message = "商户名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotBlank(message = "商户名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
     
     /**
@@ -43,7 +43,7 @@ public class MerchantSaveRequest {
      * 联系方式
      */
     @Size(max = 15, message = "联系方式称字数超出最大限制15字")
-    @NotEmpty(message = "联系方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotBlank(message = "联系方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String phone;
     
     /**
@@ -103,4 +103,9 @@ public class MerchantSaveRequest {
      * 企业id
      */
     private Long enterpriseId;
+    
+    /**
+     * 加盟商绑定的数据权限的加盟商id
+     */
+    private List<Long> bindFranchiseeIdList;
 }

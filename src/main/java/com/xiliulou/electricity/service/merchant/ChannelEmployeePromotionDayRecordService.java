@@ -16,5 +16,5 @@ public interface ChannelEmployeePromotionDayRecordService {
     
     List<ChannelEmployeePromotionDayRecord> queryList(long startTime, long endTime, Long offset, Long size);
     
-    List<ChannelEmployeePromotionDayRecord> queryListByFeeDate(long startTime, long endTime, Integer tenantId);
+    List<ChannelEmployeePromotionDayRecord> queryListByFeeDate(long startTime, long endTime, Integer tenantId, List<Long> franchiseeIdList);
 }

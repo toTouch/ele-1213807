@@ -220,20 +220,20 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     public R queryCode() {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
-            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            log.warn("USER CHANNEL QUERY CODE WARN! not found user");
             return R.fail("100001", "用户不存在");
         }
     
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            log.warn("USER CHANNEL QUERY CODE WARN! not found user");
             return R.fail("100001", "用户不存在");
         }
     
         //活动是否下架
         ChannelActivity usableActivity = channelActivityService.findUsableActivity(TenantContextHolder.getTenantId());
         if (Objects.isNull(usableActivity)) {
-            log.error("USER CHANNEL SCAN ERROR! not find usableActivity! tenantId={},user={}",
+            log.warn("USER CHANNEL SCAN WARN! not find usableActivity! tenantId={},user={}",
                     TenantContextHolder.getTenantId(), uid);
             return R.fail("100458", "渠道活动未开启");
         }
@@ -276,7 +276,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_CHANNEL, tenantCode));
         }
         
-        log.warn("USER CHANNEL QUERY CODE ERROR! user not partake activity! uid={}", uid);
+        log.warn("USER CHANNEL QUERY CODE WARN! user not partake activity! uid={}", uid);
         return R.fail("100456", "用户未参与渠道人活动");
     }
     
@@ -289,38 +289,38 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
-            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            log.warn("USER CHANNEL QUERY CODE WARN! not found user");
             return R.fail("100001", "用户不存在");
         }
     
         if (!redisService.setNx(CacheConstant.CACHE_SCAN_INTO_ACTIVITY_LOCK + uid, "ok", 3000L, false)) {
-            log.warn("USER CHANNEL QUERY CODE ERROR! Frequency too fast");
+            log.warn("USER CHANNEL QUERY CODE WARN! Frequency too fast");
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
     
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("USER CHANNEL QUERY CODE ERROR! not found user, uid={}", uid);
+            log.warn("USER CHANNEL QUERY CODE WARN! not found user, uid={}", uid);
             return R.fail("100001", "用户不存在");
         }
     
         //活动是否下架
         ChannelActivity usableActivity = channelActivityService.findUsableActivity(TenantContextHolder.getTenantId());
         if (Objects.isNull(usableActivity)) {
-            log.error("USER CHANNEL SCAN ERROR! not find usableActivity! tenantId={},user={}",
+            log.warn("USER CHANNEL SCAN WARN! not find usableActivity! tenantId={},user={}",
                     TenantContextHolder.getTenantId(), uid);
             return R.fail("100458", "渠道活动未开启");
         }
     
         String decrypt = codeDeCoder(code);
         if (StringUtils.isBlank(decrypt)) {
-            log.error("USER CHANNEL SCAN ERROR! code decrypt error! code={}, user={}", code, uid);
+            log.warn("USER CHANNEL SCAN WARN! code decrypt error! code={}, user={}", code, uid);
             return R.fail("100457", "渠道活动二维码解码失败");
         }
         
         String[] split = decrypt.split(":");
         if (split.length != 3) {
-            log.error("USER CHANNEL SCAN ERROR! code length illegal! code={}, user={}", code, uid);
+            log.warn("USER CHANNEL SCAN WARN! code length illegal! code={}, user={}", code, uid);
             return R.fail("100459", "渠道活动二维码内容不合法");
         }
     
@@ -337,7 +337,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
     
         if (Objects.isNull(type) || Objects.isNull(inviteUid) || Objects.isNull(channelUid)) {
-            log.error("USER CHANNEL SCAN ERROR! code parse error! decrypt={}, user={}", decrypt, uid);
+            log.warn("USER CHANNEL SCAN WARN! code parse error! decrypt={}, user={}", decrypt, uid);
             return R.fail("100459", "渠道活动二维码内容不合法");
         }
     
@@ -349,7 +349,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         //类型是否一致，
         if (!Objects.equals(type, ChannelActivityCodeVo.TYPE_CHANNEL) && !Objects
                 .equals(type, ChannelActivityCodeVo.TYPE_INVITE)) {
-            log.error("USER CHANNEL SCAN ERROR! code type error! type={}, user={}", type, uid);
+            log.warn("USER CHANNEL SCAN WARN! code type error! type={}, user={}", type, uid);
             return R.fail("100459", "渠道活动二维码内容不合法");
         }
     
@@ -357,13 +357,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         //用户是否存在，
         User inviteUser = userService.queryByUidFromCache(inviteUid);
         if (Objects.isNull(inviteUser)) {
-            log.error("USER CHANNEL SCAN ERROR! inviteUser not find error! user={}", inviteUid);
+            log.warn("USER CHANNEL SCAN WARN! inviteUser not find error! user={}", inviteUid);
             return R.fail("100001", "邀请用户用户不存在");
         }
     
         User channelUser = userService.queryByUidFromCache(channelUid);
         if (Objects.isNull(channelUser)) {
-            log.error("USER CHANNEL SCAN ERROR! channelUser not find error! user={}", channelUid);
+            log.warn("USER CHANNEL SCAN WARN! channelUser not find error! user={}", channelUid);
             return R.fail("100001", "渠道人用户不存在");
         }
         
@@ -380,14 +380,14 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         // 是否参与过邀请活动
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
-            log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
-            return R.ok();
+            log.warn("USER CHANNEL SCAN WARN! user has participated in activities! user={}", uid);
+            return R.fail("100460", "您已参与渠道活动，请勿重复扫码");
         }
     
         // 是否渠道人，
         UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
         if (Objects.nonNull(userChannel)) {
-            log.error("USER CHANNEL SCAN ERROR! user is channel user! user={}", uid);
+            log.warn("USER CHANNEL SCAN WARN! user is channel user! user={}", uid);
             return R.ok();
         }
     
@@ -412,12 +412,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     public void queryExportExcel(String phone, Long uid, Long beginTime, Long endTime, HttpServletResponse response) {
         Long userId = SecurityUtils.getUid();
         if (Objects.isNull(userId)) {
-            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            log.warn("USER CHANNEL QUERY CODE WARN! not found user");
             throw new CustomBusinessException("未查询到用户");
         }
         
         if (Objects.isNull(beginTime) || Objects.isNull(endTime) || (endTime - beginTime) == 0) {
-            log.error("USER CHANNEL EXPORT EXCEL ERROR! Illegal time ! user={}", uid);
+            log.warn("USER CHANNEL EXPORT EXCEL WARN! Illegal time ! user={}", uid);
             throw new CustomBusinessException("搜索日期不合法");
         }
         
