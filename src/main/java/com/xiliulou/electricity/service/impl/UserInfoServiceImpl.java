@@ -22,6 +22,7 @@ import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
@@ -1321,7 +1322,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
                 
                 // 保存电池被取走对应的订单，供后台租借状态电池展示
-                OrderForBatteryUtil.save(null, rentBatteryOrder);
+                OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(), OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 try {
                     // 发送操作记录
@@ -1515,6 +1516,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
         // 删除redis中保存的租电订单或换电订单
         OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+        
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -3117,7 +3119,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
                 
                 // 保存电池被取走对应的订单，供后台租借状态电池展示
-                OrderForBatteryUtil.save(null, rentBatteryOrder);
+                OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(), OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 return null;
             });

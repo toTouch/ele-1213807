@@ -7,6 +7,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -225,7 +226,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(cabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
             // 保存电池被取走对应的订单，供后台租借状态电池展示
-            OrderForBatteryUtil.save(cabinetOrder, null);
+            OrderForBatteryUtil.save(cabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
         } else {
             log.warn("SELF OPEN CELL error! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
                     eleSelfOPenCellOrderVo.getOrderId());

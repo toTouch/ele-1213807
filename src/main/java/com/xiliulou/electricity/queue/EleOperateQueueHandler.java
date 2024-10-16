@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -675,7 +676,7 @@ public class EleOperateQueueHandler {
             }
             
             // 保存电池被取走对应的订单，供后台租借状态电池展示
-            OrderForBatteryUtil.save(electricityCabinetOrder, null);
+            OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
         }
     }
     
@@ -817,7 +818,7 @@ public class EleOperateQueueHandler {
         }
         
         // 保存电池被取走对应的订单，供后台租借状态电池展示
-        OrderForBatteryUtil.save(null, rentBatteryOrder);
+        OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(), OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, electricityBattery.getSn());
     }
     
     

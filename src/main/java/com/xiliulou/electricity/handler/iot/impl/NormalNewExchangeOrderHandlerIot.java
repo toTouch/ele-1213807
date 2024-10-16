@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -387,7 +388,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
             // 保存电池被取走对应的订单，供后台租借状态电池展示
-            OrderForBatteryUtil.save(electricityCabinetOrder, null);
+            OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
             
             handleCallBatteryChangeSoc(electricityBattery);
             

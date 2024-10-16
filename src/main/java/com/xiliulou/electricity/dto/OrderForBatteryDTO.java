@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderForBatteryDTO {
     
-    private String orderId;
+    private String orderIdForBattery;
     
-    private Integer orderType;
+    private Integer orderTypeForBattery;
 }
