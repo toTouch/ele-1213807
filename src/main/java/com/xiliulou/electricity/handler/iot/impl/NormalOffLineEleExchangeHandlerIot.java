@@ -239,10 +239,11 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             oldElectricityBatteryUpdate.setUpdateTime(System.currentTimeMillis());
             oldElectricityBatteryUpdate.setBorrowExpireTime(null);
             oldElectricityBatteryUpdate.setBindTime(offlineOrderMessage.getEndTime());
-            electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
             
             // 删除redis中保存的租电订单或换电订单
             OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+            
+            electricityBatteryService.updateBatteryUser(oldElectricityBatteryUpdate);
         }
         
         // 归还电池soc

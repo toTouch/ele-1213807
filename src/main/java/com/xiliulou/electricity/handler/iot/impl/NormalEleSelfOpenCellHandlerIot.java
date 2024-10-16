@@ -302,6 +302,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         newElectricityBattery.setElectricityCabinetName(null);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(placeBattery.getSn());
+        
         Long bindTime = placeBattery.getBindTime();
         //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
         log.info("SELF OPEN CELL INFO! returnBattery.bindTime={},current time={}", bindTime, System.currentTimeMillis());
@@ -309,9 +312,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             newElectricityBattery.setBindTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
-        
-        // 删除redis中保存的租电订单或换电订单
-        OrderForBatteryUtil.delete(placeBattery.getSn());
     }
     
     @Data

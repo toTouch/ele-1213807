@@ -1243,6 +1243,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     notBindOldElectricityBattery.setBorrowExpireTime(null);
                     notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
                     notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
+                    
+                    // 删除redis中保存的租电订单或换电订单
+                    OrderForBatteryUtil.delete(isBindElectricityBattery.getSn());
+                    
                     electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
                     
                     // 添加退电记录
@@ -1262,9 +1266,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
                     rentBatteryOrder.setOrderType(orderType);
                     rentBatteryOrderService.insert(rentBatteryOrder);
-                    
-                    // 删除redis中保存的租电订单或换电订单
-                    OrderForBatteryUtil.delete(isBindElectricityBattery.getSn());
                 }
             }
             
@@ -1470,6 +1471,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setBorrowExpireTime(null);
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBattery.setBindTime(System.currentTimeMillis());
+        
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+        
         electricityBatteryService.updateBatteryUser(electricityBattery);
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
@@ -1514,8 +1519,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
-        // 删除redis中保存的租电订单或换电订单
-        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
         
         try {
             Map<String, Object> map = new HashMap<>();

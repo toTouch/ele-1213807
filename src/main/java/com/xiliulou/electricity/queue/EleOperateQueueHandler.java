@@ -495,10 +495,11 @@ public class EleOperateQueueHandler {
                     newElectricityBattery.setElectricityCabinetId(null);
                     newElectricityBattery.setElectricityCabinetName(null);
                     newElectricityBattery.setBorrowExpireTime(null);
-                    electricityBatteryService.updateBatteryUser(newElectricityBattery);
                     
                     // 删除redis中保存的租电订单或换电订单
                     OrderForBatteryUtil.delete(electricityBattery.getSn());
+                    
+                    electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 }
                 
                 //放入电池改为在仓
@@ -514,10 +515,11 @@ public class EleOperateQueueHandler {
                         newElectricityBattery.setUid(null);
                         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                         newElectricityBattery.setBorrowExpireTime(null);
-                        electricityBatteryService.updateBatteryUser(newElectricityBattery);
                         
                         // 删除redis中保存的租电订单或换电订单
                         OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+                        
+                        electricityBatteryService.updateBatteryUser(newElectricityBattery);
                     }
                 }
                 
@@ -650,10 +652,11 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 
                 // 删除redis中保存的租电订单或换电订单
                 OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+                
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
             
             //电池改为在用
@@ -790,10 +793,11 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(newElectricityBattery);
             
             // 删除redis中保存的租电订单或换电订单
             OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+            
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
         
         //电池改为在用
@@ -926,10 +930,11 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 
                 // 删除redis中保存的租电订单或换电订单
                 OrderForBatteryUtil.delete(electricityBattery.getSn());
+                
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
         }
         
@@ -946,17 +951,16 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setBorrowExpireTime(null);
                 
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+                
                 Long bindTime = oldElectricityBattery.getBindTime();
                 log.info("return bindTime={},currentTime={}", bindTime, System.currentTimeMillis());
                 //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
-                    
                 }
-                
-                // 删除redis中保存的租电订单或换电订单
-                OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
             }
             
         }
