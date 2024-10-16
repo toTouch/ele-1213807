@@ -168,7 +168,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             
             //封装UserInfo回滚
             rollBackUserInfo = UserInfo.builder().uid(userInfo.getUid()).batteryDepositStatus(userInfo.getBatteryDepositStatus()).franchiseeId(userInfo.getFranchiseeId())
-                    .storeId(userInfo.getStoreId()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).build();
+                    .storeId(userInfo.getStoreId()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).tenantId(userInfo.getTenantId()).build();
             
             List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
             if (CollectionUtils.isNotEmpty(batteryTypeList)) {
@@ -460,7 +460,8 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             userInfoService.updateByUid(userInfoUpdate);
             
             //封装UserInfo回滚
-            rollBackUserInfo = UserInfo.builder().uid(userInfo.getUid()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).build();
+            rollBackUserInfo = UserInfo.builder().uid(userInfo.getUid()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).tenantId(userInfo.getTenantId())
+                    .build();
             
             double newValidDays = Math.ceil((userBatteryMemberCardUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 3600000 / 24.0);
             
@@ -690,7 +691,8 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             userInfoService.updateByUid(userInfoUpdate);
             
             //封装UserInfo回滚数据
-            rollBackUserInfo = UserInfo.builder().uid(userInfo.getUid()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).build();
+            rollBackUserInfo = UserInfo.builder().uid(userInfo.getUid()).payCount(userInfo.getPayCount()).updateTime(userInfo.getUpdateTime()).tenantId(userInfo.getTenantId())
+                    .build();
             
             electricityMemberCardOrderService.insert(memberCardOrder);
             
