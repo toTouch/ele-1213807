@@ -85,8 +85,8 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
 
         if (currentTimestamp - lastOnlineTimestamp > TWO_MINUTES_IN_MILLIS) {
             userEleOnlineLogService.insert(eleOnlineLog);
+            sendDeviceNotification(eleOnlineLog);
         }
-        sendDeviceNotification(eleOnlineLog);
     }
 
     // Send device notification
