@@ -47,10 +47,9 @@
         tuc.id as id, tuc.name as name,tuc.verified_uid as  verifiedUid, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tc.franchisee_id as franchiseeId,
-        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName, tc.description, tc.specific_packages,
+        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tc.description, tc.specific_packages,
         tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay'
         from t_user_coupon as tuc
-        left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
@@ -64,9 +63,6 @@
             </if>
             <if test="query.endTime != null">
                 and tuc.create_time &lt;=#{query.endTime}
-            </if>
-            <if test="query.userName != null and query.userName != ''">
-                and tui.name = #{query.userName}
             </if>
             <if test="query.orderId != null and query.orderId != ''">
                 and tuc.order_id = #{query.orderId}
@@ -132,7 +128,7 @@
 
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
-        from t_user_coupon as tuc left join t_user_info tui on tuc.uid=tui.uid
+        from t_user_coupon as tuc
         left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
@@ -152,9 +148,6 @@
             </if>
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}
-            </if>
-            <if test="query.userName != null and query.userName != ''">
-                and tui.name = #{query.userName}
             </if>
             <if test="query.discountType != null">
                 and tuc.discount_type = #{query.discountType}

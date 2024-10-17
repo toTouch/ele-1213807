@@ -221,6 +221,9 @@ public class UserCouponServiceImpl implements UserCouponService {
             User user = userService.queryByUidFromCache(verifiedUid);
             u.setVerifiedName(Objects.isNull(user) ? null : user.getName());
             
+            UserInfo userInfo = userInfoService.queryByUidFromCache(u.getUid());
+            u.setUserName(Objects.isNull(userInfo) ? null : userInfo.getName());
+            
             Integer franchiseeId = u.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
                 u.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
@@ -516,6 +519,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                 userCouponVO.setBatteryPackages(getBatteryPackages(couponId));
                 userCouponVO.setCarRentalPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
                 userCouponVO.setCarWithBatteryPackages(getCarBatteryPackages(couponId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+                userCouponVO.setUserName(userInfo.getName());
             }
         }
         
