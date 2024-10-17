@@ -488,7 +488,7 @@
         from t_battery_member_card
         where name = #{name}
           and del_flag = 0
-          and business_type in (0, 2)
+          and business_type in (0, 2, 4)
           and tenant_id = #{tenantId} LIMIT 1
     </select>
     
