@@ -119,7 +119,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         
         // 更换电表优化，更换电表之后sumPower需要继续累计
         if (Objects.nonNull(lastElePower)) {
-            hourPower = Math.max(cabinetPowerReport.getPowerConsumption(), 0.00);
+            hourPower = Math.max(hourPower, 0.00);
             sumPower = BigDecimal.valueOf(lastElePower.getSumPower()).add(BigDecimal.valueOf(hourPower)).setScale(2, RoundingMode.HALF_UP).doubleValue();
         } else {
             // 第一条上报
