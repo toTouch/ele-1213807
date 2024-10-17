@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.profitsharing;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -21,7 +22,6 @@ import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
-import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.base.exception.ProfitSharingException;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingUnfreezeRequest;

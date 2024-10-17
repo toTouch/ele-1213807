@@ -106,4 +106,9 @@ public class CarRentalPackageOrderSlippageQryReq implements Serializable {
      * </p>
      */
     private Integer type;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }

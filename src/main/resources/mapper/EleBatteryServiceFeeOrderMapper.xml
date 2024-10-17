@@ -39,7 +39,7 @@
 
 
     <select id="queryListForAdmin" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
-        SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type, te.status, te.`pay_time`,
+        SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type, te.status, te.`pay_time`, te.payment_channel,
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,te.source,te.battery_service_fee_end_time,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
@@ -67,8 +67,8 @@
     </select>
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
-        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`
-        FROM     t_ele_battery_service_fee_order
+        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`, payment_channel
+        FROM    t_ele_battery_service_fee_order
         <where>
             <if test="status != null">
                 and status in (1,3)
@@ -87,7 +87,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
-        te.status,te.source,te.phone,te.name ,te.uid, te.status, te.`pay_time`,
+        te.status,te.source,te.phone,te.name ,te.uid, te.status, te.`pay_time`,te.payment_channel,
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
@@ -118,6 +118,9 @@
             </if>
             <if test="query.source != null">
                 and te.source =#{query.source}
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and te.payment_channel =#{query.paymentChannel}
             </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
@@ -184,6 +187,9 @@
             </if>
             <if test="query.source != null">
                 and te.source =#{query.source}
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and te.payment_channel =#{query.paymentChannel}
             </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in

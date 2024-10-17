@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -62,6 +63,13 @@ public class ElectricityTradeOrder {
      * 微信商户号
      */
     private String wechatMerchantId;
+    
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
     
     public static final Integer STATUS_INIT = 0;
     

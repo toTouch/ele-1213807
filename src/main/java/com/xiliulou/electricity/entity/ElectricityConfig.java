@@ -167,6 +167,13 @@ public class ElectricityConfig {
      */
     private Integer wxCustomer;
     
+    
+    /**
+     * 打开支付宝客服 0-是 1-否
+     */
+    private Integer alipayCustomer;
+    
+    
     /**
      * 柜机少电比例
      */
@@ -315,6 +322,13 @@ public class ElectricityConfig {
     public static Integer OPEN_WX_CUSTOMER = 0;
     
     public static Integer CLOSE_WX_CUSTOMER = 1;
+    
+    
+    /**
+     * 打开支付宝客服 0-是 1-否
+     */
+    public static Integer OPEN_ALIPAY_CUSTOMER = 0;
+    public static Integer CLOSE_ALIPAY_CUSTOMER = 1;
     
     /**
      * 柜机少电多电配置标准:0-统一配置

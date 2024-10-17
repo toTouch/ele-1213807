@@ -17,4 +17,6 @@ public class UnbindOpenIdRequest {
     
     @NotNull(message = "uid不能为空!", groups = {UpdateGroup.class})
     private Long uid;
+    
+    private Integer source;
 }

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.car.v2.CarRenalPackageDepositV2BizServic
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -76,8 +77,26 @@ public class JsonUserCarDepositPayV2Controller extends BasicController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        return R.ok(carRenalPackageDepositV2BizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq).getQrCode());
+    }
+    
+    /**
+     * 创建免押订单 支付宝
+     *
+     * @param freeDepositOptReq 免押订单申请数据模型
+     * @return 生成二维码的网址
+     */
+    @PostMapping("/pay/createAlipayFreeDeposit")
+    public R<FreeDepositVO> createAlipayFreeDeposit(@RequestBody @Valid FreeDepositOptReq freeDepositOptReq) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         return R.ok(carRenalPackageDepositV2BizService.createFreeDeposit(tenantId, user.getUid(), freeDepositOptReq));
     }
+    
     
     /**
      * 退押申请

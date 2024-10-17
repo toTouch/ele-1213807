@@ -72,6 +72,11 @@ public class MemberCardOrderQuery {
     private Long cardId;
     
     /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    
+    /**
      * 请求签约号
      */
     private String externalAgreementNo;

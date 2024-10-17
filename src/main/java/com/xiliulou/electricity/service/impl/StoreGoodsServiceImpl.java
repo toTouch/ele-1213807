@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreGoodsMapper;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
@@ -51,6 +52,10 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    
+    @Autowired
+    StorageConverter storageConverter;
+    
     @Autowired
     ElectricityCarService electricityCarService;
 
@@ -147,7 +152,8 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
             electricityCabinetFileList.stream().forEach(auth -> {
                 if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-                    auth.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                    auth.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                    auth.setUrl(storageConverter.generateUrl( auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
                     electricityCabinetFiles.add(auth);
                 }
                 storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);

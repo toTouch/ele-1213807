@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.factory.paycallback;
 
-import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.electricity.service.wxrefund.RefundPayService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -17,13 +17,13 @@ import java.util.Map;
  * @author xiaohui.song
  **/
 @Component
-public class WxRefundPayServiceFactory implements InitializingBean, ApplicationContextAware {
+public class RefundPayServiceFactory implements InitializingBean, ApplicationContextAware {
 
     private ApplicationContext appContext;
 
-    private static final Map<String, WxRefundPayService> WX_REFUND_PAY_SERVICE_MAP = new HashMap<>();
+    private static final Map<String, RefundPayService> WX_REFUND_PAY_SERVICE_MAP = new HashMap<>();
 
-    public static WxRefundPayService getService(String optType) {
+    public static RefundPayService getService(String optType) {
         return WX_REFUND_PAY_SERVICE_MAP.get(optType);
     }
 
@@ -38,7 +38,7 @@ public class WxRefundPayServiceFactory implements InitializingBean, ApplicationC
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        appContext.getBeansOfType(WxRefundPayService.class).values().forEach(s -> {
+        appContext.getBeansOfType(RefundPayService.class).values().forEach(s -> {
             WX_REFUND_PAY_SERVICE_MAP.put(s.getOptType(), s);
         });
     }

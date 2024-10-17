@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -39,6 +40,11 @@ public class IntegratedPaymentAdd {
      */
     @NotNull(message = "套餐Id不能为空!")
     private Long memberCardId;
+    
+    /**
+     * 支付渠道 WECHAT-微信支付,ALIPAY-支付宝
+     */
+    private String paymentChannel;
     
     /**
      * 优惠券id

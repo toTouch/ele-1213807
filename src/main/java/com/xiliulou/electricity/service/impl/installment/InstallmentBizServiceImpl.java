@@ -378,12 +378,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     }
     
     @Override
-    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request) {
+    public R<String> sign(InstallmentSignQuery query, HttpServletRequest request,String channelFrom) {
         Long uid = null;
         try {
             uid = SecurityUtils.getUid();
             if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, uid), "1", 3 * 1000L, false)) {
-                return R.fail("301019", "解当前套餐正在签约或取消，请稍候再试");
+                return R.fail("301019", "当前套餐正在签约或取消，请稍候再试");
             }
             
             InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
@@ -431,7 +431,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             String description = "订单编号:%s；套餐名称:%s";
             
             FySignAgreementRequest agreementRequest = new FySignAgreementRequest();
-            agreementRequest.setChannelFrom(CHANNEL_FROM_H5);
+            agreementRequest.setChannelFrom(channelFrom);
             agreementRequest.setExternalAgreementNo(installmentRecord.getExternalAgreementNo());
             agreementRequest.setMerchantName(tenant.getName());
             agreementRequest.setServiceName(packageName);
@@ -896,7 +896,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
             
-            unionTradeOrderService.manageMemberCardOrderV2(memberCardOrder.getOrderId(), ElectricityTradeOrder.STATUS_SUCCESS);
+            unionTradeOrderService.manageMemberCardOrderV2(memberCardOrder.getOrderId(), ElectricityTradeOrder.STATUS_SUCCESS,userInfo);
         } else {
             // 下述校验在上文的绑定第一期套餐方法内部做了，故在此处校验
             if (Objects.isNull(userInfo)) {

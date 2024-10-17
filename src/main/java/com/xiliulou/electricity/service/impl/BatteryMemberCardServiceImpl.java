@@ -446,6 +446,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return batteryMemberCardMapper.listByIdList(query);
     }
     
+    @Slave
+    @Override
+    public List<BatteryMemberCard> queryListByIdList(List<Long> ids) {
+        return batteryMemberCardMapper.selectListByIds(ids);
+    }
+    
     
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
@@ -641,7 +647,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
             }
         }
-        
+
         List<BatteryMemberCardVO> result = new ArrayList<>();
         for (BatteryMemberCardAndTypeVO item : list) {
             
@@ -652,7 +658,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType()))
                             .map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
                 }
-                
+
                 if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
                     if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
                         continue;

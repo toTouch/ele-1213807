@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleUserAuth;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,5 +47,6 @@ public interface EleUserAuthService {
     R acquireIdcardFileSign();
 
     R acquireselfieFileSign();
-
+    
+    Integer batchInsert(List<EleUserAuth> list);
 }

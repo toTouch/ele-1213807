@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.UserNotifyConstant;
+import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.UserNotify;
 import com.xiliulou.electricity.mapper.UserNotifyMapper;
 import com.xiliulou.electricity.query.NotifyPictureInfo;
@@ -50,7 +51,12 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     StorageConfig storageConfig;
     
     @Autowired
+    StorageConverter storageConverter;
+    
+    @Autowired
     OperateRecordUtil operateRecordUtil;
+    
+    
     
     /**
      * 通过ID查询单条数据从DB
@@ -234,7 +240,8 @@ public class UserNotifyServiceImpl implements UserNotifyService {
                 NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
                 infoVo.setActivityType(info.getActivityType());
                 infoVo.setPictureUrl(info.getPictureUrl());
-                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+//                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                infoVo.setPictureOSSUrl(storageConverter.assembleUrl(info.getPictureUrl()));
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);
@@ -266,7 +273,8 @@ public class UserNotifyServiceImpl implements UserNotifyService {
                 NotifyPictureInfoVO infoVo = new NotifyPictureInfoVO();
                 infoVo.setActivityType(info.getActivityType());
                 infoVo.setPictureUrl(info.getPictureUrl());
-                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+//                infoVo.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + info.getPictureUrl());
+                infoVo.setPictureOSSUrl(storageConverter.assembleUrl(info.getPictureUrl()));
                 pictureInfoVOList.add(infoVo);
             }
             vo.setPictureInfoList(pictureInfoVOList);

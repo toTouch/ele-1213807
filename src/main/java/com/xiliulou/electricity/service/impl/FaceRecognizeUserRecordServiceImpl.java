@@ -86,7 +86,6 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public FaceRecognizeUserRecord insert(FaceRecognizeUserRecord faceRecognizeUserRecord) {
         this.faceRecognizeUserRecordMapper.insertOne(faceRecognizeUserRecord);
         return faceRecognizeUserRecord;
@@ -99,12 +98,15 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(FaceRecognizeUserRecord faceRecognizeUserRecord) {
         return this.faceRecognizeUserRecordMapper.update(faceRecognizeUserRecord);
-
     }
-
+    
+    @Override
+    public Integer updateByUidAndCertifyId(FaceRecognizeUserRecord faceRecognizeUserRecordUpdate) {
+        return this.faceRecognizeUserRecordMapper.updateByUidAndCertifyId(faceRecognizeUserRecordUpdate);
+    }
+    
     /**
      * 通过主键删除数据
      *
@@ -112,7 +114,6 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
      * @return 是否成功
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.faceRecognizeUserRecordMapper.deleteById(id) > 0;
     }

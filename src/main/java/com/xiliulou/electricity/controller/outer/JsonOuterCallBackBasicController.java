@@ -25,35 +25,35 @@ public class JsonOuterCallBackBasicController {
     @Resource
     private ElectricityPayParamsService electricityPayParamsService;
     
-    /**
-     * 处理回调参数 ,老支付回调(兼容上线期间的历史数据)
-     *
-     * @param wechatV3RefundOrderCallBackQuery
-     * @return
-     */
-    protected WechatJsapiRefundOrderCallBackResource handCallBackParam(WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
-        WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
-        if (Objects.isNull(resource)) {
-            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
-            return null;
-        }
-        
-        String decryptJson = null;
-        try {
-            String apiV3Key = this.getApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
-            decryptJson = AesUtil
-                    .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
-                            apiV3Key.getBytes(StandardCharsets.UTF_8));
-            
-        } catch (Exception e) {
-            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
-            return null;
-        }
-        
-        WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
-        
-        return callBackResource;
-    }
+//    /**
+//     * 处理回调参数 ,老支付回调(兼容上线期间的历史数据)
+//     *
+//     * @param wechatV3RefundOrderCallBackQuery
+//     * @return
+//     */
+//    protected WechatJsapiRefundOrderCallBackResource handCallBackParam(WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+//        WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
+//        if (Objects.isNull(resource)) {
+//            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
+//            return null;
+//        }
+//
+//        String decryptJson = null;
+//        try {
+//            String apiV3Key = this.getApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+//            decryptJson = AesUtil
+//                    .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
+//                            apiV3Key.getBytes(StandardCharsets.UTF_8));
+//
+//        } catch (Exception e) {
+//            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
+//            return null;
+//        }
+//
+//        WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
+//
+//        return callBackResource;
+//    }
     
     
     /**
