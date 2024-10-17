@@ -82,6 +82,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.DeviceStatusQuery;
 import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -3058,24 +3059,43 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery) {
         
-        JSONObject jsonObject = JSON.parseObject(apiRequestQuery.getData());
-        String productKey = String.valueOf(jsonObject.get("productKey"));
-        String deviceName = String.valueOf(jsonObject.get("deviceName"));
-        
-        if (org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
+        DeviceStatusQuery deviceStatusQuery = JsonUtil.fromJson(apiRequestQuery.getData(), DeviceStatusQuery.class);
+        if (Objects.isNull(deviceStatusQuery)) {
             return R.fail("SYSTEM.0003", "参数不合法");
         }
         
-        Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
-        if (!result.getLeft()) {
-            log.warn("acsClient link warn! errorMsg={}", result.getLeft());
-            return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+        String productKey = deviceStatusQuery.getProductKey();
+        String deviceName = deviceStatusQuery.getDeviceName();
+        Integer iotConnectMode = deviceStatusQuery.getIotConnectMode();
+        
+        if (StringUtils.isBlank(productKey) || StringUtils.isBlank(deviceName)) {
+            return R.fail("SYSTEM.0003", "参数不合法");
         }
         
-        if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
-            log.warn("Query device is unActive status warn!errorMsg={}", result.getRight());
-            return R.fail("CUPBOARD.10036", "三元组在线");
+        if (Objects.equals(EleCabinetConstant.TCP_PATTERN, iotConnectMode)) {
+            EleDeviceCode deviceCode = eleDeviceCodeService.queryBySnFromCache(productKey, deviceName);
+            if (Objects.isNull(deviceCode)) {
+                log.warn("checkDevice warn! not found deviceCode,p={},d={}", productKey, deviceName);
+                return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+            }
+            
+            if (this.deviceIsOnlineForTcp(productKey, deviceName)) {
+                log.warn("checkDevice warn!,device is online,p={},d={}", productKey, deviceName);
+                return R.fail("CUPBOARD.10036", "三元组在线");
+            }
+        } else {
+            Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
+            if (!result.getLeft()) {
+                log.warn("checkDevice warn! errorMsg={}", result.getLeft());
+                return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+            }
+            
+            if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
+                log.warn("checkDevice warn!errorMsg={}", result.getRight());
+                return R.fail("CUPBOARD.10036", "三元组在线");
+            }
         }
+        
         return R.ok();
     }
     
