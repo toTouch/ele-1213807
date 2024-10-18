@@ -810,7 +810,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
         
         UserBatteryMemberCard updateUserBatteryMemberCard = rollBackBO.getRollBackUserBatteryMemberCard();
         if (Objects.nonNull(updateUserBatteryMemberCard)) {
-            userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
+            userBatteryMemberCardService.updateByUidForEmptyOrder(updateUserBatteryMemberCard);
         }
         
         ServiceFeeUserInfo serviceFeeUserInfo = rollBackBO.getRollBackServiceFeeUserInfo();

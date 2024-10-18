@@ -18,7 +18,6 @@ import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
-import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -270,7 +269,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Slave
     @Override
     public List<UserBatteryMemberCard> batteryMemberCardExpire(Integer tenantId, Integer offset, Integer size, Long firstTime, Long lastTime) {
-        return userBatteryMemberCardMapper.batteryMemberCardExpire(tenantId,offset, size, firstTime, lastTime);
+        return userBatteryMemberCardMapper.batteryMemberCardExpire(tenantId, offset, size, firstTime, lastTime);
     }
     
     
@@ -513,5 +512,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         }
         
         return delete;
+    }
+    
+    @Override
+    public Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard) {
+        return userBatteryMemberCardMapper.updateByUidForEmptyOrder(updateUserBatteryMemberCard);
     }
 }
