@@ -335,7 +335,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
             throw new CustomBusinessException(e.getMessage());
         }
         
-        rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
+            rollBackBO = buildRollBackData(eleDepositOrderById, electricityMemberCardOrderById, null, rollBackUserInfo, userBatteryTypes, userBatteryDepositById,
                 rollBackUserBatteryDeposit, userBatteryMemberCardUpdateById, rollBackUserBatteryMemberCard, serviceFeeUserInfoById, rollBackServiceFeeUserInfo,
                 eleUserDepositOperateRecordById, eleUserMemberCardOperateRecordById, null, null);
         
