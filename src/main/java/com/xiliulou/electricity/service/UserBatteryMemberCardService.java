@@ -131,4 +131,6 @@ public interface UserBatteryMemberCardService {
     void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId);
     
     Integer deleteById(Long id);
+    
+    void handlePackageNumber(Long uid);
 }
