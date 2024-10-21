@@ -15,8 +15,6 @@ import java.util.List;
  */
 public interface UserInfoGroupDetailMapper {
     
-    UserInfoGroupDetail selectByUid(@Param("groupNo") String groupNo, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
-    
     List<UserInfoGroupDetailBO> selectPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
@@ -26,8 +24,6 @@ public interface UserInfoGroupDetailMapper {
     List<UserInfoGroupNamesBO> selectListGroupByUidList(@Param("uidList") List<Long> uidList);
     
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
-    
-    Integer countUserByGroupId(Long id);
     
     @Deprecated
     Integer countGroupByUid(Long uid);

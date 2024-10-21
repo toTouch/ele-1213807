@@ -84,12 +84,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     
     @Slave
     @Override
-    public UserInfoGroupDetail queryByUid(String groupNo, Long uid, Integer tenantId) {
-        return userInfoGroupDetailMapper.selectByUid(groupNo, uid, tenantId);
-    }
-    
-    @Slave
-    @Override
     public List<UserInfoGroupDetailPageBO> listByPage(UserInfoGroupDetailQuery query) {
         List<UserInfoGroupDetailBO> list = userInfoGroupDetailMapper.selectPage(query);
         
@@ -148,18 +142,6 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
     @Override
     public Integer batchInsert(List<UserInfoGroupDetail> detailList) {
         return userInfoGroupDetailMapper.batchInsert(detailList);
-    }
-    
-    @Slave
-    @Override
-    public Integer countUserByGroupId(Long id) {
-        return userInfoGroupDetailMapper.countUserByGroupId(id);
-    }
-    
-    @Slave
-    @Override
-    public Integer countGroupByUidAndFranchisee(Long uid, Long franchiseeId) {
-        return userInfoGroupDetailMapper.countGroupByUidAndFranchisee(uid, franchiseeId);
     }
     
     @Slave

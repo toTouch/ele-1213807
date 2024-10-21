@@ -39,13 +39,6 @@
             </if>
     </delete>
     
-    <select id="selectByUid" resultType="com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroupDetail">
-        select
-        <include refid="basic_field"/>
-        from t_user_info_group_detail
-        where group_no = #{groupNo} and uid = #{uid} and tenant_id = #{tenantId}
-    </select>
-    
     <select id="selectPage" resultType="com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupDetailBO">
         select
         any_value(tuigd.id) as id,
@@ -100,13 +93,6 @@
                 </foreach>
             </if>
         </where>
-    </select>
-    
-    <select id="countUserByGroupId" resultType="java.lang.Integer">
-        select count(1)
-        from t_user_info_group_detail tuigd
-                 left join t_user_info_group tuig on tuig.group_no = tuigd.group_no
-        where tuig.id = #{id}
     </select>
     
     <select id="countGroupByUid" resultType="java.lang.Integer">

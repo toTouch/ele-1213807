@@ -18,17 +18,11 @@ import java.util.List;
  */
 public interface UserInfoGroupDetailService {
     
-    UserInfoGroupDetail queryByUid(String groupNo, Long uid, Integer tenantId);
-    
     List<UserInfoGroupDetailPageBO> listByPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
     
     Integer batchInsert(List<UserInfoGroupDetail> detailList);
-    
-    Integer countUserByGroupId(Long id);
-    
-    Integer countGroupByUidAndFranchisee(Long uid, Long franchiseeId);
     
     List<UserInfoGroupNamesBO> listGroupByUid(UserInfoGroupDetailQuery query);
     
