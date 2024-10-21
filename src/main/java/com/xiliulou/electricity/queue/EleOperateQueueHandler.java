@@ -293,6 +293,11 @@ public class EleOperateQueueHandler {
                         newRentBatteryOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
                     }
                     
+                    // 只有租电池异常才需要回退
+                    if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)){
+                        userBatteryMemberCardService.handlePackageNumber(rentBatteryOrder.getUid());
+                    }
+                    
                     //取消订单
                     if (finalOpenDTO.getIsNeedEndOrder()) {
                         newRentBatteryOrder.setId(rentBatteryOrder.getId());

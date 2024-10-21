@@ -248,26 +248,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         if (warnStateList.contains(exchangeOrderRsp.getOrderStatus())) {
             // 通过订单的 UID 获取用户信息
-            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
-            
-            //回退单电套餐次数
-            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-                if (Objects.nonNull(userBatteryMemberCard)) {
-                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                    if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                        log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user battery member card number.");
-                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
-                    }
-                }
-            }
-            
-            //回退车电一体套餐次数
-            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-                log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user car_battery member number.");
-                carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
-            }
-            
+            userBatteryMemberCardService.handlePackageNumber(electricityCabinetOrder.getUid());
         }
     }
     

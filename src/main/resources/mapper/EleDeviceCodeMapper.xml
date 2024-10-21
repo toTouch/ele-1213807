@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleDeviceCodeMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.EleDeviceCode" id="EleDeviceCodeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="productKey" column="product_key" jdbcType="VARCHAR"/>
+        <result property="deviceName" column="device_name" jdbcType="VARCHAR"/>
+        <result property="secret" column="secret" jdbcType="VARCHAR"/>
+        <result property="onlineStatus" column="online_status" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <select id="selectById" resultMap="EleDeviceCodeMap">
+        select id,
+               product_key,
+               device_name,
+               secret,
+               online_status,
+               remark,
+               del_flag,
+               create_time,
+               update_time
+        from t_ele_device_code
+        where id = #{id} and del_flag = 0
+    </select>
+    
+    
+    <select id="selectBySn" resultMap="EleDeviceCodeMap">
+        select id,
+               product_key,
+               device_name,
+               secret,
+               online_status,
+               remark,
+               del_flag,
+               create_time,
+               update_time
+        from t_ele_device_code
+        where product_key = #{productKey} and device_name = #{deviceName} and del_flag = 0
+    </select>
+    
+    <select id="selectListDeviceInfo" resultMap="EleDeviceCodeMap">
+        select id,
+               product_key,
+               device_name,
+               secret,
+               online_status,
+               remark,
+               del_flag,
+               create_time,
+               update_time
+        from t_ele_device_code
+        where product_key = #{productKey} and del_flag = 0 and device_name in
+        <foreach collection="deviceNames" item="deviceName" open="(" close=")" separator=",">
+            #{deviceName}
+        </foreach>
+    </select>
+    
+    <select id="selectByPage" resultMap="EleDeviceCodeMap">
+        select
+        id, product_key, device_name, secret, online_status, remark, create_time, update_time
+        from t_ele_device_code
+        <where>
+            <if test="deviceName != null and deviceName != ''">
+                and device_name like concat(#{deviceName,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="secret != null and secret != ''">
+                and secret = #{secret}
+            </if>
+            <if test="onlineStatus != null">
+                and online_status = #{onlineStatus}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countByPage" resultType="int">
+        select
+        count(*)
+        from t_ele_device_code
+        <where>
+            <if test="deviceName != null and deviceName != ''">
+                and device_name like concat(#{deviceName,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="secret != null and secret != ''">
+                and secret = #{secret}
+            </if>
+            <if test="onlineStatus != null">
+                and online_status = #{onlineStatus}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+        </where>
+    </select>
+    
+    <select id="existsDeviceName" resultType="integer">
+        select 1 from t_ele_device_code where device_name = #{deviceName} and del_flag =0 order by id desc limit 1
+    </select>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_device_code(product_key, device_name, secret, online_status, remark, del_flag, create_time, update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.productKey}, #{item.deviceName}, #{item.secret}, #{item.onlineStatus}, #{item.remark}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_device_code
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productKey != null and productKey != ''">
+                product_key,
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name,
+            </if>
+            <if test="secret != null and secret != ''">
+                secret,
+            </if>
+            <if test="onlineStatus != null">
+                online_status,
+            </if>
+            <if test="remark != null and remark != ''">
+                remark,
+            </if>
+            <if test="delFlag != null">
+                del_flag,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productKey != null and productKey != ''">
+                #{productKey},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                #{deviceName},
+            </if>
+            <if test="secret != null and secret != ''">
+                #{secret},
+            </if>
+            <if test="onlineStatus != null">
+                #{onlineStatus},
+            </if>
+            <if test="remark != null and remark != ''">
+                #{remark},
+            </if>
+            <if test="delFlag != null">
+                #{delFlag},
+            </if>
+            <if test="createTime != null">
+                #{createTime},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime},
+            </if>
+        </trim>
+    </insert>
+    
+    <update id="updateById">
+        update t_ele_device_code
+        <set>
+            <if test="productKey != null and productKey != ''">
+                product_key = #{productKey},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name = #{deviceName},
+            </if>
+            <if test="secret != null and secret != ''">
+                secret = #{secret},
+            </if>
+            <if test="onlineStatus != null">
+                online_status = #{onlineStatus},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            remark = #{remark}
+        </set>
+        where id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        delete
+        from t_ele_device_code
+        where id = #{id}
+    </delete>
+
+</mapper>
+
