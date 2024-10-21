@@ -1054,21 +1054,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
-        if (Objects.isNull(otherSetting) || StringUtils.isBlank(otherSetting.getApiAddress())) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        
-        Map<String, Object> params = Maps.newHashMap();
-        params.put("apiAddress", otherSetting.getApiAddress());
-        params.put("iotConnectMode", query.getPattern());
-        
-        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
-        commandQuery.setProductKey(query.getProductKey());
-        commandQuery.setDeviceName(query.getDeviceName());
-        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
-        commandQuery.setData(params);
-        return electricityCabinetService.sendCommandToEleForOuter(commandQuery);
+        return electricityCabinetService.updateCabinetPattern(query);
     }
     
     
