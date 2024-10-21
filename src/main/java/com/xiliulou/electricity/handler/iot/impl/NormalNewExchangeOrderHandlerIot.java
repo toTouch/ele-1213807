@@ -14,6 +14,7 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -24,9 +25,9 @@ import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -45,6 +46,7 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -130,6 +132,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     private ExchangeBatterySocService exchangeBatterySocService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
     
     XllThreadPoolExecutorService lineExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("LINE_EXCHANGE_BATTERY_SOC_ANALYZE", 1,
@@ -162,7 +167,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder, exchangeOrderRsp);
             
-       
             if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
                 log.warn("EXCHANGE ORDER WARN! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(),
                         electricityCabinetOrder.getUid());
@@ -171,7 +175,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             
             // 处理失败回退电池套餐次数
             handlePackageNumber(exchangeOrderRsp, receiverMessage, electricityCabinetOrder);
-            
             
             //是否开启异常仓门锁仓
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
@@ -366,8 +369,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             handleCallBatteryChangeSoc(electricityBattery);
             
         } else {
-            log.warn("EXCHANGE ORDER WARN! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(),
-                    exchangeOrderRsp.getOrderId());
+            log.warn("EXCHANGE ORDER WARN! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
         }
         
         BatteryTrackRecord placeatteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName()).setEId(Long.valueOf(electricityCabinet.getId()))
@@ -381,7 +383,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
-        
+        // 给第三方推送换电记录/用户信息/电池信息
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), exchangeOrderRsp.getSessionId(),
+                electricityCabinet.getTenantId(), electricityCabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, electricityCabinetOrder.getUid());
     }
     
     /**
@@ -593,8 +597,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     TimeUnit.MINUTES);
         }
         
-        
-        
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);
     }
@@ -614,10 +616,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     }
     
     private boolean allowNewSelfOpenStatus(String orderStatus) {
-        return (orderStatus.equals(ElectricityCabinetOrder.INIT_OPEN_FAIL)
-                || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
-                || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)
-                || orderStatus.equals(ElectricityCabinetOrder.COMPLETE_OPEN_FAIL) );
+        return (orderStatus.equals(ElectricityCabinetOrder.INIT_OPEN_FAIL) || orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) || orderStatus.equals(
+                ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT) || orderStatus.equals(ElectricityCabinetOrder.COMPLETE_OPEN_FAIL));
     }
     
     // TODO: 2022/8/1 异常锁定格挡

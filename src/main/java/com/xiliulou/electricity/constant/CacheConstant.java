@@ -817,15 +817,12 @@ public interface CacheConstant {
     String CACHE_DEVICE_CODE = "cache_device_code:";
     String CACHE_DEVICE_CODE_SN = "cache_device_code_sn:";
     
-    
-    
     //退款审核通过
     String APPROVE_REFUND_RENT_ORDER_LOCK_KEY = "saas_ele:approve_refund_rent_order:%s";
     
     String APPROVE_REFUND_DEPOSIT_ORDER_LOCK_KEY = "saas_ele:approve_refund_deposit_order:%s";
     
     String BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_membercar_refund:%s";
-    
     
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
 

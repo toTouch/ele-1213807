@@ -10,7 +10,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.constant.meituan.MeiTuanConfigConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
@@ -22,6 +21,7 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
@@ -37,8 +37,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.template.TemplateConfigService;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -54,6 +53,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -200,7 +201,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         // 若开启美团骑手商城
-        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall(), MeiTuanConfigConstant.ENABLE_MEI_TUAN_RIDER_MALL)) {
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall(), MeiTuanRiderMallEnum.ENABLE_MEI_TUAN_RIDER_MALL.getCode())) {
             MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(meiTuanRiderMallConfig) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppId()) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppKey())
                     || StringUtils.isBlank(meiTuanRiderMallConfig.getSecret())) {
@@ -292,10 +293,14 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         
-        int updateResult = electricityConfigMapper.update(electricityConfig);
-        if (updateResult > 0) {
-            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
-        }
+        electricityConfigMapper.update(electricityConfig);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // 清理缓存
+                redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+            }
+        });
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }

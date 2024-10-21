@@ -144,4 +144,9 @@ public interface MqProducerConstant {
      * 用户设备在线日志topic
      */
     String USER_DEVICE_STATUS_TOPIC = "user_device_status_topic";
+    
+    /**
+     * 第三方商城主题
+     */
+    String THIRD_PARTY_MALL_TOPIC = "third_party_mall_topic";
 }

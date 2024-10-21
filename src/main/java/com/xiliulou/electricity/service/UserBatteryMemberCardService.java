@@ -133,4 +133,6 @@ public interface UserBatteryMemberCardService {
     Integer deleteById(Long id);
     
     void handlePackageNumber(Long uid);
+    
+    Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard);
 }

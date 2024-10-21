@@ -6,7 +6,6 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -78,6 +77,7 @@ import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -100,7 +100,6 @@ import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
-import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
@@ -151,7 +150,9 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -200,15 +201,9 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -456,6 +451,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     private EleDeviceCodeService eleDeviceCodeService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -649,6 +647,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
+        
+        // 给第三方推送柜机信息
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
+        
         return R.ok();
     }
     
@@ -778,6 +781,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
+        
         return R.ok();
     }
     
@@ -1538,6 +1542,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     /**
      * TODO zhaohzilong 2024年08月26日 15:09:09 判断设备是否在线改为调用网关接口，从返回值中获取设备连接的网关IP
+     *
      * @param productKey
      * @param deviceName
      * @return
@@ -1579,6 +1584,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
+        
+        // 给第三方推送柜机信息
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
+        
         return R.ok();
     }
     
@@ -2896,7 +2906,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (comfortExchangeGetEmptyCellPair.getLeft()) {
             return comfortExchangeGetEmptyCellPair;
         }
-        
         
         // 有多个空格挡  优先分配开门的格挡
         List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))

@@ -11,12 +11,13 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
-import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -27,6 +28,7 @@ import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardChannelExitVo;
@@ -83,6 +85,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
+    
+    @Resource
+    private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
     private final ScheduledThreadPoolExecutor scheduledExecutor = ThreadUtil.createScheduledExecutor(2);
     
@@ -264,7 +269,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Slave
     @Override
     public List<UserBatteryMemberCard> batteryMemberCardExpire(Integer tenantId, Integer offset, Integer size, Long firstTime, Long lastTime) {
-        return userBatteryMemberCardMapper.batteryMemberCardExpire(tenantId,offset, size, firstTime, lastTime);
+        return userBatteryMemberCardMapper.batteryMemberCardExpire(tenantId, offset, size, firstTime, lastTime);
     }
     
     
@@ -379,6 +384,17 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
                     if (Objects.nonNull(batteryMemberCard) && BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_ENTERPRISE_BATTERY.getCode()
                             .equals(batteryMemberCard.getBusinessType())) {
                         enterpriseChannelUserService.updatePaymentStatusByUid(item.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
+                    }
+                    
+                    // 如果当前套餐是美团订单，则更新美团订单状态为已失效
+                    MeiTuanRiderMallOrder meiTuanRiderMallOrder = meiTuanRiderMallOrderService.queryByOrderId(item.getOrderId(), item.getUid(), item.getTenantId());
+                    if (Objects.nonNull(meiTuanRiderMallOrder)) {
+                        MeiTuanRiderMallOrder updateMeiTuanRiderMallOrder = new MeiTuanRiderMallOrder();
+                        updateMeiTuanRiderMallOrder.setOrderId(item.getOrderId());
+                        updateMeiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
+                        updateMeiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+                        updateMeiTuanRiderMallOrder.setTenantId(item.getTenantId());
+                        meiTuanRiderMallOrderService.updateStatusByOrderId(updateMeiTuanRiderMallOrder);
                     }
                 }
                 
@@ -523,5 +539,10 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             log.info("NormalNewExchangeOrderHandlerIot.postHandleReceiveMsg handlePackageNumber, refund user car_battery member number.");
             carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
         }
+    }
+    
+    @Override
+    public Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard) {
+        return userBatteryMemberCardMapper.updateByUidForEmptyOrder(updateUserBatteryMemberCard);
     }
 }
