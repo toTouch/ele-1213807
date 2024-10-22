@@ -545,7 +545,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     @Slave
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
+        Integer orderMode = electricityCabinetOrderQuery.getOrderMode();
+        if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
+            return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
+        } else {
+            return R.ok(electricityCabinetOrderHistoryService.queryCount(electricityCabinetOrderQuery));
+        }
     }
     
     @Slave
