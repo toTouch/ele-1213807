@@ -86,4 +86,9 @@ public class ElectricityCabinetOrderQuery {
      * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String channel;
+    
+    /**
+     * 订单方式，1:近3月订单，2：历史订单
+     */
+    private Integer orderMode;
 }
