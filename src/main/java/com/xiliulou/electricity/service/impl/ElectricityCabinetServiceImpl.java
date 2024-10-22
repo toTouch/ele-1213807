@@ -2680,16 +2680,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Triple.of(false, "", "换电柜暂无满电电池");
             }
             
-            // 如果存在多个电量相同的格挡，取充电器电压最大
-            Double maxPower = usableBatteryCellNos.get(0).getPower();
-            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower))
-                    .filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second)
-                    .orElse(null);
-            if (Objects.isNull(usableCabinetBox)) {
-                return Triple.of(false, "", "换电柜暂无满电电池");
+            // 过滤异常满电仓门
+            Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBatteryCellNos);
+            if (filterFullExceptionCellPair.getLeft()) {
+                return commonGetFullCell(uid, eid, filterFullExceptionCellPair.getRight());
+            }
+            usableBatteryCellNos = filterFullExceptionCellPair.getRight();
+            
+            
+            // 舒适换电分配满电仓适配
+            Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos, fullyCharged);
+            if (comfortExchangeGetFullCellPair.getLeft()) {
+                return Triple.of(true, null, comfortExchangeGetFullCellPair.getRight());
             }
             
-            return Triple.of(true, null, usableCabinetBox);
+            
+            return commonGetFullCell(uid, eid, usableBatteryCellNos);
         } else {
             List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
