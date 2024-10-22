@@ -1167,10 +1167,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         couponIdSet.forEach(couponIdFromSet -> {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
             Coupon coupon = couponService.queryByIdFromCache(couponIdFromSet);
-            if (Objects.nonNull(coupon)) {
-                BeanUtils.copyProperties(coupon, couponSearchVo);
-                couponSearchVo.setId(coupon.getId().longValue());
+            if (Objects.isNull(coupon)) {
+                return;
             }
+
+            BeanUtils.copyProperties(coupon, couponSearchVo);
+            couponSearchVo.setId(coupon.getId().longValue());
             
             // 兼容旧版本小程序，取优惠金额最大的优惠券的金额与name展示
             if (Objects.nonNull(couponSearchVo.getAmount()) && couponSearchVo.getAmount().compareTo(batteryMemberCardVO.getAmount()) > 0) {
