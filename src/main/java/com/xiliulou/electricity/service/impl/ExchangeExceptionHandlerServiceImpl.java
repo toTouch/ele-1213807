@@ -117,7 +117,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             // 如果剩余空仓为空，则返回随机的异常空仓
             if (CollUtil.isEmpty(filterExchangeEmptyCellList)) {
                 log.info("FilterEmptyExceptionCell Info! filterExchangeEmptyCellList is null, return exceptionEmptyCellList, eid is {}", eid);
-                return Pair.of(true, emptyList.stream().filter(item -> exceptionEmptyCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList()));
+                return Pair.of(true, emptyList);
             }
             
             // 否则返回剩余空仓
@@ -163,7 +163,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             // 如果剩余满电仓为空，则返回随机的异常满电仓
             if (CollUtil.isEmpty(filterExchangeFullCellList)) {
                 log.info("FilterFullExceptionCell Info! filterExchangeFullCellList is null, return exceptionFullCellList, eid is {}", cabinet.getId());
-                return Pair.of(true, fullList.stream().filter(item -> exceptionFullCellList.contains(Integer.valueOf(item.getCellNo()))).collect(Collectors.toList()));
+                return Pair.of(true, fullList);
             }
             
             // 否则返回剩余满电仓
