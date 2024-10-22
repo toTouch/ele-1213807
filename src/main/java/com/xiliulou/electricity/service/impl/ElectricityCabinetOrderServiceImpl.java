@@ -1691,7 +1691,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> orderSelectionExchange(OrderSelectionExchangeQuery exchangeQuery) {
         // 判断用户信息
         Long uid = SecurityUtils.getUid();
