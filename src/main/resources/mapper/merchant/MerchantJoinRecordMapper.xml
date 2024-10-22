@@ -519,7 +519,6 @@
                 </foreach>
             </if>
         </where>
-        ) a
     </select>
     
     <select id="selectListSuccessJoinNumByCondition"
