@@ -28,4 +28,6 @@ public interface MerchantAreaMapper {
     List<MerchantArea> queryList(MerchantAreaQueryModel queryModel);
     
     MerchantArea selectById(@Param("id") Long id);
+    
+    List<MerchantArea> selectListByIdList(@Param("idList") List<Long> areaIdList);
 }

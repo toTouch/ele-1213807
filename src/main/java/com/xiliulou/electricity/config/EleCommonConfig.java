@@ -36,6 +36,8 @@ public class EleCommonConfig {
 
     private Integer testFactoryTenantId;
     
+    private String productKey;
+    
     /**
      * 启用GEO获取位置信息开关
      */
