@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import com.xiliulou.electricity.query.base.BasePageQuery;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @ClassName: ShareActivityPageQuery
  * @description:
@@ -15,4 +17,7 @@ public class ShareActivityPageQuery extends BasePageQuery {
     private Integer tenantId;
     
     private String name;
+    
+    private List<Long> franchiseeIds;
+    
 }

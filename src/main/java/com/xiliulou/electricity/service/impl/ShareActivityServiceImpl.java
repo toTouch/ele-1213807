@@ -72,6 +72,7 @@ import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1162,6 +1163,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     @Override
     public List<ShareAndUserActivityVO> listShareActivity(ShareActivityPageQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return new ArrayList<>();
+        }
+        query.setFranchiseeIds(pair.getRight());
         return shareActivityMapper.listShareActivity(query);
     }
 }

@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import com.xiliulou.electricity.query.base.BasePageQuery;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @ClassName: BatteryCarMemberListQuery
  * @description:
@@ -15,4 +17,6 @@ public class BatteryCarMemberListQuery extends BasePageQuery {
     private String name;
     
     private Integer tenantId;
+    
+    private List<Long> franchiseeIds;
 }
