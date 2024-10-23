@@ -75,6 +75,8 @@ public interface CacheConstant {
     
     //下单加锁缓存
     String ORDER_ELE_ID = "order_lock_ele_id:";
+    //新增设备加锁
+    String CACHE_DEVICE_CODE_LOCK = "device_code_lock:";
     
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
@@ -809,7 +811,11 @@ public interface CacheConstant {
      */
     String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
     
-    
+    /**
+     * 设备信息缓存
+     */
+    String CACHE_DEVICE_CODE = "cache_device_code:";
+    String CACHE_DEVICE_CODE_SN = "cache_device_code_sn:";
     
     //退款审核通过
     String APPROVE_REFUND_RENT_ORDER_LOCK_KEY = "saas_ele:approve_refund_rent_order:%s";
@@ -818,7 +824,12 @@ public interface CacheConstant {
     
     String BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_membercar_refund:%s";
     
-    
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
+
+    /**
+     * 用户设备状态缓存
+     */
+    String CACHE_USER_DEVICE_STATUS = "d_stat:";
+
 }
 

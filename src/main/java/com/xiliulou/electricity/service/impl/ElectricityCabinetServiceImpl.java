@@ -6,10 +6,10 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.net.Ipv4Util;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -32,6 +32,7 @@ import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.DeviceReportConstant;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -39,12 +40,14 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.OtaConstant;
 import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.converter.storage.StorageConverter;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.CabinetMoveHistory;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.entity.EleOtaFile;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -74,11 +77,14 @@ import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.DeviceStatusQuery;
+import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
@@ -94,7 +100,6 @@ import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
-import com.xiliulou.electricity.request.CabinetCommandRequest;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
 import com.xiliulou.electricity.service.BatteryGeoService;
@@ -106,6 +111,7 @@ import com.xiliulou.electricity.service.CabinetMoveHistoryService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleDeviceCodeService;
 import com.xiliulou.electricity.service.EleOtaFileService;
 import com.xiliulou.electricity.service.EleOtaUpgradeService;
 import com.xiliulou.electricity.service.EleOtherConfigService;
@@ -144,7 +150,9 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -193,15 +201,9 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -446,6 +448,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
+    @Autowired
+    private EleDeviceCodeService eleDeviceCodeService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -639,6 +647,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
+        
+        // 给第三方推送柜机信息
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
+        
         return R.ok();
     }
     
@@ -768,6 +781,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             return null;
         });
+        
         return R.ok();
     }
     
@@ -970,8 +984,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public Triple<Boolean, String, Object> updateOnlineStatus(Long id) {
         ElectricityCabinet electricityCabinet = this.queryByIdFromCache(id.intValue());
-        if (Objects.isNull(electricityCabinet) || !Objects.equals(TenantContextHolder.getTenantId(), electricityCabinet.getTenantId())) {
+        if (Objects.isNull(electricityCabinet)) {
             return Triple.of(false, "100003", "柜机不存在");
+        }
+        
+        if(!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())){
+            return Triple.of(false,"100003", "柜机不存在");
         }
         
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
@@ -1524,6 +1542,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     /**
      * TODO zhaohzilong 2024年08月26日 15:09:09 判断设备是否在线改为调用网关接口，从返回值中获取设备连接的网关IP
+     *
      * @param productKey
      * @param deviceName
      * @return
@@ -1565,6 +1584,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
         operateRecordUtil.record(oldElectricityCabinet, electricityCabinet);
+        
+        // 给第三方推送柜机信息
+        pushDataToThirdService.asyncPushCabinetToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), TtlTraceIdSupport.get(), electricityCabinet.getTenantId(),
+                electricityCabinet.getId().longValue());
+        
         return R.ok();
     }
     
@@ -2883,7 +2907,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return comfortExchangeGetEmptyCellPair;
         }
         
-        
         // 有多个空格挡  优先分配开门的格挡
         List<ElectricityCabinetBox> openDoorEmptyCellList = emptyCellList.stream().filter(item -> Objects.equals(item.getIsLock(), ElectricityCabinetBox.OPEN_DOOR))
                 .collect(Collectors.toList());
@@ -3052,24 +3075,43 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery) {
         
-        JSONObject jsonObject = JSON.parseObject(apiRequestQuery.getData());
-        String productKey = String.valueOf(jsonObject.get("productKey"));
-        String deviceName = String.valueOf(jsonObject.get("deviceName"));
-        
-        if (org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
+        DeviceStatusQuery deviceStatusQuery = JsonUtil.fromJson(apiRequestQuery.getData(), DeviceStatusQuery.class);
+        if (Objects.isNull(deviceStatusQuery)) {
             return R.fail("SYSTEM.0003", "参数不合法");
         }
         
-        Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
-        if (!result.getLeft()) {
-            log.warn("acsClient link warn! errorMsg={}", result.getLeft());
-            return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+        String productKey = deviceStatusQuery.getProductKey();
+        String deviceName = deviceStatusQuery.getDeviceName();
+        Integer iotConnectMode = deviceStatusQuery.getIotConnectMode();
+        
+        if (StringUtils.isBlank(productKey) || StringUtils.isBlank(deviceName)) {
+            return R.fail("SYSTEM.0003", "参数不合法");
         }
         
-        if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
-            log.warn("Query device is unActive status warn!errorMsg={}", result.getRight());
-            return R.fail("CUPBOARD.10036", "三元组在线");
+        if (Objects.equals(EleCabinetConstant.TCP_PATTERN, iotConnectMode)) {
+            EleDeviceCode deviceCode = eleDeviceCodeService.queryBySnFromCache(productKey, deviceName);
+            if (Objects.isNull(deviceCode)) {
+                log.warn("checkDevice warn! not found deviceCode,p={},d={}", productKey, deviceName);
+                return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+            }
+            
+            if (this.deviceIsOnlineForTcp(productKey, deviceName)) {
+                log.warn("checkDevice warn!,device is online,p={},d={}", productKey, deviceName);
+                return R.fail("CUPBOARD.10036", "三元组在线");
+            }
+        } else {
+            Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
+            if (!result.getLeft()) {
+                log.warn("checkDevice warn! errorMsg={}", result.getLeft());
+                return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+            }
+            
+            if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
+                log.warn("checkDevice warn!errorMsg={}", result.getRight());
+                return R.fail("CUPBOARD.10036", "三元组在线");
+            }
         }
+        
         return R.ok();
     }
     
@@ -5012,7 +5054,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 校验柜机Id
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
-        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("100003", "柜机不存在");
+        }
+        
+        if(!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())){
             return R.fail("100003", "柜机不存在");
         }
         
@@ -5168,6 +5214,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(new RentReturnEditEchoVO(cabinetExtra.getEid(), cabinetExtra.getRentTabType(), cabinetExtra.getReturnTabType(), cabinetExtra.getMinRetainBatteryCount(),
                 cabinetExtra.getMaxRetainBatteryCount()));
+    }
+    
+    @Override
+    public R updateCabinetPattern(EleCabinetPatternQuery query) {
+        //判断三元组是否在设备列表中存在,若不存在，新增
+        if (Objects.isNull(eleDeviceCodeService.existsDeviceName(query.getDeviceName()))) {
+            long time = System.currentTimeMillis();
+            EleDeviceCode deviceCode = new EleDeviceCode();
+            deviceCode.setProductKey(query.getProductKey());
+            deviceCode.setDeviceName(query.getDeviceName());
+            deviceCode.setSecret(SecureUtil.hmacMd5(query.getProductKey() + query.getDeviceName()).digestHex(String.valueOf(time)));
+            deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
+            deviceCode.setRemark("");
+            deviceCode.setDelFlag(CommonConstant.DEL_N);
+            deviceCode.setCreateTime(time);
+            deviceCode.setUpdateTime(time);
+            eleDeviceCodeService.insert(deviceCode);
+        }
+        
+        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
+        if (Objects.isNull(otherSetting) || org.apache.commons.lang3.StringUtils.isBlank(otherSetting.getApiAddress())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("apiAddress", otherSetting.getApiAddress());
+        params.put("iotConnectMode", query.getPattern());
+        
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(query.getProductKey());
+        commandQuery.setDeviceName(query.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+        return this.sendCommandToEleForOuter(commandQuery);
     }
     
     @Override

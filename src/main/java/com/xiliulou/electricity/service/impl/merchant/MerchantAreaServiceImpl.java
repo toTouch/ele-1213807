@@ -234,4 +234,10 @@ public class MerchantAreaServiceImpl implements MerchantAreaService {
         return merchantAreaMapper.selectById(id);
     }
     
+    @Override
+    @Slave
+    public List<MerchantArea> listByIdList(List<Long> areaIdList) {
+        return merchantAreaMapper.selectListByIdList(areaIdList);
+    }
+    
 }

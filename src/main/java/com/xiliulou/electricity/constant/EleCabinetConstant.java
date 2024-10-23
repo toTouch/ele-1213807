@@ -28,4 +28,10 @@ public interface EleCabinetConstant {
     int HW_IOT_PATTERN = 1;
     int TCP_PATTERN = 2;
     
+    /**
+     * 柜机在线状态
+     */
+    Integer STATUS_ONLINE = 0;
+    Integer STATUS_OFFLINE = 1;
+    
 }

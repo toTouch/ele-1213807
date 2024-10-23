@@ -3,18 +3,23 @@ package com.xiliulou.electricity.handler.iot.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.enums.OrderCheckEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +48,8 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
     
+    public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.19";
+    
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         
@@ -60,7 +67,11 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                 ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleOrderOperateVO.getOrderId());
                 if (Objects.nonNull(electricityCabinetOrder)) {
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE;
-                    seq = eleOrderOperateVO.getSeq();
+                    if (VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+                        seq = eleOrderOperateVO.getSeq();
+                    }else {
+                        seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_SUCCESS;
+                    }
                 } else {
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK;
                     seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
