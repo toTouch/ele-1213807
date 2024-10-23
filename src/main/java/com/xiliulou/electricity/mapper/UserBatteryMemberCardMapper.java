@@ -97,4 +97,5 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     
     Integer selectRenewalNumberByMerchantId(@Param("merchantId") Long merchantId, @Param("tenantId") Integer tenantId);
     
+    int updateByUidForEmptyOrder(UserBatteryMemberCard userBatteryMemberCard);
 }

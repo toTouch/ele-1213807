@@ -1,10 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.EleOnlineLog;
-import com.xiliulou.electricity.query.CouponQuery;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * 优惠券规则表(TEleOnLineLog)表服务接口

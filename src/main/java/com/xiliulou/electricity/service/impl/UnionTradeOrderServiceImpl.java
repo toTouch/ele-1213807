@@ -1383,17 +1383,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         });
     
         // 处理分账回调
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                for (int i = 0; i < orderTypeList.size(); i++) {
-                    if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_PAUSE.getCode()) || Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode())) {
-                        // 处理换电-滞纳金缴纳
-                        sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode());
-                    }
-                }
+        for (int i = 0; i < orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_PAUSE.getCode()) || Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode())) {
+                // 处理换电-滞纳金缴纳
+                sendProfitSharingOrderMQ(transactionId, orderIdList.get(i), finalTradeOrderStatus, ProfitSharingBusinessTypeEnum.BATTERY_SERVICE_FEE.getCode());
             }
-        });
+        }
         
         // 小程序虚拟发货
         if (ChannelEnum.WECHAT.getCode().equals(callBackResource.getChannel())) {

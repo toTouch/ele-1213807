@@ -7,6 +7,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -21,6 +23,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -69,6 +72,8 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     @Resource
     private BatteryTrackRecordService batteryTrackRecordService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -114,7 +119,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             // 订单完成。扣减套餐次数
             userBatteryMemberCardService.deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
-            
             // 修改订单最终状态为成功
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
             newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
@@ -131,7 +135,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);
             
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-            userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(),electricityCabinetOrder);
+            userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(), electricityCabinetOrder);
             
             return;
         }
@@ -160,8 +164,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
         electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
     }
-    
-    
     
     
     private void takeBatteryHandler(EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
@@ -243,6 +245,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
                 .setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
+        // 给第三方推送换电记录/用户信息/电池信息
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), eleSelfOPenCellOrderVo.getSessionId(),
+                electricityCabinet.getTenantId(), cabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, cabinetOrder.getUid());
     }
     
     
