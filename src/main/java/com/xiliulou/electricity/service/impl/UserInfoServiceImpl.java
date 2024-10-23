@@ -2738,11 +2738,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             if (Objects.nonNull(inviterUid) && !Objects.equals(inviterUid, NumberConstant.ZERO_L) && Objects.nonNull(activitySource) && !Objects.equals(activitySource,
                     NumberConstant.ZERO)) {
-                // 商户活动的邀请人来源于user
                 if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
-                    Merchant merchant = merchantService.queryByUid(inviterUid);
-                    if (Objects.nonNull(merchant)) {
-                        inviterName = merchant.getName();
+                    MerchantInviterVO merchantInviterVO = userInfoExtraService.judgeInviterTypeForMerchant(uid, inviterUid, userInfoExtra.getTenantId());
+                    if (Objects.nonNull(merchantInviterVO)) {
+                        inviterName = merchantInviterVO.getInviterName();
                     }
                 } else {
                     UserInfo userInfo = this.queryByUidFromCache(inviterUid);
