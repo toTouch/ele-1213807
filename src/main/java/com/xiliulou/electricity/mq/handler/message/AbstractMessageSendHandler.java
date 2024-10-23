@@ -5,25 +5,18 @@
 package com.xiliulou.electricity.mq.handler.message;
 
 
-import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
-import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.message.MessageCenterConfig;
-import com.xiliulou.electricity.dto.message.SendDTO;
-import com.xiliulou.electricity.dto.message.SendReceiverDTO;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
-import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import com.xiliulou.electricity.request.SendMessageRequest;
+import com.xiliulou.electricity.service.MsgPlatformRetrofitService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,9 +29,8 @@ import java.util.UUID;
 @Slf4j
 public abstract class AbstractMessageSendHandler implements MessageSendHandler {
     
-    @Qualifier("restTemplateServiceImpl")
-    @Autowired
-    RestTemplateService restTemplateService;
+    @Resource
+    private MsgPlatformRetrofitService msgPlatformRetrofitService;
     
     @Autowired
     private MessageCenterConfig messageCenterConfig;
@@ -48,84 +40,73 @@ public abstract class AbstractMessageSendHandler implements MessageSendHandler {
     public void sendMessage(MqNotifyCommon mqNotifyCommon) {
         
         // 获取发送参数
-        SendDTO sendDTO = this.getSendDTO(mqNotifyCommon);
-        if (Objects.isNull(sendDTO)) {
+        SendMessageRequest sendMessageRequest = this.getSendRequest(mqNotifyCommon);
+        if (Objects.isNull(sendMessageRequest)) {
             log.warn("sendDTO is null!");
             return;
         }
         
         // 设置租户id
-        sendDTO.setTenantId(mqNotifyCommon.getTenantId());
+        sendMessageRequest.setTenantId(mqNotifyCommon.getTenantId());
         
-        if (StringUtils.isBlank(sendDTO.getMessageId())) {
+        if (StringUtils.isBlank(sendMessageRequest.getMessageId())) {
             // 设置消息id
-            sendDTO.setMessageId(UUID.randomUUID().toString().replace("-", ""));
+            sendMessageRequest.setMessageId(UUID.randomUUID().toString().replace("-", ""));
         }
         
-        if (StringUtils.isBlank(sendDTO.getMessageTemplateCode())) {
+        if (StringUtils.isBlank(sendMessageRequest.getMessageTemplateCode())) {
             //设置模版编码
-            sendDTO.setMessageTemplateCode(this.getMessageTemplateCode());
+            sendMessageRequest.setMessageTemplateCode(this.getMessageTemplateCode());
         }
         
         // 参数校验
-        if (!this.checkParam(sendDTO)) {
+        if (!this.checkParam(sendMessageRequest)) {
             return;
         }
         
         // 发送前处理
-        if (!this.preProcessing(sendDTO)) {
+        if (!this.preProcessing(sendMessageRequest)) {
             return;
         }
         
         // 发送
-        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(sendDTO), this.getHeaders(sendDTO));
+        R r = msgPlatformRetrofitService.sendMessage(sendMessageRequest);
         
         //发送后处理
-        this.postProcessing(sendDTO, responseEntity);
-    }
-    
-    /**
-     * name: 获取请求头 description:
-     *
-     * @param sendDTO
-     * @author caobotao.cbt
-     * @date 2024/7/2 10:46
-     */
-    protected Map<String, String> getHeaders(SendDTO sendDTO) {
-        return null;
+        this.postProcessing(sendMessageRequest, r);
     }
     
     
     /**
      * 参数校验
      *
-     * @param sendDTO
+     * @param sendMessageRequest
      * @author caobotao.cbt
      * @date 2024/7/1 18:25
      */
-    protected boolean checkParam(SendDTO sendDTO) {
-        Integer tenantId = sendDTO.getTenantId();
+    protected boolean checkParam(SendMessageRequest sendMessageRequest) {
+        Integer tenantId = sendMessageRequest.getTenantId();
         if (Objects.isNull(tenantId)) {
             log.warn("AbstractMessageSendHandler.checkParam tenantId isNull");
             return false;
         }
         
-        if (StringUtils.isBlank(sendDTO.getMessageId())) {
+        if (StringUtils.isBlank(sendMessageRequest.getMessageId())) {
             log.warn("AbstractMessageSendHandler.checkParam messageId is isBlank");
             return false;
         }
         
-        if (StringUtils.isBlank(sendDTO.getMessageTemplateCode())) {
+        if (StringUtils.isBlank(sendMessageRequest.getMessageTemplateCode())) {
             log.warn("AbstractMessageSendHandler.checkParam messageTemplateCode is isBlank");
             return false;
         }
         
-        if (MapUtils.isEmpty(sendDTO.getParamMap())) {
+        if (MapUtils.isEmpty(sendMessageRequest.getParamMap())) {
             log.warn("AbstractMessageSendHandler.checkParam paramMap is isEmpty");
             return false;
         }
         
-        if (CollectionUtils.isEmpty(sendDTO.getSendReceiverList())) {
+        if (CollectionUtils.isEmpty(sendMessageRequest.getSendReceiverList())) {
             log.warn("AbstractMessageSendHandler.checkParam sendReceiverList is isEmpty");
             return false;
         }
@@ -137,11 +118,11 @@ public abstract class AbstractMessageSendHandler implements MessageSendHandler {
     /**
      * 发送前处理
      *
-     * @param sendDTO
+     * @param sendMessageRequest
      * @author caobotao.cbt
      * @date 2024/6/28 16:46
      */
-    protected boolean preProcessing(SendDTO sendDTO) {
+    protected boolean preProcessing(SendMessageRequest sendMessageRequest) {
         return true;
     }
     
@@ -162,25 +143,22 @@ public abstract class AbstractMessageSendHandler implements MessageSendHandler {
      * @author caobotao.cbt
      * @date 2024/6/27 19:58
      */
-    protected abstract SendDTO getSendDTO(MqNotifyCommon mqNotifyCommon);
+    protected abstract SendMessageRequest getSendRequest(MqNotifyCommon mqNotifyCommon);
     
     
     /**
      * 后置处理
      *
-     * @param sendDTO
+     * @param sendMessageRequest
      * @param responseEntity
      * @author caobotao.cbt
      * @date 2024/6/27 16:19
      */
-    protected void postProcessing(SendDTO sendDTO, ResponseEntity<String> responseEntity) {
+    protected void postProcessing(SendMessageRequest sendMessageRequest, R responseEntity) {
         if (Objects.isNull(responseEntity)) {
-            log.warn("send warn to message center warn! failure warn send note result is null, messageId={}", sendDTO.getMessageId());
+            log.warn("send warn to message center warn! failure warn send note result is null, messageId={}", sendMessageRequest.getMessageId());
         }
-        
-        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            log.warn("send warn to message center warn! failure warn send note error, sessionId={}, msg = {}", sendDTO.getMessageId(), responseEntity.getBody());
-        }
+        log.info("AbstractMessageSendHandler.postProcessing send result:{}", responseEntity.isSuccess());
     }
     
 }

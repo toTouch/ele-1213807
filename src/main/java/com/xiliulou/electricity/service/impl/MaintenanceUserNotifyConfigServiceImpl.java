@@ -238,36 +238,36 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
 
     }
 
-    @Override
-    public void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String occurTime) {
-        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
-        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
-            return;
-        }
-
-        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_HARDWARE_INFO) != MaintenanceUserNotifyConfig.P_HARDWARE_INFO) {
-            return;
-        }
-
-        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
-        phones.forEach(p -> {
-            MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
-            query.setPhone(p);
-            query.setTime(System.currentTimeMillis());
-            query.setType(SendMessageTypeEnum.HARDWARE_INFO_NOTIFY.getType());
-            query.setTenantId(electricityCabinet.getTenantId());
-
-            MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
-            mqHardwareNotify.setDeviceName(electricityCabinet.getName());
-            mqHardwareNotify.setOccurTime(occurTime);
-            mqHardwareNotify.setErrMsg(String.format("%s号仓门发生异常，已被锁定！", cellNo));
-            mqHardwareNotify.setProjectTitle(MqHardwareNotify.LOCK_CELL_PROJECT_TITLE);
-            query.setData(mqHardwareNotify);
-
-            messageSendProducer.sendAsyncMsg(query, String.valueOf(MqNotifyCommon.TYPE_HARDWARE_INFO), sessionId, 0);
-
-        });
-    }
+//    @Override
+//    public void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String occurTime) {
+//        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
+//        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
+//            return;
+//        }
+//
+//        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_HARDWARE_INFO) != MaintenanceUserNotifyConfig.P_HARDWARE_INFO) {
+//            return;
+//        }
+//
+//        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
+//        phones.forEach(p -> {
+//            MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
+//            query.setPhone(p);
+//            query.setTime(System.currentTimeMillis());
+//            query.setType(SendMessageTypeEnum.HARDWARE_INFO_NOTIFY.getType());
+//            query.setTenantId(electricityCabinet.getTenantId());
+//
+//            MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
+//            mqHardwareNotify.setDeviceName(electricityCabinet.getName());
+//            mqHardwareNotify.setOccurTime(occurTime);
+//            mqHardwareNotify.setErrMsg(String.format("%s号仓门发生异常，已被锁定！", cellNo));
+//            mqHardwareNotify.setProjectTitle(MqHardwareNotify.LOCK_CELL_PROJECT_TITLE);
+//            query.setData(mqHardwareNotify);
+//
+//            messageSendProducer.sendAsyncMsg(query, String.valueOf(MqNotifyCommon.TYPE_HARDWARE_INFO), sessionId, 0);
+//
+//        });
+//    }
 
     @Override
     public void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet) {

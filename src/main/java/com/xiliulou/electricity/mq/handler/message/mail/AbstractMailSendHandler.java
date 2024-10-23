@@ -6,13 +6,13 @@ package com.xiliulou.electricity.mq.handler.message.mail;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.dto.message.SendDTO;
-import com.xiliulou.electricity.dto.message.SendReceiverDTO;
 import com.xiliulou.electricity.entity.EmailRecipient;
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.notify.NotifyUserInfo;
 import com.xiliulou.electricity.mq.handler.message.AbstractMessageSendHandler;
+import com.xiliulou.electricity.request.SendMessageRequest;
+import com.xiliulou.electricity.request.SendReceiverRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 
@@ -36,15 +36,15 @@ public abstract class AbstractMailSendHandler extends AbstractMessageSendHandler
     
     public static final Integer WECHAT_SEND_MAIL = 2;
     
-    private static final Map<String, String> HEARDERS = Maps.newHashMapWithExpectedSize(1);
-    
-    static {
-        HEARDERS.put("Accept-Encoding", "gzip, deflate");
-    }
+//    private static final Map<String, String> HEARDERS = Maps.newHashMapWithExpectedSize(1);
+//
+//    static {
+//        HEARDERS.put("Accept-Encoding", "gzip, deflate");
+//    }
     
     
     @Override
-    public SendDTO getSendDTO(MqNotifyCommon mqNotifyCommon) {
+    public SendMessageRequest getSendRequest(MqNotifyCommon mqNotifyCommon) {
         
         if (Objects.isNull(mqNotifyCommon.getData())) {
             log.warn("AbstractMailSendHandler.getSendDTO data is null");
@@ -61,14 +61,14 @@ public abstract class AbstractMailSendHandler extends AbstractMessageSendHandler
         if (MapUtils.isEmpty(map)) {
             return null;
         }
-        
-        SendDTO sendDTO = new SendDTO();
-        sendDTO.setParamMap(map);
-        SendReceiverDTO sendReceiverDTO = new SendReceiverDTO();
-        sendReceiverDTO.setSendChannel(WECHAT_SEND_MAIL);
-        sendReceiverDTO.setReceiver(receiver);
-        sendDTO.setSendReceiverList(Collections.singletonList(sendReceiverDTO));
-        return sendDTO;
+    
+        SendMessageRequest sendMessageRequest = new SendMessageRequest();
+        sendMessageRequest.setParamMap(map);
+        SendReceiverRequest receiverRequest = new SendReceiverRequest();
+        receiverRequest.setSendChannel(WECHAT_SEND_MAIL);
+        receiverRequest.setReceiver(receiver);
+        sendMessageRequest.setSendReceiverList(Collections.singletonList(receiverRequest));
+        return sendMessageRequest;
         
     }
     
@@ -87,9 +87,9 @@ public abstract class AbstractMailSendHandler extends AbstractMessageSendHandler
     }
     
     
-    @Override
-    protected Map<String, String> getHeaders(SendDTO sendDTO) {
-        return this.HEARDERS;
-    }
+//    @Override
+//    protected Map<String, String> getHeaders(SendDTO sendDTO) {
+//        return this.HEARDERS;
+//    }
     
 }
