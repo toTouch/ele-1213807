@@ -2,8 +2,10 @@ package com.xiliulou.electricity.task;
 
 import cn.hutool.core.thread.ThreadUtil;
 import com.xiliulou.electricity.constant.EleCabinetConstant;
+import com.xiliulou.electricity.entity.EleDeviceCode;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.service.EleDeviceCodeService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.response.QueryDeviceDetailResult;
 import com.xiliulou.iot.service.RegisterDeviceService;
@@ -36,6 +38,9 @@ public class TempElectricityCabinetTask extends IJobHandler {
     @Autowired
     private RegisterDeviceService registerDeviceService;
     
+    @Autowired
+    private EleDeviceCodeService eleDeviceCodeService;
+    
     @Override
     public ReturnT<String> execute(String s) throws Exception {
         try {
@@ -52,7 +57,7 @@ public class TempElectricityCabinetTask extends IJobHandler {
                 for (ElectricityCabinet electricityCabinet : electricityCabinets) {
                     QueryDeviceDetailResult deviceDetailResult = registerDeviceService.queryDeviceDetail(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
                     if (Objects.isNull(deviceDetailResult)) {
-                        log.warn("ELE WARN!not found deviceDetailResult,p={},d={}", electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                        log.warn("ELE TASK WARN!not found deviceDetailResult,p={},d={}", electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
                         continue;
                     }
                     
@@ -62,6 +67,18 @@ public class TempElectricityCabinetTask extends IJobHandler {
                     update.setUpdateTime(System.currentTimeMillis());
                     electricityCabinetService.update(update);
                     
+                    EleDeviceCode deviceCode = eleDeviceCodeService.queryBySnFromDB(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                    if (Objects.isNull(deviceCode)) {
+                        log.warn("ELE TASK WARN!not found deviceCode,p={},d={}", electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                        continue;
+                    }
+                    
+                    EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
+                    deviceCodeUpdate.setId(deviceCode.getId());
+                    deviceCodeUpdate.setSecret(deviceDetailResult.getDeviceSecret());
+                    deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
+                    eleDeviceCodeService.updateById(deviceCodeUpdate, electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                    
                     ThreadUtil.safeSleep(1000L);
                 }
                 
@@ -69,6 +86,7 @@ public class TempElectricityCabinetTask extends IJobHandler {
             }
         } catch (Exception e) {
             log.error("init deviceSecret fail", e);
-        } return IJobHandler.SUCCESS;
+        }
+        return IJobHandler.SUCCESS;
     }
 }
