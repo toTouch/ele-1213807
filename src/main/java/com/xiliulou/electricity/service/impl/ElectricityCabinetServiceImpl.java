@@ -77,11 +77,13 @@ import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
+import com.xiliulou.electricity.enums.notify.AbnormalAlarmExceptionTypeEnum;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.DeviceStatusQuery;
 import com.xiliulou.electricity.query.EleCabinetPatternQuery;
@@ -379,6 +381,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     RocketMqService rocketMqService;
     
     @Autowired
+    private MessageSendProducer messageSendProducer;
+    
+    @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     
     @Qualifier("aliyunOssService")
@@ -664,13 +669,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             throw new CustomBusinessException("退电类型不能为空");
         }
         
-        if (Objects.equals(electricityCabinetAddAndUpdate.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode()) && Objects.isNull(
-                electricityCabinetAddAndUpdate.getMinRetainBatteryCount())) {
+        if (Objects.equals(electricityCabinetAddAndUpdate.getRentTabType(), RentReturnNormEnum.CUSTOM_RENT.getCode()) && Objects
+                .isNull(electricityCabinetAddAndUpdate.getMinRetainBatteryCount())) {
             throw new CustomBusinessException("自定义，最小保留电池数不能为空");
         }
         
-        if (Objects.equals(electricityCabinetAddAndUpdate.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode()) && Objects.isNull(
-                electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
+        if (Objects.equals(electricityCabinetAddAndUpdate.getReturnTabType(), RentReturnNormEnum.CUSTOM_RETURN.getCode()) && Objects
+                .isNull(electricityCabinetAddAndUpdate.getMaxRetainBatteryCount())) {
             throw new CustomBusinessException("自定义！保留空仓数不能为空");
         }
     }
@@ -762,8 +767,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         
         // 删除柜机扩展参数
-        electricityCabinetExtraService.update(
-                ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinet.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
+        electricityCabinetExtraService
+                .update(ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinet.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
         
         DbUtils.dbOperateSuccessThen(update, () -> {
             // 删除缓存
@@ -988,8 +993,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "100003", "柜机不存在");
         }
         
-        if(!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())){
-            return Triple.of(false,"100003", "柜机不存在");
+        if (!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "100003", "柜机不存在");
         }
         
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
@@ -1512,14 +1517,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public boolean deviceIsOnlineForIot(String productKey, String deviceName) {
         
-        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot productKey:{},deviceName:{}",productKey,deviceName);
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot productKey:{},deviceName:{}", productKey, deviceName);
         GetDeviceStatusResponse getDeviceStatusResponse = pubHardwareService.queryDeviceStatusFromIot(productKey, deviceName);
         if (Objects.isNull(getDeviceStatusResponse)) {
             return false;
         }
         
         GetDeviceStatusResponse.Data data = getDeviceStatusResponse.getData();
-        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot data:{}",JsonUtil.toJson(data));
+        log.info("ElectricityCabinetServiceImpl.deviceIsOnlineForIot data:{}", JsonUtil.toJson(data));
         if (Objects.isNull(data)) {
             return false;
         }
@@ -1554,8 +1559,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public Integer queryByModelId(Integer id) {
-        return electricityCabinetMapper.selectCount(
-                Wrappers.<ElectricityCabinet>lambdaQuery().eq(ElectricityCabinet::getModelId, id).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
+        return electricityCabinetMapper
+                .selectCount(Wrappers.<ElectricityCabinet>lambdaQuery().eq(ElectricityCabinet::getModelId, id).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
     }
     
     @Override
@@ -1726,8 +1731,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         }
         
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.isNull(electricityMemberCard) && !Objects.equals(userBatteryMemberCard.getRemainingNumber(),
-                UserBatteryMemberCard.SEND_REMAINING_NUMBER) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_MEMBER_CARD_ID_ZERO)) {
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.isNull(electricityMemberCard) && !Objects
+                .equals(userBatteryMemberCard.getRemainingNumber(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && !Objects
+                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_MEMBER_CARD_ID_ZERO)) {
             log.error("HOME ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
@@ -1738,8 +1744,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             now = userBatteryMemberCard.getDisableMemberCardTime();
         }
         
-        if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && Objects.nonNull(
-                electricityMemberCard)) {
+        if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && Objects
+                .nonNull(electricityMemberCard)) {
             if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber())
                         && userBatteryMemberCard.getRemainingNumber() > 0 && userBatteryMemberCard.getMemberCardExpireTime() > now) {
@@ -1750,8 +1756,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 cardDay = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
             }
         } else {
-            if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects.nonNull(
-                    userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() > 0 && userBatteryMemberCard.getMemberCardExpireTime() > now) {
+            if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && Objects
+                    .nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() > 0
+                    && userBatteryMemberCard.getMemberCardExpireTime() > now) {
                 cardDay = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
             }
         }
@@ -1768,9 +1775,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         String memberCardExpireTime = null;
         Integer memberCardDisableStatus = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
-            memberCardExpireTime =
-                    Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) ? DateUtil.format(DateUtil.date(userBatteryMemberCard.getMemberCardExpireTime()),
-                            DatePattern.NORM_DATE_FORMAT) : "";
+            memberCardExpireTime = Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) ? DateUtil
+                    .format(DateUtil.date(userBatteryMemberCard.getMemberCardExpireTime()), DatePattern.NORM_DATE_FORMAT) : "";
             memberCardDisableStatus = userBatteryMemberCard.getMemberCardStatus();
         }
         homeInfo.put("memberCardExpireTime", memberCardExpireTime);
@@ -2486,8 +2492,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
-        return Objects.nonNull(electricityCabinetBox.getPower()) && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged && StringUtils.isNotBlank(
-                electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
+        return Objects.nonNull(electricityCabinetBox.getPower()) && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged && StringUtils
+                .isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
     }
     
     @Override
@@ -3164,8 +3170,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Double fullyCharged = electricityCabinet.getFullyCharged();
         
-        if (Objects.isNull(fullyCharged) || Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsLowBatteryExchange(),
-                ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
+        if (Objects.isNull(fullyCharged) || Objects.isNull(electricityConfig) || Objects
+                .equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
             return fullyCharged;
         }
         List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
@@ -3173,8 +3179,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Long now = System.currentTimeMillis();
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             if (Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime()))
-                    && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime())) && Objects.nonNull(
-                    lowBatteryExchangeModel.getBatteryPowerStandard()) && lowBatteryExchangeModel.getBatteryPowerStandard() < fullyCharged) {
+                    && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime())) && Objects
+                    .nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && lowBatteryExchangeModel.getBatteryPowerStandard() < fullyCharged) {
                 fullyCharged = lowBatteryExchangeModel.getBatteryPowerStandard();
             }
         }
@@ -3193,9 +3199,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Long now = System.currentTimeMillis();
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.queryWareHouseByElectricityCabinetId(electricityCabinetId);
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
-            if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(
-                    simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(
-                    simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
+            if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer
+                    .parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer
+                    .parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 for (ElectricityBattery electricityBattery : electricityBatteries) {
                     // 电池所在仓门非禁用
                     ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), electricityCabinetId);
@@ -3416,7 +3422,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 用户总数
         CompletableFuture<Void> userCount = CompletableFuture.runAsync(() -> {
-//            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
+            //            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
             homePageUserAnalysisVo.setUserCount(0);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -3524,8 +3530,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         CompletableFuture<Void> exchangeFrequency = CompletableFuture.runAsync(() -> {
-            List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService.homepageExchangeFrequency(
-                    homepageElectricityExchangeFrequencyQuery);
+            List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService
+                    .homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
             List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos = new ArrayList<>();
             homepageExchangeFrequency.parallelStream().forEach(item -> {
                 HomepageElectricityExchangeVo homepageElectricityExchangeVo = new HomepageElectricityExchangeVo();
@@ -3610,8 +3616,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
-        List<ElectricityCabinetFile> electricityCabinetFiles = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId.longValue(),
-                ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
+        List<ElectricityCabinetFile> electricityCabinetFiles = electricityCabinetFileService
+                .queryByDeviceInfo(electricityCabinetId.longValue(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
         List<String> cabinetPhoto = new ArrayList<>();
         
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
@@ -3845,8 +3851,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private Triple<Boolean, String, Object> verifyUserBatteryMemberCardStatus(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects.equals(userBatteryMemberCard.getMemberCardId(),
-                NumberConstant.ZERO_L)) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId()) || Objects
+                .equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             log.warn("QUERY SELECTION EXCHANGE ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
@@ -3874,8 +3880,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         // 判断用户电池服务费
-        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("SELECTION EXCHAGE ORDER WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
@@ -4540,7 +4546,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 messageNotifyList.forEach(i -> {
-                    rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+                    messageSendProducer.sendAsyncMsg(i, "", "", 0);
                 });
             }
         });
@@ -4564,14 +4570,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
             abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
             abnormalMessageNotify.setEquipmentNumber(electricityCabinet.getName());
-            abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
-            abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
+            abnormalMessageNotify.setExceptionType(AbnormalAlarmExceptionTypeEnum.BATTERY_FULL_TYPE.getType());
+            abnormalMessageNotify.setDescription(AbnormalAlarmExceptionTypeEnum.BATTERY_FULL_TYPE.getDescription());
             abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
             
             MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
+            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.ABNORMAL_ALARM_NOTIFY.getType());
             abnormalMessageNotifyCommon.setPhone(item);
+            abnormalMessageNotifyCommon.setTenantId(electricityCabinet.getTenantId());
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             return abnormalMessageNotifyCommon;
         }).collect(Collectors.toList());
@@ -4589,7 +4596,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-//                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                //                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
                 item.setUrl(storageConverter.generateUrl(item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
             }).collect(Collectors.toList());
             
@@ -4639,8 +4646,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetUpdate.setTenantId(TenantContextHolder.getTenantId());
             
             // 删除柜机扩展参数
-            electricityCabinetExtraService.update(
-                    ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinetUpdate.getDelFlag()).updateTime(electricityCabinet.getUpdateTime()).build());
+            electricityCabinetExtraService
+                    .update(ElectricityCabinetExtra.builder().eid(Long.valueOf(id)).delFlag(electricityCabinetUpdate.getDelFlag()).updateTime(electricityCabinet.getUpdateTime())
+                            .build());
             
             DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinetUpdate), i -> {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
@@ -4746,8 +4754,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public Triple<Boolean, String, Object> listTransferCabinetModel(TransferCabinetModelRequest cabinetModelRequest) {
         // 查询工厂租户下是否有该柜机
-        ElectricityCabinet testFactoryCabinet = this.selectByProductKeyAndDeviceNameFromDB(cabinetModelRequest.getProductKey(), cabinetModelRequest.getDeviceName(),
-                eleCommonConfig.getTestFactoryTenantId());
+        ElectricityCabinet testFactoryCabinet = this
+                .selectByProductKeyAndDeviceNameFromDB(cabinetModelRequest.getProductKey(), cabinetModelRequest.getDeviceName(), eleCommonConfig.getTestFactoryTenantId());
         if (Objects.isNull(testFactoryCabinet)) {
             log.warn("ELE WARN!not found testFactoryCabinet,p={},d={},tenantId={}", cabinetModelRequest.getProductKey(), cabinetModelRequest.getDeviceName(),
                     eleCommonConfig.getTestFactoryTenantId());
@@ -4966,11 +4974,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 excelVO.setWarehouseName(finalWarehouseNameVOMap.get(cabinetVO.getWarehouseId()));
             }
             
-            ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(),
-                    cabinetVO.getDeviceName());
+            ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService
+                    .queryByProductKeyAndDeviceName(cabinetVO.getProductKey(), cabinetVO.getDeviceName());
             if (Objects.nonNull(electricityCabinetServer)) {
-                excelVO.setServerEndTime(Objects.nonNull(electricityCabinetServer.getServerEndTime()) ? DateUtil.format(DateUtil.date(electricityCabinetServer.getServerEndTime()),
-                        DatePattern.NORM_DATETIME_FORMATTER) : "");
+                excelVO.setServerEndTime(Objects.nonNull(electricityCabinetServer.getServerEndTime()) ? DateUtil
+                        .format(DateUtil.date(electricityCabinetServer.getServerEndTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
             }
             
             excelVOS.add(excelVO);
@@ -5058,7 +5066,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("100003", "柜机不存在");
         }
         
-        if(!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())){
+        if (!SecurityUtils.isAdmin() && !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("100003", "柜机不存在");
         }
         

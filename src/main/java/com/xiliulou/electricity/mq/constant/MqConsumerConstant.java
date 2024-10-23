@@ -57,6 +57,13 @@ public interface MqConsumerConstant {
     
     
     /**
+     * 消息发送group
+     */
+    String MESSAGE_SEND_SAAS_GROUP = "message_send_saas_group";
+    
+    
+    
+    /**
      * 支付宝退款异步通知 consumer group
      */
     String ALIPAY_REFUND_NOTIFY_GROUP = "alipay_refund_notify_group";

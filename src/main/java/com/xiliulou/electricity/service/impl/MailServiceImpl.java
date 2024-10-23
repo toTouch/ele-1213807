@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,9 +9,7 @@ import org.springframework.stereotype.Service;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.MailService;
-import com.xiliulou.mq.service.RocketMqService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,20 +23,21 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class MailServiceImpl implements MailService {
-
+    
     @Autowired
-    RocketMqService rocketMqService;
-
+    MessageSendProducer messageSendProducer;
+    
     @Override
-    public void sendVersionNotificationEmailToMQ(MQMailMessageNotify mailMessage) {
-
+    public void sendVersionNotificationEmailToMQ(MQMailMessageNotify mailMessage, Integer tenantId) {
+        
         MqNotifyCommon<MQMailMessageNotify> query = new MqNotifyCommon<>();
-//        query.setPhone(p);
+        //        query.setPhone(p);
         query.setTime(System.currentTimeMillis());
-        query.setType(MqNotifyCommon.TYPE_UPGRADE_SEND_MAIL);
+        query.setType(SendMessageTypeEnum.UPGRADE_SEND_MAIL_NOTIFY.getType());
         query.setData(mailMessage);
+        query.setTenantId(tenantId);
 
-        Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
+        Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", 0);
         log.info("SEND EMAIL INFO! original msg={}", JsonUtil.toJson(query));
         if (!result.getLeft()) {
             log.error("SEND SIMPLE EMAIL NOTIFY TO MQ ERROR! reason={}", result.getRight());

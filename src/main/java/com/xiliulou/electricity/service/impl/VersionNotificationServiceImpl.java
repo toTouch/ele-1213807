@@ -25,9 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -39,23 +41,25 @@ import java.util.stream.Collectors;
 @Service("versionNotificationService")
 @Slf4j
 public class VersionNotificationServiceImpl implements VersionNotificationService {
-
+    
     private static final Integer limit = 5;
-
+    
     private static final String SUBJECT_PREFIX = "版本升级通知：";
-
+    
     @Resource
     private VersionNotificationMapper versionNotificationMapper;
+    
     @Autowired
     private TenantNotifyMailService tenantNotifyMailService;
+    
     @Autowired
     private MailService mailService;
     
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
-
-
+    
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -67,8 +71,8 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public VersionNotification queryByIdFromDB(Integer id) {
         return this.versionNotificationMapper.selectById(id);
     }
-
-
+    
+    
     /**
      * 修改数据
      *
@@ -79,10 +83,10 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     @Transactional(rollbackFor = Exception.class)
     public Integer update(VersionNotification versionNotification) {
         return this.versionNotificationMapper.updateById(versionNotification);
-
+        
     }
-
-
+    
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> updateNotification(VersionNotificationQuery versionNotificationQuery) {
@@ -90,7 +94,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         if (Objects.isNull(userInfo) || !userInfo.getType().equals(User.TYPE_USER_SUPER)) {
             return Triple.of(false, "SYSTEM.0007", "系统错误");
         }
-
+        
         VersionNotification versionNotification = new VersionNotification();
         versionNotification.setId(versionNotificationQuery.getId());
         versionNotification.setVersion(versionNotificationQuery.getVersion());
@@ -98,10 +102,10 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         versionNotification.setSendMailStatus(VersionNotification.STATUS_SEND_MAIL_NO);
         versionNotification.setUpdateTime(System.currentTimeMillis());
         update(versionNotification);
-
+        
         return Triple.of(true, null, null);
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> insertNotification(VersionNotificationQuery versionNotificationQuery) {
@@ -116,10 +120,10 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         versionNotification.setCreateTime(System.currentTimeMillis());
         versionNotification.setUpdateTime(System.currentTimeMillis());
         insert(versionNotification);
-
+        
         return Triple.of(true, null, null);
     }
-
+    
     public Integer insert(VersionNotification versionNotification) {
         return this.versionNotificationMapper.insert(versionNotification);
     }
@@ -141,7 +145,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public VersionNotification queryCreateTimeMaxTenantNotification() {
         return this.versionNotificationMapper.queryCreateTimeMaxTenantNotification();
     }
-
+    
     /**
      * 获取最新未发送邮件通知的版本升级记录
      *
@@ -151,7 +155,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public VersionNotification selectNotSendMailOne() {
         return this.versionNotificationMapper.selectNotSendMailOne();
     }
-
+    
     @Override
     public void handleVersionNotificationSendEmail() {
         //1.获取最新未发送邮件通知的版本升级记录
@@ -160,42 +164,41 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
             log.warn("ELE ERROR!versionNotification is null");
             return;
         }
-
-
+        
         //2.获取所有通知邮箱   根据租户ID分组 发送通知
         List<TenantNotifyMailDTO> tenantNotifyMailDTOList = tenantNotifyMailService.selectAllTenantNotifyMail();
         if (CollectionUtils.isEmpty(tenantNotifyMailDTOList)) {
             log.error("ELE ERROR!tenantNotifyMailDTOList is empty");
             return;
         }
-
+        
         Map<Long, List<TenantNotifyMailDTO>> tenantNotifyMailMap = tenantNotifyMailDTOList.stream().collect(Collectors.groupingBy(TenantNotifyMailDTO::getTenantId));
-        if(ObjectUtil.isEmpty(tenantNotifyMailMap)){
+        if (ObjectUtil.isEmpty(tenantNotifyMailMap)) {
             log.error("ELE ERROR!tenantNotifyMailMap is empty");
             return;
         }
-
-        for (List<TenantNotifyMailDTO> tenantNotifyMailDTOs : tenantNotifyMailMap.values()) {
+        
+        for (Map.Entry<Long, List<TenantNotifyMailDTO>> entry : tenantNotifyMailMap.entrySet()) {
+            List<TenantNotifyMailDTO> tenantNotifyMailDTOs = entry.getValue();
+            
             if (CollectionUtils.isEmpty(tenantNotifyMailDTOs)) {
                 log.info("ELE INFO!tenantNotifyMailDTOs is empty");
                 break;
             }
-
+            
             List<EmailRecipient> mailList = tenantNotifyMailDTOs.stream().map(item -> {
                 EmailRecipient emailRecipient = new EmailRecipient();
                 emailRecipient.setEmail(item.getMail());
                 emailRecipient.setName(item.getTenantName());
                 return emailRecipient;
             }).collect(Collectors.toList());
-
-            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
-                    .to(mailList)
-                    .subject(SUBJECT_PREFIX + versionNotification.getVersion())
+            
+            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder().to(mailList).subject(versionNotification.getVersion())
                     .text(versionNotification.getContent()).build();
-
-            mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
+            
+            mailService.sendVersionNotificationEmailToMQ(mailMessageNotify, entry.getKey().intValue());
         }
-
+        
         //3.发送完毕 更新邮件发送状态
         VersionNotification updateVersionNotification = new VersionNotification();
         updateVersionNotification.setId(versionNotification.getId());

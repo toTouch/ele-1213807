@@ -1,0 +1,186 @@
+/**
+ * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/27
+ */
+
+package com.xiliulou.electricity.mq.handler.message;
+
+
+import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.message.MessageCenterConfig;
+import com.xiliulou.electricity.dto.message.SendDTO;
+import com.xiliulou.electricity.dto.message.SendReceiverDTO;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
+/**
+ * description:
+ *
+ * @author caobotao.cbt
+ * @date 2024/6/27 19:26
+ */
+@Slf4j
+public abstract class AbstractMessageSendHandler implements MessageSendHandler {
+    
+    @Qualifier("restTemplateServiceImpl")
+    @Autowired
+    RestTemplateService restTemplateService;
+    
+    @Autowired
+    private MessageCenterConfig messageCenterConfig;
+    
+    
+    @Override
+    public void sendMessage(MqNotifyCommon mqNotifyCommon) {
+        
+        // 获取发送参数
+        SendDTO sendDTO = this.getSendDTO(mqNotifyCommon);
+        if (Objects.isNull(sendDTO)) {
+            log.warn("sendDTO is null!");
+            return;
+        }
+        
+        // 设置租户id
+        sendDTO.setTenantId(mqNotifyCommon.getTenantId());
+        
+        if (StringUtils.isBlank(sendDTO.getMessageId())) {
+            // 设置消息id
+            sendDTO.setMessageId(UUID.randomUUID().toString().replace("-", ""));
+        }
+        
+        if (StringUtils.isBlank(sendDTO.getMessageTemplateCode())) {
+            //设置模版编码
+            sendDTO.setMessageTemplateCode(this.getMessageTemplateCode());
+        }
+        
+        // 参数校验
+        if (!this.checkParam(sendDTO)) {
+            return;
+        }
+        
+        // 发送前处理
+        if (!this.preProcessing(sendDTO)) {
+            return;
+        }
+        
+        // 发送
+        ResponseEntity<String> responseEntity = restTemplateService.postJsonForResponseEntity(messageCenterConfig.getUrl(), JsonUtil.toJson(sendDTO), this.getHeaders(sendDTO));
+        
+        //发送后处理
+        this.postProcessing(sendDTO, responseEntity);
+    }
+    
+    /**
+     * name: 获取请求头 description:
+     *
+     * @param sendDTO
+     * @author caobotao.cbt
+     * @date 2024/7/2 10:46
+     */
+    protected Map<String, String> getHeaders(SendDTO sendDTO) {
+        return null;
+    }
+    
+    
+    /**
+     * 参数校验
+     *
+     * @param sendDTO
+     * @author caobotao.cbt
+     * @date 2024/7/1 18:25
+     */
+    protected boolean checkParam(SendDTO sendDTO) {
+        Integer tenantId = sendDTO.getTenantId();
+        if (Objects.isNull(tenantId)) {
+            log.warn("AbstractMessageSendHandler.checkParam tenantId isNull");
+            return false;
+        }
+        
+        if (StringUtils.isBlank(sendDTO.getMessageId())) {
+            log.warn("AbstractMessageSendHandler.checkParam messageId is isBlank");
+            return false;
+        }
+        
+        if (StringUtils.isBlank(sendDTO.getMessageTemplateCode())) {
+            log.warn("AbstractMessageSendHandler.checkParam messageTemplateCode is isBlank");
+            return false;
+        }
+        
+        if (MapUtils.isEmpty(sendDTO.getParamMap())) {
+            log.warn("AbstractMessageSendHandler.checkParam paramMap is isEmpty");
+            return false;
+        }
+        
+        if (CollectionUtils.isEmpty(sendDTO.getSendReceiverList())) {
+            log.warn("AbstractMessageSendHandler.checkParam sendReceiverList is isEmpty");
+            return false;
+        }
+        
+        return true;
+        
+    }
+    
+    /**
+     * 发送前处理
+     *
+     * @param sendDTO
+     * @author caobotao.cbt
+     * @date 2024/6/28 16:46
+     */
+    protected boolean preProcessing(SendDTO sendDTO) {
+        return true;
+    }
+    
+    
+    /**
+     * 获取消息模版编号
+     *
+     * @author caobotao.cbt
+     * @date 2024/6/28 16:26
+     */
+    protected String getMessageTemplateCode() {
+        return messageCenterConfig.getMessageTemplateCode().get(getType());
+    }
+    
+    
+    /**
+     * @param mqNotifyCommon
+     * @author caobotao.cbt
+     * @date 2024/6/27 19:58
+     */
+    protected abstract SendDTO getSendDTO(MqNotifyCommon mqNotifyCommon);
+    
+    
+    /**
+     * 后置处理
+     *
+     * @param sendDTO
+     * @param responseEntity
+     * @author caobotao.cbt
+     * @date 2024/6/27 16:19
+     */
+    protected void postProcessing(SendDTO sendDTO, ResponseEntity<String> responseEntity) {
+        if (Objects.isNull(responseEntity)) {
+            log.warn("send warn to message center warn! failure warn send note result is null, messageId={}", sendDTO.getMessageId());
+        }
+        
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            log.warn("send warn to message center warn! failure warn send note error, sessionId={}, msg = {}", sendDTO.getMessageId(), responseEntity.getBody());
+        }
+    }
+    
+}
