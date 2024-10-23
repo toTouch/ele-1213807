@@ -32,6 +32,7 @@ import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ShareActivityPageQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
@@ -60,6 +61,7 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponMemberCardVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.electricity.vo.ShareActivityVO;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import com.xiliulou.electricity.vo.activity.ActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityPackageVO;
 import com.xiliulou.electricity.vo.activity.ShareActivityRuleVO;
@@ -70,6 +72,7 @@ import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1157,5 +1160,15 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         return null;
     }
     
+    @Override
+    public List<ShareAndUserActivityVO> listShareActivity(ShareActivityPageQuery query) {
+        query.setTenantId(TenantContextHolder.getTenantId());
+        Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
+        if (!pair.getLeft()){
+            return new ArrayList<>();
+        }
+        query.setFranchiseeIds(pair.getRight());
+        return shareActivityMapper.listShareActivity(query);
+    }
 }
 
