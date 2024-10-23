@@ -477,6 +477,9 @@
         <if test="onlineStatus != null">
             and online_status = #{onlineStatus}
         </if>
+        <if test="pattern != null ">
+            and pattern = #{pattern}
+        </if>
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
         </if>
