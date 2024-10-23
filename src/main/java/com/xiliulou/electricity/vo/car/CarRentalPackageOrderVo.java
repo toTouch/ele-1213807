@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.car;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
@@ -269,4 +270,10 @@ public class CarRentalPackageOrderVo implements Serializable {
      */
     private List<CarCouponVO> coupons;
     
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
 }

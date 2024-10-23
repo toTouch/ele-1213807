@@ -928,7 +928,8 @@ public class UserServiceImpl implements UserService {
     @Slave
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
-        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
+        return this.userMapper.queryCount(null, null, null, null, startTime, endTime, tenantId);
+//        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
     
     @Override
@@ -949,7 +950,7 @@ public class UserServiceImpl implements UserService {
         }
         
         User user = queryByUidFromCache(uid);
-        if (Objects.isNull(user) || !user.getUserType().equals(User.TYPE_USER_NORMAL_WX_PRO)) {
+        if (Objects.isNull(user) || !(User.TYPE_USER_NORMAL_WX_PRO.equals(user.getUserType()))) {
             return Triple.of(false, "USER.0001", "没有此用户！无法删除");
         }
         

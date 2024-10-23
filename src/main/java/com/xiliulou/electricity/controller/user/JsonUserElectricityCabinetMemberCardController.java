@@ -44,10 +44,11 @@ public class JsonUserElectricityCabinetMemberCardController {
     
     /**
      * 首次购买套餐分页
-     *
+     * -------------跟前端确认不再使用
      * @param
      * @return
      */
+    @Deprecated
     @GetMapping(value = "/user/firstPayMemberCard/list")
     public R queryFirstPayMemberCard(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "model", required = false) Integer model,
             @RequestParam(value = "franchiseeId") Long franchiseeId, @RequestParam(value = "productKey", required = false) String productKey,

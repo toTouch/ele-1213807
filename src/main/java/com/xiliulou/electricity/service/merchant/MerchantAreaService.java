@@ -30,4 +30,6 @@ public interface MerchantAreaService {
     List<MerchantArea> queryList(MerchantAreaRequest request);
     
     MerchantArea queryById(Long id);
+    
+    List<MerchantArea> listByIdList(List<Long> areaIdList);
 }

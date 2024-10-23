@@ -91,8 +91,10 @@ public interface UserBatteryMemberCardService {
 
     List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId);
 
-    List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime,
+    List<UserBatteryMemberCard> batteryMemberCardExpire(Integer tenantId,Integer offset, Integer size, Long firstTime,
                                                                      Long lastTime);
+    
+    
 
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
                                                              Long lastTime);
@@ -129,4 +131,8 @@ public interface UserBatteryMemberCardService {
     void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, String sessionId);
     
     Integer deleteById(Long id);
+    
+    void handlePackageNumber(Long uid);
+    
+    Integer updateByUidForEmptyOrder(UserBatteryMemberCard updateUserBatteryMemberCard);
 }

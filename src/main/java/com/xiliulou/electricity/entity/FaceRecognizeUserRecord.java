@@ -38,6 +38,8 @@ public class FaceRecognizeUserRecord {
      * 状态
      */
     private Integer status;
+    
+    private String certifyId;
 
     private Integer tenantId;
     /**
@@ -52,7 +54,8 @@ public class FaceRecognizeUserRecord {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
-    //人脸核身结果 1：成功，2：失败
+    //人脸核身结果 0:初始化，1：成功，2：失败
+    public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;
 

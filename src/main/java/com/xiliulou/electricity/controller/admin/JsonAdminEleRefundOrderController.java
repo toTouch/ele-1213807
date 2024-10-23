@@ -62,7 +62,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "orderId", required = false) String orderId, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "orderType", required = false) Integer orderType,
-            @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo) {
+            @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,@RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -96,7 +96,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
         
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder().offset(offset).size(size).orderId(orderId).status(status).beginTime(beginTime).endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId()).storeIds(storeIds).franchiseeIds(franchiseeIds).phone(phone).uid(uid).payType(payType).refundOrderType(refundOrderType)
-                .name(name).orderType(orderType).refundOrderNo(refundOrderNo).build();
+                .name(name).orderType(orderType).refundOrderNo(refundOrderNo).paymentChannel(paymentChannel).build();
         
         return eleRefundOrderService.queryList(eleRefundQuery);
     }
@@ -107,7 +107,8 @@ public class JsonAdminEleRefundOrderController extends BaseController {
             @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType, @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo) {
+            @RequestParam(value = "orderType", required = false) Integer orderType, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo
+            ,@RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         // 用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -134,7 +135,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
         
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder().orderId(orderId).status(status).storeIds(storeIds).franchiseeIds(franchiseeIds).payType(payType)
                 .refundOrderType(refundOrderType).beginTime(beginTime).endTime(endTime).tenantId(TenantContextHolder.getTenantId()).phone(phone).uid(uid).orderType(orderType)
-                .refundOrderNo(refundOrderNo).build();
+                .refundOrderNo(refundOrderNo).paymentChannel(paymentChannel).build();
         
         return eleRefundOrderService.queryCount(eleRefundQuery);
     }
@@ -159,6 +160,17 @@ public class JsonAdminEleRefundOrderController extends BaseController {
             @RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
             @RequestParam("uid") Long uid) {
         return returnTripleResult(eleRefundOrderService.batteryFreeDepostRefundAudit(refundOrderNo, errMsg, status, refundAmount, uid));
+    }
+    
+    /**
+     * 电池免押后台退款审核处理V2
+     */
+    @PostMapping("/admin/battery/free/refund/audit/v2")
+    @Log(title = "电池免押退款审核")
+    public R batteryFreeDepostRefundAuditV2(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,
+            @RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+            @RequestParam("uid") Long uid) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepostRefundAuditV2(refundOrderNo, errMsg, status, refundAmount, uid));
     }
     
     
@@ -191,5 +203,16 @@ public class JsonAdminEleRefundOrderController extends BaseController {
     @Log(title = "电池免押后台退押金")
     public R batteryFreeDepositRefund(@RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam("uid") Long uid) {
         return returnTripleResult(eleRefundOrderService.batteryFreeDepositRefund(errMsg, uid));
+    }
+    
+    
+    /**
+     * 电池免押退押金
+     */
+    @PostMapping("/admin/battery/freeDeposit/refund/v2")
+    @Log(title = "电池免押后台退押金")
+    public R batteryFreeDepositRefundV2(@RequestParam(value = "errMsg", required = false) String errMsg, @RequestParam("uid") Long uid,
+            @RequestParam("refundAmount") BigDecimal refundAmount) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepositRefundV2(errMsg, uid, refundAmount));
     }
 }

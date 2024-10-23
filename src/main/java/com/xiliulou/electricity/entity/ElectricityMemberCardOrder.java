@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -75,7 +76,7 @@ public class ElectricityMemberCardOrder {
     private Integer isBindActivity;
     
     /**
-     * 交易方式： 0-线上， 1-线下， 2-企业代付 3-美团支付
+     * 交易方式： 0-线上， 1-线下， 2-企业代付 3-美团支付， 4-分期
      */
     private Integer payType;
     
@@ -146,6 +147,22 @@ public class ElectricityMemberCardOrder {
      */
     private String wechatMerchantId;
     
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
+    
+    /**
+     * 请求签约号，唯一
+     */
+    private String externalAgreementNo;
+    
+    /**
+     * 分期套餐期次
+     */
+    private Integer issue;
+    
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
     
@@ -153,7 +170,7 @@ public class ElectricityMemberCardOrder {
     
     public static final Integer STATUS_FAIL = 2;
     
-    public static final Integer STATUS_CANCELL = 3;
+    public static final Integer STATUS_CANCEL = 3;
     
     
     public static final Integer BIND_ACTIVITY = 1;
@@ -172,6 +189,10 @@ public class ElectricityMemberCardOrder {
     
     public static final Integer MEITUAN_PAYMENT = 3;
     
+    /**
+     * 交易方式-分期
+     */
+    public static final Integer INSTALLMENT_PAYMENT = 4;
     
     //套餐订单来源，1：扫码，2：线上，3：后台
     public static final Integer SOURCE_SCAN = 1;
@@ -203,5 +224,4 @@ public class ElectricityMemberCardOrder {
     public static final Integer REFUND_STATUS_REFUSED = 6;
     
     public static final Long SEND_COUPON_ID_DEFAULT_VALUE = 0L;
-    
 }

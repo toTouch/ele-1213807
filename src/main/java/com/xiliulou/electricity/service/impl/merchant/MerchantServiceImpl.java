@@ -1279,7 +1279,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         
         //查询openid
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(merchant.getUid(), merchant.getTenantId());
+        UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(merchant.getUid(), merchant.getTenantId(),UserOauthBind.SOURCE_WX_PRO);
         if (!Objects.isNull(userOauthBind) && Objects.nonNull(userOauthBind.getThirdId())){
             vo.setOpenId(userOauthBind.getThirdId());
         }
@@ -1608,15 +1608,31 @@ public class MerchantServiceImpl implements MerchantService {
         if (Objects.isNull(userOauthBind)) {
             return Pair.of(false,"解绑失败,请联系客服处理");
         }
+    
+        Long franchiseeId = NumberConstant.ZERO_L;
+    
+        if (Objects.equals(params.getType(), MerchantConstant.UN_BIND_MERCHANT_USER_TYPE)) {
+            // 检测用户所属的商户是否存在
+            Merchant merchant = this.queryByUid(userOauthBind.getUid());
+            if (Objects.isNull(merchant)) {
+                return Pair.of(false,"解绑商户不存在,请联系客服处理");
+            }
         
-        // 检测用户所属的商户是否存在
-        Merchant merchant = this.queryByUid(userOauthBind.getUid());
-        if (Objects.isNull(merchant)) {
-            return Pair.of(false,"解绑商户不存在,请联系客服处理");
+            franchiseeId = merchant.getFranchiseeId();
+        }
+    
+        if (Objects.equals(params.getType(), MerchantConstant.UN_BIND_CHANNEL_EMPLOYEE_USER_TYPE)) {
+            // 检测用户所属的渠道员是否存在
+            ChannelEmployeeVO channelEmployeeVO = channelEmployeeService.queryByUid(userOauthBind.getUid());
+            if (Objects.isNull(channelEmployeeVO)) {
+                return Pair.of(false,"解绑渠道员不存在,请联系客服处理");
+            }
+        
+            franchiseeId = channelEmployeeVO.getFranchiseeId();
         }
         
-        if (ObjectUtils.isNotEmpty(params.getBindFranchiseeIdList()) && !params.getBindFranchiseeIdList().contains(merchant.getFranchiseeId())) {
-            log.info("merchant un bind open id info, franchisee is not different uid={}, franchiseeId={}, bindFranchiseeId={}", userOauthBind.getUid(), merchant.getFranchiseeId(), params.getBindFranchiseeIdList());
+        if (ObjectUtils.isNotEmpty(params.getBindFranchiseeIdList()) && !params.getBindFranchiseeIdList().contains(franchiseeId)) {
+            log.info("merchant un bind open id info, franchisee is not different uid={}, franchiseeId={}, bindFranchiseeId={}", userOauthBind.getUid(), franchiseeId, params.getBindFranchiseeIdList());
             return Pair.of(false,  "当前加盟商无权限操作");
         }
     

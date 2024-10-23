@@ -146,4 +146,14 @@ public class BatteryMemberCardAndTypeVO {
      * 分组类型，0-系统分组，1-用户分组。
      */
     private Integer groupType;
+    
+    /**
+     * 分期套餐服务费
+     */
+    private BigDecimal installmentServiceFee;
+    
+    /**
+     * 分期套餐首期费用
+     */
+    private BigDecimal downPayment;
 }

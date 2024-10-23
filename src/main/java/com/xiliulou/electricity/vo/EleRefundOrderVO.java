@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -110,5 +111,16 @@ public class EleRefundOrderVO {
      * 租户名称
      */
     private String tenantName;
+    
+    /**
+     * 支付渠道
+     *
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    /**
+     * 剩余代扣金额
+     */
+    private Double payTransAmt;
     
 }

@@ -10,7 +10,9 @@ import cn.hutool.json.JSONUtil;
 //import com.alibaba.nacos.client.identify.Base64;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.ElectricityCabinetApplication;
+import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
+import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
 import com.xiliulou.pay.weixin.constant.WechatConstant;
 import com.xiliulou.pay.weixin.entity.AccessTokenResult;
@@ -51,6 +53,7 @@ public class EleTest {
     
     @Autowired
     ExchangeBatterySocService service;
+    
     
     @Test
     public void test(){

@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties("wechat")
 @Data
 @RefreshScope
-public class WechatConfig {
+public class WechatConfig implements BasePayCallBackConfig{
     /**
      * 小程序appId
      */

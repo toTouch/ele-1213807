@@ -3,6 +3,7 @@ package com.xiliulou.electricity;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.xiliulou.cache.redis.EnableRedis;
 import com.xiliulou.clickhouse.EnableCH;
+import com.xiliulou.core.alipay.EnableAlipayTemplate;
 import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
 import com.xiliulou.core.sms.EnableSms;
 import com.xiliulou.core.wp.EnableWeChatTemplate;
@@ -13,6 +14,7 @@ import com.xiliulou.faceid.EnableFaceid;
 import com.xiliulou.feishu.EnableFeishu;
 import com.xiliulou.iot.EnableIot;
 import com.xiliulou.mq.EnableMq;
+import com.xiliulou.pay.EnableFengYun;
 import com.xiliulou.pay.EnableFreeDeposit;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.pay.ProfitSharingAutoConfiguration;
@@ -25,6 +27,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author: eclair
@@ -41,15 +44,17 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
-@EnablePay(isOpenNewWechatV3 = true)
+@EnablePay(isOpenNewWechatV3 = true, isOpenAlipay = true)
 @EnableXllXxlJob
 @EnableSms
 @EnableCH
 @EnableWeChatTemplate
+@EnableAlipayTemplate
 @EnableFeishu
 @EnableFaceid
 @EnableMq
 @EnableFreeDeposit
+@EnableFengYun
 @EnableEsign
 @EnableThirdMall
 @Slf4j

@@ -70,4 +70,14 @@ public class MemberCardOrderQuery {
      * 套餐id
      */
     private Long cardId;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    
+    /**
+     * 请求签约号
+     */
+    private String externalAgreementNo;
 }

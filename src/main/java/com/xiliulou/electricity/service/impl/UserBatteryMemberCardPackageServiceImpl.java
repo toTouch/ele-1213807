@@ -7,6 +7,8 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
+import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -15,12 +17,12 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -57,6 +59,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Resource
     private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
     
+    @Resource
+    private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -91,7 +96,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(UserBatteryMemberCardPackage userBatteryMemberCardPackage) {
         return this.userBatteryMemberCardPackageMapper.update(userBatteryMemberCardPackage);
     }
@@ -103,7 +107,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
      * @return 是否成功
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userBatteryMemberCardPackageMapper.deleteById(id) > 0;
     }
@@ -265,7 +268,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
         
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-    
+        
         // 修改企业用户当前套餐的支付记录对应的开始和结束时间
         anotherPayMembercardRecordService.handlerOrderEffect(userBatteryMemberCardUpdate, userBatteryMemberCard.getUid());
         
@@ -278,6 +281,18 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         oldMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
         oldMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateStatusByOrderNo(oldMemberCardOrder);
+        
+        // 如果当前套餐是美团订单，则更新美团订单状态为已失效
+        MeiTuanRiderMallOrder meiTuanRiderMallOrder = meiTuanRiderMallOrderService.queryByOrderId(userBatteryMemberCard.getOrderId(), userBatteryMemberCard.getUid(),
+                userBatteryMemberCard.getTenantId());
+        if (Objects.nonNull(meiTuanRiderMallOrder)) {
+            MeiTuanRiderMallOrder updateMeiTuanRiderMallOrder = new MeiTuanRiderMallOrder();
+            updateMeiTuanRiderMallOrder.setOrderId(userBatteryMemberCard.getOrderId());
+            updateMeiTuanRiderMallOrder.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_INVALID.getCode());
+            updateMeiTuanRiderMallOrder.setUpdateTime(System.currentTimeMillis());
+            updateMeiTuanRiderMallOrder.setTenantId(userBatteryMemberCard.getTenantId());
+            meiTuanRiderMallOrderService.updateStatusByOrderId(updateMeiTuanRiderMallOrder);
+        }
         
         //更新新绑定的套餐订单的状态
         ElectricityMemberCardOrder currentMemberCardOrder = new ElectricityMemberCardOrder();
@@ -316,6 +331,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     
     /**
      * 根据uid查询用户最新的一条的企业套餐的信息
+     *
      * @param uid
      * @return
      */

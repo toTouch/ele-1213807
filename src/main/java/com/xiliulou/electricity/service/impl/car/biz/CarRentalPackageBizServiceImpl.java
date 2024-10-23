@@ -8,6 +8,8 @@ import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FyConfig;
+import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
@@ -32,6 +34,8 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FyConfigService;
+import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
@@ -43,6 +47,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarCouponVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVo;
 import com.xiliulou.electricity.vo.userinfo.UserGroupByCarVO;
@@ -122,6 +127,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     
     @Autowired
     private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Resource
+    private PxzConfigService pxzConfigService;
+    
+    @Resource
+    private FyConfigService fyConfigService;
     
     /**
      * 获取用户可以购买的套餐
@@ -373,6 +384,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("300834", "用户分组最多支持选10个");
         }
         
+        // 免押套餐校验免押配置
+        checkFreeDepositConfig(optModel);
+        
         // 新增租车套餐
         CarRentalPackagePo entity = new CarRentalPackagePo();
         BeanUtils.copyProperties(optModel, entity, "couponId", "couponIds", "userGroupIds");
@@ -429,6 +443,18 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardService.insertBatteryMemberCardAndBatteryType(batteryMemberCard, batteryModelTypes);
         
         return true;
+    }
+    
+    private void checkFreeDepositConfig(CarRentalPackageOptModel optModel) {
+        if (Objects.equals(optModel.getFreeDeposit(), BatteryMemberCard.FREE_DEPOSIT)) {
+            PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+            
+            if (Objects.isNull(pxzConfig) && Objects.isNull(fyConfig)) {
+                throw new BizException("100380", "请先完成免押配置，再新增免押套餐");
+            }
+        }
     }
     
     private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePo entity) {

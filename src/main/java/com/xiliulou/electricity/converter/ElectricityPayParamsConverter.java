@@ -93,6 +93,7 @@ public class ElectricityPayParamsConverter {
                 .privateKey(payParamsDetails.getPrivateKey()).build();
     }
     
+    
     public static List<WechatPayParamsDetails> qryDoToDetailsList(List<ElectricityPayParams> electricityPayParams) {
         return Optional.ofNullable(electricityPayParams).orElse(Collections.emptyList()).stream().map(ElectricityPayParamsConverter::qryDoToDetails).collect(Collectors.toList());
     }

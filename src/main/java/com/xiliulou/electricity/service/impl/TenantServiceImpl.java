@@ -374,6 +374,8 @@ public class TenantServiceImpl implements TenantService {
             FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(item.getId());
             if(Objects.nonNull(freeDepositData)){
                 item.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity());
+                item.setFyFreeDepositCapacity(freeDepositData.getFyFreeDepositCapacity());
+                item.setByStagesCapacity(freeDepositData.getByStagesCapacity());
             }
             
             // 查询短信次数
@@ -431,7 +433,11 @@ public class TenantServiceImpl implements TenantService {
         }
         return genTenantCode();
     }
-
+    
+    
+    public static void main(String[] args) {
+        System.out.println(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
+    }
 
 
 }

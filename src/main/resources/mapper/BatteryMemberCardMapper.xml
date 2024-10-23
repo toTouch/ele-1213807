@@ -31,6 +31,8 @@
         <result property="groupType" column="group_type" jdbcType="INTEGER"/>
         <result property="couponIds" column="coupon_ids"/>
         <result property="userInfoGroupIds" column="user_info_group_ids"/>
+        <result property="installmentServiceFee" column="installment_service_fee" jdbcType="DECIMAL"/>
+        <result property="downPayment" column="down_payment" jdbcType="DECIMAL"/>
     </resultMap>
     
     <resultMap type="com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO" id="BatteryMemberCardTypeMap">
@@ -62,6 +64,8 @@
         <result property="groupType" column="group_type" jdbcType="INTEGER"/>
         <result property="couponIds" column="coupon_ids"/>
         <result property="userInfoGroupIds" column="user_info_group_ids"/>
+        <result property="installmentServiceFee" column="installment_service_fee" jdbcType="DECIMAL"/>
+        <result property="downPayment" column="down_payment" jdbcType="DECIMAL"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
             <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
@@ -97,6 +101,8 @@
         <result property="groupType" column="group_type" jdbcType="INTEGER"/>
         <result property="couponIds" column="coupon_ids"/>
         <result property="userInfoGroupIds" column="user_info_group_ids"/>
+        <result property="installmentServiceFee" column="installment_service_fee" jdbcType="DECIMAL"/>
+        <result property="downPayment" column="down_payment" jdbcType="DECIMAL"/>
         <collection property="batteryType" javaType="java.util.List" ofType="com.xiliulou.electricity.entity.MemberCardBatteryType" column="id"
             select="selectListMemberCardBatteryType">
             <id property="id" column="mcbt_id" jdbcType="INTEGER"/>
@@ -133,9 +139,54 @@
                sort_param,
                group_type,
                coupon_ids,
-               user_info_group_ids
+               user_info_group_ids,
+               installment_service_fee,
+               down_payment
         from t_battery_member_card
         where id = #{id}
+    </select>
+    
+    <select id="selectBySearchV2" resultMap="BatteryMemberCardMap">
+        select
+        id, name
+        from t_battery_member_card
+        <where>
+            <if test="businessTypes != null">
+                and business_type in
+                <foreach collection="businessTypes" item="businessTyp" index="index" open="(" close=")" separator=",">
+                    #{businessTyp}
+                </foreach>
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null and rentType==1">
+                and rent_type in (1,0)
+            </if>
+            <if test="rentType != null and rentType==2">
+                and rent_type in (2,0)
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
     </select>
     
     <select id="selectBySearch" resultMap="BatteryMemberCardMap">
@@ -144,7 +195,7 @@
         from t_battery_member_card
         <where>
             case
-                when #{catchEnterprise} = 1 then business_type in (0, 2)
+                when #{catchEnterprise} = 1 then business_type in (0, 2, 4)
                 else business_type = 0
             end
             <if test="franchiseeId != null">
@@ -184,12 +235,15 @@
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
         tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
-        tbmc.user_info_group_ids, tbmc.group_type
+        tbmc.user_info_group_ids, tbmc.group_type, tbmc.installment_service_fee, tbmc.down_payment
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
-            <if test="businessType != null">
-                and tbmc.business_type = #{businessType}
+            <if test="businessTypes != null">
+                and tbmc.business_type in
+                <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
             </if>
             
             <if test="franchiseeId != null">
@@ -250,7 +304,8 @@
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,status, limit_count, use_count, coupon_id, is_refund,
-        refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, sort_param, group_type, coupon_ids, user_info_group_ids
+        refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, sort_param, group_type, coupon_ids, user_info_group_ids,installment_service_fee,
+        down_payment
         from t_battery_member_card
         <where>
             business_type=0
@@ -322,12 +377,15 @@
         bmc.coupon_ids,
         bmc.user_info_group_ids,
         bmc.group_type,
+        bmc.installment_service_fee,
+        bmc.down_payment,
+        bmc.business_type,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
-            bmc.business_type=0 and bmc.status=0 and bmc.del_flag=0
+            bmc.business_type in (0, 4) and bmc.status=0 and bmc.del_flag=0
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>
@@ -381,7 +439,7 @@
         mcbt.battery_v
         from t_battery_member_card bmc left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
-            bmc.business_type=0
+            bmc.business_type in (0, 4)
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>
@@ -415,8 +473,11 @@
         from t_battery_member_card tbmc
         left join t_member_card_battery_type tmcbt on tbmc.id = tmcbt.mid
         <where>
-            <if test="businessType != null">
-                and tbmc.business_type = #{businessType}
+            <if test="businessTypes != null">
+                and tbmc.business_type in
+                <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
             </if>
             <if test="franchiseeId != null">
                 and tbmc.franchisee_id = #{franchiseeId}
@@ -565,6 +626,12 @@
             <if test="userInfoGroupIds != null and userInfoGroupIds != ''">
                 user_info_group_ids = #{userInfoGroupIds},
             </if>
+            <if test="installmentServiceFee != null">
+                installment_service_fee = #{installmentServiceFee},
+            </if>
+            <if test="downPayment != null">
+                down_payment = #{downPayment},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -611,6 +678,8 @@
         bmc.refund_limit,
         bmc.free_deposite,
         bmc.service_charge,
+        bmc.installment_service_fee,
+        bmc.down_payment,
         mcbt.id as mcbt_id,
         mcbt.battery_type battery_type
         from t_battery_member_card bmc
@@ -704,11 +773,14 @@
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
         status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite,
-        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
+        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, installment_service_fee, down_payment
         from t_battery_member_card
         <where>
-            <if test="businessType != null">
-                and business_type = #{businessType}
+            <if test="businessTypes != null">
+                and business_type in
+                <foreach collection="businessTypes" item="businessType" open="(" separator="," close=")">
+                    #{businessType}
+                </foreach>
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
@@ -747,7 +819,7 @@
     <select id="selectListMemberCardForSort" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
         select id, `name`, create_time, sort_param
         from t_battery_member_card
-        where del_flag = 0 and status = 0 and business_type = 0
+        where del_flag = 0 and status = 0 and business_type in (0, 4)
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
@@ -763,7 +835,7 @@
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
         tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
         tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
-        tbmc.user_info_group_ids, tbmc.group_type, tbmc.tenant_id
+        tbmc.user_info_group_ids, tbmc.group_type, tbmc.tenant_id, tbmc.installment_service_fee, tbmc.down_payment
     </sql>
     <sql id="pageFilter">
         <where>
@@ -825,6 +897,17 @@
         group by tbmc.id
         order by tbmc.status, tbmc.sort_param desc
         limit #{offset}, #{size}
+    </select>
+    <select id="selectListByIds" resultMap="BatteryMemberCardMap">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_battery_member_card tbmc
+        where del_flag = 0
+        and id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
 </mapper>
