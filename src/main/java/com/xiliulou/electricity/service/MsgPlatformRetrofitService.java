@@ -7,11 +7,13 @@ import com.xiliulou.electricity.request.SendMessageRequest;
 import com.xiliulou.electricity.service.impl.MsgPlatformRetrofitServiceImpl;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
 
 @RetrofitClient(serviceId = "xiliulou-msg-service", fallback = MsgPlatformRetrofitServiceImpl.class)
 @SentinelDegrade(count = 3, enable = true, timeWindow = 15, grade = 2)
 public interface MsgPlatformRetrofitService {
     
-    @PostMapping("/xiliulou-msg/inner/send/message")
-    R sendMessage(@RequestBody SendMessageRequest request);
+    @POST("/xiliulou-msg/inner/send/message")
+    R sendMessage(@Body SendMessageRequest request);
 }
