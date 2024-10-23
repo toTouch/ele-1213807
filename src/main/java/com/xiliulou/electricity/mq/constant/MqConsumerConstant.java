@@ -61,4 +61,22 @@ public interface MqConsumerConstant {
      */
     String MESSAGE_SEND_SAAS_GROUP = "message_send_saas_group";
     
+    
+    
+    /**
+     * 支付宝退款异步通知 consumer group
+     */
+    String ALIPAY_REFUND_NOTIFY_GROUP = "alipay_refund_notify_group";
+    
+    /**
+     * 使用同一topic,不同tag,为保证订阅消息一致性，免押、解冻、代扣使用不同消费者组
+     */
+    String FREE_DEPOSIT_CONSUMER_GROUP = "free_deposit_group";
+    String UN_FREE_DEPOSIT_CONSUMER_GROUP = "un_free_deposit_group";
+    String AUTH_PAY_CONSUMER_GROUP = "auth_pay_group";
+
+    /**
+     * 用户设备在线日志 consumer group
+     */
+    String USER_DEVICE_STATUS_CONSUMER_GROUP = "user_device_status_consumer";
 }

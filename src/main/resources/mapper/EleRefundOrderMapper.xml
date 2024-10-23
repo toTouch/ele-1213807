@@ -40,6 +40,9 @@
     <update id="update">
         update t_ele_refund_order set status = #{status},update_time = #{updateTime} where id = #{id}
     </update>
+    <update id="updateRefundAmountById">
+        update t_ele_refund_order set refund_amount = #{refundAmount}, update_time = #{updateTime} where id = #{id}
+    </update>
     
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
@@ -48,7 +51,8 @@
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
         tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
         memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
-        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType, tedo.franchisee_id
+        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType, tedo.franchisee_id,
+        tero.payment_channel as paymentChannel
         from t_ele_refund_order as tero
         left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
@@ -97,6 +101,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and tero.payment_channel = #{query.paymentChannel}
+            </if>
         </where>
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
@@ -114,6 +121,12 @@
             </if>
             <if test="query.status != null">
                 and tero.status = #{query.status}
+            </if>
+            <if test="query.statuses != null and query.statuses.size > 0">
+                and tero.status in
+                    <foreach collection="query.statuses" open="(" separator="," close=")" item="status">
+                        #{status}
+                    </foreach>
             </if>
             <if test="query.uid != null">
                 and tedo.uid = #{query.uid}
@@ -150,6 +163,9 @@
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and tero.payment_channel = #{query.paymentChannel}
             </if>
         </where>
     </select>

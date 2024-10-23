@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -117,6 +118,12 @@ public class EleBatteryServiceFeeOrderVo {
      * 支付时间
      */
     private Long payTime;
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
     
     /**
      * 租户名称

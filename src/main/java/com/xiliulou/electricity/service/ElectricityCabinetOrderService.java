@@ -77,7 +77,12 @@ public interface ElectricityCabinetOrderService {
     
     Triple<Boolean, String, Object> orderV3(OrderQueryV3 orderQuery);
     
+    
+    Triple<Boolean, String, Object> selectionExchangeCheck(SelectionExchangeCheckQuery orderQuery);
+    
     Triple<Boolean, String, Object> orderSelectionExchange(OrderSelectionExchangeQuery orderQuery);
+    
+    Triple<Boolean, String, Object> orderSelectionExchangeTakeBattery(OrderSelectionExchangeQuery orderQuery);
     
     Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard);
 
@@ -115,4 +120,5 @@ public interface ElectricityCabinetOrderService {
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
     
     R openFullCell(OpenFullCellQuery query);
+
 }

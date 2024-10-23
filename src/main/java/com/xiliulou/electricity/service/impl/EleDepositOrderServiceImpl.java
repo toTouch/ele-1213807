@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -36,6 +37,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
@@ -45,6 +47,7 @@ import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
@@ -83,8 +86,14 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.pay.PayConfigBizService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
@@ -118,6 +127,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
+
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
  *
@@ -147,9 +158,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     ElectricityTradeOrderService electricityTradeOrderService;
     
     @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
-    
-    @Autowired
     UserOauthBindService userOauthBindService;
     
     @Autowired
@@ -173,8 +181,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     
-    @Resource
-    EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
     
     @Autowired
     ElectricityCarModelService electricityCarModelService;
@@ -249,7 +255,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
+    private PayConfigBizService payConfigBizService;
     
     @Resource
     private TenantService tenantService;
@@ -257,13 +263,18 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     private SiteMessagePublish siteMessagePublish;
     
+    @Autowired
+    private InstallmentBizService installmentBizService;
+    
+    @Autowired
+    private InstallmentDeductionRecordService installmentDeductionRecordService;
+    
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, orderNo));
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R returnDeposit(HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -293,6 +304,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.nonNull(enterpriseChannelUserVO) && Objects.equals(enterpriseChannelUserVO.getRenewalStatus(), EnterpriseChannelUser.RENEWAL_CLOSE)) {
             log.warn("ELE DEPOSIT WARN! return Deposit channel user is disable! uid={}", user.getUid());
             return R.fail("120303", "您已是渠道用户，请联系站点开启自主续费后，进行退押操作");
+        }
+        
+        InstallmentDeductionRecordQuery recordQuery = new InstallmentDeductionRecordQuery();
+        recordQuery.setUid(userInfo.getUid());
+        recordQuery.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+        List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(recordQuery);
+        if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            return R.fail("301015", "当前有正在执行中的分期代扣，请前往分期代扣记录更新状态");
         }
         
         BatteryMemberCard batteryMemberCard = null;
@@ -361,15 +380,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         // 查找缴纳押金订单
-        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(
-                new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper
+                .selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
             log.warn("ELE DEPOSIT WARN! not found eleDepositOrder! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         
-        Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                batteryMemberCard, serviceFeeUserInfo);
+        Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
             return R.fail("100220", "用户存在电池服务费", checkUserBatteryServiceFeeResult.getRight());
@@ -397,9 +416,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
         
+        
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
-        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        
+        BigDecimal refundAmount = getRefundAmountV2(eleDepositOrder, freeDepositOrder);
+        
         BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
+        
         
         UserInfo updateUserInfo = new UserInfo();
         boolean eleRefund = false;
@@ -410,7 +433,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         String generateBusinessOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid());
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId()).refundOrderNo(generateBusinessOrderId).payAmount(payAmount)
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).build();
+                .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel()).build();
         
         // 发送站内信
         siteMessagePublish.publish(
@@ -434,8 +457,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userInfoService.updateByUid(updateUserInfo);
                 
                 // 更新用户套餐订单为已失效
-                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
-                        ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                electricityMemberCardOrderService
+                        .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
                 
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                 
@@ -467,16 +490,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 // 删除用户分组
                 userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
                 
+                // 解约分期签约，如果有的话
+                installmentBizService.terminateForReturnDeposit(userInfo.getUid());
+                
                 return R.ok("SUCCESS");
             }
         }
         
         eleRefundOrderService.insert(eleRefundOrder);
         
-        if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
-                Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
-            freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
-        }
+        // if (Objects.nonNull(freeDepositOrder) && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund) || (
+        //        Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
+        //     freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
+        // }
         
         // 等到后台同意退款
         return R.ok(packageOwe);
@@ -536,6 +562,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return refundAmount;
     }
     
+    private BigDecimal getRefundAmountV2(EleDepositOrder eleDepositOrder, FreeDepositOrder freeDepositOrder) {
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            return eleDepositOrder.getPayAmount();
+        }
+        
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        
+        if (Objects.nonNull(freeDepositOrder)) {
+            return BigDecimal.valueOf(freeDepositOrder.getPayTransAmt());
+        }
+        
+        return refundAmount;
+    }
+    
     @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
@@ -543,6 +583,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         eleDepositOrderVOS.forEach(eleDepositOrderVO -> {
             eleDepositOrderVO.setRefundFlag(true);
+            // orderId
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrderVO.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                eleDepositOrderVO.setPayTransAmt(freeDepositOrder.getPayTransAmt());
+            }
             
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectByOrderIdNoFilerStatus(eleDepositOrderVO.getOrderId());
             // 订单已退押或正在退押中
@@ -641,8 +686,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             map.put("batteryType", null);
         }
         
-        if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(
-                userBatteryDeposit.getOrderId()))) {
+        if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects
+                .nonNull(userBatteryDeposit.getOrderId()))) {
             
             if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
@@ -788,10 +833,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryCacheByTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
-                eleDepositOrder.getParamFranchiseeId());
-        if (Objects.isNull(electricityPayParams) || !Objects.equals(eleDepositOrder.getParamFranchiseeId(), electricityPayParams.getFranchiseeId()) || !Objects.equals(
-                eleDepositOrder.getWechatMerchantId(), electricityPayParams.getWechatMerchantId())) {
+        boolean checkConfigConsistency = payConfigBizService
+                .checkConfigConsistency(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getParamFranchiseeId(),
+                        eleDepositOrder.getWechatMerchantId());
+        if (!checkConfigConsistency) {
             return R.ok(CheckPayParamsResultEnum.FAIL.getCode());
         }
         return R.ok(CheckPayParamsResultEnum.SUCCESS.getCode());
@@ -829,6 +874,28 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public Integer deleteById(Long id) {
         return eleDepositOrderMapper.deleteById(id);
+    }
+    
+    @Override
+    @Slave
+    public EleDepositOrder queryLastEnterpriseDeposit(Long uid) {
+        return eleDepositOrderMapper.selectLastEnterpriseDeposit(uid);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard, ElectricityCabinet electricityCabinet,
+            BasePayConfig basePayConfig) {
+        // 生成押金独立订单
+        String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(depositOrderId).uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName())
+                .payAmount(batteryMemberCard.getDeposit()).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(EleDepositOrder.ONLINE_PAYMENT)
+                .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0)
+                .paramFranchiseeId(basePayConfig.getFranchiseeId()).wechatMerchantId(basePayConfig.getThirdPartyMerchantId()).paymentChannel(basePayConfig.getPaymentChannel()).paymentChannel(
+                        ChannelSourceContextHolder.get())
+                .build();
+        
+        return Triple.of(true, null, eleDepositOrder);
     }
     
     @Override

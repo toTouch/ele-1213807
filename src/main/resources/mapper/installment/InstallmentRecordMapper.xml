@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentRecordMapper">
+    
+    <sql id="columnsWithoutId">
+        uid, external_agreement_no, agreement_no, user_name, mobile, package_id, package_type, paid_amount, `status`, installment_no, paid_installment, tenant_id,
+        franchisee_id, create_time, update_time
+    </sql>
+    
+    <sql id="fieldsWithoutId">
+        #{uid}, #{externalAgreementNo}, #{agreementNo}, #{userName}, #{mobile}, #{packageId}, #{packageType}, #{paidAmount}, #{status}, #{installmentNo}, #{paidInstallment},
+        #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
+    </sql>
+    
+    <sql id="ifLabelsForWhere">
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+        <if test="externalAgreementNo != null and externalAgreementNo != ''">
+            and external_agreement_no = #{externalAgreementNo}
+        </if>
+        <if test="agreementNo != null and agreementNo != ''">
+            and agreement_no = #{agreementNo}
+        </if>
+        <if test="userName != null and userName != ''">
+            and user_name = #{userName}
+        </if>
+        <if test="mobile != null and mobile != ''">
+            and mobile = #{mobile}
+        </if>
+        <if test="packageId != null">
+            and package_id = #{packageId}
+        </if>
+        <if test="packageType != null">
+            and package_type = #{packageType}
+        </if>
+        <if test="paidAmount != null">
+            and paid_amount = #{paidAmount}
+        </if>
+        <if test="status != null">
+            and `status` = #{status}
+        </if>
+        <if test="installmentNo != null">
+            and installment_no = #{installmentNo}
+        </if>
+        <if test="paidInstallment != null">
+            and paid_installment = #{paidInstallment}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test="createTime != null">
+            and create_time = #{createTime}
+        </if>
+        <if test="updateTime != null">
+            and update_time = #{updateTime}
+        </if>
+    </sql>
+    
+    <resultMap id="installmentRecordMap" type="com.xiliulou.electricity.entity.installment.InstallmentRecord">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="uid" column="uid" jdbcType="BIGINT"/>
+        <result property="externalAgreementNo" column="external_agreement_no" jdbcType="VARCHAR"/>
+        <result property="agreementNo" column="agreement_no" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="mobile" column="mobile" jdbcType="VARCHAR"/>
+        <result property="packageId" column="package_id" jdbcType="BIGINT"/>
+        <result property="packageType" column="package_type" jdbcType="TINYINT"/>
+        <result property="paidAmount" column="paid_amount" jdbcType="DECIMAL"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="installmentNo" column="installment_no" jdbcType="TINYINT"/>
+        <result property="paidInstallment" column="paid_installment" jdbcType="TINYINT"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+    </resultMap>
+    
+    <select id="selectPage" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where tenant_id = #{tenantId}
+            <if test="status == null">
+                and `status` != 7
+            </if>
+            <include refid="ifLabelsForWhere"/>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="count" resultType="java.lang.Integer">
+        select count(1)
+        from t_installment_record
+        where tenant_id = #{tenantId}
+            <if test="status == null">
+                and `status` != 7
+            </if>
+            <include refid="ifLabelsForWhere"/>
+    </select>
+
+    <select id="selectRecordWithStatusForUser" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where uid = #{uid}
+            and status in
+                <foreach collection="statuses" open="(" separator="," close=")" item="status">
+                    #{status}
+                </foreach>
+        order by id desc
+
+    </select>
+    
+    <select id="selectByExternalAgreementNo" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where external_agreement_no = #{externalAgreementNo}
+    </select>
+    
+    <select id="selectByExternalAgreementNoWithoutUnpaid" resultMap="installmentRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where external_agreement_no = #{externalAgreementNo}
+            and status != 7
+    </select>
+    
+    <select id="selectLatestUsingRecordByUid"
+            resultType="com.xiliulou.electricity.entity.installment.InstallmentRecord">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_record
+        where uid = #{uid}
+            and status in (0,1,2,3)
+        order by id desc
+        limit 1
+    </select>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_installment_record(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
+    </insert>
+    
+    <update id="update">
+        update t_installment_record
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="externalAgreementNo != null and externalAgreementNo != ''">
+                external_agreement_no = #{externalAgreementNo},
+            </if>
+            <if test="agreementNo != null and agreementNo != ''">
+                agreement_no = #{agreementNo},
+            </if>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="mobile != null and mobile != ''">
+                mobile = #{mobile},
+            </if>
+            <if test="packageId != null">
+                package_id = #{packageId},
+            </if>
+            <if test="packageType != null">
+                package_type = #{packageType},
+            </if>
+            <if test="paidAmount != null">
+                paid_amount = #{paidAmount},
+            </if>
+            <if test="status != null">
+                `status` = #{status},
+            </if>
+            <if test="installmentNo != null">
+                installment_no = #{installmentNo},
+            </if>
+            <if test="paidInstallment != null">
+                paid_installment = #{paidInstallment},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

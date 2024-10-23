@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.entity.meituan;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,7 +38,6 @@ public class MeiTuanRiderMallOrder {
     /**
      * 订单状态: 10-已付款, 20-订单取消, 40-已发货
      *
-     * @see VirtualTradeStatusEnum
      */
     private Integer meiTuanOrderStatus;
     
@@ -76,14 +74,12 @@ public class MeiTuanRiderMallOrder {
     /**
      * 同步对账状态: 1-已处理, 2-未处理, 3-已对账
      *
-     * @see VirtualTradeStatusEnum
      */
     private Integer orderSyncStatus;
     
     /**
      * 订单使用状态: 0-未使用, 1-已使用
      *
-     * @see VirtualTradeStatusEnum
      */
     private Integer orderUseStatus;
     

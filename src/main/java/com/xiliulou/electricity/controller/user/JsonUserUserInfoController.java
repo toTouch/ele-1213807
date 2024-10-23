@@ -52,6 +52,15 @@ public class JsonUserUserInfoController extends BaseController {
         return returnTripleResult(userInfoService.selectUserInfoStatus());
     }
     
+    
+    /**
+     * 小程序首页 用户状态(新),适配新的免押代扣
+     */
+    @GetMapping(value = "/user/userInfoStatus/v2")
+    public R selectUserInfoStatusV2() {
+        return returnTripleResult(userInfoService.selectUserInfoStatusV2());
+    }
+    
     /**
      * 登录成功回调
      */

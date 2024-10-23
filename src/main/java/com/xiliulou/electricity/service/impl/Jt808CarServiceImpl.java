@@ -14,6 +14,7 @@ import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.query.CarControlQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarGpsVo;

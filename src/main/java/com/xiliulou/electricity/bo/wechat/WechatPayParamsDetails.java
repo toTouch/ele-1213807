@@ -5,7 +5,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
-import com.xiliulou.pay.base.enums.ChannelEnum;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import lombok.Data;
 
 import java.math.BigInteger;
@@ -120,6 +120,17 @@ public class WechatPayParamsDetails extends BasePayConfig {
      */
     private HashMap<BigInteger, X509Certificate> wechatPlatformCertificateMap;
     
+    @Override
+    public String getThirdPartyMerchantId() {
+        return this.wechatMerchantId;
+    }
+    
+    
+    @Override
+    public String getPaymentChannel() {
+        return ChannelEnum.WECHAT.getCode();
+    }
+    
     
     /**
      * 分账方配置
@@ -165,13 +176,4 @@ public class WechatPayParamsDetails extends BasePayConfig {
         return null;
     }
     
-    @Override
-    public String getThirdPartyMerchantId() {
-        return this.wechatMerchantId;
-    }
-    
-    @Override
-    public String getPaymentChannel() {
-        return ChannelEnum.WECHAT.getCode();
-    }
 }

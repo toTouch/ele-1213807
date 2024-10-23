@@ -10,8 +10,8 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.constant.meituan.MeiTuanConfigConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
+import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -21,9 +21,11 @@ import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
+import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -33,14 +35,16 @@ import com.xiliulou.electricity.service.FaceRecognizeDataService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
+import com.xiliulou.electricity.service.template.TemplateConfigService;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +53,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -101,6 +107,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Autowired
     EleEsignConfigService eleEsignConfigService;
     
+    @Autowired
+    AlipayAppConfigService alipayAppConfigService;
     @Resource
     MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
     
@@ -193,7 +201,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         // 若开启美团骑手商城
-        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall(), MeiTuanConfigConstant.ENABLE_MEI_TUAN_RIDER_MALL)) {
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall(), MeiTuanRiderMallEnum.ENABLE_MEI_TUAN_RIDER_MALL.getCode())) {
             MeiTuanRiderMallConfig meiTuanRiderMallConfig = meiTuanRiderMallConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(meiTuanRiderMallConfig) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppId()) || StringUtils.isBlank(meiTuanRiderMallConfig.getAppKey())
                     || StringUtils.isBlank(meiTuanRiderMallConfig.getSecret())) {
@@ -242,6 +250,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setWxCustomer(ElectricityConfig.CLOSE_WX_CUSTOMER);
             electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
             electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+            electricityConfig.setAlipayCustomer(electricityConfigAddAndUpdateQuery.getAlipayCustomer());
             electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
             electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
             electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
@@ -279,14 +288,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setAllowFreezeWithAssets(electricityConfigAddAndUpdateQuery.getAllowFreezeWithAssets());
         electricityConfig.setChannelTimeLimit(electricityConfigAddAndUpdateQuery.getChannelTimeLimit());
         electricityConfig.setChargeRateType(electricityConfigAddAndUpdateQuery.getChargeRateType());
+        electricityConfig.setAlipayCustomer(electricityConfigAddAndUpdateQuery.getAlipayCustomer());
         electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
         electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         
-        int updateResult = electricityConfigMapper.update(electricityConfig);
-        if (updateResult > 0) {
-            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
-        }
+        electricityConfigMapper.update(electricityConfig);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // 清理缓存
+                redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+            }
+        });
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }
@@ -388,13 +402,56 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
         
         //获取租户模板id
-        List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, ChannelEnum.WECHAT.getCode());
         tenantConfigVO.setTemplateConfigList(templateConfigList);
         
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
         
+        return tenantConfigVO;
+    }
+    
+    @Override
+    public TenantConfigVO queryTenantConfigByAppId(String appId, String appType) {
+        TenantConfigVO tenantConfigVO = new TenantConfigVO();
+    
+        Integer tenantId = null;
+        String channel =null;
+        if (TokenConstant.THIRD_AUTH_WX_PRO.equals(appType)) {
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
+            if (Objects.isNull(electricityPayParams)) {
+                log.warn("ELE WARN! not found tenant,appId={}", appId);
+                return tenantConfigVO;
+            }
+        
+            tenantId = electricityPayParams.getTenantId();
+            channel = ChannelEnum.WECHAT.getCode();
+        }
+    
+        if (TokenConstant.THIRD_AUTH_ALI_PAY.equals(appType)) {
+            List<AlipayAppConfig> alipayAppConfigs = alipayAppConfigService.queryListByAppId(appId);
+            if (CollectionUtils.isEmpty(alipayAppConfigs)) {
+                log.warn("ELE WARN! not found alipayAppConfig,appId={}", appId);
+                return tenantConfigVO;
+            }
+        
+            tenantId = alipayAppConfigs.stream().findFirst().get().getTenantId();
+            channel = ChannelEnum.ALIPAY.getCode();
+        }
+    
+        //获取租户配置信息
+        ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
+        BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+    
+        //获取租户模板id
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId,channel);
+        tenantConfigVO.setTemplateConfigList(templateConfigList);
+    
+        //获取客服电话
+        String servicePhone = userService.selectServicePhone(tenantId);
+        tenantConfigVO.setServicePhone(servicePhone);
+    
         return tenantConfigVO;
     }
     

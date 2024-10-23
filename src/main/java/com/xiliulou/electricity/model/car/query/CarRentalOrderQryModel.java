@@ -96,4 +96,9 @@ public class CarRentalOrderQryModel implements Serializable {
      * 创建时间截止
      */
     private Long endCreateTime;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String channel;
 }

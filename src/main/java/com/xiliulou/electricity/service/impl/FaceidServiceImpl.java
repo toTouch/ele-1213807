@@ -1,11 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.config.AliPayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FaceAuthResultDTO;
+import com.xiliulou.electricity.entity.AlipayAppConfig;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.FaceAuthResultData;
+import com.xiliulou.electricity.entity.FaceRecognizeData;
+import com.xiliulou.electricity.entity.FaceRecognizeUserRecord;
+import com.xiliulou.electricity.entity.FaceidConfig;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.AlipayUserCertifyInfoQuery;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -27,12 +39,25 @@ import com.xiliulou.electricity.service.FaceRecognizeUserRecordService;
 import com.xiliulou.electricity.service.FaceidConfigService;
 import com.xiliulou.electricity.service.FaceidService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.query.UserCertifyInfoQuery;
+import com.xiliulou.electricity.service.AlipayAppConfigService;
+import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.FaceAuthResultDataService;
+import com.xiliulou.electricity.service.FaceRecognizeDataService;
+import com.xiliulou.electricity.service.FaceRecognizeUserRecordService;
+import com.xiliulou.electricity.service.FaceidConfigService;
+import com.xiliulou.electricity.service.FaceidService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.ImageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.AlipayUserCertifyVO;
+import com.xiliulou.faceid.entity.dto.AlipayUserCertifyInfoDTO;
 import com.xiliulou.faceid.entity.dto.EidUserInfoDTO;
 import com.xiliulou.faceid.entity.rsp.FaceidResultRsp;
 import com.xiliulou.faceid.entity.rsp.FaceidTokenRsp;
+import com.xiliulou.faceid.service.AlipayUserCertifyService;
 import com.xiliulou.faceid.service.FaceidResultService;
 import com.xiliulou.faceid.service.FaceidTokenService;
 import com.xiliulou.storage.config.StorageConfig;
@@ -109,7 +134,199 @@ public class FaceidServiceImpl implements FaceidService {
     AliyunOssService aliyunOssService;
     
     @Autowired
+    AliPayConfig aliPayConfig;
+    
+    
+    @Autowired
     private EleUserAuthService eleUserAuthService;
+    
+    @Autowired
+    private AlipayUserCertifyService alipayUserCertifyService;
+    
+    @Autowired
+    private AlipayAppConfigService alipayAppConfigService;
+    
+    @Override
+    public Triple<Boolean, String, Object> saveUserCertifyInfo(UserCertifyInfoQuery userCertifyInfoQuery) {
+        Long uid = SecurityUtils.getUid();
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_ALIPAY_CERTIFY_INFO_LOCK_KEY + uid, "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        
+        Triple<Boolean, String, Object> verifyUserInfo = verifyUserInfo(userInfo, uid);
+        if (Boolean.FALSE.equals(verifyUserInfo.getLeft())) {
+            return verifyUserInfo;
+        }
+        
+        //身份证号唯一性校验
+        if (!Objects.isNull(userInfoService.existsByIdNumber(userCertifyInfoQuery.getIdNumber(), userInfo.getTenantId()))) {
+            log.warn("ALIPAY WARN! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), userCertifyInfoQuery.getIdNumber());
+            return Triple.of(false, "100339", "身份证号已存在");
+        }
+        
+        //保存用户实名认证状态及审核类型
+        UserInfo userInfoUpdate = new UserInfo();
+        userInfoUpdate.setUid(userInfo.getUid());
+        userInfoUpdate.setName(userCertifyInfoQuery.getName());
+        userInfoUpdate.setIdNumber(userCertifyInfoQuery.getIdNumber());
+        userInfoUpdate.setTenantId(userInfo.getTenantId());
+        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoService.update(userInfoUpdate);
+        
+        //身份证正面照片
+        EleUserAuth userAuthFront = new EleUserAuth();
+        userAuthFront.setUid(userInfo.getUid());
+        userAuthFront.setEntryId(EleAuthEntry.ID_CARD_FRONT_PHOTO);
+        userAuthFront.setValue(userCertifyInfoQuery.getFrontPicture());
+        userAuthFront.setCreateTime(System.currentTimeMillis());
+        userAuthFront.setUpdateTime(System.currentTimeMillis());
+        userAuthFront.setTenantId(userInfo.getTenantId());
+        eleUserAuthService.insert(userAuthFront);
+        
+        //身份证反面照片
+        EleUserAuth userAuthBack = new EleUserAuth();
+        userAuthBack.setUid(userInfo.getUid());
+        userAuthBack.setEntryId(EleAuthEntry.ID_CARD_BACK_PHOTO);
+        userAuthBack.setValue(userCertifyInfoQuery.getBackPicture());
+        userAuthBack.setCreateTime(System.currentTimeMillis());
+        userAuthBack.setUpdateTime(System.currentTimeMillis());
+        userAuthBack.setTenantId(userInfo.getTenantId());
+        eleUserAuthService.insert(userAuthBack);
+        
+        return Triple.of(true, "", "");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryAliPayCertifyInfo(AlipayUserCertifyInfoQuery query) {
+        Long uid = SecurityUtils.getUid();
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_ALIPAY_CERTIFY_LOCK_KEY + uid, "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        Triple<Boolean, String, Object> verifyUserInfo = verifyUserInfo(userInfo, uid);
+        if (Boolean.FALSE.equals(verifyUserInfo.getLeft())) {
+            return verifyUserInfo;
+        }
+        
+        //身份证号唯一性校验
+        if (!Objects.isNull(userInfoService.existsByIdNumber(query.getIdNumber(), userInfo.getTenantId()))) {
+            log.warn("ALIPAY WARN! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), query.getIdNumber());
+            return Triple.of(false, "100339", "身份证号已存在");
+        }
+        
+        //是否开启人脸核身
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig) || !Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
+            log.warn("ALIPAY WARN! not open face recognize,uid={}", uid);
+            return Triple.of(false, "100337", "未开启人脸核身！");
+        }
+        
+        //获取支付宝小程序配置
+        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(alipayAppConfig)) {
+            log.warn("ALIPAY WARN! alipayAppConfig is null,uid={}", uid);
+            return Triple.of(false, "100389", "小程序配置不存在！");
+        }
+        
+        AlipayUserCertifyInfoDTO alipayUserCertifyInfo = buildAlipayUserCertifyInfoDTO(query, alipayAppConfig, aliPayConfig);
+        
+        //获取人脸核身certifyId
+        String certifyId = alipayUserCertifyService.acquireCertifyId(alipayUserCertifyInfo);
+        if (StringUtils.isBlank(certifyId)) {
+            log.warn("ALIPAY WARN! not found certifyId,uid={}", uid);
+            return Triple.of(false, "100388", "人脸核身初始化失败！");
+        }
+        
+        //获取人脸核身URL
+        alipayUserCertifyInfo.setCertifyId(certifyId);
+        String userCertifyUrl = alipayUserCertifyService.acquireUserCertifyUrl(alipayUserCertifyInfo);
+        if (StringUtils.isBlank(userCertifyUrl)) {
+            log.warn("ALIPAY WARN! not found userCertifyUrl,uid={}", uid);
+            return Triple.of(false, "100388", "人脸核身初始化失败！");
+        }
+        
+        //保存人脸核身使用记录
+        faceRecognizeUserRecordService.insert(buildFaceRecognizeUserRecord(userInfo, certifyId));
+        
+        return Triple.of(true, "", new AlipayUserCertifyVO(userCertifyUrl, certifyId));
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryAliPayUserCertifyResult(AlipayUserCertifyInfoQuery query) {
+        Long uid = SecurityUtils.getUid();
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_ALIPAY_CERTIFY_RESULT_LOCK_KEY + uid, "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        Triple<Boolean, String, Object> verifyUserInfo = verifyUserInfo(userInfo, uid);
+        if (Boolean.FALSE.equals(verifyUserInfo.getLeft())) {
+            return verifyUserInfo;
+        }
+        
+        //获取支付宝小程序配置
+        AlipayAppConfig alipayAppConfig = alipayAppConfigService.queryByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(alipayAppConfig)) {
+            log.warn("ALIPAY WARN! alipayAppConfig is null,uid={}", uid);
+            return Triple.of(false, "100389", "小程序配置不存在！");
+        }
+        
+        AlipayUserCertifyInfoDTO alipayUserCertifyInfo = buildAlipayUserCertifyInfoDTO(query, alipayAppConfig, aliPayConfig);
+        alipayUserCertifyInfo.setCertifyId(query.getCertifyId());
+        
+        if (Boolean.FALSE.equals(alipayUserCertifyService.acquireUserCertifyResult(alipayUserCertifyInfo))) {
+            log.warn("ALIPAY WARN! auth fail,uid={},certifyId={}", uid, query.getCertifyId());
+            return Triple.of(false, "100331", "人脸核身失败！");
+        }
+        
+        //更新人脸核身记录
+        FaceRecognizeUserRecord faceRecognizeUserRecordUpdate = new FaceRecognizeUserRecord();
+        faceRecognizeUserRecordUpdate.setUid(uid);
+        faceRecognizeUserRecordUpdate.setCertifyId(query.getCertifyId());
+        faceRecognizeUserRecordUpdate.setStatus(FaceRecognizeUserRecord.STATUS_SUCCESS);
+        faceRecognizeUserRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        faceRecognizeUserRecordService.updateByUidAndCertifyId(faceRecognizeUserRecordUpdate);
+        
+        //更新用户实名认证状态及审核类型
+        UserInfo userInfoUpdate = new UserInfo();
+        userInfoUpdate.setUid(userInfo.getUid());
+        userInfoUpdate.setName(query.getUserName());
+        userInfoUpdate.setIdNumber(query.getIdNumber());
+        userInfoUpdate.setTenantId(userInfo.getTenantId());
+        userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
+        userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
+        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoService.update(userInfoUpdate);
+        
+        //身份证正面照片
+        EleUserAuth userAuthFront = new EleUserAuth();
+        userAuthFront.setUid(userInfo.getUid());
+        userAuthFront.setEntryId(EleAuthEntry.ID_CARD_FRONT_PHOTO);
+        userAuthFront.setValue(query.getFrontPicture());
+        userAuthFront.setDelFlag(EleUserAuth.DEL_NORMAL);
+        userAuthFront.setStatus(EleUserAuth.STATUS_REVIEW_PASSED);
+        userAuthFront.setCreateTime(System.currentTimeMillis());
+        userAuthFront.setUpdateTime(System.currentTimeMillis());
+        userAuthFront.setTenantId(userInfo.getTenantId());
+        
+        //身份证反面照片
+        EleUserAuth userAuthBack = new EleUserAuth();
+        userAuthBack.setUid(userInfo.getUid());
+        userAuthBack.setEntryId(EleAuthEntry.ID_CARD_BACK_PHOTO);
+        userAuthBack.setValue(query.getBackPicture());
+        userAuthBack.setDelFlag(EleUserAuth.DEL_NORMAL);
+        userAuthBack.setStatus(EleUserAuth.STATUS_REVIEW_PASSED);
+        userAuthBack.setCreateTime(System.currentTimeMillis());
+        userAuthBack.setUpdateTime(System.currentTimeMillis());
+        userAuthBack.setTenantId(userInfo.getTenantId());
+        eleUserAuthService.batchInsert(Lists.newArrayList(userAuthFront, userAuthBack));
+        
+        return Triple.of(true, "", "");
+    }
+    
     
     @Autowired
     private SiteMessagePublish siteMessagePublish;
@@ -163,7 +380,7 @@ public class FaceidServiceImpl implements FaceidService {
         }
         //发送站内信
         siteMessagePublish.publish(SiteMessageEvent.builder(this).code(SiteMessageType.INSUFFICIENT_RECHARGE_BALANCE).notifyTime(System.currentTimeMillis())
-                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.FACIAL_VERIFICATION)
+                .tenantId(TenantContextHolder.getTenantId().longValue()).addContext("type", RechargeAlarm.FACIAL_VERIFICATION.getCode())
                 .addContext("count", faceRecognizeData.getFaceRecognizeCapacity()).build());
         
         if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
@@ -195,7 +412,6 @@ public class FaceidServiceImpl implements FaceidService {
      * @return
      */
     @Override
-    //    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> verifyEidResult(FaceidResultQuery faceidResultQuery) {
         
         if (!redisService.setNx(CacheConstant.ELE_CACHE_FACEID_RESULT_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false)) {
@@ -328,7 +544,7 @@ public class FaceidServiceImpl implements FaceidService {
             }
             
             //身份证号唯一性校验
-            Integer idNumberExist = userInfoService.verifyIdNumberExist(eidUserInfo.getIdnum(), TenantContextHolder.getTenantId());
+            Integer idNumberExist = userInfoService.existsByIdNumber(eidUserInfo.getIdnum(), TenantContextHolder.getTenantId());
             if (!Objects.isNull(idNumberExist)) {
                 log.warn("ELE WARN! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), eidUserInfo.getIdnum());
                 return Triple.of(false, "100339", "身份证号已存在");
@@ -428,5 +644,48 @@ public class FaceidServiceImpl implements FaceidService {
         faceAuthResultData.setUpdateTime(System.currentTimeMillis());
         
         return faceAuthResultData;
+    }
+    
+    private AlipayUserCertifyInfoDTO buildAlipayUserCertifyInfoDTO(AlipayUserCertifyInfoQuery query, AlipayAppConfig alipayAppConfig, AliPayConfig aliPayConfig) {
+        AlipayUserCertifyInfoDTO alipayUserCertifyInfo = new AlipayUserCertifyInfoDTO();
+        alipayUserCertifyInfo.setUserName(query.getUserName());
+        alipayUserCertifyInfo.setIdNumber(query.getIdNumber());
+        alipayUserCertifyInfo.setServerUrl(aliPayConfig.getServerUrl());
+        alipayUserCertifyInfo.setAppId(alipayAppConfig.getAppId());
+        alipayUserCertifyInfo.setPrivateKey(alipayAppConfig.getAppPrivateKey());
+        alipayUserCertifyInfo.setAlipayPublicKey(alipayAppConfig.getPublicKey());
+        return alipayUserCertifyInfo;
+    }
+    
+    private FaceRecognizeUserRecord buildFaceRecognizeUserRecord(UserInfo userInfo, String certifyId) {
+        FaceRecognizeUserRecord faceRecognizeUserRecord = new FaceRecognizeUserRecord();
+        faceRecognizeUserRecord.setUid(userInfo.getUid());
+        faceRecognizeUserRecord.setAuthResultId(0L);
+        faceRecognizeUserRecord.setCertifyId(certifyId);
+        faceRecognizeUserRecord.setTenantId(userInfo.getTenantId());
+        faceRecognizeUserRecord.setStatus(FaceRecognizeUserRecord.STATUS_INIT);
+        faceRecognizeUserRecord.setDelFlag(FaceRecognizeUserRecord.DEL_NORMAL);
+        faceRecognizeUserRecord.setCreateTime(System.currentTimeMillis());
+        faceRecognizeUserRecord.setUpdateTime(System.currentTimeMillis());
+        return faceRecognizeUserRecord;
+    }
+    
+    private Triple<Boolean, String, Object> verifyUserInfo(UserInfo userInfo, Long uid) {
+        if (Objects.isNull(userInfo)) {
+            log.warn("ALIPAY WARN! not found userInfo,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("ALIPAY WARN! user is disable,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("ALIPAY WARN! user already auth passed,uid={}", uid);
+            return Triple.of(false, "100336", "用户已实名认证!");
+        }
+        
+        return Triple.of(true, "", "");
     }
 }

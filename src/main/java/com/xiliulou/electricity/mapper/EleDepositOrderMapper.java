@@ -66,4 +66,6 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
     List<EleDepositOrderVO> selectListSuperAdminPage(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
+    
+    EleDepositOrder selectLastEnterpriseDeposit(@Param("uid") Long uid);
 }

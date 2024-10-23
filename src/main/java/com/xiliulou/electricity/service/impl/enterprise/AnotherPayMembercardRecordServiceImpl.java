@@ -331,4 +331,15 @@ public class AnotherPayMembercardRecordServiceImpl implements AnotherPayMemberca
             this.anotherPayMembercardRecordMapper.batchUpdateBeginAndEndTimeByIds(idList, realDisableTime, currentTimeMillis);
         }
     }
+    
+    @Override
+    @Slave
+    public boolean existPayRecordByUid(Long uid) {
+        Integer count = anotherPayMembercardRecordMapper.existPayRecordByUid(uid);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
+    }
 }

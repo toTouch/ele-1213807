@@ -11,6 +11,7 @@
         <result property="idCard" column="id_card" jdbcType="VARCHAR"/>
         <result property="realName" column="real_name" jdbcType="VARCHAR"/>
         <result property="transAmt" column="trans_amt" jdbcType="NUMERIC"/>
+        <result property="withheldAmt" column="withheld_amt" jdbcType="NUMERIC"/>
         <result property="payTransAmt" column="pay_trans_amt" jdbcType="NUMERIC"/>
         <result property="authStatus" column="auth_status" jdbcType="INTEGER"/>
         <result property="payStatus" column="pay_status" jdbcType="INTEGER"/>
@@ -20,6 +21,7 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="channel" column="channel" jdbcType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->
@@ -41,6 +43,7 @@
         tfdo.id_card,
         tfdo.real_name,
         tfdo.trans_amt,
+        tfdo.withheld_amt,
         tfdo.pay_trans_amt,
         tfdo.auth_status,
         tfdo.pay_status,
@@ -78,6 +81,9 @@
         </if>
         <if test="endTime != null">
             and tfdo.create_time &lt;= #{endTime}
+        </if>
+        <if test="franchiseeId != null">
+            and tfdo.franchisee_id = #{franchiseeId}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size()>0">
             and tfdo.franchisee_id in
@@ -126,6 +132,9 @@
         </if>
         <if test="endTime != null">
             and tfdo.create_time &lt;= #{endTime}
+        </if>
+        <if test="franchiseeId != null">
+            and tfdo.franchisee_id = #{franchiseeId}
         </if>
         <if test="franchiseeIds != null and franchiseeIds.size()>0">
             and tfdo.franchisee_id in
@@ -221,7 +230,56 @@
             </if>
         </where>
     </select>
-
+    <select id="queryByOrderId" resultMap="FreeDepositOrderMap">
+        select id,
+               uid,
+               order_id,
+               auth_no,
+               phone,
+               id_card,
+               real_name,
+               trans_amt,
+               pay_trans_amt,
+               auth_status,
+               pay_status,
+               tenant_id,
+               type,
+               deposit_type,
+               create_time,
+               update_time,
+               channel
+        from t_free_deposit_order
+        where order_id = #{orderId}
+    </select>
+    <select id="selectPayTransAmtByOrderIds" resultType="com.xiliulou.electricity.entity.FreeDepositOrder">
+        select order_id,pay_trans_amt from t_free_deposit_order where order_id in
+        <foreach collection="orderIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectListByUid" resultType="com.xiliulou.electricity.entity.FreeDepositOrder">
+        select id,
+               uid,
+               order_id,
+               auth_no,
+               phone,
+               id_card,
+               real_name,
+               trans_amt,
+               pay_trans_amt,
+               auth_status,
+               pay_status,
+               tenant_id,
+               type,
+               deposit_type,
+               create_time,
+               update_time,
+               package_id,
+               channel
+        from t_free_deposit_order
+        where uid=#{uid} and tenant_id = #{tenantId}
+    </select>
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_free_deposit_order
@@ -246,6 +304,9 @@
             </if>
             <if test="transAmt != null">
                 trans_amt = #{transAmt},
+            </if>
+            <if test="withheldAmt != null">
+                withheld_amt = #{withheldAmt},
             </if>
             <if test="payTransAmt != null">
                 pay_trans_amt = #{payTransAmt},
@@ -283,4 +344,27 @@
     <update id="updatePhoneByUid">
         update t_free_deposit_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
+    
+    <select id="selectUpDateByUid" resultType="com.xiliulou.electricity.entity.FreeDepositOrder">
+        select id,
+               uid,
+               order_id,
+               auth_no,
+               phone,
+               id_card,
+               real_name,
+               trans_amt,
+               pay_trans_amt,
+               auth_status,
+               pay_status,
+               tenant_id,
+               type,
+               deposit_type,
+               create_time,
+               update_time,
+               package_id,
+               channel
+        from t_free_deposit_order
+        where uid = #{uid} order by id desc limit 1
+    </select>
 </mapper>

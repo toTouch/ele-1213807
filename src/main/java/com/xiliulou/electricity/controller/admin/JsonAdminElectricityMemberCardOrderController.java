@@ -64,7 +64,9 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
             @RequestParam(value = "payCount", required = false) Integer payCount, @RequestParam(value = "refId", required = false) Long refId,
             @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
-            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "cardId", required = false) Long cardId) {
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "cardId", required = false) Long cardId,
+            @RequestParam(value = "externalAgreementNo", required = false) String externalAgreementNo,
+            @RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -98,7 +100,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder().payType(payType).phone(phone).orderId(orderId).cardType(cardType).queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime).offset(offset).size(size).tenantId(TenantContextHolder.getTenantId()).status(status).uid(uid).useStatus(useStatus).source(source)
                 .payType(payType).refId(refId).cardModel(memberCardModel).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds).cardPayCount(payCount)
-                .userName(userName).payType(payType).cardId(cardId).build();
+                .userName(userName).payType(payType).cardId(cardId).paymentChannel(paymentChannel).externalAgreementNo(externalAgreementNo).build();
         
         return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
     }
@@ -116,7 +118,9 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
             @RequestParam(value = "refId", required = false) Long refId, @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
             @RequestParam(value = "queryEndTime", required = false) Long queryEndTime, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "cardId", required = false) Long cardId) {
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "cardId", required = false) Long cardId,
+            @RequestParam(value = "paymentChannel", required = false) String paymentChannel,
+            @RequestParam(value = "externalAgreementNo", required = false) String externalAgreementNo) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -142,7 +146,7 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder().payType(payType).phone(phone).orderId(orderId).cardType(cardType).queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime).tenantId(TenantContextHolder.getTenantId()).status(status).uid(uid).useStatus(useStatus).source(source).payType(payType).refId(refId)
                 .cardModel(memberCardModel).franchiseeId(franchiseeId).franchiseeIds(franchiseeIds).storeIds(storeIds).cardPayCount(payCount).userName(userName).payType(payType)
-                .cardId(cardId).build();
+                .cardId(cardId).paymentChannel(paymentChannel).externalAgreementNo(externalAgreementNo).build();
         
         return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
     }

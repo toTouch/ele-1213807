@@ -61,4 +61,6 @@ public interface AnotherPayMembercardRecordService {
     void handlerOrderEffect(UserBatteryMemberCard userBatteryMemberCardUpdate, Long uid);
     
     void systemEnableMemberCardHandler(Long uid, EleDisableMemberCardRecord eleDisableMemberCardRecord);
+    
+    boolean existPayRecordByUid(Long uid);
 }

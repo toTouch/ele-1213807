@@ -137,4 +137,10 @@ public class CarRentalPackageOrderRentRefundPo extends BasicCarPo {
      * @see YesNoEnum#getCode()
      */
     private Integer compelOffLine;
+    
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }
