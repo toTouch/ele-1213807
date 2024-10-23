@@ -292,7 +292,8 @@ public class EleOperateQueueHandler {
                     }
                     
                     // 保存租退异常格挡
-                    exceptionHandlerService.saveRentReturnExceptionCell(finalOpenDTO.getOrderStatus(), electricityCabinet.getId(), rentBatteryOrder.getCellNo());
+                    exceptionHandlerService.saveRentReturnExceptionCell(finalOpenDTO.getOrderStatus(), electricityCabinet.getId(), rentBatteryOrder.getCellNo(),
+                            finalOpenDTO.getSessionId());
                     
                     //取消订单
                     if (finalOpenDTO.getIsNeedEndOrder()) {

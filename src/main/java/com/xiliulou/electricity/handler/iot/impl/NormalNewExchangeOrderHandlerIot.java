@@ -617,8 +617,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         // 保存异常格挡号
-        exceptionHandlerService.saveExchangeExceptionCell(exchangeOrderRsp.getOrderStatus(), newElectricityCabinetOrder.getElectricityCabinetId(),
-                newElectricityCabinetOrder.getOldCellNo(), newElectricityCabinetOrder.getNewCellNo());
+        exceptionHandlerService.saveExchangeExceptionCell(exchangeOrderRsp.getOrderStatus(), electricityCabinetOrder.getElectricityCabinetId(),
+                newElectricityCabinetOrder.getOldCellNo(), newElectricityCabinetOrder.getNewCellNo(), exchangeOrderRsp.getSessionId());
         
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);

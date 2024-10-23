@@ -49,13 +49,13 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
     
     
     @Override
-    public void saveExchangeExceptionCell(String orderStatus, Integer eid, Integer oldCell, Integer newCell) {
-        log.info("SaveExchangeExceptionCell Info! eid is {} , orderStatus is {}, oldCell is {}, newCell is {}", eid, orderStatus, oldCell, newCell);
+    public void saveExchangeExceptionCell(String orderStatus, Integer eid, Integer oldCell, Integer newCell, String sessionId) {
+        log.info("SaveExchangeExceptionCell Info! sessionId is {} , eid is {} , orderStatus is {}, oldCell is {}, newCell is {}", sessionId, eid, orderStatus, oldCell, newCell);
         
         try {
             Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
             // 空仓失败
-            if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL)) {
+            if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
                 RMapCache<Integer, Integer> mapCache = redissonClient.getMapCache(String.format(CacheConstant.EXCEPTION_EMPTY_EID_KEY, eid));
                 mapCache.put(oldCell, 1, exceptionCellSaveTime, TimeUnit.MILLISECONDS);
             }
@@ -71,8 +71,8 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
     }
     
     @Override
-    public void saveRentReturnExceptionCell(String orderStatus, Integer eid, Integer cellNo) {
-        log.info("SaveRentReturnExceptionCell Info! eid is {}, orderStatus is {}, cellNo is {}", eid, orderStatus, cellNo);
+    public void saveRentReturnExceptionCell(String orderStatus, Integer eid, Integer cellNo, String sessionId) {
+        log.info("SaveRentReturnExceptionCell Info! sessionId is {},  eid is {}, orderStatus is {}, cellNo is {}", sessionId, eid, orderStatus, cellNo);
         
         try {
             Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();

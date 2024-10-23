@@ -142,7 +142,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             
             // 保存异常格挡号
             exceptionHandlerService.saveExchangeExceptionCell(openFullCellRsp.getOrderStatus(), cabinetOrder.getElectricityCabinetId(), openFullCellRsp.getPlaceCellNo(),
-                    openFullCellRsp.getTakeCellNo());
+                    openFullCellRsp.getTakeCellNo(), openFullCellRsp.getSessionId());
             
             
             // 设备正在使用中，不更新； 开满电仓失败/电池前置检测失败更新状态
