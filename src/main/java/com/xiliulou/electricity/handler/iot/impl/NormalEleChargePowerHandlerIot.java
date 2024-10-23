@@ -109,7 +109,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
             return;
         }
         
-        ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue());
+        ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue(), cabinetPowerReport.getCreateTime());
         
         double hourPower = cabinetPowerReport.getPowerConsumption();
         if (hourPower > ELE_POWER_HOUR_POWER_MAXIMUM) {
