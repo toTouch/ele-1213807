@@ -263,22 +263,7 @@ public interface ElectricityCabinetService {
     Integer existsByAreaId(Long areaId);
     
     List<AreaCabinetNumBO> countByAreaGroup(List<Long> areaIdList);
-    
-    /**
-     * <p>
-     * Description: queryIdsBySnArray
-     * </p>
-     *
-     * @param snList             snList
-     * @param tenantId           tenantId
-     * @param sourceFranchiseeId sourceFranchiseeId
-     * @return java.util.List<java.lang.Long>
-     * <p>Project: ElectricityCabinetService</p>
-     * <p>Copyright: Copyright (c) 2024</p>
-     * <p>Company: www.xiliulou.com</p>
-     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
-     * @since V1.0 2024/3/18
-     */
+
     Map<String, Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
     
     List<Integer> listIdsByName(String name);

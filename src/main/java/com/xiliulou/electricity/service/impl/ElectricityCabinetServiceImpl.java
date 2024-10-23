@@ -180,8 +180,10 @@ import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.iot.entity.response.QueryDeviceDetailResult;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
+import com.xiliulou.iot.service.RegisterDeviceService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
@@ -453,6 +455,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private PushDataToThirdService pushDataToThirdService;
+    
+    @Autowired
+    private RegisterDeviceService registerDeviceService;
     
     
     /**
@@ -5218,6 +5223,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R updateCabinetPattern(EleCabinetPatternQuery query) {
+        ElectricityCabinet electricityCabinet = this.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        //如果没有deviceSecret异步获取后更新
+        if(StringUtils.isBlank(electricityCabinet.getDeviceSecret())){
+            executorService.execute(()->{
+                QueryDeviceDetailResult queryDeviceDetailResult = registerDeviceService.queryDeviceDetail(query.getProductKey(), query.getDeviceName());
+                if (Objects.isNull(queryDeviceDetailResult)) {
+                    log.warn("ELE WARN!not found deviceDetailResult,p={},d={}", query.getProductKey(), query.getDeviceName());
+                    return;
+                }
+                
+                ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+                electricityCabinetUpdate.setId(electricityCabinet.getId());
+                electricityCabinetUpdate.setDeviceSecret(queryDeviceDetailResult.getDeviceSecret());
+                electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
+                electricityCabinetService.update(electricityCabinetUpdate);
+            });
+        }
+        
         //判断三元组是否在设备列表中存在,若不存在，新增
         if (Objects.isNull(eleDeviceCodeService.existsDeviceName(query.getDeviceName()))) {
             long time = System.currentTimeMillis();
