@@ -223,66 +223,6 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         }
     }
     
-    /**
-     * 故障上报发送MQ通知
-     *
-     * @param electricityCabinet
-     * @param eleWarnMsgVo
-     */
-    private void sendWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo) {
-        List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = null;
-        
-        if (Objects.equals(SMOKE_WARN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
-            messageNotifyList = this
-                    .buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo, ElectricityAbnormalMessageNotify.SMOKE_WARN_TYPE, ElectricityAbnormalMessageNotify.SMOKE_WARN_MSG);
-        } else if (Objects.equals(BACK_DOOR_OPEN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
-            messageNotifyList = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo, ElectricityAbnormalMessageNotify.BACK_DOOR_OPEN_TYPE,
-                    ElectricityAbnormalMessageNotify.BACK_DOOR_OPEN_MSG);
-        } else {
-            return;
-        }
-        
-        if (!CollectionUtils.isEmpty(messageNotifyList)) {
-            messageNotifyList.forEach(item -> {
-                messageSendProducer.sendAsyncMsg(item, "", "", 0);
-                log.info("ELE WARN MSG INFO! ele warn message notify, msg={}", JsonUtil.toJson(item));
-            });
-        }
-    }
-    
-    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Integer warnNotifyType,
-            String description) {
-        
-        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
-        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE WARN MSG ERROR! not found maintenanceUserNotifyConfig,tenantId={}", electricityCabinet.getTenantId());
-            return Collections.EMPTY_LIST;
-        }
-        
-        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
-        if (CollectionUtils.isEmpty(phones)) {
-            log.error("ELE WARN MSG ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
-            return Collections.EMPTY_LIST;
-        }
-        
-        return phones.parallelStream().map(item -> {
-            ElectricityAbnormalMessageNotify messageNotify = new ElectricityAbnormalMessageNotify();
-            messageNotify.setAddress(electricityCabinet.getAddress());
-            messageNotify.setEquipmentNumber(electricityCabinet.getName());
-            messageNotify.setDescription(description);
-            messageNotify.setExceptionType(warnNotifyType);
-            messageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-            
-            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
-            abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.ABNORMAL_ALARM_NOTIFY.getType());
-            abnormalMessageNotifyCommon.setPhone(item);
-            abnormalMessageNotifyCommon.setData(messageNotify);
-            abnormalMessageNotifyCommon.setTenantId(electricityCabinet.getTenantId());
-            
-            return abnormalMessageNotifyCommon;
-        }).collect(Collectors.toList());
-    }
     
     @Data
     class EleWarnMsgVo {

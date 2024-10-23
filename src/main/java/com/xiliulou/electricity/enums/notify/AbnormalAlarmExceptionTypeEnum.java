@@ -18,9 +18,7 @@ import java.util.Optional;
  */
 @Getter
 public enum AbnormalAlarmExceptionTypeEnum {
-    BATTERY_FULL_TYPE(1, "柜机电池满仓", "电池满仓"),
-    SMOKE_WARN_TYPE(2, "烟雾告警/后门锁异常打开", "烟雾告警"),
-    BACK_DOOR_OPEN_TYPE(3, "烟雾告警/后门锁异常打开", "后门异常打开"),
+    BATTERY_FULL_TYPE(1, "检测到柜机内电池满仓，暂无法提供换电服务", "柜机电池满仓", "电池满仓"),
     ;
     
     private static final Map<Integer, AbnormalAlarmExceptionTypeEnum> map = new HashMap<>();
@@ -33,12 +31,15 @@ public enum AbnormalAlarmExceptionTypeEnum {
     
     private Integer type;
     
+    private String description;
+    
     private String firstName;
     
     private String exceptionName;
     
-    AbnormalAlarmExceptionTypeEnum(Integer type, String firstName, String exceptionName) {
+    AbnormalAlarmExceptionTypeEnum(Integer type, String description, String firstName, String exceptionName) {
         this.type = type;
+        this.description = description;
         this.firstName = firstName;
         this.exceptionName = exceptionName;
     }
