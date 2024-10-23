@@ -36,11 +36,9 @@ public class AbnormalAlarmSendHandler extends AbstractWechatOfficialAccountSendH
         Optional<AbnormalAlarmExceptionTypeEnum> byType = AbnormalAlarmExceptionTypeEnum.getByType(exceptionType);
         AbnormalAlarmExceptionTypeEnum typeEnum = byType.orElseThrow();
         params.put("first", typeEnum.getFirstName());
-        params.put("keyword1", notify.getAddress());
-        params.put("keyword2", notify.getEquipmentNumber());
-        params.put("keyword3", typeEnum.getExceptionName());
-        params.put("keyword4", notify.getDescription());
-        params.put("keyword5", notify.getReportTime());
+        params.put("keyword1", notify.getEquipmentNumber());
+        params.put("keyword2", notify.getDescription());
+        params.put("keyword3", notify.getReportTime());
         params.put("remark", "为不影响正常使用，请及时核实并处理");
         return params;
     }

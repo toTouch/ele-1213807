@@ -28,18 +28,15 @@ import java.util.Optional;
 public class DeviceStatusSendHandler extends AbstractWechatOfficialAccountSendHandler {
     
     
-    @Resource
-    private ElectricityCabinetService electricityCabinetService;
-    
-    
     @Override
     protected Map<String, String> converterParamMap(String data) {
         DeviceNotify deviceNotify = JsonUtil.fromJson(data, DeviceNotify.class);
-        if (DeviceStatusEnum.DEVICE_OFFLINE.getStatus().equals(deviceNotify.getStatus()) && electricityCabinetService
-                .deviceIsOnline(deviceNotify.getProductKey(), deviceNotify.getDeviceName())) {
-            //如果这个时候还在线的话，就不用通知了
-            return null;
-        }
+        // TODO: 2024/10/23 同步notify删除此代码
+//        if (DeviceStatusEnum.DEVICE_OFFLINE.getStatus().equals(deviceNotify.getStatus()) && electricityCabinetService
+//                .deviceIsOnline(deviceNotify.getProductKey(), deviceNotify.getDeviceName())) {
+//            //如果这个时候还在线的话，就不用通知了
+//            return null;
+//        }
         
         Map<String, String> params = new HashMap<>();
         
