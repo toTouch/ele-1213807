@@ -464,7 +464,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         CompletableFuture<List<MerchantStatisticsUserVO>> merchantRenewalStatisticsUserInfo = CompletableFuture.supplyAsync(
                 () -> queryRenewalNum(type, uid, beginTime, endTime, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
             if (ObjectUtils.isNotEmpty(result)) {
-                merchantAddStatisticsUserVOS.addAll(result);
+                merchantRenewalStatisticsUserVOS.addAll(result);
             }
         
             if (e != null) {

@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin.merchant;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.merchant.MerchantDeleteCacheDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.merchant.MerchantUnbindReq;
@@ -12,7 +11,6 @@ import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.request.merchant.MerchantSaveRequest;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
-import com.xiliulou.electricity.service.merchant.MerchantPromotionFeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -20,7 +18,6 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,43 +52,6 @@ public class JsonMerchantController extends BaseController {
     
     @Resource
     private UserDataScopeService userDataScopeService;
-    
-    @Resource
-    private MerchantPromotionFeeService merchantPromotionFeeService;
-    
-    /**
-     * 用户分析
-     *
-     * @param type      用户类型
-     * @param uid       用户uid
-     * @param beginTime 开始时间
-     * @param endTime   结束时间
-     * @return 用户分析
-     */
-    @GetMapping("/admin/super/promotionFee/statistic/user")
-    public R promotionFeeStatisticAnalysisUser(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
-            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime
-            , @RequestParam(value = "userType", required = false) Integer userType) {
-        
-        return merchantPromotionFeeService.statisticUserV2(type, uid, beginTime, endTime, userType);
-    }
-    
-    /**
-     * 用户分析
-     *
-     * @param type      用户类型
-     * @param uid       用户uid
-     * @param beginTime 开始时间
-     * @param endTime   结束时间
-     * @return 用户分析
-     */
-    @GetMapping("/admin/super/promotionFee/statistic/user1")
-    public R promotionFeeStatisticAnalysisUser1(@RequestParam("type") Integer type, @RequestParam("uid") Long uid,
-            @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime
-            , @RequestParam(value = "userType", required = false) Integer userType) {
-        
-        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime, userType);
-    }
     
     /**
      * 查询商户升级条件
