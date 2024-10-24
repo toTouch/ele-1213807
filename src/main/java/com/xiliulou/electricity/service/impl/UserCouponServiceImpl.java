@@ -24,6 +24,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponActivityPackage;
 import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -42,6 +44,7 @@ import com.xiliulou.electricity.service.CouponActivityPackageService;
 import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -133,6 +136,9 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
     
+    @Autowired
+    private NewUserActivityService newUserActivityService;
+    
     /**
      * 根据ID集查询用户优惠券信息
      *
@@ -215,18 +221,51 @@ public class UserCouponServiceImpl implements UserCouponService {
             User user = userService.queryByUidFromCache(verifiedUid);
             u.setVerifiedName(Objects.isNull(user) ? null : user.getName());
             
+            UserInfo userInfo = userInfoService.queryByUidFromCache(u.getUid());
+            u.setUserName(Objects.isNull(userInfo) ? null : userInfo.getName());
+            
             Integer franchiseeId = u.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
                 u.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId.longValue())).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
+            getCouponWayDetails(u);
         });
         //******************************查询核销人结束************************************/
         return R.ok(userCouponList);
     }
     
+    private void getCouponWayDetails(UserCouponVO vo){
+        Integer couponType = vo.getCouponType();
+        if (Objects.isNull(couponType)){
+            return;
+        }
+        Long couponWay = vo.getCouponWay();
+        if (Objects.equals(couponType, CouponTypeEnum.BATCH_RELEASE.getCode())) {
+            User user = userService.queryByUidFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(user) ? null : user.getName());
+        }
+        // 电
+        if (Objects.equals(couponType, CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode())) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.CAR_BUY_PACKAGE.getCode())) {
+            CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(couponWay);
+            vo.setCouponWayDetails(Objects.isNull(carRentalPackagePo) ? null : carRentalPackagePo.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())) {
+            ShareActivity shareActivity = shareActivityService.queryByIdFromCache(couponWay.intValue());
+            vo.setCouponWayDetails(Objects.isNull(shareActivity) ? null : shareActivity.getName());
+        }
+        if (Objects.equals(couponType, CouponTypeEnum.REGISTER_ACTIVITIES.getCode())) {
+            NewUserActivity newUserActivity = newUserActivityService.queryByIdFromCache(couponWay.intValue());
+            vo.setCouponWayDetails(Objects.isNull(newUserActivity) ? null : newUserActivity.getName());
+        }
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R batchRelease(Integer id, Long[] uids) {
+    public R batchRelease(Integer id, Long[] uids, Long newActiveId) {
         if (ObjectUtil.isEmpty(uids)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -242,7 +281,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).couponId(coupon.getId())
                 .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(coupon.getTenantId());
+                .tenantId(coupon.getTenantId())
+                .couponType(CouponTypeEnum.REGISTER_ACTIVITIES.getCode())
+                .couponWay(newActiveId);
         
         //优惠券过期时间
         
@@ -472,6 +513,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         
         //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
         for (UserCouponVO userCouponVO : userCouponVOList) {
+            userCouponVO.setUserName(userInfo.getName());
             if (Coupon.SUPERPOSITION_NO.equals(userCouponVO.getSuperposition()) && SpecificPackagesEnum.SPECIFIC_PACKAGES_YES.getCode()
                     .equals(userCouponVO.getSpecificPackages())) {
                 Long couponId = userCouponVO.getCouponId().longValue();
@@ -606,7 +648,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
-                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId);
+                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
+                                .couponWay(Long.valueOf(activityId));
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -642,7 +685,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
-                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId);
+                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
+                                .couponWay(Long.valueOf(activityId));
                         
                         UserCoupon userCoupon = couponBuild.build();
                         
@@ -837,6 +881,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             saveCoupon.setDelFlag(UserCoupon.DEL_NORMAL);
             saveCoupon.setVerifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             saveCoupon.setTenantId(user.getTenantId());
+            saveCoupon.setCouponType(CouponTypeEnum.BATCH_RELEASE.getCode());
+            saveCoupon.setCouponWay(operateUid);
             userCouponList.add(saveCoupon);
             
             CouponIssueOperateRecord record = CouponIssueOperateRecord.builder().couponId(coupon.getId()).tenantId(user.getTenantId()).createTime(System.currentTimeMillis())
@@ -894,7 +940,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_BUY_PACKAGE).couponId(coupon.getId())
                     .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).sourceOrderId(userCouponDTO.getSourceOrderNo());
+                    .tenantId(coupon.getTenantId()).uid(uid).phone(userInfo.getPhone()).couponType(userCouponDTO.getCouponType()).couponWay(userCouponDTO.getPackageId())
+                    .sourceOrderId(userCouponDTO.getSourceOrderNo());
             
             //优惠券过期时间
             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());

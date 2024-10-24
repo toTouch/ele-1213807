@@ -53,7 +53,7 @@ public interface UserCouponService {
     
     R queryList(UserCouponQuery userCouponQuery);
     
-    R batchRelease(Integer id, Long[] uids);
+    R batchRelease(Integer id, Long[] uids, Long newActiveId);
     
     R adminBatchRelease(Integer id, Long[] uids);
     

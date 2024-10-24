@@ -11,7 +11,7 @@
 		tsar.tenant_id as tenantId,tsar.status as status,tsar.available_count as availableCount,
 		tui.phone as phone,tui.name as name,tsa.name as activityName,tsar.uid as uid
 		from t_share_activity_record as tsar
-		left join t_user_info as tui on tui.uid=tsar.uid
+		left join t_user_info as tui on tui.uid=tsar.uid and tui.del_flag=0
 		left join t_share_activity as tsa on tsar.activity_id=tsa.id
 		<where>
 			<if test="phone != null and phone != ''">

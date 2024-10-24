@@ -29,5 +29,12 @@ public class UserCouponDTO {
      * 链路ID
      */
     private String traceId;
-
+    
+    /**
+     * 套餐id
+     */
+    private Long packageId;
+    
+    
+    private Integer couponType;
 }

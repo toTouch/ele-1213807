@@ -69,6 +69,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -3626,9 +3627,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         couponIdSet.forEach(couponId -> {
             UserCouponDTO userCouponDTO = new UserCouponDTO();
             userCouponDTO.setCouponId(couponId);
+            userCouponDTO.setPackageId(batteryMemberCard.getId());
             userCouponDTO.setUid(memberCardOrder.getUid());
             userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
             userCouponDTO.setTraceId(IdUtil.simpleUUID());
+            userCouponDTO.setCouponType(CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode());
             userCouponService.asyncSendCoupon(userCouponDTO);
         });
         
@@ -3858,7 +3861,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         // 送优惠券
         if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()));
+            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()), null);
         }
         
         return remainingNumber;

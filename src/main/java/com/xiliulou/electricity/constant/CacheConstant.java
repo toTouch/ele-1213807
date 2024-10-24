@@ -831,5 +831,10 @@ public interface CacheConstant {
      */
     String CACHE_USER_DEVICE_STATUS = "d_stat:";
 
+    
+    /**
+     * 保存租借状态的电池对应的订单
+     */
+    String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
 }
 
