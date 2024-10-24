@@ -268,7 +268,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                 for (ShareActivityRuleQuery shareActivityRuleQuery : shareActivityRuleQueryList) {
                     ShareActivityRule.ShareActivityRuleBuilder activityBindCouponBuild = ShareActivityRule.builder().activityId(shareActivity.getId())
                             .couponId(shareActivityRuleQuery.getCouponId()).triggerCount(shareActivityRuleQuery.getTriggerCount()).createTime(System.currentTimeMillis())
-                            .updateTime(System.currentTimeMillis());
+                            .updateTime(System.currentTimeMillis()).tenantId(tenantId);
                     ShareActivityRule shareActivityRule = activityBindCouponBuild.build();
                     shareActivityRuleService.insert(shareActivityRule);
                 }
