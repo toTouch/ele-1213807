@@ -19,4 +19,9 @@ public class FreeDepositOrderDTO {
     private Integer channel;
     
     private String data;
+    
+    private String extraData;
+    
+    private String path;
+    
 }

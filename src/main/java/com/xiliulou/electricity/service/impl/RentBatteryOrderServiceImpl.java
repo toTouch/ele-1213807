@@ -17,12 +17,14 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -63,6 +65,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
@@ -92,6 +95,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
@@ -246,6 +250,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
     
+    @Autowired
+    private EleUserEsignRecordService eleUserEsignRecordService;
+    
     /**
      * 吞电池优化版本
      */
@@ -263,7 +270,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public RentBatteryOrder insert(RentBatteryOrder rentBatteryOrder) {
         this.rentBatteryOrderMapper.insert(rentBatteryOrder);
         return rentBatteryOrder;
@@ -380,6 +386,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.warn("RENT BATTERY WARN! user rent battery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0045", "已绑定电池");
             }
+            
+            //电子签署拦截
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryEsignFinishedRecordByUser(user.getUid(), Long.valueOf(user.getTenantId()));
+                if (Objects.isNull(eleUserEsignRecord)) {
+                    return R.fail("100329", "请先完成电子签名");
+                }
+            }
+            
             
             Triple<Boolean, String, Object> rentBatteryResult = null;
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -510,7 +526,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .phone(userInfo.getPhone()).name(userInfo.getName()).batteryDeposit(userBatteryDeposit.getBatteryDeposit()).type(RentBatteryOrder.TYPE_USER_RENT)
                 .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT).electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).storeId(store.getId()).franchiseeId(store.getFranchiseeId())
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .channel(ChannelSourceContextHolder.get())
+                .build();
         rentBatteryOrderMapper.insert(rentBatteryOrder);
         
         //发送开门命令
@@ -658,7 +676,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .updateTime(System.currentTimeMillis())
                 .storeId(store.getId())
                 .franchiseeId(store.getFranchiseeId())
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .tenantId(TenantContextHolder.getTenantId())
+                .channel(ChannelSourceContextHolder.get())
+                .build();
         rentBatteryOrderMapper.insert(rentBatteryOrder);
         
         //发送开门命令
@@ -876,7 +896,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .storeId(store.getId())
                     .franchiseeId(store.getFranchiseeId())
-                    .tenantId(TenantContextHolder.getTenantId()).build();
+                    .tenantId(TenantContextHolder.getTenantId())
+                    .channel(ChannelSourceContextHolder.get())
+                    .build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
             
             //发送开门命令

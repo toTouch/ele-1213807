@@ -14,35 +14,48 @@ import java.io.Serializable;
 @Data
 @TableName("t_template_config")
 public class TemplateConfigEntity implements Serializable {
+    
     @TableId
-    private Integer id;
+    private Long id;
+    
     /**
      * 电池超时未归还
      */
-    private String batteryOuttimeTemplate ;
+    private String batteryOuttimeTemplate;
+    
     /**
      * 低电量模板
      */
-    private String electricQuantityRemindTemplate ;
+    private String electricQuantityRemindTemplate;
     //    /**
     //     * 套餐到期通知
     //     */
     //    private String memberCardExpiringTemplate;
+    
     /**
-     *  电池月卡快过期提醒模板
+     * 电池月卡快过期提醒模板
      */
     private String batteryMemberCardExpiringTemplate;
+    
     /**
      * 租车月卡快过期提醒模板
      */
     private String carMemberCardExpiringTemplate;
+    
     /**
      * 租户id
      */
     private Integer tenantId;
-
+    
+    /**
+     * 渠道
+     *
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String channel;
+    
     private Long createTime;
-
+    
     private Long updateTime;
-
+    
 }

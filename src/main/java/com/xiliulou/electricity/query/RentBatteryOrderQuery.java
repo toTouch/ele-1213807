@@ -62,4 +62,10 @@ public class RentBatteryOrderQuery {
      * 电池编号
      */
     private String electricityBatterySn;
+    
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String channel;
 }

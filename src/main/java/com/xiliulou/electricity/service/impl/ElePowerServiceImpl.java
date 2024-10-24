@@ -168,8 +168,8 @@ public class ElePowerServiceImpl implements ElePowerService {
     
     @Slave
     @Override
-    public ElePower queryLatestByEid(Long eid) {
-        return this.elePowerMapper.selectLatestByEid(eid);
+    public ElePower queryLatestByEid(Long eid, Long reportTime) {
+        return this.elePowerMapper.selectLatestByEid(eid, reportTime);
     }
     
     @Slave

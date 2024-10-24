@@ -163,6 +163,11 @@ public interface InstallmentConstants {
      * 客户端来源(h5)，h5模式返回url，可以直接访问
      */
     String CHANNEL_FROM_H5 = "h5";
+    
+    /**
+     * 客户端来源(miniapp)
+     */
+    String CHANNEL_FROM_MINIAPP = "miniapp";
 
     /**
      * 签约记录查询结果-签约成功

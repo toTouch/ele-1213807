@@ -26,6 +26,11 @@ public interface CacheConstant {
     String ELE_PAY_PARAMS_KEY = "saas_ele:pay_params:%d:%d";
     
     /**
+     * 微信支付参数缓存key
+     */
+    String ELE_ALI_PAY_PARAMS_KEY="saas_ele:ali_pay_params:%d:%d";
+    
+    /**
      * 微信支付证书
      */
     String PAYMENT_CERTIFICATE_KEY = "saas_ele:pay_payment_certificate:%d:%d";
@@ -70,6 +75,8 @@ public interface CacheConstant {
     
     //下单加锁缓存
     String ORDER_ELE_ID = "order_lock_ele_id:";
+    //新增设备加锁
+    String CACHE_DEVICE_CODE_LOCK = "device_code_lock:";
     
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
@@ -258,7 +265,7 @@ public interface CacheConstant {
      * userInfo的缓存
      */
     String CACHE_USER_INFO = "user_info:";
-    String CACHE_ELE_SET_CONFIG = "ele_set_config:";
+    String CACHE_ELE_SET_CONFIG = "ele_set_config:v2";
     String CACHE_ELE_APP_SET_CONFIG = "ele_app_set_config:";
     
     /**
@@ -475,14 +482,21 @@ public interface CacheConstant {
     String CACHE_BT_ATTR = "bt_attr:";
     
     /**
+     * 用户端提交人脸核身信息缓存锁
+     */
+    String ELE_CACHE_ALIPAY_CERTIFY_INFO_LOCK_KEY = "alipay_certify_info_lock_key:";
+    
+    /**
      * 人脸核身token缓存锁
      */
     String ELE_CACHE_FACEID_TOKEN_LOCK_KEY = "faceid_token_lock_key:";
+    String ELE_CACHE_ALIPAY_CERTIFY_LOCK_KEY = "alipay_certify_lock_key:";
     
     /**
      * 人脸核身结果缓存锁
      */
     String ELE_CACHE_FACEID_RESULT_LOCK_KEY = "faceid_result_lock_key:";
+    String ELE_CACHE_ALIPAY_CERTIFY_RESULT_LOCK_KEY = "alipay_certify_result_lock_key:";
     String CACHE_PXZ_CONFIG = "cache_pxz_config:";
     
     /**
@@ -504,7 +518,8 @@ public interface CacheConstant {
     /**
      * 换电套餐免押订单链接缓存V2
      */
-    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "battery_free_deposit_order_generate_lock_key:%s:%s";
+    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "battery_free_deposit_order_generate_lock_key:v2:%s:%s";
+    String ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD = "battery_free_deposit_order_generate_lock_key:%s:%s";
     /**
      * 租车套餐免押订单链接缓存
      */
@@ -512,7 +527,8 @@ public interface CacheConstant {
     /**
      * 租车套餐免押订单链接缓存V2
      */
-    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "car_rental_free_deposit_order_generate_lock_key:%s:%s";
+    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2 = "car_rental_free_deposit_order_generate_lock_key:v2:%s:%s";
+    String ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD = "car_rental_free_deposit_order_generate_lock_key:%s:%s";
     
     /**
      * 企业渠道换电套餐免押订单链接缓存
@@ -685,6 +701,13 @@ public interface CacheConstant {
     String CACHE_USERINFO_OVERDUE_REMARK_SAVE_LOCK = "cache_userinfo_overdue_remark_save_lock:%d:%d";
     
     
+    /**
+     * 模版配置缓存key
+     */
+    String TEMPLATE_CONFIG_KEY="saas_electricity:tmp_config:%d:%s";
+    
+    
+    
     String OPEN_FULL_CELL_LIMIT = "open_full_cell_handle_limit:";
     
     
@@ -787,5 +810,31 @@ public interface CacheConstant {
      * 分期套餐代扣后处理逻辑锁
      */
     String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
+    
+    /**
+     * 设备信息缓存
+     */
+    String CACHE_DEVICE_CODE = "cache_device_code:";
+    String CACHE_DEVICE_CODE_SN = "cache_device_code_sn:";
+    
+    //退款审核通过
+    String APPROVE_REFUND_RENT_ORDER_LOCK_KEY = "saas_ele:approve_refund_rent_order:%s";
+    
+    String APPROVE_REFUND_DEPOSIT_ORDER_LOCK_KEY = "saas_ele:approve_refund_deposit_order:%s";
+    
+    String BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_membercar_refund:%s";
+    
+    String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
+
+    /**
+     * 用户设备状态缓存
+     */
+    String CACHE_USER_DEVICE_STATUS = "d_stat:";
+
+    
+    /**
+     * 保存租借状态的电池对应的订单
+     */
+    String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
 }
 

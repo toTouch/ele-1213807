@@ -57,7 +57,7 @@ public interface InstallmentBizService {
     /**
      * 请求峰云签约接口返回二维码链接
      */
-    R<String> sign(InstallmentSignQuery query, HttpServletRequest request);
+    R<String> sign(InstallmentSignQuery query, HttpServletRequest request,String channelFrom);
     
     /**
      * 签约成功的处理

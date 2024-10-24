@@ -46,7 +46,8 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
             @RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
             @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "mid", required = false) Long mid,
             @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "payType", required = false) Integer payType) {
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "payType", required = false) Integer payType,
+            @RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -79,7 +80,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
         
         BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder().uid(uid).phone(phone).refundOrderNo(refundOrderNo).startTime(beginTime)
                 .endTime(endTime).offset(offset).size(size).rentType(rentType).tenantId(TenantContextHolder.getTenantId()).status(status).franchiseeIds(franchiseeIds)
-                .storeIds(storeIds).mid(mid).payType(payType).build();
+                .storeIds(storeIds).mid(mid).payType(payType).paymentChannel(paymentChannel).build();
         
         return R.ok(batteryMembercardRefundOrderService.selectByPage(query));
     }
@@ -89,7 +90,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
             @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo, @RequestParam(value = "rentType", required = false) Integer rentType,
             @RequestParam(value = "mid", required = false) Long mid, @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "payType", required = false) Integer payType) {
+            @RequestParam(value = "payType", required = false) Integer payType,@RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -114,7 +115,7 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
         
         BatteryMembercardRefundOrderQuery query = BatteryMembercardRefundOrderQuery.builder().uid(uid).phone(phone).refundOrderNo(refundOrderNo).startTime(beginTime)
                 .endTime(endTime).tenantId(TenantContextHolder.getTenantId()).status(status).rentType(rentType).payType(payType).franchiseeIds(franchiseeIds).storeIds(storeIds)
-                .mid(mid).build();
+                .mid(mid).paymentChannel(paymentChannel).build();
         
         return R.ok(batteryMembercardRefundOrderService.selectPageCount(query));
     }

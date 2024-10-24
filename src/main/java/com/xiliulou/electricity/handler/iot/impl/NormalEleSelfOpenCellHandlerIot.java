@@ -7,12 +7,15 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -20,6 +23,8 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +72,8 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
     @Resource
     private BatteryTrackRecordService batteryTrackRecordService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -112,7 +119,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             // 订单完成。扣减套餐次数
             userBatteryMemberCardService.deductionPackageNumberHandler(electricityCabinetOrder, sessionId);
             
-            
             // 修改订单最终状态为成功
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
             newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
@@ -129,7 +135,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             takeBatteryHandler(eleSelfOPenCellOrderVo, electricityCabinetOrder, electricityCabinet);
             
             // 处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
-            userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(),electricityCabinetOrder);
+            userBatteryMemberCardService.handleExpireMemberCard(eleSelfOPenCellOrderVo.getSessionId(), electricityCabinetOrder);
             
             return;
         }
@@ -158,8 +164,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
         electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
     }
-    
-    
     
     
     private void takeBatteryHandler(EleSelfOPenCellOrderVo eleSelfOPenCellOrderVo, ElectricityCabinetOrder cabinetOrder, ElectricityCabinet electricityCabinet) {
@@ -223,6 +227,8 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(cabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
+            // 保存电池被取走对应的订单，供后台租借状态电池展示
+            OrderForBatteryUtil.save(cabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
         } else {
             log.warn("SELF OPEN CELL error! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(), eleSelfOPenCellOrderVo.getSessionId(),
                     eleSelfOPenCellOrderVo.getOrderId());
@@ -239,6 +245,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
                 .setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
         
+        // 给第三方推送换电记录/用户信息/电池信息
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), eleSelfOPenCellOrderVo.getSessionId(),
+                electricityCabinet.getTenantId(), cabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, cabinetOrder.getUid());
     }
     
     
@@ -270,6 +279,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             newElectricityBattery.setGuessUid(null);
         }
         
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+        
         electricityBatteryService.updateBatteryUser(newElectricityBattery);
     }
     
@@ -294,6 +306,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(placeBattery.getSn());
         
         Long bindTime = placeBattery.getBindTime();
         //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息

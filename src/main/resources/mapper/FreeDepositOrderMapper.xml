@@ -344,4 +344,27 @@
     <update id="updatePhoneByUid">
         update t_free_deposit_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
+    
+    <select id="selectUpDateByUid" resultType="com.xiliulou.electricity.entity.FreeDepositOrder">
+        select id,
+               uid,
+               order_id,
+               auth_no,
+               phone,
+               id_card,
+               real_name,
+               trans_amt,
+               pay_trans_amt,
+               auth_status,
+               pay_status,
+               tenant_id,
+               type,
+               deposit_type,
+               create_time,
+               update_time,
+               package_id,
+               channel
+        from t_free_deposit_order
+        where uid = #{uid} order by id desc limit 1
+    </select>
 </mapper>

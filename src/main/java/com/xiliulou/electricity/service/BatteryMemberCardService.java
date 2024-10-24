@@ -4,9 +4,11 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
+import com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -108,6 +110,23 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> listSuperAdminPage(BatteryMemberCardQuery query);
     
+    /**
+     * 根据id批量查询
+     *
+     * @param ids
+     * @author caobotao.cbt
+     * @date 2024/8/13 20:20
+     */
+    List<BatteryMemberCard> queryListByIdList(List<Long> ids);
+    
+    
+    /**
+     * 获取电和车的套餐列表
+     *
+     * @param query BatteryCarMemberListQuery
+     * @return BatteryAndCarMemberCardVO
+     */
+    List<BatteryAndCarMemberCardVO> listBatteryAndCarMember(BatteryCarMemberListQuery query);
     /**
      * 检查用户与套餐的用户分组是否匹配
      * @param userInfo 用户

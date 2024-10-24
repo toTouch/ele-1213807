@@ -55,4 +55,9 @@ public class EleDepositOrderQuery {
      * @see PackageOrderTypeEnum
      */
     private Integer orderType;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }

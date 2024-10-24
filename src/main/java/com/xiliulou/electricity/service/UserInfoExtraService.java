@@ -34,4 +34,6 @@ public interface UserInfoExtraService {
     R selectInviterList(MerchantModifyInviterRequest request);
     
     R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator, List<Long> franchiseeIds);
+    
+    MerchantInviterVO judgeInviterTypeForMerchant(Long joinUid, Long inviterUid, Integer tenantId);
 }

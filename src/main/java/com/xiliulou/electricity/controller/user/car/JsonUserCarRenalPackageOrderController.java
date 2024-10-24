@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundServi
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.rental.RefundRentOrderHintVo;
@@ -422,7 +423,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         buyOptModel.setTenantId(tenantId);
         buyOptModel.setUid(user.getUid());
         buyOptModel.setPayType(PayTypeEnum.ON_LINE.getCode());
-        
+        buyOptModel.setPaymentChannel(ChannelSourceContextHolder.get());
         return carRentalPackageOrderBizService.buyRentalPackageOrder(buyOptModel, request);
     }
     

@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
+import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
+import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Triple;
@@ -21,7 +24,7 @@ import java.util.List;
  * @since 2023-07-12 15:56:43
  */
 public interface BatteryMembercardRefundOrderService {
-
+    
     /**
      * 通过ID查询单条数据从数据库
      *
@@ -30,14 +33,14 @@ public interface BatteryMembercardRefundOrderService {
      */
     BatteryMembercardRefundOrder queryByIdFromDB(Long id);
     
-      /**
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
     BatteryMembercardRefundOrder queryByIdFromCache(Long id);
-
+    
     /**
      * 修改数据
      *
@@ -48,13 +51,14 @@ public interface BatteryMembercardRefundOrderService {
     
     /**
      * 根据更换手机号
+     *
      * @param tenantId 租户ID
-     * @param uid 用户ID
+     * @param uid      用户ID
      * @param newPhone 新号码
      * @return 影响行数
      */
-    Integer updatePhoneByUid(Integer tenantId, Long uid,String newPhone);
-
+    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
+    
     /**
      * 通过主键删除数据
      *
@@ -62,33 +66,48 @@ public interface BatteryMembercardRefundOrderService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
-
+    
     List<BatteryMembercardRefundOrderVO> selectByPage(BatteryMembercardRefundOrderQuery query);
-
+    
     Integer selectPageCount(BatteryMembercardRefundOrderQuery query);
-
+    
     BatteryMembercardRefundOrder selectByRefundOrderNo(String orderNo);
-
+    
     BatteryMembercardRefundOrder selectLatestByMembercardOrderNo(String orderNo);
-
-    Triple<Boolean,String,Object> batteryMembercardRefund(String orderNo);
-
-    Triple<Boolean, String, Object> batteryMembercardRefundOrderDetail(String orderNo,Integer confirm);
-
+    
+    Triple<Boolean, String, Object> batteryMembercardRefund(String orderNo);
+    
+    Triple<Boolean, String, Object> batteryMembercardRefundOrderDetail(String orderNo, Integer confirm);
+    
     void updateUserCouponStatus(String orderId);
-
-    Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String errMsg, BigDecimal refundAmount, Integer status, HttpServletRequest request, Integer offlineRefund);
-
+    
+    Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String errMsg, BigDecimal refundAmount, Integer status, HttpServletRequest request,
+            Integer offlineRefund);
+    
     Integer insert(BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert);
-
+    
     Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, BigDecimal refundAmount, HttpServletRequest request, Integer offlineRefund);
-
-    WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, WechatPayParamsDetails wechatPayParamsDetails, HttpServletRequest request) throws WechatPayException;
-
+    
+//    WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, WechatPayParamsDetails wechatPayParamsDetails,
+//            HttpServletRequest request) throws WechatPayException;
+    
+    /**
+     * 退款
+     *
+     * @param wechatPayParamsDetails
+     * @param batteryMembercardRefundOrder
+     * @param request
+     * @author caobotao.cbt
+     * @date 2024/7/25 16:18
+     * @return
+     */
+    BasePayOrderRefundDTO handleRefundOrderV2(BatteryMembercardRefundOrder batteryMembercardRefundOrder, BasePayConfig basePayConfig,
+            HttpServletRequest request) throws PayException;
+    
     List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid);
-
+    
     BigDecimal selectUserTotalRefund(Integer tenantId, Long uid);
-
+    
     void sendAuditNotify(UserInfo userInfo);
     
     void sendMerchantRebateRefundMQ(Long uid, String orderId);

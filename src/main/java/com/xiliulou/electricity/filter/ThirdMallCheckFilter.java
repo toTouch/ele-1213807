@@ -7,7 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallConfigService;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigService;
 import com.xiliulou.electricity.utils.ThirdMallConfigHolder;
 import com.xiliulou.electricity.web.entity.BodyReaderHttpServletRequestWrapper;
 import com.xiliulou.thirdmall.constant.meituan.virtualtrade.VirtualTradeConstant;

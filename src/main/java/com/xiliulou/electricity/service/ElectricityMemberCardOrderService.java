@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
@@ -75,7 +76,7 @@ public interface ElectricityMemberCardOrderService {
 
     BigDecimal querySumMemberCardTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
 
-    void batteryMemberCardExpireReminder();
+    void batteryMemberCardExpireReminder(BatteryMemberCardExpireReminderTask.TaskParam param);
 
     void systemEnableMemberCardTask();
 

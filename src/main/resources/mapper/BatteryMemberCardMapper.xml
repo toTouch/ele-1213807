@@ -398,7 +398,7 @@
         mcbt.battery_v
         from t_battery_member_card bmc left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
-            bmc.business_type=0
+            bmc.business_type in (0, 4)
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>
@@ -856,6 +856,49 @@
         group by tbmc.id
         order by tbmc.status, tbmc.sort_param desc
         limit #{offset}, #{size}
+    </select>
+    <select id="selectListByIds" resultMap="BatteryMemberCardMap">
+        SELECT
+        <include refid="column"/>
+        FROM
+        t_battery_member_card tbmc
+        where del_flag = 0
+        and id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    
+    <select id="listBatteryAndCarMember" resultType="com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO">
+        SELECT id, name
+        from (SELECT id, name
+        from t_battery_member_card
+        where tenant_id = #{tenantId} and del_flag = 0 and business_type != 2
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        union all
+        SELECT id, name
+        from t_car_rental_package
+        where tenant_id = #{tenantId} and del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        ) u
+        limit #{offset}
+        , #{size}
     </select>
 
 </mapper>

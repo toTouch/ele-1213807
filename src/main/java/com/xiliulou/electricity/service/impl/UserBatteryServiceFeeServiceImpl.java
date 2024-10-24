@@ -74,7 +74,6 @@ public class UserBatteryServiceFeeServiceImpl implements UserBatteryServiceFeeSe
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UserBatteryServiceFee insert(UserBatteryServiceFee userBatteryServiceFee) {
         int insert = this.userBatteryServiceFeeMapper.insertOne(userBatteryServiceFee);
         DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -101,7 +100,6 @@ public class UserBatteryServiceFeeServiceImpl implements UserBatteryServiceFeeSe
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer updateByUid(UserBatteryServiceFee userBatteryServiceFee) {
         int update= this.userBatteryServiceFeeMapper.updateByUid(userBatteryServiceFee);
         DbUtils.dbOperateSuccessThen(update, () -> {
@@ -118,7 +116,6 @@ public class UserBatteryServiceFeeServiceImpl implements UserBatteryServiceFeeSe
      * @return 是否成功
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer deleteByUid(Long uid) {
         int delete= this.userBatteryServiceFeeMapper.deleteByUid(uid);
         DbUtils.dbOperateSuccessThen(delete, () -> {

@@ -50,7 +50,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -178,7 +177,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status) {
         
         Integer tenantId = TenantContextHolder.getTenantId();

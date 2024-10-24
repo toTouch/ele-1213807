@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.AlipayAppConfigMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.AlipayAppConfig" id="AlipayAppConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="appId" column="app_id" jdbcType="VARCHAR"/>
+        <result property="receivableAccounts" column="receivable_accounts" jdbcType="VARCHAR"/>
+        <result property="appSecret" column="app_secret" jdbcType="VARCHAR"/>
+        <result property="publicKey" column="public_key" jdbcType="VARCHAR"/>
+        <result property="privateKey" column="private_key" jdbcType="VARCHAR"/>
+        <result property="appPublicKey" column="app_public_key" jdbcType="VARCHAR"/>
+        <result property="appPrivateKey" column="app_private_key" jdbcType="VARCHAR"/>
+        <result property="loginDecryptionKey" column="login_decryption_key" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="configType" column="config_type" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <sql id="base_column">
+        id
+        , app_id,receivable_accounts, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time
+    </sql>
+    <update id="logicalDelete">
+        update
+            t_alipay_app_config
+        set del_flag   = 1,
+            update_time=now()
+        where id = #{id}
+          and tenant_id = #{tenantId}
+    </update>
+    
+    <!--查询单个-->
+    <select id="selectById" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where id = #{id} and del_flag = 0
+    </select>
+    
+    <select id="selectOneByTenantId" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where tenant_id = #{tenantId} and del_flag = 0 order by id limit 1
+    </select>
+    
+    <select id="selectByAppId" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where app_id = #{appId} and del_flag = 0
+    </select>
+    
+    <select id="selectByReceivableAccountsAndTenantId" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where receivable_accounts = #{receivableAccounts} and tenant_id= #{tenantId} and del_flag = 0
+    </select>
+    
+    <select id="selectListByTenantId" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where tenant_id = #{tenantId} and del_flag = 0
+    </select>
+    
+    <select id="selectByConfigType" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from t_alipay_app_config
+        where tenant_id = #{tenantId} and config_type = #{type} and del_flag = 0
+    </select>
+    
+    <select id="selectListByTenantIdAndFranchiseeIds" resultMap="AlipayAppConfigMap">
+        select
+        <include refid="base_column"/>
+        from
+        t_alipay_app_config
+        where del_flag = 0
+        and tenant_id =#{tenantId}
+        and franchisee_id in
+        <foreach collection="franchiseeIds" open="(" separator="," close=")" item="franchiseeId">
+            #{franchiseeId}
+        </foreach>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_alipay_app_config(app_id, receivable_accounts, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id, config_type,
+                                        franchisee_id,
+                                        del_flag, create_time, update_time)
+        values (#{appId}, #{receivableAccounts}, #{appSecret}, #{publicKey}, #{privateKey}, #{appPublicKey}, #{appPrivateKey}, #{loginDecryptionKey}, #{tenantId}, #{configType},
+                #{franchiseeid},
+                #{delFlag} #{createTime}, #{updateTime})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_alipay_app_config
+        <set>
+            <if test="appId != null and appId != ''">
+                app_id = #{appId},
+            </if>
+            <if test="appSecret != null and appSecret != ''">
+                app_secret = #{appSecret},
+            </if>
+            <if test="receivableAccounts != null and receivableAccounts != ''">
+                receivable_accounts = #{receivableAccounts},
+            </if>
+            <if test="publicKey != null and publicKey != ''">
+                public_key = #{publicKey},
+            </if>
+            <if test="privateKey != null and privateKey != ''">
+                private_key = #{privateKey},
+            </if>
+            <if test="appPublicKey != null and appPublicKey != ''">
+                app_public_key = #{appPublicKey},
+            </if>
+            <if test="appPrivateKey != null and appPrivateKey != ''">
+                app_private_key = #{appPrivateKey},
+            </if>
+            <if test="loginDecryptionKey != null and loginDecryptionKey != ''">
+                login_decryption_key = #{loginDecryptionKey},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <update id="updateSyncByIds">
+        update
+        t_alipay_app_config
+        <set>
+            update_time = UNIX_TIMESTAMP()*1000,
+            <if test="alipayAppConfig.appId != null and alipayAppConfig.appId != ''">
+                app_id = #{alipayAppConfig.appId},
+            </if>
+            <if test="alipayAppConfig.publicKey != null and alipayAppConfig.publicKey != ''">
+                public_key = #{alipayAppConfig.publicKey},
+            </if>
+            <if test="alipayAppConfig.appPrivateKey != null and alipayAppConfig.appPrivateKey != ''">
+                app_private_key = #{alipayAppConfig.appPrivateKey},
+            </if>
+        </set>
+        where
+        id in
+        <foreach collection="ids" open="(" close=")" item="item" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+</mapper>

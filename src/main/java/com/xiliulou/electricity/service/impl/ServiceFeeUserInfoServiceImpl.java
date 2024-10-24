@@ -443,7 +443,6 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public List<UserServiceFeeDetail> selectUserBatteryServiceFee() {
         List<UserServiceFeeDetail> list = new ArrayList<>();
         

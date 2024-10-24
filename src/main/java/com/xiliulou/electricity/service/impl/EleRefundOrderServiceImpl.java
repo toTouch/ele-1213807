@@ -1,5 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
+
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -12,9 +16,12 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.callback.FreeDepositNotifyService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
-import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.converter.PayConfigConverter;
+import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
@@ -40,6 +47,7 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
+import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -71,8 +79,10 @@ import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.pay.PayConfigBizService;
+import com.xiliulou.electricity.service.installment.InstallmentBizService;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -81,16 +91,17 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.electricity.vo.enterprise.EnterpriseChannelUserVO;
+import com.xiliulou.pay.base.PayServiceDispatcher;
+import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
+import com.xiliulou.pay.base.exception.PayException;
+import com.xiliulou.pay.base.request.BaseOrderRefundCallBackResource;
+import com.xiliulou.pay.base.request.BasePayRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
-import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -145,8 +156,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     EleRefundOrderService eleRefundOrderService;
     
+    
     @Autowired
-    WechatConfig wechatConfig;
+    PayConfigConverter payConfigConverter;
     
     @Autowired
     EleRefundOrderHistoryService eleRefundOrderHistoryService;
@@ -168,7 +180,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Autowired
     UserBatteryService userBatteryService;
-
+    
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
     
@@ -209,10 +221,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     private FranchiseeServiceImpl franchiseeService;
     
     @Resource
-    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
+    private PayServiceDispatcher payServiceDispatcher;
     
     @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
+    private PayConfigBizService payConfigBizService;
     
     @Resource
     private TenantService tenantService;
@@ -237,7 +249,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public EleRefundOrder insert(EleRefundOrder eleRefundOrder) {
         this.eleRefundOrderMapper.insert(eleRefundOrder);
         return eleRefundOrder;
@@ -250,7 +261,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer update(EleRefundOrder eleRefundOrder) {
         return this.eleRefundOrderMapper.updateById(eleRefundOrder);
     }
@@ -265,9 +275,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return this.eleRefundOrderMapper.selectCarFreeDepositRefundingOrder(offset, size);
     }
     
+    
     @Override
-    public WechatJsapiRefundResultDTO commonCreateRefundOrder(RefundOrder refundOrder, WechatPayParamsDetails wechatPayParamsDetails, HttpServletRequest request)
-            throws WechatPayException {
+    public BasePayOrderRefundDTO commonCreateRefundOrderV2(RefundOrder refundOrder, BasePayConfig payConfig, HttpServletRequest request) throws PayException {
         
         // 第三方订单号
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
@@ -288,27 +298,33 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
         }
         
-        // 退款
-        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
-        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
-        wechatV3RefundRequest.setOrderId(tradeOrderNo);
-        wechatV3RefundRequest.setReason("退款");
-        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
-        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundRequest.setTotal(total);
-        wechatV3RefundRequest.setCurrency("CNY");
-        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
+        OrderRefundParamConverterModel model = new OrderRefundParamConverterModel();
+        model.setRefundId(refundOrder.getRefundOrderNo());
+        model.setOrderId(tradeOrderNo);
+        model.setReason("退款");
+        model.setRefund(refundOrder.getRefundAmount());
+        model.setTotal(total);
+        model.setCurrency("CNY");
+        model.setPayConfig(payConfig);
+        model.setTenantId(electricityTradeOrder.getTenantId());
+        model.setFranchiseeId(electricityTradeOrder.getPayFranchiseeId());
+        model.setRefundType(RefundPayOptTypeEnum.BATTERY_DEPOSIT_REFUND_CALL_BACK.getCode());
         
-        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
+        BasePayRequest basePayRequest = payConfigConverter.converterOrderRefund(model);
+        
+        return payServiceDispatcher.refund(basePayRequest);
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> notifyDepositRefundOrder(BaseOrderRefundCallBackResource callBackResource) {
+        //幂等加锁
+        
+        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + callBackResource.getOutTradeNo(), String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            return Pair.of(false, "频繁操作!");
+        }
         // 回调参数
         String tradeRefundNo = callBackResource.getOutRefundNo();
         String outTradeNo = callBackResource.getOutTradeNo();
-        String refundStatus = callBackResource.getRefundStatus();
         
         // 退款订单
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, tradeRefundNo));
@@ -320,7 +336,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO={}", tradeRefundNo);
             return Pair.of(false, "退款订单已处理");
         }
-
+        
         // 获取押金订单号
         Pair<Boolean, Object> findDepositOrderNOResult = findDepositOrder(outTradeNo, eleRefundOrder);
         if (Boolean.FALSE.equals(findDepositOrderNOResult.getLeft())) {
@@ -331,7 +347,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         Integer refundOrderStatus = EleRefundOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(refundStatus) && ObjectUtil.equal(refundStatus, "SUCCESS")) {
+        if (callBackResource.refundStatusIsSuccess()) {
             refundOrderStatus = EleRefundOrder.STATUS_SUCCESS;
             result = true;
         } else {
@@ -360,8 +376,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 userInfoService.updateByUid(updateUserInfo);
                 
                 // 更新用户套餐订单为已失效
-                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
-                        ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                electricityMemberCardOrderService
+                        .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
                 
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                 
@@ -402,9 +418,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleRefundOrder(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, Integer offlineRefund,
             HttpServletRequest request) {
+    
+        Boolean getLockSuccess = redisService.setNx(String.format(CacheConstant.BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY,refundOrderNo), IdUtil.fastSimpleUUID(), 10 * 1000L, false);
+        if (!getLockSuccess) {
+            throw new BizException("ELECTRICITY.0034", "操作频繁");
+        }
         
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
@@ -458,6 +478,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 拒绝退款
         if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+//            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return Triple.of(true, "", null);
         }
@@ -485,28 +506,29 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         
         // 置于此处为了避免干扰线下退款，将异常抛出是为了回滚避免生成数据错误的订单，避免把数据修改成错误的中间态
-        WechatPayParamsDetails wechatPayParamsDetails = null;
+        BasePayConfig basePayConfig = null;
         try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(TenantContextHolder.getTenantId(),
-                    eleDepositOrder.getParamFranchiseeId());
-        } catch (WechatPayException e) {
+            basePayConfig = payConfigBizService.queryPayParams(eleDepositOrder.getPaymentChannel(), TenantContextHolder.getTenantId(), eleDepositOrder.getParamFranchiseeId(),null);
+        } catch (PayException e) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
             throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
         }
-        if (Objects.isNull(wechatPayParamsDetails)) {
+        if (Objects.isNull(basePayConfig)) {
             log.warn("BATTERY DEPOSIT WARN!not found pay params,refundOrderNo={}", eleRefundOrder.getRefundOrderNo());
             throw new BizException("100307", "未配置支付参数!");
         }
         
         try {
-            RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
-                    .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
-            
-            eleRefundOrderService.commonCreateRefundOrder(refundOrder, wechatPayParamsDetails, request);
-            
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+//            eleRefundOrderUpdate.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.update(eleRefundOrderUpdate);
+            
+            RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                    .payAmount(eleRefundOrder.getPayAmount()).refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+            eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, request);
+            
+            
             
             return Triple.of(true, "", null);
         } catch (Exception e) {
@@ -516,6 +538,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         // 提交失败
         eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+//        eleRefundOrderUpdate.setPaymentChannel(eleRefundOrder.getPaymentChannel());
         eleRefundOrderService.update(eleRefundOrderUpdate);
         
         return Triple.of(false, "PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
@@ -666,8 +689,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.updateByUid(updateUserInfo);
             
             // 更新用户套餐订单为已失效
-            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid),
-                    ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+            electricityMemberCardOrderService
+                    .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
             
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
@@ -712,6 +735,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         return Triple.of(true, "", "退款中，请稍后");
     }
+    
     
     
     @Override
@@ -845,7 +869,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> batteryFreeDepositRefund(String errMsg, Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -1022,7 +1045,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                     .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel())
+                    .build();
             eleRefundOrderService.insert(eleRefundOrder);
             
             // 更新用户状态
@@ -1033,8 +1057,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.updateByUid(updateUserInfo);
             
             // 更新用户套餐订单为已失效
-            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid),
-                    ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+            electricityMemberCardOrderService
+                    .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
             
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
@@ -1080,7 +1104,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel())
+                .build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         return Triple.of(true, "100413", "免押押金解冻中");
@@ -1095,7 +1120,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid) {
+    public Triple<Boolean, String, Object> batteryFreeDepositRefundV2(String errMsg, Long uid, BigDecimal refundMoney) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("REFUND ORDER WARN!userInfo is null,uid={}", uid);
@@ -1149,6 +1174,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(freeDepositOrder.getPayTransAmt()) || BigDecimal.valueOf(freeDepositOrder.getPayTransAmt()).compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
             log.warn("FREE DEPOSIT WARN! freeDepositOrder.payTransAmt is 0 ,orderId={}", freeDepositOrder.getOrderId());
             return Triple.of(false, "100434", "剩余可代扣金额超过免押金额");
+        }
+        
+        if (Objects.isNull(refundMoney)) {
+            log.warn("FREE DEPOSIT WARN! refundAmount is null or refundAmount > payTransAmt ,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100437", "退款金额不能为空");
+        }
+        
+        if (refundMoney.compareTo(BigDecimal.valueOf(freeDepositOrder.getPayTransAmt())) > 0) {
+            log.warn("FREE DEPOSIT WARN! refundAmount is null or refundAmount > payTransAmt ,orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100438", "退款金额不能大于剩余可代扣金额");
         }
         
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
@@ -1220,7 +1255,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid)).payAmount(eleDepositOrder.getPayAmount())
                 .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_REFUND).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel()).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         
@@ -1242,8 +1277,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         userInfoService.updateByUid(updateUserInfo);
         
         // 更新用户套餐订单为已失效
-        electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
-                ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+        electricityMemberCardOrderService
+                .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
         
         userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
         userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
@@ -1261,8 +1296,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         userInfoService.unBindUserFranchiseeId(userInfo.getUid());
         
         // 更新用户套餐订单为已失效
-        electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()),
-                ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+        electricityMemberCardOrderService
+                .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(userInfo.getUid()), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
         
         userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
         
@@ -1281,97 +1316,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return Triple.of(true, "", null);
     }
     
-    /**
-     * 电池免押退押金
-     */
-    @Deprecated
-    private Triple<Boolean, String, Object> handleBatteryFreeDepositRefundOrder(UserBatteryDeposit userBatteryDeposit, EleRefundOrder eleRefundOrder,
-            EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
-            log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
-            return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
-        }
-        
-        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
-        if (Objects.isNull(freeDepositOrder)) {
-            log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
-            return Triple.of(false, "100403", "免押订单不存在");
-        }
-        
-        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> testQuery = new PxzCommonRequest<>();
-        testQuery.setAesSecret(pxzConfig.getAesKey());
-        testQuery.setDateTime(System.currentTimeMillis());
-        testQuery.setSessionId(userBatteryDeposit.getOrderId());
-        testQuery.setMerchantCode(pxzConfig.getMerchantCode());
-        
-        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
-        queryRequest.setRemark("电池押金解冻");
-        queryRequest.setTransId(freeDepositOrder.getOrderId());
-        testQuery.setData(queryRequest);
-        
-        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzUnfreezeDepositCommonRsp = null;
-        
-        try {
-            pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
-        } catch (Exception e) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId(), e);
-            return Triple.of(false, "100401", "免押解冻调用失败！");
-        }
-        
-        if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
-            return Triple.of(false, "100401", "免押调用失败！");
-        }
-        
-        if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(), freeDepositOrder.getOrderId());
-            return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
-        }
-        
-        if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
-            // 更新免押订单状态
-            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
-            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            freeDepositOrderService.update(freeDepositOrderUpdate);
-            
-            // 更新退款订单
-            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderService.update(eleRefundOrderUpdate);
-            
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
-            
-            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-            userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-            userBatteryService.deleteByUid(userInfo.getUid());
-            
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo);
-            }
-            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-        }
-        
-        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
-        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        freeDepositOrderService.update(freeDepositOrderUpdate);
-        
-        // 更新退款订单
-        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleRefundOrderService.update(eleRefundOrderUpdate);
-        
-        return Triple.of(true, "", "退款中，请稍后");
-    }
     
     @Override
     public R queryUserDepositPayType(Long uid) {
@@ -1440,9 +1384,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.warn("BATTERY DEPOSIT REFUND WARN! user membercard is disable,uid={}", uid);
             return R.fail("100211", "用户套餐已暂停！");
         }
-    
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
-                UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+        
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.warn("BATTERY DEPOSIT REFUND WARN! disable member card is reviewing,uid={}", uid);
             return R.fail("ELECTRICITY.100003", "停卡正在审核中");
         }
@@ -1515,7 +1458,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
         eleRefundOrder.setPayType(eleDepositOrder.getPayType());
-        
+        eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
         // 修改企业用户代付状态为代付过期
         enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
         
@@ -1528,6 +1471,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             // 生成退款订单
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+//            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.insert(eleRefundOrder);
             
             UserInfo updateUserInfo = new UserInfo();
@@ -1537,8 +1481,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.updateByUid(updateUserInfo);
             
             // 更新用户套餐订单为已失效
-            electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid),
-                    ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+            electricityMemberCardOrderService
+                    .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
             
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             
@@ -1580,6 +1524,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 eleRefundOrder.setRefundAmount(refundAmount);
+//                eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
                 eleRefundOrderService.insert(eleRefundOrder);
                 
                 UserInfo updateUserInfo = new UserInfo();
@@ -1589,8 +1534,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 userInfoService.updateByUid(updateUserInfo);
                 
                 // 更新用户套餐订单为已失效
-                electricityMemberCardOrderService.batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid),
-                        ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
+                electricityMemberCardOrderService
+                        .batchUpdateStatusByOrderNo(userBatteryMemberCardService.selectUserBatteryMemberCardOrder(uid), ElectricityMemberCardOrder.USE_STATUS_EXPIRE);
                 
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                 
@@ -1623,15 +1568,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
             
             // 置于此处为了避免干扰线下退款，将异常抛出是为了回滚避免生成数据错误的订单，避免把数据修改成错误的中间态
-            WechatPayParamsDetails wechatPayParamsDetails = null;
+            BasePayConfig basePayConfig = null;
             try {
-                wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(eleDepositOrder.getTenantId(),
-                        eleDepositOrder.getParamFranchiseeId());
-            } catch (WechatPayException e) {
+                basePayConfig = payConfigBizService.queryPayParams(eleDepositOrder.getPaymentChannel(), eleDepositOrder.getTenantId(), eleDepositOrder.getParamFranchiseeId(),null);
+            } catch (PayException e) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
                 throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
             }
-            if (Objects.isNull(wechatPayParamsDetails)) {
+            if (Objects.isNull(basePayConfig)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,orderId={}", eleDepositOrder.getOrderId());
                 throw new BizException("100307", "未配置支付参数!");
             }
@@ -1641,7 +1585,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId()).refundOrderNo(eleRefundOrder.getRefundOrderNo())
                         .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount).build();
                 
-                eleRefundOrderService.commonCreateRefundOrder(refundOrder, wechatPayParamsDetails, null);
+                eleRefundOrderService.commonCreateRefundOrderV2(refundOrder, basePayConfig, null);
                 // 提交成功
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 eleRefundOrder.setRefundAmount(refundAmount);
@@ -1655,6 +1599,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_FAIL);
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrder.setPaymentChannel(eleDepositOrder.getPaymentChannel());
             eleRefundOrderService.insert(eleRefundOrder);
             return R.fail("PAY_TRANSFER.0020", "支付调用失败，请检查相关配置");
         }
@@ -1711,8 +1656,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Override
     public Integer queryStatusByOrderId(String orderId) {
-        List<EleRefundOrder> eleRefundOrderList = eleRefundOrderMapper.selectList(
-                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).orderByDesc(EleRefundOrder::getUpdateTime));
+        List<EleRefundOrder> eleRefundOrderList = eleRefundOrderMapper
+                .selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).orderByDesc(EleRefundOrder::getUpdateTime));
         if (ObjectUtil.isEmpty(eleRefundOrderList)) {
             return null;
         }
@@ -1833,8 +1778,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
     @Override
     public List<EleRefundOrder> selectByOrderId(String orderId) {
-        return this.eleRefundOrderMapper.selectList(
-                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
+        return this.eleRefundOrderMapper
+                .selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
     }
     
     public List<EleRefundOrder> selectByOrderIdNoFilerStatus(String orderId) {
@@ -1870,7 +1815,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (CollectionUtils.isEmpty(eleRefundOrderVOS)) {
             return R.ok(new ArrayList<>());
         }
-    
+        
         eleRefundOrderVOS.forEach(item -> {
             if (Objects.nonNull(item.getTenantId())) {
                 Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
@@ -1880,7 +1825,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             if (Objects.equals(item.getStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
                 item.setRefundAmount(null);
             }
-        
+            
             if (!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                 item.setIsFreeDepositAliPay(false);
                 return;
@@ -1891,7 +1836,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 item.setIsFreeDepositAliPay(false);
                 return;
             }
-        
+            
             item.setIsFreeDepositAliPay(true);
         });
         return R.ok(eleRefundOrderVOS);

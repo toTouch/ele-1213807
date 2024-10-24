@@ -7,6 +7,7 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="authResultId" column="auth_result_id" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="certifyId" column="certify_id" jdbcType="VARCHAR"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -15,7 +16,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectFaceRecognizeUserRecord">
-       	select   id, uid, auth_result_id, status, tenant_id, del_flag, create_time, update_time        from t_face_recognize_user_record
+       	select   id, uid, auth_result_id, status, certify_id, tenant_id, del_flag, create_time, update_time        from t_face_recognize_user_record
     </sql>
 
     <!--查询单个-->
@@ -154,8 +155,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_face_recognize_user_record(uid, auth_result_id, status, tenant_id, del_flag, create_time, update_time)
-        values (#{uid}, #{authResultId}, #{status}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_face_recognize_user_record(uid, auth_result_id, status, certify_id, tenant_id, del_flag, create_time, update_time)
+        values (#{uid}, #{authResultId}, #{status}, #{certifyId}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -171,6 +172,9 @@
             <if test="status != null">
                 status = #{status},
             </if>
+            <if test="certifyId != null and certifyId != ''">
+                certify_id = #{certifyId},
+            </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
             </if>
@@ -185,6 +189,19 @@
             </if>
         </set>
         where id = #{id}
+    </update>
+    
+    <update id="updateByUidAndCertifyId">
+        update t_face_recognize_user_record
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where uid = #{uid} and certify_id=#{certifyId}
     </update>
 
     <!--通过主键删除-->
