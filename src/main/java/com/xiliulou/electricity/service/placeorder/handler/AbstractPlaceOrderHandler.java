@@ -14,11 +14,7 @@ public abstract class AbstractPlaceOrderHandler<T> implements PlaceOrderHandler<
     @Override
     public void fireProcess(T context, R<Object> result) {
         if (nextHandler != null) {
-            transformParamAndProcess(context, result);
+            nextHandler.process(context, result);
         }
-    }
-    
-    void transformParamAndProcess(T context, R<Object> result) {
-        process(context, result);
     }
 }

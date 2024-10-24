@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.service.placeorder;
+package com.xiliulou.electricity.service.placeorder.chain;
 
 import com.xiliulou.electricity.context.placeorder.PlaceOrderDepositAndMemberCardContext;
 import com.xiliulou.electricity.service.placeorder.handler.PlaceOrderHandler;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
  * @Date: 2024/10/24 9:49
  */
 @Service
-public class PlaceOrderDepositAndMemberCardService {
+public class PlaceOrderDepositAndMemberCardChain {
     
     private PlaceOrderHandler<PlaceOrderDepositAndMemberCardContext> head;
 }
