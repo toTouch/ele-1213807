@@ -693,7 +693,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     @Override
-    @Klock(name = "warnNoteNotice", keys = {"#warnNoteCallBack.tenantId"}, waitTime = 5, customLockTimeoutStrategy = "warnNoteNoticeFail")
+//    @Klock(name = "warnNoteNotice", keys = {"#warnNoteCallBack.tenantId"}, waitTime = 5, customLockTimeoutStrategy = "warnNoteNoticeFail")
     public Triple<Boolean, String, Object> warnNoteNotice(WarnNoteCallBack warnNoteCallBack) {
         log.info("warn note notice info! failure warn sessionId = {}, alarmId={}, tenantId={}, count={}", warnNoteCallBack.getSessionId(), warnNoteCallBack.getAlarmId(),
                 warnNoteCallBack.getTenantId(), warnNoteCallBack.getCount());
