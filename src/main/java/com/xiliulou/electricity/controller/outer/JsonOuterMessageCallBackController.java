@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.inner;
+package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
@@ -28,7 +28,7 @@ public class JsonOuterMessageCallBackController extends BaseController {
      *
      * @return
      */
-    @PostMapping("/inner/message/warn/note/notice")
+    @PostMapping("/outer/message/warn/note/notice")
     public R warnNoteNotice(@RequestBody WarnNoteCallBack warnNoteCallBack) {
         return returnTripleResult(eleHardwareFailureWarnMsgService.warnNoteNotice(warnNoteCallBack));
     }
