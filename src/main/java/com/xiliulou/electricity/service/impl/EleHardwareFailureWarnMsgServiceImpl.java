@@ -760,7 +760,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
     }
     
     public void warnNoteNoticeFail(WarnNoteCallBack warnNoteCallBack) {
-        log.error("WARN NOTE NOTICE FAIL ERROR, msg = {}", warnNoteCallBack);
+        log.warn("WARN NOTE NOTICE FAIL ERROR, msg = {}", warnNoteCallBack);
     }
     
     private void sendLowerNoteNotice(WarnNoteCallBack warnNoteCallBack, Long noteNum) {
