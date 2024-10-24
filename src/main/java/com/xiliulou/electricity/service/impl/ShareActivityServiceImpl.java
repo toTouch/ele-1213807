@@ -1108,6 +1108,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + identification);
         });
         
+        // 逻辑删除活动与优惠券的关联关系
+        shareActivityRuleService.removeByActivityId(id, shareActivity.getTenantId());
+        
         if (Objects.equals(shareActivity.getStatus(), ShareActivity.STATUS_OFF)) {
             return R.ok(count);
         }
