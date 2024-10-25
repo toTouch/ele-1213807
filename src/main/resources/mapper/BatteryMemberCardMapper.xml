@@ -914,7 +914,7 @@
         SELECT id, name
         from (SELECT id, name
         from t_battery_member_card
-        where tenant_id = #{tenantId} and del_flag = 0 and business_type != 2
+        where tenant_id = #{tenantId} and del_flag = 0 and business_type in (0,4)
         <if test="name != null and name != ''">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
