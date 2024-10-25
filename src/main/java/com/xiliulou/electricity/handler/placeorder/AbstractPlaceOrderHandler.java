@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.service.placeorder.handler;
+package com.xiliulou.electricity.handler.placeorder;
 
 import com.xiliulou.core.web.R;
 

@@ -390,7 +390,12 @@
                 and mcbt.battery_v = #{batteryV}
             </if>
             <if test="deposit != null">
-                and bmc.deposit = #{deposit}
+                and (
+                    case
+                        when isEnableFlexibleRenewal = 0 then bmc.deposit = #{deposit}
+                        else bmc.deposit &lt;= #{deposit}
+                    end
+                )
             </if>
             <if test="franchiseeId != null">
                 and bmc.franchisee_id = #{franchiseeId}
@@ -648,13 +653,6 @@
             #{item.id}
         </foreach>
     </update>
-    
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete
-        from t_battery_member_card
-        where id = #{id}
-    </delete>
     
     <!--根据条件查询企业渠道套餐信息-->
     <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypeMap">

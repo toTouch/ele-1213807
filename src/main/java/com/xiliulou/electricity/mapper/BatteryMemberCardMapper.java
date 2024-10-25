@@ -37,14 +37,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      */
     int update(BatteryMemberCard batteryMemberCard);
     
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
-    
     List<BatteryMemberCardAndTypeVO> selectByPage(BatteryMemberCardQuery query);
     
     Integer selectByPageCount(BatteryMemberCardQuery query);

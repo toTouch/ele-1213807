@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -14,6 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.BatteryModelDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FyConfig;
@@ -26,27 +26,25 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
-import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
-import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
-import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.PxzConfigService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -177,6 +175,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Resource
     private AssertPermissionService assertPermissionService;
     
+    @Autowired
+    private ElectricityConfigService electricityConfigService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -212,11 +213,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
     
     @Override
-    public Integer insert(BatteryMemberCard batteryMemberCard) {
-        return this.batteryMemberCardMapper.insert(batteryMemberCard);
-    }
-    
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels) {
         int insert = this.batteryMemberCardMapper.insert(batteryMemberCard);
@@ -237,23 +233,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         });
         
         return update;
-    }
-    
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer deleteById(Long id) {
-        int delete = this.batteryMemberCardMapper.deleteById(id);
-        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
-            redisService.delete(CacheConstant.CACHE_BATTERY_MEMBERCARD + id);
-        });
-        
-        return delete;
     }
     
     @Override
@@ -293,6 +272,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             log.warn("USER BATTERY MEMBER CARD WARN!not found franchisee,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
             return Collections.emptyList();
         }
+        
+        // 若开启了灵活续费，押金金额的限制变为小于用户已缴纳押金
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(franchisee.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            log.warn("USER BATTERY MEMBER CARD WARN!not found electricity config,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
+            return Collections.emptyList();
+        }
+        query.setIsEnableFlexibleRenewal(electricityConfig.getIsEnableFlexibleRenewal());
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         
@@ -363,7 +350,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                         userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
-            query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
+            // 开启了灵活续费时，不用根据电压过滤套餐
+            if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+                query.setBatteryV(
+                        Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
+            }
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
                     userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
         }
@@ -385,7 +376,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         List<BatteryMemberCardVO> result = new ArrayList<>();
         for (BatteryMemberCardAndTypeVO item : list) {
             
-            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
+                    FlexibleRenewalEnum.NORMAL.getCode())) {
                 List<String> number = null;
                 if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
                     // 套餐电池型号串数 number
@@ -566,6 +558,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Collections.emptyList();
         }
         
+        // 若开启了灵活续费，押金金额的限制变为小于用户已缴纳押金
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(franchisee.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            log.warn("USER BATTERY MEMBER CARD WARN!not found electricity config,uid={},franchiseeId={}", query.getUid(), query.getFranchiseeId());
+            return Collections.emptyList();
+        }
+        query.setIsEnableFlexibleRenewal(electricityConfig.getIsEnableFlexibleRenewal());
+        
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
@@ -636,8 +636,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                         userInfoGroupNamesBOs.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             }
             
-            query.setBatteryV(
-                    Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
+            // 开启了灵活续费时，不用根据电压过滤套餐
+            if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+                query.setBatteryV(
+                        Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
+            }
             query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
                     userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
         }
@@ -655,18 +658,19 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
             }
         }
-
+        
         List<BatteryMemberCardVO> result = new ArrayList<>();
         for (BatteryMemberCardAndTypeVO item : list) {
             
-            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
+                    FlexibleRenewalEnum.NORMAL.getCode())) {
                 List<String> number = null;
                 if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
                     // 套餐电池型号串数 number
                     number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType()))
                             .map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
                 }
-
+                
                 if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
                     if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
                         continue;
@@ -878,7 +882,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         batteryMemberCardUpdate.setInstallmentServiceFee(Objects.nonNull(query.getInstallmentServiceFee()) ? query.getInstallmentServiceFee() : null);
         if (Objects.equals(batteryMemberCard.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode())) {
-            batteryMemberCardUpdate.setDownPayment(Objects.equals(batteryMemberCardUpdate.getValidDays() / 30, 1) ? batteryMemberCardUpdate.getRentPrice() : query.getDownPayment());
+            batteryMemberCardUpdate.setDownPayment(
+                    Objects.equals(batteryMemberCardUpdate.getValidDays() / 30, 1) ? batteryMemberCardUpdate.getRentPrice() : query.getDownPayment());
         }
         
         this.update(batteryMemberCardUpdate);
@@ -947,8 +952,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         List<Integer> typeList = Arrays.asList(BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode(),
                 BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_INSTALLMENT_BATTERY.getCode());
         if (Objects.equals(query.getBusinessType(), BatteryMemberCardBusinessTypeEnum.BUSINESS_TYPE_BATTERY.getCode())) {
-            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessTypes(typeList)
-                    .tenantId(TenantContextHolder.getTenantId()).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+            BatteryMemberCardQuery queryCount = BatteryMemberCardQuery.builder().businessTypes(typeList).tenantId(TenantContextHolder.getTenantId())
+                    .delFlag(BatteryMemberCard.DEL_NORMAL).build();
             
             if (selectByPageCount(queryCount) >= BatteryMemberCardConstants.MAX_BATTERY_MEMBER_CARD_NUM) {
                 return Triple.of(false, "100378", "换电套餐新增已达最大上限，可删除多余套餐后操作");
@@ -1178,7 +1183,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.isNull(coupon)) {
                 return;
             }
-
+            
             BeanUtils.copyProperties(coupon, couponSearchVo);
             couponSearchVo.setId(coupon.getId().longValue());
             
@@ -1232,7 +1237,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     public List<BatteryAndCarMemberCardVO> listBatteryAndCarMember(BatteryCarMemberListQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()){
+        if (!pair.getLeft()) {
             return new ArrayList<>();
         }
         query.setFranchiseeIds(pair.getRight());

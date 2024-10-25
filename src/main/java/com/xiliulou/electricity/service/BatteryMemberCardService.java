@@ -39,19 +39,9 @@ public interface BatteryMemberCardService {
      */
     BatteryMemberCard queryByIdFromCache(Long id);
     
-    Integer insert(BatteryMemberCard batteryMemberCard);
-    
     Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels);
     
     Integer update(BatteryMemberCard batteryMemberCard);
-    
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Integer deleteById(Long id);
     
     List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query);
     
