@@ -8,6 +8,6 @@ import lombok.Data;
  * @Date: 2024/10/24 10:42
  */
 @Data
-public class PlaceOrderDepositAndMemberCardContext {
+public class PlaceOrderContext {
 
 }

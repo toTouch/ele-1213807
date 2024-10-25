@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -187,6 +188,17 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否开启美团骑手商城：0--是 1--否
      */
     private Integer isEnableMeiTuanRiderMall;
+    
+    /**
+     * 灵活续费开关
+     * @see FlexibleRenewalEnum
+     */
+    private Integer isEnableFlexibleRenewal;
+    
+    /**
+     * 单独缴纳押金开关：0--关闭 1--开启
+     */
+    private Integer isEnableSeparateDeposit;
     
     public static Double MIN_NORM = 50.00;
     

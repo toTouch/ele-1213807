@@ -70,8 +70,10 @@ public class ExchangeUserSelectVo {
      */
     private Integer cellType;
     
-    
-    
+    /**
+     * 是否进行灵活续费套餐切换后的电池转换
+     */
+    private Integer flexibleRenewal;
     
     
     

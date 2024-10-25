@@ -72,6 +72,8 @@ public interface ElectricityCabinetOrderService {
     R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
     R checkOpenSessionId(String sessionId);
+    
+    Triple<Boolean, String, Object> exchangeOrderCheck(OrderQueryCheck queryCheck);
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
     

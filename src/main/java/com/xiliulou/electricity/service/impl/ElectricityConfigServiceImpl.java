@@ -146,42 +146,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
         
-        //        String franchiseeMoveDetail = null;
-        //        //若开启了迁移加盟商
-        //        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-        //            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
-        //                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
-        //                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
-        //            }
-        //
-        //            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
-        //
-        //            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
-        //            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-        //
-        //            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
-        //            if (!verifyFranchiseeResult.getLeft()) {
-        //                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
-        //            }
-        //
-        //            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
-        //            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
-        //            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
-        //            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
-        //            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
-        //            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
-        //            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
-        //
-        //            //将旧加盟商下套餐迁移到新加盟商
-        //            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
-        //
-        //            //将旧加盟商下保险迁移到新加盟商
-        //            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
-        //
-        //            //将旧加盟商下的车辆型号迁移到新加盟商下
-        //            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
-        //        }
-        
         //若开启免押
         if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(),
                 ElectricityConfig.FREE_DEPOSIT_TYPE_DEFAULT)) {
@@ -254,6 +218,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
             electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
             electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
+            electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
+            electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -292,6 +258,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
         electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
+        electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
+        electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
         
         electricityConfigMapper.update(electricityConfig);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {

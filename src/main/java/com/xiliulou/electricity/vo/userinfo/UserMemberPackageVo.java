@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.userinfo;
 
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.Data;
 
@@ -41,4 +42,9 @@ public class UserMemberPackageVo implements Serializable {
      */
     private Integer renewalStatus;
     
+    /**
+     * 是否进行灵活续费套餐转换的换电
+     * @see FlexibleRenewalEnum
+     */
+    private Integer flexibleRenewal;
 }

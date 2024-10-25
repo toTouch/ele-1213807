@@ -43,6 +43,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CellTypeEnum;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.OrderCheckEnum;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
 import com.xiliulou.electricity.enums.YesNoEnum;
@@ -55,6 +56,7 @@ import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OpenFullCellQuery;
 import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.OrderQueryCheck;
 import com.xiliulou.electricity.query.OrderQueryV2;
 import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
@@ -236,6 +238,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     TtlXllThreadPoolExecutorServiceWrapper executorServiceWrapper = TtlXllThreadPoolExecutorsSupport
             .get(XllThreadPoolExecutors.newFixedThreadPool("ELE_USER_ORDER_LIST", 3, "ele_user_order_list_thread"));
+    
+    @Autowired
+    private MemberCardBatteryTypeServiceImpl memberCardBatteryTypeService;
     
     
     /**
@@ -3447,6 +3452,42 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return null;
     }
     
+    @Override
+    public Triple<Boolean, String, Object> exchangeOrderCheck(OrderQueryCheck orderQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ORDER ERROR!  not found user,eid={}", orderQuery.getEid());
+            return Triple.of(false, "100001", "未能找到用户");
+        }
+        
+        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("ORDER WARN! user haven't memberCard uid={}", user.getUid());
+            return Triple.of(false, "100210", "用户未开通套餐");
+        }
+        
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("ORDER WARN! not found batteryMemberCard,uid={},mid={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+        }
+        
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+        }
+        
+        // 判断用户绑定的电池与当前正在使用的套餐，电池型号是否匹配，返回是否需要进行灵活续费后的电池转换
+        Triple<Boolean, String, Object> checkFlexibleRenewal = checkFlexibleRenewal(vo, electricityBattery, batteryMemberCard);
+        if (!checkFlexibleRenewal.getLeft()) {
+            return checkFlexibleRenewal;
+        }
+        
+        return Triple.of(true, null, vo);
+    }
+    
     /**
      * 开满电仓命令下发
      * @param cabinetOrder
@@ -3529,5 +3570,37 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn()) && !StringUtils.startsWithIgnoreCase(
                 electricityCabinetBox.getSn(), "UNKNOW");
     }
- 
+    
+    private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVo vo, ElectricityBattery battery, BatteryMemberCard memberCard) {
+        List<String> batteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
+        if (CollectionUtils.isEmpty(batteryTypes)) {
+            log.warn("ORDER WARN! not found batteryMemberCard, mid={}", memberCard.getId());
+            return Triple.of(false, "300871", "换电套餐未绑定电池型号，请联系客服处理");
+        }
+        
+        if (StringUtils.isEmpty(battery.getModel()) || StringUtils.isBlank(battery.getModel())) {
+            log.warn("ORDER WARN! The battery model is not set up, batteryId={}", battery.getId());
+            return Triple.of(false, "300872", "电池未绑定电池型号，请联系客服处理");
+        }
+        
+        for (String batteryType : batteryTypes) {
+            if (StringUtils.equals(battery.getModel(), batteryType)) {
+                vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            }
+            return Triple.of(true, null, null);
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(memberCard.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            log.warn("ORDER WARN! The electricity config is null, tenantId={}", memberCard.getTenantId());
+            return Triple.of(false, "300873", "换电配置错误，请联系客服处理");
+        }
+        
+        if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode());
+        } else {
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode());
+        }
+        return Triple.of(true, null, null);
+    }
 }
