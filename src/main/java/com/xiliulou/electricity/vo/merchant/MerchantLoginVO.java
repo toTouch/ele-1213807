@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.vo.merchant;
 
+import com.xiliulou.electricity.vo.ServicePhoneVO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * @author : eclair
@@ -70,6 +73,11 @@ public class MerchantLoginVO {
      * 客服电话
      */
     private String servicePhone;
+    
+    /**
+     * 客服电话
+     */
+    private List<ServicePhoneVO> servicePhones;
     
     public void setBusinessInfo(Integer enterprisePackageAuth, Integer purchaseAuthority){
         this.businessInfo = new BusinessInfo(enterprisePackageAuth, purchaseAuthority);

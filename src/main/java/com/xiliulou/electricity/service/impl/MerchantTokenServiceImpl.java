@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantLoginRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.service.merchant.ChannelEmployeeService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.MerchantTokenService;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
+import com.xiliulou.electricity.vo.ServicePhonesVO;
 import com.xiliulou.electricity.vo.merchant.ChannelEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantLoginVO;
 import com.xiliulou.security.authentication.JwtTokenManager;
@@ -88,6 +90,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     
     @Autowired
     JwtTokenManager jwtTokenManager;
+    
+    @Resource
+    private ServicePhoneService servicePhoneService;
     
     @Override
     public Triple<Boolean, String, Object> login(HttpServletRequest request, MerchantLoginRequest merchantLoginRequest) {
@@ -217,6 +222,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setTenantName(tenant.getName());
                 merchantLoginVO.setTenantCode(tenant.getCode());
                 merchantLoginVO.setServicePhone(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
+                merchantLoginVO.setServicePhones(servicePhoneService.listByTenantId(tenantId));
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);

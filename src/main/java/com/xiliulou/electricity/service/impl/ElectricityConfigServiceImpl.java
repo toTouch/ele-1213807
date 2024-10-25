@@ -6,18 +6,15 @@ import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
 import com.xiliulou.electricity.entity.EleEsignConfig;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FaceRecognizeData;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.YesNoEnum;
@@ -35,6 +32,7 @@ import com.xiliulou.electricity.service.FaceRecognizeDataService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.template.TemplateConfigService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigService;
@@ -42,7 +40,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
-import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -109,11 +106,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     
     @Autowired
     AlipayAppConfigService alipayAppConfigService;
-    @Resource
+    
+    @Autowired
     MeiTuanRiderMallConfigService meiTuanRiderMallConfigService;
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
+    
+    @Autowired
+    ServicePhoneService servicePhoneService;
     
     
     @Override
@@ -145,42 +146,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                 return R.fail("100335", "人脸核身资源包余额不足，请充值");
             }
         }
-        
-        //        String franchiseeMoveDetail = null;
-        //        //若开启了迁移加盟商
-        //        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-        //            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(
-        //                    electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
-        //                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
-        //            }
-        //
-        //            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
-        //
-        //            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
-        //            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-        //
-        //            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
-        //            if (!verifyFranchiseeResult.getLeft()) {
-        //                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
-        //            }
-        //
-        //            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
-        //            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
-        //            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
-        //            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
-        //            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
-        //            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
-        //            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
-        //
-        //            //将旧加盟商下套餐迁移到新加盟商
-        //            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo, newFranchisee);
-        //
-        //            //将旧加盟商下保险迁移到新加盟商
-        //            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo, newFranchisee);
-        //
-        //            //将旧加盟商下的车辆型号迁移到新加盟商下
-        //            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
-        //        }
         
         //若开启免押
         if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(),
@@ -254,6 +219,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
             electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
             electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
+            electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
+            electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -292,6 +259,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsComfortExchange(electricityConfigAddAndUpdateQuery.getIsComfortExchange());
         electricityConfig.setPriorityExchangeNorm(electricityConfigAddAndUpdateQuery.getPriorityExchangeNorm());
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
+        electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
+        electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
         
         electricityConfigMapper.update(electricityConfig);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -303,63 +272,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         });
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
-    }
-    
-    @Deprecated
-    private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
-        //旧加盟商校验
-        if (Objects.isNull(oldFranchisee)) {
-            log.error("ELE ERROR! not found old franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
-            return Triple.of(false, "ELECTRICITY.0038", "旧加盟商不存在");
-        }
-        if (Objects.equals(oldFranchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            log.error("ELE ERROR! old franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
-            return Triple.of(false, "100350", "旧加盟商不能为多型号");
-        }
-        
-        //新加盟商校验
-        if (Objects.isNull(newFranchisee)) {
-            log.error("ELE ERROR! not found new franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
-            return Triple.of(false, "ELECTRICITY.0038", "新加盟商不存在");
-        }
-        if (Objects.equals(newFranchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            log.error("ELE ERROR! new franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
-            return Triple.of(false, "100351", "新加盟商不能为单型号");
-        }
-        
-        List<FranchiseeBatteryModelDTO> franchiseeBatteryModels = JsonUtil.fromJsonArray(newFranchisee.getModelBatteryDeposit(), FranchiseeBatteryModelDTO.class);
-        if (CollectionUtils.isEmpty(franchiseeBatteryModels)) {
-            log.error("ELE ERROR!not found newFranchiseeBatteryModelDTO,franchinseeId={}", newFranchisee.getId());
-            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
-        }
-        
-        FranchiseeBatteryModelDTO franchiseeBatteryModelDTO = franchiseeBatteryModels.stream()
-                .filter(item -> Objects.equals(item.getModel(), franchiseeMoveInfoQuery.getBatteryModel())).findFirst().orElse(null);
-        if (Objects.isNull(franchiseeBatteryModelDTO)) {
-            log.error("ELE ERROR!franchiseeBatteryModelDTO is null,franchinseeId={}", newFranchisee.getId());
-            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
-        }
-        
-        //加盟商押金校验
-        if (oldFranchisee.getBatteryDeposit().compareTo(franchiseeBatteryModelDTO.getBatteryDeposit()) != 0) {
-            log.error("ELE ERROR! oldFranchisee batteryDeposit not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
-            return Triple.of(false, "100363", "新加盟商与旧加盟商押金不一致");
-        }
-        
-        //加盟商电池服务费开关校验
-        if (!Objects.equals(oldFranchisee.getIsOpenServiceFee(), newFranchisee.getIsOpenServiceFee())) {
-            log.error("ELE ERROR! IsOpenServiceFee new franchisee not equals old franchisee,newfranchiseeId={},oldfranchiseeId={}", newFranchisee.getId(), oldFranchisee.getId());
-            return Triple.of(false, "100367", "新加盟商与旧加盟商电池服务费开关不一致");
-        }
-        
-        //加盟商电池服务费校验
-        if (Objects.equals(oldFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE) && Objects.equals(newFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)
-                && oldFranchisee.getBatteryServiceFee().compareTo(franchiseeBatteryModelDTO.getBatteryServiceFee()) != 0) {
-            log.error("ELE ERROR! oldFranchisee batteryServiceFee not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
-            return Triple.of(false, "100364", "新加盟商与旧加盟商电池服务费不一致");
-        }
-        
-        return Triple.of(true, "", null);
     }
     
     @Override
@@ -408,6 +320,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
+        tenantConfigVO.setServicePhones(servicePhoneService.listByTenantId(tenantId));
         
         return tenantConfigVO;
     }
@@ -415,43 +328,44 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Override
     public TenantConfigVO queryTenantConfigByAppId(String appId, String appType) {
         TenantConfigVO tenantConfigVO = new TenantConfigVO();
-    
+        
         Integer tenantId = null;
-        String channel =null;
+        String channel = null;
         if (TokenConstant.THIRD_AUTH_WX_PRO.equals(appType)) {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
             if (Objects.isNull(electricityPayParams)) {
                 log.warn("ELE WARN! not found tenant,appId={}", appId);
                 return tenantConfigVO;
             }
-        
+            
             tenantId = electricityPayParams.getTenantId();
             channel = ChannelEnum.WECHAT.getCode();
         }
-    
+        
         if (TokenConstant.THIRD_AUTH_ALI_PAY.equals(appType)) {
             List<AlipayAppConfig> alipayAppConfigs = alipayAppConfigService.queryListByAppId(appId);
             if (CollectionUtils.isEmpty(alipayAppConfigs)) {
                 log.warn("ELE WARN! not found alipayAppConfig,appId={}", appId);
                 return tenantConfigVO;
             }
-        
+            
             tenantId = alipayAppConfigs.stream().findFirst().get().getTenantId();
             channel = ChannelEnum.ALIPAY.getCode();
         }
-    
+        
         //获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
-    
+        
         //获取租户模板id
-        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId,channel);
+        List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, channel);
         tenantConfigVO.setTemplateConfigList(templateConfigList);
-    
+        
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
-    
+        tenantConfigVO.setServicePhones(servicePhoneService.listByTenantId(tenantId));
+        
         return tenantConfigVO;
     }
     

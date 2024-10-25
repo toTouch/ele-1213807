@@ -3,9 +3,11 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.request.UserInfoLimitRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -36,4 +38,8 @@ public interface UserInfoExtraService {
     R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator, List<Long> franchiseeIds);
     
     MerchantInviterVO judgeInviterTypeForMerchant(Long joinUid, Long inviterUid, Integer tenantId);
+    
+    Triple<Boolean, String, String> isLimitPurchase(Long uid, Integer tenantId);
+    
+    R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds);
 }

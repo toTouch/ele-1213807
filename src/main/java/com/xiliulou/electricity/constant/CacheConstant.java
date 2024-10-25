@@ -28,7 +28,7 @@ public interface CacheConstant {
     /**
      * 微信支付参数缓存key
      */
-    String ELE_ALI_PAY_PARAMS_KEY="saas_ele:ali_pay_params:%d:%d";
+    String ELE_ALI_PAY_PARAMS_KEY = "saas_ele:ali_pay_params:%d:%d";
     
     /**
      * 微信支付证书
@@ -704,8 +704,7 @@ public interface CacheConstant {
     /**
      * 模版配置缓存key
      */
-    String TEMPLATE_CONFIG_KEY="saas_electricity:tmp_config:%d:%s";
-    
+    String TEMPLATE_CONFIG_KEY = "saas_electricity:tmp_config:%d:%s";
     
     
     String OPEN_FULL_CELL_LIMIT = "open_full_cell_handle_limit:";
@@ -746,7 +745,6 @@ public interface CacheConstant {
     String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent:%d";
     
     
-    
     /**
      * 分账统计分布式锁
      */
@@ -772,7 +770,7 @@ public interface CacheConstant {
      * 免押信息用户key
      */
     String CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "car_free_deposit_user_info_lock_key:%s:%s";
- 
+    
     
     String UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "un_free_deposit_user_lock_order:%s";
     
@@ -795,17 +793,17 @@ public interface CacheConstant {
      * 代扣锁
      */
     String CACHE_INSTALLMENT_DEDUCT_LOCK = "installment:deduct_lock:%d";
-
+    
     /**
      * 分期套餐混合支付锁
      */
     String CACHE_INSTALLMENT_PAYMENT_LOCK = "installment:payment_lock:%d";
-
+    
     /**
      * 分期套餐签约成功后处理逻辑锁
      */
     String CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK = "installment:sign_notify_lock:%d";
-
+    
     /**
      * 分期套餐代扣后处理逻辑锁
      */
@@ -825,16 +823,26 @@ public interface CacheConstant {
     String BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_membercar_refund:%s";
     
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
-
+    
     /**
      * 用户设备状态缓存
      */
     String CACHE_USER_DEVICE_STATUS = "d_stat:";
-
+    
     
     /**
      * 保存租借状态的电池对应的订单
      */
     String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
+    
+    /**
+     * 客服电话缓存
+     */
+    String SERVICE_PHONE = "service_phone:";
+    
+    /**
+     * 客服电话缓存LOCK
+     */
+    String SERVICE_PHONE_LOCK_KEY = "service_phone_lock:";
 }
 

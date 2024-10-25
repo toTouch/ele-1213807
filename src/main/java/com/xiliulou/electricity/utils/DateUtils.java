@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -377,5 +378,28 @@ public class DateUtils {
     
         // 再次转换回时间戳
         return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 剩余时间戳转化为剩余 x天 x时
+     */
+    public static String convertExpireTime(long expireTime) {
+        Instant now = Instant.now();
+        Instant target = Instant.ofEpochMilli(expireTime);
+        Duration duration = Duration.between(now, target);
+        
+        if (duration.isNegative()) {
+            return "0天 0时";
+        } else {
+            long hours = duration.toHours();
+            long days = hours / 24;
+            hours = hours % 24;
+            
+            if (hours < 1) {
+                return "不足 1时";
+            } else {
+                return days + "天 " + hours + "时";
+            }
+        }
     }
 }

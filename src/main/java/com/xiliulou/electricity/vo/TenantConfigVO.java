@@ -79,6 +79,11 @@ public class TenantConfigVO {
      * 客服电话
      */
     private String servicePhone;
+    
+    /**
+     * 客服电话
+     */
+    private List<ServicePhoneVO> servicePhones;
 
     /**
      * 是否迁移加盟商 1--关闭 2--开启
