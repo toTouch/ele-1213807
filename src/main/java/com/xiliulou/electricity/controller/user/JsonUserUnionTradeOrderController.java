@@ -5,9 +5,11 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
+import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.electricity.query.ServiceFeePaymentQuery;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.PlaceOrderService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -39,6 +41,9 @@ public class JsonUserUnionTradeOrderController extends BaseController {
     @Autowired
     FranchiseeService franchiseeService;
     
+    @Autowired
+    private PlaceOrderService placeOrderService;
+    
     
     // 集成支付
     @PostMapping("/user/integratedPayment")
@@ -67,10 +72,17 @@ public class JsonUserUnionTradeOrderController extends BaseController {
     /**
      * 分期套餐混合支付接口
      */
-    @ProcessParameter
     @PostMapping("/user/installmentPayment")
     public R<Object> installmentPayment(@RequestBody InstallmentPayQuery query, HttpServletRequest request) {
         return tradeOrderService.installmentPayment(query, request);
+    }
+    
+    /**
+     * 押金、套餐、保险购买下单支付接口
+     */
+    @PostMapping("user/place/order")
+    public R<Object> placeOrder(@RequestBody PlaceOrderQuery query, HttpServletRequest request) {
+        return placeOrderService.placeOrder(query, request);
     }
 }
 

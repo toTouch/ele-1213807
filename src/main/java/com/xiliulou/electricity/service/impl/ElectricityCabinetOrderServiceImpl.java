@@ -3578,13 +3578,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "300871", "换电套餐未绑定电池型号，请联系客服处理");
         }
         
-        if (StringUtils.isEmpty(battery.getModel()) || StringUtils.isBlank(battery.getModel())) {
+        String batteryModel = battery.getModel();
+        
+        if (StringUtils.isEmpty(batteryModel) || StringUtils.isBlank(batteryModel)) {
             log.warn("ORDER WARN! The battery model is not set up, batteryId={}", battery.getId());
             return Triple.of(false, "300872", "电池未绑定电池型号，请联系客服处理");
         }
         
         for (String batteryType : batteryTypes) {
-            if (StringUtils.equals(battery.getModel(), batteryType)) {
+            if (StringUtils.equals(batteryModel, batteryType)) {
                 vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
             }
             return Triple.of(true, null, null);
@@ -3595,6 +3597,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("ORDER WARN! The electricity config is null, tenantId={}", memberCard.getTenantId());
             return Triple.of(false, "300873", "换电配置错误，请联系客服处理");
         }
+        
+        String cardBatteryType = batteryTypes.get(0);
+        vo.setOldVoltage(batteryModel.substring(batteryModel.indexOf("_") + 1, batteryModel.indexOf("V")));
+        vo.setNewVoltage(cardBatteryType.substring(batteryModel.indexOf("_") + 1, batteryModel.indexOf("V")));
         
         if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
             vo.setFlexibleRenewal(FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode());

@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -43,8 +44,11 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderType
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
+import com.xiliulou.electricity.handler.placeorder.chain.PlaceOrderChainManager;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
+import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
@@ -1278,6 +1282,88 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         BasePayOrderCreateDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, basePayConfig, userOauthBind.getThirdId(),
                 request, installmentRecord.getExternalAgreementNo());
         return Triple.of(true, null, resultDTO);
+    }
+    
+    @Override
+    public void dealProfitSharingTradeOrderV2(ElectricityMemberCardOrder electricityMemberCardOrder, InsuranceOrder insuranceOrder,
+            BasePayConfig payParamConfig, BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {
+        // 判断分账配置是否存在
+        
+        ProfitSharingConfig enableProfitSharingConfig = payParamConfig.getEnableProfitSharingConfig();
+        if (Objects.isNull(enableProfitSharingConfig)) {
+            log.info("pay battery memberCard profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), payParamConfig.getTenantId(),
+                    payParamConfig.getFranchiseeId());
+            return;
+        }
+        
+        List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
+        
+        // 处理换电套餐
+        boolean batteryPackageOrderPermission =
+                (enableProfitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
+        if (!batteryPackageOrderPermission) {
+            log.info("pay battery memberCard profit sharing config battery package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    enableProfitSharingConfig.getTenantId(), enableProfitSharingConfig.getFranchiseeId());
+        }
+        
+        if (batteryPackageOrderPermission && Objects.nonNull(electricityMemberCardOrder)) {
+            if (electricityMemberCardOrder.getPayAmount().compareTo(PlaceOrderConstant.AMOUNT_MIN) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(enableProfitSharingConfig.getTenantId())
+                        .franchiseeId(enableProfitSharingConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId())
+                        .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode())
+                        .amount(electricityMemberCardOrder.getPayAmount()).processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(payParamConfig.getPaymentChannel())
+                        .supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime()).createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(batteryMemberCard.getRefundLimit()).build();
+                
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+        
+        // 处理保险
+        boolean insuranceOrderPermission =
+                (enableProfitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode()) == ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode();
+        if (!insuranceOrderPermission) {
+            log.info("pay battery memberCard profit sharing config insurance package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    payParamConfig.getTenantId(), payParamConfig.getFranchiseeId());
+        }
+        
+        if (insuranceOrderPermission && Objects.nonNull(insuranceOrder)) {
+            if (insuranceOrder.getPayAmount().compareTo(PlaceOrderConstant.AMOUNT_MIN) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(payParamConfig.getTenantId())
+                        .franchiseeId(payParamConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId()).orderNo(insuranceOrder.getOrderId())
+                        .orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
+                        .processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(payParamConfig.getPaymentChannel())
+                        .supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO).payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
+                
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+        
+        // 如果存在符合条件的分账订单，则设置分账标识
+        if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
+            // 设置分账标识  开启分账
+            unionPayOrder.setProfitSharing(true);
+            
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(payParamConfig.getTenantId())
+                    .franchiseeId(payParamConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId()).amount(unionPayOrder.getPayAmount())
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .channel(payParamConfig.getPaymentChannel()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+            
+            if (profitSharingTradeOrderList.size() > 1) {
+                // 支付订单数量大于1 设置为混合支付
+                profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
+            }
+            
+            // 保存分账主表
+            profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
+            
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId()));
+            
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+        }
     }
     
     /**

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -72,10 +73,19 @@ public class ExchangeUserSelectVo {
     
     /**
      * 是否进行灵活续费套餐切换后的电池转换
+     * @see FlexibleRenewalEnum 取值含义与该功能开关一致
      */
     private Integer flexibleRenewal;
     
+    /**
+     * 旧套餐电压
+     */
+    private String oldVoltage;
     
+    /**
+     * 新套餐电压
+     */
+    private String newVoltage;
     
     
     
