@@ -633,7 +633,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Override
     public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
-        return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
+        Integer count = electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
+        Integer historyCount = electricityCabinetOrderHistoryService.homeOneCount(first, now, eleIdList, tenantId);
+        return count + historyCount;
     }
     
     @Slave
@@ -641,6 +643,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
         Integer countTotal = homeOneCount(first, now, eleIdList, tenantId);
         Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList, tenantId);
+        Integer historySuccessTotal = electricityCabinetOrderHistoryService.homeOneSuccess(first, now, eleIdList, tenantId);
+        successTotal += historySuccessTotal;
         if (successTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }

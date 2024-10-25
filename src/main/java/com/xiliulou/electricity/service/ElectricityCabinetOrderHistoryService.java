@@ -22,7 +22,7 @@ public interface ElectricityCabinetOrderHistoryService {
     
     Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId);
     
-    BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId);
+    Integer homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId);
     
     Integer homeTotal(Long uid);
     
