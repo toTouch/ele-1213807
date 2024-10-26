@@ -93,6 +93,14 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         
         List<Long> uidList = list.stream().map(UserInfoGroupDetailBO::getUid).collect(Collectors.toList());
         List<UserInfoGroupNamesBO> listByUidList = this.listGroupByUidList(uidList);
+        
+        // 加盟商用户过滤数据
+        if (CollectionUtils.isNotEmpty(query.getFranchiseeIds())) {
+            listByUidList = listByUidList.stream().filter(userInfoGroupNamesBO -> {
+                return query.getFranchiseeIds().contains(userInfoGroupNamesBO.getFranchiseeId());
+            }).collect(Collectors.toList());
+        }
+        
         // 根据uid进行分组
         Map<Long, List<UserInfoGroupNamesBO>> groupMap = null;
         if (CollectionUtils.isNotEmpty(listByUidList)) {
