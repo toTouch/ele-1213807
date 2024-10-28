@@ -67,6 +67,9 @@
         <if test="startTime!=null">
             and create_time > #{startTime}
         </if>
+        <if test="endTime!=null">
+            and create_time &lt; #{endTime}
+        </if>
         <if test="notNullThirdOrderNo != null">
             and third_order_no is not null
         </if>
@@ -82,10 +85,9 @@
     </select>
     
     <select id="selectListThirdOrderNoByTenantId" resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">
-        select
-            r.third_order_no,
-            franchisee_id,
-            r.id
+        select r.third_order_no,
+               franchisee_id,
+               r.id
         from t_profit_sharing_trade_mixed_order r
         where r.tenant_id = #{tenantId}
           and r.create_time > #{startTime}
@@ -93,8 +95,8 @@
           and r.state = 1
           and r.create_time &lt; #{endTime}
           and r.id > #{startId}
-          and exists (select 1 from t_profit_sharing_order_detail d where  d.third_trade_order_no = r.third_order_no  and d.unfreeze_status = 0 )
-         limit  #{size}
+          and exists(select 1 from t_profit_sharing_order_detail d where d.third_trade_order_no = r.third_order_no and d.unfreeze_status = 0)
+            limit #{size}
     </select>
     <select id="selectById"
         resultType="com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder">

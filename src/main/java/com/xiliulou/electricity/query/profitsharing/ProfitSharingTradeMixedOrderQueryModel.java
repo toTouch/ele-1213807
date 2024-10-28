@@ -55,4 +55,9 @@ public class ProfitSharingTradeMixedOrderQueryModel {
      * 数量
      */
     private Integer size;
+    
+    /**
+     * 结束时间
+     */
+    private Long endTime;
 }
