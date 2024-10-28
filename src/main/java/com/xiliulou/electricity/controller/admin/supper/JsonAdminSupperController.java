@@ -388,7 +388,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
             @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "orderMode", required = false) Integer orderMode) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -412,7 +413,7 @@ public class JsonAdminSupperController {
                 .offset(offset).size(size).orderId(orderId).phone(phone).status(status)
                 .eid(eid).beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).eleIdList(null)
                 .source(source).electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo).uid(uid).tenantId(tenantId).build();
+                .oldCellNo(oldCellNo).uid(uid).tenantId(tenantId).orderMode(orderMode).build();
         return electricityCabinetOrderService.listSuperAdminPage(electricityCabinetOrderQuery);
     }
 
@@ -431,7 +432,8 @@ public class JsonAdminSupperController {
             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
             @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId) {
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "orderMode", required = false) Integer orderMode) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -447,7 +449,7 @@ public class JsonAdminSupperController {
                 .orderId(orderId).phone(phone).status(status).eid(eid)
                 .beginTime(beginTime).endTime(endTime).paymentMethod(paymentMethod).eleIdList(null).source(source)
                 .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo).uid(uid).tenantId(tenantId).build();
+                .oldCellNo(oldCellNo).uid(uid).tenantId(tenantId).orderMode(orderMode).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 

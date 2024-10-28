@@ -89,6 +89,7 @@ public class ElectricityCabinetOrderQuery {
     
     /**
      * 订单方式，1:近3月订单，2：历史订单
+     * @see com.xiliulou.electricity.enums.OrderDataModeEnums
      */
     private Integer orderMode;
 }

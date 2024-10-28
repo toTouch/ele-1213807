@@ -2730,7 +2730,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     @Slave
     public R listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
+        Integer orderMode = electricityCabinetOrderQuery.getOrderMode();
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = new ArrayList<>();
+        if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
+            electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
+        } else {
+            electricityCabinetOrderHistoryService.listSuperAdminPage(electricityCabinetOrderQuery);
+        }
+        
         if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
             return R.ok(new ArrayList<>());
         }

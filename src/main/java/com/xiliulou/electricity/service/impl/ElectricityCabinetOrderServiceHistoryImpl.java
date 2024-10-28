@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderHistory;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderHistoryMapper;
@@ -30,39 +31,46 @@ public class ElectricityCabinetOrderServiceHistoryImpl implements ElectricityCab
     
     
     @Override
+    @Slave
     public List<ElectricityCabinetOrderVO> queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return electricityCabinetOrderHistoryMapper.queryList(electricityCabinetOrderQuery);
     }
     
     @Override
+    @Slave
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return R.ok(electricityCabinetOrderHistoryMapper.queryCount(electricityCabinetOrderQuery));
     }
     
     
     @Override
+    @Slave
     public Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return electricityCabinetOrderHistoryMapper.queryCount(electricityCabinetOrderQuery);
     }
     
     
     @Override
+    @Slave
     public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
         return electricityCabinetOrderHistoryMapper.homeOneCount(first, now, eleIdList, tenantId);
     }
     
     @Override
+    @Slave
     public Integer homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
         return electricityCabinetOrderHistoryMapper.homeOneSuccess(first, now, eleIdList, tenantId);
     }
     
     @Override
+    @Slave
     public Integer homeTotal(Long uid) {
         return electricityCabinetOrderHistoryMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrderHistory>().eq(ElectricityCabinetOrderHistory::getUid, uid));
     }
     
     
     @Override
+    @Slave
     public ElectricityCabinetOrderHistory queryByUid(Long uid) {
         return electricityCabinetOrderHistoryMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrderHistory>().eq(ElectricityCabinetOrderHistory::getUid, uid)
                 .notIn(ElectricityCabinetOrderHistory::getStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL,
@@ -81,6 +89,7 @@ public class ElectricityCabinetOrderServiceHistoryImpl implements ElectricityCab
     }
     
     @Override
+    @Slave
     public List<ElectricityCabinetOrderVO> listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return electricityCabinetOrderHistoryMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
     }
