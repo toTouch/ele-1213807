@@ -487,9 +487,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 
                 eleRefundOrderService.insert(eleRefundOrder);
                 
-                // 删除用户分组
-                userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
-                
                 // 解约分期签约，如果有的话
                 installmentBizService.terminateForReturnDeposit(userInfo.getUid());
                 

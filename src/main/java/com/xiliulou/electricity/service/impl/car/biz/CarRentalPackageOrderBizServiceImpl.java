@@ -873,7 +873,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 1.3 查询用户当前所在分组
             Set<Long> groupIds = new HashSet<>();
-            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(buyOptModel.getFranchiseeId().longValue()).build();
             List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
             if (!CollectionUtils.isEmpty(vos)) {
                 groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
@@ -2856,7 +2856,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 1.3 查询用户当前所在分组
             Set<Long> groupIds = new HashSet<>();
-            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().franchiseeId(buyOptModel.getFranchiseeId().longValue()).uid(uid).build();
             List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
             if (!CollectionUtils.isEmpty(vos)) {
                 groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
