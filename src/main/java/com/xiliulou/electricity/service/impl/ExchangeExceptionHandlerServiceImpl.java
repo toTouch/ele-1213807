@@ -66,7 +66,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             }
             
         } catch (Exception e) {
-            log.error("saveExchangeExceptionCell Error!", e);
+            log.error("saveExchangeExceptionCell Error! sessionId is {}", sessionId, e);
         }
     }
     
@@ -88,7 +88,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             }
             
         } catch (Exception e) {
-            log.error("saveRentReturnExceptionCell Error!", e);
+            log.error("saveRentReturnExceptionCell Error! sessionId is {} ", sessionId, e);
         }
     }
     
@@ -124,7 +124,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             return Pair.of(false, filterExchangeEmptyCellList);
             
         } catch (Exception e) {
-            log.error("FilterEmptyExceptionCell Error!", e);
+            log.error("FilterEmptyExceptionCell Error! eid is {}", eid, e);
         }
         return Pair.of(false, emptyList);
     }
@@ -169,7 +169,6 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             // 否则返回剩余满电仓
             return Pair.of(false, filterExchangeFullCellList);
         } catch (Exception e) {
-            
             log.error("FilterFullExceptionCell Error!", e);
         }
         return Pair.of(false, fullList);

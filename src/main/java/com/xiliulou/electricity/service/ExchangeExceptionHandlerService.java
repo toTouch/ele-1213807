@@ -46,7 +46,6 @@ public interface ExchangeExceptionHandlerService {
     /**
      * 过滤掉异常满电的格挡号
      *
-     * @param eid      eid
      * @param fullList fullList
      * @return
      */
