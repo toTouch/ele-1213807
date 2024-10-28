@@ -77,7 +77,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
         try {
             Long exceptionCellSaveTime = Objects.isNull(exchangeConfig.getExceptionCellSaveTime()) ? 1000 * 60 * 5L : exchangeConfig.getExceptionCellSaveTime();
             // 空仓(退电)失败
-            if (Objects.equals(orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL)) {
+            if (Objects.equals(orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL) || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
                 RMapCache<Integer, Integer> mapCache = redissonClient.getMapCache(String.format(CacheConstant.EXCEPTION_EMPTY_EID_KEY, eid));
                 mapCache.put(cellNo, 1, exceptionCellSaveTime, TimeUnit.MILLISECONDS);
             }
