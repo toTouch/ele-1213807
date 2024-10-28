@@ -10,6 +10,9 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrderHistory;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -36,6 +39,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -146,6 +150,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
     
     @Resource
     private AnotherPayMembercardRecordService anotherPayMembercardRecordService;
+    
+    @Resource
+    private ElectricityCabinetOrderHistoryService electricityCabinetOrderHistoryService;
     
     
     @Override
@@ -1953,13 +1960,17 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         }
         
         //查询换电时间及柜机信息
-        //Integer tenantId = TenantContextHolder.getTenantId();
-        ElectricityCabinetOrderVO electricityCabinetOrderVO = electricityCabinetOrderService.selectLatestOrderAndCabinetInfo(uid);
-        if (Objects.nonNull(electricityCabinetOrderVO)) {
-            //ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
-            userBatteryVo.setElectricityCabinetId(electricityCabinetOrderVO.getElectricityCabinetId());
-            userBatteryVo.setElectricityCabinetName(electricityCabinetOrderVO.getElectricityCabinetName());
-            userBatteryVo.setBatteryExchangeTime(electricityCabinetOrderVO.getUpdateTime());
+        ElectricityCabinetOrder cabinetOrder = electricityCabinetOrderService.selectLatestByUidV2(uid);
+        if (Objects.isNull(cabinetOrder)) {
+            ElectricityCabinetOrderHistory cabinetOrderHistory = electricityCabinetOrderHistoryService.selectLatestByUidV2(uid);
+            cabinetOrder = BeanUtil.copyProperties(cabinetOrderHistory, ElectricityCabinetOrder.class);
+        }
+       
+        if (Objects.nonNull(cabinetOrder)) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(cabinetOrder.getElectricityCabinetId());
+            userBatteryVo.setElectricityCabinetId(electricityCabinet.getId());
+            userBatteryVo.setElectricityCabinetName(electricityCabinet.getName());
+            userBatteryVo.setBatteryExchangeTime(cabinetOrder.getUpdateTime());
         }
         
         return userBatteryVo;
