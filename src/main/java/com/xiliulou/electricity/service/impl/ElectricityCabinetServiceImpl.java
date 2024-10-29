@@ -2667,11 +2667,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 // 电量最大的
-                Double maxPower = usableBatteryCellNos.get(0).getPower();
-                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
-                if (usableBatteryCellNos.size() == 1) {
-                    return Triple.of(true, null, usableBatteryCellNos.get(0));
-                }
+//                Double maxPower = usableBatteryCellNos.get(0).getPower();
+//                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+//                if (usableBatteryCellNos.size() == 1) {
+//                    return Triple.of(true, null, usableBatteryCellNos.get(0));
+//                }
             }
             
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
