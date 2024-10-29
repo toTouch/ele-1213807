@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.faq;
 
+import com.xiliulou.electricity.entity.faq.FaqCategoryV2;
 import com.xiliulou.electricity.reqparam.faq.AdminFaqCategoryReq;
 import com.xiliulou.electricity.vo.faq.FaqCategoryVo;
 
@@ -32,4 +33,8 @@ public interface FaqCategoryV2Service {
     List<FaqCategoryVo> listFaqCategory(String title, Integer typeId);
     
     long listFaqCategoryCount(String title);
+    
+    void initFaqByTenantId(Integer tenantId);
+    
+    List<FaqCategoryV2> listByTenantId(Integer tenantId);
 }

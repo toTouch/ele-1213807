@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
+import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -37,4 +38,6 @@ public interface TenantService {
     
     
     List<Integer> queryIdListByStartId(Integer startId,Integer size);
+    
+    R updatePassword(ResetPasswordRequest request);
 }

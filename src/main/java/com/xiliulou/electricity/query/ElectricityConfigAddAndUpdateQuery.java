@@ -188,16 +188,6 @@ public class ElectricityConfigAddAndUpdateQuery {
      */
     private Integer isEnableMeiTuanRiderMall;
     
-    /**
-     * 是否开启对换电套餐购买次数的限制：0--是 1--否
-     */
-    private Integer eleLimit;
-    
-    /**
-     * 换电套餐购买限制次数，默认1次
-     */
-    private Integer eleLimitCount;
-    
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;

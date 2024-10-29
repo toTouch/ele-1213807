@@ -28,7 +28,7 @@ public interface CacheConstant {
     /**
      * 微信支付参数缓存key
      */
-    String ELE_ALI_PAY_PARAMS_KEY = "saas_ele:ali_pay_params:%d:%d";
+    String ELE_ALI_PAY_PARAMS_KEY="saas_ele:ali_pay_params:%d:%d";
     
     /**
      * 微信支付证书
@@ -265,7 +265,7 @@ public interface CacheConstant {
      * userInfo的缓存
      */
     String CACHE_USER_INFO = "user_info:";
-    String CACHE_ELE_SET_CONFIG = "ele_set_config:v2";
+    String CACHE_ELE_SET_CONFIG = "ele_set_config:";
     String CACHE_ELE_APP_SET_CONFIG = "ele_app_set_config:";
     
     /**
@@ -704,7 +704,8 @@ public interface CacheConstant {
     /**
      * 模版配置缓存key
      */
-    String TEMPLATE_CONFIG_KEY = "saas_electricity:tmp_config:%d:%s";
+    String TEMPLATE_CONFIG_KEY="saas_electricity:tmp_config:%d:%s";
+    
     
     
     String OPEN_FULL_CELL_LIMIT = "open_full_cell_handle_limit:";
@@ -743,6 +744,7 @@ public interface CacheConstant {
      * 分账配置幂等
      */
     String PROFIT_SHARING_RECEIVER_IDEMPOTENT_KEY = "saas_ele:profit_sharing_receiver:idempotent:%d";
+    
     
     
     /**
@@ -793,17 +795,17 @@ public interface CacheConstant {
      * 代扣锁
      */
     String CACHE_INSTALLMENT_DEDUCT_LOCK = "installment:deduct_lock:%d";
-    
+
     /**
      * 分期套餐混合支付锁
      */
     String CACHE_INSTALLMENT_PAYMENT_LOCK = "installment:payment_lock:%d";
-    
+
     /**
      * 分期套餐签约成功后处理逻辑锁
      */
     String CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK = "installment:sign_notify_lock:%d";
-    
+
     /**
      * 分期套餐代扣后处理逻辑锁
      */
@@ -823,12 +825,12 @@ public interface CacheConstant {
     String BATTERY_MEMBERCAR_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_membercar_refund:%s";
     
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
-    
+
     /**
      * 用户设备状态缓存
      */
     String CACHE_USER_DEVICE_STATUS = "d_stat:";
-    
+
     
     /**
      * 保存租借状态的电池对应的订单

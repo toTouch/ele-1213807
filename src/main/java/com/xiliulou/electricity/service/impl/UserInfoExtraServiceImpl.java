@@ -7,13 +7,10 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
-import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -25,17 +22,14 @@ import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
-import com.xiliulou.electricity.request.UserInfoLimitRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
@@ -52,7 +46,6 @@ import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -115,12 +108,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Resource
     private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
-    
-    @Resource
-    private ElectricityConfigService electricityConfigService;
-    
-    @Resource
-    private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -568,63 +555,5 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 .status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime).protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)
                 .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES)
                 .franchiseeId(franchiseeId).successTime(nowTime).build();
-    }
-    
-    @Override
-    public Triple<Boolean, String, String> isLimitPurchase(Long uid, Integer tenantId) {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.isNull(electricityConfig)) {
-            return Triple.of(false, null, null);
-        }
-        
-        if (Objects.equals(electricityConfig.getEleLimit(), ElectricityConfig.ELE_LIMIT_CLOSE)) {
-            return Triple.of(false, null, null);
-        }
-        
-        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfoExtra)) {
-            return Triple.of(false, null, null);
-        }
-        
-        if (Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
-            return Triple.of(false, null, null);
-        }
-        
-        List<UserBatteryMemberCardPackage> packageList = userBatteryMemberCardPackageService.selectByUid(uid);
-        if (CollectionUtils.isEmpty(packageList)) {
-            return Triple.of(false, null, null);
-        }
-        
-        if (packageList.size() >= electricityConfig.getEleLimitCount()) {
-            return Triple.of(true, "120151", "您已购买了多个尚未使用的换电套餐，为保障您的资金安全，请联系客服后购买");
-        }
-        
-        return Triple.of(false, null, null);
-    }
-    
-    @Override
-    public R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds) {
-        Long uid = request.getUid();
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
-        
-        if (Objects.isNull(userInfo) || Objects.isNull(userInfoExtra) || !Objects.equals(userInfoExtra.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.warn("UpdateEleLimit warn! not found user, uid={}", uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        // 加盟商一致性校验
-        Long franchiseeId = userInfo.getFranchiseeId();
-        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
-            log.warn("UpdateEleLimit warn! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
-            return R.fail("120240", "当前加盟商无权限操作");
-        }
-        
-        int update = userInfoExtraMapper.updateByUid(UserInfoExtra.builder().eleLimit(request.getEleLimit()).uid(uid).build());
-        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
-            redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + userInfoExtra.getUid());
-        });
-        
-        return R.ok(update);
     }
 }

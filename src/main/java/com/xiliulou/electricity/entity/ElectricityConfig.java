@@ -204,16 +204,6 @@ public class ElectricityConfig {
      */
     private Integer isEnableMeiTuanRiderMall;
     
-    /**
-     * 是否开启对换电套餐购买次数的限制：0--是 1--否
-     */
-    private Integer eleLimit;
-    
-    /**
-     * 换电套餐购买限制次数，默认1次
-     */
-    private Integer eleLimitCount;
-    
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
@@ -338,7 +328,6 @@ public class ElectricityConfig {
      * 打开支付宝客服 0-是 1-否
      */
     public static Integer OPEN_ALIPAY_CUSTOMER = 0;
-    
     public static Integer CLOSE_ALIPAY_CUSTOMER = 1;
     
     /**
@@ -360,14 +349,4 @@ public class ElectricityConfig {
      * 舒适换电关闭
      */
     public static Integer NOT_COMFORT_EXCHANGE = 1;
-    
-    /**
-     * 开启对换电套餐购买次数的限制
-     */
-    public static Integer ELE_LIMIT_OPEN = 0;
-    
-    /**
-     * 关闭对换电套餐购买次数的限制
-     */
-    public static Integer ELE_LIMIT_CLOSE = 1;
 }

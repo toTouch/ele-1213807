@@ -553,6 +553,12 @@ public class UserServiceImpl implements UserService {
         return userMapper.selectListByPhones(phoneList, tenantId, type);
     }
     
+    @Slave
+    @Override
+    public List<UserSearchVO> listTenantUsers(Integer tenantId) {
+        return userMapper.selectListTenantUsers(tenantId);
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {

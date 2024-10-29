@@ -49,8 +49,7 @@ public interface UserService {
     User insert(User user);
     
     /**
-     * 修改数据
-     * oldUser必须包括手机号和uid
+     * 修改数据 oldUser必须包括手机号和uid
      *
      * @return 实例对象
      */
@@ -149,4 +148,9 @@ public interface UserService {
     User queryByUidFromDB(Long uid);
     
     List<User> listByPhones(List<String> phoneList, Integer tenantId, Integer type);
+    
+    /**
+     * 查询运营商(userType=1)账号
+     */
+    List<UserSearchVO> listTenantUsers(Integer tenantId);
 }
