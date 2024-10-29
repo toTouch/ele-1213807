@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -27,6 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
@@ -102,7 +104,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     }
     
     @Override
-    public void initFaqByTenantId(Integer tenantId) {
+    public void initFaqByTenantId(Integer tenantId, Long operator) {
         List<InitFaqProperties.Category> categoryList = initFaqProperties.getCategory();
         if (CollectionUtils.isEmpty(categoryList)) {
             log.warn("InitFaqByTenantId warn! categoryList is empty!");
@@ -116,7 +118,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
             return;
         }
         
-        List<FaqCategoryV2> faqCategoryInsertList = this.buildFaqCategoryList(categoryMap.keySet(), tenantId);
+        List<FaqCategoryV2> faqCategoryInsertList = this.buildFaqCategoryList(categoryMap.keySet(), tenantId, operator);
         if (CollectionUtils.isNotEmpty(faqCategoryInsertList)) {
             faqCategoryV2Mapper.batchInsert(faqCategoryInsertList);
         }
@@ -133,14 +135,14 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
             return;
         }
         
-        List<FaqV2> faqList = this.buildFaqV2List(categoryMap, typeMap, tenantId);
+        List<FaqV2> faqList = this.buildFaqV2List(categoryMap, typeMap, tenantId, operator);
         if (CollectionUtils.isNotEmpty(faqList)) {
             faqV2Service.batchInsert(faqList);
         }
         
     }
     
-    private List<FaqCategoryV2> buildFaqCategoryList(Set<String> typeSet, Integer tenantId) {
+    private List<FaqCategoryV2> buildFaqCategoryList(Set<String> typeSet, Integer tenantId, Long operator) {
         final BigDecimal[] sort = {BigDecimal.ZERO};
         
         return typeSet.stream().map(type -> {
@@ -148,7 +150,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
             faqCategory.setType(type);
             faqCategory.setSort(sort[0]);
             faqCategory.setTenantId(tenantId);
-            faqCategory.setOpUser(SecurityUtils.getUid());
+            faqCategory.setOpUser(operator);
             faqCategory.setCreateTime(System.currentTimeMillis());
             faqCategory.setUpdateTime(System.currentTimeMillis());
             
@@ -158,7 +160,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
         }).collect(Collectors.toList());
     }
     
-    private List<FaqV2> buildFaqV2List(Map<String, List<InitFaqProperties.Category.Problem>> categoryMap, Map<String, Long> typeMap, Integer tenantId) {
+    private List<FaqV2> buildFaqV2List(Map<String, List<InitFaqProperties.Category.Problem>> categoryMap, Map<String, Long> typeMap, Integer tenantId, Long operator) {
         BigDecimal[] sort = {BigDecimal.ZERO};
         List<FaqV2> list = new ArrayList<>();
         
@@ -177,10 +179,11 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
                 FaqV2 faq = new FaqV2();
                 faq.setTypeId(typeMap.get(type));
                 faq.setTitle(problem.getTitle());
+                faq.setAnswer(handleAnswers(problem.getAnswer()));
                 faq.setOnShelf(FaqV2.SHELF_TYPE);
                 faq.setSort(sort[0]);
                 faq.setTenantId(tenantId);
-                faq.setOpUser(SecurityUtils.getUid());
+                faq.setOpUser(operator);
                 faq.setCreateTime(System.currentTimeMillis());
                 faq.setUpdateTime(System.currentTimeMillis());
                 
@@ -190,6 +193,19 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
         }
         
         return list;
+    }
+    
+    private String handleAnswers(List<String> answer) {
+        if (CollectionUtils.isEmpty(answer)) {
+            return StringUtils.EMPTY;
+        }
+        
+        StringJoiner joiner = new StringJoiner("\r\n");
+        for (String s : answer) {
+            joiner.add(s);
+        }
+        
+        return joiner.toString();
     }
     
     @Slave

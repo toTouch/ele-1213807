@@ -34,7 +34,7 @@ public interface FaqCategoryV2Service {
     
     long listFaqCategoryCount(String title);
     
-    void initFaqByTenantId(Integer tenantId);
+    void initFaqByTenantId(Integer tenantId, Long operator);
     
     List<FaqCategoryV2> listByTenantId(Integer tenantId);
 }

@@ -267,7 +267,7 @@ public class TenantServiceImpl implements TenantService {
         executorService.submit(() -> assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
         
         // 初始化常见问题
-        executorService.submit(() -> faqCategoryV2Service.initFaqByTenantId(tenant.getId()));
+        executorService.submit(() -> faqCategoryV2Service.initFaqByTenantId(tenant.getId(), user.getUid()));
         
         return R.ok();
     }
