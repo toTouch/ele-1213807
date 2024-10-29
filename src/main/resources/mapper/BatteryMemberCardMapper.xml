@@ -351,7 +351,7 @@
             <if test="deposit != null">
                 and (
                     case
-                        when isEnableFlexibleRenewal = 0 then bmc.deposit = #{deposit}
+                        when #{isEnableFlexibleRenewal} = 0 then bmc.deposit = #{deposit}
                         else bmc.deposit &lt;= #{deposit}
                     end
                 )
