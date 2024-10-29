@@ -266,7 +266,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             log.warn("USER BATTERY MEMBER CARD WARN!not found electricity config,uid={},franchiseeId={}", userInfo.getUid(), query.getFranchiseeId());
             return Collections.emptyList();
         }
-        query.setIsEnableFlexibleRenewal(electricityConfig.getIsEnableFlexibleRenewal());
+        query.setIsEnableFlexibleRenewal(Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) ? 0 : electricityConfig.getIsEnableFlexibleRenewal());
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -535,7 +535,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             log.warn("USER BATTERY MEMBER CARD WARN!not found electricity config,uid={},franchiseeId={}", query.getUid(), query.getFranchiseeId());
             return Collections.emptyList();
         }
-        query.setIsEnableFlexibleRenewal(electricityConfig.getIsEnableFlexibleRenewal());
+        query.setIsEnableFlexibleRenewal(Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) ? 0 : electricityConfig.getIsEnableFlexibleRenewal());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());

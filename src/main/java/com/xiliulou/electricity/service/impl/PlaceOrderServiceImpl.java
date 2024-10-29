@@ -47,7 +47,6 @@ public class PlaceOrderServiceImpl implements PlaceOrderService {
         
         try {
             // 封装上下文，获取执行链处理结果
-            query.setPayType(PlaceOrderConstant.ONLINE_PAYMENT);
             PlaceOrderContext context = PlaceOrderContext.builder().placeOrderQuery(query).request(request).tokenUser(tokenUser).tenantId(TenantContextHolder.getTenantId())
                     .build();
             R<Object> result = placeOrderChainManager.chooseNodeAndProcess(context);

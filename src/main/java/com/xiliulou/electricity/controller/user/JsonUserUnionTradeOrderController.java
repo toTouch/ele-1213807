@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.ProcessParameter;
+import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -82,6 +83,9 @@ public class JsonUserUnionTradeOrderController extends BaseController {
      */
     @PostMapping("user/place/order")
     public R<Object> placeOrder(@RequestBody PlaceOrderQuery query, HttpServletRequest request) {
+        // 设置支付类型
+        query.setPayType(PlaceOrderConstant.ONLINE_PAYMENT);
+        
         return placeOrderService.placeOrder(query, request);
     }
 }
