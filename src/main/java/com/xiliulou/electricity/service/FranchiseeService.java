@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;

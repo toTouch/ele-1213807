@@ -15,8 +15,6 @@ import java.util.List;
  */
 public interface UserInfoGroupDetailMapper {
     
-    UserInfoGroupDetail selectByUid(@Param("groupNo") String groupNo, @Param("uid") Long uid, @Param("tenantId") Integer tenantId);
-    
     List<UserInfoGroupDetailBO> selectPage(UserInfoGroupDetailQuery query);
     
     Integer countTotal(UserInfoGroupDetailQuery query);
@@ -27,11 +25,16 @@ public interface UserInfoGroupDetailMapper {
     
     Integer batchInsert(@Param("detailList") List<UserInfoGroupDetail> detailList);
     
-    Integer countUserByGroupId(Long id);
-    
+    @Deprecated
     Integer countGroupByUid(Long uid);
+    
+    Integer countGroupByUidAndFranchisee(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId);
     
     Integer deleteByUid(@Param("uid") Long uid, @Param("groupNoList") List<String> groupNoList);
     
     Integer deleteByGroupNo(@Param("groupNo") String groupNo, @Param("tenantId") Integer tenantId);
+    
+    Integer deleteForUpdate(@Param("uid") Long uid, @Param("tenantId") Long tenantId, @Param("franchiseeId") Long franchiseeId);
+    
+    List<Long> selectListFranchiseeForUpdate(@Param("uid") Long uid);
 }

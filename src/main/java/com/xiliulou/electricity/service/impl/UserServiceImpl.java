@@ -60,7 +60,7 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
     UserInfoExtraService userInfoExtraService;
     
     @Resource
-    private UserInfoGroupDetailService userInfoGroupDetailService;
+    private UserInfoGroupBizService userInfoGroupBizService;
     
     /**
      * 启用锁定用户
@@ -318,7 +318,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "USER.0001", "查询不到用户！");
         }
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         if (!Objects.equals(tokenUser.getType(), User.TYPE_USER_SUPER) && Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_SUPER)) {
@@ -336,7 +336,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, null, "用户名已存在");
         }
         
-        //解密密码
+        // 解密密码
         String encryptPassword = adminUserQuery.getPassword();
         String decryptPassword = decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
@@ -345,7 +345,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "SYSTEM.0001", "系统错误!");
         }
         
-        //处理城市和省份
+        // 处理城市和省份
         City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
         Province province = provinceService.queryByIdFromDB(adminUserQuery.getProvinceId());
         
@@ -382,13 +382,13 @@ public class UserServiceImpl implements UserService {
         //            }
         //        }
         
-        //设置角色
+        // 设置角色
         UserRole userRole = new UserRole();
         userRole.setRoleId(adminUserQuery.getRoleId());
         userRole.setUid(insert.getUid());
         userRoleService.insert(userRole);
         
-        //保存用户数据范围
+        // 保存用户数据范围
         if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
             List<UserDataScope> userDataScopes = buildUserDataScope(insert.getUid(), adminUserQuery.getDataIdList());
             userDataScopeService.batchInsert(userDataScopes);
@@ -563,7 +563,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         User user = queryByUidFromCache(adminUserQuery.getUid());
@@ -591,7 +591,7 @@ public class UserServiceImpl implements UserService {
         
         String decryptPassword = null;
         if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
-            //解密密码
+            // 解密密码
             String encryptPassword = adminUserQuery.getPassword();
             decryptPassword = decryptPassword(encryptPassword);
             if (StrUtil.isEmpty(decryptPassword)) {
@@ -608,7 +608,7 @@ public class UserServiceImpl implements UserService {
                 .dataType(adminUserQuery.getDataType()).lockFlag(adminUserQuery.getLock()).build();
         
         if (Objects.nonNull(adminUserQuery.getCityId())) {
-            //城市
+            // 城市
             City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
             if (Objects.nonNull(city)) {
                 Province province = provinceService.queryByIdFromDB(city.getPid());
@@ -629,7 +629,7 @@ public class UserServiceImpl implements UserService {
         }
         
         int i = updateUser(updateUser, user);
-        //更新userInfo
+        // 更新userInfo
         if (i > 0) {
             UserInfo oldUserInfo = userInfoService.queryByUidFromCache(user.getUid());
             if (Objects.nonNull(oldUserInfo)) {
@@ -642,7 +642,7 @@ public class UserServiceImpl implements UserService {
                 userInfoService.update(userInfo);
             }
             
-            //更新用户数据范围
+            // 更新用户数据范围
             if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
                 userDataScopeService.deleteByUid(user.getUid());
                 
@@ -657,7 +657,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Pair<Boolean, Object> deleteAdminUser(Long uid) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         User user = queryByUidFromCache(uid);
@@ -673,12 +673,12 @@ public class UserServiceImpl implements UserService {
             return Pair.of(false, "非法操作");
         }
         
-        //不让删除租户
+        // 不让删除租户
         if (Objects.equals(SecurityUtils.getUid(), 1) && !Objects.equals(user.getTenantId(), 1) && Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             return Pair.of(false, "非法操作");
         }
         
-        //加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
+        // 加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             
             Integer count = franchiseeService.queryByFanchisee(user.getUid());
@@ -687,7 +687,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         
-        //门店用户删除查看是否绑定换电柜
+        // 门店用户删除查看是否绑定换电柜
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             
             Integer count = storeService.queryCountByFranchisee(user.getUid());
@@ -700,7 +700,7 @@ public class UserServiceImpl implements UserService {
             redisService.delete(CacheConstant.CACHE_USER_UID + uid);
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
             
-            //删除加盟商或门店
+            // 删除加盟商或门店
             if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                 franchiseeService.deleteByUid(uid);
             }
@@ -708,7 +708,7 @@ public class UserServiceImpl implements UserService {
                 storeService.deleteByUid(uid);
             }
             
-            //删除用户数据可见范围
+            // 删除用户数据可见范围
             userDataScopeService.deleteByUid(user.getUid());
             
             // 判断用户的数据类型是否为商户或者是渠道员
@@ -728,7 +728,7 @@ public class UserServiceImpl implements UserService {
             log.error("updatePassword  ERROR! not found user ");
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         User oldUser = queryByUserNameAndTenantId(passwordQuery.getName(), tenantId);
@@ -814,7 +814,7 @@ public class UserServiceImpl implements UserService {
         
         HashMap<String, Object> resultMap = Maps.newHashMap();
         
-        //处理用户信息
+        // 处理用户信息
         UserVo userVo = new UserVo();
         BeanUtils.copyProperties(user, userVo);
         resultMap.put("user", userVo);
@@ -835,7 +835,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public R addInnerUser(AdminUserQuery adminUserQuery) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(), tenantId);
@@ -849,7 +849,7 @@ public class UserServiceImpl implements UserService {
             return R.fail("用户名已经存在！");
         }
         
-        //解密密码
+        // 解密密码
         String encryptPassword = adminUserQuery.getPassword();
         String decryptPassword = decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
@@ -858,7 +858,7 @@ public class UserServiceImpl implements UserService {
             return R.fail("系统错误!");
         }
         
-        //处理城市和省份
+        // 处理城市和省份
         City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
         Province province = provinceService.queryByIdFromDB(adminUserQuery.getProvinceId());
         
@@ -870,13 +870,13 @@ public class UserServiceImpl implements UserService {
                 .build();
         User insert = insert(user);
         
-        //默认值
+        // 默认值
         Long roleId = adminUserQuery.getUserType().longValue() + 1;
         if (Objects.nonNull(adminUserQuery.getRoleId())) {
             roleId = adminUserQuery.getRoleId();
         }
         
-        //运营商
+        // 运营商
         if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_OPERATE)) {
             Long role = roleService.queryByName("OPERATE_USER", tenantId);
             if (Objects.nonNull(role)) {
@@ -885,7 +885,7 @@ public class UserServiceImpl implements UserService {
             
         }
         
-        //加盟商
+        // 加盟商
         if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
             if (Objects.nonNull(role)) {
@@ -893,7 +893,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         
-        //门店
+        // 门店
         if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_STORE)) {
             Long role = roleService.queryByName("STORE_USER", tenantId);
             if (Objects.nonNull(role)) {
@@ -901,7 +901,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         
-        //设置角色
+        // 设置角色
         UserRole userRole = new UserRole();
         userRole.setRoleId(roleId);
         userRole.setUid(insert.getUid());
@@ -942,7 +942,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Triple<Boolean, String, Object> deleteNormalUser(Long uid) {
         
-        //租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         TokenUser userInfo = SecurityUtils.getUserInfo();
@@ -983,22 +983,22 @@ public class UserServiceImpl implements UserService {
             delUserOauthBindAndClearToken(userOauthBinds);
         }
         
-        //判断用户是否为企业用户
+        // 判断用户是否为企业用户
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.selectByUid(uid);
         if (Objects.nonNull(enterpriseInfo)) {
             return Triple.of(false, "100253", "请先删除企业用户配置");
         }
         
-        //判断企业用户云豆是否回收
+        // 判断企业用户云豆是否回收
         EnterpriseChannelUser enterpriseChannelUser = enterpriseChannelUserService.selectByUid(uid);
         if (Objects.nonNull(enterpriseChannelUser) && Objects.equals(enterpriseChannelUser.getCloudBeanStatus(), CloudBeanStatusEnum.NOT_RECYCLE.getCode())) {
             return Triple.of(false, "", "该用户名下有未回收的云豆订单，请联系所属企业处理");
         }
         
-        //删除企业用户
+        // 删除企业用户
         enterpriseChannelUserService.deleteByUid(uid);
         
-        //删除用户
+        // 删除用户
         deleteWxProUser(uid, user.getTenantId());
         userInfoService.deleteByUid(uid);
         
@@ -1009,7 +1009,7 @@ public class UserServiceImpl implements UserService {
         userInfoExtraService.deleteByUid(uid);
         
         // 删除用户分组信息
-        userInfoGroupDetailService.deleteByUid(uid, null);
+        userInfoGroupBizService.deleteGroupDetailByUid(uid, null);
         
         return Triple.of(true, null, null);
     }
@@ -1186,10 +1186,10 @@ public class UserServiceImpl implements UserService {
                 }
             }
             
-            //获取用户首次购买套餐记录
+            // 获取用户首次购买套餐记录
             ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(item.getUid());
             if (Objects.nonNull(electricityMemberCardOrder) && Objects.nonNull(electricityMemberCardOrder.getRefId())) {
-                //获取用户首次购买套餐柜机名称
+                // 获取用户首次购买套餐柜机名称
                 ElectricityCabinet firstBuyMemberCardElectricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrder.getRefId().intValue());
                 if (Objects.nonNull(firstBuyMemberCardElectricityCabinet)) {
                     item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());

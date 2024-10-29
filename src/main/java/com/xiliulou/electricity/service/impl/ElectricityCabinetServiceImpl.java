@@ -5233,13 +5233,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             eleDeviceCodeService.insert(deviceCode);
         }
         
-        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
-        if (Objects.isNull(otherSetting) || org.apache.commons.lang3.StringUtils.isBlank(otherSetting.getApiAddress())) {
+        String apiAddress = eleCommonConfig.getApiAddress();
+        if (StringUtils.isBlank(apiAddress)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         
         Map<String, Object> params = Maps.newHashMap();
-        params.put("apiAddress", otherSetting.getApiAddress());
+        params.put("apiAddress", apiAddress);
         params.put("iotConnectMode", query.getPattern());
         
         EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
