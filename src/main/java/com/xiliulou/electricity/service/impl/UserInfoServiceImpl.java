@@ -2108,8 +2108,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R queryDetailsBasicInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromDb(uid);
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+    
+        if (Objects.isNull(userInfo) || Objects.isNull(userInfoExtra) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -2169,6 +2170,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterName(queryFinalInviterUserName(uid));
         // 邀请人来源
         vo.setInviterSource(inviterSource);
+        // 是否限制换电套餐购买次数
+        vo.setEleLimit(userInfoExtra.getEleLimit());
         
         return R.ok(vo);
     }
