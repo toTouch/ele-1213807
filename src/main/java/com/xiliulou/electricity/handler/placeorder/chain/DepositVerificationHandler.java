@@ -7,6 +7,7 @@ import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -24,7 +25,8 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
     @Resource
     private DepositPlaceOrderHandler depositPlaceOrderHandler;
     
-    public DepositVerificationHandler() {
+    @PostConstruct
+    public void init() {
         this.nextHandler = depositPlaceOrderHandler;
         this.nodePlaceOrderType = PLACE_ORDER_DEPOSIT;
     }
@@ -37,6 +39,6 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
             result = R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
         
-        processEntryAndExit(context, result, placeOrderType);
+        fireProcess(context, result, placeOrderType);
     }
 }

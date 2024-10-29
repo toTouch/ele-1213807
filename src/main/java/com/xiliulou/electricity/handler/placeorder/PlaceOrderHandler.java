@@ -10,15 +10,6 @@ import com.xiliulou.core.web.R;
 public interface PlaceOrderHandler<T> {
     
     /**
-     * 管理各节点进入与退出
-     *
-     * @param context 业务参数
-     * @param result  响应结果
-     * @param placeOrderType 购买下单业务类型
-     */
-    void processEntryAndExit(T context, R<Object> result, Integer placeOrderType);
-    
-    /**
      * 处理各节点的业务逻辑
      *
      * @param context 业务参数

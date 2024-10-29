@@ -836,5 +836,10 @@ public interface CacheConstant {
      * 保存租借状态的电池对应的订单
      */
     String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
+    
+    /**
+     * 用户端及后台下单接口锁
+     */
+    String ELE_CACHE_PLACE_ORDER_LOCK_KEY = "ele_cache_place_order_lock_key:";
 }
 

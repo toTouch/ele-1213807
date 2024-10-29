@@ -19,7 +19,7 @@ public abstract class AbstractPlaceOrderHandler implements PlaceOrderHandler<Pla
     /**
      * 用于设置下一个节点组成执行链路
      */
-    protected PlaceOrderHandler<PlaceOrderContext> nextHandler;
+    protected AbstractPlaceOrderHandler nextHandler;
     
     /**
      * 各节点业务类型
@@ -32,7 +32,6 @@ public abstract class AbstractPlaceOrderHandler implements PlaceOrderHandler<Pla
     /**
      * 通用控制节点进出逻辑
      */
-    @Override
     public void processEntryAndExit(PlaceOrderContext context, R<Object> result, Integer placeOrderType) {
         // 节点进入时，执行相关校验判断是否需要执行当前节点业务逻辑
         if (Objects.isNull(placeOrderType) || (placeOrderType & this.getNodePlaceOrderType()) != this.getNodePlaceOrderType() || !result.isSuccess() || Objects.isNull(
@@ -43,7 +42,6 @@ public abstract class AbstractPlaceOrderHandler implements PlaceOrderHandler<Pla
         
         // 执行当前节点逻辑，正常退出当前节点，开始执行下一个节点的逻辑
         dealWithBusiness(context, result, placeOrderType);
-        fireProcess(context, result, placeOrderType);
     }
     
     /**

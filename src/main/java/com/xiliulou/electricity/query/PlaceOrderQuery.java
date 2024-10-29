@@ -64,4 +64,14 @@ public class PlaceOrderQuery {
      * 支付类型 0--线上 1--线下
      */
     private Integer payType;
+    
+    /**
+     * 后台单独缴纳押金的金额
+     */
+    private Double depositAmount;
+    
+    /**
+     * 后台绑定时，被操作用户的uid
+     */
+    private Long uid;
 }

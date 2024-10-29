@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.handler.placeorder.chain.PlaceOrderChainManager;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -40,7 +39,7 @@ public class PlaceOrderServiceImpl implements PlaceOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_PLACE_ORDER_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }

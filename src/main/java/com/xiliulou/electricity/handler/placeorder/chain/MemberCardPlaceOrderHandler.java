@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -45,7 +46,8 @@ public class MemberCardPlaceOrderHandler extends AbstractPlaceOrderHandler {
     @Resource
     private UserBatteryMemberCardService userBatteryMemberCardService;
     
-    public MemberCardPlaceOrderHandler() {
+    @PostConstruct
+    public void init() {
         this.nextHandler = insuranceVerificationHandler;
         this.nodePlaceOrderType = PLACE_ORDER_MEMBER_CARD;
     }
@@ -110,6 +112,6 @@ public class MemberCardPlaceOrderHandler extends AbstractPlaceOrderHandler {
         context.getAllPayAmount().add(electricityMemberCardOrder.getPayAmount());
         context.setTotalAmount(context.getTotalAmount().add(electricityMemberCardOrder.getPayAmount()));
         
-        processEntryAndExit(context, result, placeOrderType);
+        fireProcess(context, result, placeOrderType);
     }
 }

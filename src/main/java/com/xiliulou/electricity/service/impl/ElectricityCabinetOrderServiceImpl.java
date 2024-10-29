@@ -3574,8 +3574,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVo vo, ElectricityBattery battery, BatteryMemberCard memberCard) {
         List<String> batteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
         if (CollectionUtils.isEmpty(batteryTypes)) {
-            log.warn("ORDER WARN! not found batteryMemberCard, mid={}", memberCard.getId());
-            return Triple.of(false, "300871", "换电套餐未绑定电池型号，请联系客服处理");
+            // 标准型号套餐，不存在电池型号转换，正常换电
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return Triple.of(true, null, null);
         }
         
         String batteryModel = battery.getModel();
@@ -3588,8 +3589,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         for (String batteryType : batteryTypes) {
             if (StringUtils.equals(batteryModel, batteryType)) {
                 vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+                return Triple.of(true, null, null);
             }
-            return Triple.of(true, null, null);
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(memberCard.getTenantId());

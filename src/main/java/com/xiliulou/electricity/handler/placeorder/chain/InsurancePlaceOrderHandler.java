@@ -14,6 +14,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_INSURANCE;
@@ -27,7 +28,8 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_I
 @Component
 public class InsurancePlaceOrderHandler extends AbstractPlaceOrderHandler {
     
-    public InsurancePlaceOrderHandler() {
+    @PostConstruct
+    public void init() {
         this.nodePlaceOrderType = PLACE_ORDER_INSURANCE;
     }
     
@@ -57,6 +59,6 @@ public class InsurancePlaceOrderHandler extends AbstractPlaceOrderHandler {
         context.getAllPayAmount().add(insuranceOrder.getPayAmount());
         context.setTotalAmount(context.getTotalAmount().add(insuranceOrder.getPayAmount()));
         
-        processEntryAndExit(context, result, placeOrderType);
+        fireProcess(context, result, placeOrderType);
     }
 }

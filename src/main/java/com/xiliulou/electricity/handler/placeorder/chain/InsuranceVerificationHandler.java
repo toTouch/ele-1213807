@@ -9,6 +9,7 @@ import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -29,7 +30,8 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
     @Resource
     private FranchiseeInsuranceService franchiseeInsuranceService;
     
-    public InsuranceVerificationHandler() {
+    @PostConstruct
+    public void init() {
         this.nextHandler = insurancePlaceOrderHandler;
         this.nodePlaceOrderType = PLACE_ORDER_INSURANCE;
     }
@@ -63,6 +65,6 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
         }
         
         context.setFranchiseeInsurance(franchiseeInsurance);
-        processEntryAndExit(context, result, placeOrderType);
+        fireProcess(context, result, placeOrderType);
     }
 }

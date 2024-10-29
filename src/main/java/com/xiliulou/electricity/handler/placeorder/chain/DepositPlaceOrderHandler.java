@@ -2,7 +2,7 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
+import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -10,11 +10,15 @@ import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
+import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_DEPOSIT;
@@ -31,7 +35,8 @@ public class DepositPlaceOrderHandler extends AbstractPlaceOrderHandler {
     @Resource
     private MemberCardVerificationHandler memberCardVerificationHandler;
     
-    public DepositPlaceOrderHandler() {
+    @PostConstruct
+    public void init() {
         this.nextHandler = memberCardVerificationHandler;
         this.nodePlaceOrderType = PLACE_ORDER_DEPOSIT;
     }
@@ -42,24 +47,30 @@ public class DepositPlaceOrderHandler extends AbstractPlaceOrderHandler {
         BatteryMemberCard batteryMemberCard = context.getBatteryMemberCard();
         ElectricityCabinet electricityCabinet = context.getElectricityCabinet();
         BasePayConfig payParamConfig = context.getPayParamConfig();
+        PlaceOrderQuery placeOrderQuery = context.getPlaceOrderQuery();
+        
+        // 根据支付类型设置押金金额，后台直接缴纳押金时，金额可修改
+        Integer payType = placeOrderQuery.getPayType();
+        BigDecimal amount = Objects.equals(payType, PlaceOrderConstant.ONLINE_PAYMENT) ? batteryMemberCard.getDeposit() : BigDecimal.valueOf(placeOrderQuery.getDepositAmount());
         
         // 生成押金独立订单
         String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(depositOrderId).uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName())
-                .payAmount(batteryMemberCard.getDeposit()).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(context.getPlaceOrderQuery().getPayType())
+                .payAmount(amount).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(userInfo.getTenantId()).franchiseeId(batteryMemberCard.getFranchiseeId()).payType(payType)
                 .storeId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : userInfo.getStoreId()).mid(batteryMemberCard.getId()).modelType(0)
-                .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId()).paymentChannel(payParamConfig.getPaymentChannel())
-                .build();
+                .paramFranchiseeId(Objects.isNull(payParamConfig) ? null : payParamConfig.getFranchiseeId())
+                .wechatMerchantId(Objects.isNull(payParamConfig) ? null : payParamConfig.getThirdPartyMerchantId())
+                .paymentChannel(Objects.isNull(payParamConfig) ? null : payParamConfig.getPaymentChannel()).build();
         
         context.setEleDepositOrder(eleDepositOrder);
         
         // 设置套餐订单号、类型、金额等相关数据
         context.getOrderList().add(eleDepositOrder.getOrderId());
         context.getOrderTypeList().add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-        context.getAllPayAmount().add(eleDepositOrder.getPayAmount());
-        context.setTotalAmount(context.getTotalAmount().add(eleDepositOrder.getPayAmount()));
+        context.getAllPayAmount().add(amount);
+        context.setTotalAmount(context.getTotalAmount().add(amount));
         
-        processEntryAndExit(context, result, placeOrderType);
+        fireProcess(context, result, placeOrderType);
     }
 }

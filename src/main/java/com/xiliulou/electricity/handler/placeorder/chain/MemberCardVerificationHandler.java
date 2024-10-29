@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +37,8 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     @Resource
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
-    public MemberCardVerificationHandler() {
+    @PostConstruct
+    public void init() {
         this.nextHandler = memberCardPlaceOrderHandler;
         this.nodePlaceOrderType = PLACE_ORDER_MEMBER_CARD;
     }
@@ -79,6 +81,6 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             }
         }
         
-        processEntryAndExit(context, result, placeOrderType);
+        fireProcess(context, result, placeOrderType);
     }
 }
