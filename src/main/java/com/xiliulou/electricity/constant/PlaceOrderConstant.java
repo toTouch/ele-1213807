@@ -20,6 +20,11 @@ public interface PlaceOrderConstant {
     Integer PLACE_ORDER_MEMBER_CARD = 2;
     
     /**
+     * 购买押金及套餐
+     */
+    Integer PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD = 3;
+    
+    /**
      * 业务类型--保险购买
      */
     Integer PLACE_ORDER_INSURANCE = 4;

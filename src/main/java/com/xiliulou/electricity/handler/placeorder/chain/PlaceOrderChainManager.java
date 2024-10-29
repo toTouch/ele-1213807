@@ -107,6 +107,7 @@ public class PlaceOrderChainManager {
     @PostConstruct
     public void init() {
         FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT, depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD, depositVerificationHandler);
         FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD, memberCardVerificationHandler);
         FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE, memberCardVerificationHandler);
         FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_ALL, depositVerificationHandler);
