@@ -79,15 +79,12 @@ public class ElectricityCabinetOrderServiceHistoryImpl implements ElectricityCab
     
     
     @Override
+    @Slave
     public ElectricityCabinetOrderHistory selectLatestByUidV2(Long uid) {
         return electricityCabinetOrderHistoryMapper.selectLatestByUidV2(uid);
     }
     
-    @Override
-    public ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid) {
-        return electricityCabinetOrderHistoryMapper.selectLatestOrderAndCabinetInfo(uid);
-    }
-    
+  
     @Override
     @Slave
     public List<ElectricityCabinetOrderVO> listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {

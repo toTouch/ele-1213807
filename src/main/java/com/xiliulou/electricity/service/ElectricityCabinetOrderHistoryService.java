@@ -30,7 +30,7 @@ public interface ElectricityCabinetOrderHistoryService {
     
     ElectricityCabinetOrderHistory selectLatestByUidV2(Long uid);
     
-    ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
+
     
     List<ElectricityCabinetOrderVO> listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     
