@@ -549,7 +549,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
             return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
         } else {
-            return R.ok(electricityCabinetOrderHistoryService.queryCount(electricityCabinetOrderQuery));
+            return electricityCabinetOrderHistoryService.queryCount(electricityCabinetOrderQuery);
         }
     }
     
