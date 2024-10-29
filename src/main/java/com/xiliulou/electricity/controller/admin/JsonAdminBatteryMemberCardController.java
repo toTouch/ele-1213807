@@ -99,41 +99,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     }
     
     /**
-     * TODO SJP 分期套餐需求上线之后可删除
-     */
-    @Deprecated
-    @GetMapping("/admin/battery/memberCard/search")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "catchEnterprise", required = false) Integer catchEnterprise) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.emptyList());
-            }
-        }
-        
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds).delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name)
-                .catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0).build();
-        
-        return R.ok(batteryMemberCardService.search(query));
-    }
-    
-    /**
      * 分页列表
      */
     @GetMapping("/admin/battery/memberCard/page")

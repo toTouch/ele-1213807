@@ -63,4 +63,9 @@ public class UserInfoGroupDetailHistoryBO {
      * 租户ID
      */
     private Integer tenantId;
+    
+    /**
+     * 加盟商名称
+     */
+    private String franchiseeName;
 }

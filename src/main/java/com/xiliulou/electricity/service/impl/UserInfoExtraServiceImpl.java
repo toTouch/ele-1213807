@@ -32,7 +32,6 @@ import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -106,9 +105,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     
     @Resource
     ChannelActivityHistoryService channelActivityHistoryService;
-    
-    @Resource
-    private UserService userService;
     
     @Resource
     private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
@@ -200,7 +196,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        //        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
@@ -350,10 +345,10 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         String inviterName = StringUtils.EMPTY;
         Long merchantId = NumberConstant.ZERO_L;
         if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
-            Merchant merchant = merchantService.queryByUid(inviterUid);
-            if (Objects.nonNull(merchant)) {
-                inviterName = merchant.getName();
-                merchantId = merchant.getId();
+            MerchantInviterVO merchantInviterVO = this.judgeInviterTypeForMerchant(uid, inviterUid, userInfoExtra.getTenantId());
+            if (Objects.nonNull(merchantInviterVO)) {
+                inviterName = merchantInviterVO.getInviterName();
+                merchantId = merchantInviterVO.getMerchantId();
             }
         } else {
             inviterName = Optional.ofNullable(userInfoService.queryByUidFromDb(inviterUid)).map(UserInfo::getName).orElse("");
@@ -497,6 +492,31 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid);
         }
+    }
+    
+    @Override
+    public MerchantInviterVO judgeInviterTypeForMerchant(Long joinUid, Long inviterUid, Integer tenantId) {
+        Merchant merchant1 = merchantService.queryByUid(inviterUid);
+        String inviterName = "";
+        Long merchantId = null;
+        if (Objects.nonNull(merchant1)) {
+            // 邀请人是商户
+            inviterName = merchant1.getName();
+            merchantId = merchant1.getId();
+        } else {
+            // 邀请人是场地员工
+            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(joinUid, tenantId);
+            if (Objects.nonNull(merchantJoinRecord) && Objects.equals(merchantJoinRecord.getInviterType(), MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
+                Merchant merchant2 = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
+                if (Objects.nonNull(merchant2)) {
+                    inviterName = merchant2.getName();
+                    merchantId = merchant2.getId();
+                }
+            }
+        }
+        
+        return MerchantInviterVO.builder().uid(joinUid).inviterUid(inviterUid).inviterName(inviterName)
+                .inviterSource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).merchantId(merchantId).build();
     }
     
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId,
