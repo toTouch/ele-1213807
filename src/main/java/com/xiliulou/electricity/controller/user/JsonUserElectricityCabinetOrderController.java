@@ -48,7 +48,7 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
      * @return R
      */
     @PostMapping("/user/electricityCabinetOrder/order/check")
-    public R exchangeOrderCheck(@RequestBody OrderQueryCheck queryCheck) {
+    public R exchangeOrderCheck(@RequestBody @Validated OrderQueryCheck queryCheck) {
         return returnTripleResult(electricityCabinetOrderService.exchangeOrderCheck(queryCheck));
     }
     
