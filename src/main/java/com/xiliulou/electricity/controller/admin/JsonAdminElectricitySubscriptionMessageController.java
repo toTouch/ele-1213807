@@ -104,12 +104,12 @@ public class JsonAdminElectricitySubscriptionMessageController {
         return R.fail("120150", "网络不佳,请刷新页面重试");
     }
     
-    @GetMapping("admin/servicePhones")
+    @GetMapping("admin/servicePhone/all")
     public R getServicePhones() {
         return R.ok(servicePhoneService.queryByTenantIdFromCache(TenantContextHolder.getTenantId()));
     }
     
-    @PostMapping("admin/servicePhones")
+    @PostMapping("admin/servicePhone/update")
     public R insertOrUpdate(@RequestBody ServicePhonesRequest servicePhonesRequest) {
         return servicePhoneService.insertOrUpdate(servicePhonesRequest);
     }
