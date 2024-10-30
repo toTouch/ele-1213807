@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -19,7 +18,6 @@ import java.util.List;
 @Data
 public class ServicePhonesRequest {
     
-    @Size(min = 1, max = 5, message = "最多只能添加5个手机号")
     @NotEmpty(message = "手机号不能为空")
     private List<ServicePhoneRequest> phoneList;
 }

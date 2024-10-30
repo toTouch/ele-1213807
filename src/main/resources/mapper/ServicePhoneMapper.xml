@@ -25,7 +25,6 @@
             remark      = #{remark},
             update_time = #{updateTime}
         where id = #{id}
-          and tenant_id = #{tenantId}
     </update>
     
     <update id="updateByPhone">

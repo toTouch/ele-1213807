@@ -562,6 +562,8 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public R updateTenantPassword(ResetPasswordRequest request) {
+        log.info("updateTenantPassword! request={}", request);
+        
         Integer tenantId = request.getTenantId();
         Long uid = request.getUid();
         
@@ -576,6 +578,9 @@ public class UserServiceImpl implements UserService {
         updateUser.setUid(oldUser.getUid());
         updateUser.setLoginPwd(customPasswordEncoder.encode(request.getPassword()));
         updateUser.setUpdateTime(System.currentTimeMillis());
+    
+        log.info("updateTenantPassword! updateUser={}, oldUser={}", updateUser, oldUser);
+        
         Integer update = this.updateUser(updateUser, oldUser);
         
         return update > 0 ? R.ok() : R.fail("修改密码失败!");

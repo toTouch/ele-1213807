@@ -54,6 +54,10 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         
         try {
             List<ServicePhoneRequest> requestPhoneList = request.getPhoneList();
+            if (requestPhoneList.size() > ServicePhone.LIMIT_NUM) {
+                return R.fail("120150", "电话号码不能超过5个");
+            }
+            
             if (requestPhoneList.stream().map(ServicePhoneRequest::getPhone).distinct().count() != requestPhoneList.size()) {
                 return R.fail("120149", "电话号码重复，请检查！");
             }

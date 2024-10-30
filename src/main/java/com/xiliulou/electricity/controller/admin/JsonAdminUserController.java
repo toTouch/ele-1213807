@@ -281,7 +281,7 @@ public class JsonAdminUserController extends BaseController {
      * 修改租户登录密码
      */
     @PostMapping(value = "/user/update/pw")
-    public R updateTenantPassword(@Validated ResetPasswordRequest request) {
+    public R updateTenantPassword(@RequestBody @Validated ResetPasswordRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");

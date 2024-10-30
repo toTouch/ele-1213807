@@ -3700,7 +3700,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 60 / 1000.0) : 0);
         }
         
-        // 剩余 x天 x分
+        // 剩余 x天 x时
         userBatteryMemberCardInfoVO.setExpireTimeStr(DateUtils.convertExpireTime(userBatteryMemberCard.getMemberCardExpireTime()));
         
         // 套餐订单金额

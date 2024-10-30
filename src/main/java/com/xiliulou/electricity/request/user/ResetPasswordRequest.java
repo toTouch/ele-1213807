@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.request.user;
 
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,12 +18,12 @@ import javax.validation.constraints.NotNull;
 @Data
 public class ResetPasswordRequest {
     
-    @NotNull(groups = UpdateGroup.class, message = "tenantId不能为空")
+    @NotNull(message = "tenantId不能为空")
     private Integer tenantId;
     
-    @NotNull(groups = UpdateGroup.class, message = "uid不能为空")
+    @NotNull(message = "uid不能为空")
     private Long uid;
     
-    @NotBlank(groups = UpdateGroup.class, message = "密码不能为空")
+    @NotBlank(message = "密码不能为空")
     private String password;
 }
