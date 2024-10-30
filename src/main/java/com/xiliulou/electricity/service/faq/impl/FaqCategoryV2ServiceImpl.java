@@ -25,6 +25,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,7 +113,10 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
         }
         
         Map<String, List<InitFaqProperties.Category.Problem>> categoryMap = categoryList.stream()
-                .collect(Collectors.toMap(InitFaqProperties.Category::getType, InitFaqProperties.Category::getProblem));
+                .collect(Collectors.toMap(InitFaqProperties.Category::getType, InitFaqProperties.Category::getProblem, (existing, replacement) -> {
+                    existing.addAll(replacement);
+                    return existing;
+                }, LinkedHashMap::new));
         if (MapUtils.isEmpty(categoryMap)) {
             log.warn("InitFaqByTenantId warn! categoryMap is empty!");
             return;
@@ -129,7 +133,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
             return;
         }
         
-        Map<String, Long> typeMap = faqCategoryList.stream().collect(Collectors.toMap(FaqCategoryV2::getType, FaqCategoryV2::getId));
+        Map<String, Long> typeMap = faqCategoryList.stream().collect(Collectors.toMap(FaqCategoryV2::getType, FaqCategoryV2::getId, (k1, k2) -> k1));
         if (MapUtils.isEmpty(typeMap)) {
             log.warn("InitFaqByTenantId warn! typeMap is empty!");
             return;
@@ -144,7 +148,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     
     private List<FaqCategoryV2> buildFaqCategoryList(Set<String> typeSet, Integer tenantId, Long operator) {
         List<FaqCategoryV2> list = new ArrayList<>();
-        int sort = typeSet.size();
+        int sort = 1;
         
         for (String type : typeSet) {
             FaqCategoryV2 faqCategory = new FaqCategoryV2();
@@ -155,8 +159,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
             faqCategory.setCreateTime(System.currentTimeMillis());
             faqCategory.setUpdateTime(System.currentTimeMillis());
             
-            sort--;
-            
+            sort++;
             list.add(faqCategory);
         }
         
@@ -164,7 +167,7 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     }
     
     private List<FaqV2> buildFaqV2List(Map<String, List<InitFaqProperties.Category.Problem>> categoryMap, Map<String, Long> typeMap, Integer tenantId, Long operator) {
-        BigDecimal[] sort = {BigDecimal.ZERO};
+        int sort = 1;
         List<FaqV2> list = new ArrayList<>();
         
         for (Map.Entry<String, List<InitFaqProperties.Category.Problem>> entry : categoryMap.entrySet()) {
@@ -184,13 +187,13 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
                 faq.setTitle(problem.getTitle());
                 faq.setAnswer(handleAnswers(problem.getAnswer()));
                 faq.setOnShelf(FaqV2.SHELF_TYPE);
-                faq.setSort(sort[0]);
+                faq.setSort(new BigDecimal(sort));
                 faq.setTenantId(tenantId);
                 faq.setOpUser(operator);
                 faq.setCreateTime(System.currentTimeMillis());
                 faq.setUpdateTime(System.currentTimeMillis());
                 
-                sort[0] = sort[0].add(BigDecimal.ONE);
+                sort++;
                 list.add(faq);
             }
         }
