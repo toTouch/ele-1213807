@@ -3,10 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
-import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
-import com.xiliulou.electricity.request.user.ResetPasswordRequest;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -17,7 +14,7 @@ import java.util.List;
  * @since 2021-06-16 14:31:45
  */
 public interface TenantService {
-
+    
     /**
      * 新增数据
      *
@@ -25,19 +22,17 @@ public interface TenantService {
      * @return 实例对象
      */
     R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery);
-
+    
     R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery);
-
+    
     R queryListTenant(TenantQuery tenantQuery);
-
+    
     Tenant queryByIdFromCache(Integer tenantId);
-
-	R queryCount(TenantQuery tenantQuery);
-
-	Integer querySumCount(TenantQuery tenantQuery);
+    
+    R queryCount(TenantQuery tenantQuery);
+    
+    Integer querySumCount(TenantQuery tenantQuery);
     
     
-    List<Integer> queryIdListByStartId(Integer startId,Integer size);
-    
-    R updatePassword(ResetPasswordRequest request);
+    List<Integer> queryIdListByStartId(Integer startId, Integer size);
 }

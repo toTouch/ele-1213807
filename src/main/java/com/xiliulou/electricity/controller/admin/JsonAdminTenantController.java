@@ -5,13 +5,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
-import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -103,22 +100,5 @@ public class JsonAdminTenantController extends BaseController {
     @GetMapping(value = "/admin/tenant/{id}")
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
-    }
-    
-    /**
-     * 修改租户登录密码
-     */
-    @PostMapping(value = "/admin/tenant/update/pw")
-    public R updatePassword(@RequestBody @Validated ResetPasswordRequest request) {
-        if (!Objects.equals(TenantContextHolder.getTenantId(), 1)) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        return tenantService.updatePassword(request);
     }
 }

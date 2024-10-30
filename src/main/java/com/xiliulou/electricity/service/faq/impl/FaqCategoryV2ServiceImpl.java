@@ -143,21 +143,24 @@ public class FaqCategoryV2ServiceImpl implements FaqCategoryV2Service {
     }
     
     private List<FaqCategoryV2> buildFaqCategoryList(Set<String> typeSet, Integer tenantId, Long operator) {
-        final BigDecimal[] sort = {BigDecimal.ZERO};
+        List<FaqCategoryV2> list = new ArrayList<>();
+        int sort = typeSet.size();
         
-        return typeSet.stream().map(type -> {
+        for (String type : typeSet) {
             FaqCategoryV2 faqCategory = new FaqCategoryV2();
             faqCategory.setType(type);
-            faqCategory.setSort(sort[0]);
+            faqCategory.setSort(new BigDecimal(sort));
             faqCategory.setTenantId(tenantId);
             faqCategory.setOpUser(operator);
             faqCategory.setCreateTime(System.currentTimeMillis());
             faqCategory.setUpdateTime(System.currentTimeMillis());
             
-            sort[0] = sort[0].add(BigDecimal.ONE);
+            sort--;
             
-            return faqCategory;
-        }).collect(Collectors.toList());
+            list.add(faqCategory);
+        }
+        
+        return list;
     }
     
     private List<FaqV2> buildFaqV2List(Map<String, List<InitFaqProperties.Category.Problem>> categoryMap, Map<String, Long> typeMap, Integer tenantId, Long operator) {

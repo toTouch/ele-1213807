@@ -25,7 +25,6 @@ import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.query.asset.AssetWarehouseSaveOrUpdateQueryModel;
-import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.EleAuthEntryService;
@@ -422,28 +421,6 @@ public class TenantServiceImpl implements TenantService {
         return tenantMapper.selectIdListByStartId(startId, size);
     }
     
-    @Override
-    public R updatePassword(ResetPasswordRequest request) {
-        Integer tenantId = request.getTenantId();
-        Long uid = request.getUid();
-        
-        User user = userService.queryByUidFromCache(uid);
-        if (Objects.isNull(user) || Objects.equals(user.getDelFlag(), User.DEL_DEL) || !Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL_ADMIN) || !Objects.equals(
-                user.getTenantId(), tenantId)) {
-            log.warn("Update tenant password warn! not found user, uid={}", uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
-        User updateUser = new User();
-        updateUser.setUid(uid);
-        updateUser.setLoginPwd(customPasswordEncoder.encode(request.getPassword()));
-        updateUser.setUpdateTime(System.currentTimeMillis());
-        Integer update = userService.updateUser(updateUser, user);
-        
-        return update > 0 ? R.ok() : R.fail("修改密码失败!");
-    }
-    
-    
     /**
      * 生成新的租户code
      */
@@ -454,11 +431,5 @@ public class TenantServiceImpl implements TenantService {
         }
         return genTenantCode();
     }
-    
-    
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
-    }
-    
     
 }

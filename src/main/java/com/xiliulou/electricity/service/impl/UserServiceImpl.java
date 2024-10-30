@@ -39,6 +39,7 @@ import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
+import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -560,6 +561,27 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
+    public R updateTenantPassword(ResetPasswordRequest request) {
+        Integer tenantId = request.getTenantId();
+        Long uid = request.getUid();
+        
+        User oldUser = this.queryByUidFromCache(uid);
+        if (Objects.isNull(oldUser) || Objects.equals(oldUser.getDelFlag(), User.DEL_DEL) || !Objects.equals(oldUser.getUserType(), User.TYPE_USER_NORMAL_ADMIN) || !Objects.equals(
+                oldUser.getDataType(), User.DATA_TYPE_OPERATE) || !Objects.equals(oldUser.getTenantId(), tenantId)) {
+            log.warn("Update tenant password warn! not found user, uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        User updateUser = new User();
+        updateUser.setUid(oldUser.getUid());
+        updateUser.setLoginPwd(customPasswordEncoder.encode(request.getPassword()));
+        updateUser.setUpdateTime(System.currentTimeMillis());
+        Integer update = this.updateUser(updateUser, oldUser);
+        
+        return update > 0 ? R.ok() : R.fail("修改密码失败!");
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
         
@@ -935,7 +957,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
         return this.userMapper.queryCount(null, null, null, null, startTime, endTime, tenantId);
-//        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
+        //        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
     
     @Override
