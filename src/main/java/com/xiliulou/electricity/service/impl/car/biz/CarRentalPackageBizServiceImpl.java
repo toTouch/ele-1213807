@@ -258,7 +258,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setName(qryReq.getName());
         
         //根据用户uid查询出对应分组，然后作为条件查询
-        UserInfoGroupDetailQuery built = UserInfoGroupDetailQuery.builder().uid(uid).build();
+        UserInfoGroupDetailQuery built = UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(franchiseeId.longValue()).build();
         List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(built);
         
         //如果用户分组有值则为分组用户

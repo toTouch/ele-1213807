@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import com.google.gson.JsonElement;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -15,10 +14,8 @@ import com.xiliulou.electricity.service.BatteryChargeConfigService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;

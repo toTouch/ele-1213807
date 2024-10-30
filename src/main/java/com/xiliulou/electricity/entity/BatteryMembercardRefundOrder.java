@@ -83,6 +83,11 @@ public class BatteryMembercardRefundOrder {
     private Long franchiseeId;
 
     private Long storeId;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

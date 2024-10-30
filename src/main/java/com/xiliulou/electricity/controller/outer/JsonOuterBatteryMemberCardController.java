@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
-import com.xiliulou.electricity.request.meituan.LimitTradeRequest;
-import com.xiliulou.electricity.service.meituan.MeiTuanRiderMallOrderService;
+import com.xiliulou.electricity.request.thirdPartyMall.LimitTradeRequest;
+import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.thirdmall.entity.meituan.response.JsonR;
 import com.xiliulou.thirdmall.enums.meituan.virtualtrade.VirtualTradeStatusEnum;
 import lombok.extern.slf4j.Slf4j;

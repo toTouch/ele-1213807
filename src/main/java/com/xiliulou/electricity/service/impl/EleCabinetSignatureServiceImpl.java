@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.mapper.ElectricityEsignConfigMapper;
 import com.xiliulou.electricity.query.SignFileQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.IdCardValidator;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.SignUtils;
@@ -46,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+
+import static com.xiliulou.electricity.constant.EleEsignConstant.ALIPAY_AVAILABLE_SIGN_CLIENT_TYPES;
 
 /**
  * @author: Kenneth
@@ -320,8 +324,12 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
             signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
             signFlowDataQuery.setSignFieldPositionList(signFileQuery.getSignFieldPositionList());
-            
             //signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+    
+            if (ChannelEnum.ALIPAY.getCode().equals(ChannelSourceContextHolder.get())){
+                signFlowDataQuery.setAvailableSignClientTypes(ALIPAY_AVAILABLE_SIGN_CLIENT_TYPES);
+            }
+            
             signFlowId = getSignFlowId(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
             
         } catch (Exception e) {

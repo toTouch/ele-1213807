@@ -876,7 +876,7 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
             wechatPayParamsDetails.setMerchantAppletSecret(merchantConfig.getMerchantAppletSecret());
             
             
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, TenantContextHolder.getTenantId());
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(uid, TenantContextHolder.getTenantId(),UserOauthBind.SOURCE_WX_PRO);
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.error("CLOUD BEAN RECHARGE ERROR!not found userOauthBind,uid={}", uid);
                 return Triple.of(false, "100314", "未找到用户的第三方授权信息!");
@@ -1779,7 +1779,9 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
                 .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).payType(eleDepositOrder.getPayType()).build();
+                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).payType(eleDepositOrder.getPayType())
+                .paymentChannel(eleDepositOrder.getPaymentChannel())
+                .build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         //记录企业用户退押记录
@@ -1909,7 +1911,8 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(userBatteryDeposit.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, userInfo.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
                 .refundAmount(userBatteryDeposit.getBatteryDeposit()).status(status).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).payType(eleDepositOrder.getPayType()).build();
+                .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).memberCardOweNumber(0).payType(eleDepositOrder.getPayType())
+                .paymentChannel(eleDepositOrder.getPaymentChannel()).build();
         eleRefundOrderService.insert(eleRefundOrder);
         
         //记录企业用户退押记录

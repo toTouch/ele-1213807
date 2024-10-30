@@ -27,5 +27,11 @@ public class FreeBatteryDepositQueryV3 {
     private String productKey;
 
     private String deviceName;
+    
+    
+    /**
+     * 免押成功后跳转的地址
+     */
+    private String jumpUrl;
 
 }

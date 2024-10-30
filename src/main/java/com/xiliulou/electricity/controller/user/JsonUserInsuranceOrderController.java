@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ public class JsonUserInsuranceOrderController {
     //缴纳保险
     @PostMapping("/user/payInsurance")
     public R payInsurance(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
+        insuranceOrderAdd.setPaymentChannel(ChannelSourceContextHolder.get());
         return insuranceOrderService.createOrder(insuranceOrderAdd, request);
     }
     

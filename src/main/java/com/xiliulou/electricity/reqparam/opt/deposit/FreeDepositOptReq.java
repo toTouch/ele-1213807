@@ -26,5 +26,12 @@ public class FreeDepositOptReq implements Serializable {
 
     @NotEmpty(message = "真实姓名不能为空")
     private String realName;
+    
+    
+    
+    /**
+     * 免押成功后跳转的地址
+     */
+    private String jumpUrl;
 
 }

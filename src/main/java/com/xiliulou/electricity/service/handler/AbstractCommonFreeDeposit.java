@@ -88,6 +88,7 @@ public abstract class AbstractCommonFreeDeposit {
         request.setTransId(orderId);
         request.setTransAmt(freeDepositOrderRequest.getPayAmount().multiply(BigDecimal.valueOf(100)).intValue());
         request.setCallbackUrl(String.format(freeDepositConfig.getUrl(), 1, 1, freeDepositOrderRequest.getTenantId()));
+        request.setJumpUrl(freeDepositOrderRequest.getJumpUrl());
         query.setData(request);
         
         log.info("PXZ INFO! FreeDepositOrderPxzRequest.query is {}", JsonUtil.toJson(query));

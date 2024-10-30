@@ -168,6 +168,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
     }
     
     
+    
     @Override
     public void refreshMerchantInfo(Integer tenantId, Long franchiseeId) {
         String key = buildCacheKey(tenantId, franchiseeId);
@@ -317,6 +318,8 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         }
         return WechatCertificateUtils.transferCertificateContent(wechatPaymentCertificate.getCertificateContent());
     }
+    
+
     
     
     private WechatPayParamsDetails buildWechatPayParamsDetails(ElectricityPayParams payParams) {

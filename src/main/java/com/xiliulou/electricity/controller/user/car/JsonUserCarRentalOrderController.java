@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,8 @@ public class JsonUserCarRentalOrderController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return R.ok(carRentalOrderBizService.refundCarOrderApply(tenantId, user.getUid()));
+        String channel = ChannelSourceContextHolder.get();
+        return R.ok(carRentalOrderBizService.refundCarOrderApply(tenantId, user.getUid(),channel));
     }
     
     /**
@@ -61,7 +63,9 @@ public class JsonUserCarRentalOrderController {
             log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+    
+        String channel = ChannelSourceContextHolder.get();
         
-        return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, franchiseeId, user.getUid(), sn, user.getUid()));
+        return R.ok(carRentalOrderBizService.bindingCarByQR(tenantId, franchiseeId, user.getUid(), sn, user.getUid(),channel));
     }
 }

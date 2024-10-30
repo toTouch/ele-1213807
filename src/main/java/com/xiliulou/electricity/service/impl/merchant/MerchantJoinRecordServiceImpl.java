@@ -202,7 +202,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             try {
                 decrypt = QrCodeUtils.codeDeCoder(code);
             } catch (Exception e) {
-                log.error("MERCHANT JOIN ERROR! decode fail, joinUid={}, code={}", joinUid, code);
+                log.error("MERCHANT JOIN ERROR! decode fail, joinUid={}, code={}", joinUid, code, e);
             }
             
             if (StringUtils.isBlank(decrypt)) {
@@ -235,7 +235,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 inviterType = Integer.parseInt(inviterTypeStr);
             } catch (NumberFormatException e) {
                 log.error("MERCHANT JOIN ERROR! Invalid format, joinUid={}, merchantIdStr={}, inviterUidStr={}, inviterTypeStr={}", joinUid, merchantIdStr, inviterUidStr,
-                        inviterTypeStr);
+                        inviterTypeStr, e);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
@@ -447,6 +447,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             Long franchiseeId = merchantJoinRecord.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
                 vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
+            
+            if (Objects.isNull(merchantJoinRecord.getSuccessTime()) || Objects.equals(merchantJoinRecord.getSuccessTime(), NumberConstant.ZERO_L)) {
+                vo.setSuccessTime(merchantJoinRecord.getCreateTime());
             }
             
             voList.add(vo);
@@ -713,10 +717,16 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.countScanCodeRecord(request);
     }
     
+    @Slave
+    @Override
+    public MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId) {
+        return merchantJoinRecordMapper.selectRemoveSuccessRecord(joinUid, inviterUid, tenantId);
+    }
+    
     @Override
     public List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest request) {
         if (StrUtil.isNotBlank(request.getPhone())) {
-            if (!PhoneUtils.isChinaPhoneNum(request.getPhone())){
+            if (!PhoneUtils.isChinaPhoneNum(request.getPhone())) {
                 return new ArrayList<>();
             }
             List<UserInfo> userList = userInfoService.queryListUserInfoByPhone(request.getPhone());
@@ -729,6 +739,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             List<String> orderIdList = orderList.stream().map(ElectricityMemberCardOrder::getOrderId).collect(Collectors.toList());
             request.setOrderIdList(orderIdList);
         }
+        
         // 加盟商权限
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
@@ -755,7 +766,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             List<UserInfo> userInfo = userInfoService.listByUidList(uidList);
             userInfoMap = userInfo.stream().collect(Collectors.toMap(UserInfo::getUid, Function.identity(), (k1, k2) -> k1));
         }
-        
         
         Map<String, ElectricityMemberCardOrder> finalMemberCardOrderMap = memberCardOrderMap;
         Map<Long, UserInfo> finalUserInfoMap = userInfoMap;

@@ -387,6 +387,11 @@ public class ElectricityIotConstant {
     public static final String OPEN_FULL_CELL_RSP = "open_full_cell_rsp";
    
     public static final String OPEN_FULL_CELL_ACK = "open_full_cell_ack";
+    
+    /**
+     * 柜机重启
+     */
+    public static final String REMOTE_SHELL = "remote_shell";
 
 
     static {
@@ -473,6 +478,7 @@ public class ElectricityIotConstant {
         SEND_COMMAND_SETS.add(CUPBOARD_RESUME_CYCLE);
         SEND_COMMAND_SETS.add(ELE_CELL_OPEN_CHARGE);
         SEND_COMMAND_SETS.add(ELE_BATTERY_OFFLINE_PASSWORD_RESET);
+        SEND_COMMAND_SETS.add(REMOTE_SHELL);
 
 
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -498,6 +504,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_CELL_OPEN_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_CELL_CLOSE_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(CUPBOARD_RESUME_CYCLE, NORMAL_ELE_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(REMOTE_SHELL, NORMAL_ELE_OPERATE_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);

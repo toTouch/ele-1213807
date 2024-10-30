@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.FreeDepositOrderVO;
+import com.xiliulou.electricity.vo.FreeDepositVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,6 +64,8 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatus();
     
     Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusV2();
+    
+    Triple<Boolean, String, Object> acquireUserFreeBatteryDepositStatusAliPay();
     
     Integer selectByPageCount(FreeDepositOrderQuery query);
     

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.InsuranceOrder;
@@ -86,5 +87,5 @@ public interface InsuranceOrderService {
      * 生成保险订单
      */
     Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId, ElectricityCabinet electricityCabinet,
-            ElectricityPayParams electricityPayParams);
+            BasePayConfig basePayConfig);
 }

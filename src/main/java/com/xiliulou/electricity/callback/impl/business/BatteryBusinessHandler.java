@@ -157,6 +157,11 @@ public class BatteryBusinessHandler implements BusinessHandler {
             if (ObjectUtils.isNotEmpty(md5s)) {
                 Arrays.stream(md5s.split(","))
                         .forEach(md5 -> {
+                            // TODO: 2024/10/10 兼容历史数据 后续删除
+                            String batteryKeyOld = String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD, uid, md5);
+                            if (redisService.hasKey(batteryKeyOld)) {
+                                redisService.delete(batteryKeyOld);
+                            }
                             String batteryKey = String.format(CacheConstant.ELE_CACHE_BATTERY_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
                             if (redisService.hasKey(batteryKey)) {
                                 redisService.delete(batteryKey);
@@ -195,7 +200,7 @@ public class BatteryBusinessHandler implements BusinessHandler {
                 eleRefundOrder = EleRefundOrder.builder().orderId(order.getOrderId())
                         .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, order.getUid())).payAmount(eleDepositOrder.getPayAmount())
                         .refundAmount(new BigDecimal(order.getPayTransAmt().toString())).status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                        .tenantId(eleDepositOrder.getTenantId()).franchiseeId(order.getFranchiseeId()).payType(eleDepositOrder.getPayType()).build();
+                        .tenantId(eleDepositOrder.getTenantId()).franchiseeId(order.getFranchiseeId()).payType(eleDepositOrder.getPayType()).paymentChannel(eleDepositOrder.getPaymentChannel()).build();
                 eleRefundOrderService.insert(eleRefundOrder);
             }
             EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -247,9 +252,6 @@ public class BatteryBusinessHandler implements BusinessHandler {
             
             // 修改企业用户代付状态为代付过期
 //            enterpriseChannelUserService.updatePaymentStatusForRefundDeposit(userInfo.getUid(), EnterprisePaymentStatusEnum.PAYMENT_TYPE_EXPIRED.getCode());
-            
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(userInfo.getUid());
             
             // 解约分期签约，如果有的话
             installmentBizService.terminateForReturnDeposit(userInfo.getUid());
