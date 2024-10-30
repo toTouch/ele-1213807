@@ -20,6 +20,9 @@ public class RedissonConfig {
     @Value("${redisson.address}")
     private String redisAddress;
     
+    @Value("${redisson.password}")
+    private String password;
+    
     @Value("${redisson.connectionPoolSize}")
     private int connectionPoolSize;
     
@@ -30,7 +33,7 @@ public class RedissonConfig {
     public RedissonClient redissonClient() {
         
         Config config = new Config();
-        config.useSingleServer().setAddress(redisAddress).setConnectionPoolSize(connectionPoolSize).setConnectionMinimumIdleSize(connectionMinimumIdleSize);
+        config.useSingleServer().setAddress(redisAddress).setPassword(password).setConnectionPoolSize(connectionPoolSize).setConnectionMinimumIdleSize(connectionMinimumIdleSize);
         
         config.setCodec(new JsonJacksonCodec());
         return Redisson.create(config);
