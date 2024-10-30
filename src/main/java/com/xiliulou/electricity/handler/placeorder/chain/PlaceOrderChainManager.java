@@ -17,7 +17,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
-import com.xiliulou.electricity.handler.placeorder.PlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
@@ -180,7 +179,7 @@ public class PlaceOrderChainManager {
         // 调起支付
         UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                 .jsonSingleFee(JsonUtil.toJson(context.getAllPayAmount())).payAmount(context.getTotalAmount()).tenantId(batteryMemberCard.getTenantId())
-                .attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT).description("租电租金（含押金）").uid(userInfo.getUid()).build();
+                .attach(UnionTradeOrder.ATTACH_PLACE_ORDER).description("租电租金（含押金）").uid(userInfo.getUid()).build();
         
         // 处理分账交易订单
         tradeOrderService.dealProfitSharingTradeOrderV2(electricityMemberCardOrder, insuranceOrder, payParamConfig, batteryMemberCard, unionPayOrder, userInfo, orderList);

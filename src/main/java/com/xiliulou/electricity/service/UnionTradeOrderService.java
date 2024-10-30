@@ -50,4 +50,9 @@ public interface UnionTradeOrderService {
      * 购买分期套餐回调方法
      */
     Pair<Boolean, Object> notifyInstallmentPayment(BaseOrderCallBackResource callBackResource);
+    
+    /**
+     * 押金、套餐、保险全场景下单购买回调
+     */
+    Pair<Boolean, Object> notifyPlaceOrder(BaseOrderCallBackResource callBackResource);
 }
