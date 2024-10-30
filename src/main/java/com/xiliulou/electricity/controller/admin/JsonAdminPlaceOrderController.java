@@ -25,7 +25,7 @@ public class JsonAdminPlaceOrderController {
     /**
      * 押金、套餐、保险购买下单支付接口
      */
-    @PostMapping("admin/place/order")
+    @PostMapping("/admin/place/order")
     public R<Object> placeOrder(@RequestBody PlaceOrderQuery query, HttpServletRequest request) {
         // 设置支付类型
         query.setPayType(PlaceOrderConstant.OFFLINE_PAYMENT);

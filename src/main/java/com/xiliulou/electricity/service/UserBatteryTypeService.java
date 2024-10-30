@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;

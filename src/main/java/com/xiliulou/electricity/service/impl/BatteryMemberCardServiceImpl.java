@@ -671,8 +671,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Collections.emptyList();
         }
         
-        // 未缴纳押金
-        if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        
+        // 未缴纳押金；灵活续费开启时，也需要查询加盟商下的全部电压
+        if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus()) || Objects.isNull(electricityConfig) || !Objects.equals(
+                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
             List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.emptyList();

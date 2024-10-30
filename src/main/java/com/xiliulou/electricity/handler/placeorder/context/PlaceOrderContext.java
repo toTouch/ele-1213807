@@ -58,7 +58,7 @@ public class PlaceOrderContext {
     private UserInfo userInfo;
     
     /**
-     * 根据token解析出的用户信息
+     * 登录用户的用户信息
      */
     private TokenUser tokenUser;
     

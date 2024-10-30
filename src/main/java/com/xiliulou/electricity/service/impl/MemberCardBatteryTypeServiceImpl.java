@@ -1,8 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.mapper.MemberCardBatteryTypeMapper;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeService {
     @Resource
     private MemberCardBatteryTypeMapper memberCardBatteryTypeMapper;
-
+    
+    @Qualifier("redisService")
+    @Autowired
+    private RedisService redisService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -79,5 +90,22 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     @Override
     public List<String> selectBatteryTypeByMid(Long mid) {
         return this.memberCardBatteryTypeMapper.selectBatteryTypeByMid(mid);
+    }
+    
+    @Override
+    public List<String> checkBatteryTypeWithMemberCard(Long uid, String batteryType, BatteryMemberCard memberCard) {
+        // 用户当前套餐不分型号，不作处理
+        List<String> batteryTypesWithCard = selectBatteryTypeByMid(memberCard.getId());
+        if (CollectionUtils.isEmpty(batteryTypesWithCard)) {
+            return List.of();
+        }
+        
+        // 用户当前绑定的电池也就是要还的电池和当前套餐匹配，不作处理
+        if (batteryTypesWithCard.contains(batteryType)) {
+            return List.of();
+        }
+        
+        // 不匹配时，从缓存内获取旧套餐的电池型号
+        return redisService.getWithList(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, uid), String.class);
     }
 }

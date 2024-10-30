@@ -45,6 +45,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
@@ -78,6 +79,7 @@ import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordSer
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
@@ -262,6 +264,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Resource
     private TenantService tenantService;
+    
+    @Autowired
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
     
     /**
      * 新增数据
@@ -815,6 +820,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
             
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+            
+            List<String> oldBatteryTypes = null;
+            
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //判断电池滞纳金
                 
@@ -852,18 +861,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
                 }
+                
+                if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+                    oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), batteryMemberCard);
+                }
             } else {
                 //判断车电一体滞纳金
                 if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
                     log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("300001", "存在滞纳金，请先缴纳");
                 }
-                
-                //判断车电一体套餐状态
-                //                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
-                //                    log.warn("RETURNBATTERY WARN! user memberCard disable,uid={}", userInfo.getUid());
-                //                    return R.fail( "100210", "用户套餐不可用");
-                //                }
             }
             
             
@@ -882,8 +889,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
-            
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
@@ -916,7 +921,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
-            List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
+            List<String> batteryTypeList;
+            if (CollectionUtils.isEmpty(oldBatteryTypes)) {
+                batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
+            } else {
+                batteryTypeList = oldBatteryTypes;
+            }
             
             if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
@@ -940,6 +950,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             //为逾期用户清除备注
             overdueUserRemarkPublish.publish(user.getUid(), OverdueType.BATTERY.getCode(), user.getTenantId());
+            
+            // 命令下发成功再删除缓存
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                redisService.delete(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
+            }
+            
             return R.ok(orderId);
         } catch (BizException e) {
             throw new BizException(e.getErrCode(), e.getErrMsg());
