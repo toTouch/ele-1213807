@@ -148,9 +148,7 @@ public class RequestFilter implements Filter {
                 httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
                 if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-                    log.info("httpServletRequest");
                     params = getRequestBody(httpServletRequest);
-                    log.info("params:{}", params);
                 } else {
                     params = JsonUtil.toJson(httpServletRequest.getParameterMap());
                 }
