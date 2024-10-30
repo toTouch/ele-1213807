@@ -3497,7 +3497,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         // 判断用户绑定的电池与当前正在使用的套餐，电池型号是否匹配，返回是否需要进行灵活续费后的电池转换
-        Triple<Boolean, String, Object> checkFlexibleRenewal = checkFlexibleRenewal(vo, electricityBattery, batteryMemberCard);
+        Triple<Boolean, String, Object> checkFlexibleRenewal = checkFlexibleRenewal(vo, electricityBattery, batteryMemberCard, user);
         if (!checkFlexibleRenewal.getLeft()) {
             return checkFlexibleRenewal;
         }
@@ -3588,7 +3588,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 electricityCabinetBox.getSn(), "UNKNOW");
     }
     
-    private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVo vo, ElectricityBattery battery, BatteryMemberCard memberCard) {
+    private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVo vo, ElectricityBattery battery, BatteryMemberCard memberCard, TokenUser user) {
+        // 缓存内没数据表示，没有经过套餐转换，正常换电
+        List<String> oldBatteryTypes = redisService.getWithList(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, user.getUid()), String.class);
+        if (CollectionUtils.isEmpty(oldBatteryTypes)) {
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return Triple.of(true, null, null);
+        }
+        
         List<String> batteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
         if (CollectionUtils.isEmpty(batteryTypes)) {
             // 标准型号套餐，不存在电池型号转换，正常换电
