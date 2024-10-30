@@ -574,6 +574,8 @@ public class UserServiceImpl implements UserService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
+        
+        
         User updateUser = new User();
         updateUser.setUid(oldUser.getUid());
         updateUser.setLoginPwd(customPasswordEncoder.encode(request.getPassword()));
@@ -750,6 +752,7 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery) {
+        log.info("updatePassword passwordQuery={}", passwordQuery);
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("updatePassword  ERROR! not found user ");
@@ -773,6 +776,9 @@ public class UserServiceImpl implements UserService {
         updateUser.setUid(oldUser.getUid());
         updateUser.setLoginPwd(customPasswordEncoder.encode(passwordQuery.getPassword()));
         updateUser.setUpdateTime(System.currentTimeMillis());
+    
+        log.info("updatePassword oldUser={}, updateUser={}", oldUser, updateUser);
+        
         Integer update = updateUser(updateUser, oldUser);
         
         return update > 0 ? Triple.of(true, null, null) : Triple.of(false, null, "修改密码失败!");
