@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.config.redis;
 
+import cn.hutool.core.util.StrUtil;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
@@ -33,7 +34,10 @@ public class RedissonConfig {
     public RedissonClient redissonClient() {
         
         Config config = new Config();
-        config.useSingleServer().setAddress(redisAddress).setPassword(password).setConnectionPoolSize(connectionPoolSize).setConnectionMinimumIdleSize(connectionMinimumIdleSize);
+        config.useSingleServer().setAddress(redisAddress).setConnectionPoolSize(connectionPoolSize).setConnectionMinimumIdleSize(connectionMinimumIdleSize);
+        if (StrUtil.isNotBlank(password)){
+            config.useSingleServer().setPassword(password);
+        }
         
         config.setCodec(new JsonJacksonCodec());
         return Redisson.create(config);
