@@ -17,10 +17,12 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.entity.ElectricityAppConfig;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -60,6 +62,7 @@ import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.SelectionExchangeCheckQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
+import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.ElectricityAppConfigService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -226,6 +229,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private ElectricityAppConfigService electricityAppConfigService;
+    
+    @Resource
+    private EleUserEsignRecordService eleUserEsignRecordService;
     
     public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.19";
     
@@ -1159,6 +1165,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100206", "用户未审核");
             }
             
+            //电子签署拦截
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryEsignFinishedRecordByUser(user.getUid(), Long.valueOf(user.getTenantId()));
+                if (Objects.isNull(eleUserEsignRecord)) {
+                    return Triple.of(false, "100329", "请先完成电子签名");
+                }
+            }
+            
             //查询用户绑定的电池列表
             List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
             
@@ -1253,6 +1268,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("ORDER WARN! userinfo is UN AUTH! uid={}", user.getUid());
                 return Triple.of(false, "100206", "用户未审核");
+            }
+            
+            //电子签署拦截
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryEsignFinishedRecordByUser(user.getUid(), Long.valueOf(user.getTenantId()));
+                if (Objects.isNull(eleUserEsignRecord)) {
+                    return Triple.of(false, "100329", "请先完成电子签名");
+                }
             }
             
             
@@ -1733,6 +1757,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Triple<Boolean, String, Object> cabinetStatus = verifyElectricityCabinetStatus(electricityCabinet, exchangeQuery);
         if (Boolean.FALSE.equals(cabinetStatus.getLeft())) {
             return cabinetStatus;
+        }
+        
+        //电子签署拦截
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+            EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryEsignFinishedRecordByUser(userInfo.getUid(), Long.valueOf(userInfo.getTenantId()));
+            if (Objects.isNull(eleUserEsignRecord)) {
+                return Triple.of(false, "100329", "请先完成电子签名");
+            }
         }
         
         //校验加盟商

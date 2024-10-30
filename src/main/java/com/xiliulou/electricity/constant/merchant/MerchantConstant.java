@@ -113,4 +113,8 @@ public interface MerchantConstant {
     public final static Integer MERCHANT_EMPLOYEE_QR_CODE_TYPE = 2;
     
     public final static Integer MERCHANT_EMPLOYEE_MAX_SIZE = 20;
+    
+    Integer UN_BIND_MERCHANT_USER_TYPE = 0;
+    
+    Integer UN_BIND_CHANNEL_EMPLOYEE_USER_TYPE = 1;
 }

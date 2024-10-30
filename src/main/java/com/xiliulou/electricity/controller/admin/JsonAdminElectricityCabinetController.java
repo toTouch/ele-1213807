@@ -34,6 +34,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserEleOnlineLogService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -102,7 +103,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
     EleCabinetCoreDataService eleCabinetCoreDataService;
     
     @Autowired
-    EleOnlineLogService eleOnlineLogService;
+    UserEleOnlineLogService userEleOnlineLogService;
     
     @Autowired
     UserDataScopeService userDataScopeService;
@@ -711,13 +712,13 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             offset = 0;
         }
         
-        return eleOnlineLogService.queryOnlineLogList(size, offset, status, eleId);
+        return userEleOnlineLogService.queryOnlineLogList(size, offset, status, eleId);
     }
     
     
     @GetMapping("/admin/electricityCabinet/onlineLogCount")
     public R getOnlineLogCount(@RequestParam(value = "status", required = false) String status, @RequestParam("eleId") Integer eleId) {
-        return eleOnlineLogService.queryOnlineLogCount(status, eleId);
+        return userEleOnlineLogService.queryOnlineLogCount(status, eleId);
     }
     
     /**
@@ -1053,21 +1054,7 @@ public class JsonAdminElectricityCabinetController extends BasicController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
-        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
-        if (Objects.isNull(otherSetting) || StringUtils.isBlank(otherSetting.getApiAddress())) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        
-        Map<String, Object> params = Maps.newHashMap();
-        params.put("apiAddress", otherSetting.getApiAddress());
-        params.put("iotConnectMode", query.getPattern());
-        
-        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
-        commandQuery.setProductKey(query.getProductKey());
-        commandQuery.setDeviceName(query.getDeviceName());
-        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
-        commandQuery.setData(params);
-        return electricityCabinetService.sendCommandToEleForOuter(commandQuery);
+        return electricityCabinetService.updateCabinetPattern(query);
     }
     
     

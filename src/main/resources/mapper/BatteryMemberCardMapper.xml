@@ -189,47 +189,6 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectBySearch" resultMap="BatteryMemberCardMap">
-        select
-        id, name
-        from t_battery_member_card
-        <where>
-            case
-                when #{catchEnterprise} = 1 then business_type in (0, 2, 4)
-                else business_type = 0
-            end
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="name != null and name != ''">
-                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
-            </if>
-            <if test="rentType != null and rentType==1">
-                and rent_type in (1,0)
-            </if>
-            <if test="rentType != null and rentType==2">
-                and rent_type in (2,0)
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="franchiseeIds != null">
-                and franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
-        order by id desc
-        limit #{offset}, #{size}
-    </select>
-    
     <select id="selectByPage" resultMap="BatteryMemberCardTypePageMap">
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
@@ -529,7 +488,7 @@
         from t_battery_member_card
         where name = #{name}
           and del_flag = 0
-          and business_type in (0, 2)
+          and business_type in (0, 2, 4)
           and tenant_id = #{tenantId} LIMIT 1
     </select>
     
@@ -908,6 +867,38 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+    </select>
+    
+    <select id="listBatteryAndCarMember" resultType="com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO">
+        SELECT id, name
+        from (SELECT id, name
+        from t_battery_member_card
+        where tenant_id = #{tenantId} and del_flag = 0 and business_type != 2
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        union all
+        SELECT id, name
+        from t_car_rental_package
+        where tenant_id = #{tenantId} and del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        ) u
+        limit #{offset}
+        , #{size}
     </select>
 
 </mapper>

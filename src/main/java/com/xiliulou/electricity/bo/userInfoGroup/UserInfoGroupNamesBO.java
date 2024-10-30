@@ -22,5 +22,7 @@ public class UserInfoGroupNamesBO {
     
     private String groupNo;
     
+    private Long franchiseeId;
+    
     private String groupName;
 }

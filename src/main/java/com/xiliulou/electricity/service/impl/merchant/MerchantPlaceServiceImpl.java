@@ -315,8 +315,7 @@ public class MerchantPlaceServiceImpl implements MerchantPlaceService {
                 return;
             }
             
-            MerchantAreaRequest areaQuery = MerchantAreaRequest.builder().idList(areaIdList).build();
-            List<MerchantArea> merchantAreaList = merchantAreaService.queryList(areaQuery);
+            List<MerchantArea> merchantAreaList = merchantAreaService.listByIdList(areaIdList);
             if (ObjectUtils.isEmpty(merchantAreaList)) {
                 return;
             }

@@ -30,8 +30,8 @@ import com.xiliulou.electricity.request.userinfo.userInfoGroup.UserInfoGroupSave
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailHistoryService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -87,13 +87,13 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     private UserInfoService userInfoService;
     
     @Resource
-    private UserInfoGroupDetailService userInfoGroupDetailService;
-    
-    @Resource
     private UserInfoGroupDetailHistoryService userInfoGroupDetailHistoryService;
     
     @Resource
     private OperateRecordUtil operateRecordUtil;
+    
+    @Resource
+    private UserInfoGroupBizService userInfoGroupBizService;
     
     @Override
     public R save(UserInfoGroupSaveAndUpdateRequest request, Long operator) {
@@ -148,7 +148,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         }
         
         // 物理删除分组绑定的用户
-        userInfoGroupDetailService.deleteByGroupNo(userInfoGroup.getGroupNo(), tenantId);
+        userInfoGroupBizService.deleteGroupDetailByGroupNo(userInfoGroup.getGroupNo(), tenantId);
         
         // 逻辑删除用户分组
         UserInfoGroup delUserInfoGroup = UserInfoGroup.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(CommonConstant.DEL_Y).operator(operator).build();
@@ -326,19 +326,8 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
                 userInfoList.removeAll(notExistUserInfos);
             }
             
-            userInfoList.forEach(userInfo -> {
-                Long bindFranchiseeId = userInfo.getFranchiseeId();
-                if (Objects.isNull(bindFranchiseeId) || Objects.equals(bindFranchiseeId, NumberConstant.ZERO_L)) {
-                    notBoundFranchiseePhone.add(userInfo.getPhone());
-                } else {
-                    if (Objects.equals(bindFranchiseeId, franchiseeId)) {
-                        sameFranchiseeUserInfos.add(userInfo);
-                        userInfoMap.put(userInfo.getUid(), userInfo);
-                    } else {
-                        notSameFranchiseePhone.add(userInfo.getPhone());
-                    }
-                }
-            });
+            // 不做加盟商校验，直接将用户添加到相同加盟商集合用于后续操作
+            sameFranchiseeUserInfos.addAll(userInfoList);
         });
         
         AtomicReference<Map<Long, List<UserInfoGroupNamesBO>>> userGroupMap = new AtomicReference<>();
@@ -350,7 +339,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             List<List<Long>> partition1 = ListUtils.partition(uidList, 500);
             
             partition1.parallelStream().forEach(uidList1 -> {
-                List<UserInfoGroupNamesBO> listByUidList = userInfoGroupDetailService.listGroupByUidList(uidList1);
+                List<UserInfoGroupNamesBO> listByUidList = userInfoGroupBizService.listGroupByUidList(uidList1);
                 if (CollectionUtils.isEmpty(listByUidList)) {
                     return;
                 }
@@ -381,8 +370,11 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         String sessionId = UUID.fastUUID().toString(true);
         batchImportUserInfoVO.setSessionId(sessionId);
         batchImportUserInfoVO.setNotExistPhones(CollectionUtils.isEmpty(notExistsPhone) ? Collections.emptySet() : notExistsPhone);
+        
+        // TODO SJP NotBoundFranchiseePhones、NotSameFranchiseePhones在用户分组优化上线后即无用，可以删除，删除前需要找前端核对，前端取值代码是否已删除
         batchImportUserInfoVO.setNotBoundFranchiseePhones(CollectionUtils.isEmpty(notBoundFranchiseePhone) ? Collections.emptySet() : notBoundFranchiseePhone);
         batchImportUserInfoVO.setNotSameFranchiseePhones(CollectionUtils.isEmpty(notSameFranchiseePhone) ? Collections.emptySet() : notSameFranchiseePhone);
+        
         batchImportUserInfoVO.setOverLimitGroupNumPhones(CollectionUtils.isEmpty(overLimitGroupNumPhone) ? Collections.emptySet() : overLimitGroupNumPhone);
         
         if (existsPhone.isEmpty()) {
@@ -409,7 +401,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
         
         while (iterator.hasNext()) {
             if (size >= maxSize) {
-                Integer insert = userInfoGroupDetailService.batchInsert(detailList);
+                Integer insert = userInfoGroupBizService.batchInsertGroupDetail(detailList);
                 
                 if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
                     // 新增修改记录
@@ -459,7 +451,7 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
             size++;
         }
         if (!detailList.isEmpty()) {
-            Integer insert = userInfoGroupDetailService.batchInsert(detailList);
+            Integer insert = userInfoGroupBizService.batchInsertGroupDetail(detailList);
             
             if (insert > 0 && CollectionUtils.isNotEmpty(detailHistoryList)) {
                 // 新增修改记录
@@ -478,18 +470,18 @@ public class UserInfoGroupServiceImpl implements UserInfoGroupService {
     
     @Override
     public UserInfoGroup queryByIdFromCache(Long id) {
-        //先查缓存
+        // 先查缓存
         UserInfoGroup cacheUserInfoGroup = redisService.getWithHash(CacheConstant.CACHE_USER_GROUP + id, UserInfoGroup.class);
         if (Objects.nonNull(cacheUserInfoGroup)) {
             return cacheUserInfoGroup;
         }
-        //缓存没有再查数据库
+        // 缓存没有再查数据库
         UserInfoGroup userInfoGroup = userInfoGroupMapper.selectById(id);
         if (Objects.isNull(userInfoGroup)) {
             return null;
         }
         
-        //放入缓存
+        // 放入缓存
         redisService.saveWithHash(CacheConstant.CACHE_USER_GROUP + id, userInfoGroup);
         return userInfoGroup;
     }

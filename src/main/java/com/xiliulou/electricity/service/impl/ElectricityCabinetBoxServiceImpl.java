@@ -9,10 +9,12 @@ import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryModel;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -193,6 +195,20 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 item.setBatteryA(Objects.nonNull(electricityBatteryVO.getBatteryChargeA()) ? electricityBatteryVO.getBatteryChargeA() : 0);
                 item.setBatteryV(Objects.nonNull(electricityBatteryVO.getBatteryV()) ? electricityBatteryVO.getBatteryV() : 0);
                 item.setBatteryTemperature(Objects.nonNull(electricityBatteryVO.getBatteryTemperature()) ? electricityBatteryVO.getBatteryTemperature() : "0.00");
+                
+                // 租借在仓
+                if (Objects.equals(electricityBatteryVO.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.equals(electricityBatteryVO.getPhysicsStatus(),
+                        ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
+                    if (Objects.isNull(electricityBatteryVO.getUid())) {
+                        log.warn("ListBoxOther Warn! 电池租借在仓，但是uid为空，sn is {}", sn);
+                    } else {
+                        item.setIsBatteryRentInCell(ElectricityCabinetBoxVO.BATTERY_RENT_IN_CELL);
+                        item.setUid(electricityBatteryVO.getUid());
+                        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBatteryVO.getUid());
+                        item.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : null);
+                        item.setPhone(Objects.nonNull(userInfo) ? userInfo.getPhone() : null);
+                    }
+                }
             }
 
             //设置电池短型号
