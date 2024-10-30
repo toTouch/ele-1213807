@@ -1,0 +1,23 @@
+package com.xiliulou.electricity.service.batteryRecycle;
+
+import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleSaveOrUpdateRequest;
+import com.xiliulou.electricity.request.batteryrecycle.BatteryRecyclePageRequest;
+import com.xiliulou.electricity.vo.recycle.BatteryRecycleVO;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.List;
+
+/**
+ * 电池回收记录表(TBatteryRecycleRecord)表服务接口
+ *
+ * @author maxiaodong
+ * @since 2024-10-30 10:47:56
+ */
+public interface BatteryRecycleRecordService {
+    
+    Triple<Boolean, String, Object> save(BatteryRecycleSaveOrUpdateRequest saveRequest, Long uid);
+    
+    List<BatteryRecycleVO> listByPage(BatteryRecyclePageRequest request);
+    
+    Integer countTotal(BatteryRecyclePageRequest request);
+}

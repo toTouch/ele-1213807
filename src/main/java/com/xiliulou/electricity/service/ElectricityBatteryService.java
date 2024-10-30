@@ -22,7 +22,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 换电柜电池表(ElectricityBattery)表服务接口
@@ -159,4 +158,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Map<String,Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
     
     List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList);
+    
+    List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList);
 }

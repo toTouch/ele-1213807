@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.batteryrecycle.BatteryRecycleRecordMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`,
+          `batch_no`,
+          `electricity_cabinet_id`,
+          `franchisee_id` ,
+          `battery_id`,
+          `sn`,
+          `cell_no`,
+          `status`,
+          `recycle_reason`,
+          `del_flag`,
+          `operator_id`,
+          `tenant_id`,
+          `create_time`,
+          `update_time`
+    </sql>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_battery_recycle_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            batch_no,
+            electricity_cabinet_id,
+            franchisee_id,
+            battery_id,
+            sn,
+            cell_no,
+            status,
+            recycle_reason,
+            operator_id,
+            tenant_id,
+            create_time,
+            update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{batchNo},
+            #{electricityCabinetId},
+            #{franchiseeId},
+            #{batteryId},
+            #{sn},
+            #{cellNo},
+            #{status},
+            #{recycleReason},
+            #{operatorId},
+            #{tenantId},
+            #{createTime},
+            #{updateTime}
+        </trim>
+    </insert>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into
+        t_battery_recycle_record(batch_no,electricity_cabinet_id,franchisee_id,battery_id,sn,cell_no,status,recycle_reason,operator_id,tenant_id,create_time,update_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.batchNo},#{item.electricityCabinetId},#{item.franchiseeId},#{item.batteryId},#{item.sn},#{item.cellNo},#{item.status},#{item.recycleReason},#{item.operatorId},#{item.tenantId},#{item.createTime},#{item.updateTime}})
+        </foreach>
+    </insert>
+    
+    <select id="selectListLastRecycleRecordByTime"
+        resultType="com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord">
+        select
+        <include refid="basic_field"/>
+        from t_battery_recycle_record
+        <where>
+            del_flag = 0
+            and create_time >= #{startTime}
+            and create_time &lt; #{endTime}
+            and tenant_id = #{tenantId}
+        </where>
+        order by id desc limit 1
+    </select>
+    
+    <sql id="pageFilter">
+        <where>
+            del_flag = 0
+            <if test="sn != null and sn != ''">
+                and sn like concat('%', #{sn}, '%')
+            </if>
+            <if test="batchNo != null and batchNo != ''">
+                and batch_no like concat('%', #{batchNo}, '%')
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="electricityCabinetId != null">
+                and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                and franchisee_id in
+                <foreach collection="franchiseeIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="startTime != null">
+                and create_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt; #{endTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </sql>
+    
+    <select id="selectListByPage"
+        resultType="com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord">
+        select
+        <include refid="basic_field"/>
+        from t_battery_recycle_record
+        <include refid="pageFilter"/>
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="countTotal" resultType="java.lang.Integer">
+        select count(1) from t_battery_recycle_record
+        <include refid="pageFilter"/>
+    </select>
+
+</mapper>
+
+
+
+

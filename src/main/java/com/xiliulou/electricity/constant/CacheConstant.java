@@ -836,5 +836,11 @@ public interface CacheConstant {
      * 保存租借状态的电池对应的订单
      */
     String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
+    
+    /**
+     * 商户电池回收订单保存用户id
+     */
+    String BATTERY_RECYCLE_SAVE_UID = "battery_recycle_save_uid:";
+    String BATTERY_RECYCLE_BATCH_NO = "battery_recycle_batch_no:%s:%s";
 }
 
