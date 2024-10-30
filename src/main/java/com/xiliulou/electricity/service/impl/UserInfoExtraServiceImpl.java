@@ -489,7 +489,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                         .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .activitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).inviterUid(newInviterUid)
-                        .latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).build();
+                        .latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).eleLimit(UserInfoExtraConstant.ELE_LIMIT_YES).build();
                 
                 this.insert(insertUserInfoExtra);
             }
@@ -630,7 +630,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + userInfoExtra.getUid());
         });
-    
+        
         if (update > 0) {
             Map<String, Object> oldMap = new HashMap<>();
             oldMap.put("eleLimit", userInfoExtra.getEleLimit());
