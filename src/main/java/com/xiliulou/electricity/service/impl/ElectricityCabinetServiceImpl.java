@@ -129,6 +129,7 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
@@ -454,6 +455,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private PushDataToThirdService pushDataToThirdService;
     
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -2722,6 +2725,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid) {
         
         Integer tenantId = TenantContextHolder.getTenantId();
+        // 有锂换电大部分走选仓换电，少部分正常换电这里特殊处理
         if (Objects.nonNull(tenantId) && Objects.nonNull(eleCommonConfig.getSpecialTenantId()) && Objects.equals(eleCommonConfig.getSpecialTenantId(), tenantId)) {
             List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
@@ -2757,11 +2761,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
                 
                 // 电量最大的
-                Double maxPower = usableBatteryCellNos.get(0).getPower();
-                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
-                if (usableBatteryCellNos.size() == 1) {
-                    return Triple.of(true, null, usableBatteryCellNos.get(0));
-                }
+//                Double maxPower = usableBatteryCellNos.get(0).getPower();
+//                usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower)).collect(Collectors.toList());
+//                if (usableBatteryCellNos.size() == 1) {
+//                    return Triple.of(true, null, usableBatteryCellNos.get(0));
+//                }
             }
             
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
@@ -2770,16 +2774,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Triple.of(false, "", "换电柜暂无满电电池");
             }
             
-            // 如果存在多个电量相同的格挡，取充电器电压最大
-            Double maxPower = usableBatteryCellNos.get(0).getPower();
-            ElectricityCabinetBox usableCabinetBox = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), maxPower))
-                    .filter(item -> Objects.nonNull(item.getChargeV())).sorted(Comparator.comparing(ElectricityCabinetBox::getChargeV)).reduce((first, second) -> second)
-                    .orElse(null);
-            if (Objects.isNull(usableCabinetBox)) {
-                return Triple.of(false, "", "换电柜暂无满电电池");
+            // 过滤异常满电仓门
+            Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBatteryCellNos);
+            if (filterFullExceptionCellPair.getLeft()) {
+                return commonGetFullCell(uid, eid, filterFullExceptionCellPair.getRight());
+            }
+            usableBatteryCellNos = filterFullExceptionCellPair.getRight();
+            
+            
+            // 舒适换电分配满电仓适配
+            Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos, fullyCharged);
+            if (comfortExchangeGetFullCellPair.getLeft()) {
+                return Triple.of(true, null, comfortExchangeGetFullCellPair.getRight());
             }
             
-            return Triple.of(true, null, usableCabinetBox);
+            
+            return commonGetFullCell(uid, eid, usableBatteryCellNos);
         } else {
             List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(eid, null, fullyCharged);
             if (CollectionUtils.isEmpty(usableBatteryCellNos)) {
@@ -2847,6 +2857,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 log.warn("EXCHANGE WARN!usableBatteryCellNos is empty,eid={}", eid);
                 return Triple.of(false, "100216", "换电柜暂无满电电池");
             }
+            
+            // 过滤异常满电仓门
+            Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBatteryCellNos);
+            if (filterFullExceptionCellPair.getLeft()) {
+                return commonGetFullCell(uid, eid, filterFullExceptionCellPair.getRight());
+            }
+            usableBatteryCellNos = filterFullExceptionCellPair.getRight();
+            
             
             // 舒适换电分配满电仓适配
             Pair<Boolean, ElectricityCabinetBox> comfortExchangeGetFullCellPair = chooseCellConfigService.comfortExchangeGetFullCell(uid, usableBatteryCellNos, fullyCharged);
@@ -2954,6 +2972,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
             return Pair.of(true, cellNo);
         }
+        
+        // 过滤异常的仓内号
+        Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        // 没有正常仓门，随机获取异常仓门
+        if (filterEmptyExchangeCellPair.getLeft()) {
+            return Pair.of(true,
+                    Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()));
+        }
+        emptyCellList = filterEmptyExchangeCellPair.getRight();
+        
         
         // 舒适换电分配空仓
         Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
@@ -5467,7 +5495,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version) {
+    public Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version, Long uid) {
         // 旧版本仍走旧分配逻辑
         if (StringUtils.isNotBlank(version) && VersionUtil.compareVersion(ELE_CABINET_VERSION, version) > 0) {
             return this.findUsableEmptyCellNo(eid);
@@ -5483,6 +5511,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (emptyCellList.size() == 1) {
             cellNo = Integer.valueOf(emptyCellList.get(0).getCellNo());
             return Pair.of(true, cellNo);
+        }
+        
+        // 空仓逻辑优化：过滤异常的空仓号
+        Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        if (filterEmptyExchangeCellPair.getLeft()) {
+            return Pair.of(true,
+                    Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()));
+        }
+        emptyCellList = filterEmptyExchangeCellPair.getRight();
+        
+        
+        // 舒适换电分配空仓
+        Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
+        if (comfortExchangeGetEmptyCellPair.getLeft()) {
+            return Pair.of(true, comfortExchangeGetEmptyCellPair.getRight());
         }
         
         // 有多个空格挡  优先分配开门的格挡

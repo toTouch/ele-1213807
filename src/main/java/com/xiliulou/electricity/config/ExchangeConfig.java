@@ -21,4 +21,9 @@ public class ExchangeConfig {
      * 3分钟内再次扫码换电
      */
     private String scanTime;
+    
+    /**
+     * 异常格挡保存时间
+     */
+    private Long exceptionCellSaveTime;
 }

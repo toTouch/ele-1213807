@@ -842,5 +842,17 @@ public interface CacheConstant {
      */
     String BATTERY_RECYCLE_SAVE_UID = "battery_recycle_save_uid:";
     String BATTERY_RECYCLE_BATCH_NO = "battery_recycle_batch_no:%s:%s";
+    
+    
+    /**
+     * 异常柜机格挡redis
+     */
+    String EXCEPTION_EMPTY_EID_KEY = "exception_empty_eid:%d";
+    
+    
+    /**
+     * 异常满电仓redis
+     */
+    String EXCEPTION_FULL_EID_KEY = "exception_full_eid:%d";
 }
 
