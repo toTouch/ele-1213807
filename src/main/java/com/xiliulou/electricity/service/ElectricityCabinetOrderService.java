@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 订单表(TElectricityCabinetOrder)表服务接口
@@ -120,5 +121,6 @@ public interface ElectricityCabinetOrderService {
     R lessExchangeSelfOpenCell(LessExchangeSelfOpenCellQuery query);
     
     R openFullCell(OpenFullCellQuery query);
-
+    
+    List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList);
 }

@@ -837,6 +837,18 @@ public interface CacheConstant {
      */
     String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
     
+    
+    /**
+     * 异常柜机格挡redis
+     */
+    String EXCEPTION_EMPTY_EID_KEY = "exception_empty_eid:%d";
+    
+    
+    /**
+     * 异常满电仓redis
+     */
+    String EXCEPTION_FULL_EID_KEY = "exception_full_eid:%d";
+    
     /**
      * 客服电话缓存
      */

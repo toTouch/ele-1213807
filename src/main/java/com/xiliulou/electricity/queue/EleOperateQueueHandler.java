@@ -47,6 +47,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.TenantService;
@@ -179,6 +180,9 @@ public class EleOperateQueueHandler {
     @Resource
     private PushDataToThirdService pushDataToThirdService;
     
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
+    
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
     
     XllThreadPoolExecutorService operateBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPERATE_BATTERY_SOC_ANALYZE", 1, "operate-battery-soc-pool-thread");
@@ -299,6 +303,10 @@ public class EleOperateQueueHandler {
                     if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)){
                         userBatteryMemberCardService.handlePackageNumber(rentBatteryOrder.getUid());
                     }
+                    
+                    // 保存租退异常格挡
+                    exceptionHandlerService.saveRentReturnExceptionCell(finalOpenDTO.getOrderStatus(), electricityCabinet.getId(), rentBatteryOrder.getCellNo(),
+                            finalOpenDTO.getSessionId());
                     
                     //取消订单
                     if (finalOpenDTO.getIsNeedEndOrder()) {

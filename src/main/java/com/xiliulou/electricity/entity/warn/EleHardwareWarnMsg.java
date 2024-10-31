@@ -124,6 +124,11 @@ public class EleHardwareWarnMsg {
      */
     private String cabinetSn;
     
+    /**
+     * 订单编号：租退换
+     */
+    private String orderId;
+    
     
     /**
      * 告警标识

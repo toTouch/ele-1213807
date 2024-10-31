@@ -80,6 +80,7 @@ import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
@@ -268,6 +269,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Autowired
     private ApplicationContext applicationContext;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     @Override
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -576,6 +580,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+            }
+    
+            // 是否限制套餐购买次数
+            Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
+            if (limitPurchase.getLeft()) {
+                log.warn("PayMemberCardAndInsurance WARN! user limit purchase,uid={}", userInfo.getUid());
+                return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
             }
             
             // 检查是否为自主续费状态
