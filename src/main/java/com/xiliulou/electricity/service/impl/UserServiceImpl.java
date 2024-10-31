@@ -572,9 +572,16 @@ public class UserServiceImpl implements UserService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
+        // 解密密码
+        String decryptPassword = decryptPassword(request.getPassword());
+        if (StringUtils.isBlank(decryptPassword)) {
+            log.error("UpdateTenantPassword ERROR! decryptPassword error! tenantId={},uid={},password={}", tenantId, uid, request.getPassword());
+            return R.fail("系统错误!");
+        }
+        
         User updateUser = new User();
         updateUser.setUid(oldUser.getUid());
-        updateUser.setLoginPwd(customPasswordEncoder.encode(request.getPassword()));
+        updateUser.setLoginPwd(customPasswordEncoder.encode(decryptPassword));
         updateUser.setUpdateTime(System.currentTimeMillis());
         Integer update = this.updateUser(updateUser, oldUser);
         

@@ -59,4 +59,8 @@ public class ServicePhone {
     private Long updateTime;
     
     public static final Integer LIMIT_NUM = 5;
+    
+    public static final Integer LIMIT_PHONE_LENGTH = 20;
+    
+    public static final Integer LIMIT_REMARK_LENGTH = 10;
 }

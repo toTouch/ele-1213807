@@ -101,7 +101,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     @PostMapping("admin/servicePhone")
     public R getServicePhone(@RequestBody ServicePhoneQuery servicePhoneQuery) {
         // 强制走新的接口
-        return R.fail("120151", "网络不佳,请刷新页面重试");
+        return R.fail("120152", "网络不佳,请刷新页面重试！");
     }
     
     @GetMapping("admin/servicePhone/all")

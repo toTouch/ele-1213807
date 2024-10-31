@@ -16,9 +16,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ServicePhoneVO;
 import com.xiliulou.electricity.vo.ServicePhonesVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
  * @author HeYafeng
  * @date 2024/10/24 17:40:54
  */
+@Slf4j
 @Service
 public class ServicePhoneServiceImpl implements ServicePhoneService {
     
@@ -57,12 +60,9 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         
         try {
             List<ServicePhoneRequest> requestPhoneList = request.getPhoneList();
-            if (requestPhoneList.size() > ServicePhone.LIMIT_NUM) {
-                return R.fail("120150", "电话号码不能超过5个");
-            }
-            
-            if (!Objects.equals(requestPhoneList.stream().map(ServicePhoneRequest::getPhone).distinct().count(), requestPhoneList.size())) {
-                return R.fail("120149", "电话号码重复，请检查！");
+            Triple<Boolean, String, String> preValid = this.preValid(requestPhoneList);
+            if (!preValid.getLeft()) {
+                return R.fail(preValid.getMiddle(), preValid.getRight());
             }
             
             List<ServicePhone> insertList = null;
@@ -77,62 +77,14 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
                 existMap = servicePhoneDTO.getExistMap();
             }
             
-            boolean flag = false;
-            if (CollectionUtil.isNotEmpty(insertList)) {
-                Integer insert = servicePhoneMapper.batchInsert(insertList);
-                if (Objects.nonNull(insert) && Objects.equals(insertList.size(), insert)) {
-                    flag = true;
-                    String oldPhone = "";
-                    String oldRemark = "";
-                    for (ServicePhone servicePhone : insertList) {
-                        this.sendOperateRecord(oldPhone, oldRemark, servicePhone);
-                    }
-                }
+            boolean flag = this.handleInsert(insertList);
+            Boolean update = this.handleUpdate(updateList, tenantId);
+            if (!flag) {
+                flag = update;
             }
-            
-            if (CollectionUtil.isNotEmpty(updateList)) {
-                List<Long> updateIds = updateList.stream().map(ServicePhone::getId).collect(Collectors.toList());
-                List<ServicePhone> oldServicePhoneList = this.listByIds(updateIds);
-                Map<Long, ServicePhone> oldServicePhoneMap = oldServicePhoneList.stream().collect(Collectors.toMap(ServicePhone::getId, servicePhone -> servicePhone));
-                
-                for (ServicePhone servicePhone : updateList) {
-                    Integer update = servicePhoneMapper.update(servicePhone);
-                    if (Objects.nonNull(update) && update > 0) {
-                        flag = true;
-                        String newPhone = servicePhone.getPhone();
-                        String oldPhone = "";
-                        String oldRemark = "";
-                        if (MapUtils.isNotEmpty(oldServicePhoneMap) && oldServicePhoneMap.containsKey(servicePhone.getId())) {
-                            ServicePhone oldServicePhone = oldServicePhoneMap.get(servicePhone.getId());
-                            if (Objects.nonNull(oldServicePhone)) {
-                                oldPhone = oldServicePhone.getPhone();
-                                oldRemark = oldServicePhone.getRemark();
-                            }
-                        }
-                        
-                        // 更新旧缓存key的手机号
-                        this.updateOldCache(tenantId, oldPhone, newPhone);
-                        // 发送操作记录
-                        if (Objects.equals(oldPhone, newPhone) && Objects.equals(oldRemark, servicePhone.getRemark())) {
-                            continue;
-                        }
-                        this.sendOperateRecord(oldPhone, oldRemark, servicePhone);
-                    }
-                }
-            }
-            
-            if (CollectionUtils.isNotEmpty(deleteList)) {
-                Integer delete = servicePhoneMapper.deleteByIds(deleteList);
-                if (Objects.nonNull(delete) && delete > 0) {
-                    flag = true;
-                    for (Long delId : deleteList) {
-                        if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(delId)) {
-                            this.sendOperateRecord(existMap.get(delId).getPhone(), existMap.get(delId).getRemark(), null);
-                        }
-                    }
-                }
-                // 清除旧缓存
-                redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+            Boolean delete = this.handleDelete(deleteList, existMap, tenantId);
+            if (!flag) {
+                flag = delete;
             }
             
             // 清除新缓存
@@ -143,6 +95,104 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         } finally {
             redisService.delete(CacheConstant.SERVICE_PHONE_LOCK_KEY + tenantId);
         }
+    }
+    
+    private Boolean handleInsert(List<ServicePhone> insertList) {
+        boolean flag = false;
+        if (CollectionUtil.isNotEmpty(insertList)) {
+            Integer insert = servicePhoneMapper.batchInsert(insertList);
+            if (Objects.nonNull(insert) && Objects.equals(insertList.size(), insert)) {
+                flag = true;
+                String oldPhone = "";
+                String oldRemark = "";
+                for (ServicePhone servicePhone : insertList) {
+                    this.sendOperateRecord(oldPhone, oldRemark, servicePhone);
+                }
+            }
+        }
+        
+        return flag;
+    }
+    
+    private Boolean handleUpdate(List<ServicePhone> updateList, Integer tenantId) {
+        boolean flag = false;
+        if (CollectionUtil.isNotEmpty(updateList)) {
+            List<Long> updateIds = updateList.stream().map(ServicePhone::getId).collect(Collectors.toList());
+            List<ServicePhone> oldServicePhoneList = this.listByIds(updateIds);
+            Map<Long, ServicePhone> oldServicePhoneMap = oldServicePhoneList.stream().collect(Collectors.toMap(ServicePhone::getId, servicePhone -> servicePhone));
+            
+            for (ServicePhone servicePhone : updateList) {
+                Integer update = servicePhoneMapper.update(servicePhone);
+                if (Objects.nonNull(update) && update > 0) {
+                    flag = true;
+                    String newPhone = servicePhone.getPhone();
+                    String oldPhone = "";
+                    String oldRemark = "";
+                    if (MapUtils.isNotEmpty(oldServicePhoneMap) && oldServicePhoneMap.containsKey(servicePhone.getId())) {
+                        ServicePhone oldServicePhone = oldServicePhoneMap.get(servicePhone.getId());
+                        if (Objects.nonNull(oldServicePhone)) {
+                            oldPhone = oldServicePhone.getPhone();
+                            oldRemark = oldServicePhone.getRemark();
+                        }
+                    }
+                    
+                    // 更新旧缓存key的手机号
+                    this.updateOldCache(tenantId, oldPhone, newPhone);
+                    // 发送操作记录
+                    if (Objects.equals(oldPhone, newPhone) && Objects.equals(oldRemark, servicePhone.getRemark())) {
+                        continue;
+                    }
+                    this.sendOperateRecord(oldPhone, oldRemark, servicePhone);
+                }
+            }
+        }
+        
+        return flag;
+    }
+    
+    private Boolean handleDelete(List<Long> deleteList, Map<Long, ServicePhoneVO> existMap, Integer tenantId) {
+        boolean flag = false;
+        if (CollectionUtils.isNotEmpty(deleteList)) {
+            Integer delete = servicePhoneMapper.deleteByIds(deleteList);
+            if (Objects.nonNull(delete) && delete > 0) {
+                flag = true;
+                for (Long delId : deleteList) {
+                    if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(delId)) {
+                        this.sendOperateRecord(existMap.get(delId).getPhone(), existMap.get(delId).getRemark(), null);
+                    }
+                }
+            }
+            // 清除旧缓存
+            redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+        }
+        
+        return flag;
+    }
+    
+    private Triple<Boolean, String, String> preValid(List<ServicePhoneRequest> requestPhoneList) {
+        if (requestPhoneList.size() > ServicePhone.LIMIT_NUM) {
+            return Triple.of(false, "120150", "电话号码不能超过5个！");
+        }
+        
+        if (!Objects.equals((int) requestPhoneList.stream().map(ServicePhoneRequest::getPhone).distinct().count(), requestPhoneList.size())) {
+            return Triple.of(false, "120149", "电话号码重复，请检查！");
+        }
+        
+        for (ServicePhoneRequest requestPhone : requestPhoneList) {
+            if (StringUtils.isBlank(requestPhone.getPhone())) {
+                return Triple.of(false, "120153", "电话号码不能为空，请检查！");
+            }
+            
+            if (requestPhone.getPhone().length() > ServicePhone.LIMIT_PHONE_LENGTH) {
+                return Triple.of(false, "120154", "电话号码长度超限，请检查！");
+            }
+            
+            if (Objects.nonNull(requestPhone.getRemark()) && requestPhone.getRemark().length() > ServicePhone.LIMIT_REMARK_LENGTH) {
+                return Triple.of(false, "120155", "提示文案长度超限，请检查！");
+            }
+        }
+        
+        return Triple.of(true, null, null);
     }
     
     private ServicePhoneDTO handlePhones(List<ServicePhoneRequest> requestPhoneList, Integer tenantId) {
@@ -215,6 +265,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         Map<String, String> newMap = new HashMap<>(2);
         newMap.put("phone", Objects.isNull(servicePhone) ? "" : servicePhone.getPhone());
         newMap.put("remark", Objects.isNull(servicePhone) ? "" : servicePhone.getRemark());
+        
         operateRecordUtil.record(oldMap, newMap);
     }
     
