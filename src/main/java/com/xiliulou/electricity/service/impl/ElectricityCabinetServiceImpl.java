@@ -1985,7 +1985,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
             map.put("command", "cell_update_down");
         }
-        operateRecordUtil.record(null, map);
+//        operateRecordUtil.record(null, map);
         return R.ok(sessionId);
     }
     
