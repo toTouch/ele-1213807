@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -60,11 +59,6 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         
         try {
             List<ServicePhoneRequest> requestPhoneList = request.getPhoneList();
-            Triple<Boolean, String, String> preValid = this.preValid(requestPhoneList);
-            if (!preValid.getLeft()) {
-                return R.fail(preValid.getMiddle(), preValid.getRight());
-            }
-            
             List<ServicePhone> insertList = null;
             List<ServicePhone> updateList = null;
             List<Long> deleteList = null;
@@ -169,32 +163,6 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         return flag;
     }
     
-    private Triple<Boolean, String, String> preValid(List<ServicePhoneRequest> requestPhoneList) {
-        if (requestPhoneList.size() > ServicePhone.LIMIT_NUM) {
-            return Triple.of(false, "120150", "电话号码不能超过5个！");
-        }
-        
-        if (!Objects.equals((int) requestPhoneList.stream().map(ServicePhoneRequest::getPhone).distinct().count(), requestPhoneList.size())) {
-            return Triple.of(false, "120149", "电话号码重复，请检查！");
-        }
-        
-        for (ServicePhoneRequest requestPhone : requestPhoneList) {
-            if (StringUtils.isBlank(requestPhone.getPhone())) {
-                return Triple.of(false, "120153", "电话号码不能为空，请检查！");
-            }
-            
-            if (requestPhone.getPhone().length() > ServicePhone.LIMIT_PHONE_LENGTH) {
-                return Triple.of(false, "120154", "电话号码长度超限，请检查！");
-            }
-            
-            if (Objects.nonNull(requestPhone.getRemark()) && requestPhone.getRemark().length() > ServicePhone.LIMIT_REMARK_LENGTH) {
-                return Triple.of(false, "120155", "提示文案长度超限，请检查！");
-            }
-        }
-        
-        return Triple.of(true, null, null);
-    }
-    
     private ServicePhoneDTO handlePhones(List<ServicePhoneRequest> requestPhoneList, Integer tenantId) {
         List<ServicePhone> insertList = new ArrayList<>();
         List<ServicePhone> updateList = new ArrayList<>();
@@ -217,7 +185,8 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         ServicePhonesVO servicePhonesExist = this.queryByTenantIdFromCache(tenantId);
         if (Objects.nonNull(servicePhonesExist) && CollectionUtil.isNotEmpty(servicePhonesExist.getPhoneList())) {
             // 处理要更新的数据：手机号和文案无变化，则无需更新
-            existMap = servicePhonesExist.getPhoneList().stream().collect(Collectors.toMap(ServicePhoneVO::getId, servicePhone -> servicePhone));
+            List<ServicePhoneVO> phoneList = servicePhonesExist.getPhoneList();
+            existMap = phoneList.stream().collect(Collectors.toMap(ServicePhoneVO::getId, servicePhone -> servicePhone));
             List<ServicePhone> updateRemoveList = new ArrayList<>();
             for (ServicePhone requestPhone : updateList) {
                 if (existMap.containsKey(requestPhone.getId())) {
