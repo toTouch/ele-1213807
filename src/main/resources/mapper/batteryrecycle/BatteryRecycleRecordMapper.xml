@@ -63,11 +63,12 @@
     </insert>
     <update id="updateById">
         update t_battery_recycle_record
-            set
+            <set>
                 electricity_cabinet_id = #{electricityCabinetId},
-            cell_no = #{cellNo},
-            status = #{status}
-            update_time = #{updateTime}
+                cell_no = #{cellNo},
+                status = #{status},
+                update_time = #{updateTime}
+            </set>
         where id = #{id}
     </update>
     
