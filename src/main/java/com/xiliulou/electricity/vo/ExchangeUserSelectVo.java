@@ -87,7 +87,10 @@ public class ExchangeUserSelectVo {
      */
     private String newVoltage;
     
-    
+    /**
+     * 开始展示自主开仓页面，1-开始自主开仓，其他-不展示自主开仓画面
+     */
+    private Integer beginSelfOpen;
     
     
     
@@ -131,5 +134,8 @@ public class ExchangeUserSelectVo {
     public static final Integer ENTER_TAKE_BATTERY = 1;
     
     
-    
+    /**
+     * 展示自主开仓页面
+     */
+    public static final Integer BEGIN_SELF_OPEN = 1;
 }

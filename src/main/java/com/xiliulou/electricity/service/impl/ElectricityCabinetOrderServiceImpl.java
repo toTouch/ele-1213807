@@ -1568,14 +1568,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("OrderV3 INFO! oldCellCheckFail.cabinetBox is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
                 JsonUtil.toJson(lastOrder));
         
-        // 判断灵活续费场景下，二次扫码是走去电流程还是自主开仓
+        // 判断灵活续费场景下，二次扫码是走去电流程还是自主开仓，true为取电，false为自主开仓
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         boolean exchangeBatteryOrNot = checkExchangeOrSelfOpen(userBatteryTypes, electricityBattery, electricityConfig);
         
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
-                Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo()) && exchangeBatteryOrNot) {
+                Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
+            if (!exchangeBatteryOrNot) {
+                backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
+                vo.setBeginSelfOpen(ExchangeUserSelectVo.BEGIN_SELF_OPEN);
+                return Pair.of(true, vo);
+            }
             
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
