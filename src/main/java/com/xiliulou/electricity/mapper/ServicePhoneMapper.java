@@ -24,4 +24,6 @@ public interface ServicePhoneMapper {
     Integer updateByPhone(@Param("oldPhone") String oldPhone, @Param("newPhone") String newPhone, @Param("tenantId") Integer tenantId, @Param("updateTime") Long updateTime);
     
     ServicePhone selectByPhoneAndTenantId(@Param("newPhone") String newPhone, @Param("tenantId") Integer tenantId);
+    
+    Integer deleteByIds(@Param("ids") List<Long> ids);
 }

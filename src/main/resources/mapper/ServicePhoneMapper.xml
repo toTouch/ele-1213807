@@ -36,6 +36,14 @@
           and del_flag = 0
     </update>
     
+    <delete id="deleteByIds">
+        delete from t_service_phone
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ServicePhone">
         select
         <include refid="basic_field"/>

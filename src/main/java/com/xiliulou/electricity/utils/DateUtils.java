@@ -389,16 +389,16 @@ public class DateUtils {
         Duration duration = Duration.between(now, target);
         
         if (duration.isNegative()) {
-            return "0天 0时";
+            return "0天 0小时";
         } else {
             long hours = duration.toHours();
             long days = hours / 24;
             hours = hours % 24;
             
             if (hours < 1) {
-                return "不足 1时";
+                return "不足 1小时";
             } else {
-                return days + "天 " + hours + "时";
+                return days + "天 " + hours + "小时";
             }
         }
     }

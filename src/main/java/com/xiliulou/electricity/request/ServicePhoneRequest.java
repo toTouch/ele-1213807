@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
@@ -20,7 +19,7 @@ public class ServicePhoneRequest {
     
     private Long id;
     
-    @NotNull(message = "手机号不能为空")
+    @Size(min = 1, max = 20, message = "电话格式错误，请检查！")
     private String phone;
     
     @Size(max = 10, message = "文案长度超限，最长为10位，请检查！")
