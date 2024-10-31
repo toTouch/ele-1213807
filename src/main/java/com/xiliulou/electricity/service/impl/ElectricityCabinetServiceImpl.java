@@ -5228,36 +5228,49 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         
-        //如果没有deviceSecret异步获取后更新
-        if(StringUtils.isBlank(electricityCabinet.getDeviceSecret())){
-            executorService.execute(()->{
-                QueryDeviceDetailResult queryDeviceDetailResult = registerDeviceService.queryDeviceDetail(query.getProductKey(), query.getDeviceName());
-                if (Objects.isNull(queryDeviceDetailResult)) {
-                    log.warn("ELE WARN!not found deviceDetailResult,p={},d={}", query.getProductKey(), query.getDeviceName());
-                    return;
-                }
-                
-                ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
-                electricityCabinetUpdate.setId(electricityCabinet.getId());
-                electricityCabinetUpdate.setDeviceSecret(queryDeviceDetailResult.getDeviceSecret());
-                electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
-                electricityCabinetService.update(electricityCabinetUpdate);
-            });
-        }
+        String deviceSecret = electricityCabinet.getDeviceSecret();
         
         //判断三元组是否在设备列表中存在,若不存在，新增
-        if (Objects.isNull(eleDeviceCodeService.existsDeviceName(query.getDeviceName()))) {
+        EleDeviceCode deviceCodeCache = eleDeviceCodeService.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(deviceCodeCache)) {
             long time = System.currentTimeMillis();
             EleDeviceCode deviceCode = new EleDeviceCode();
             deviceCode.setProductKey(query.getProductKey());
             deviceCode.setDeviceName(query.getDeviceName());
-            deviceCode.setSecret(SecureUtil.hmacMd5(query.getProductKey() + query.getDeviceName()).digestHex(String.valueOf(time)));
+            deviceCode.setSecret(StringUtils.isBlank(deviceSecret)?SecureUtil.hmacMd5(query.getProductKey() + query.getDeviceName()).digestHex(String.valueOf(time)):deviceSecret);
             deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
             deviceCode.setRemark("");
             deviceCode.setDelFlag(CommonConstant.DEL_N);
             deviceCode.setCreateTime(time);
             deviceCode.setUpdateTime(time);
             eleDeviceCodeService.insert(deviceCode);
+        }
+        
+        //如果没有deviceSecret，或者柜机表与设备表的deviceSecret不一致
+        if (StringUtils.isBlank(deviceSecret) || !Objects.equals(deviceSecret, deviceCodeCache.getSecret())) {
+            QueryDeviceDetailResult queryDeviceDetailResult = registerDeviceService.queryDeviceDetail(query.getProductKey(), query.getDeviceName());
+            if (Objects.isNull(queryDeviceDetailResult) || StringUtils.isBlank(queryDeviceDetailResult.getDeviceSecret())) {
+                log.warn("ELE WARN!not found deviceDetailResult,p={},d={}", query.getProductKey(), query.getDeviceName());
+                return R.fail("100218", "iot消息发送失败");
+            }
+            
+            //更新柜机deviceSecret
+            ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+            electricityCabinetUpdate.setId(electricityCabinet.getId());
+            electricityCabinetUpdate.setDeviceSecret(queryDeviceDetailResult.getDeviceSecret());
+            electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetService.update(electricityCabinetUpdate);
+            
+            if (Objects.isNull(deviceCodeCache)) {
+                deviceCodeCache = eleDeviceCodeService.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
+            }
+            
+            //更新设备deviceSecret
+            EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
+            deviceCodeUpdate.setId(deviceCodeCache.getId());
+            deviceCodeUpdate.setSecret(queryDeviceDetailResult.getDeviceSecret());
+            deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
+            eleDeviceCodeService.updateById(deviceCodeUpdate, query.getProductKey(), query.getDeviceName());
         }
         
         ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + query.getId(), ElectricityCabinetOtherSetting.class);
