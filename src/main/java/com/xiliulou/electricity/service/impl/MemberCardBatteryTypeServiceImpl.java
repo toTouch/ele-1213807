@@ -35,51 +35,6 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     @Autowired
     private RedisService redisService;
     
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public MemberCardBatteryType queryByIdFromDB(Long id) {
-        return this.memberCardBatteryTypeMapper.queryById(id);
-    }
-
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public MemberCardBatteryType queryByIdFromCache(Long id) {
-        return null;
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param memberCardBatteryType 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(MemberCardBatteryType memberCardBatteryType) {
-        return this.memberCardBatteryTypeMapper.update(memberCardBatteryType);
-    }
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.memberCardBatteryTypeMapper.deleteById(id) > 0;
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

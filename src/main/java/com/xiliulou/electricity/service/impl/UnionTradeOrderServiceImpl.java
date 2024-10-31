@@ -333,9 +333,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     @Autowired
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
     
-    @Resource
-    private WechatV3JsapiInvokeService wechatV3JsapiInvokeService;
-    
     @Autowired
     private PayConfigConverter payConfigConverter;
     
@@ -946,12 +943,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                         electricityMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdateUseStatus);
                     }
                     
-                    // 保存用户押金对应的电池型号
-                    //                    List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-                    //                    if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                    //                        userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
-                    //                    }
-                    
                     userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 } else {
                     
@@ -1075,9 +1066,6 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             log.warn("notify member card order WARN, batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getMemberCardId());
             return Pair.of(false, "套餐不存在");
         }
-        
-        // 获取套餐订单优惠券
-        // List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
         
@@ -1781,16 +1769,13 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 // 兼容2.0冻结不限制天数 冻结天数为空的场景
                 if (Objects.isNull(eleDisableMemberCardRecord.getChooseDays())) {
                     memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                    // orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                     orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 } else {
                     // 申请冻结的天数
                     Long chooseTime = eleDisableMemberCardRecord.getChooseDays() * TimeConstant.DAY_MILLISECOND;
                     // 实际的冻结时间
                     Long realTime = System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime();
-                    // memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                     memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
-                    // orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                     orderExpireTime = userBatteryMemberCard.getOrderExpireTime() - (chooseTime - realTime);
                 }
                 
@@ -1818,25 +1803,12 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             } else {
-                //                memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
-                //                orderExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getOrderExpireTime() - eleDisableMemberCardRecord.getDisableMemberCardTime());
-                //
-                //                //更新用户套餐到期时间，启用用户套餐
-                //                UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-                //                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
-                //                userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-                //                userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
-                //                userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-                //                userBatteryMemberCardUpdate.setOrderExpireTime(orderExpireTime);
-                //                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-                //                userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
                 
                 // 解绑停卡单号，更新电池服务费产生时间,解绑停卡电池服务费订单号
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
                 serviceFeeUserInfoUpdate.setPauseOrderNo("");
                 serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
-                //                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }

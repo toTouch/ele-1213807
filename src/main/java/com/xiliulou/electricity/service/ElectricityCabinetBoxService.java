@@ -40,8 +40,6 @@ public interface ElectricityCabinetBoxService {
     R modify(ElectricityCabinetBox electricityCabinetBox);
 
     List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id);
-
-    List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id);
     
     List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo,
             String batteryType, Double fullCharged);

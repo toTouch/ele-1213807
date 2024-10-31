@@ -273,13 +273,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
     
     @Override
-    public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
-        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-                .eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
-    }
-    
-    @Override
     public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType, Double fullCharged) {
         List<ElectricityCabinetBox> boxes = electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType, fullCharged);
         if (CollUtil.isEmpty(boxes)){

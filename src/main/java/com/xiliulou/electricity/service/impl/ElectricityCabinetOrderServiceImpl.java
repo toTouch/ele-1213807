@@ -643,12 +643,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal), BigDecimal.ROUND_HALF_EVEN);
     }
     
-    @Slave
-    @Override
-    public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId) {
-        return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList, tenantId);
-    }
-    
     @Override
     public Integer homeMonth(Long uid, Long first, Long now) {
         return electricityCabinetOrderMapper.selectCount(
@@ -666,41 +660,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
                 .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL,
                         ElectricityCabinetOrder.ORDER_CANCEL).orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
-    }
-    
-    @Override
-    public ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId, Integer cellNo) {
-        return electricityCabinetOrderMapper.selectOne(
-                new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getElectricityCabinetId, eleId).eq(ElectricityCabinetOrder::getOldCellNo, cellNo).or()
-                        .eq(ElectricityCabinetOrder::getNewCellNo, cellNo).orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
-    }
-    
-    @Override
-    public String findUsableCellNo(Integer id) {
-        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryNoElectricityBatteryBox(id);
-        if (!DataUtil.collectionIsUsable(usableBoxes)) {
-            return null;
-        }
-        
-        List<Integer> boxes = usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList());
-        
-        //查看有没有初始化过设备的上次操作过的格挡,这里不必关心线程安全，不需要保证原子性
-        if (!redisService.hasKey(CacheConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id)) {
-            redisService.setNx(CacheConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, boxes.get(0).toString());
-        }
-        
-        String lastCellNo = redisService.get(CacheConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id);
-        
-        boxes = rebuildByCellCircleForDevice(boxes, Integer.parseInt(lastCellNo));
-        
-        for (Integer box : boxes) {
-            if (redisService.setNx(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
-                redisService.set(CacheConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, box.toString());
-                return box.toString();
-            }
-        }
-        
-        return null;
     }
     
     @Override
@@ -1032,36 +991,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         } else {
             return R.ok("0003");
         }
-    }
-    
-    public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {
-        
-        if (cellNos.get(0) > lastCellNo) {
-            return cellNos;
-        }
-        
-        int index = 0;
-        
-        for (int i = 0; i < cellNos.size(); i++) {
-            if (cellNos.get(i) > lastCellNo) {
-                index = i;
-                break;
-            }
-            
-            if (cellNos.get(i).equals(lastCellNo)) {
-                index = i + 1;
-                break;
-            }
-        }
-        
-        List<Integer> firstSegmentList = cellNos.subList(0, index);
-        List<Integer> twoSegmentList = cellNos.subList(index, cellNos.size());
-        
-        ArrayList<Integer> resultList = com.google.common.collect.Lists.newArrayList();
-        resultList.addAll(twoSegmentList);
-        resultList.addAll(firstSegmentList);
-        
-        return resultList;
     }
     
     @Deprecated
@@ -2747,19 +2676,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid) {
         return electricityCabinetOrderMapper.selectLatestOrderAndCabinetInfo(uid);
-    }
-    
-    /**
-     * 更新用户手机号
-     *
-     * @param tenantId 租户ID
-     * @param uid      用户ID
-     * @param newPhone 新号码
-     * @return 影响行数
-     */
-    @Override
-    public Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone) {
-        return electricityCabinetOrderMapper.updatePhoneByUid(tenantId, uid, newPhone);
     }
     
     @Override

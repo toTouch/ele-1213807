@@ -257,10 +257,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     EnterpriseChannelUserService enterpriseChannelUserService;
     
     @Autowired
-    private UserInfoGroupDetailService userInfoGroupDetailService;
-    
-    
-    @Autowired
     private PayConfigBizService payConfigBizService;
     
     @Resource
@@ -454,9 +450,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(true, "", null);
             }
             
-            //            // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-            //            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
-            
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                     .jsonSingleFee(JsonUtil.toJson(allPayAmount)).payAmount(integratedPaAmount).tenantId(tenantId).attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
@@ -471,8 +464,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
-        } finally {
-            //            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
@@ -742,8 +733,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
-        } finally {
-            //            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + SecurityUtils.getUid());
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
@@ -901,9 +890,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
-        } finally {
-            /// 因缓存锁删除过快，导致重复发起支付。因此注释掉该功能
-            // redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
