@@ -26,5 +26,7 @@ public interface BatteryRecycleRecordMapper {
     BatteryRecycleRecord selectListFirstNotLockedRecord(@Param("tenantId") Integer tenantId);
     
     List<BatteryRecycleRecord> selectListNotLockedRecord(@Param("tenantId") Integer tenantId,@Param("maxId") Long maxId,@Param("size") Long size);
+    
+    Integer updateById(BatteryRecycleRecord batteryRecycleRecord);
 }
 

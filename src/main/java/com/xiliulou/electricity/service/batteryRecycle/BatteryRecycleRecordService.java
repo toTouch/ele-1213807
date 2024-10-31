@@ -25,4 +25,6 @@ public interface BatteryRecycleRecordService {
     BatteryRecycleRecord listFirstNotLockedRecord(Integer tenantId);
     
     List<BatteryRecycleRecord> listNotLockedRecord(Integer tenantId, Long maxId, Long size);
+    
+    Integer updateById(BatteryRecycleRecord batteryRecycleRecord);
 }

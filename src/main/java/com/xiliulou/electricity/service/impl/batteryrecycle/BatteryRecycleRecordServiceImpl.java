@@ -216,6 +216,11 @@ public class BatteryRecycleRecordServiceImpl implements BatteryRecycleRecordServ
         return batteryRecycleRecordMapper.selectListNotLockedRecord(tenantId, maxId, size);
     }
     
+    @Override
+    public Integer updateById(BatteryRecycleRecord batteryRecycleRecord) {
+        return batteryRecycleRecordMapper.updateById(batteryRecycleRecord);
+    }
+    
     private List<ElectricityBattery> checkBatterySnList(List<String> batterySnList, Integer tenantId, List<Long> bindFranchiseeIdList) {
         if (batterySnList.size() > 2000) {
             List<List<String>> partition = ListUtils.partition(batterySnList, 2000);

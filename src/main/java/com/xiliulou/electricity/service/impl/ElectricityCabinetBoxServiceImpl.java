@@ -395,4 +395,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> listBySnList(List<String> snList) {
         return electricityCabinetBoxMapper.selectListBySnList(snList);
     }
+    
+    @Override
+    @Slave
+    public List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo) {
+        return electricityCabinetBoxMapper.selectListNotUsableBySn(sn, cabinetId, cellNo);
+    }
 }

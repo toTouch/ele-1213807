@@ -60,6 +60,14 @@
             (#{item.batchNo},#{item.electricityCabinetId},#{item.franchiseeId},#{item.batteryId},#{item.sn},#{item.cellNo},#{item.status},#{item.recycleReason},#{item.operatorId},#{item.tenantId},#{item.createTime},#{item.updateTime}})
         </foreach>
     </insert>
+    <update id="updateById">
+        update t_battery_recycle_record
+            electricity_cabinet_id = #{electricityCabinetId},
+            cell_no = #{cellNo},
+            status = #{status}
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
     
     <select id="selectListLastRecycleRecordByTime"
         resultType="com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord">

@@ -4,31 +4,23 @@ import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.BatteryRecycleDelayDTO;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
-import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord;
+import com.xiliulou.electricity.enums.batteryrecycle.BatteryRecycleStatusEnum;
+import com.xiliulou.electricity.mapper.batteryrecycle.BatteryRecycleRecordMapper;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
-import com.xiliulou.electricity.mq.model.ProfitSharingTradeOrderUpdate;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
-import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.batteryRecycle.BatteryRecycleRecordService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Objects;
+import java.util.List;
 
 /**
  * @author maxiaodong
@@ -39,6 +31,11 @@ import java.util.Objects;
 @Component
 @RocketMQMessageListener(topic = MqProducerConstant.BATTERY_RECYCLE_TOPIC_NAME, consumerGroup = MqConsumerConstant.BATTERY_RECYCLE_GROUP, consumeThreadMax = 5)
 public class BatteryRecycleConsumer implements RocketMQListener<String> {
+    @Resource
+    private ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Resource
+    private BatteryRecycleRecordService batteryRecycleRecordService;
     
     public void onMessage(String message) {
         log.info("BATTERY RECYCLE CONSUMER INFO!received msg={}", message);
@@ -49,8 +46,21 @@ public class BatteryRecycleConsumer implements RocketMQListener<String> {
         
         try {
             batteryRecycleDelayDTO = JsonUtil.fromJson(message, BatteryRecycleDelayDTO.class);
+            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.listNotUsableBySn(batteryRecycleDelayDTO.getSn(), batteryRecycleDelayDTO.getCabinetId(), batteryRecycleDelayDTO.getCellNo());
+            if (ObjectUtils.isEmpty(electricityCabinetBoxList)) {
+                log.info("BATTERY RECYCLE CONSUMER INFO! disable cell is invalid msg={}", message);
+                return;
+            }
+    
+            BatteryRecycleRecord batteryRecycleRecord = new BatteryRecycleRecord();
+            batteryRecycleRecord.setId(electricityCabinetBoxList.get(0).getId());
+            batteryRecycleRecord.setStatus(BatteryRecycleStatusEnum.LOCK.getCode());
+            batteryRecycleRecord.setElectricityCabinetId(batteryRecycleDelayDTO.getCabinetId());
+            batteryRecycleRecord.setCellNo(batteryRecycleDelayDTO.getCellNo());
+            batteryRecycleRecord.setUpdateTime(System.currentTimeMillis());
+            batteryRecycleRecordService.updateById(batteryRecycleRecord);
         } catch (Exception e) {
-            log.error("PROFIT SHARING ORDE CONSUMER ERROR!msg={}", message, e);
+            log.error("BATTERY RECYCLE CONSUMER ERROR!msg={}", message, e);
         } finally {
             MDC.clear();
         }

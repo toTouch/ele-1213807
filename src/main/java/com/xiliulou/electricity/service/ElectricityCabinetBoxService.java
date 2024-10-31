@@ -86,4 +86,6 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id);
     
     List<ElectricityCabinetBox> listBySnList(List<String> snList);
+    
+    List<ElectricityCabinetBox> listNotUsableBySn(String sn, Integer cabinetId, String cellNo);
 }
