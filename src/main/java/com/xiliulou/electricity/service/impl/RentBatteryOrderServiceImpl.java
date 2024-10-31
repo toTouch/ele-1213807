@@ -78,6 +78,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
@@ -138,6 +139,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -254,6 +256,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Autowired
     private EleUserEsignRecordService eleUserEsignRecordService;
+    
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     /**
      * 吞电池优化版本
@@ -1012,6 +1017,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(true, cellNo, null);
         }
         
+        // 过滤异常的仓内号
+        Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        if (filterEmptyExchangeCellPair.getLeft()) {
+            return Triple.of(true,
+                    Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()), null);
+        }
+        emptyCellList = filterEmptyExchangeCellPair.getRight();
+        
+        
         // 舒适换电分配空仓
         Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
         if (comfortExchangeGetEmptyCellPair.getLeft()) {
@@ -1544,6 +1558,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return null;
         }
         
+        // 过滤异常满电仓门
+        Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBoxes);
+        if (filterFullExceptionCellPair.getLeft()) {
+            return ruleAllotCell(userInfo, filterFullExceptionCellPair.getRight());
+        }
+        usableBoxes = filterFullExceptionCellPair.getRight();
+        
         // 舒适换电
         Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes, fullyCharged);
         if (satisfyComfortExchange.getLeft()) {
@@ -1551,6 +1572,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         return ruleAllotCell(userInfo, usableBoxes);
+    }
+    
+    @Override
+    @Slave
+    public List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList) {
+        return rentBatteryOrderMapper.selectListByOrderIdList(returnOrderIdList);
     }
     
     

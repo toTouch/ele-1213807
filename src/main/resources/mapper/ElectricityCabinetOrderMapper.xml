@@ -509,4 +509,12 @@
           and old_cell_no = #{oldCellNo}
         order by id limit 1
     </select>
+    
+    <select id="selectListByOrderIdList" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
+        select order_id,uid from  t_electricity_cabinet_order
+        where order_id in
+        <foreach collection="orderIdList" separator="," item="orderId" close=")" open="(">
+            #{orderId}
+        </foreach>
+    </select>
 </mapper>

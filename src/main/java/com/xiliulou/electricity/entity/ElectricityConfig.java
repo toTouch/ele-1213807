@@ -206,6 +206,16 @@ public class ElectricityConfig {
     private Integer isEnableMeiTuanRiderMall;
     
     /**
+     * 是否开启对换电套餐购买次数的限制：0--是 1--否
+     */
+    private Integer eleLimit;
+    
+    /**
+     * 换电套餐购买限制次数，默认1次
+     */
+    private Integer eleLimitCount;
+    
+    /**
      * 灵活续费开关
      * @see FlexibleRenewalEnum
      */
@@ -361,6 +371,16 @@ public class ElectricityConfig {
      * 舒适换电关闭
      */
     public static Integer NOT_COMFORT_EXCHANGE = 1;
+    
+    /**
+     * 开启对换电套餐购买次数的限制
+     */
+    public static Integer ELE_LIMIT_OPEN = 0;
+    
+    /**
+     * 关闭对换电套餐购买次数的限制
+     */
+    public static Integer ELE_LIMIT_CLOSE = 1;
     
     /**
      * 单独缴纳押金开关：0--开启 1--关闭

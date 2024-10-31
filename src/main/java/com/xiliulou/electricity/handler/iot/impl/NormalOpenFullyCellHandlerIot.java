@@ -31,6 +31,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
@@ -102,6 +103,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     @Resource
     private PushDataToThirdService pushDataToThirdService;
     
+    @Resource
+    ExchangeExceptionHandlerService exceptionHandlerService;
+    
     XllThreadPoolExecutorService openFullBatteryExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPEN_FULL_BATTERY_SOC_ANALYZE", 1,
             "open-full-battery-soc-pool-thread");
     
@@ -143,6 +147,11 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
             //错误信息保存到缓存里，方便前端显示
             redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
+            
+            // 保存异常格挡号
+            exceptionHandlerService.saveExchangeExceptionCell(openFullCellRsp.getOrderStatus(), cabinetOrder.getElectricityCabinetId(), openFullCellRsp.getPlaceCellNo(),
+                    openFullCellRsp.getTakeCellNo(), openFullCellRsp.getSessionId());
+            
             
             // 设备正在使用中，不更新； 开满电仓失败/电池前置检测失败更新状态
             if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {

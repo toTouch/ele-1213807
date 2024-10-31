@@ -15,20 +15,21 @@
         <result property="activitySource" column="activity_source" jdbcType="INTEGER"/>
         <result property="inviterUid" column="inviter_uid" jdbcType="INTEGER"/>
         <result property="latestActivitySource" column="latest_activity_source" jdbcType="INTEGER"/>
+        <result property="eleLimit" column="ele_limit" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserInfoExtraMap">
         select
-          uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source
+          uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source, ele_limit
         from t_user_info_extra
         where uid = #{uid}
     </select>
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="uid" useGeneratedKeys="true">
-        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source)
-        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime}, #{activitySource}, #{inviterUid}, #{latestActivitySource})
+        insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time, activity_source, inviter_uid, latest_activity_source, ele_limit)
+        values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime}, #{activitySource}, #{inviterUid}, #{latestActivitySource}, #{eleLimit})
     </insert>
     
     <!--通过主键修改数据-->
@@ -67,6 +68,9 @@
             </if>
             <if test="latestActivitySource != null">
                 latest_activity_source = #{latestActivitySource},
+            </if>
+            <if test="eleLimit != null">
+                ele_limit = #{eleLimit},
             </if>
         </set>
         where uid = #{uid}
