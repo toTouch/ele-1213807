@@ -1568,9 +1568,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("OrderV3 INFO! oldCellCheckFail.cabinetBox is {}, lastOrder is {}", Objects.nonNull(cabinetBox) ? JsonUtil.toJson(cabinetBox) : "null",
                 JsonUtil.toJson(lastOrder));
         
+        // 判断灵活续费场景下，二次扫码是走去电流程还是自主开仓
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        boolean exchangeBatteryOrNot = checkExchangeOrSelfOpen(userBatteryTypes, electricityBattery, electricityConfig);
+        
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
-                Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
+                Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo()) && exchangeBatteryOrNot) {
             
             vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
@@ -3556,5 +3561,25 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             vo.setFlexibleRenewal(FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode());
         }
         return Triple.of(true, null, null);
+    }
+    
+    private boolean checkExchangeOrSelfOpen(List<String> userBatteryTypes, ElectricityBattery electricityBattery, ElectricityConfig electricityConfig) {
+        // 不分型号，和灵活续费没关系，走取电流程
+        if (CollectionUtils.isEmpty(userBatteryTypes)) {
+            return true;
+        }
+        
+        if (Objects.isNull(electricityBattery.getModel())) {
+            return false;
+        }
+        
+        // 用户还进来的电池和当前套餐匹配，和灵活续费没关系
+        if (userBatteryTypes.contains(electricityBattery.getModel())) {
+            return true;
+        }
+        
+        // 用户还进来的电池和当前套餐不匹配，当租户的配置是“灵活续费——换电”的时候才能走取电流程
+        return Objects.nonNull(electricityConfig.getIsEnableFlexibleRenewal()) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
+                FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode());
     }
 }
