@@ -389,4 +389,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         }
         return boxes;
     }
+    
+    @Override
+    @Slave
+    public List<ElectricityCabinetBox> listBySnList(List<String> snList) {
+        return electricityCabinetBoxMapper.selectListBySnList(snList);
+    }
 }

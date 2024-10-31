@@ -121,6 +121,35 @@
         select count(1) from t_battery_recycle_record
         <include refid="pageFilter"/>
     </select>
+    
+    <select id="selectListFirstNotLockedRecord"
+            resultType="com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord">
+        select
+        <include refid="basic_field"/>
+        from t_battery_recycle_record
+        <where>
+            del_flag = 0 and status = 0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by id asc limit 1
+    </select>
+    
+    <select id="selectListNotLockedRecord"
+            resultType="com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord">
+        select
+        <include refid="basic_field"/>
+        from t_battery_recycle_record
+        <where>
+            del_flag = 0 and status = 0 and id > #{maxId}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by id asc
+        limit #{size}
+    </select>
 
 </mapper>
 

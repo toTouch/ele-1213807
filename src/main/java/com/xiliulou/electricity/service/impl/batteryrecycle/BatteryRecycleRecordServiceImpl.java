@@ -13,7 +13,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord;
-import com.xiliulou.electricity.enums.car.BatteryRecycleStatusEnum;
+import com.xiliulou.electricity.enums.batteryrecycle.BatteryRecycleStatusEnum;
 import com.xiliulou.electricity.mapper.batteryrecycle.BatteryRecycleRecordMapper;
 import com.xiliulou.electricity.query.batteryRecycle.BatteryRecycleQueryModel;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleSaveOrUpdateRequest;
@@ -92,7 +92,9 @@ public class BatteryRecycleRecordServiceImpl implements BatteryRecycleRecordServ
         
         List<ElectricityBattery> existsBatteryList = checkBatterySnList(saveRequest.getBatterySnList(), tenantId, saveRequest.getBindFranchiseeIdList());
         if (ObjectUtils.isEmpty(existsBatteryList)) {
-            return Triple.of(true, "", saveRequest.getBatterySnList());
+            BatteryRecycleSaveResultVO recycleSaveResultVO = BatteryRecycleSaveResultVO.builder().successCount(0).failCount(saveRequest.getBatterySnList().size())
+                    .notExistBatterySnList(saveRequest.getBatterySnList()).build();
+            return Triple.of(true, "", recycleSaveResultVO);
         }
         
         Map<String, ElectricityBattery> batteryMap = existsBatteryList.stream().collect(Collectors.toMap(ElectricityBattery::getSn, Function.identity(), (v1, v2) -> v1));
@@ -200,6 +202,18 @@ public class BatteryRecycleRecordServiceImpl implements BatteryRecycleRecordServ
         BatteryRecycleQueryModel queryModel = new BatteryRecycleQueryModel();
         BeanUtils.copyProperties(request, queryModel);
         return batteryRecycleRecordMapper.countTotal(queryModel);
+    }
+    
+    @Override
+    @Slave
+    public BatteryRecycleRecord listFirstNotLockedRecord(Integer tenantId) {
+        return batteryRecycleRecordMapper.selectListFirstNotLockedRecord(tenantId);
+    }
+    
+    @Override
+    @Slave
+    public List<BatteryRecycleRecord> listNotLockedRecord(Integer tenantId, Long maxId, Long size) {
+        return batteryRecycleRecordMapper.selectListNotLockedRecord(tenantId, maxId, size);
     }
     
     private List<ElectricityBattery> checkBatterySnList(List<String> batterySnList, Integer tenantId, List<Long> bindFranchiseeIdList) {

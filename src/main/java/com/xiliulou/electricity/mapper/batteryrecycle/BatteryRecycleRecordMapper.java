@@ -22,5 +22,9 @@ public interface BatteryRecycleRecordMapper {
     List<BatteryRecycleRecord> selectListByPage(BatteryRecycleQueryModel queryModel);
     
     Integer countTotal(BatteryRecycleQueryModel queryModel);
+    
+    BatteryRecycleRecord selectListFirstNotLockedRecord(@Param("tenantId") Integer tenantId);
+    
+    List<BatteryRecycleRecord> selectListNotLockedRecord(@Param("tenantId") Integer tenantId,@Param("maxId") Long maxId,@Param("size") Long size);
 }
 

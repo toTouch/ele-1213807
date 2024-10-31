@@ -84,4 +84,6 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> listCabineBoxByEids(List<Integer> electricityCabinetIdList);
     
     List<ElectricityCabinetBox> selectHaveBatteryCellId(Integer id);
+    
+    List<ElectricityCabinetBox> listBySnList(List<String> snList);
 }

@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.enums.car;
+package com.xiliulou.electricity.enums.batteryrecycle;
 
 /**
  * 车辆运营数据查询类型

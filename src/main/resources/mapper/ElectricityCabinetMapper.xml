@@ -1401,7 +1401,7 @@
     </select>
     
     <select id="selectListByIdList" resultType="com.xiliulou.electricity.bo.asset.ElectricityCabinetBO">
-        select id, name, sn, product_key, device_name, online_status, model_id, stock_status, warehouse_id
+        select id, name, sn, product_key, device_name, online_status, model_id, stock_status, warehouse_id, pattern
         from t_electricity_cabinet
         <where>
             del_flag=0
@@ -1564,5 +1564,4 @@
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
-
 </mapper>

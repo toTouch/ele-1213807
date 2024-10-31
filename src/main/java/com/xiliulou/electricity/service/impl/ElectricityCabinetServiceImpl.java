@@ -1933,6 +1933,60 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
+    public R sendCommand(EleOuterCommandQuery eleOuterCommandQuery) {
+        // 不合法的参数
+        if (Objects.isNull(eleOuterCommandQuery.getCommand()) || Objects.isNull(eleOuterCommandQuery.getDeviceName()) || Objects.isNull(eleOuterCommandQuery.getProductKey())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+    
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
+        eleOuterCommandQuery.setSessionId(sessionId);
+    
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(eleOuterCommandQuery.getProductKey(), eleOuterCommandQuery.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+    
+        // 换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
+        if (!eleResult) {
+            return R.fail("100004", "柜机不在线");
+        }
+    
+        if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
+            return R.fail("ELECTRICITY.0036", "不合法的命令");
+        }
+    
+        Map<String, Object> dataMap = null;
+        if (CollectionUtils.isEmpty(eleOuterCommandQuery.getData())) {
+            dataMap = Maps.newHashMap();
+        } else {
+            dataMap = eleOuterCommandQuery.getData();
+        }
+    
+        dataMap.put("uid", NumberConstant.ONE_L);
+        dataMap.put("username", "admin");
+        eleOuterCommandQuery.setData(dataMap);
+    
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
+    
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
+        // 发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
+        map.put("operateType", 1);
+        map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
+            map.put("command", "cell_update_down");
+        }
+        operateRecordUtil.record(null, map);
+        return R.ok(sessionId);
+    }
+    
+    @Override
     public String acquireDeviceBindServerIp(String productKey, String deviceName) {
         return redisService.get(CacheConstant.CACHE_CABINET_SN_ONLINE + DeviceTextUtil.assembleSn(productKey, deviceName));
     }
@@ -5248,6 +5302,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
         commandQuery.setData(params);
         return this.sendCommandToEleForOuter(commandQuery);
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityCabinetBO> listByIdList(List<Integer> cabinetIdList) {
+        return electricityCabinetMapper.selectListByIdList(cabinetIdList);
     }
     
     @Override

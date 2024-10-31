@@ -60,4 +60,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     
     
     List<ElectricityCabinetBox> selectHaveBatteryCellId(@Param("eid") Integer eid);
+    
+    List<ElectricityCabinetBox> selectListBySnList(@Param("snList") List<String> snList);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.batteryRecycle;
 
+import com.xiliulou.electricity.entity.batteryrecycle.BatteryRecycleRecord;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecycleSaveOrUpdateRequest;
 import com.xiliulou.electricity.request.batteryrecycle.BatteryRecyclePageRequest;
 import com.xiliulou.electricity.vo.recycle.BatteryRecycleVO;
@@ -20,4 +21,8 @@ public interface BatteryRecycleRecordService {
     List<BatteryRecycleVO> listByPage(BatteryRecyclePageRequest request);
     
     Integer countTotal(BatteryRecyclePageRequest request);
+    
+    BatteryRecycleRecord listFirstNotLockedRecord(Integer tenantId);
+    
+    List<BatteryRecycleRecord> listNotLockedRecord(Integer tenantId, Long maxId, Long size);
 }
