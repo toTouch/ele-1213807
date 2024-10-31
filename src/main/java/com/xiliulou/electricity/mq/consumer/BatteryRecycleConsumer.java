@@ -53,7 +53,7 @@ public class BatteryRecycleConsumer implements RocketMQListener<String> {
             }
     
             BatteryRecycleRecord batteryRecycleRecord = new BatteryRecycleRecord();
-            batteryRecycleRecord.setId(electricityCabinetBoxList.get(0).getId());
+            batteryRecycleRecord.setId(batteryRecycleDelayDTO.getRecycleId());
             batteryRecycleRecord.setStatus(BatteryRecycleStatusEnum.LOCK.getCode());
             batteryRecycleRecord.setElectricityCabinetId(batteryRecycleDelayDTO.getCabinetId());
             batteryRecycleRecord.setCellNo(batteryRecycleDelayDTO.getCellNo());
