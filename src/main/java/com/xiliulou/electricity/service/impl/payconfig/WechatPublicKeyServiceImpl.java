@@ -101,7 +101,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     
     @Override
     public WechatPublicKeyBO queryByTenantIdFromDB(Long tenantId, Long franchiseeId) {
-        WechatPublicKeyEntity entity = this.wechatPublicKeyMapper.selectByQueryModel(WechatPublicKeyQueryModel.builder().id(tenantId).franchiseeId(franchiseeId).build());
+        WechatPublicKeyEntity entity = this.wechatPublicKeyMapper.selectByQueryModel(WechatPublicKeyQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId).build());
         if (Objects.isNull(entity)) {
             return null;
         }
@@ -164,7 +164,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             return;
         }
         
-        WechatPublicKeyBO bo = redisService.getWithHash(cacheKeyByTenantId, WechatPublicKeyBO.class);
+        WechatPublicKeyBO bo = JsonUtil.fromJson(redisService.get(cacheKeyByTenantId),WechatPublicKeyBO.class);
         if (Objects.isNull(bo)) {
             return;
         }
@@ -242,7 +242,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             publicKeyBO.setUploadTime(System.currentTimeMillis());
             return this.update(publicKeyBO) > NumberConstant.ZERO ? R.ok() : R.fail("证书上传失败，请重试！");
         } catch (Exception e) {
-            log.error("certificate get error, tenantId={}", tenantId);
+            log.error("certificate get error, tenantId={}", tenantId , e);
             return R.fail("证书内容获取失败，请重试！");
         } finally {
             redisService.remove(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, tenantId, franchiseeId));
