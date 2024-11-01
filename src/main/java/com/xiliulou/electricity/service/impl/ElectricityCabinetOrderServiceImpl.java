@@ -77,6 +77,7 @@ import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordSer
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
@@ -1339,7 +1340,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Long scanTime = StrUtil.isEmpty(exchangeConfig.getScanTime()) ? 180000L : Long.valueOf(exchangeConfig.getScanTime());
         log.info("OrderV3 INFO! lessTimeExchangeTwoCountAssert.scanTime is {} ,currentTime is {}", scanTime, System.currentTimeMillis());
         
-        if (System.currentTimeMillis() - lastOrder.getCreateTime() > scanTime) {
+        // 判断是直接开门还是让前端再调一次V3接口
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        boolean flexibleRenewalNotEnterMoreExchange = CollectionUtils.isEmpty(userBatteryTypes) || userBatteryTypes.contains(electricityBattery.getModel());
+        
+        if (System.currentTimeMillis() - lastOrder.getCreateTime() > scanTime && flexibleRenewalNotEnterMoreExchange) {
             log.warn("OrderV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 5 minutes,lastOrderId is {} ", lastOrder.getOrderId());
             return Pair.of(false, null);
         }
