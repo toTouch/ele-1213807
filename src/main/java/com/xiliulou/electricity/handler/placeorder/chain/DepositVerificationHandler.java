@@ -1,14 +1,16 @@
 package com.xiliulou.electricity.handler.placeorder.chain;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_DEPOSIT;
@@ -20,10 +22,13 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_D
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
     
-    @Resource
-    private DepositPlaceOrderHandler depositPlaceOrderHandler;
+    private final DepositPlaceOrderHandler depositPlaceOrderHandler;
+    
+    private final ElectricityConfigService electricityConfigService;
+    
     
     @PostConstruct
     public void init() {
@@ -37,6 +42,14 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("BATTERY DEPOSIT WARN! user is rent deposit,uid={} ", userInfo.getUid());
             result = R.fail("ELECTRICITY.0049", "已缴纳押金");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            result = R.fail("302001", "单独缴纳押金已禁用，请刷新后重新购买");
+        }
+        if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(electricityConfig.getIsEnableSeparateDeposit(), ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
+            result = R.fail("302001", "单独缴纳押金已禁用，请刷新后重新购买");
         }
         
         fireProcess(context, result, placeOrderType);

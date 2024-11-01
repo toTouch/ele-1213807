@@ -194,7 +194,7 @@ public class PlaceOrderChainManager {
      *
      * @param context 业务参数
      */
-    protected R<Object> commonVerification(PlaceOrderContext context) throws Exception {
+    private R<Object> commonVerification(PlaceOrderContext context) throws Exception {
         TokenUser tokenUser = context.getTokenUser();
         PlaceOrderQuery placeOrderQuery = context.getPlaceOrderQuery();
         Integer tenantId = context.getTenantId();
