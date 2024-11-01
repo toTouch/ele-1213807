@@ -83,7 +83,8 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             List<String> snList = batteryRecycleRecords.parallelStream().map(BatteryRecycleRecord::getSn).collect(Collectors.toList());
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.listBySnList(snList);
             if (ObjectUtils.isEmpty(electricityCabinetBoxes)) {
-                return;
+                log.warn("battery recycle warn! not find box sn: {}", snList);
+                continue;
             }
             
             Map<String, List<ElectricityCabinetBox>> boxMap = electricityCabinetBoxes.stream()
@@ -93,7 +94,7 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             List<ElectricityCabinetBO> electricityCabinets = electricityCabinetService.listByIdList(cabinetIdList);
             if (ObjectUtils.isEmpty(electricityCabinets)) {
                 log.warn("battery recycle warn! not find cabinet, ids: {}", cabinetIdList);
-                return;
+                continue;
             }
             
             Map<Integer, ElectricityCabinetBO> cabinetMap = electricityCabinets.stream()
