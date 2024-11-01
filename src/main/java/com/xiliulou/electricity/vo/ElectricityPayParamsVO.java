@@ -122,4 +122,11 @@ public class ElectricityPayParamsVO implements Serializable {
      * </p>
      */
     private String pubKeyId;
+    
+    /**
+     * <p>
+     *    Description: 微信公钥子表的ID
+     * </p>
+     */
+    private Long wechatPubKeyId;
 }

@@ -260,11 +260,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         }
         
         Map<Long, WechatPublicKeyBO> publicKeyBOMap = publicKeyBOS.stream().collect(Collectors.toMap(WechatPublicKeyBO::getPayParamsId, Function.identity() , (k1,k2)->k2));
-        voList.forEach(vo -> {
+        for (ElectricityPayParamsVO vo : voList) {
             if (publicKeyBOMap.containsKey(vo.getId().longValue())){
                 vo.setPubKeyId(publicKeyBOMap.get(vo.getId().longValue()).getPubKeyId());
+                vo.setWechatPubKeyId(publicKeyBOMap.get(vo.getId().longValue()).getId());
             }
-        });
+        }
         
         return voList;
     }
