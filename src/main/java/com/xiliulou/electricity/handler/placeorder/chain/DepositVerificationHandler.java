@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -41,18 +42,15 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
         UserInfo userInfo = context.getUserInfo();
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("BATTERY DEPOSIT WARN! user is rent deposit,uid={} ", userInfo.getUid());
-            result = R.fail("ELECTRICITY.0049", "已缴纳押金");
-            exit();
+            throw new BizException("ELECTRICITY.0049", "已缴纳押金");
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            result = R.fail("302001", "单独缴纳押金已禁用，请刷新后重新购买");
-            exit();
+            throw new BizException("302001", "单独缴纳押金已禁用，请刷新后重新购买");
         }
         if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(electricityConfig.getIsEnableSeparateDeposit(), ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
-            result = R.fail("302001", "单独缴纳押金已禁用，请刷新后重新购买");
-            exit();
+            throw new BizException("302001", "单独缴纳押金已禁用，请刷新后重新购买");
         }
         
         fireProcess(context, result, placeOrderType);

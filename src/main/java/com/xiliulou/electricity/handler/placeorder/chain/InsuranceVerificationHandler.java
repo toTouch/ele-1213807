@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
@@ -46,22 +47,16 @@ public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
         
         if (Objects.isNull(franchiseeInsurance) || !Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", insuranceId, uid);
-            result = R.fail("100305", "未找到保险!");
-            // 提前退出
-            exit();
+            throw new BizException("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
             log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", insuranceId, uid);
-            result = R.fail("100306", "保险已禁用!");
-            // 提前退出
-            exit();
+            throw new BizException("100306", "保险已禁用!");
         }
         
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
             log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={},uid={}", insuranceId, uid);
-            result = R.fail("100305", "未找到保险");
-            // 提前退出
-            exit();
+            throw new BizException("100305", "未找到保险");
         }
         
         context.setFranchiseeInsurance(franchiseeInsurance);

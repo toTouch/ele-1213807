@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.chain.PlaceOrderChainManager;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -55,6 +56,8 @@ public class PlaceOrderServiceImpl implements PlaceOrderService {
             
             // 保存订单并调起支付
             return placeOrderChainManager.saveOrdersAndPay(context);
+        } catch (BizException e) {
+            return R.fail(e.getErrCode(), e.getErrMsg());
         } catch (Exception e) {
             log.error("PLACE ORDER ERROR! wechat v3 order  error! uid={}", tokenUser.getUid(), e);
         }

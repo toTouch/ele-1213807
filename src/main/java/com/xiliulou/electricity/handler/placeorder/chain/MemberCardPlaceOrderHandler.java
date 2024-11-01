@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -65,9 +66,7 @@ public class MemberCardPlaceOrderHandler extends AbstractPlaceOrderHandler {
         Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(placeOrderQuery.getUserCouponId(), placeOrderQuery.getUserCouponIds());
         Triple<Boolean, String, Object> calculatePayAmountResult = electricityMemberCardOrderService.calculatePayAmount(batteryMemberCard, userCouponIds);
         if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
-            result = R.fail(calculatePayAmountResult.getMiddle(), (String) calculatePayAmountResult.getRight());
-            // 提前退出
-            exit();
+            throw new BizException(calculatePayAmountResult.getMiddle(), (String) calculatePayAmountResult.getRight());
         }
         BigDecimal payAmount = (BigDecimal) calculatePayAmountResult.getRight();
         
