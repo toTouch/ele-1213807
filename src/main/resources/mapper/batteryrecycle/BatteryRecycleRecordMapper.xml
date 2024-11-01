@@ -126,6 +126,7 @@
         from t_battery_recycle_record
         <include refid="pageFilter"/>
         limit #{offset}, #{size}
+        order by id desc
     </select>
     
     <select id="countTotal" resultType="java.lang.Integer">
