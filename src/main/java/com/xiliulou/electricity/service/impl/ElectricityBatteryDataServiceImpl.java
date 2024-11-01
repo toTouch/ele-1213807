@@ -3,9 +3,12 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.dto.OrderForBatteryDTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
@@ -33,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -72,6 +76,10 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
+    
+    @Qualifier("redisService")
+    @Autowired
+    private RedisService redisService;
     
     @Override
     @Slave
@@ -479,6 +487,13 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
                     batteryInfoQuery.setSn(electricityBatteryDataVO.getSn());
                     item.setBatteryInfoDto(callBatteryServiceQueryBatteryInfo(batteryInfoQuery, tenant));
+                }
+                
+                // 租借状态电池，查询其修改为租借状态时，对应的订单
+                if (Objects.equals(electricityBatteryDataVO.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+                    OrderForBatteryDTO orderForBatteryDTO = redisService.getWithHash(
+                            String.format(CacheConstant.ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE, electricityBatteryDataVO.getSn()), OrderForBatteryDTO.class);
+                    item.setOrderForBatteryDTO(orderForBatteryDTO);
                 }
             });
             

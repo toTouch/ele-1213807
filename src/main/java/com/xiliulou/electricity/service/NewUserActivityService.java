@@ -3,7 +3,11 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
+
+import java.util.List;
 
 /**
  * 活动表(Activity)表服务接口
@@ -69,4 +73,6 @@ public interface NewUserActivityService {
      * @since V1.0 2024/3/14
      */
     R<?> removeById(Long id);
+    
+    List<ShareAndUserActivityVO> listNewUserActivity(NewUserActivityPageQuery query);
 }

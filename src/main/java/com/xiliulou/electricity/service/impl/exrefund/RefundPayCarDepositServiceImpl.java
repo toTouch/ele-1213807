@@ -188,9 +188,7 @@ public class RefundPayCarDepositServiceImpl implements RefundPayService {
                     userBatteryTypeService.deleteByUid(depositPayEntity.getUid());
                     userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                 }
-    
-                //删除用户分组
-                userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
+                
             }
 
         } else {

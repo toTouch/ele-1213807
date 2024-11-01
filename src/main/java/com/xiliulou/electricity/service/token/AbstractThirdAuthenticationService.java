@@ -8,6 +8,7 @@ package com.xiliulou.electricity.service.token;
 import com.google.common.collect.Lists;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -129,7 +130,6 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
     }
     
     protected abstract void throwPhoneBindException();
-    
     
     
     /**
@@ -272,7 +272,7 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
                 Long[] uids = new Long[1];
                 uids[0] = insert.getUid();
                 log.info("uids is -->{}", uids[0]);
-                userCouponService.batchRelease(newUserActivity.getCouponId(), uids);
+                userCouponService.batchRelease(newUserActivity.getCouponId(), uids, newUserActivity.getId().longValue());
             }
         }
         
@@ -298,6 +298,7 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
         userInfoExtra.setActivitySource(NumberConstant.ZERO);
         userInfoExtra.setInviterUid(NumberConstant.ZERO_L);
         userInfoExtra.setLatestActivitySource(NumberConstant.ZERO);
+        userInfoExtra.setEleLimit(UserInfoExtraConstant.ELE_LIMIT_YES);
         return userInfoExtra;
     }
     

@@ -22,7 +22,9 @@ import com.xiliulou.electricity.constant.CarRentalPackageExlConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.EleUserOperateHistoryConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.domain.car.UserCarRentalPackageDO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
@@ -138,6 +140,7 @@ import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DetailsBatteryInfoVo;
@@ -1241,6 +1244,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     notBindOldElectricityBattery.setBorrowExpireTime(null);
                     notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
                     notBindOldElectricityBattery.setBindTime(System.currentTimeMillis());
+                    
+                    // 删除redis中保存的租电订单或换电订单
+                    OrderForBatteryUtil.delete(isBindElectricityBattery.getSn());
+                    
                     electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
                     
                     // 添加退电记录
@@ -1315,6 +1322,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 
                 // 记录企业用户租电池记录
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+                
+                // 保存电池被取走对应的订单，供后台租借状态电池展示
+                OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(), OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
                 
                 try {
                     // 发送操作记录
@@ -1462,6 +1472,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setBorrowExpireTime(null);
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBattery.setBindTime(System.currentTimeMillis());
+        
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+        
         electricityBatteryService.updateBatteryUser(electricityBattery);
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(oldUserInfo.getUid());
@@ -1506,6 +1520,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RETURN_BATTERY.getCode(), rentBatteryOrder);
         // 清除逾期用户备注
         overdueUserRemarkPublish.publish(uid, type.getCode(), tenantId);
+        
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", oldUserInfo.getName());
@@ -2155,6 +2170,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setInviterName(queryFinalInviterUserName(uid));
         // 邀请人来源
         vo.setInviterSource(inviterSource);
+        // 是否限制换电套餐购买次数
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
+        vo.setEleLimit(Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
         
         return R.ok(vo);
     }
@@ -2724,11 +2742,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             if (Objects.nonNull(inviterUid) && !Objects.equals(inviterUid, NumberConstant.ZERO_L) && Objects.nonNull(activitySource) && !Objects.equals(activitySource,
                     NumberConstant.ZERO)) {
-                // 商户活动的邀请人来源于user
                 if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
-                    Merchant merchant = merchantService.queryByUid(inviterUid);
-                    if (Objects.nonNull(merchant)) {
-                        inviterName = merchant.getName();
+                    MerchantInviterVO merchantInviterVO = userInfoExtraService.judgeInviterTypeForMerchant(uid, inviterUid, userInfoExtra.getTenantId());
+                    if (Objects.nonNull(merchantInviterVO)) {
+                        inviterName = merchantInviterVO.getInviterName();
                     }
                 } else {
                     UserInfo userInfo = this.queryByUidFromCache(inviterUid);
@@ -3103,6 +3120,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 
                 // 记录企业用户租电池记录
                 enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+                
+                // 保存电池被取走对应的订单，供后台租借状态电池展示
+                OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(), OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, oldElectricityBattery.getSn());
+                
                 return null;
             });
             return R.ok();
@@ -3124,7 +3145,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard) {
         // 判断套餐用户分组和用户的用户分组是否匹配
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
-                UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+                UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).franchiseeId(batteryMemberCard.getFranchiseeId()).build());
         
         if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userInfoGroupNamesBos)) {
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
@@ -3140,17 +3161,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 return Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧");
             }
-        }
-        
-        // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
-            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
-        }
-        // 新用户无法购买续费套餐
-        if (userInfo.getPayCount() == 0 && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
-            log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
-            return Triple.of(false, "100379", "平台新用户，无法购买续租类型套餐，请刷新页面重试");
+            
+            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+                log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(),
+                        batteryMemberCard.getId());
+                return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+            }
+            // 新用户无法购买续费套餐
+            if (userInfo.getPayCount() == 0 && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
+                log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(),
+                        batteryMemberCard.getId());
+                return Triple.of(false, "100379", "平台新用户，无法购买续租类型套餐，请刷新页面重试");
+            }
         }
         
         return Triple.of(true, null, null);

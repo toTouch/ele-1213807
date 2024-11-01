@@ -265,7 +265,7 @@ public interface CacheConstant {
      * userInfo的缓存
      */
     String CACHE_USER_INFO = "user_info:";
-    String CACHE_ELE_SET_CONFIG = "ele_set_config:v2";
+    String CACHE_ELE_SET_CONFIG = "ele_set_config:";
     String CACHE_ELE_APP_SET_CONFIG = "ele_app_set_config:";
     
     /**
@@ -831,5 +831,22 @@ public interface CacheConstant {
      */
     String CACHE_USER_DEVICE_STATUS = "d_stat:";
 
+    
+    /**
+     * 保存租借状态的电池对应的订单
+     */
+    String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
+    
+    
+    /**
+     * 异常柜机格挡redis
+     */
+    String EXCEPTION_EMPTY_EID_KEY = "exception_empty_eid:%d";
+    
+    
+    /**
+     * 异常满电仓redis
+     */
+    String EXCEPTION_FULL_EID_KEY = "exception_full_eid:%d";
 }
 

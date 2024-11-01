@@ -25,7 +25,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.FREE_DEPOSIT_TAG_NAME, consumerGroup = MqConsumerConstant.FREE_DEPOSIT_CONSUMER_GROUP)
+@RocketMQMessageListener(topic = MqProducerConstant.FREE_DEPOSIT_TOPIC_NAME, selectorExpression = MqProducerConstant.FREE_DEPOSIT_TAG_NAME, consumerGroup = MqConsumerConstant.FREE_DEPOSIT_CONSUMER_GROUP, consumeThreadMax = 5)
 public class FreeDepositConsumer implements RocketMQListener<String> {
     
     @Resource

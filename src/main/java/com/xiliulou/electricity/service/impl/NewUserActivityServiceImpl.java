@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NewUserActivityVO;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -357,5 +359,11 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		});
         return R.ok(count);
     }
+	
+	@Override
+	public List<ShareAndUserActivityVO> listNewUserActivity(NewUserActivityPageQuery query) {
+		query.setTenantId(TenantContextHolder.getTenantId());
+		return newUserActivityMapper.listNewUserActivity(query);
+	}
 }
 

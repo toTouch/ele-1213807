@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantInviterModifyRecord;
+import com.xiliulou.electricity.entity.merchant.MerchantJoinRecord;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.mapper.merchant.MerchantInviterModifyRecordMapper;
@@ -10,6 +13,8 @@ import com.xiliulou.electricity.query.merchant.MerchantInviterModifyRecordQueryM
 import com.xiliulou.electricity.request.merchant.MerchantInviterModifyRecordRequest;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
+import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterModifyRecordVO;
 import org.apache.commons.collections4.CollectionUtils;
@@ -37,6 +42,12 @@ public class MerchantInviterModifyRecordServiceImpl implements MerchantInviterMo
     @Resource
     private UserService userService;
     
+    @Resource
+    private MerchantService merchantService;
+    
+    @Resource
+    private MerchantJoinRecordService merchantJoinRecordService;
+    
     @Override
     public Integer insertOne(MerchantInviterModifyRecord record) {
         return merchantInviterModifyRecordMapper.insertOne(record);
@@ -61,6 +72,24 @@ public class MerchantInviterModifyRecordServiceImpl implements MerchantInviterMo
             Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
             if (Objects.equals(item.getOldInviterSource(), UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
+                String inviterName = "";
+                Merchant merchant1 = merchantService.queryByUid(item.getOldInviterUid());
+                if (Objects.nonNull(merchant1)) {
+                    // 邀请人是商户
+                    inviterName = merchant1.getName();
+                } else {
+                    // 邀请人是场地员工
+                    MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.queryRemoveSuccessRecord(item.getUid(), item.getOldInviterUid(), item.getTenantId());
+                    if (Objects.nonNull(merchantJoinRecord) && Objects.equals(merchantJoinRecord.getInviterType(),
+                            MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
+                        Merchant merchant2 = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
+                        if (Objects.nonNull(merchant2)) {
+                            inviterName = merchant2.getName();
+                        }
+                    }
+                }
+                
+                recordVO.setOldInviterName(inviterName);
             }
             
             recordVO.setOperator(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).orElse(new User()).getName());

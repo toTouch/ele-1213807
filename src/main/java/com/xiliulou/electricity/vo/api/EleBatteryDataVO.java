@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.api;
 
+import com.xiliulou.electricity.dto.OrderForBatteryDTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import lombok.Data;
@@ -10,5 +11,7 @@ public class EleBatteryDataVO {
     private ElectricityBatteryDataVO electricityBatteryDataVO;
 
     private BatteryInfoDto batteryInfoDto;
+    
+    private OrderForBatteryDTO orderForBatteryDTO;
 
 }

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.BatteryMemberCardConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -94,41 +96,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         query.setDelFlag(BatteryMemberCard.DEL_NORMAL);
         
         return R.ok(batteryMemberCardService.searchV2(query));
-    }
-    
-    /**
-     * TODO SJP 分期套餐需求上线之后可删除
-     */
-    @Deprecated
-    @GetMapping("/admin/battery/memberCard/search")
-    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "catchEnterprise", required = false) Integer catchEnterprise) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(Collections.emptyList());
-            }
-        }
-        
-        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds).delFlag(BatteryMemberCard.DEL_NORMAL).status(status).rentType(rentType).name(name)
-                .catchEnterprise(Objects.equals(catchEnterprise, 1) ? catchEnterprise : 0).build();
-        
-        return R.ok(batteryMemberCardService.search(query));
     }
     
     /**
@@ -383,6 +350,19 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         }
         
         return R.ok(batteryMemberCardService.listMemberCardForSort(tokenUser));
+    }
+    
+    
+    /**
+     * 根据套餐名称搜索套餐(包含电、车)
+     */
+    @PostMapping("/admin/battery/memberCard/listBatteryAndCarMember")
+    public R<List<BatteryAndCarMemberCardVO>> listBatteryAndCarMember(@RequestBody BatteryCarMemberListQuery query) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser) || Objects.isNull(userService.queryByUidFromCache(tokenUser.getUid()))) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(batteryMemberCardService.listBatteryAndCarMember(query));
     }
     
 }
