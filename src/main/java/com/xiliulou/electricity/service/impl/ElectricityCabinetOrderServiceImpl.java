@@ -1577,8 +1577,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             if (!exchangeBatteryOrNot) {
-                backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
+                backSelfOpen(lastOrder.getOldCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
                 vo.setBeginSelfOpen(ExchangeUserSelectVo.BEGIN_SELF_OPEN);
+                vo.setCell(lastOrder.getOldCellNo());
                 return Pair.of(true, vo);
             }
             
