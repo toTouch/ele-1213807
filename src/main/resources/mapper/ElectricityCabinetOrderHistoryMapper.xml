@@ -204,7 +204,7 @@
     
     
     <select id="selectLatestByUidV2" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrderHistory">
-        select id, uid, new_electricity_battery_sn
+        select id, uid, new_electricity_battery_sn,,electricity_cabinet_id
         from t_electricity_cabinet_order_history
         where uid = #{uid}
           and status = 'COMPLETE_BATTERY_TAKE_SUCCESS'
