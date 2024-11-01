@@ -102,12 +102,14 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             batteryRecycleRecords.stream().forEach(batteryRecycleRecord -> {
                 // 不在仓
                 if (!boxMap.containsKey(batteryRecycleRecord.getSn())) {
+                    log.info("battery recycle info! box is null, sn: {}", batteryRecycleRecord.getSn());
                     return;
                 }
                 
                 // 查询柜机是否存在
                 ElectricityCabinetBox electricityCabinetBox = boxMap.get(batteryRecycleRecord.getSn());
                 if (Objects.isNull(cabinetMap.get(electricityCabinetBox.getElectricityCabinetId()))) {
+                    log.info("battery recycle info! cabinet is null, id: {}, sn: {}", electricityCabinetBox.getElectricityCabinetId(), batteryRecycleRecord.getSn());
                     return;
                 }
     
