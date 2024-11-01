@@ -20,6 +20,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -61,6 +62,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -71,6 +73,7 @@ import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
@@ -274,6 +277,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Resource
     private UserInfoExtraService userInfoExtraService;
     
+    @Resource
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+    
+    
     @Override
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
         
@@ -353,7 +363,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 判断套餐用户分组和用户的用户分组是否匹配
             Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
                     batteryMemberCard, CHECK_USERINFO_GROUP_USER);
-            
             if (Boolean.FALSE.equals(checkTriple.getLeft())) {
                 return checkTriple;
             }
@@ -369,6 +378,17 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
                         integratedPaymentAdd.getMemberCardId());
                 return Triple.of(false, "100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
+            }
+            
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.isNull(electricityConfig)) {
+                return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+            }
+            
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
+            if (!matchOrNot) {
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
             // 押金订单
@@ -651,6 +671,17 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .equals(userInfo.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberId());
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
+            }
+            
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.isNull(electricityConfig)) {
+                return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+            }
+            
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
+            if (!matchOrNot) {
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
             // 获取扫码柜机

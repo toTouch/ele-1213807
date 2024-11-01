@@ -88,28 +88,11 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         }
         
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-        if (!checkBatteryTypes(userBatteryTypes, memberCardBatteryTypes, context.getElectricityConfig())) {
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, context.getElectricityConfig());
+        if (!matchOrNot) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
         }
         
         fireProcess(context, result, placeOrderType);
-    }
-    
-    
-    /**
-     * 检查用户绑定的型号与套餐绑定的型号、灵活续费是否开启的关系，false为不匹配，不可购买
-     */
-    private boolean checkBatteryTypes(List<String> userBatteryTypes, List<String> memberCardBatteryTypes, ElectricityConfig electricityConfig) {
-        if (CollectionUtils.isEmpty(userBatteryTypes) && CollectionUtils.isEmpty(memberCardBatteryTypes)) {
-            return true;
-        }
-        
-        if (CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes)) {
-            return false;
-        }
-        
-        return !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) || CollectionUtils.containsAll(memberCardBatteryTypes,
-                userBatteryTypes);
     }
 }

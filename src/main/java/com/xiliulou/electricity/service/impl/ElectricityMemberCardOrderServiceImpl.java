@@ -3082,6 +3082,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
         }
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
+        if (!matchOrNot) {
+            return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
@@ -3288,6 +3299,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
+        if (!matchOrNot) {
+            return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard,
