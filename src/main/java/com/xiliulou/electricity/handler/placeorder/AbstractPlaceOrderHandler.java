@@ -26,13 +26,11 @@ public abstract class AbstractPlaceOrderHandler implements PlaceOrderHandler<Pla
      */
     protected Integer nodePlaceOrderType;
     
-
-    
     
     /**
      * 通用控制节点进出逻辑
      */
-    public void processEntryAndExit(PlaceOrderContext context, R<Object> result, Integer placeOrderType) {
+    void processEntryAndExit(PlaceOrderContext context, R<Object> result, Integer placeOrderType) {
         // 节点进入时，执行相关校验判断是否需要执行当前节点业务逻辑
         if (Objects.isNull(placeOrderType) || (placeOrderType & this.getNodePlaceOrderType()) != this.getNodePlaceOrderType() || !result.isSuccess() || Objects.isNull(
                 context.getPlaceOrderQuery().getPayType())) {

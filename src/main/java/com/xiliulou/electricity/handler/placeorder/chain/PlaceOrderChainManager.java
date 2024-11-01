@@ -125,9 +125,10 @@ public class PlaceOrderChainManager {
         AbstractPlaceOrderHandler firstNode = FIRST_NODES.get(placeOrderType);
         if (Objects.isNull(firstNode)) {
             log.error("Place order error! 无相应业务的首节点，PlaceOrderQuery={}", context.getPlaceOrderQuery());
+            return R.fail("302002", "业务类型错误，请联系客服");
         }
         
-        firstNode.processEntryAndExit(context, result, placeOrderType);
+        firstNode.dealWithBusiness(context, result, placeOrderType);
         return result;
     }
     

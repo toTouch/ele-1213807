@@ -42,14 +42,17 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("BATTERY DEPOSIT WARN! user is rent deposit,uid={} ", userInfo.getUid());
             result = R.fail("ELECTRICITY.0049", "已缴纳押金");
+            exit();
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig)) {
             result = R.fail("302001", "单独缴纳押金已禁用，请刷新后重新购买");
+            exit();
         }
         if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(electricityConfig.getIsEnableSeparateDeposit(), ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
             result = R.fail("302001", "单独缴纳押金已禁用，请刷新后重新购买");
+            exit();
         }
         
         fireProcess(context, result, placeOrderType);
