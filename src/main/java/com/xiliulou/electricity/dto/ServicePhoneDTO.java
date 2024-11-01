@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.dto;
 
 import com.xiliulou.electricity.entity.ServicePhone;
-import com.xiliulou.electricity.vo.ServicePhoneVO;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,5 +21,5 @@ public class ServicePhoneDTO {
     
     private List<Long> deleteList;
     
-    private Map<Long, ServicePhoneVO> existMap;
+    private Map<Long, ServicePhone> existMap;
 }

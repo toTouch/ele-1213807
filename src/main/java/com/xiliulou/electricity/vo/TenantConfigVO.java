@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.ServicePhone;
 import lombok.Data;
 
 import java.util.List;
@@ -11,50 +12,50 @@ import java.util.List;
  */
 @Data
 public class TenantConfigVO {
-
+    
     /**
      * 平台名称
      */
     private String name;
-
+    
     /**
      * 订单间隔时间
      */
     private Integer orderTime;
-
+    
     /**
      * 是否人工审核（0--是，1--否）
      */
     private Integer isManualReview;
-
+    
     /**
      * 是否线上提现（0--是，1--否）
      */
     private Integer isWithdraw;
-
+    
     //租户id
     private Integer tenantId;
-
+    
     /**
      * 是否开启异常仓锁仓 （0--开启，1--关闭）
      */
     private Integer isOpenDoorLock;
-
+    
     /**
      * 是否电池检测 （0--是，1--否）
      */
     private Integer isBatteryReview;
-
+    
     /**
      * 是否开始暂停月卡功能 （0--关闭 1--开启）
      */
     private Integer disableMemberCard;
-
+    
     /**
      * 是否开启低电量换电 （0--是 1--否）
      */
     private Integer isLowBatteryExchange;
-
+    
     /**
      * 低电量换电模式
      */
@@ -64,17 +65,17 @@ public class TenantConfigVO {
      * 是否开启选仓换电 （0--开启 1--关闭）
      */
     private Integer isSelectionExchange;
-
+    
     /**
      * 是否可以自主开仓
      */
     private Integer isEnableSelfOpen;
-
+    
     /**
      * 租户模板id
      */
     private List<String> templateConfigList;
-
+    
     /**
      * 客服电话
      */
@@ -83,18 +84,18 @@ public class TenantConfigVO {
     /**
      * 客服电话
      */
-    private List<ServicePhoneVO> servicePhones;
-
+    private List<ServicePhone> servicePhones;
+    
     /**
      * 是否迁移加盟商 1--关闭 2--开启
      */
     private Integer isMoveFranchisee;
-
+    
     /**
      * 迁移加盟商
      */
     private String franchiseeMoveInfo;
-
+    
     /**
      * 押金缴纳类型 (0：缴纳押金，1：电池免押金，2：租车免押金，3：车辆电池免押金)
      */
@@ -104,12 +105,12 @@ public class TenantConfigVO {
      * 是否开启车辆控制 0--是 0--否
      */
     private Integer isOpenCarControl;
-
+    
     /**
      * 是否开启电子签名 0--是 1--否
      */
     private Integer isEnableEsign;
-
+    
     /**
      * 冻结是否强制退资产 0--是 1--否
      */

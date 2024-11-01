@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ServicePhone;
 import com.xiliulou.electricity.request.ServicePhoneRequest;
-import com.xiliulou.electricity.vo.ServicePhoneVO;
-import com.xiliulou.electricity.vo.ServicePhonesVO;
 
 import java.util.List;
 
@@ -16,10 +14,8 @@ public interface ServicePhoneService {
     
     R insertOrUpdate(List<ServicePhoneRequest> requestPhoneList);
     
-    ServicePhonesVO queryByTenantIdFromCache(Integer tenantId);
+    List<ServicePhone> listByTenantIdFromCache(Integer tenantId);
     
     List<ServicePhone> listByIds(List<Long> ids);
-    
-    List<ServicePhoneVO> listByTenantId(Integer tenantId);
     
 }

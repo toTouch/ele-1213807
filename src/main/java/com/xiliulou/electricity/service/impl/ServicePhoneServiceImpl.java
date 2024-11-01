@@ -13,8 +13,6 @@ import com.xiliulou.electricity.request.ServicePhoneRequest;
 import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
-import com.xiliulou.electricity.vo.ServicePhoneVO;
-import com.xiliulou.electricity.vo.ServicePhonesVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -28,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +56,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         try {
             if (CollectionUtils.isEmpty(requestPhoneList)) {
                 // 删除所有
-                Integer delete = servicePhoneMapper.deleteByTenantId(tenantId);
+                servicePhoneMapper.deleteByTenantId(tenantId);
                 
                 // 清除新缓存
                 redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
@@ -71,7 +68,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             List<ServicePhone> insertList = null;
             List<ServicePhone> updateList = null;
             List<Long> deleteList = null;
-            Map<Long, ServicePhoneVO> existMap = null;
+            Map<Long, ServicePhone> existMap = null;
             ServicePhoneDTO servicePhoneDTO = this.handlePhones(requestPhoneList, tenantId);
             if (Objects.nonNull(servicePhoneDTO)) {
                 insertList = servicePhoneDTO.getInsertList();
@@ -153,7 +150,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         return flag;
     }
     
-    private Boolean handleDelete(List<Long> deleteList, Map<Long, ServicePhoneVO> existMap, Integer tenantId) {
+    private Boolean handleDelete(List<Long> deleteList, Map<Long, ServicePhone> existMap, Integer tenantId) {
         boolean flag = false;
         if (CollectionUtils.isNotEmpty(deleteList)) {
             Integer delete = servicePhoneMapper.deleteByIds(deleteList);
@@ -176,13 +173,17 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         List<ServicePhone> insertList = new ArrayList<>();
         List<ServicePhone> updateList = new ArrayList<>();
         List<Long> deleteList = new ArrayList<>();
-        Map<Long, ServicePhoneVO> existMap = null;
+        Map<Long, ServicePhone> existMap = null;
         
         // 查询旧的手机号
-        ServicePhonesVO servicePhonesExist = this.queryByTenantIdFromCache(tenantId);
-        if (Objects.nonNull(servicePhonesExist) && CollectionUtil.isNotEmpty(servicePhonesExist.getPhoneList())) {
-            List<ServicePhoneVO> phoneList = servicePhonesExist.getPhoneList();
-            existMap = phoneList.stream().collect(Collectors.toMap(ServicePhoneVO::getId, servicePhone -> servicePhone));
+        List<ServicePhone> servicePhonesExist = this.listByTenantIdFromCache(tenantId);
+        if (CollectionUtil.isNotEmpty(servicePhonesExist)) {
+            existMap = servicePhonesExist.stream().collect(Collectors.toMap(ServicePhone::getId, servicePhone -> servicePhone));
+            
+            List<Long> requestPhoneIds = requestPhoneList.stream().filter(Objects::nonNull).filter(servicePhoneRequest -> Objects.nonNull(servicePhoneRequest.getId()))
+                    .map(ServicePhoneRequest::getId).collect(Collectors.toList());
+            
+            deleteList = servicePhonesExist.stream().map(ServicePhone::getId).filter(id -> !requestPhoneIds.contains(id)).collect(Collectors.toList());
         }
         
         for (ServicePhoneRequest requestPhone : requestPhoneList) {
@@ -201,29 +202,15 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             // 手机号不为空的处理
             if (Objects.nonNull(id)) {
                 if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(requestPhone.getId())) {
-                    ServicePhoneVO existPhone = existMap.get(requestPhone.getId());
-                    // 手机号和文案均无变化则不处理
-                    if (Objects.equals(requestPhone.getPhone(), existPhone.getPhone()) && Objects.equals(requestPhone.getRemark(), existPhone.getRemark())) {
-                        continue;
+                    ServicePhone existPhone = existMap.get(requestPhone.getId());
+                    // 手机号和文案有变化时才更新
+                    if (!(Objects.equals(requestPhone.getPhone(), existPhone.getPhone()) && Objects.equals(requestPhone.getRemark(), existPhone.getRemark()))) {
+                        updateList.add(ServicePhone.builder().phone(phone).remark(remark).id(id).tenantId(tenantId).updateTime(System.currentTimeMillis()).build());
                     }
                 }
-                
-                updateList.add(ServicePhone.builder().phone(phone).remark(remark).id(id).tenantId(tenantId).updateTime(System.currentTimeMillis()).build());
             } else {
                 insertList.add(ServicePhone.builder().phone(phone).remark(remark).tenantId(tenantId).delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).build());
-            }
-        }
-        
-        // 处理要删除的数据
-        Set<Long> existIds = MapUtils.isEmpty(existMap) ? Collections.emptySet() : existMap.keySet();
-        Set<Long> updateIds = updateList.stream().map(ServicePhone::getId).collect(Collectors.toSet());
-        if (CollectionUtils.isEmpty(updateList)) {
-            deleteList.addAll(existIds);
-        } else {
-            Set<Long> needDelIds = existIds.stream().filter(id -> !updateIds.contains(id)).collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(needDelIds)) {
-                deleteList.addAll(needDelIds);
             }
         }
         
@@ -255,39 +242,25 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
     }
     
     @Override
-    public ServicePhonesVO queryByTenantIdFromCache(Integer tenantId) {
-        ServicePhonesVO servicePhoneCache = redisService.getWithHash(CacheConstant.SERVICE_PHONE + tenantId, ServicePhonesVO.class);
-        if (Objects.nonNull(servicePhoneCache)) {
-            return servicePhoneCache;
+    public List<ServicePhone> listByTenantIdFromCache(Integer tenantId) {
+        List<ServicePhone> phoneList = redisService.getWithList(CacheConstant.SERVICE_PHONE + tenantId, ServicePhone.class);
+        if (CollectionUtils.isNotEmpty(phoneList)) {
+            return phoneList;
         }
         
         List<ServicePhone> servicePhones = servicePhoneMapper.selectByTenantId(tenantId);
         if (CollectionUtil.isEmpty(servicePhones)) {
-            return null;
+            return Collections.emptyList();
         }
         
-        ServicePhonesVO servicePhonesVO = ServicePhonesVO.builder().tenantId(tenantId).phoneList(servicePhones.stream()
-                .map(servicePhone -> ServicePhoneVO.builder().id(servicePhone.getId()).phone(servicePhone.getPhone()).remark(servicePhone.getRemark()).build())
-                .collect(Collectors.toList())).build();
-        
-        redisService.saveWithHash(CacheConstant.SERVICE_PHONE + tenantId, servicePhonesVO);
-        return servicePhonesVO;
+        redisService.saveWithList(CacheConstant.SERVICE_PHONE + tenantId, servicePhones);
+        return servicePhones;
     }
     
     @Slave
     @Override
     public List<ServicePhone> listByIds(List<Long> ids) {
         return servicePhoneMapper.selectListByIds(ids);
-    }
-    
-    @Override
-    public List<ServicePhoneVO> listByTenantId(Integer tenantId) {
-        ServicePhonesVO servicePhonesVO = this.queryByTenantIdFromCache(tenantId);
-        if (Objects.isNull(servicePhonesVO) || CollectionUtil.isEmpty(servicePhonesVO.getPhoneList())) {
-            return Collections.emptyList();
-        }
-        
-        return servicePhonesVO.getPhoneList();
     }
     
 }

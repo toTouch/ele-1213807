@@ -107,7 +107,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     
     @GetMapping("admin/servicePhone/all")
     public R getServicePhones() {
-        return R.ok(servicePhoneService.queryByTenantIdFromCache(TenantContextHolder.getTenantId()));
+        return R.ok(servicePhoneService.listByTenantIdFromCache(TenantContextHolder.getTenantId()));
     }
     
     @PostMapping("admin/servicePhone/update")
