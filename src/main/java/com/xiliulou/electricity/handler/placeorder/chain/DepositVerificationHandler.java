@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
-import com.xiliulou.electricity.service.ElectricityConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,8 +27,6 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
     
     private final DepositPlaceOrderHandler depositPlaceOrderHandler;
     
-    private final ElectricityConfigService electricityConfigService;
-    
     
     @PostConstruct
     public void init() {
@@ -45,11 +42,8 @@ public class DepositVerificationHandler extends AbstractPlaceOrderHandler {
             throw new BizException("ELECTRICITY.0049", "已缴纳押金");
         }
         
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
-        if (Objects.isNull(electricityConfig)) {
-            throw new BizException("302001", "单独缴纳押金已禁用，请刷新后重新购买");
-        }
-        if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(electricityConfig.getIsEnableSeparateDeposit(), ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
+        if (Objects.equals(placeOrderType, PLACE_ORDER_DEPOSIT) && Objects.equals(context.getElectricityConfig().getIsEnableSeparateDeposit(),
+                ElectricityConfig.SEPARATE_DEPOSIT_CLOSE)) {
             throw new BizException("302001", "单独缴纳押金已禁用，请刷新后重新购买");
         }
         

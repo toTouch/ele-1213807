@@ -3,20 +3,27 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
+import com.xiliulou.electricity.constant.PlaceOrderConstant;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -30,13 +37,17 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_M
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     
-    @Resource
-    private MemberCardPlaceOrderHandler memberCardPlaceOrderHandler;
+    private final MemberCardPlaceOrderHandler memberCardPlaceOrderHandler;
     
-    @Resource
-    private UserInfoGroupDetailService userInfoGroupDetailService;
+    private final UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    private final UserBatteryTypeService userBatteryTypeService;
+    
+    private final MemberCardBatteryTypeService memberCardBatteryTypeService;
+    
     
     @PostConstruct
     public void init() {
@@ -76,6 +87,29 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             }
         }
         
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+        if (!checkBatteryTypes(userBatteryTypes, memberCardBatteryTypes, context.getElectricityConfig())) {
+            throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
         fireProcess(context, result, placeOrderType);
+    }
+    
+    
+    /**
+     * 检查用户绑定的型号与套餐绑定的型号、灵活续费是否开启的关系，false为不匹配，不可购买
+     */
+    private boolean checkBatteryTypes(List<String> userBatteryTypes, List<String> memberCardBatteryTypes, ElectricityConfig electricityConfig) {
+        if (CollectionUtils.isEmpty(userBatteryTypes) && CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+            return true;
+        }
+        
+        if (CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+            return false;
+        }
+        
+        return !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) || CollectionUtils.containsAll(memberCardBatteryTypes,
+                userBatteryTypes);
     }
 }

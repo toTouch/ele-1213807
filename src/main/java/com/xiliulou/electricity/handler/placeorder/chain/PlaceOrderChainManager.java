@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.UnionPayOrder;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -23,6 +25,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.TradeOrderService;
@@ -33,6 +36,7 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +44,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,60 +59,49 @@ import java.util.Set;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class PlaceOrderChainManager {
     
-    @Resource
-    private DepositVerificationHandler depositVerificationHandler;
+    private final DepositVerificationHandler depositVerificationHandler;
     
-    @Resource
-    private MemberCardVerificationHandler memberCardVerificationHandler;
+    private final MemberCardVerificationHandler memberCardVerificationHandler;
     
-    @Resource
-    private UserInfoService userInfoService;
+    private final UserInfoService userInfoService;
     
-    @Resource
-    private PayConfigBizService payConfigBizService;
+    private final PayConfigBizService payConfigBizService;
     
-    @Resource
-    private UserOauthBindService userOauthBindService;
+    private final UserOauthBindService userOauthBindService;
     
-    @Resource
-    private BatteryMemberCardService batteryMemberCardService;
+    private final BatteryMemberCardService batteryMemberCardService;
     
-    @Resource
-    private ElectricityCabinetService electricityCabinetService;
+    private final ElectricityCabinetService electricityCabinetService;
     
-    @Resource
-    private EleDepositOrderService eleDepositOrderService;
+    private final EleDepositOrderService eleDepositOrderService;
     
-    @Resource
-    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    private final ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
-    @Resource
-    private BatteryMemberCardOrderCouponService memberCardOrderCouponService;
+    private final BatteryMemberCardOrderCouponService memberCardOrderCouponService;
     
-    @Resource
-    private UserCouponService userCouponService;
+    private final UserCouponService userCouponService;
     
-    @Resource
-    private InsuranceOrderService insuranceOrderService;
+    private final InsuranceOrderService insuranceOrderService;
     
-    @Resource
-    private TradeOrderService tradeOrderService;
+    private final TradeOrderService tradeOrderService;
     
-    @Resource
-    private UnionTradeOrderService unionTradeOrderService;
+    private final UnionTradeOrderService unionTradeOrderService;
+    
+    private final ElectricityConfigService electricityConfigService;
     
     
-    private final HashMap<Integer, AbstractPlaceOrderHandler> FIRST_NODES = new HashMap<>();
+    private HashMap<Integer, AbstractPlaceOrderHandler> firstNodes = new HashMap<>();
     
     @PostConstruct
     public void init() {
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT, depositVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD, depositVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD, memberCardVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE, memberCardVerificationHandler);
-        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_ALL, depositVerificationHandler);
+        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT, depositVerificationHandler);
+        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD, depositVerificationHandler);
+        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD, memberCardVerificationHandler);
+        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE, memberCardVerificationHandler);
+        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_ALL, depositVerificationHandler);
     }
     
     /**
@@ -122,7 +114,7 @@ public class PlaceOrderChainManager {
         }
         
         Integer placeOrderType = context.getPlaceOrderQuery().getPlaceOrderType();
-        AbstractPlaceOrderHandler firstNode = FIRST_NODES.get(placeOrderType);
+        AbstractPlaceOrderHandler firstNode = firstNodes.get(placeOrderType);
         if (Objects.isNull(firstNode)) {
             log.error("Place order error! 无相应业务的首节点，PlaceOrderQuery={}", context.getPlaceOrderQuery());
             return R.fail("302002", "业务类型错误，请联系客服");
@@ -130,6 +122,92 @@ public class PlaceOrderChainManager {
         
         firstNode.dealWithBusiness(context, result, placeOrderType);
         return result;
+    }
+    
+    /**
+     * 公共校验，以及获取相关数据传递给执行链路使用
+     *
+     * @param context 业务参数
+     */
+    private R<Object> commonVerification(PlaceOrderContext context) throws Exception {
+        TokenUser tokenUser = context.getTokenUser();
+        PlaceOrderQuery placeOrderQuery = context.getPlaceOrderQuery();
+        Integer tenantId = context.getTenantId();
+        
+        // 线上与线下两种情况，需要绑定套餐的人的uid是以不同的方式取得的
+        Long uid = Objects.equals(placeOrderQuery.getPayType(), PlaceOrderConstant.OFFLINE_PAYMENT) ? placeOrderQuery.getUid() : tokenUser.getUid();
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("BATTERY DEPOSIT WARN! not found user,uid={}", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        context.setUserInfo(userInfo);
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("BATTERY DEPOSIT WARN! user is unUsable,uid={}", uid);
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", uid);
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return R.fail("302003", "运营商配置异常，请联系客服");
+        }
+        context.setElectricityConfig(electricityConfig);
+        
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(placeOrderQuery.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
+            return R.fail("ELECTRICITY.00121", "电池套餐不存在");
+        }
+        if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
+            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
+            return R.fail("100275", "电池套餐不可用");
+        }
+        context.setBatteryMemberCard(batteryMemberCard);
+        
+        // 线上购买才需要支付配置
+        if (Objects.equals(placeOrderQuery.getPayType(), PlaceOrderConstant.ONLINE_PAYMENT)) {
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(placeOrderQuery.getPaymentChannel(), tenantId, batteryMemberCard.getFranchiseeId(),
+                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
+            if (Objects.isNull(payParamConfig)) {
+                log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", uid);
+                return R.fail("100307", "未配置支付参数!");
+            }
+            context.setPayParamConfig(payParamConfig);
+            
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId, placeOrderQuery.getPaymentChannel());
+            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+                log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", uid);
+                return R.fail("100308", "未找到用户的第三方授权信息!");
+            }
+            context.setUserOauthBind(userOauthBind);
+        }
+        
+        // 获取扫码柜机
+        ElectricityCabinet electricityCabinet = null;
+        if (StringUtils.isNotBlank(placeOrderQuery.getProductKey()) && StringUtils.isNotBlank(placeOrderQuery.getDeviceName())) {
+            electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(placeOrderQuery.getProductKey(), placeOrderQuery.getDeviceName());
+        }
+        if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
+                electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
+            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
+                    placeOrderQuery.getMemberCardId());
+            return R.fail("100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
+        }
+        context.setElectricityCabinet(electricityCabinet);
+        
+        context.setOrderList(new ArrayList<>());
+        context.setOrderTypeList(new ArrayList<>());
+        context.setAllPayAmount(new ArrayList<>());
+        context.setTotalAmount(BigDecimal.valueOf(0));
+        
+        return R.ok();
     }
     
     /**
@@ -188,85 +266,5 @@ public class PlaceOrderChainManager {
         BasePayOrderCreateDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, payParamConfig, context.getUserOauthBind().getThirdId(),
                 context.getRequest(), null);
         return R.ok(resultDTO);
-    }
-    
-    /**
-     * 公共校验，以及获取相关数据传递给执行链路使用
-     *
-     * @param context 业务参数
-     */
-    private R<Object> commonVerification(PlaceOrderContext context) throws Exception {
-        TokenUser tokenUser = context.getTokenUser();
-        PlaceOrderQuery placeOrderQuery = context.getPlaceOrderQuery();
-        Integer tenantId = context.getTenantId();
-        
-        // 线上与线下两种情况，需要绑定套餐的人的uid是以不同的方式取得的
-        Long uid = Objects.equals(placeOrderQuery.getPayType(), PlaceOrderConstant.OFFLINE_PAYMENT) ? placeOrderQuery.getUid() : tokenUser.getUid();
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.warn("BATTERY DEPOSIT WARN! not found user,uid={}", uid);
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-        context.setUserInfo(userInfo);
-        
-        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.warn("BATTERY DEPOSIT WARN! user is unUsable,uid={}", uid);
-            return R.fail("ELECTRICITY.0024", "用户已被禁用");
-        }
-        
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", uid);
-            return R.fail("ELECTRICITY.0041", "未实名认证");
-        }
-        
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(placeOrderQuery.getMemberCardId());
-        if (Objects.isNull(batteryMemberCard)) {
-            log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
-            return R.fail("ELECTRICITY.00121", "电池套餐不存在");
-        }
-        if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
-            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
-            return R.fail("100275", "电池套餐不可用");
-        }
-        context.setBatteryMemberCard(batteryMemberCard);
-        
-        // 线上购买才需要支付配置
-        if (Objects.equals(placeOrderQuery.getPayType(), PlaceOrderConstant.ONLINE_PAYMENT)) {
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(placeOrderQuery.getPaymentChannel(), tenantId, batteryMemberCard.getFranchiseeId(),
-                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
-            if (Objects.isNull(payParamConfig)) {
-                log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", uid);
-                return R.fail("100307", "未配置支付参数!");
-            }
-            context.setPayParamConfig(payParamConfig);
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId, placeOrderQuery.getPaymentChannel());
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", uid);
-                return R.fail("100308", "未找到用户的第三方授权信息!");
-            }
-            context.setUserOauthBind(userOauthBind);
-        }
-        
-        // 获取扫码柜机
-        ElectricityCabinet electricityCabinet = null;
-        if (StringUtils.isNotBlank(placeOrderQuery.getProductKey()) && StringUtils.isNotBlank(placeOrderQuery.getDeviceName())) {
-            electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(placeOrderQuery.getProductKey(), placeOrderQuery.getDeviceName());
-        }
-        if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
-                electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
-            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
-                    placeOrderQuery.getMemberCardId());
-            return R.fail("100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
-        }
-        context.setElectricityCabinet(electricityCabinet);
-        
-        context.setOrderList(new ArrayList<>());
-        context.setOrderTypeList(new ArrayList<>());
-        context.setAllPayAmount(new ArrayList<>());
-        context.setTotalAmount(BigDecimal.valueOf(0));
-        
-        return R.ok();
     }
 }
