@@ -165,6 +165,9 @@
         from t_installment_terminating_record
         <where>
             external_agreement_no = #{externalAgreementNo}
+            <if test="status != null">
+                and `status` = #{status}
+            </if>
             <if test="statuses != null and statuses.size > 0">
                 and `status` in
                 <foreach collection="statuses" open="(" separator="," close=")" item="status">

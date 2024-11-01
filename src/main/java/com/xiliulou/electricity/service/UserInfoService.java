@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.request.user.BindBatteryRequest;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
@@ -135,7 +136,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     List<UserInfo> queryByIdNumber(String value);
     
-    Integer verifyIdNumberExist(String idNumber, Integer tenantId);
+    Integer existsByIdNumber(String idNumber, Integer tenantId);
     
     R queryDetailsBasicInfo(Long uid);
     
@@ -145,7 +146,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     R queryDetailsBatteryInfo(Long uid);
     
-    R userInfoSearch(Long size, Long offset, String name);
+    R userInfoSearch(Long size, Long offset, String name, String keyWords);
     
     R queryEleList(UserInfoQuery userInfoQuery);
     
@@ -195,4 +196,8 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 校验结果
      */
     Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo, BatteryMemberCard batteryMemberCard);
+    
+    R bindBattery(BindBatteryRequest bindBatteryRequest);
+    
+    Integer updatePayCountByUid(UserInfo userInfo);
 }

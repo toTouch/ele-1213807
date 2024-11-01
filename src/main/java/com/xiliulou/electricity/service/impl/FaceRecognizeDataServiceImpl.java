@@ -121,22 +121,17 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> update(FaceRecognizeDataQuery faceRecognizeDataQuery) {
         FaceRecognizeData faceRecognizeData = this.selectByIdFromDB(faceRecognizeDataQuery.getId());
 
-        if (faceRecognizeData.getFaceRecognizeCapacity() > 0 && System.currentTimeMillis() - faceRecognizeData.getRechargeTime() < 365 * 24 * 60 * 60 * 1000L) {
-            return Pair.of(false, "计费周期内不允许重复充值");
-        }
-
-        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        if (faceRecognizeDataQuery.getFaceRecognizeCapacity() <= 0) {
-            faceRecognizeCapacity = faceRecognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        }
+//        if (faceRecognizeData.getFaceRecognizeCapacity() > 0 && System.currentTimeMillis() - faceRecognizeData.getRechargeTime() < 365 * 24 * 60 * 60 * 1000L) {
+//            return Pair.of(false, "计费周期内不允许重复充值");
+//        }
 
         FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
         faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
-        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeCapacity);
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity());
         faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
         faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
 
@@ -173,18 +168,14 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
             return Triple.of(true, "", null);
         }
 
-        if (recognizeData.getFaceRecognizeCapacity() > 0 && System.currentTimeMillis() - recognizeData.getRechargeTime() < 365 * 24 * 60 * 60 * 1000L) {
-            return Triple.of(false, "100333", "计费周期内不允许重复充值");
-        }
-
-        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        if (recognizeData.getFaceRecognizeCapacity() <= 0) {
-            faceRecognizeCapacity = recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        }
+//        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
+//        if (recognizeData.getFaceRecognizeCapacity() <= 0) {
+//            faceRecognizeCapacity = recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
+//        }
 
         FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
         faceRecognizeDataUpdate.setId(recognizeData.getId());
-        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeCapacity);
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity());
         faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
         faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
 

@@ -13,34 +13,40 @@ import java.util.List;
 @Data
 @Builder
 public class BatteryServiceFeeQuery {
-
-
+    
+    
     private Long size;
+    
     private Long offset;
-
-
+    
+    
     private String phone;
+    
     private Long uid;
+    
     private String name;
-
+    
     private Long beginTime;
+    
     private Long endTime;
-
+    
     private Integer status;
-
+    
     private Integer source;
+    
     private Integer tenantId;
-
+    
     private String orderId;
     
     private List<Long> franchiseeIds;
+    
     private List<Long> storeIds;
-
+    
     /**
      * 支付时间开始
      */
     private Long payTimeBegin;
-
+    
     /**
      * 支付时间截止
      */
@@ -55,4 +61,9 @@ public class BatteryServiceFeeQuery {
      * 根据支付时间排序，1-倒叙，2-正序
      */
     private Integer orderByPayTime;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }

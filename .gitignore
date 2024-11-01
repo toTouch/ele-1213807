@@ -21,7 +21,7 @@ bin/
 *.ipr
 *.lock
 rebel.xml
-
+.vscode/*
 ### NetBeans ###
 nbproject/private/
 build/

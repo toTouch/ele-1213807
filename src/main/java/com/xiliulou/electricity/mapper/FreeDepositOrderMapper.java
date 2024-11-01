@@ -67,4 +67,6 @@ public interface FreeDepositOrderMapper extends BaseMapper<FreeDepositOrder> {
     List<FreeDepositOrder> selectPayTransAmtByOrderIds(@Param("orderIds") List<String> orderIds);
     
     List<FreeDepositOrder> selectListByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    
+    FreeDepositOrder selectUpDateByUid(@Param("uid") Long uid);
 }

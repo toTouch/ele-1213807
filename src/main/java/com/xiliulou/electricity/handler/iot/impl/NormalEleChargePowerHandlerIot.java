@@ -50,6 +50,11 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN);
 
+    final Double ELE_POWER_ERROR_CODE_12 = 12.00;
+    
+    final Double ELE_POWER_ERROR_CODE_14 = 14.00;
+    
+    final Double ELE_POWER_HOUR_POWER_MAXIMUM = 100.00;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -85,14 +90,14 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         }
 
         // 丢掉异常数据
-        if (cabinetPowerReport.getPowerConsumption() < 0 || Double.valueOf(12.00).equals(cabinetPowerReport.getSumConsumption()) || Double.valueOf(14.00).equals(cabinetPowerReport.getSumConsumption())) {
+        if (cabinetPowerReport.getPowerConsumption() < 0 || ELE_POWER_ERROR_CODE_12.equals(cabinetPowerReport.getSumConsumption()) || ELE_POWER_ERROR_CODE_14.equals(cabinetPowerReport.getSumConsumption())) {
             sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
             return;
         }
 
         // 丢掉错误码后一个小时的错误数据
         BigDecimal lastHourMeterReading = BigDecimal.valueOf(cabinetPowerReport.getSumConsumption()).subtract(BigDecimal.valueOf(cabinetPowerReport.getPowerConsumption()));
-        if (BigDecimal.valueOf(12.00).equals(lastHourMeterReading) || BigDecimal.valueOf(14.00).equals(lastHourMeterReading)) {
+        if (BigDecimal.valueOf(ELE_POWER_ERROR_CODE_12).equals(lastHourMeterReading) || BigDecimal.valueOf(ELE_POWER_ERROR_CODE_14).equals(lastHourMeterReading)) {
             sendConfirmationCommand(electricityCabinet, receiverMessage, cabinetPowerReport);
             return;
         }
@@ -104,16 +109,20 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
             return;
         }
         
-        ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue());
-        // 更换电表优化，更换电表之后sumPower需要继续累计
-        double hourPower;
+        ElePower lastElePower = elePowerService.queryLatestByEid(electricityCabinet.getId().longValue(), cabinetPowerReport.getCreateTime());
+        
+        double hourPower = cabinetPowerReport.getPowerConsumption();
+        if (hourPower > ELE_POWER_HOUR_POWER_MAXIMUM) {
+            hourPower = 0.00;
+        }
         double sumPower;
+        
+        // 更换电表优化，更换电表之后sumPower需要继续累计
         if (Objects.nonNull(lastElePower)) {
-            hourPower = Math.max(cabinetPowerReport.getPowerConsumption(), 0.00);
+            hourPower = Math.max(hourPower, 0.00);
             sumPower = BigDecimal.valueOf(lastElePower.getSumPower()).add(BigDecimal.valueOf(hourPower)).setScale(2, RoundingMode.HALF_UP).doubleValue();
         } else {
             // 第一条上报
-            hourPower = cabinetPowerReport.getPowerConsumption();
             sumPower = cabinetPowerReport.getSumConsumption();
         }
         

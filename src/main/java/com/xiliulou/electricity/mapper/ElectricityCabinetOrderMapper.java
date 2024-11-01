@@ -7,9 +7,11 @@ import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import org.apache.ibatis.annotations.Param;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 订单表(TElectricityCabinetOrder)表数据库访问层
@@ -64,4 +66,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     
     Integer existExchangeOrderInSameCabinetAndCell(@Param("id") Long id, @Param("endTime") Long endTime, @Param("eid") Integer eid, @Param("cell") Integer cell,
             @Param("newOrOldCellFlag") Integer newOrOldCellFlag);
+    
+    List<ElectricityCabinetOrder> selectListByOrderIdList(@Param("orderIdList") Set<String> exchangeOrderIdList);
 }

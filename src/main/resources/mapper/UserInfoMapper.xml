@@ -861,17 +861,26 @@
       from t_user_info
       where del_flag = 0 and id_number = #{idNumber} and tenant_id = #{tenantId}
   </select>
-
-
-    <select id="verifyIdNumberExist" resultType="Integer">
-      SELECT 1  FROM t_user_info WHERE del_flag = 0 AND id_number = #{idNumber} AND tenant_id = #{tenantId} LIMIT 1
+    
+    
+    <select id="existsByIdNumber" resultType="Integer">
+        SELECT 1
+        FROM t_user_info
+        WHERE del_flag = 0
+          and auth_status = 2
+          AND id_number = #{idNumber}
+          AND tenant_id = #{tenantId} LIMIT 1
     </select>
     
     <select id="userInfoSearch" resultType="com.xiliulou.electricity.vo.UserInfoSearchVo">
-        select id, uid, name FROM t_user_info
+        select id, uid, name, phone FROM t_user_info
         WHERE del_flag = 0 and auth_status=2 and tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             and name like concat('%', #{name}, '%')
+        </if>
+        
+        <if test="keyWords != null and keyWords != ''">
+            and (name like concat('%', #{keyWords}, '%') or phone like concat('%', #{keyWords}, '%'))
         </if>
         order by id
         limit #{offset}, #{size}
@@ -1241,6 +1250,63 @@
     
     <update id="updatePhoneByUid">
         update t_user_info set phone=#{newPhone},update_time=#{updateTime} where uid=#{uid} and tenant_id = #{tenantId}
+    </update>
+    <update id="updatePayCountByUid">
+        update t_user_info
+        <set>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="authStatus != null">
+                auth_status = #{authStatus},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="authType != null">
+                auth_type = #{authType},
+            </if>
+            <if test="batteryDepositStatus != null">
+                battery_deposit_status = #{batteryDepositStatus},
+            </if>
+            <if test="batteryRentStatus != null">
+                battery_rent_status = #{batteryRentStatus},
+            </if>
+            <if test="carRentStatus != null">
+                car_rent_status = #{carRentStatus},
+            </if>
+            <if test="carDepositStatus != null">
+                car_deposit_status = #{carDepositStatus},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="carBatteryDepositStatus != null">
+                `car_battery_deposit_status` = #{carBatteryDepositStatus},
+            </if>
+            <if test="payCount != null">
+                `pay_count` = #{payCount},
+            </if>
+        </set>
+        where uid = #{uid} and tenant_id=#{tenantId}
     </update>
     
     <select id="selectListUserInfoByPhone" resultType="com.xiliulou.electricity.entity.UserInfo">

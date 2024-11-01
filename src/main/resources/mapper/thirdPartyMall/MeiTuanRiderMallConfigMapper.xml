@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.thirdPartyMall.MeiTuanRiderMallConfigMapper">
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        id
+        , app_id, app_key, secret, tenant_id, del_flag, create_time, update_time
+    </sql>
+    
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_mei_tuan_rider_mall_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            app_id, app_key, secret, tenant_id, del_flag, create_time, update_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{appId}, #{appKey}, #{secret}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime}
+        </trim>
+    </insert>
+    
+    <update id="update">
+        update t_mei_tuan_rider_mall_config
+        <set>
+            <if test="appId != null">
+                app_id = #{appId},
+            </if>
+            <if test="appKey != null">
+                app_key = #{appKey},
+            </if>
+            <if test="secret != null">
+                secret = #{secret},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+    
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+        select
+        <include refid="basic_field"/>
+        from t_mei_tuan_rider_mall_config
+        where tenant_id = #{tenantId} and del_flag = 0
+        order by id desc
+        limit 1
+    </select>
+    
+    <select id="selectByConfig" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+        select
+        <include refid="basic_field"/>
+        from t_mei_tuan_rider_mall_config
+        where app_id = #{appId} and app_key = #{appKey} and del_flag = 0
+        order by id desc
+        limit 1
+    </select>
+    
+    <select id="selectListEnableMeiTuanRiderMall" resultType="com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig">
+        select id,
+               app_id,
+               app_key,
+               secret,
+               tenant_id,
+               del_flag,
+               create_time,
+               update_time
+        from t_mei_tuan_rider_mall_config
+        where del_flag = 0
+        order by id
+            limit #{offset}, #{size}
+    </select>
+
+</mapper>

@@ -76,6 +76,11 @@ public class UnionTradeOrder {
     private String wechatMerchantId;
     
     /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    
+    /**
      * 请求签约号，唯一
      */
     private String externalAgreementNo;

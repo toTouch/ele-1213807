@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.RentBatteryOrderVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 租电池记录(TRentBatteryOrder)表数据库访问层
@@ -42,4 +43,6 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     
     Integer existSameCabinetCellSameTimeOpenReturnOrder(@Param("createTime") Long createTime, @Param("electricityCabinetId") Integer electricityCabinetId,
             @Param("oldCellNo") Integer oldCellNo);
+    
+    List<RentBatteryOrder> selectListByOrderIdList(@Param("orderIdList") Set<String> returnOrderIdList);
 }

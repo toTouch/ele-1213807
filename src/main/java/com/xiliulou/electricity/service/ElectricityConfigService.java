@@ -29,4 +29,6 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
     void updateTenantConfigWxCustomer(Integer status);
     
     ElectricityConfig queryTenantConfigWxCustomer();
+    
+    TenantConfigVO queryTenantConfigByAppId(String appId, String appType);
 }

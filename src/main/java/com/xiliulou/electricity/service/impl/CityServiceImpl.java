@@ -53,7 +53,7 @@ public class CityServiceImpl implements CityService {
             return null;
         }
 
-        redisService.saveWithHash(CacheConstant.CACHE_REGION_CODE + cityCode, city);
+        redisService.saveWithHash(CacheConstant.CACHE_CITY_CODE + cityCode, city);
 
         return city;
     }

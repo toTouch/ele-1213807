@@ -51,7 +51,8 @@ public class JsonAdminInsuranceOrderController {
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId, @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "uid", required = false) Long uid, @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "insuranceId", required = false) Integer insuranceId) {
+            @RequestParam(value = "payType", required = false) Integer payType, @RequestParam(value = "insuranceId", required = false) Integer insuranceId,
+            @RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         if (size < 0 || size > 50) {
             size = 10L;
@@ -89,7 +90,7 @@ public class JsonAdminInsuranceOrderController {
                 .storeIds(storeIds)
                 //.franchiseeName(franchiseeName)
                 .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).status(status).insuranceType(insuranceType).isUse(isUse).userName(userName).uid(uid).offset(offset)
-                .size(size).type(type).payType(payType).insuranceId(insuranceId).build();
+                .size(size).type(type).payType(payType).insuranceId(insuranceId).paymentChannel(paymentChannel).build();
         
         return insuranceOrderService.queryList(insuranceOrderQuery, true);
     }
@@ -102,7 +103,8 @@ public class JsonAdminInsuranceOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime, @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "userName", required = false) String userName, @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "type", required = false) Integer type, @RequestParam(value = "payType", required = false) Integer payType,
-            @RequestParam(value = "insuranceId", required = false) Integer insuranceId) {
+            @RequestParam(value = "insuranceId", required = false) Integer insuranceId,
+            @RequestParam(value = "paymentChannel", required = false) String paymentChannel) {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         
@@ -130,7 +132,8 @@ public class JsonAdminInsuranceOrderController {
         InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder().orderId(orderId).beginTime(beginTime).endTime(endTime).status(status).insuranceType(insuranceType)
                 .isUse(isUse).franchiseeIds(franchiseeIds).storeIds(storeIds)
                 //.franchiseeName(franchiseeName)
-                .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).userName(userName).uid(uid).type(type).payType(payType).insuranceId(insuranceId).build();
+                .franchiseeId(franchiseeId).tenantId(tenantId).phone(phone).userName(userName).uid(uid).type(type).payType(payType).insuranceId(insuranceId)
+                .paymentChannel(paymentChannel).build();
         
         return insuranceOrderService.queryCount(insuranceOrderQuery);
     }

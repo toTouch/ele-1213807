@@ -148,6 +148,20 @@ public class ElectricityCabinetBoxVO {
      */
     private String batteryTemperature;
     
-    public static final Integer EXCHANGE_YES=0;
-    public static final Integer EXCHANGE_NO=1;
+    private Long uid;
+    
+    private String userName;
+    
+    private String phone;
+    
+    /**
+     * 是否已租，1为租借在仓
+     */
+    private Integer isBatteryRentInCell;
+    
+    public static final Integer EXCHANGE_YES = 0;
+    
+    public static final Integer EXCHANGE_NO = 1;
+    
+    public static final Integer BATTERY_RENT_IN_CELL = 1;
 }

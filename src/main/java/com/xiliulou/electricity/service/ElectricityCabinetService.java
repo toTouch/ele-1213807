@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.EleCabinetPatternQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetAddressQuery;
@@ -136,7 +137,7 @@ public interface ElectricityCabinetService {
     
     Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version);
     
-    Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version);
+    Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version, Long uid);
     
     R getFranchisee(String productKey, String deviceName);
     
@@ -290,4 +291,6 @@ public interface ElectricityCabinetService {
     R rentReturnEditEchoByDeviceName(String productKey, String deviceName);
     
     R listSuperAdminPage(ElectricityCabinetQuery electricityCabinetQuery);
+    
+    R updateCabinetPattern(EleCabinetPatternQuery query);
 }

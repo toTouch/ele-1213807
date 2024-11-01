@@ -12,13 +12,16 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.request.user.UnbindOpenIdRequest;
 import com.xiliulou.electricity.request.user.UpdateUserPhoneRequest;
+import com.xiliulou.electricity.request.userinfo.UserInfoLimitRequest;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -38,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.List;
@@ -86,6 +90,9 @@ public class JsonAdminUserInfoController extends BaseController {
     
     @Autowired
     ActivityService activityService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     // 列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -428,6 +435,16 @@ public class JsonAdminUserInfoController extends BaseController {
      */
     @PostMapping(value = "/admin/userInfo/details/openId/unbind")
     public R unbindOpenId(@RequestBody @Validated(value = UpdateGroup.class) UnbindOpenIdRequest unbindOpenIdRequest) {
+        unbindOpenIdRequest.setSource(UserOauthBind.SOURCE_WX_PRO);
+        return userInfoService.unbindOpenId(unbindOpenIdRequest);
+    }
+    
+    /**
+     * 会员列表详情解绑支付宝
+     */
+    @PostMapping(value = "/admin/userInfo/details/openId/unbindAlipay")
+    public R unbindAlipay(@RequestBody @Validated(value = UpdateGroup.class) UnbindOpenIdRequest unbindOpenIdRequest) {
+        unbindOpenIdRequest.setSource(UserOauthBind.SOURCE_ALI_PAY);
         return userInfoService.unbindOpenId(unbindOpenIdRequest);
     }
     
@@ -509,7 +526,8 @@ public class JsonAdminUserInfoController extends BaseController {
      * 下拉列表搜索
      */
     @GetMapping(value = "/admin/userInfo/search")
-    public R userInfoSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name) {
+    public R userInfoSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset, @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "keyWords", required = false) String keyWords) {
         if (Objects.isNull(size) || size < 0 || size > 20) {
             size = 20L;
         }
@@ -517,7 +535,7 @@ public class JsonAdminUserInfoController extends BaseController {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
-        return userInfoService.userInfoSearch(size, offset, name);
+        return userInfoService.userInfoSearch(size, offset, name, keyWords);
     }
     
     @GetMapping("/admin/userInfo/exportCarRentalExcel")
@@ -739,6 +757,28 @@ public class JsonAdminUserInfoController extends BaseController {
         verifyMemberCardExpireTimeEnd(userInfoQuery);
         
         return userInfoService.queryEleListCount(userInfoQuery);
+    }
+    
+    @PostMapping("/admin/userInfo/eleLimit")
+    public R updateEleLimit(@RequestBody @Validated UserInfoLimitRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.ok();
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
+        }
+        
+        return userInfoExtraService.updateEleLimit(request, franchiseeIds);
     }
     
 }

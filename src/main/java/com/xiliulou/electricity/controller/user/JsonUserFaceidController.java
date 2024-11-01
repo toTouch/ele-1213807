@@ -6,11 +6,14 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
 import com.xiliulou.electricity.enums.ActivityEnum;
+import com.xiliulou.electricity.query.AlipayUserCertifyInfoQuery;
 import com.xiliulou.electricity.query.FaceidResultQuery;
+import com.xiliulou.electricity.query.UserCertifyInfoQuery;
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.FaceidService;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.faceid.service.FaceidTokenService;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -63,5 +67,20 @@ public class JsonUserFaceidController extends BaseController {
         return returnTripleResult(result);
     }
     
+    /**
+     * 获取支付宝人脸核身URL和CertifyId
+     */
+    @PostMapping(value = "/user/alipay/queryCertifyId")
+    public R queryAliPayCertifyId(@RequestBody @Validated(CreateGroup.class) AlipayUserCertifyInfoQuery query) {
+        return returnTripleResult(faceidService.queryAliPayCertifyInfo(query));
+    }
+    
+    /**
+     * 查询人脸核身结果
+     */
+    @PostMapping(value = "/user/alipay/queryUserCertifyResult")
+    public R queryAliPayUserCertifyUrl(@RequestBody @Validated(UpdateGroup.class) AlipayUserCertifyInfoQuery query) {
+        return returnTripleResult(faceidService.queryAliPayUserCertifyResult(query));
+    }
     
 }

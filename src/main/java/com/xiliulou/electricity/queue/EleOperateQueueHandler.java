@@ -14,6 +14,8 @@ import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
@@ -32,6 +34,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -44,6 +47,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.TenantService;
@@ -54,7 +58,9 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +72,7 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -169,6 +176,12 @@ public class EleOperateQueueHandler {
     
     @Autowired
     private ExchangeBatterySocService exchangeBatterySocService;
+    
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
     
@@ -278,13 +291,22 @@ public class EleOperateQueueHandler {
                 if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                     lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
                 }
-    
+                
                 if (finalOpenDTO.getIsProcessFail()) {
                     RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
                     //若柜机正在使用中
                     if (RentBatteryOrder.INIT_DEVICE_USING.equals(finalOpenDTO.getOrderStatus())) {
                         newRentBatteryOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
                     }
+                    
+                    // 只有租电池异常才需要回退
+                    if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)){
+                        userBatteryMemberCardService.handlePackageNumber(rentBatteryOrder.getUid());
+                    }
+                    
+                    // 保存租退异常格挡
+                    exceptionHandlerService.saveRentReturnExceptionCell(finalOpenDTO.getOrderStatus(), electricityCabinet.getId(), rentBatteryOrder.getCellNo(),
+                            finalOpenDTO.getSessionId());
                     
                     //取消订单
                     if (finalOpenDTO.getIsNeedEndOrder()) {
@@ -295,7 +317,7 @@ public class EleOperateQueueHandler {
                         rentBatteryOrderService.update(newRentBatteryOrder);
                         return;
                     }
-        
+                    
                     //订单状态
                     newRentBatteryOrder.setId(rentBatteryOrder.getId());
                     newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
@@ -304,7 +326,7 @@ public class EleOperateQueueHandler {
                     rentBatteryOrderService.update(newRentBatteryOrder);
                     return;
                 }
-    
+                
                 //订单状态
                 rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                 rentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
@@ -312,7 +334,7 @@ public class EleOperateQueueHandler {
                 if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
                     rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
                 }
-    
+                
                 if (Objects.nonNull(finalOpenDTO.getCellNo())) {
                     rentBatteryOrder.setCellNo(finalOpenDTO.getCellNo());
                 }
@@ -493,6 +515,10 @@ public class EleOperateQueueHandler {
                     newElectricityBattery.setElectricityCabinetId(null);
                     newElectricityBattery.setElectricityCabinetName(null);
                     newElectricityBattery.setBorrowExpireTime(null);
+                    
+                    // 删除redis中保存的租电订单或换电订单
+                    OrderForBatteryUtil.delete(electricityBattery.getSn());
+                    
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 }
                 
@@ -509,6 +535,10 @@ public class EleOperateQueueHandler {
                         newElectricityBattery.setUid(null);
                         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                         newElectricityBattery.setBorrowExpireTime(null);
+                        
+                        // 删除redis中保存的租电订单或换电订单
+                        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+                        
                         electricityBatteryService.updateBatteryUser(newElectricityBattery);
                     }
                 }
@@ -642,6 +672,10 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+                
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
             
@@ -663,6 +697,9 @@ public class EleOperateQueueHandler {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinetOrder.getElectricityCabinetId(), String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L,
                         TimeUnit.DAYS);
             }
+            
+            // 保存电池被取走对应的订单，供后台租借状态电池展示
+            OrderForBatteryUtil.save(electricityCabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
         }
     }
     
@@ -721,6 +758,10 @@ public class EleOperateQueueHandler {
             enterpriseRentRecordService.saveEnterpriseRentRecord(rentBatteryOrder.getUid());
             //记录企业用户租电池记录
             enterpriseUserCostRecordService.asyncSaveUserCostRecordForRentalAndReturnBattery(UserCostTypeEnum.COST_TYPE_RENT_BATTERY.getCode(), rentBatteryOrder);
+            
+            // 给第三方推送用户电池信息和用户信息
+            pushDataToThirdService.asyncPushUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), finalOpenDTO.getSessionId(), rentBatteryOrder.getTenantId(),
+                    rentBatteryOrder.getOrderId(), MeiTuanRiderMallConstant.RENT_ORDER, rentBatteryOrder.getUid());
         }
         
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) && Objects.equals(finalOpenDTO.getOrderStatus(),
@@ -776,6 +817,10 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            
+            // 删除redis中保存的租电订单或换电订单
+            OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+            
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
         
@@ -800,6 +845,8 @@ public class EleOperateQueueHandler {
             operateBatterSocThreadPool.execute(() -> handlerUserTakeBatterySoc(userInfo, electricityBattery.getSn(), electricityBattery.getPower()));
         }
         
+        // 保存电池被取走对应的订单，供后台租借状态电池展示
+        OrderForBatteryUtil.save(rentBatteryOrder.getOrderId(), OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER, electricityBattery.getSn());
     }
     
     
@@ -907,6 +954,10 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(electricityBattery.getSn());
+                
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
         }
@@ -924,15 +975,16 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setBorrowExpireTime(null);
                 
+                // 删除redis中保存的租电订单或换电订单
+                OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+                
                 Long bindTime = oldElectricityBattery.getBindTime();
                 log.info("return bindTime={},currentTime={}", bindTime, System.currentTimeMillis());
                 //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息
                 if (Objects.isNull(bindTime) || bindTime < System.currentTimeMillis()) {
                     newElectricityBattery.setBindTime(System.currentTimeMillis());
                     electricityBatteryService.updateBatteryUser(newElectricityBattery);
-                    
                 }
-                
             }
             
         }

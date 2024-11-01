@@ -174,7 +174,7 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
                 .uid(uid).build();
         List<UserInfoGroupNamesBO> boList = userInfoGroupDetailService.listGroupByUid(query);
         
-        //BO转化为VO
+        // BO转化为VO
         List<UserInfoGroupNamesVO> result = null;
         if (CollectionUtils.isNotEmpty(boList)) {
             result = boList.stream().map(bo -> {
@@ -194,7 +194,9 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     
     /**
      * 编辑
+     * TODO SJP
      */
+    @Deprecated
     @PostMapping("/admin/userInfo/userInfoGroupDetail/update")
     public R update(@RequestBody @Validated UserInfoGroupDetailUpdateRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -211,8 +213,28 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
     }
     
     /**
-     * 加入分组
+     * 编辑
      */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/updateV2")
+    public R updateV2(@RequestBody @Validated UserInfoGroupDetailUpdateRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return userInfoGroupDetailService.updateV2(request, user);
+    }
+    
+    /**
+     * 加入分组
+     * TODO SJP
+     */
+    @Deprecated
     @PostMapping("/admin/userInfo/userInfoGroupDetail/bindGroup")
     public R bindGroup(@RequestBody @Validated UserInfoBindGroupRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
@@ -228,4 +250,32 @@ public class JsonAdminUserInfoGroupDetailController extends BasicController {
         return userInfoGroupDetailService.bindGroup(request, user.getUid());
     }
     
+    /**
+     * 加入分组
+     */
+    @PostMapping("/admin/userInfo/userInfoGroupDetail/bindGroupV2")
+    public R bindGroupV2(@RequestBody @Validated UserInfoBindGroupRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.warn("ELE WARN! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return userInfoGroupDetailService.bindGroupV2(request, user);
+    }
+    
+    /**
+     * 用户详情页预览用户分组详情
+     * @param uid 要查看的用户uid
+     * @return 查询结果
+     */
+    @GetMapping("/admin/userInfo/userInfoGroupDetail/selectAll")
+    public R<Object> selectAll(@RequestParam(value = "uid") Long uid) {
+        UserInfoGroupDetailQuery query = UserInfoGroupDetailQuery.builder().uid(uid).build();
+        return userInfoGroupDetailService.selectAll(query);
+    }
 }

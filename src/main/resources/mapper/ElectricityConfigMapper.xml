@@ -28,7 +28,10 @@
         <result property="lowChargeRate" column="low_charge_rate" jdbcType="DOUBLE"/>
         <result property="fullChargeRate" column="full_charge_rate" jdbcType="DOUBLE"/>
         <result property="chargeRateType" column="charge_rate_type" jdbcType="INTEGER"/>
+        <result property="alipayCustomer" column="alipay_customer" jdbcType="INTEGER"/>
         <result property="isEnableMeiTuanRiderMall" column="is_enable_mei_tuan_rider_mall" jdbcType="INTEGER"/>
+        <result property="eleLimit" column="ele_limit" jdbcType="INTEGER"/>
+        <result property="eleLimitCount" column="ele_limit_count" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 基础字段 -->
@@ -59,7 +62,10 @@
                low_charge_rate,
                full_charge_rate,
                charge_rate_type,
-               is_enable_mei_tuan_rider_mall
+               alipay_customer,
+               is_enable_mei_tuan_rider_mall,
+               ele_limit,
+               ele_limit_count
         from t_electricity_config
     </sql>
     
@@ -70,7 +76,8 @@
         is_enable_return_box_check,is_open_insurance,is_move_franchisee,franchisee_move_info,free_deposit_type,
         is_open_car_battery_bind,is_open_car_control,is_zero_deposit_audit_enabled,is_enable_esign,
         allow_rent_ele,allow_return_ele,allow_freeze_with_assets,is_selection_exchange,low_charge_rate,
-        full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,is_comfort_exchange,priority_exchange_norm,is_enable_mei_tuan_rider_mall
+        full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,alipay_customer,is_comfort_exchange,priority_exchange_norm,
+        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count
     </sql>
     <!--通过主键修改数据-->
     <update id="update">
@@ -160,6 +167,9 @@
             <if test="chargeRateType != null">
                 charge_rate_type = #{chargeRateType},
             </if>
+            <if test="alipayCustomer != null">
+                alipay_customer = #{alipayCustomer},
+            </if>
             <if test="isComfortExchange != null">
                 is_comfort_exchange = #{isComfortExchange},
             </if>
@@ -168,6 +178,12 @@
             </if>
             <if test="isEnableMeiTuanRiderMall != null">
                 is_enable_mei_tuan_rider_mall = #{isEnableMeiTuanRiderMall},
+            </if>
+            <if test="eleLimit != null">
+                ele_limit = #{eleLimit},
+            </if>
+            <if test="eleLimitCount != null">
+                ele_limit_count = #{eleLimitCount},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>

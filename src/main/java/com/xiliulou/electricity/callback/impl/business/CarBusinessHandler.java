@@ -160,6 +160,12 @@ public class CarBusinessHandler implements BusinessHandler {
             if (ObjectUtils.isNotEmpty(md5s)) {
                 Arrays.stream(md5s.split(","))
                         .forEach(md5 -> {
+                            // TODO: 2024/10/10 兼容历史数据 后续删除
+                            String oldKey = String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2_OLD, uid,md5);
+                            if (redisService.hasKey(oldKey)) {
+                                redisService.delete(oldKey);
+                            }
+                            
                             String key = String.format(CacheConstant.ELE_CACHE_CAR_RENTAL_FREE_DEPOSIT_ORDER_GENERATE_LOCK_KEY_V2, uid,md5);
                             if (redisService.hasKey(key)) {
                                 redisService.delete(key);
@@ -212,8 +218,6 @@ public class CarBusinessHandler implements BusinessHandler {
                 userBatteryDepositService.deleteByUid(depositRefundEntity.getUid());
             }
             
-            //删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(depositRefundEntity.getUid());
             redisService.delete(String.format(UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY, order.getOrderId()));
             log.info("Car/car electronics order no unfree deposit callback completed, order number: {}",order.getOrderId());
             return true;

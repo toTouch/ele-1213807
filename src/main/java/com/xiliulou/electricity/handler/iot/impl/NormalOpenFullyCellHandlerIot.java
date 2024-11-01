@@ -11,6 +11,8 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CabinetBoxConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
@@ -28,8 +31,11 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ExchangeBatterySocService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
+import com.xiliulou.electricity.utils.OrderForBatteryUtil;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
@@ -94,6 +100,12 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
     @Resource
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
     
+    @Resource
+    private PushDataToThirdService pushDataToThirdService;
+    
+    @Resource
+    ExchangeExceptionHandlerService exceptionHandlerService;
+    
     XllThreadPoolExecutorService openFullBatteryExchangeBatterSocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("OPEN_FULL_BATTERY_SOC_ANALYZE", 1,
             "open-full-battery-soc-pool-thread");
     
@@ -135,6 +147,11 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
             //错误信息保存到缓存里，方便前端显示
             redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
+            
+            // 保存异常格挡号
+            exceptionHandlerService.saveExchangeExceptionCell(openFullCellRsp.getOrderStatus(), cabinetOrder.getElectricityCabinetId(), openFullCellRsp.getPlaceCellNo(),
+                    openFullCellRsp.getTakeCellNo(), openFullCellRsp.getSessionId());
+            
             
             // 设备正在使用中，不更新； 开满电仓失败/电池前置检测失败更新状态
             if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
@@ -279,7 +296,8 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(), String.valueOf(cabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
             
-            
+            // 保存电池被取走对应的订单，供后台租借状态电池展示
+            OrderForBatteryUtil.save(cabinetOrder.getOrderId(), OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER, electricityBattery.getSn());
         } else {
             log.error("normalOpenFullyCellHandlerIot error! takeBattery is null!uid={},sessionId={},orderId={}", userInfo.getUid(), openFullCellRsp.getSessionId(),
                     openFullCellRsp.getOrderId());
@@ -295,6 +313,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
                 .setCreateTime(TimeUtils.convertToStandardFormatTime(openFullCellRsp.getReportTime())).setOrderId(openFullCellRsp.getOrderId()).setUid(userInfo.getUid())
                 .setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(takeBatteryTrackRecord);
+        
+        // 给第三方推送换电记录/用户信息/电池信息
+        pushDataToThirdService.asyncPushExchangeAndUserAndBatteryToThird(ThirdPartyMallEnum.MEI_TUAN_RIDER_MALL.getCode(), openFullCellRsp.getSessionId(),
+                electricityCabinet.getTenantId(), cabinetOrder.getOrderId(), MeiTuanRiderMallConstant.EXCHANGE_ORDER, cabinetOrder.getUid());
         
     }
     
@@ -326,6 +348,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             newElectricityBattery.setGuessUid(null);
         }
         
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(oldElectricityBattery.getSn());
+        
         electricityBatteryService.updateBatteryUser(newElectricityBattery);
     }
     
@@ -350,6 +375,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        
+        // 删除redis中保存的租电订单或换电订单
+        OrderForBatteryUtil.delete(placeBattery.getSn());
         
         Long bindTime = placeBattery.getBindTime();
         //如果绑定时间为空或者电池绑定时间小于当前时间则更新电池信息

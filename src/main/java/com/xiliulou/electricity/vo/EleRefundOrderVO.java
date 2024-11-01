@@ -113,6 +113,12 @@ public class EleRefundOrderVO {
     private String tenantName;
     
     /**
+     * 支付渠道
+     *
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
+    /**
      * 剩余代扣金额
      */
     private Double payTransAmt;

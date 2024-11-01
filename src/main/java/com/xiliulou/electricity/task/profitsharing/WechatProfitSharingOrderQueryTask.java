@@ -4,6 +4,7 @@
 
 package com.xiliulou.electricity.task.profitsharing;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingOrderDetailUnfreezeStatusEnum;
@@ -14,18 +15,15 @@ import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingCommonRe
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingOrderDetail;
-import com.xiliulou.pay.base.enums.ChannelEnum;
 import com.xiliulou.pay.profitsharing.request.wechat.WechatProfitSharingQueryOrderRequest;
 import com.xiliulou.pay.profitsharing.response.BaseProfitSharingQueryOrderResp;
 import com.xiliulou.pay.profitsharing.response.wechat.ReceiverResp;
 import com.xiliulou.pay.profitsharing.response.wechat.WechatProfitSharingQueryOrderResp;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;

@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * 优惠券规则表(TEleOnLineLog)表服务接口
+ * 
  *
  * @author makejava
  * @since 2022-08-16 09:28:22
@@ -17,9 +17,9 @@ public interface EleOnlineLogMapper extends BaseMapper<EleOnlineLog>{
     
     
     List<ELeOnlineLogVO> queryOnlineLogList(@Param("size") Integer size, @Param("offset") Integer offset,
-            @Param("type") String type, @Param("eleId") Integer eleId, @Param("tenantId") Integer tenantId);
+            @Param("type") String type, @Param("electricityId") Integer eleId, @Param("tenantId") Integer tenantId);
 
 
-    Integer queryOnlineLogCount(@Param("type") String type, @Param("eleId") Integer eleId);
+    Integer queryOnlineLogCount(@Param("type") String type, @Param("electricityId") Integer eleId);
 
 }

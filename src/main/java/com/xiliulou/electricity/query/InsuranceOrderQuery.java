@@ -52,4 +52,10 @@ public class InsuranceOrderQuery {
      * 保险id
      */
     private Integer insuranceId;
+    
+    /**
+     * 支付方式
+     * @see ChannelEnum
+     */
+    private String paymentChannel;
 }

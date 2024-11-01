@@ -114,4 +114,9 @@ public class TenantConfigVO {
      * 打开微信客服 0-是 1-否
      */
     private Integer wxCustomer;
+    
+    /**
+     * 打开支付宝客服 0-是 1-否
+     */
+    private Integer alipayCustomer;
 }

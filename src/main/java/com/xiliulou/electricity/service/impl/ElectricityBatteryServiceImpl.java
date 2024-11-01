@@ -61,6 +61,7 @@ import com.xiliulou.electricity.service.asset.AssetWarehouseRecordService;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -140,9 +141,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     ElectricityPayParamsService electricityPayParamsService;
     
     @Autowired
-    TemplateConfigService templateConfigService;
-    
-    @Autowired
     UserOauthBindService userOauthBindService;
     
     @Autowired
@@ -175,6 +173,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Resource
     AssetWarehouseRecordService assetWarehouseRecordService;
+    
+    @Resource
+    MiniTemplateMsgBizService miniTemplateMsgBizService;
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
@@ -1072,8 +1073,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     @Slave
     public ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId) {
-        return electricitybatterymapper.selectOne(
-                new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, oldElectricityBatterySn).eq(ElectricityBattery::getTenantId, tenantId));
+        return electricitybatterymapper
+                .selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, oldElectricityBatterySn).eq(ElectricityBattery::getTenantId, tenantId));
     }
     
     @Override
@@ -1195,49 +1196,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 if (!isOutTime) {
                     return;
                 }
-                
-                UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
-                if (Objects.isNull(userOauthBind)) {
-                    log.error("USER_OAUTH_BIND IS NULL uid={},tenantId={}", uid, tenantId);
-                    return;
-                }
-                String openId = userOauthBind.getThirdId();
-                
-//                BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
-//                QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
-//                wrapper.eq("tenant_id", tenantId);
-//                ElectricityPayParams ele = mapper.selectOne(wrapper);
-                ElectricityPayParams ele =electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
-                if (Objects.isNull(ele)) {
-                    log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
-                    return;
-                }
-                
-                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
-                
-                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
-                    log.warn("TEMPLATE_CONFIG IS NULL WARN! tenantId={}", tenantId);
-                    return;
-                }
-                
-                AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-                appTemplateQuery.setAppId(ele.getMerchantMinProAppId());
-                appTemplateQuery.setSecret(ele.getMerchantMinProAppSecert());
-                appTemplateQuery.setTouser(openId);
-                appTemplateQuery.setFormId(RandomUtil.randomString(20));
-                appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
-                appTemplateQuery.setPage("/pages/start/index");
-                Map<String, Object> data = new HashMap<>(3);
-                
-                data.put("character_string1", electricityBattery.getPower() + "%");
-                data.put("character_string2", electricityBattery.getSn());
-                //data.put("keyword3", sdf.format(new Date(System.currentTimeMillis())));
-                data.put("thing3", "当前电量较低，请及时换电。");
-                
-                appTemplateQuery.setData(data);
-                log.info("LOW BATTERY POWER MESSAGE TO USER uid={}, sn={}", uid, electricityBattery.getSn());
-                
-                weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+                miniTemplateMsgBizService.sendLowBatteryReminder(tenantId, uid, electricityBattery.getPower() + "%", electricityBattery.getSn());
             });
             
             offset += size;
@@ -1279,8 +1238,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
             }
             
-            if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) && Objects.nonNull(
-                    electricityBattery.getElectricityCabinetId())) {
+            if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) && Objects
+                    .nonNull(electricityBattery.getElectricityCabinetId())) {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
                 if (Objects.nonNull(electricityCabinet)) {
                     electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
@@ -1379,8 +1338,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId, Long franchiseeId) {
-        return electricitybatterymapper.selectOne(
-                new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, batteryId).eq(ElectricityBattery::getFranchiseeId, franchiseeId));
+        return electricitybatterymapper
+                .selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, batteryId).eq(ElectricityBattery::getFranchiseeId, franchiseeId));
     }
     
     @Slave

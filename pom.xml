@@ -12,7 +12,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <xiliulou.version>2.1.12</xiliulou.version>
+        <xiliulou.version>2.1.13</xiliulou.version>
         <logback.version>1.2.10</logback.version>
     </properties>
 
@@ -192,6 +192,25 @@
             <version>${xiliulou.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.xiliulou</groupId>
+            <artifactId>xiliulou-common-thirdmall</artifactId>
+            <version>${xiliulou.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.69</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.39.113.ALL</version>
+        </dependency>
+        
     </dependencies>
     <build>
         <plugins>

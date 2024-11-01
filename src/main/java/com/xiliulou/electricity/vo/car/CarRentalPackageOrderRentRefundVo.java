@@ -162,5 +162,10 @@ public class CarRentalPackageOrderRentRefundVo implements Serializable {
      * </p>
     */
     private String franchiseeName;
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 
 }

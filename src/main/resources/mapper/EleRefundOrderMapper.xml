@@ -51,7 +51,8 @@
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
         tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
         memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
-        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType, tedo.franchisee_id
+        tero.refund_order_type as refundOrderType, tero.pay_type as payType, tedo.order_type as orderType, tedo.franchisee_id,
+        tero.payment_channel as paymentChannel
         from t_ele_refund_order as tero
         left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
@@ -99,6 +100,9 @@
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and tero.payment_channel = #{query.paymentChannel}
             </if>
         </where>
         order by tero.update_time desc
@@ -159,6 +163,9 @@
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.paymentChannel != null and query.paymentChannel != ''">
+                and tero.payment_channel = #{query.paymentChannel}
             </if>
         </where>
     </select>

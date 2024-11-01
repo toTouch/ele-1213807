@@ -946,6 +946,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
         request.setIdNumber(freeQuery.getIdCard());
         request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
+        request.setJumpUrl(freeQuery.getJumpUrl());
         query.setData(request);
         
         PxzCommonRsp<String> callPxzRsp = null;
@@ -1208,11 +1209,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package by enterprise user error, not found pay params,uid={}", userInfo.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
             }*/
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("purchase package by enterprise user error, not found user oauth bind or third id is null,uid={}", userInfo.getUid());
-                return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
+    
+            boolean exist = userOauthBindService.checkExistBind(uid, tenantId);
+            if (!exist) {
+                log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
+                return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }
             
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -1327,7 +1328,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新保险状态
             if (Objects.nonNull(insuranceOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     throw new BizException("300072", (String) result.getRight());
                 }
@@ -1478,11 +1479,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase package with deposit by enterprise user warn, user is rent deposit,uid={} ", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
             }
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(userInfo.getUid(), tenantId);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("purchase package with deposit by enterprise user warn, not found user oauth bind or third id is null,uid={}", userInfo.getUid());
-                return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
+    
+            boolean exist = userOauthBindService.checkExistBind(uid, tenantId);
+            if (!exist) {
+                log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
+                return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getPackageId());
@@ -1601,7 +1602,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新押金状态
             if (Objects.nonNull(eleDepositOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     //return  Triple.of(false, "100349", result.getRight());
                     throw new BizException("300071", (String) result.getRight());
@@ -1610,7 +1611,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新保险状态
             if (Objects.nonNull(insuranceOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     throw new BizException("300072", (String) result.getRight());
                 }
@@ -1763,9 +1764,9 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 log.warn("purchase Package with free deposit error, not found electricityPayParams,uid={}", uid);
                 return Triple.of(false, "100234", "未配置支付参数!");
             }*/
-            
-            UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
-            if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+    
+            boolean exist = userOauthBindService.checkExistBind(uid, tenantId);
+            if (!exist) {
                 log.warn("purchase Package with free deposit error, not found userOauthBind,uid={}", uid);
                 return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
             }
@@ -1900,7 +1901,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新保险状态
             if (Objects.nonNull(insuranceOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.STATUS_SUCCESS, userInfo);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     throw new BizException("300072", (String) result.getRight());
                 }

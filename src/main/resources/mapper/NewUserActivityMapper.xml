@@ -63,4 +63,13 @@
         from t_new_user_activity
         where del_flg=0 and coupon_id=#{couponId} order by id limit 1
     </select>
+	<select id="listNewUserActivity" resultType="com.xiliulou.electricity.vo.ShareAndUserActivityVO">
+		SELECT id, name
+		from t_new_user_activity
+		where tenant_id = #{tenantId} and del_flg = 0
+		<if test="name != null and name != ''">
+			and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+		</if>
+		limit #{offset}, #{size}
+	</select>
 </mapper>

@@ -67,4 +67,6 @@ public interface FaceRecognizeUserRecordMapper extends BaseMapper<FaceRecognizeU
     int deleteById(Long id);
 
     FaceRecognizeUserRecord selectLatestByUid(@Param("uid") Long uid);
+    
+    Integer updateByUidAndCertifyId(FaceRecognizeUserRecord faceRecognizeUserRecordUpdate);
 }

@@ -111,4 +111,9 @@ public class CarRentalPackageOrderQryReq implements Serializable {
     */
     private Long rentalPackageId;
     /*************14.4 套餐购买记录（2条优化项） end***********/
+    
+    /**
+     * @see com.xiliulou.core.base.enums.ChannelEnum
+     */
+    private String paymentChannel;
 }
