@@ -137,7 +137,7 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                 //发送锁仓命令
                 R r = electricityCabinetService.sendCommand(eleOuterCommandQuery);
                 if (!r.isSuccess()) {
-                    log.warn("BATTERY RECYCLE LOCK CELL WARN! send command warn! sn:{}, msg:{}", r.getErrMsg());
+                    log.warn("BATTERY RECYCLE LOCK CELL WARN! send command warn! sn:{}, msg:{}",batteryRecycleRecord.getSn(), r.getErrMsg());
                     return;
                 }
                 
