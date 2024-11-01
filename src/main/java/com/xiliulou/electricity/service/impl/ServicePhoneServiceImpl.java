@@ -10,7 +10,6 @@ import com.xiliulou.electricity.dto.ServicePhoneDTO;
 import com.xiliulou.electricity.entity.ServicePhone;
 import com.xiliulou.electricity.mapper.ServicePhoneMapper;
 import com.xiliulou.electricity.request.ServicePhoneRequest;
-import com.xiliulou.electricity.request.ServicePhonesRequest;
 import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -50,7 +49,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
     private OperateRecordUtil operateRecordUtil;
     
     @Override
-    public R insertOrUpdate(ServicePhonesRequest request) {
+    public R insertOrUpdate(List<ServicePhoneRequest> requestPhoneList) {
         Integer tenantId = TenantContextHolder.getTenantId();
         boolean result = redisService.setNx(CacheConstant.SERVICE_PHONE_LOCK_KEY + tenantId, "1", 3 * 1000L, false);
         if (!result) {
@@ -58,7 +57,17 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         }
         
         try {
-            List<ServicePhoneRequest> requestPhoneList = request.getPhoneList();
+            if (CollectionUtils.isEmpty(requestPhoneList)) {
+                // 删除所有
+                Integer delete = servicePhoneMapper.deleteByTenantId(tenantId);
+                
+                // 清除新缓存
+                redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
+                // 清除旧缓存
+                redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+                return R.ok();
+            }
+            
             List<ServicePhone> insertList = null;
             List<ServicePhone> updateList = null;
             List<Long> deleteList = null;
@@ -95,7 +104,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         boolean flag = false;
         if (CollectionUtil.isNotEmpty(insertList)) {
             Integer insert = servicePhoneMapper.batchInsert(insertList);
-            if (Objects.nonNull(insert) && Objects.equals(insertList.size(), insert)) {
+            if (insert > 0) {
                 flag = true;
                 String oldPhone = "";
                 String oldRemark = "";
@@ -117,7 +126,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             
             for (ServicePhone servicePhone : updateList) {
                 Integer update = servicePhoneMapper.update(servicePhone);
-                if (Objects.nonNull(update) && update > 0) {
+                if (update > 0) {
                     flag = true;
                     String newPhone = servicePhone.getPhone();
                     String oldPhone = "";
@@ -148,7 +157,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         boolean flag = false;
         if (CollectionUtils.isNotEmpty(deleteList)) {
             Integer delete = servicePhoneMapper.deleteByIds(deleteList);
-            if (Objects.nonNull(delete) && delete > 0) {
+            if (delete > 0) {
                 flag = true;
                 for (Long delId : deleteList) {
                     if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(delId)) {
@@ -169,45 +178,52 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         List<Long> deleteList = new ArrayList<>();
         Map<Long, ServicePhoneVO> existMap = null;
         
+        // 查询旧的手机号
+        ServicePhonesVO servicePhonesExist = this.queryByTenantIdFromCache(tenantId);
+        if (Objects.nonNull(servicePhonesExist) && CollectionUtil.isNotEmpty(servicePhonesExist.getPhoneList())) {
+            List<ServicePhoneVO> phoneList = servicePhonesExist.getPhoneList();
+            existMap = phoneList.stream().collect(Collectors.toMap(ServicePhoneVO::getId, servicePhone -> servicePhone));
+        }
+        
         for (ServicePhoneRequest requestPhone : requestPhoneList) {
             Long id = requestPhone.getId();
             String phone = requestPhone.getPhone();
             String remark = requestPhone.getRemark();
             
-            if (Objects.isNull(id)) {
+            // 手机号为空的处理
+            if (StringUtils.isBlank(phone)) {
+                if (Objects.nonNull(id)) {
+                    deleteList.add(id);
+                }
+                continue;
+            }
+            
+            // 手机号不为空的处理
+            if (Objects.nonNull(id)) {
+                if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(requestPhone.getId())) {
+                    ServicePhoneVO existPhone = existMap.get(requestPhone.getId());
+                    // 手机号和文案均无变化则不处理
+                    if (Objects.equals(requestPhone.getPhone(), existPhone.getPhone()) && Objects.equals(requestPhone.getRemark(), existPhone.getRemark())) {
+                        continue;
+                    }
+                }
+                
+                updateList.add(ServicePhone.builder().phone(phone).remark(remark).id(id).tenantId(tenantId).updateTime(System.currentTimeMillis()).build());
+            } else {
                 insertList.add(ServicePhone.builder().phone(phone).remark(remark).tenantId(tenantId).delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).build());
-            } else {
-                updateList.add(ServicePhone.builder().phone(phone).remark(remark).id(id).tenantId(tenantId).updateTime(System.currentTimeMillis()).build());
             }
         }
         
-        ServicePhonesVO servicePhonesExist = this.queryByTenantIdFromCache(tenantId);
-        if (Objects.nonNull(servicePhonesExist) && CollectionUtil.isNotEmpty(servicePhonesExist.getPhoneList())) {
-            // 处理要更新的数据：手机号和文案无变化，则无需更新
-            List<ServicePhoneVO> phoneList = servicePhonesExist.getPhoneList();
-            existMap = phoneList.stream().collect(Collectors.toMap(ServicePhoneVO::getId, servicePhone -> servicePhone));
-            List<ServicePhone> updateRemoveList = new ArrayList<>();
-            for (ServicePhone requestPhone : updateList) {
-                if (existMap.containsKey(requestPhone.getId())) {
-                    ServicePhoneVO existPhone = existMap.get(requestPhone.getId());
-                    if (Objects.equals(requestPhone.getPhone(), existPhone.getPhone()) && Objects.equals(requestPhone.getRemark(), existPhone.getRemark())) {
-                        updateRemoveList.add(requestPhone);
-                    }
-                }
-            }
-            updateList.removeAll(updateRemoveList);
-            
-            // 处理要删除的数据
-            Set<Long> existIds = servicePhonesExist.getPhoneList().stream().map(ServicePhoneVO::getId).collect(Collectors.toSet());
-            Set<Long> updateIds = updateList.stream().map(ServicePhone::getId).collect(Collectors.toSet());
-            if (CollectionUtils.isEmpty(updateList)) {
-                deleteList.addAll(existIds);
-            } else {
-                Set<Long> needDelIds = existIds.stream().filter(id -> !updateIds.contains(id)).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(needDelIds)) {
-                    deleteList.addAll(needDelIds);
-                }
+        // 处理要删除的数据
+        Set<Long> existIds = MapUtils.isEmpty(existMap) ? Collections.emptySet() : existMap.keySet();
+        Set<Long> updateIds = updateList.stream().map(ServicePhone::getId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(updateList)) {
+            deleteList.addAll(existIds);
+        } else {
+            Set<Long> needDelIds = existIds.stream().filter(id -> !updateIds.contains(id)).collect(Collectors.toSet());
+            if (CollectionUtils.isNotEmpty(needDelIds)) {
+                deleteList.addAll(needDelIds);
             }
         }
         

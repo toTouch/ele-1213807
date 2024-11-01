@@ -44,6 +44,12 @@
         </foreach>
     </delete>
     
+    <delete id="deleteByTenantId">
+        delete
+        from t_service_phone
+        where tenant_id = #{tenantId}
+    </delete>
+    
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ServicePhone">
         select
         <include refid="basic_field"/>

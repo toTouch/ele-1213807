@@ -2,12 +2,11 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ServicePhone;
-import com.xiliulou.electricity.request.ServicePhonesRequest;
+import com.xiliulou.electricity.request.ServicePhoneRequest;
 import com.xiliulou.electricity.vo.ServicePhoneVO;
 import com.xiliulou.electricity.vo.ServicePhonesVO;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author HeYafeng
@@ -15,7 +14,7 @@ import java.util.Objects;
  */
 public interface ServicePhoneService {
     
-    R insertOrUpdate(ServicePhonesRequest request);
+    R insertOrUpdate(List<ServicePhoneRequest> requestPhoneList);
     
     ServicePhonesVO queryByTenantIdFromCache(Integer tenantId);
     

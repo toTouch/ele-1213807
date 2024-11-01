@@ -5,12 +5,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
-import com.xiliulou.electricity.request.ServicePhonesRequest;
+import com.xiliulou.electricity.request.ServicePhoneRequest;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
 import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.ValidList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -110,8 +111,8 @@ public class JsonAdminElectricitySubscriptionMessageController {
     }
     
     @PostMapping("admin/servicePhone/update")
-    public R insertOrUpdate(@RequestBody ServicePhonesRequest servicePhonesRequest) {
-        return servicePhoneService.insertOrUpdate(servicePhonesRequest);
+    public R insertOrUpdate(@RequestBody @Validated ValidList<ServicePhoneRequest> requestList) {
+        return servicePhoneService.insertOrUpdate(requestList);
     }
     
     /**
