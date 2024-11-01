@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
+import com.xiliulou.electricity.entity.ServicePhone;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
 import com.xiliulou.electricity.request.ServicePhoneRequest;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -13,6 +14,8 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.ValidList;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -90,7 +94,18 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
+        String phone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+        if (StringUtils.isBlank(phone)) {
+            List<ServicePhone> servicePhones = servicePhoneService.listByTenantIdFromCache(tenantId);
+            if (CollectionUtils.isNotEmpty(servicePhones)) {
+                ServicePhone servicePhone = servicePhones.get(0);
+                if (Objects.nonNull(servicePhone)) {
+                    phone = servicePhone.getPhone();
+                }
+            }
+        }
+        
+        return R.ok(phone);
     }
     
     /**

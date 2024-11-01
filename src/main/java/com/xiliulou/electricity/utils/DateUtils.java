@@ -399,7 +399,7 @@ public class DateUtils {
             if (hours < 1) {
                 return "不足1小时";
             } else {
-                return days + "天 " + hours + "小时";
+                return days + "天" + hours + "小时";
             }
         }
     }

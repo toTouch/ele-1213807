@@ -54,14 +54,26 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         }
         
         try {
+            List<ServicePhone> servicePhonesExist = null;
             if (CollectionUtils.isEmpty(requestPhoneList)) {
-                // 删除所有
-                servicePhoneMapper.deleteByTenantId(tenantId);
+                // 查询旧的手机号
+                servicePhonesExist = this.listByTenantIdFromCache(tenantId);
                 
-                // 清除新缓存
-                redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
-                // 清除旧缓存
-                redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+                // 删除所有
+                Integer delete = servicePhoneMapper.deleteByTenantId(tenantId);
+                if (delete > 0) {
+                    // 清除新缓存
+                    redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
+                    // 清除旧缓存
+                    redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+                    
+                    if (CollectionUtils.isNotEmpty(servicePhonesExist)) {
+                        servicePhonesExist.forEach(servicePhone -> {
+                            this.sendOperateRecord(servicePhone.getPhone(), servicePhone.getRemark(), null);
+                        });
+                    }
+                    
+                }
                 return R.ok();
             }
             
@@ -69,7 +81,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             List<ServicePhone> updateList = null;
             List<Long> deleteList = null;
             Map<Long, ServicePhone> existMap = null;
-            ServicePhoneDTO servicePhoneDTO = this.handlePhones(requestPhoneList, tenantId);
+            ServicePhoneDTO servicePhoneDTO = this.handlePhones(servicePhonesExist, requestPhoneList, tenantId);
             if (Objects.nonNull(servicePhoneDTO)) {
                 insertList = servicePhoneDTO.getInsertList();
                 updateList = servicePhoneDTO.getUpdateList();
@@ -169,14 +181,12 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         return flag;
     }
     
-    private ServicePhoneDTO handlePhones(List<ServicePhoneRequest> requestPhoneList, Integer tenantId) {
+    private ServicePhoneDTO handlePhones(List<ServicePhone> servicePhonesExist, List<ServicePhoneRequest> requestPhoneList, Integer tenantId) {
         List<ServicePhone> insertList = new ArrayList<>();
         List<ServicePhone> updateList = new ArrayList<>();
         List<Long> deleteList = new ArrayList<>();
         Map<Long, ServicePhone> existMap = null;
         
-        // 查询旧的手机号
-        List<ServicePhone> servicePhonesExist = this.listByTenantIdFromCache(tenantId);
         if (CollectionUtil.isNotEmpty(servicePhonesExist)) {
             existMap = servicePhonesExist.stream().collect(Collectors.toMap(ServicePhone::getId, servicePhone -> servicePhone));
             
@@ -232,11 +242,15 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
     
     private void sendOperateRecord(String oldPhone, String oldRemark, ServicePhone servicePhone) {
         Map<String, String> oldMap = new HashMap<>(2);
-        oldMap.put("phone", oldPhone);
-        oldMap.put("remark", oldRemark);
+        String oldPhoneValue = StringUtils.isBlank(oldPhone) ? "空" : oldPhone;
+        String oldRemarkValue = StringUtils.isBlank(oldRemark) ? "空" : oldRemark;
+        oldMap.put("phone", oldPhoneValue);
+        oldMap.put("remark", oldRemarkValue);
         Map<String, String> newMap = new HashMap<>(2);
-        newMap.put("phone", Objects.isNull(servicePhone) ? "" : servicePhone.getPhone());
-        newMap.put("remark", Objects.isNull(servicePhone) ? "" : servicePhone.getRemark());
+        String newPhoneValue = Objects.isNull(servicePhone) || StringUtils.isBlank(servicePhone.getPhone()) ? "空" : servicePhone.getPhone();
+        String newRemarkValue = Objects.isNull(servicePhone) || StringUtils.isBlank(servicePhone.getRemark()) ? "空" : servicePhone.getRemark();
+        newMap.put("phone", newPhoneValue);
+        newMap.put("remark", newRemarkValue);
         
         operateRecordUtil.record(oldMap, newMap);
     }
