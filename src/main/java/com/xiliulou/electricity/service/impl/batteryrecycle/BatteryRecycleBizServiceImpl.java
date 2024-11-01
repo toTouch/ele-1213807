@@ -86,8 +86,8 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                 return;
             }
             
-            Map<String, ElectricityCabinetBox> boxMap = electricityCabinetBoxes.stream()
-                    .collect(Collectors.toMap(ElectricityCabinetBox::getSn, electricityCabinetBox -> electricityCabinetBox, (v1, v2) -> v2));
+            Map<String, List<ElectricityCabinetBox>> boxMap = electricityCabinetBoxes.stream()
+                    .collect(Collectors.groupingBy(ElectricityCabinetBox::getSn));
             
             List<Integer> cabinetIdList = electricityCabinetBoxes.parallelStream().map(ElectricityCabinetBox::getElectricityCabinetId).collect(Collectors.toList());
             List<ElectricityCabinetBO> electricityCabinets = electricityCabinetService.listByIdList(cabinetIdList);
@@ -107,46 +107,48 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                 }
                 
                 // 查询柜机是否存在
-                ElectricityCabinetBox electricityCabinetBox = boxMap.get(batteryRecycleRecord.getSn());
-                if (Objects.isNull(cabinetMap.get(electricityCabinetBox.getElectricityCabinetId()))) {
-                    log.info("battery recycle info! cabinet is null, id: {}, sn: {}", electricityCabinetBox.getElectricityCabinetId(), batteryRecycleRecord.getSn());
-                    return;
-                }
+                List<ElectricityCabinetBox> electricityCabinetBoxList = boxMap.get(batteryRecycleRecord.getSn());
+                electricityCabinetBoxList.stream().forEach(electricityCabinetBox -> {
+                    if (Objects.isNull(cabinetMap.get(electricityCabinetBox.getElectricityCabinetId()))) {
+                        log.info("battery recycle info! cabinet is null, id: {}, sn: {}", electricityCabinetBox.getElectricityCabinetId(), batteryRecycleRecord.getSn());
+                        return;
+                    }
     
-                ElectricityCabinetBO electricityCabinetBO = cabinetMap.get(electricityCabinetBox.getElectricityCabinetId());
-                ElectricityCabinet electricityCabinet = new ElectricityCabinet();
-                BeanUtils.copyProperties(electricityCabinetBO, electricityCabinet);
-                
-                // 修改锁仓原因
-                BoxOtherProperties boxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(electricityCabinetBox.getCellNo())
-                        .remark(batteryRecycleRecord.getRecycleReason()).lockReason(LockReasonEnum.OTHER.getCode()).build();
-                boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+                    ElectricityCabinetBO electricityCabinetBO = cabinetMap.get(electricityCabinetBox.getElectricityCabinetId());
+                    ElectricityCabinet electricityCabinet = new ElectricityCabinet();
+                    BeanUtils.copyProperties(electricityCabinetBO, electricityCabinet);
     
-                EleOuterCommandQuery eleOuterCommandQuery = new EleOuterCommandQuery();
-                eleOuterCommandQuery.setCommand(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE);
-                eleOuterCommandQuery.setProductKey(electricityCabinet.getProductKey());
-                eleOuterCommandQuery.setDeviceName(electricityCabinet.getDeviceName());
-                
-                HashMap<String, Object> dataMap = Maps.newHashMap();
-                dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_USER);
-                dataMap.put("isForbidden", true);
-                dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_OTHER);
-                List<String> cellList = new ArrayList<>();
-                cellList.add(electricityCabinetBox.getCellNo());
-                dataMap.put("cell_list", cellList);
-                eleOuterCommandQuery.setData(dataMap);
+                    // 修改锁仓原因
+                    BoxOtherProperties boxOtherProperties = BoxOtherProperties.builder().electricityCabinetId(electricityCabinet.getId()).cellNo(electricityCabinetBox.getCellNo())
+                            .remark(batteryRecycleRecord.getRecycleReason()).lockReason(LockReasonEnum.OTHER.getCode()).build();
+                    boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
     
-                //发送锁仓命令
-                R r = electricityCabinetService.sendCommand(eleOuterCommandQuery);
-                if (!r.isSuccess()) {
-                    log.warn("BATTERY RECYCLE LOCK CELL WARN! send command warn! sn:{}, msg:{}",batteryRecycleRecord.getSn(), r.getErrMsg());
-                    return;
-                }
-                
-                // 发送异步消息
-                BatteryRecycleDelayDTO batteryRecycleDelayDTO = BatteryRecycleDelayDTO.builder().sn(batteryRecycleRecord.getSn()).cabinetId(electricityCabinet.getId())
-                        .recycleId(batteryRecycleRecord.getId()).cellNo(electricityCabinetBox.getCellNo()).build();
-                batteryRecycleProducer.sendDelayMessage(batteryRecycleDelayDTO);
+                    EleOuterCommandQuery eleOuterCommandQuery = new EleOuterCommandQuery();
+                    eleOuterCommandQuery.setCommand(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE);
+                    eleOuterCommandQuery.setProductKey(electricityCabinet.getProductKey());
+                    eleOuterCommandQuery.setDeviceName(electricityCabinet.getDeviceName());
+    
+                    HashMap<String, Object> dataMap = Maps.newHashMap();
+                    dataMap.put("lockType", CabinetBoxConstant.LOCK_BY_USER);
+                    dataMap.put("isForbidden", true);
+                    dataMap.put("lockReason", CabinetBoxConstant.LOCK_REASON_OTHER);
+                    List<String> cellList = new ArrayList<>();
+                    cellList.add(electricityCabinetBox.getCellNo());
+                    dataMap.put("cell_list", cellList);
+                    eleOuterCommandQuery.setData(dataMap);
+    
+                    //发送锁仓命令
+                    R r = electricityCabinetService.sendCommand(eleOuterCommandQuery);
+                    if (!r.isSuccess()) {
+                        log.warn("BATTERY RECYCLE LOCK CELL WARN! send command warn! sn:{}, cabinetId:{}, msg:{}",batteryRecycleRecord.getSn(), electricityCabinet.getId(), r.getErrMsg());
+                        return;
+                    }
+                    
+                    // 发送异步消息
+                    BatteryRecycleDelayDTO batteryRecycleDelayDTO = BatteryRecycleDelayDTO.builder().sn(batteryRecycleRecord.getSn()).cabinetId(electricityCabinet.getId())
+                            .recycleId(batteryRecycleRecord.getId()).cellNo(electricityCabinetBox.getCellNo()).build();
+                    batteryRecycleProducer.sendDelayMessage(batteryRecycleDelayDTO);
+                });
             });
             
             maxId = batteryRecycleRecords.get(batteryRecycleRecords.size() - 1).getId();

@@ -35,6 +35,8 @@ public class BatteryRecycleProducer {
             return;
         }
         
+        log.info("BATTERY RECYCLE LOCK CELL INFO! msg:{}", dto);
+        
         rocketMqService.sendSyncMsg(MqProducerConstant.BATTERY_RECYCLE_TOPIC_NAME, JsonUtil.toJson(dto), "", "", 9);
     }
 }
