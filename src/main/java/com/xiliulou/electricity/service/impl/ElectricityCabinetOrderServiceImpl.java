@@ -3176,6 +3176,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
+        // 开启灵活续费时，获取旧电池型号
+        List<String> oldBatteryTypes = null;
+        if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+            oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), batteryMemberCard);
+        }
+        
         // 分配满电仓门
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
@@ -3230,12 +3236,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
         
+        // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
+        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+            commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
+            commandData.put("newBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
+        }
+        
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
                 .data(commandData).productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
                 .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
         Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
+        }
+        
+        // 命令下发成功再删除缓存
+        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+            redisService.delete(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
         }
         
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
