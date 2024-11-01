@@ -25,7 +25,7 @@ public class BatteryRecycleProducer {
     private RocketMqService rocketMqService;
     
     /**
-     * 默认延迟5分钟
+     * 默认延迟30s
      *
      * @param dto
      */
@@ -37,6 +37,6 @@ public class BatteryRecycleProducer {
         
         log.info("BATTERY RECYCLE LOCK CELL INFO! msg:{}", dto);
         
-        rocketMqService.sendSyncMsg(MqProducerConstant.BATTERY_RECYCLE_TOPIC_NAME, JsonUtil.toJson(dto), "", "", 9);
+        rocketMqService.sendSyncMsg(MqProducerConstant.BATTERY_RECYCLE_TOPIC_NAME, JsonUtil.toJson(dto), "", "", 4);
     }
 }
