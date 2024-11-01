@@ -1963,7 +1963,9 @@ public class EnterpriseChannelUserServiceImpl implements EnterpriseChannelUserSe
         ElectricityCabinetOrder cabinetOrder = electricityCabinetOrderService.selectLatestByUidV2(uid);
         if (Objects.isNull(cabinetOrder)) {
             ElectricityCabinetOrderHistory cabinetOrderHistory = electricityCabinetOrderHistoryService.selectLatestByUidV2(uid);
-            cabinetOrder = BeanUtil.copyProperties(cabinetOrderHistory, ElectricityCabinetOrder.class);
+            if (!Objects.isNull(cabinetOrderHistory)){
+                cabinetOrder = BeanUtil.copyProperties(cabinetOrderHistory, ElectricityCabinetOrder.class);
+            }
         }
        
         if (Objects.nonNull(cabinetOrder)) {
