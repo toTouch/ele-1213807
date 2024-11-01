@@ -193,13 +193,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
         
         query.forEach(item -> {
-            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
+            UserInfo inviteUserInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 item.setInviteName(inviteUserInfo.getName());
                 item.setInvitePhone(inviteUserInfo.getPhone());
             }
             
-            UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
+            UserInfo channelUserInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getChannelUid());
             if (Objects.nonNull(channelUserInfo)) {
                 item.setChannelName(channelUserInfo.getName());
                 item.setChannelPhone(channelUserInfo.getPhone());
@@ -450,13 +450,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             vo.setName(Objects.isNull(item.getName()) ? "" : item.getName());
             vo.setPhone(Objects.isNull(item.getPhone()) ? "" : item.getPhone());
     
-            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
+            UserInfo inviteUserInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 vo.setInviterName(Objects.isNull(inviteUserInfo.getName()) ? "未实名认证" : inviteUserInfo.getName());
                 vo.setInviterPhone(Objects.isNull(inviteUserInfo.getPhone()) ? "" : inviteUserInfo.getPhone());
             }
             
-            UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
+            UserInfo channelUserInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getChannelUid());
             if (Objects.nonNull(channelUserInfo)) {
                 vo.setChannelName(Objects.isNull(channelUserInfo.getName()) ? "未实名认证" : channelUserInfo.getName());
             }
@@ -493,13 +493,13 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
 
         query.forEach(item -> {
-            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
+            UserInfo inviteUserInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 item.setInviteName(inviteUserInfo.getName());
                 item.setInvitePhone(inviteUserInfo.getPhone());
             }
 
-            UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
+            UserInfo channelUserInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getChannelUid());
             if (Objects.nonNull(channelUserInfo)) {
                 item.setChannelName(channelUserInfo.getName());
                 item.setChannelPhone(channelUserInfo.getPhone());

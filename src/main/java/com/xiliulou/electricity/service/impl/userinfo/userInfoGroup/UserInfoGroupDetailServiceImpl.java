@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -177,7 +176,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         try {
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
@@ -342,7 +341,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         try {
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
@@ -418,7 +417,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
             List<Long> groupIds = request.getGroupIds();
             Integer tenantId = TenantContextHolder.getTenantId();
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
@@ -487,7 +486,7 @@ public class UserInfoGroupDetailServiceImpl implements UserInfoGroupDetailServic
         }
         
         try {
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }

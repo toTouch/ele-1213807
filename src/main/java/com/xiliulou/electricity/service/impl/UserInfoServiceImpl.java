@@ -57,7 +57,6 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
-import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -176,7 +175,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -799,7 +797,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    public UserInfo queryByUidFromDb(Long uid) {
+    public UserInfo queryByUidFromDbIncludeDelUser(Long uid) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
     }
     
@@ -2107,7 +2105,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     @Override
     public R queryDetailsBasicInfo(Long uid) {
-        UserInfo userInfo = this.queryByUidFromDb(uid);
+        UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(uid);
         Integer tenantId = TenantContextHolder.getTenantId();
         
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), tenantId)) {
@@ -2381,7 +2379,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Slave
     @Override
     public R queryDetailsBatteryInfo(Long uid) {
-        UserInfo userInfo = this.queryByUidFromDb(uid);
+        UserInfo userInfo = this.queryByUidFromDbIncludeDelUser(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }

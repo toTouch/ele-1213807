@@ -370,7 +370,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 merchantId = merchantInviterVO.getMerchantId();
             }
         } else {
-            inviterName = Optional.ofNullable(userInfoService.queryByUidFromDb(inviterUid)).map(UserInfo::getName).orElse("");
+            inviterName = Optional.ofNullable(userInfoService.queryByUidFromDbIncludeDelUser(inviterUid)).map(UserInfo::getName).orElse("");
         }
         
         return MerchantInviterVO.builder().uid(uid).inviterUid(inviterUid).inviterName(inviterName).inviterSource(activitySource).merchantId(merchantId).build();

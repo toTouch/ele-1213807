@@ -6,15 +6,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.FreeDepositUrlCacheBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.bo.AuthPayStatusBO;
-import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -56,7 +52,6 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
@@ -142,7 +137,6 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
@@ -155,7 +149,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -736,7 +729,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
             Long boundFranchiseeId = userInfo.getFranchiseeId();
             if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
                 userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
