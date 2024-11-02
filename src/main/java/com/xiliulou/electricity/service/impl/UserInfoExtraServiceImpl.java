@@ -601,6 +601,10 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return Triple.of(false, null, null);
         }
         
+        if (Objects.isNull(electricityConfig.getEleLimitCount())) {
+            return Triple.of(false, null, null);
+        }
+        
         if (packageList.size() >= electricityConfig.getEleLimitCount()) {
             return Triple.of(true, "120151", "您已购买了多个尚未使用的换电套餐，为保障您的资金安全，请联系客服后购买");
         }
