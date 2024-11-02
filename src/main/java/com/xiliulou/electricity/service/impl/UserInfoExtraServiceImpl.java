@@ -592,7 +592,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return Triple.of(false, null, null);
         }
         
-        if (Objects.isNull(userInfoExtra.getEleLimit()) || Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
+        if (Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
             return Triple.of(false, null, null);
         }
         
