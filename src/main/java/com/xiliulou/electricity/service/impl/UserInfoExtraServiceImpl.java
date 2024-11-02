@@ -592,12 +592,16 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return Triple.of(false, null, null);
         }
         
-        if (Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
+        if (Objects.isNull(userInfoExtra.getEleLimit()) || Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
             return Triple.of(false, null, null);
         }
         
         List<UserBatteryMemberCardPackage> packageList = userBatteryMemberCardPackageService.selectByUid(uid);
         if (CollectionUtils.isEmpty(packageList)) {
+            return Triple.of(false, null, null);
+        }
+        
+        if (Objects.isNull(electricityConfig.getEleLimitCount())) {
             return Triple.of(false, null, null);
         }
         
