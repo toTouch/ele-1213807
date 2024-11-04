@@ -83,7 +83,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             List<String> snList = batteryRecycleRecords.parallelStream().map(BatteryRecycleRecord::getSn).collect(Collectors.toList());
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.listBySnList(snList);
             if (ObjectUtils.isEmpty(electricityCabinetBoxes)) {
-                log.info("battery recycle warn! not find box sn: {}", snList);
                 continue;
             }
             
@@ -93,7 +92,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             List<Integer> cabinetIdList = electricityCabinetBoxes.parallelStream().map(ElectricityCabinetBox::getElectricityCabinetId).collect(Collectors.toList());
             List<ElectricityCabinetBO> electricityCabinets = electricityCabinetService.listByIdList(cabinetIdList);
             if (ObjectUtils.isEmpty(electricityCabinets)) {
-                log.warn("battery recycle warn! not find cabinet, ids: {}", cabinetIdList);
                 continue;
             }
             
@@ -103,7 +101,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             batteryRecycleRecords.stream().forEach(batteryRecycleRecord -> {
                 // 不在仓
                 if (!boxMap.containsKey(batteryRecycleRecord.getSn())) {
-                    log.info("battery recycle info! box is null, sn: {}", batteryRecycleRecord.getSn());
                     return;
                 }
                 
@@ -111,7 +108,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                 List<ElectricityCabinetBox> electricityCabinetBoxList = boxMap.get(batteryRecycleRecord.getSn());
                 electricityCabinetBoxList.stream().forEach(electricityCabinetBox -> {
                     if (Objects.isNull(cabinetMap.get(electricityCabinetBox.getElectricityCabinetId()))) {
-                        log.info("battery recycle info! cabinet is null, id: {}, sn: {}", electricityCabinetBox.getElectricityCabinetId(), batteryRecycleRecord.getSn());
                         return;
                     }
     
@@ -145,9 +141,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                     //发送锁仓命令
                     R r = electricityCabinetService.sendCommand(eleOuterCommandQuery);
                     if (!r.isSuccess()) {
-                        // 发送失败
-                        log.warn("BATTERY RECYCLE LOCK CELL WARN! send command warn! sn:{}, cabinetId:{}, msg:{}",batteryRecycleRecord.getSn(), electricityCabinet.getId(), r.getErrMsg());
-    
                         // 禁用格口启用
                         ElectricityCabinetBox electricityCabinetBoxUpdate = new ElectricityCabinetBox();
                         electricityCabinetBoxUpdate.setElectricityCabinetId(electricityCabinet.getId());

@@ -31,11 +31,8 @@ public class BatteryRecycleProducer {
      */
     public void sendDelayMessage(BatteryRecycleDelayDTO dto) {
         if (Objects.isNull(dto)) {
-            log.warn("Battery recycle Delay Warn! dto is null");
             return;
         }
-        
-        log.info("BATTERY RECYCLE LOCK CELL INFO! msg:{}", dto);
         
         rocketMqService.sendSyncMsg(MqProducerConstant.BATTERY_RECYCLE_TOPIC_NAME, JsonUtil.toJson(dto), "", "", 4);
     }

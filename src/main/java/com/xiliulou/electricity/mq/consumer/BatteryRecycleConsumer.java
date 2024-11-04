@@ -41,35 +41,6 @@ public class BatteryRecycleConsumer implements RocketMQListener<String> {
     @Resource
     private RedisService redisService;
     
-   /* public void onMessage(String message) {
-        log.info("BATTERY RECYCLE CONSUMER INFO!received msg={}", message);
-        
-        MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
-    
-        BatteryRecycleDelayDTO batteryRecycleDelayDTO = null;
-        
-        try {
-            batteryRecycleDelayDTO = JsonUtil.fromJson(message, BatteryRecycleDelayDTO.class);
-            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.listNotUsableBySn(batteryRecycleDelayDTO.getSn(), batteryRecycleDelayDTO.getCabinetId(), batteryRecycleDelayDTO.getCellNo());
-            if (ObjectUtils.isEmpty(electricityCabinetBoxList)) {
-                log.info("BATTERY RECYCLE CONSUMER INFO! disable cell is invalid msg={}", message);
-                return;
-            }
-    
-            BatteryRecycleRecord batteryRecycleRecord = new BatteryRecycleRecord();
-            batteryRecycleRecord.setId(batteryRecycleDelayDTO.getRecycleId());
-            batteryRecycleRecord.setStatus(BatteryRecycleStatusEnum.LOCK.getCode());
-            batteryRecycleRecord.setElectricityCabinetId(batteryRecycleDelayDTO.getCabinetId());
-            batteryRecycleRecord.setCellNo(batteryRecycleDelayDTO.getCellNo());
-            batteryRecycleRecord.setUpdateTime(System.currentTimeMillis());
-            batteryRecycleRecordService.updateById(batteryRecycleRecord);
-        } catch (Exception e) {
-            log.error("BATTERY RECYCLE CONSUMER ERROR!msg={}", message, e);
-        } finally {
-            MDC.clear();
-        }
-    }*/
-    
     public void onMessage(String message) {
         log.info("BATTERY RECYCLE CONSUMER INFO!received msg={}", message);
         
