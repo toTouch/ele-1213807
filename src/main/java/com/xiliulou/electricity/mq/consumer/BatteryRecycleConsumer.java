@@ -42,9 +42,9 @@ public class BatteryRecycleConsumer implements RocketMQListener<String> {
     private RedisService redisService;
     
     public void onMessage(String message) {
-        log.info("BATTERY RECYCLE CONSUMER INFO!received msg={}", message);
-        
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
+    
+        log.info("BATTERY RECYCLE CONSUMER INFO!received msg={}", message);
         
         BatteryRecycleDelayDTO batteryRecycleDelayDTO = null;
         
