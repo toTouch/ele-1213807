@@ -386,9 +386,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
-            if (!matchOrNot) {
-                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+            List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+            if (CollectionUtils.isNotEmpty(batteryTypeByMid) && CollectionUtils.containsAll(batteryTypeByMid, userBatteryTypes)) {
+                return Triple.of(false, "302005", "不支持灵活续费，请联系运营商升级小程序");
             }
             
             // 押金订单
@@ -679,9 +679,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
-            if (!matchOrNot) {
-                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+            List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+            if (CollectionUtils.isNotEmpty(batteryTypeByMid) && CollectionUtils.containsAll(batteryTypeByMid, userBatteryTypes)) {
+                return Triple.of(false, "302005", "不支持灵活续费，请联系运营商升级小程序");
             }
             
             // 获取扫码柜机
