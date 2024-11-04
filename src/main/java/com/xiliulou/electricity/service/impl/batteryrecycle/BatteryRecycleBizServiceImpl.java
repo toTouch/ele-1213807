@@ -81,7 +81,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             }
     
             maxId = batteryRecycleRecords.get(batteryRecycleRecords.size() - 1).getId();
-            log.info("BATTERY RECYCLE LOCK CELL INFO! maxId:{}, size:{}", maxId, batteryRecycleRecords.size());
     
             List<String> snList = batteryRecycleRecords.parallelStream().map(BatteryRecycleRecord::getSn).collect(Collectors.toList());
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.listBySnList(snList);
@@ -162,8 +161,6 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                     batteryRecycleProducer.sendDelayMessage(batteryRecycleDelayDTO);
                 });
             });
-            
-            maxId = batteryRecycleRecords.get(batteryRecycleRecords.size() - 1).getId();
         }
     }
 }
