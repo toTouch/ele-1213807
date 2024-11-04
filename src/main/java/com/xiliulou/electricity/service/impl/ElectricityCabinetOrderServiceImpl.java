@@ -1328,12 +1328,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.info("OrderV3 INFO! not same cabinet, normal exchange");
             return Pair.of(false, null);
         }
+        
+        // 判断是直接开门还是让前端再调一次V3接口
+        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        checkFlexibleRenewal(vo, electricityBattery, userInfo);
        
         Long uid = userInfo.getUid();
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
             log.warn("OrderV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
-            return Pair.of(false, null);
+            // 只租了一次电就灵活续费了的场景，检查结束后，如果是正常换电，直接去分配电池
+            return Pair.of(!Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()), vo);
         }
         
         // 默认取5分钟的订单，可选择配置
@@ -1345,10 +1350,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.warn("OrderV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 5 minutes,lastOrderId is {} ", lastOrder.getOrderId());
                 return Pair.of(false, null);
             } else {
-                // 判断是直接开门还是让前端再调一次V3接口
-                ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-                checkFlexibleRenewal(vo, electricityBattery, userInfo);
-                // 检查结束后，如果是正常换电，直接去分配电池
+                // 上一次是换电，检查结束后，如果是正常换电，直接去分配电池
                 return Pair.of(!Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()), vo);
             }
         }
