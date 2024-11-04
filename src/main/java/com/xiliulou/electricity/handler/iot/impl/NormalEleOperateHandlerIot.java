@@ -45,7 +45,7 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
 //        } else {
 //            redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, operateVo, 30L, TimeUnit.SECONDS);
 //        }
-        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, map, 30L, TimeUnit.SECONDS);
+        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, map, 60L, TimeUnit.SECONDS);
     }
 
 }

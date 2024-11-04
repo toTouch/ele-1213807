@@ -35,6 +35,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * description:
@@ -70,6 +71,9 @@ public class AutomatedTestingLoginServiceImpl implements AutomatedTestingLoginSe
         
         User user = userService.queryByUserPhoneFromDB(loginRequest.getUserPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
         
+        if (Objects.isNull(user)){
+            throw new AuthenticationServiceException("手机号不存在");
+        }
         
         if (!customPasswordEncoder.matches(this.decryptPassword(loginRequest.getPassword()), user.getLoginPwd())) {
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
@@ -85,7 +89,7 @@ public class AutomatedTestingLoginServiceImpl implements AutomatedTestingLoginSe
     }
     
     
-    public static String decryptPassword(String encryptPassword) {
+    public  String decryptPassword(String encryptPassword) {
         AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(ENCODE_PASSWORD_KEY.getBytes(), "AES"), new IvParameterSpec(ENCODE_PASSWORD_KEY.getBytes()));
         return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
     }

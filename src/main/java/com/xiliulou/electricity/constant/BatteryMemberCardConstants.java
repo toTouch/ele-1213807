@@ -18,4 +18,13 @@ public interface BatteryMemberCardConstants {
      */
     String REGARDLESS_OF_MODEL = "0";
     
+    /**
+     * 用户端查询套餐与用户的用户分组是否匹配
+     */
+    Integer CHECK_USERINFO_GROUP_USER = 0;
+    
+    /**
+     * 后台查询套餐与用户的用户分组是否匹配
+     */
+    Integer CHECK_USERINFO_GROUP_ADMIN = 1;
 }

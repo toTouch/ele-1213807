@@ -304,4 +304,36 @@
           and status = 0
           and del_flag = 0
     </select>
+    
+    <sql id="column">
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
+        update_time,
+        del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
+    </sql>
+    
+    <select id="selectListBySnList" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        <include refid="column"/>
+        from t_electricity_cabinet_box
+        <where>
+            sn in
+            <foreach collection="snList" item="sn" separator="," open="(" close=")">
+                #{sn}
+            </foreach>
+            and del_flag = 0
+        </where>
+    </select>
+    <select id="selectListNotUsableBySn" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        <include refid="column"/>
+        from t_electricity_cabinet_box
+        <where>
+            sn = #{sn}
+            and electricity_cabinet_id = #{cabinetId}
+            and cell_no = #{cellNo}
+            and del_flag = 0
+            and usable_status = 1
+        </where>
+    </select>
 </mapper>

@@ -69,6 +69,7 @@ import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -210,6 +211,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK_USERINFO_GROUP_ADMIN;
 import static com.xiliulou.electricity.entity.ElectricityMemberCardOrder.INSTALLMENT_PAYMENT;
 
 /**
@@ -2831,29 +2833,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService
-                .listGroupByUid(UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
+                batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
         
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-            
-            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (CollectionUtils.isEmpty(userGroupIds)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        } else {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        }
-        
-        // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());
-            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+        if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+            return checkTriple;
         }
         
         if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects
@@ -3249,28 +3233,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100275", "电池套餐不可用");
         }
         
-        List<UserInfoGroupNamesBO> userInfoGroupNamesBOs = userInfoGroupDetailService
-                .listGroupByUid(UserInfoGroupDetailQuery.builder().uid(query.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+        // 检查用户与套餐的用户分组是否匹配
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
+                batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
         
-        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBOs)) {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-            List<Long> userGroupIds = userInfoGroupNamesBOs.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toList());
-            userGroupIds.retainAll(JsonUtil.fromJsonArray(batteryMemberCard.getUserInfoGroupIds(), Long.class));
-            if (CollectionUtils.isEmpty(userGroupIds)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        } else {
-            if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
-                return Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
-            }
-        }
-        
-        // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("The rent type of current package is a new rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), query.getMembercardId());
-            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+        if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+            return checkTriple;
         }
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -3634,9 +3602,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         couponIdSet.forEach(couponId -> {
             UserCouponDTO userCouponDTO = new UserCouponDTO();
             userCouponDTO.setCouponId(couponId);
+            userCouponDTO.setPackageId(batteryMemberCard.getId());
             userCouponDTO.setUid(memberCardOrder.getUid());
             userCouponDTO.setSourceOrderNo(memberCardOrder.getOrderId());
             userCouponDTO.setTraceId(IdUtil.simpleUUID());
+            userCouponDTO.setCouponType(CouponTypeEnum.BATTERY_BUY_PACKAGE.getCode());
             userCouponService.asyncSendCoupon(userCouponDTO);
         });
         
@@ -3866,7 +3836,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         // 送优惠券
         if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()));
+            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()), null);
         }
         
         return remainingNumber;

@@ -12,6 +12,7 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务接口
@@ -83,4 +84,6 @@ public interface RentBatteryOrderService {
     Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell);
     
     String acquireFullBatteryBox(List<ElectricityCabinetBox> electricityCabinetBoxList, UserInfo userInfo, Franchisee franchisee, Double fullyCharged);
+    
+    List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList);
 }
