@@ -2766,24 +2766,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             // 多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
             if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 if (Objects.nonNull(electricityBattery)) {
-                    // 用户当前绑定电池的型号
-                    String userCurrentBatteryType = electricityBattery.getModel();
-                    List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream()
-                            .filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType)).collect(Collectors.toList());
+                    // // 用户当前绑定电池的型号
+                    // String userCurrentBatteryType = electricityBattery.getModel();
+                    // List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream()
+                    //         .filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), userCurrentBatteryType)).collect(Collectors.toList());
+                    //
+                    // if (CollectionUtils.isEmpty(userCurrentBatteryUsableBatteryCellNos)) {
+                    //     // 获取用户绑定的型号
+                    //     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                    //     if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                    //         log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
+                    //         return Triple.of(false, "100352", "未找到用户电池型号");
+                    //     }
+                    //
+                    //     usableBatteryCellNos = usableBatteryCellNos.stream()
+                    //             .filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
+                    // } else {
+                    //     usableBatteryCellNos = userCurrentBatteryUsableBatteryCellNos;
+                    // }
                     
-                    if (CollectionUtils.isEmpty(userCurrentBatteryUsableBatteryCellNos)) {
-                        // 获取用户绑定的型号
-                        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
-                        if (CollectionUtils.isEmpty(userBatteryTypes)) {
-                            log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
-                            return Triple.of(false, "100352", "未找到用户电池型号");
-                        }
-                        
-                        usableBatteryCellNos = usableBatteryCellNos.stream()
-                                .filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
-                    } else {
-                        usableBatteryCellNos = userCurrentBatteryUsableBatteryCellNos;
+                    // 获取用户绑定的型号，根据用户当前电池取新仓门的时候，会导致先放电池后扫码无法转换
+                    List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+                    if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                        log.error("ELE ERROR!not found use binding battery type,uid={}", uid);
+                        return Triple.of(false, "100352", "未找到用户电池型号");
                     }
+
+                    usableBatteryCellNos = usableBatteryCellNos.stream()
+                            .filter(e -> StringUtils.isNotBlank(e.getBatteryType()) && userBatteryTypes.contains(e.getBatteryType())).collect(Collectors.toList());
                 } else {
                     // 获取用户绑定的型号
                     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
