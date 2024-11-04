@@ -37,4 +37,9 @@ public class BatteryRecycleDelayDTO implements Serializable {
      * 回收记录id
      */
     private Long recycleId;
+    
+    /**
+     * sessionId
+     */
+    private String sessionId;
 }

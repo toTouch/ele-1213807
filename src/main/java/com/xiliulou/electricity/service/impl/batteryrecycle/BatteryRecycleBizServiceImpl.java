@@ -83,7 +83,7 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             List<String> snList = batteryRecycleRecords.parallelStream().map(BatteryRecycleRecord::getSn).collect(Collectors.toList());
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.listBySnList(snList);
             if (ObjectUtils.isEmpty(electricityCabinetBoxes)) {
-                log.warn("battery recycle warn! not find box sn: {}", snList);
+                log.info("battery recycle warn! not find box sn: {}", snList);
                 continue;
             }
             
@@ -137,17 +137,32 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
                     cellList.add(electricityCabinetBox.getCellNo());
                     dataMap.put("cell_list", cellList);
                     eleOuterCommandQuery.setData(dataMap);
-    
+                    
+                    // 进行格口锁仓处理
+                    //对异常仓门进行锁仓处理
+                    electricityCabinetBoxService.disableCell(Integer.valueOf(electricityCabinetBox.getCellNo()), electricityCabinet.getId());
+                    
                     //发送锁仓命令
                     R r = electricityCabinetService.sendCommand(eleOuterCommandQuery);
                     if (!r.isSuccess()) {
+                        // 发送失败
                         log.warn("BATTERY RECYCLE LOCK CELL WARN! send command warn! sn:{}, cabinetId:{}, msg:{}",batteryRecycleRecord.getSn(), electricityCabinet.getId(), r.getErrMsg());
+    
+                        // 禁用格口启用
+                        ElectricityCabinetBox electricityCabinetBoxUpdate = new ElectricityCabinetBox();
+                        electricityCabinetBoxUpdate.setElectricityCabinetId(electricityCabinet.getId());
+                        electricityCabinetBoxUpdate.setCellNo(electricityCabinetBox.getCellNo());
+                        electricityCabinetBoxUpdate.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
+                        electricityCabinetBoxUpdate.setUpdateTime(System.currentTimeMillis());
+                        electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBoxUpdate);
                         return;
                     }
+        
+                    String sessionId = (String) r.getData();
                     
                     // 发送异步消息
                     BatteryRecycleDelayDTO batteryRecycleDelayDTO = BatteryRecycleDelayDTO.builder().sn(batteryRecycleRecord.getSn()).cabinetId(electricityCabinet.getId())
-                            .recycleId(batteryRecycleRecord.getId()).cellNo(electricityCabinetBox.getCellNo()).build();
+                            .recycleId(batteryRecycleRecord.getId()).cellNo(electricityCabinetBox.getCellNo()).sessionId(sessionId).build();
                     batteryRecycleProducer.sendDelayMessage(batteryRecycleDelayDTO);
                 });
             });

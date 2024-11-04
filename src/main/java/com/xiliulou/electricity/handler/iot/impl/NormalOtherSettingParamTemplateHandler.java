@@ -62,7 +62,7 @@ public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityI
         
         redisService.saveWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(),
                 electricityCabinetOtherSetting);
-        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), "ok", 30L,
+        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), "ok", 60L,
                 TimeUnit.SECONDS);
     }
     
