@@ -311,7 +311,7 @@
     </select>
     
     <select id="selectByPageForUser" resultMap="BatteryMemberCardTypePageMap">
-        select
+        select distinct
         bmc.id,
         bmc.name,
         bmc.deposit,
