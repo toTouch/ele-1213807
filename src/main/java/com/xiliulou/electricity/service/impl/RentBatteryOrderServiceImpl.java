@@ -827,8 +827,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             
-            List<String> oldBatteryTypes = null;
-            
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //判断电池滞纳金
                 
@@ -865,10 +863,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                     log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
-                }
-                
-                if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-                    oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), batteryMemberCard);
                 }
             } else {
                 //判断车电一体滞纳金
@@ -926,18 +920,21 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
-            List<String> batteryTypeList;
-            if (CollectionUtils.isEmpty(oldBatteryTypes)) {
-                batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
-            } else {
-                batteryTypeList = oldBatteryTypes;
-            }
+            List<String> oldBatteryTypes = null;
+            List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
             
             if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
             } else {
                 dataMap.put("model_type", true);
                 if (Objects.nonNull(electricityBattery)) {
+                    // 需要根据电池与用户绑定的电池型号确认是否需要取缓存内的电池型号用于还电池校验
+                    List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+                    oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
+                    if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                        batteryTypeList = oldBatteryTypes;
+                    }
+                    
                     dataMap.put("multiBatteryModelName", electricityBattery.getModel());
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
                 } else {

@@ -51,15 +51,14 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     }
     
     @Override
-    public List<String> checkBatteryTypeWithMemberCard(Long uid, String batteryType, BatteryMemberCard memberCard) {
+    public List<String> checkBatteryTypeWithMemberCard(Long uid, String batteryType, List<String> userBatteryTypes) {
         // 用户当前套餐不分型号，不作处理
-        List<String> batteryTypesWithCard = selectBatteryTypeByMid(memberCard.getId());
-        if (CollectionUtils.isEmpty(batteryTypesWithCard)) {
+        if (CollectionUtils.isEmpty(userBatteryTypes)) {
             return List.of();
         }
         
         // 用户当前绑定的电池也就是要还的电池和当前套餐匹配，不作处理
-        if (batteryTypesWithCard.contains(batteryType)) {
+        if (userBatteryTypes.contains(batteryType)) {
             return List.of();
         }
         
