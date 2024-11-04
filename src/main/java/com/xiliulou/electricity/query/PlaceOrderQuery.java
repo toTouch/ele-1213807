@@ -3,6 +3,7 @@ package com.xiliulou.electricity.query;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -68,7 +69,7 @@ public class PlaceOrderQuery {
     /**
      * 后台单独缴纳押金的金额
      */
-    private Double depositAmount;
+    private BigDecimal depositAmount;
     
     /**
      * 后台绑定时，被操作用户的uid

@@ -45,6 +45,7 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderType
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
@@ -462,7 +463,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 处理0元问题
             if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 
-                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
+                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     return result;
                 }
@@ -751,7 +752,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 处理0元问题
             if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 
-                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
+                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     return result;
                 }
@@ -785,7 +786,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, InstallmentRecord installmentRecord) {
+    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, InstallmentRecord installmentRecord,
+            PlaceOrderContext context) {
         if (Objects.nonNull(installmentRecord)) {
             InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
             installmentRecordUpdate.setId(installmentRecord.getId());
@@ -812,7 +814,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 String depositOrderId = orderList.get(index);
                 
-                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS, userInfo);
+                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS, userInfo, context);
             }
             
             // 电池套餐
@@ -1264,7 +1266,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 处理0元问题
         if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, installmentRecord);
+            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, installmentRecord, null);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }

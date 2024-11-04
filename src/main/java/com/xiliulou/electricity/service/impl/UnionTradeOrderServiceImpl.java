@@ -58,6 +58,7 @@ import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
@@ -463,7 +464,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
-                Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus, userInfo);
+                Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus, userInfo, null);
                 if (!manageDepositOrderResult.getLeft()) {
                     return manageDepositOrderResult;
                 }
@@ -637,7 +638,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
     
     // 处理押金订单
     @Override
-    public Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus, UserInfo userInfo) {
+    public Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus, UserInfo userInfo, PlaceOrderContext context) {
         
         // 押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
@@ -675,6 +676,16 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
             userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
             userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            
+            // 兼容其他位置旧接口调用不传上下文
+            if (Objects.nonNull(context)) {
+                BatteryMemberCard batteryMemberCard = context.getBatteryMemberCard();
+                if (!Objects.equals(batteryMemberCard.getDeposit(), context.getPlaceOrderQuery().getDepositAmount())) {
+                    userBatteryDeposit.setDepositModifyFlag(UserBatteryDeposit.DEPOSIT_MODIFY_YES);
+                    userBatteryDeposit.setBeforeModifyDeposit(batteryMemberCard.getDeposit());
+                }
+            }
+            
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
             
             // 保存用户押金对应的电池型号
@@ -1446,7 +1457,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
                 Pair<Boolean, Object> manageDepositOrderResult = applicationContext.getBean(UnionTradeOrderServiceImpl.class)
-                        .manageDepositOrder(orderIdList.get(i), tradeOrderStatus,userInfo);
+                        .manageDepositOrder(orderIdList.get(i), tradeOrderStatus,userInfo, null);
                 if (!manageDepositOrderResult.getLeft()) {
                     return manageDepositOrderResult;
                 }
@@ -1630,7 +1641,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
         
         for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
-                Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus, userInfo);
+                Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus, userInfo, null);
                 if (!manageDepositOrderResult.getLeft()) {
                     return manageDepositOrderResult;
                 }

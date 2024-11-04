@@ -1602,7 +1602,7 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //更新押金状态
             if (Objects.nonNull(eleDepositOrder)) {
-                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS, userInfo);
+                Pair<Boolean, Object> result = unionTradeOrderService.manageDepositOrder(eleDepositOrder.getOrderId(), EleDepositOrder.STATUS_SUCCESS, userInfo, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     //return  Triple.of(false, "100349", result.getRight());
                     throw new BizException("300071", (String) result.getRight());

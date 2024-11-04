@@ -51,7 +51,7 @@ public class DepositPlaceOrderHandler extends AbstractPlaceOrderHandler {
         
         // 根据支付类型设置押金金额，后台直接缴纳押金时，金额可修改
         Integer payType = placeOrderQuery.getPayType();
-        BigDecimal amount = Objects.equals(payType, PlaceOrderConstant.ONLINE_PAYMENT) ? batteryMemberCard.getDeposit() : BigDecimal.valueOf(placeOrderQuery.getDepositAmount());
+        BigDecimal amount = Objects.equals(payType, PlaceOrderConstant.ONLINE_PAYMENT) ? batteryMemberCard.getDeposit() : placeOrderQuery.getDepositAmount();
         
         // 生成押金独立订单
         String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());

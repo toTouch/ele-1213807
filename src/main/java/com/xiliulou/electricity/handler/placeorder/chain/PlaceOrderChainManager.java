@@ -248,7 +248,7 @@ public class PlaceOrderChainManager {
         // 0元支付和线下支付
         if (context.getTotalAmount().compareTo(PlaceOrderConstant.AMOUNT_MIN) < 0 || Objects.equals(context.getPlaceOrderQuery().getPayType(),
                 PlaceOrderConstant.OFFLINE_PAYMENT)) {
-            Triple<Boolean, String, Object> tripleResult = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
+            Triple<Boolean, String, Object> tripleResult = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList, null, context);
             if (Boolean.FALSE.equals(tripleResult.getLeft())) {
                 return R.fail(tripleResult.getMiddle(), (String) tripleResult.getRight());
             }
