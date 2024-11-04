@@ -47,7 +47,6 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            log.error("battery recycle save warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
@@ -55,7 +54,6 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.warn("battery recycle save warn! franchisee is empty");
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
             
@@ -88,7 +86,6 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            log.warn("merchant area page warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         
@@ -96,7 +93,6 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.warn("merchant area page warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         }
@@ -121,7 +117,6 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         }
         
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
-            log.warn("merchant area page count warn! user not auth");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
@@ -129,7 +124,6 @@ public class JsonAdminBatteryRecycleRecordController extends BaseController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
-                log.warn("merchant area page warn! franchisee is empty, uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
         }
