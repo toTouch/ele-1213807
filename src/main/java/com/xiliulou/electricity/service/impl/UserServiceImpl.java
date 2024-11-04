@@ -48,6 +48,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -65,6 +66,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizS
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ServicePhoneVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserSearchVO;
@@ -185,6 +187,9 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private UserInfoGroupBizService userInfoGroupBizService;
+    
+    @Resource
+    private ServicePhoneService servicePhoneService;
     
     /**
      * 启用锁定用户
@@ -1072,15 +1077,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public String selectServicePhone(Integer tenantId) {
         String cachePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        //        if (StringUtils.isNotBlank(cachePhone)) {
-        //            return cachePhone;
-        //        }
-        //
-        //        String phone = null;
-        //        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
-        //        if (CollectionUtils.isNotEmpty(userList)) {
-        //            phone = userList.get(0).getPhone();
-        //        }
+        if (StringUtils.isBlank(cachePhone)) {
+            List<ServicePhoneVO> servicePhoneList = servicePhoneService.listPhones(TenantContextHolder.getTenantId());
+            if (CollectionUtils.isNotEmpty(servicePhoneList)) {
+                cachePhone = servicePhoneList.get(0).getPhone();
+            }
+        }
         
         return cachePhone;
     }

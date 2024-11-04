@@ -219,7 +219,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setTenantId(tenantId.longValue());
                 merchantLoginVO.setTenantName(tenant.getName());
                 merchantLoginVO.setTenantCode(tenant.getCode());
-                merchantLoginVO.setServicePhone(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
+                merchantLoginVO.setServicePhone(userService.selectServicePhone(tenantId));
                 merchantLoginVO.setServicePhones(servicePhoneService.listPhones(tenantId));
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
