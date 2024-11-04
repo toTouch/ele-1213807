@@ -221,6 +221,11 @@ public class ElectricityCabinetBO {
      */
     private Map<String,Integer> exchangebleMapes;
     
+    /**
+     * iot连接模式  0:阿里云 1：华为云 2:自建TCP
+     */
+    private Integer pattern;
+    
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

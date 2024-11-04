@@ -67,7 +67,7 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
         batteryChargeConfigQuery.setUpdateTime(System.currentTimeMillis());
         batteryChargeConfigService.insertOrUpdate(batteryChargeConfigQuery);
     
-        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), batteryChargeMultiDTO, 30L, TimeUnit.SECONDS);
+        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), batteryChargeMultiDTO, 60L, TimeUnit.SECONDS);
     }
     
     
