@@ -102,7 +102,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(userBatteryDeposit) && Objects.equals(context.getElectricityConfig().getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
                 userBatteryDeposit.getBatteryDeposit(), batteryMemberCard.getDeposit())) {
-            throw new BizException("302005", "灵活续费已禁用，请刷新后重新购买");
+            throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
         }
         
         fireProcess(context, result, placeOrderType);

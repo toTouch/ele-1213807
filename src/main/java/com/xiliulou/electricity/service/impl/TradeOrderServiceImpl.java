@@ -382,14 +382,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
             List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
             if (CollectionUtils.isNotEmpty(batteryTypeByMid) && !CollectionUtils.containsAll(batteryTypeByMid, userBatteryTypes)) {
-                return Triple.of(false, "302005", "不支持灵活续费，请联系运营商升级小程序");
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
             // 灵活续费押金校验
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.queryByUid(userInfo.getUid());
             if (Objects.nonNull(userBatteryDeposit) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
                     userBatteryDeposit.getBatteryDeposit(), batteryMemberCard.getDeposit())) {
-                return Triple.of(false, "302005", "不支持灵活续费，请联系运营商升级小程序");
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
             // 押金订单
@@ -685,13 +685,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
             List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
             if (CollectionUtils.isNotEmpty(batteryTypeByMid) && CollectionUtils.containsAll(batteryTypeByMid, userBatteryTypes)) {
-                return Triple.of(false, "302005", "不支持灵活续费，请联系运营商升级小程序");
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
             // 灵活续费押金校验
             if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(userBatteryDeposit.getBatteryDeposit(),
                     batteryMemberCard.getDeposit())) {
-                return Triple.of(false, "302005", "不支持灵活续费，请联系运营商升级小程序");
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
             // 获取扫码柜机
