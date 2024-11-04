@@ -111,7 +111,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
                 String oldPhone = servicePhoneDTO.getPhone();
                 String oldRemark = servicePhoneDTO.getRemark();
                 
-                this.sendOperateRecord(oldPhone, oldRemark, "空", "空");
+                this.sendOperateRecord(oldPhone, oldRemark, null, null);
             }
         }
     }
@@ -136,7 +136,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
                     // 处理后2个旧手机号
                     for (int i = requestPhoneDTOList.size(); i < oldPhoneList.size(); i++) {
                         ServicePhoneDTO oldServicePhone = oldPhoneList.get(i);
-                        this.sendOperateRecord(oldServicePhone.getPhone(), oldServicePhone.getRemark(), "空", "空");
+                        this.sendOperateRecord(oldServicePhone.getPhone(), oldServicePhone.getRemark(), null, null);
                     }
                 } else if (oldPhoneList.size() < requestPhoneDTOList.size()) {
                     // 比如：有5个新手机号，有3个旧手机号
@@ -150,7 +150,7 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
                     // 处理后2个新手机号
                     for (int i = oldPhoneList.size(); i < requestPhoneDTOList.size(); i++) {
                         ServicePhoneDTO newServicePhone = requestPhoneDTOList.get(i);
-                        this.sendOperateRecord("空", "空", newServicePhone.getPhone(), newServicePhone.getRemark());
+                        this.sendOperateRecord(null, null, newServicePhone.getPhone(), newServicePhone.getRemark());
                     }
                 } else {
                     // 比如：有5个新手机号，有5个旧手机号
@@ -173,17 +173,17 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             String newPhone = servicePhoneDTO.getPhone();
             String newRemark = servicePhoneDTO.getRemark();
             
-            this.sendOperateRecord("空", "空", newPhone, newRemark);
+            this.sendOperateRecord(null, null, newPhone, newRemark);
         }
     }
     
     private void sendOperateRecord(String oldPhone, String oldRemark, String newPhone, String newRemark) {
         Map<String, String> oldMap = new HashMap<>(2);
-        oldMap.put("phone", oldPhone);
-        oldMap.put("remark", oldRemark);
+        oldMap.put("phone", StringUtils.isBlank(oldPhone) ? "空" : oldPhone);
+        oldMap.put("remark", StringUtils.isBlank(oldRemark) ? "空" : oldRemark);
         Map<String, String> newMap = new HashMap<>(2);
-        newMap.put("phone", newPhone);
-        newMap.put("remark", newRemark);
+        newMap.put("phone", StringUtils.isBlank(newPhone) ? "空" : newPhone);
+        newMap.put("remark", StringUtils.isBlank(newRemark) ? "空" : newRemark);
         
         if (!Objects.equals(oldPhone, newPhone) || !Objects.equals(oldRemark, newRemark)) {
             operateRecordUtil.record(oldMap, newMap);
