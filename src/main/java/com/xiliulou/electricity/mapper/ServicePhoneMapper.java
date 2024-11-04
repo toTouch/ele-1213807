@@ -1,9 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ServicePhone;
-import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 /**
  * @author HeYafeng
@@ -11,21 +8,11 @@ import java.util.List;
  */
 public interface ServicePhoneMapper {
     
-    List<ServicePhone> selectByTenantId(Integer tenantId);
-    
-    Integer batchInsert(@Param("list") List<ServicePhone> insertList);
+    ServicePhone selectByTenantId(Integer tenantId);
     
     Integer update(ServicePhone servicePhone);
     
-    List<ServicePhone> selectListByIds(@Param("ids") List<Long> ids);
-    
     Integer insertOne(ServicePhone build);
     
-    Integer updateByPhone(@Param("oldPhone") String oldPhone, @Param("newPhone") String newPhone, @Param("tenantId") Integer tenantId, @Param("updateTime") Long updateTime);
-    
-    ServicePhone selectByPhoneAndTenantId(@Param("newPhone") String newPhone, @Param("tenantId") Integer tenantId);
-    
-    Integer deleteByIds(@Param("ids") List<Long> ids);
-    
-    Integer deleteByTenantId(Integer tenantId);
+    Integer deleteById(Long id);
 }

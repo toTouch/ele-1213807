@@ -1,11 +1,7 @@
 package com.xiliulou.electricity.dto;
 
-import com.xiliulou.electricity.entity.ServicePhone;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author HeYafeng
@@ -15,11 +11,7 @@ import java.util.Map;
 @Data
 public class ServicePhoneDTO {
     
-    private List<ServicePhone> insertList;
+    private String phone;
     
-    private List<ServicePhone> updateList;
-    
-    private List<Long> deleteList;
-    
-    private Map<Long, ServicePhone> existMap;
+    private String remark;
 }

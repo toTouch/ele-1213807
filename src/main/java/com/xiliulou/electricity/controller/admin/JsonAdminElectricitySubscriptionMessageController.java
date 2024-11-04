@@ -4,7 +4,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
-import com.xiliulou.electricity.entity.ServicePhone;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
 import com.xiliulou.electricity.request.ServicePhoneRequest;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -13,6 +12,7 @@ import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.ValidList;
+import com.xiliulou.electricity.vo.ServicePhoneVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -96,12 +96,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
         Integer tenantId = TenantContextHolder.getTenantId();
         String phone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
         if (StringUtils.isBlank(phone)) {
-            List<ServicePhone> servicePhones = servicePhoneService.listByTenantIdFromCache(tenantId);
-            if (CollectionUtils.isNotEmpty(servicePhones)) {
-                ServicePhone servicePhone = servicePhones.get(0);
-                if (Objects.nonNull(servicePhone)) {
-                    phone = servicePhone.getPhone();
-                }
+            List<ServicePhoneVO> servicePhoneList = servicePhoneService.listPhones(TenantContextHolder.getTenantId());
+            if (CollectionUtils.isNotEmpty(servicePhoneList)) {
+                phone = servicePhoneList.get(0).getPhone();
             }
         }
         
@@ -122,7 +119,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     
     @GetMapping("admin/servicePhone/all")
     public R getServicePhones() {
-        return R.ok(servicePhoneService.listByTenantIdFromCache(TenantContextHolder.getTenantId()));
+        return R.ok(servicePhoneService.listPhones(TenantContextHolder.getTenantId()));
     }
     
     @PostMapping("admin/servicePhone/update")

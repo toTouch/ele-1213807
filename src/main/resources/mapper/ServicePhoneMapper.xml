@@ -3,51 +3,25 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ServicePhoneMapper">
     <sql id="basic_field">
         id
-        , phone, remark, franchisee_id, tenant_id, del_flag, create_time, update_time
+        , phone_content, franchisee_id, tenant_id, del_flag, create_time, update_time
     </sql>
     
-    <insert id="batchInsert">
-        insert into t_service_phone (phone, remark, franchisee_id, tenant_id, del_flag, create_time, update_time)
-        values
-        <foreach collection="list" item="item" separator=",">
-            (#{item.phone}, #{item.remark}, #{item.franchiseeId}, #{item.tenantId}, #{item.delFlag}, #{item.createTime}, #{item.updateTime})
-        </foreach>
-    </insert>
-    
     <insert id="insertOne">
-        insert into t_service_phone (phone, remark, franchisee_id, tenant_id, del_flag, create_time, update_time)
-        values (#{phone}, #{remark}, #{franchiseeId}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_service_phone (phone_content, franchisee_id, tenant_id, del_flag, create_time, update_time)
+        values (#{phoneContent}, #{franchiseeId}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
     
     <update id="update">
         update t_service_phone
-        set phone       = #{phone},
-            remark      = #{remark},
-            update_time = #{updateTime}
+        set phone_content = #{phoneContent},
+            update_time   = #{updateTime}
         where id = #{id}
     </update>
     
-    <update id="updateByPhone">
-        update t_service_phone
-        set phone       = #{newPhone},
-            update_time = #{updateTime}
-        where phone = #{oldPhone}
-          and tenant_id = #{tenantId}
-          and del_flag = 0
-    </update>
-    
-    <delete id="deleteByIds">
-        delete from t_service_phone
-        where id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">
-            #{id}
-        </foreach>
-    </delete>
-    
-    <delete id="deleteByTenantId">
+    <delete id="deleteById">
         delete
         from t_service_phone
-        where tenant_id = #{tenantId}
+        where id = #{id}
     </delete>
     
     <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.ServicePhone">
@@ -56,27 +30,7 @@
         from t_service_phone
         where tenant_id = #{tenantId}
         and del_flag = 0
-        order by id
-    </select>
-    
-    <select id="selectListByIds" resultType="com.xiliulou.electricity.entity.ServicePhone">
-        select
-        <include refid="basic_field"/>
-        from t_service_phone
-        where id in
-        <foreach collection="ids" item="id" separator="," open="(" close=")">
-            #{id}
-        </foreach>
-        and del_flag = 0
-        order by id
-    </select>
-    <select id="selectByPhoneAndTenantId" resultType="com.xiliulou.electricity.entity.ServicePhone">
-        select
-        <include refid="basic_field"/>
-        from t_service_phone
-        where phone = #{newPhone}
-        and tenant_id = #{tenantId}
-        and del_flag = 0
+        limit 1
     </select>
 
 </mapper>

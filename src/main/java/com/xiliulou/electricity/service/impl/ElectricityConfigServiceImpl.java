@@ -320,7 +320,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
-        tenantConfigVO.setServicePhones(servicePhoneService.listByTenantIdFromCache(tenantId));
+        tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
         
         return tenantConfigVO;
     }
@@ -364,8 +364,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
-        tenantConfigVO.setServicePhones(servicePhoneService.listByTenantIdFromCache(tenantId));
-    
+        tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
+        
         return tenantConfigVO;
     }
     

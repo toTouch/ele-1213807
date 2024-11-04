@@ -24,14 +24,9 @@ public class ServicePhone {
     private Long id;
     
     /**
-     * 客服电话
+     * 客服电话内容
      */
-    private String phone;
-    
-    /**
-     * 电话文案
-     */
-    private String remark;
+    private String phoneContent;
     
     /**
      * 加盟商ID

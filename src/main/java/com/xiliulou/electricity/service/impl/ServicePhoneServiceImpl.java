@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -13,14 +13,13 @@ import com.xiliulou.electricity.request.ServicePhoneRequest;
 import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.vo.ServicePhoneVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,227 +53,168 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
         }
         
         try {
-            List<ServicePhone> servicePhonesExist = null;
+            boolean flag = false;
+            ServicePhone servicePhoneExist = this.queryByTenantIdFromCache(tenantId);
             if (CollectionUtils.isEmpty(requestPhoneList)) {
-                // 查询旧的手机号
-                servicePhonesExist = this.listByTenantIdFromCache(tenantId);
+                if (Objects.nonNull(servicePhoneExist)) {
+                    // 删除
+                    Integer delete = servicePhoneMapper.deleteById(servicePhoneExist.getId());
+                    if (delete > 0) {
+                        flag = true;
+                    }
+                }
                 
-                // 删除所有
-                Integer delete = servicePhoneMapper.deleteByTenantId(tenantId);
-                if (delete > 0) {
-                    // 清除新缓存
-                    redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
-                    // 清除旧缓存
-                    redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-                    
-                    if (CollectionUtils.isNotEmpty(servicePhonesExist)) {
-                        servicePhonesExist.forEach(servicePhone -> {
-                            this.sendOperateRecord(servicePhone.getPhone(), servicePhone.getRemark(), null);
-                        });
+                this.sendOperateRecordForDelete(servicePhoneExist.getPhoneContent());
+            } else {
+                List<ServicePhoneDTO> requestPhoneDTOList = requestPhoneList.stream()
+                        .map(requestPhone -> ServicePhoneDTO.builder().phone(requestPhone.getPhone()).remark(requestPhone.getRemark()).build()).collect(Collectors.toList());
+                
+                if (Objects.nonNull(servicePhoneExist)) {
+                    // 更新
+                    Integer update = servicePhoneMapper.update(
+                            ServicePhone.builder().id(servicePhoneExist.getId()).phoneContent(JsonUtil.toJson(requestPhoneDTOList)).updateTime(System.currentTimeMillis()).build());
+                    if (update > 0) {
+                        flag = true;
                     }
                     
+                    this.sendOperateRecordForUpdate(servicePhoneExist.getPhoneContent(), requestPhoneDTOList);
+                } else {
+                    // 新增
+                    servicePhoneMapper.insertOne(ServicePhone.builder().phoneContent(JsonUtil.toJson(requestPhoneDTOList)).tenantId(tenantId).delFlag(CommonConstant.DEL_N)
+                            .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build());
+                    
+                    this.sendOperateRecordForInsert(requestPhoneDTOList);
                 }
-                return R.ok();
             }
             
-            List<ServicePhone> insertList = null;
-            List<ServicePhone> updateList = null;
-            List<Long> deleteList = null;
-            Map<Long, ServicePhone> existMap = null;
-            ServicePhoneDTO servicePhoneDTO = this.handlePhones(servicePhonesExist, requestPhoneList, tenantId);
-            if (Objects.nonNull(servicePhoneDTO)) {
-                insertList = servicePhoneDTO.getInsertList();
-                updateList = servicePhoneDTO.getUpdateList();
-                deleteList = servicePhoneDTO.getDeleteList();
-                existMap = servicePhoneDTO.getExistMap();
-            }
-            
-            boolean flag = this.handleInsert(insertList);
-            Boolean update = this.handleUpdate(updateList, tenantId);
-            if (!flag) {
-                flag = update;
-            }
-            Boolean delete = this.handleDelete(deleteList, existMap, tenantId);
-            if (!flag) {
-                flag = delete;
-            }
-            
-            // 清除新缓存
             if (flag) {
+                // 清除新缓存
                 redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
+                // 清除旧缓存
+                redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
             }
+            
             return R.ok();
         } finally {
             redisService.delete(CacheConstant.SERVICE_PHONE_LOCK_KEY + tenantId);
         }
     }
     
-    private Boolean handleInsert(List<ServicePhone> insertList) {
-        boolean flag = false;
-        if (CollectionUtil.isNotEmpty(insertList)) {
-            Integer insert = servicePhoneMapper.batchInsert(insertList);
-            if (insert > 0) {
-                flag = true;
-                String oldPhone = "";
-                String oldRemark = "";
-                for (ServicePhone servicePhone : insertList) {
-                    this.sendOperateRecord(oldPhone, oldRemark, servicePhone);
-                }
-            }
+    private void sendOperateRecordForDelete(String phoneContent) {
+        if (StringUtils.isBlank(phoneContent)) {
+            return;
         }
         
-        return flag;
+        List<ServicePhoneDTO> servicePhoneList = JsonUtil.fromJsonArray(phoneContent, ServicePhoneDTO.class);
+        if (CollectionUtils.isNotEmpty(servicePhoneList)) {
+            for (ServicePhoneDTO servicePhoneDTO : servicePhoneList) {
+                String oldPhone = servicePhoneDTO.getPhone();
+                String oldRemark = servicePhoneDTO.getRemark();
+                
+                this.sendOperateRecord(oldPhone, oldRemark, "空", "空");
+            }
+        }
     }
     
-    private Boolean handleUpdate(List<ServicePhone> updateList, Integer tenantId) {
-        boolean flag = false;
-        if (CollectionUtil.isNotEmpty(updateList)) {
-            List<Long> updateIds = updateList.stream().map(ServicePhone::getId).collect(Collectors.toList());
-            List<ServicePhone> oldServicePhoneList = this.listByIds(updateIds);
-            Map<Long, ServicePhone> oldServicePhoneMap = oldServicePhoneList.stream().collect(Collectors.toMap(ServicePhone::getId, servicePhone -> servicePhone));
-            
-            for (ServicePhone servicePhone : updateList) {
-                Integer update = servicePhoneMapper.update(servicePhone);
-                if (update > 0) {
-                    flag = true;
-                    String newPhone = servicePhone.getPhone();
-                    String oldPhone = "";
-                    String oldRemark = "";
-                    if (MapUtils.isNotEmpty(oldServicePhoneMap) && oldServicePhoneMap.containsKey(servicePhone.getId())) {
-                        ServicePhone oldServicePhone = oldServicePhoneMap.get(servicePhone.getId());
-                        if (Objects.nonNull(oldServicePhone)) {
-                            oldPhone = oldServicePhone.getPhone();
-                            oldRemark = oldServicePhone.getRemark();
-                        }
+    private void sendOperateRecordForUpdate(String phoneContent, List<ServicePhoneDTO> requestPhoneDTOList) {
+        if (StringUtils.isBlank(phoneContent)) {
+            this.sendOperateRecordForInsert(requestPhoneDTOList);
+        } else {
+            if (CollectionUtils.isEmpty(requestPhoneDTOList)) {
+                this.sendOperateRecordForDelete(phoneContent);
+            } else {
+                List<ServicePhoneDTO> oldPhoneList = JsonUtil.fromJsonArray(phoneContent, ServicePhoneDTO.class);
+                // 比如：有5个旧手机号，有3个新手机号
+                if (oldPhoneList.size() > requestPhoneDTOList.size()) {
+                    // 处理前3个旧手机号
+                    for (int i = 0; i < requestPhoneDTOList.size(); i++) {
+                        ServicePhoneDTO oldServicePhone = oldPhoneList.get(i);
+                        ServicePhoneDTO newServicePhone = requestPhoneDTOList.get(i);
+                        this.sendOperateRecord(oldServicePhone.getPhone(), oldServicePhone.getRemark(), newServicePhone.getPhone(), newServicePhone.getRemark());
                     }
                     
-                    // 更新旧缓存key的手机号
-                    this.updateOldCache(tenantId, oldPhone, newPhone);
-                    // 发送操作记录
-                    if (Objects.equals(oldPhone, newPhone) && Objects.equals(oldRemark, servicePhone.getRemark())) {
-                        continue;
+                    // 处理后2个旧手机号
+                    for (int i = requestPhoneDTOList.size(); i < oldPhoneList.size(); i++) {
+                        ServicePhoneDTO oldServicePhone = oldPhoneList.get(i);
+                        this.sendOperateRecord(oldServicePhone.getPhone(), oldServicePhone.getRemark(), "空", "空");
                     }
-                    this.sendOperateRecord(oldPhone, oldRemark, servicePhone);
-                }
-            }
-        }
-        
-        return flag;
-    }
-    
-    private Boolean handleDelete(List<Long> deleteList, Map<Long, ServicePhone> existMap, Integer tenantId) {
-        boolean flag = false;
-        if (CollectionUtils.isNotEmpty(deleteList)) {
-            Integer delete = servicePhoneMapper.deleteByIds(deleteList);
-            if (delete > 0) {
-                flag = true;
-                for (Long delId : deleteList) {
-                    if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(delId)) {
-                        this.sendOperateRecord(existMap.get(delId).getPhone(), existMap.get(delId).getRemark(), null);
+                } else if (oldPhoneList.size() < requestPhoneDTOList.size()) {
+                    // 比如：有5个新手机号，有3个旧手机号
+                    // 处理前3个新手机号
+                    for (int i = 0; i < oldPhoneList.size(); i++) {
+                        ServicePhoneDTO oldServicePhone = oldPhoneList.get(i);
+                        ServicePhoneDTO newServicePhone = requestPhoneDTOList.get(i);
+                        this.sendOperateRecord(oldServicePhone.getPhone(), oldServicePhone.getRemark(), newServicePhone.getPhone(), newServicePhone.getRemark());
                     }
-                }
-            }
-            // 清除旧缓存
-            redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        }
-        
-        return flag;
-    }
-    
-    private ServicePhoneDTO handlePhones(List<ServicePhone> servicePhonesExist, List<ServicePhoneRequest> requestPhoneList, Integer tenantId) {
-        List<ServicePhone> insertList = new ArrayList<>();
-        List<ServicePhone> updateList = new ArrayList<>();
-        List<Long> deleteList = new ArrayList<>();
-        Map<Long, ServicePhone> existMap = null;
-        
-        if (CollectionUtil.isNotEmpty(servicePhonesExist)) {
-            existMap = servicePhonesExist.stream().collect(Collectors.toMap(ServicePhone::getId, servicePhone -> servicePhone));
-            
-            List<Long> requestPhoneIds = requestPhoneList.stream().filter(Objects::nonNull).filter(servicePhoneRequest -> Objects.nonNull(servicePhoneRequest.getId()))
-                    .map(ServicePhoneRequest::getId).collect(Collectors.toList());
-            
-            deleteList = servicePhonesExist.stream().map(ServicePhone::getId).filter(id -> !requestPhoneIds.contains(id)).collect(Collectors.toList());
-        }
-        
-        for (ServicePhoneRequest requestPhone : requestPhoneList) {
-            Long id = requestPhone.getId();
-            String phone = requestPhone.getPhone();
-            String remark = requestPhone.getRemark();
-            
-            // 手机号为空的处理
-            if (StringUtils.isBlank(phone)) {
-                if (Objects.nonNull(id)) {
-                    deleteList.add(id);
-                }
-                continue;
-            }
-            
-            // 手机号不为空的处理
-            if (Objects.nonNull(id)) {
-                if (MapUtils.isNotEmpty(existMap) && existMap.containsKey(requestPhone.getId())) {
-                    ServicePhone existPhone = existMap.get(requestPhone.getId());
-                    // 手机号和文案有变化时才更新
-                    if (!(Objects.equals(requestPhone.getPhone(), existPhone.getPhone()) && Objects.equals(requestPhone.getRemark(), existPhone.getRemark()))) {
-                        updateList.add(ServicePhone.builder().phone(phone).remark(remark).id(id).tenantId(tenantId).updateTime(System.currentTimeMillis()).build());
+                    
+                    // 处理后2个新手机号
+                    for (int i = oldPhoneList.size(); i < requestPhoneDTOList.size(); i++) {
+                        ServicePhoneDTO newServicePhone = requestPhoneDTOList.get(i);
+                        this.sendOperateRecord("空", "空", newServicePhone.getPhone(), newServicePhone.getRemark());
+                    }
+                } else {
+                    // 比如：有5个新手机号，有5个旧手机号
+                    for (int i = 0; i < oldPhoneList.size(); i++) {
+                        ServicePhoneDTO oldServicePhone = oldPhoneList.get(i);
+                        ServicePhoneDTO newServicePhone = requestPhoneDTOList.get(i);
+                        this.sendOperateRecord(oldServicePhone.getPhone(), oldServicePhone.getRemark(), newServicePhone.getPhone(), newServicePhone.getRemark());
                     }
                 }
-            } else {
-                insertList.add(ServicePhone.builder().phone(phone).remark(remark).tenantId(tenantId).delFlag(CommonConstant.DEL_N).createTime(System.currentTimeMillis())
-                        .updateTime(System.currentTimeMillis()).build());
             }
+        }
+    }
+    
+    private void sendOperateRecordForInsert(List<ServicePhoneDTO> requestPhoneDTOList) {
+        if (CollectionUtils.isEmpty(requestPhoneDTOList)) {
+            return;
         }
         
-        return ServicePhoneDTO.builder().insertList(insertList).updateList(updateList).deleteList(deleteList).existMap(existMap).build();
-    }
-    
-    /**
-     * 更新旧缓存key的手机号，因为可能别的地方还在调用
-     */
-    private void updateOldCache(Integer tenantId, String oldPhone, String newPhone) {
-        if (redisService.hasKey(CacheConstant.CACHE_SERVICE_PHONE + tenantId)) {
-            String oldPhoneCache = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+        for (ServicePhoneDTO servicePhoneDTO : requestPhoneDTOList) {
+            String newPhone = servicePhoneDTO.getPhone();
+            String newRemark = servicePhoneDTO.getRemark();
             
-            if (StringUtils.isNotBlank(oldPhone) && StringUtils.isNotBlank(oldPhoneCache) && Objects.equals(oldPhoneCache, oldPhone) && !Objects.equals(oldPhone, newPhone)) {
-                redisService.set(CacheConstant.CACHE_SERVICE_PHONE + tenantId, newPhone);
-            }
+            this.sendOperateRecord("空", "空", newPhone, newRemark);
         }
     }
     
-    private void sendOperateRecord(String oldPhone, String oldRemark, ServicePhone servicePhone) {
+    private void sendOperateRecord(String oldPhone, String oldRemark, String newPhone, String newRemark) {
         Map<String, String> oldMap = new HashMap<>(2);
-        String oldPhoneValue = StringUtils.isBlank(oldPhone) ? "空" : oldPhone;
-        String oldRemarkValue = StringUtils.isBlank(oldRemark) ? "空" : oldRemark;
-        oldMap.put("phone", oldPhoneValue);
-        oldMap.put("remark", oldRemarkValue);
+        oldMap.put("phone", oldPhone);
+        oldMap.put("remark", oldRemark);
         Map<String, String> newMap = new HashMap<>(2);
-        String newPhoneValue = Objects.isNull(servicePhone) || StringUtils.isBlank(servicePhone.getPhone()) ? "空" : servicePhone.getPhone();
-        String newRemarkValue = Objects.isNull(servicePhone) || StringUtils.isBlank(servicePhone.getRemark()) ? "空" : servicePhone.getRemark();
-        newMap.put("phone", newPhoneValue);
-        newMap.put("remark", newRemarkValue);
+        newMap.put("phone", newPhone);
+        newMap.put("remark", newRemark);
         
-        operateRecordUtil.record(oldMap, newMap);
+        if (!Objects.equals(oldPhone, newPhone) || !Objects.equals(oldRemark, newRemark)) {
+            operateRecordUtil.record(oldMap, newMap);
+        }
     }
     
     @Override
-    public List<ServicePhone> listByTenantIdFromCache(Integer tenantId) {
-        List<ServicePhone> phoneList = redisService.getWithList(CacheConstant.SERVICE_PHONE + tenantId, ServicePhone.class);
-        if (CollectionUtils.isNotEmpty(phoneList)) {
-            return phoneList;
+    public ServicePhone queryByTenantIdFromCache(Integer tenantId) {
+        ServicePhone servicePhoneCache = redisService.getWithHash(CacheConstant.SERVICE_PHONE + tenantId, ServicePhone.class);
+        if (Objects.nonNull(servicePhoneCache)) {
+            return servicePhoneCache;
         }
         
-        List<ServicePhone> servicePhones = servicePhoneMapper.selectByTenantId(tenantId);
-        if (CollectionUtil.isEmpty(servicePhones)) {
-            return Collections.emptyList();
+        ServicePhone servicePhone = servicePhoneMapper.selectByTenantId(tenantId);
+        if (Objects.isNull(servicePhone)) {
+            return null;
         }
         
-        redisService.saveWithList(CacheConstant.SERVICE_PHONE + tenantId, servicePhones);
-        return servicePhones;
+        redisService.saveWithHash(CacheConstant.SERVICE_PHONE + tenantId, servicePhone);
+        return servicePhone;
     }
     
     @Slave
     @Override
-    public List<ServicePhone> listByIds(List<Long> ids) {
-        return servicePhoneMapper.selectListByIds(ids);
+    public List<ServicePhoneVO> listPhones(Integer tenantId) {
+        ServicePhone servicePhone = this.queryByTenantIdFromCache(tenantId);
+        if (Objects.isNull(servicePhone) || StringUtils.isBlank(servicePhone.getPhoneContent())) {
+            return Collections.emptyList();
+        }
+        
+        return JsonUtil.fromJsonArray(servicePhone.getPhoneContent(), ServicePhoneVO.class);
     }
     
 }
