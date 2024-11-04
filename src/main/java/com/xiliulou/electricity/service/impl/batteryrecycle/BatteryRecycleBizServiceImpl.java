@@ -79,7 +79,10 @@ public class BatteryRecycleBizServiceImpl implements BatteryRecycleBizService {
             if (ObjectUtils.isEmpty(batteryRecycleRecords)) {
                 return;
             }
-            
+    
+            maxId = batteryRecycleRecords.get(batteryRecycleRecords.size() - 1).getId();
+            log.info("BATTERY RECYCLE LOCK CELL INFO! maxId:{}, size:{}", maxId, batteryRecycleRecords.size());
+    
             List<String> snList = batteryRecycleRecords.parallelStream().map(BatteryRecycleRecord::getSn).collect(Collectors.toList());
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.listBySnList(snList);
             if (ObjectUtils.isEmpty(electricityCabinetBoxes)) {
