@@ -5,8 +5,10 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.google.common.collect.Maps;
+import com.jpay.secure.RSAUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.bo.pay.WechatPublicKeyBO;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -18,6 +20,7 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnu
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
+import com.xiliulou.electricity.service.pay.WechatPublicKeyService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingReceiverConfigService;
 import com.xiliulou.pay.weixinv3.entity.WechatPlatformCertificate;
@@ -75,6 +78,9 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
     
     @Resource
     private ProfitSharingConfigService profitSharingConfigService;
+    
+    @Resource
+    private WechatPublicKeyService wechatPublicKeyService;
     
     @Resource
     private RedisService redisService;
@@ -158,7 +164,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
             this.batchBuildPrivateKey(tenantId, wechatPayParamsDetailsList);
             
             // 批量构建证书
-            this.batchBuildWechatPlatformCertificate(tenantId,wechatPayParamsDetailsList);
+            this.batchBuildWechatPlatformCertificate(tenantId, wechatPayParamsDetailsList);
             
             //批量构建分账配置
             this.batchBuildProfitSharing(queryProfitSharingConfig, tenantId, wechatPayParamsDetailsList);
@@ -417,9 +423,19 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
      * @date 2024/10/31 16:50
      */
     private Map<Long, WechatPlatformPublicKey> queryMapWechatPlatformPublicKey(Integer tenantId, Set<Long> franchiseeIds) {
-        // TODO: 2024/10/31 lf提供接口
+        List<WechatPublicKeyBO> wechatPublicKeyBOS = wechatPublicKeyService.queryListByTenantIdFromDB(tenantId.longValue(), new ArrayList<>(franchiseeIds));
+        wechatPublicKeyBOS = Optional.ofNullable(wechatPublicKeyBOS).orElse(Collections.emptyList());
+        Map<Long, WechatPlatformPublicKey> map = Maps.newHashMapWithExpectedSize(wechatPublicKeyBOS.size());
         
-        return null;
+        for (WechatPublicKeyBO wechatPublicKeyBO : wechatPublicKeyBOS) {
+            WechatPlatformPublicKey wechatPlatformPublicKey = this.createWechatPlatformPublicKey(wechatPublicKeyBO);
+            if (Objects.isNull(wechatPlatformPublicKey)) {
+                continue;
+            }
+            map.put(wechatPublicKeyBO.getFranchiseeId(), wechatPlatformPublicKey);
+        }
+        
+        return map;
     }
     
     /**
@@ -431,9 +447,28 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
      * @date 2024/10/31 16:25
      */
     private WechatPlatformPublicKey queryWechatPlatformPublicKey(Integer tenantId, Long franchiseeId) {
-        // TODO: 2024/10/31 lf提供接口
-        
-        return null;
+        WechatPublicKeyBO wechatPublicKeyBO = wechatPublicKeyService.queryByTenantIdFromDB(tenantId.longValue(), franchiseeId);
+        if (Objects.isNull(wechatPublicKeyBO)) {
+            return null;
+        }
+        return this.createWechatPlatformPublicKey(wechatPublicKeyBO);
+    }
+    
+    
+    /**
+     * 创建 WechatPlatformPublicKey
+     *
+     * @param wechatPublicKeyBO
+     * @author caobotao.cbt
+     * @date 2024/11/4 09:37
+     */
+    private WechatPlatformPublicKey createWechatPlatformPublicKey(WechatPublicKeyBO wechatPublicKeyBO) {
+        try {
+            return new WechatPlatformPublicKey(wechatPublicKeyBO.getPubKeyId(), RSAUtils.loadPublicKey(wechatPublicKeyBO.getPubKey()));
+        } catch (Exception e) {
+            log.warn("WechatPayParamsBizServiceImpl.queryWechatPlatformPublicKey WARN! Exception:", e);
+            return null;
+        }
     }
     
     /**

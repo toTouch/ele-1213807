@@ -83,6 +83,12 @@ public class ElectricityPayParamsRequest {
      */
     private String paternerKey;
     
+    /**
+     * <p>
+     *    Description: 微信支付平台公钥ID
+     * </p>
+    */
+    private String pubKeyId;
     
 //    /**
 //     * 商家版小程序 appid
