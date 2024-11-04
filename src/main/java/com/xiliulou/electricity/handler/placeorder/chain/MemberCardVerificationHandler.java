@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
@@ -13,12 +14,14 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -47,6 +50,8 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     private final UserBatteryTypeService userBatteryTypeService;
     
     private final MemberCardBatteryTypeService memberCardBatteryTypeService;
+    
+    private final UserBatteryDepositService userBatteryDepositService;
     
     
     @PostConstruct
@@ -91,6 +96,13 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, context.getElectricityConfig());
         if (!matchOrNot) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
+        // 灵活续费押金校验
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(userBatteryDeposit) && Objects.equals(context.getElectricityConfig().getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
+                userBatteryDeposit.getBatteryDeposit(), batteryMemberCard.getDeposit())) {
+            throw new BizException("302005", "灵活续费已禁用，请刷新后重新购买");
         }
         
         fireProcess(context, result, placeOrderType);
