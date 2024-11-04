@@ -30,7 +30,7 @@ public class RentalPackageFreezeAuditSendHandler extends AbstractWechatOfficialA
         Map<String, String> params = new HashMap<>();
         params.put("first", "你好，有暂停套餐需要处理");
         params.put("keyword1", notify.getUserName());
-        params.put("keyword2", notify.getBusinessCode());
+        params.put("keyword2", "套餐冻结审核");
         params.put("keyword3", notify.getAuthTime());
         params.put("remark", "请您尽快审核");
         return params;
