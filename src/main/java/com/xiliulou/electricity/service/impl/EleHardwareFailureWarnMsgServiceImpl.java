@@ -722,7 +722,7 @@ public class EleHardwareFailureWarnMsgServiceImpl implements EleHardwareFailureW
         
         // 修改租户对应的短信次数：更新缓存等。
         // 查询每个租户对应的短信的次数
-        TenantNote tenantNote = tenantNoteService.queryFromCacheByTenantId(warnNoteCallBack.getTenantId());
+        TenantNote tenantNote = tenantNoteService.queryFromDbByTenantId(warnNoteCallBack.getTenantId());
         
         // 判断租户是否分配过短信次数
         if (ObjectUtils.isEmpty(tenantNote)) {
