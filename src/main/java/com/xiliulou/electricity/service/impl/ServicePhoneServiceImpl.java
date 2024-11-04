@@ -62,9 +62,9 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
                     if (delete > 0) {
                         flag = true;
                     }
+                    
+                    this.sendOperateRecordForDelete(servicePhoneExist.getPhoneContent());
                 }
-                
-                this.sendOperateRecordForDelete(servicePhoneExist.getPhoneContent());
             } else {
                 List<ServicePhoneDTO> requestPhoneDTOList = requestPhoneList.stream()
                         .map(requestPhone -> ServicePhoneDTO.builder().phone(requestPhone.getPhone()).remark(requestPhone.getRemark()).build()).collect(Collectors.toList());
