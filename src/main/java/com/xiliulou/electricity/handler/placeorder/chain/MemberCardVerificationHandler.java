@@ -99,7 +99,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         }
         
         // 灵活续费押金校验
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.queryByUid(userInfo.getUid());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryDeposit) && Objects.equals(context.getElectricityConfig().getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
                 userBatteryDeposit.getBatteryDeposit(), batteryMemberCard.getDeposit())) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
