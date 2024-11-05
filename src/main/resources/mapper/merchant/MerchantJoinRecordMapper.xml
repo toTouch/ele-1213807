@@ -366,7 +366,14 @@
         select
         <include refid="basic_field"/>
         from t_merchant_join_record
-        where del_flag = 0 and tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2
+        where del_flag = 0 and tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 order by id desc limit 1
+    </select>
+    
+    <select id="selectRemoveSuccessRecord" resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_join_record
+        where tenant_id = #{tenantId} and join_uid = #{joinUid} and status = 2 and inviter_uid = #{inviterUid} order by id desc limit 1
     </select>
     
     <select id="countSuccessByCondition" resultType="java.lang.Integer">

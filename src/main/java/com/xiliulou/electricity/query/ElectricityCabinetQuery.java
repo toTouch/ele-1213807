@@ -151,4 +151,6 @@ public class ElectricityCabinetQuery {
     private String deviceName;
     
     private String version;
+    
+    private Integer pattern;
 }

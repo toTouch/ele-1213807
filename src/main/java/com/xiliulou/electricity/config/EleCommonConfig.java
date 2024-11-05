@@ -38,6 +38,8 @@ public class EleCommonConfig {
     
     private String productKey;
     
+    private String apiAddress;
+    
     /**
      * 启用GEO获取位置信息开关
      */

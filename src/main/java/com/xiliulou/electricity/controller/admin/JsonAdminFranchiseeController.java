@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
@@ -28,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 门店表(TStore)表控制层
@@ -393,5 +395,22 @@ public class JsonAdminFranchiseeController extends BasicController {
         }
 
         return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
+    }
+    
+    @GetMapping("/admin/franchisee/selectFranchiseeForSelf")
+    public R<Franchisee> selectFranchiseeForSelf() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user) || !Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            return R.fail("ELECTRICITY.0001", "非加盟商用户");
+        }
+        
+        // 管理员可能会有绑定多个加盟商的情况
+        List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return R.ok();
+        }
+        
+        List<Franchisee> franchiseeList = franchiseeIds.stream().map(franchiseeId -> franchiseeService.queryByIdFromCache(franchiseeId)).collect(Collectors.toList());
+        return R.ok(franchiseeList.get(0));
     }
 }

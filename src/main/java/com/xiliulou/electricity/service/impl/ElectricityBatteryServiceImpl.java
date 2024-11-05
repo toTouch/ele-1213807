@@ -1623,4 +1623,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList) {
         return electricitybatterymapper.selectListByEid(electricityCabinetIdList);
     }
+    
+    @Override
+    @Slave
+    public List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList) {
+        return electricitybatterymapper.selectListBySnList(tenantId, item, bindFranchiseeIdList);
+    }
 }

@@ -184,6 +184,11 @@ class HardwareFaultMsg {
      * 故障发生次数
      */
     private Integer occurNum;
+    
+    /**
+     * 租退订单id
+     */
+    private String orderId;
 }
 
 
@@ -288,4 +293,9 @@ class HardwareFaultWarnMqMsg {
     private String cabinetSn;
     
     private String deviceName;
+    
+    /**
+     * 租退订单id
+     */
+    private String orderId;
 }

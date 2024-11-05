@@ -42,7 +42,8 @@
         t.report_time,
         t.alarm_time,
         t.create_time,
-        t.cabinet_sn
+        t.cabinet_sn,
+        t.order_id
         FROM
         t_ele_hardware_warn_msg t
         <include refid="filter"/>

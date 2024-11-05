@@ -50,6 +50,13 @@
                     #{batterySn}
                 </foreach>
             </if>
+            
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                AND franchisee_id IN
+                <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
         </where>
     </select>
     
@@ -366,7 +373,8 @@
                tbop.battery_charge_a      as batteryChargeA,
                tbop.sum_v                 as sum_v,
                tbop.sum_a                 as sum_a,
-               tbop.battery_core_temp     as batteryTemperature
+               tbop.battery_core_temp     as batteryTemperature,
+               teb.uid as uid
         FROM t_electricity_battery as teb
                  left join t_battery_other_properties as tbop on teb.sn = tbop.battery_name
         WHERE teb.sn = #{sn}
@@ -1307,7 +1315,7 @@
     <select id="selectListEnableAllocateBattery" resultType="com.xiliulou.electricity.bo.asset.ElectricityBatteryBO">
         <include refid="selectElectricityBattery"/>
         <where>
-            del_flag = 0 and tenant_id = #{tenantId} and franchisee_id = #{franchiseeId} and physics_status = #{physicsStatus}
+            del_flag = 0 and tenant_id = #{tenantId} and franchisee_id = #{franchiseeId}
             and business_status in
             <foreach collection="businessStatusList" item="businessStatus" index="index" open="(" close=")" separator=",">
                 #{businessStatus}
