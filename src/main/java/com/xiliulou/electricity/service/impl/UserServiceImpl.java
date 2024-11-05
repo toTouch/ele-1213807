@@ -1076,12 +1076,10 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public String selectServicePhone(Integer tenantId) {
-        String cachePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        if (StringUtils.isBlank(cachePhone)) {
-            List<ServicePhoneVO> servicePhoneList = servicePhoneService.listPhones(TenantContextHolder.getTenantId());
-            if (CollectionUtils.isNotEmpty(servicePhoneList)) {
-                cachePhone = servicePhoneList.get(0).getPhone();
-            }
+        String cachePhone = StringUtils.EMPTY;
+        List<ServicePhoneVO> servicePhoneList = servicePhoneService.listPhones(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isNotEmpty(servicePhoneList)) {
+            cachePhone = servicePhoneList.get(0).getPhone();
         }
         
         return cachePhone;

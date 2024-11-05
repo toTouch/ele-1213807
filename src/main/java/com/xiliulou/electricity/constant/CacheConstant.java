@@ -71,6 +71,7 @@ public interface CacheConstant {
     //门店缓存
     String CACHE_STORE = "store:";
     
+    @Deprecated
     String CACHE_SERVICE_PHONE = "CACHE_SERVICE_PHONE:";
     
     //下单加锁缓存

@@ -95,8 +95,6 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
             if (flag) {
                 // 清除新缓存
                 redisService.delete(CacheConstant.SERVICE_PHONE + tenantId);
-                // 清除旧缓存
-                redisService.delete(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
             }
             
             return R.ok();
