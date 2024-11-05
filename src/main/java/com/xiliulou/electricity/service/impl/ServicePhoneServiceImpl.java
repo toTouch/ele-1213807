@@ -66,6 +66,11 @@ public class ServicePhoneServiceImpl implements ServicePhoneService {
                     this.sendOperateRecordForDelete(servicePhoneExist.getPhoneContent());
                 }
             } else {
+                if (requestPhoneList.size() > ServicePhone.LIMIT_NUM) {
+                    log.warn("InsertOrUpdate servicePhone warn! phone number exceed limit");
+                    return R.fail("120149", "客服电话最多设置5个");
+                }
+                
                 List<ServicePhoneDTO> requestPhoneDTOList = requestPhoneList.stream()
                         .map(requestPhone -> ServicePhoneDTO.builder().phone(requestPhone.getPhone()).remark(requestPhone.getRemark()).build()).collect(Collectors.toList());
                 
