@@ -54,7 +54,7 @@
         WHERE id = #{id}
     </update>
     
-    <update id="delete">
+    <update id="removeById">
         UPDATE t_wechat_public_key
         SET `del_flag` = 1
         WHERE `id` = #{id}

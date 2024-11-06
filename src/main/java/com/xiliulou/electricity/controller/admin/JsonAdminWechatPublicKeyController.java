@@ -71,8 +71,8 @@ public class JsonAdminWechatPublicKeyController extends AbstractFranchiseeDataPe
     }
     
     @DeleteMapping
-    public R<?> delete(@Validated @NotNull @RequestParam("id") Long id) {
-        wechatPublicKeyService.delete(id);
+    public R<?> remove(@Validated @NotNull @RequestParam("id") Long id) {
+        wechatPublicKeyService.remove(id);
         return R.ok();
     }
     

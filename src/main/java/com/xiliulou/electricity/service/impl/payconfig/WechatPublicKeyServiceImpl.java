@@ -201,7 +201,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     @Override
-    public int delete(Long id) {
+    public int remove(Long id) {
         if (Objects.isNull(id)) {
             return 0;
         }
@@ -209,7 +209,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         if (Objects.isNull(wechatPublicKeyBO)) {
             return 0;
         }
-        int result = this.wechatPublicKeyMapper.delete(id);
+        int result = this.wechatPublicKeyMapper.removeById(id);
         
         if (result > 0) {
             clearCache(wechatPublicKeyBO.getTenantId(), wechatPublicKeyBO.getFranchiseeId());

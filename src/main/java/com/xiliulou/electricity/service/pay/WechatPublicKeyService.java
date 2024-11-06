@@ -162,7 +162,7 @@ public interface WechatPublicKeyService {
     int update(WechatPublicKeyBO wechatPublicKeyBO);
     
     /**
-     * <p>Title: delete </p>
+     * <p>Title: remove </p>
      * <p>Project: WechatPublicKeyService</p>
      * <p>Copyright: Copyright (c) 2024</p>
      * <p>Company: www.xiliulou.com</p>
@@ -173,7 +173,7 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
-    int delete(Long id);
+    int remove(Long id);
     
     /**
      * <p>Title: uploadFile </p>

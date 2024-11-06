@@ -94,6 +94,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Resource
     private ProfitSharingConfigService profitSharingConfigService;
     
+    @Resource
+    private WechatPublicKeyService wechatPublicKeyService;
+    
+    
     @Override
     public R insert(ElectricityPayParamsRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -223,6 +227,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         // 逻辑删除
         electricityPayParamsTxService.delete(id, tenantId);
+        
+        //删除公钥配置
+        WechatPublicKeyBO publicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), payParams.getFranchiseeId());
+        if (Objects.nonNull(publicKeyBO)){
+            wechatPublicKeyService.remove(publicKeyBO.getId());
+        }
         
         // 缓存删除
         redisService.delete(buildCacheKey(tenantId, payParams.getFranchiseeId()));

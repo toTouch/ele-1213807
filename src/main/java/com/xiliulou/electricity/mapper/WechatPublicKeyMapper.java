@@ -21,7 +21,7 @@ public interface WechatPublicKeyMapper {
     
     int insert(WechatPublicKeyEntity entity);
     
-    int delete(Long id);
+    int removeById(Long id);
     
     int update(WechatPublicKeyEntity entity);
     
