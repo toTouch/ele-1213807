@@ -40,6 +40,7 @@
         from t_faq_category
         where id = #{id,jdbcType=BIGINT}
     </delete>
+    
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2" useGeneratedKeys="true">
         insert into t_faq_category
         ( id, type, sort
@@ -49,6 +50,7 @@
                , #{tenantId,jdbcType=INTEGER}, #{opUser,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}
                , #{updateTime,jdbcType=BIGINT})
     </insert>
+    
     <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2" useGeneratedKeys="true">
         insert into t_faq_category
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -70,6 +72,16 @@
             <if test="updateTime != null">update_time = #{updateTime,jdbcType=BIGINT},</if>
         </trim>
     </insert>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_faq_category
+        (type,sort,tenant_id,op_user,create_time,update_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.type},#{item.sort},#{item.tenantId},#{item.opUser},#{item.createTime},#{item.updateTime})
+        </foreach>
+    </insert>
+    
     <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2">
         update t_faq_category
         <set>
@@ -94,6 +106,7 @@
         </set>
         where id = #{id,jdbcType=BIGINT}
     </update>
+    
     <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.FaqCategoryV2">
         update t_faq_category
         set type        = #{type,jdbcType=VARCHAR},

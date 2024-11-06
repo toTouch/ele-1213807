@@ -32,6 +32,7 @@ import com.xiliulou.electricity.service.FaceRecognizeDataService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.PxzConfigService;
+import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.template.TemplateConfigService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallConfigService;
@@ -111,6 +112,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     
     @Autowired
     OperateRecordUtil operateRecordUtil;
+    
+    @Autowired
+    ServicePhoneService servicePhoneService;
     
     
     @Override
@@ -316,6 +320,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
+        tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
         
         return tenantConfigVO;
     }
@@ -359,6 +364,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
+        tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
         
         return tenantConfigVO;
     }

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
+import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.vo.UserSearchVO;
 import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -49,8 +50,7 @@ public interface UserService {
     User insert(User user);
     
     /**
-     * 修改数据
-     * oldUser必须包括手机号和uid
+     * 修改数据 oldUser必须包括手机号和uid
      *
      * @return 实例对象
      */
@@ -149,4 +149,11 @@ public interface UserService {
     User queryByUidFromDB(Long uid);
     
     List<User> listByPhones(List<String> phoneList, Integer tenantId, Integer type);
+    
+    /**
+     * 查询运营商(userType=1)账号
+     */
+    List<UserSearchVO> listTenantUsers(Integer tenantId);
+    
+    R updateTenantPassword(ResetPasswordRequest request);
 }

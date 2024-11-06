@@ -27,4 +27,6 @@ public interface ShareActivityRuleService {
     void updateByActivity(Integer id);
 
     ShareActivityRule selectByCouponId(Long id);
+    
+    Integer removeByActivityId(Long activityId, Integer tenantId);
 }

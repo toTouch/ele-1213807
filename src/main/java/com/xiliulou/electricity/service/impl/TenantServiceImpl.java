@@ -8,7 +8,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -39,12 +38,12 @@ import com.xiliulou.electricity.service.TenantNoteService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.merchant.MerchantAttrService;
-import com.xiliulou.electricity.service.merchant.MerchantLevelService;
+import com.xiliulou.electricity.service.faq.FaqCategoryV2Service;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
@@ -77,44 +76,60 @@ import static com.xiliulou.electricity.constant.StringConstant.SPACE;
 @Service("tenantService")
 @Slf4j
 public class TenantServiceImpl implements TenantService {
-
+    
     @Resource
     private TenantMapper tenantMapper;
+    
     @Resource
     private UserService userService;
+    
     @Autowired
     RoleService roleService;
+    
     @Autowired
     UserRoleService userRoleService;
-    @Autowired
-    private RolePermissionConfig permissionConfig;
+    
     @Autowired
     private RolePermissionService rolePermissionService;
+    
     @Autowired
     private RedisService redisService;
+    
     @Autowired
     EleAuthEntryService eleAuthEntryService;
+    
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
     @Autowired
     private PermissionTemplateService permissionTemplateService;
+    
     @Autowired
     private FreeDepositDataService freeDepositDataService;
+    
     @Autowired
     private BatteryModelService batteryModelService;
+    
     @Autowired
     private ChannelActivityService channelActivityService;
     
     @Resource
     private TenantNoteService noteService;
-
+    
     @Resource
     private AssetWarehouseMapper assetWarehouseMapper;
+    
+    @Resource
+    private FaqCategoryV2Service faqCategoryV2Service;
+    
+    @Resource
+    private CustomPasswordEncoder customPasswordEncoder;
     
     
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("tenantHandlerExecutors", 2, "TENANT_HANDLER_EXECUTORS");
     
     ExecutorService initOtherExecutorService = XllThreadPoolExecutors.newFixedThreadPool("initTenantOther", 2, "INIT_TENANT_OTHER");
+    
     /**
      * 新增数据
      *
@@ -139,35 +154,35 @@ public class TenantServiceImpl implements TenantService {
         if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
             return R.fail("100105", "用户名已存在");
         }
-
+        
         //1.保存租户信息
         tenantAddAndUpdateQuery.setCode(genTenantCode());
         tenantAddAndUpdateQuery.setCreateTime(System.currentTimeMillis());
         tenantAddAndUpdateQuery.setDelFlag(Tenant.DEL_NORMAL);
         tenantAddAndUpdateQuery.setStatus(Tenant.STA_NO_OUT);
         tenantAddAndUpdateQuery.setUpdateTime(System.currentTimeMillis());
-
+        
         Tenant tenant = new Tenant();
         BeanUtil.copyProperties(tenantAddAndUpdateQuery, tenant);
         tenant.setExpireTime(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
         tenantMapper.insert(tenant);
-
+        
         //保存租户默认电池型号
         batteryModelService.batchInsertDefaultBatteryModel(BatteryModelServiceImpl.generateDefaultBatteryModel(tenant.getId()));
-
+        
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
         operateRole.setName(CommonConstant.OPERATE_NAME);
         operateRole.setCode(CommonConstant.OPERATE_CODE);
-
+        
         Role franchiseeRole = new Role();
         franchiseeRole.setName(CommonConstant.FRANCHISEE_NAME);
         franchiseeRole.setCode(CommonConstant.FRANCHISEE_CODE);
-
+        
         Role storeRole = new Role();
         storeRole.setName(CommonConstant.STORE_NAME);
         storeRole.setCode(CommonConstant.STORE_CODE);
-
+        
         // 商户角色，渠道角色，商户员工
         Role merchantRole = new Role();
         merchantRole.setName(CommonConstant.MERCHANT_NAME);
@@ -184,7 +199,7 @@ public class TenantServiceImpl implements TenantService {
         Role maintainRole = new Role();
         maintainRole.setName(CommonConstant.MAINTAIN_NAME);
         maintainRole.setCode(CommonConstant.MAINTAIN_CODE);
-
+        
         ArrayList<Role> roleList = new ArrayList<>();
         roleList.add(operateRole);
         roleList.add(franchiseeRole);
@@ -193,7 +208,7 @@ public class TenantServiceImpl implements TenantService {
         roleList.add(channelRole);
         roleList.add(merchantEmployeeRole);
         roleList.add(maintainRole);
-
+        
         roleList.forEach(item -> {
             item.setTenantId(tenant.getId());
             item.setUpdateTime(System.currentTimeMillis());
@@ -201,7 +216,7 @@ public class TenantServiceImpl implements TenantService {
             item.setDesc("tenantRole");
             roleService.insert(item);
         });
-
+        
         //新增用户
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
@@ -229,28 +244,16 @@ public class TenantServiceImpl implements TenantService {
                 });
             }
         });
-      
-
+        
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());
         
-       
-            //新增租户给租户添加的默认系统配置
-            ElectricityConfig electricityConfig = ElectricityConfig.builder()
-                    .name("")
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .tenantId(tenant.getId())
-                    .isManualReview(ElectricityConfig.MANUAL_REVIEW)
-                    .isWithdraw(ElectricityConfig.WITHDRAW)
-                    .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
-                    .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
-                    .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
-                    .lowChargeRate(NumberConstant.TWENTY_FIVE_DB)
-                    .fullChargeRate(NumberConstant.SEVENTY_FIVE_DB)
-                    .chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
-            electricityConfigService.insertElectricityConfig(electricityConfig);
-        
+        //新增租户给租户添加的默认系统配置
+        ElectricityConfig electricityConfig = ElectricityConfig.builder().name("").createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(tenant.getId()).isManualReview(ElectricityConfig.MANUAL_REVIEW).isWithdraw(ElectricityConfig.WITHDRAW)
+                .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
+                .lowChargeRate(NumberConstant.TWENTY_FIVE_DB).fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
+        electricityConfigService.insertElectricityConfig(electricityConfig);
         
         //新增租户给租户增加渠道活动（产品提的需求）
         final ChannelActivity channelActivity = new ChannelActivity();
@@ -261,41 +264,40 @@ public class TenantServiceImpl implements TenantService {
         channelActivity.setTenantId(tenant.getId().longValue());
         channelActivity.setCreateTime(System.currentTimeMillis());
         channelActivity.setUpdateTime(System.currentTimeMillis());
-        executorService.submit(()->channelActivityService.insert(channelActivity));
-        final AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder()
-                .name(AssetConstant.ASSET_WAREHOUSE_DEFAULT_NAME)
-                .status(AssetConstant.ASSET_WAREHOUSE_STATUS_ENABLE)
-                .delFlag(AssetConstant.DEL_NORMAL)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .franchiseeId(0L)
-                .tenantId(TenantContextHolder.getTenantId()).build();
-        executorService.submit(()->assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
+        executorService.submit(() -> channelActivityService.insert(channelActivity));
+        final AssetWarehouseSaveOrUpdateQueryModel warehouseSaveOrUpdateQueryModel = AssetWarehouseSaveOrUpdateQueryModel.builder().name(AssetConstant.ASSET_WAREHOUSE_DEFAULT_NAME)
+                .status(AssetConstant.ASSET_WAREHOUSE_STATUS_ENABLE).delFlag(AssetConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .franchiseeId(0L).tenantId(TenantContextHolder.getTenantId()).build();
+        executorService.submit(() -> assetWarehouseMapper.insertOne(warehouseSaveOrUpdateQueryModel));
+        
+        // 初始化常见问题
+        executorService.submit(() -> faqCategoryV2Service.initFaqByTenantId(tenant.getId(), user.getUid()));
         
         return R.ok();
     }
-
+    
     /**
      * 获取角色默认权限
+     *
      * @param operateRole
      * @param franchiseeRole
      * @param storeRole
      * @return
      */
-    private List<RolePermission> buildDefaultPermission(Role operateRole, Role franchiseeRole, Role storeRole,Role maintainRole) {
+    private List<RolePermission> buildDefaultPermission(Role operateRole, Role franchiseeRole, Role storeRole, Role maintainRole) {
         List<RolePermission> rolePermissionList = Lists.newArrayList();
-
+        
         List<PermissionTemplate> permissions = permissionTemplateService.selectByPage(0, Integer.MAX_VALUE);
         if (CollectionUtils.isEmpty(permissions)) {
             return rolePermissionList;
         }
-
+        
         //默认权限分组
         Map<Integer, List<PermissionTemplate>> permissionMap = permissions.stream().collect(Collectors.groupingBy(PermissionTemplate::getType));
         if (CollectionUtils.isEmpty(permissionMap)) {
             return rolePermissionList;
         }
-
+        
         //运营商权限
         List<PermissionTemplate> operatePermissions = permissionMap.get(PermissionTemplate.TYPE_OPERATE);
         if (CollectionUtils.isNotEmpty(operatePermissions)) {
@@ -307,7 +309,7 @@ public class TenantServiceImpl implements TenantService {
             }).collect(Collectors.toList());
             rolePermissionList.addAll(operateRolePermission);
         }
-
+        
         //加盟商权限
         List<PermissionTemplate> franchiseePermissions = permissionMap.get(PermissionTemplate.TYPE_FRANCHISEE);
         if (CollectionUtils.isNotEmpty(franchiseePermissions)) {
@@ -319,7 +321,7 @@ public class TenantServiceImpl implements TenantService {
             }).collect(Collectors.toList());
             rolePermissionList.addAll(franchiseeRolePermission);
         }
-
+        
         //门店权限
         List<PermissionTemplate> storePermissions = permissionMap.get(PermissionTemplate.TYPE_STORE);
         if (CollectionUtils.isNotEmpty(storePermissions)) {
@@ -331,7 +333,7 @@ public class TenantServiceImpl implements TenantService {
             }).collect(Collectors.toList());
             rolePermissionList.addAll(storeRolePermission);
         }
-
+        
         //运维权限
         List<PermissionTemplate> maintainPermissions = permissionMap.get(PermissionTemplate.TYPE_MAINTAIN);
         if (CollectionUtils.isNotEmpty(maintainPermissions)) {
@@ -343,10 +345,10 @@ public class TenantServiceImpl implements TenantService {
             }).collect(Collectors.toList());
             rolePermissionList.addAll(maintainRolePermission);
         }
-
+        
         return rolePermissionList;
     }
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
@@ -360,16 +362,16 @@ public class TenantServiceImpl implements TenantService {
         tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
         tenant.setName(tenantAddAndUpdateQuery.getName().replaceAll(SPACE, ""));
         tenantMapper.updateById(tenant);
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_TENANT_ID + tenant.getId(), tenant);
         return R.ok();
     }
-
+    
     @Slave
     @Override
     public R queryListTenant(TenantQuery tenantQuery) {
         List<TenantVO> tenantVOS = tenantMapper.queryAll(tenantQuery);
-        if(org.apache.commons.collections4.CollectionUtils.isEmpty(tenantVOS)){
+        if (org.apache.commons.collections4.CollectionUtils.isEmpty(tenantVOS)) {
             return R.ok(Collections.EMPTY_LIST);
         }
     
@@ -382,7 +384,7 @@ public class TenantServiceImpl implements TenantService {
         Map<Integer, Long> finalTenantNoteNumMap = tenantNoteNumMap;
         tenantVOS.parallelStream().peek(item->{
             FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(item.getId());
-            if(Objects.nonNull(freeDepositData)){
+            if (Objects.nonNull(freeDepositData)) {
                 item.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity());
                 item.setFyFreeDepositCapacity(freeDepositData.getFyFreeDepositCapacity());
                 item.setByStagesCapacity(freeDepositData.getByStagesCapacity());
@@ -394,33 +396,32 @@ public class TenantServiceImpl implements TenantService {
             }
           
         }).collect(Collectors.toList());
-
-
+        
         return R.ok(tenantVOS);
     }
-
+    
     @Override
     public Tenant queryByIdFromCache(Integer tenantId) {
         Tenant cacheTenant = redisService.getWithHash(CacheConstant.CACHE_TENANT_ID + tenantId, Tenant.class);
         if (Objects.nonNull(cacheTenant)) {
             return cacheTenant;
         }
-
+        
         Tenant tenant = this.tenantMapper.selectById(tenantId);
         if (Objects.isNull(tenant)) {
             return null;
         }
-
+        
         redisService.saveWithHash(CacheConstant.CACHE_TENANT_ID + tenantId, tenant);
         return tenant;
     }
-
+    
     @Slave
     @Override
     public R queryCount(TenantQuery tenantQuery) {
         return R.ok(tenantMapper.queryCount(tenantQuery));
     }
-
+    
     @Slave
     @Override
     public Integer querySumCount(TenantQuery tenantQuery) {
@@ -429,10 +430,9 @@ public class TenantServiceImpl implements TenantService {
     
     @Slave
     @Override
-    public List<Integer> queryIdListByStartId(Integer startId,Integer size) {
-        return tenantMapper.selectIdListByStartId(startId,size);
+    public List<Integer> queryIdListByStartId(Integer startId, Integer size) {
+        return tenantMapper.selectIdListByStartId(startId, size);
     }
-    
     
     /**
      * 生成新的租户code
@@ -445,10 +445,4 @@ public class TenantServiceImpl implements TenantService {
         return genTenantCode();
     }
     
-    
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
-    }
-
-
 }
