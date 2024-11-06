@@ -5336,7 +5336,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             deviceCode.setUpdateTime(time);
             eleDeviceCodeService.insert(deviceCode);
         }
-        
+
+        deviceCodeCache = eleDeviceCodeService.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(deviceCodeCache)) {
+            return R.fail("100488", "设备不存在");
+        }
+
         //如果没有deviceSecret，或者柜机表与设备表的deviceSecret不一致
         if (StringUtils.isBlank(deviceSecret) || !Objects.equals(deviceSecret, deviceCodeCache.getSecret())) {
             QueryDeviceDetailResult queryDeviceDetailResult = registerDeviceService.queryDeviceDetail(query.getProductKey(), query.getDeviceName());
@@ -5344,18 +5349,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 log.warn("ELE WARN!not found deviceDetailResult,p={},d={}", query.getProductKey(), query.getDeviceName());
                 return R.fail("100218", "iot消息发送失败");
             }
-            
+
             //更新柜机deviceSecret
             ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
             electricityCabinetUpdate.setId(electricityCabinet.getId());
             electricityCabinetUpdate.setDeviceSecret(queryDeviceDetailResult.getDeviceSecret());
             electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
             electricityCabinetService.update(electricityCabinetUpdate);
-            
-            if (Objects.isNull(deviceCodeCache)) {
-                deviceCodeCache = eleDeviceCodeService.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
-            }
-            
+
             //更新设备deviceSecret
             EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
             deviceCodeUpdate.setId(deviceCodeCache.getId());
