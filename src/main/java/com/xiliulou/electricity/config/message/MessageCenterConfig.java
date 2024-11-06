@@ -24,7 +24,7 @@ public class MessageCenterConfig {
     /**
      * 消息中心url
      */
-    private String url;
+//    private String url;
     
     /**
      * 消息类型对应的消息中心模版配置</br>
