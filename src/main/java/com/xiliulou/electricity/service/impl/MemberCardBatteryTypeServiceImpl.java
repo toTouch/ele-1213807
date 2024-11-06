@@ -74,11 +74,14 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
             return true;
         }
         
-        if (CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes)) {
-            return false;
-        }
+//        if (CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+//            return false;
+//        }
         
         return !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) || CollectionUtils.containsAll(memberCardBatteryTypes,
                 userBatteryTypes);
+        
+        
+        
     }
 }

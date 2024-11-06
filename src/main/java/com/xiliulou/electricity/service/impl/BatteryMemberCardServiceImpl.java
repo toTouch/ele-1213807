@@ -309,7 +309,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 return Collections.emptyList();
             }
             
-            query.setDeposit(batteryMemberCard.getDeposit());
+            if (Objects.isNull(userBatteryDeposit)) {
+                query.setDeposit(batteryMemberCard.getDeposit());
+            } else {
+                query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                        : userBatteryDeposit.getBatteryDeposit());
+            }
+            
+//            query.setDeposit(batteryMemberCard.getDeposit());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             
             // 开启了灵活续费时，不用根据电压过滤套餐
@@ -580,7 +587,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 return Collections.emptyList();
             }
             
-            query.setDeposit(batteryMemberCard.getDeposit());
+            if (Objects.isNull(userBatteryDeposit)) {
+                query.setDeposit(batteryMemberCard.getDeposit());
+            } else {
+                query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                        : userBatteryDeposit.getBatteryDeposit());
+            }
+            
+//            query.setDeposit(batteryMemberCard.getDeposit());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             
             // 开启了灵活续费时，不用根据电压过滤套餐
