@@ -9,8 +9,10 @@ import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.payparams.WechatPublicKeyEntity;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.WechatPublicKeyMapper;
 import com.xiliulou.electricity.queryModel.WechatPublicKeyQueryModel;
+import com.xiliulou.electricity.request.payparams.WechatPublicKeyRequest;
 import com.xiliulou.electricity.service.pay.WechatPublicKeyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 import static com.xiliulou.electricity.constant.CacheConstant.WX_PUBLIC_KEY_CACHE_KEY;
 import static com.xiliulou.electricity.constant.CacheConstant.WX_PUBLIC_KEY_CACHE_KEY_TENANT;
 import static com.xiliulou.electricity.constant.CacheConstant.WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE;
+import static com.xiliulou.electricity.constant.StringConstant.SPACES;
 
 /**
  * <p>
@@ -249,6 +252,42 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         }
     }
     
+    @Override
+    public R<?> saveOrUpdate(WechatPublicKeyBO request) {
+        if (!redisService.setNx(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, request.getTenantId(), request.getFranchiseeId()), StringConstant.EMPTY, NumberConstant.FIVE * NumberConstant.A_THOUSAND, false)){
+            return R.failMsg("操作频繁!");
+        }
+        try {
+            if (!request.getPubKey().startsWith(StringConstant.PREFIX_PUBLIC_KEY) || !request.getPubKey().endsWith(StringConstant.SUFFIX_PUBLIC_KEY)){
+                return R.failMsg("请上传正确的证书!");
+            }
+            String pubKey = formatPublicKey(request.getPubKey());
+            if (Objects.isNull(request.getFranchiseeId())){
+                request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            }
+            
+            request.setPubKey(pubKey);
+            WechatPublicKeyBO publicKeyBO = this.queryByTenantIdFromCache(request.getTenantId(), request.getFranchiseeId());
+            if (Objects.isNull(request.getId())){
+                if (Objects.nonNull(publicKeyBO)){
+                    return R.failMsg("当前商户已存在证书，请勿继续新增！");
+                }
+                return this.save(request) > NumberConstant.ZERO ? R.ok() : R.fail("证书保存失败，请重试！");
+            }
+            publicKeyBO = this.queryByIdFromCache(request.getId());
+            if (Objects.isNull(publicKeyBO)){
+                return R.failMsg("证书不存在，请先上传证书！");
+            }
+            publicKeyBO.setPubKeyId(request.getPubKeyId());
+            publicKeyBO.setPubKey(request.getPubKey());
+            publicKeyBO.setUploadTime(System.currentTimeMillis());
+            return this.update(publicKeyBO) > NumberConstant.ZERO ? R.ok() : R.fail("证书保存失败，请重试！");
+        }finally {
+            redisService.remove(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, request.getTenantId(), request.getFranchiseeId()));
+        }
+        
+    }
+    
     
     private WechatPublicKeyBO convertBO(WechatPublicKeyEntity entity) {
         if (Objects.isNull(entity)) {
@@ -281,5 +320,11 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             return Collections.emptyList();
         }
         return franchiseeIds.stream().map(franchiseeId -> String.format(WX_PUBLIC_KEY_CACHE_KEY_TENANT, tenantId, franchiseeId)).collect(Collectors.toList());
+    }
+    
+    private String formatPublicKey(String publicKey) {
+        return publicKey.replace(StringConstant.PREFIX_PUBLIC_KEY, StringConstant.EMPTY)
+                .replace(StringConstant.SUFFIX_PUBLIC_KEY, StringConstant.EMPTY)
+                .replaceAll(SPACES, StringConstant.EMPTY);
     }
 }

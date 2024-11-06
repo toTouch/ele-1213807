@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.pay;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.pay.WechatPublicKeyBO;
+import com.xiliulou.electricity.request.payparams.WechatPublicKeyRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -187,5 +188,19 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
+    @Deprecated
     R<?> uploadFile(MultipartFile file, Long franchiseeId);
+    
+    /**
+     * <p>Title: saveOrUpdate </p>
+     * <p>Project: WechatPublicKeyService</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <p>Description: 保存或更新微信公钥信息</p>
+     * @param request request
+     * @return com.xiliulou.core.web.R<?>
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/11/6
+    */
+    R<?> saveOrUpdate(WechatPublicKeyBO request);
 }

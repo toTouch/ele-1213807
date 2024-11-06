@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.entity.operate;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -22,6 +24,7 @@ public class UserOperateLogEntity {
     /**
      * 操作用户id
      **/
+    @TableId(value = "id", type = IdType.AUTO)
     private Long uid;
     
     /**

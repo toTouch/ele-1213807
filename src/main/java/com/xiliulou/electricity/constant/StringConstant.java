@@ -19,4 +19,10 @@ public interface StringConstant {
     String SPACE = " ";
     
     String EMPTY = "";
+    
+    String PREFIX_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----";
+    
+    String SUFFIX_PUBLIC_KEY = "-----END PUBLIC KEY-----";
+    
+    String SPACES = "\\s+";
 }
