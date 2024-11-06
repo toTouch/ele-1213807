@@ -58,7 +58,7 @@ public class CouponQuery {
      * 有效天数
      */
     @NotNull(message = "有效天数不能为空!", groups = {CreateGroup.class})
-    @Pattern(regexp = "^\\+?[1-9][0-9]*$", message="有效天数输入值不合法", groups = {CreateGroup.class})
+    @Pattern(regexp = "^(\\+?[1-9]\\d{0,5})$", message="有效天数输入值不合法", groups = {CreateGroup.class})
     private String validDays;
     /**
      * 优惠券描述

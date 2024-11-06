@@ -5,7 +5,6 @@ import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author zzlong
@@ -116,6 +115,11 @@ public class UserBatteryMemberCardInfoVO {
      * 交易方式： 0-线上， 1-线下， 2-企业代付 3-美团支付
      */
     private Integer payType;
+    
+    /**
+     * 套餐到期时间，格式：x天 x时，比如：0天 10小时
+     */
+    private String expireTimeStr;
 
     public static final Integer NO = 0;
     public static final Integer YES = 1;

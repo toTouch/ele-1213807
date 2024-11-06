@@ -33,6 +33,8 @@ public interface FaqCategoryV2Mapper extends BaseMapper<FaqCategoryV2> {
     Integer countFaqCategoryByTenantId(@Param(value = "tenantId") Integer tenantId);
     
     List<FaqV2BO> selectLeftJoinByParams(@Param(value = "tenantId") Integer tenantId, @Param("title") String title, @Param("typeId") Integer typeId);
+    
+    Integer batchInsert(@Param("list") List<FaqCategoryV2> list);
 }
 
 

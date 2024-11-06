@@ -51,7 +51,12 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
     public ShareActivityRule selectByCouponId(Long id) {
         return shareActivityRuleMapper.selectByCouponId(id);
     }
-
+    
+    @Override
+    public Integer removeByActivityId(Long activityId, Integer tenantId) {
+        return shareActivityRuleMapper.removeByActivityId(activityId, tenantId);
+    }
+    
     @Override
     public void updateByActivity(Integer id) {
         shareActivityRuleMapper.updateByActivity(id,System.currentTimeMillis());
