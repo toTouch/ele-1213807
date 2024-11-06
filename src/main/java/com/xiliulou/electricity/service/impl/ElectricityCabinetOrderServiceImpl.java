@@ -2399,9 +2399,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 开启灵活续费时，获取旧电池型号
         List<String> oldBatteryTypes = null;
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
+            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), batteryTypeList);
         }
         
         
@@ -3195,9 +3194,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 开启灵活续费时，获取旧电池型号
         List<String> oldBatteryTypes = null;
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
+            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), batteryTypeList);
         }
         
         // 分配满电仓门
