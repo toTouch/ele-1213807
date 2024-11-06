@@ -17,7 +17,6 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -31,6 +30,7 @@ import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
@@ -92,8 +92,10 @@ public class PlaceOrderChainManager {
     
     private final ElectricityConfigService electricityConfigService;
     
+    private final UserInfoExtraService userInfoExtraService;
     
-    private HashMap<Integer, AbstractPlaceOrderHandler> firstNodes = new HashMap<>();
+    
+    private final HashMap<Integer, AbstractPlaceOrderHandler> firstNodes = new HashMap<>();
     
     @PostConstruct
     public void init() {
@@ -139,18 +141,25 @@ public class PlaceOrderChainManager {
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.warn("BATTERY DEPOSIT WARN! not found user,uid={}", uid);
+            log.warn("PLACE ORDER WARN! not found user,uid={}", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         context.setUserInfo(userInfo);
         
+        // 是否限制套餐购买次数
+        Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
+        if (limitPurchase.getLeft()) {
+            log.warn("PLACE ORDER WARN! user limit purchase,uid={}", userInfo.getUid());
+            return R.fail(limitPurchase.getMiddle(), limitPurchase.getRight());
+        }
+        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.warn("BATTERY DEPOSIT WARN! user is unUsable,uid={}", uid);
+            log.warn("PLACE ORDER WARN! user is unUsable,uid={}", uid);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.warn("BATTERY DEPOSIT WARN! user not auth,uid={}", uid);
+            log.warn("PLACE ORDER WARN! user not auth,uid={}", uid);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         
@@ -162,20 +171,20 @@ public class PlaceOrderChainManager {
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(placeOrderQuery.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.warn("BATTERY DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
+            log.warn("PLACE ORDER WARN! not found batteryMemberCard,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "电池套餐不存在");
         }
+        
         if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
-            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard is disable,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
+            log.warn("PLACE ORDER WARN! batteryMemberCard is disable,uid={},mid={}", uid, placeOrderQuery.getMemberCardId());
             return R.fail("100275", "电池套餐不可用");
         }
         
         if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
                 batteryMemberCard.getFranchiseeId())) {
-            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
+            log.warn("PLACE ORDER WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
             return R.fail("100349", "用户加盟商与套餐加盟商不一致");
         }
-        
         context.setBatteryMemberCard(batteryMemberCard);
         
         // 线上购买才需要支付配置
@@ -183,14 +192,14 @@ public class PlaceOrderChainManager {
             BasePayConfig payParamConfig = payConfigBizService.queryPayParams(placeOrderQuery.getPaymentChannel(), tenantId, batteryMemberCard.getFranchiseeId(),
                     Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
             if (Objects.isNull(payParamConfig)) {
-                log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", uid);
+                log.warn("PLACE ORDER WARN! not found pay params,uid={}", uid);
                 return R.fail("100307", "未配置支付参数!");
             }
             context.setPayParamConfig(payParamConfig);
             
             UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId, placeOrderQuery.getPaymentChannel());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", uid);
+                log.warn("PLACE ORDER WARN! not found user oauth bind or third id is null,uid={}", uid);
                 return R.fail("100308", "未找到用户的第三方授权信息!");
             }
             context.setUserOauthBind(userOauthBind);
@@ -203,8 +212,7 @@ public class PlaceOrderChainManager {
         }
         if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
                 electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
-            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
-                    placeOrderQuery.getMemberCardId());
+            log.warn("PLACE ORDER WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(), placeOrderQuery.getMemberCardId());
             return R.fail("100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
         }
         context.setElectricityCabinet(electricityCabinet);
