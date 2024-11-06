@@ -4,6 +4,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
@@ -59,6 +60,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     public void dealWithBusiness(PlaceOrderContext context, R<Object> result, Integer placeOrderType) {
         UserInfo userInfo = context.getUserInfo();
         BatteryMemberCard batteryMemberCard = context.getBatteryMemberCard();
+        ElectricityConfig electricityConfig = context.getElectricityConfig();
         
         // 查询用户分组供后续校验使用
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
@@ -87,15 +89,16 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             }
         }
         
+        // 灵活续费电池型号校验
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, context.getElectricityConfig());
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
         if (!matchOrNot) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
         }
         
         // 灵活续费押金校验
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(userBatteryDeposit) && Objects.equals(context.getElectricityConfig().getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
+        if (Objects.nonNull(userBatteryDeposit) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
                 userBatteryDeposit.getBatteryDeposit(), batteryMemberCard.getDeposit())) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
         }

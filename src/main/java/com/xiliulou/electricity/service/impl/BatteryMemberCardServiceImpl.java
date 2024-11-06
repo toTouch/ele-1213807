@@ -316,7 +316,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                         : userBatteryDeposit.getBatteryDeposit());
             }
             
-//            query.setDeposit(batteryMemberCard.getDeposit());
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             
             // 开启了灵活续费时，不用根据电压过滤套餐

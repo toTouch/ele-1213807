@@ -5,22 +5,19 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
-import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.mapper.MemberCardBatteryTypeMapper;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (MemberCardBatteryType)表服务实现类
@@ -31,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service("memberCardBatteryTypeService")
 @Slf4j
 public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeService {
+    
     @Resource
     private MemberCardBatteryTypeMapper memberCardBatteryTypeMapper;
     
@@ -38,13 +36,13 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     @Autowired
     private RedisService redisService;
     
-
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer batchInsert(List<MemberCardBatteryType> memberCardBatteryTypeList) {
         return this.memberCardBatteryTypeMapper.batchInsert(memberCardBatteryTypeList);
     }
-
+    
     @Override
     public List<String> selectBatteryTypeByMid(Long mid) {
         return this.memberCardBatteryTypeMapper.selectBatteryTypeByMid(mid);
@@ -70,18 +68,20 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     public boolean checkBatteryTypeWithUser(List<String> userBatteryTypes, BatteryMemberCard memberCard, ElectricityConfig electricityConfig) {
         List<String> memberCardBatteryTypes = selectBatteryTypeByMid(memberCard.getId());
         
+        // 单型号套餐续费
         if (CollectionUtils.isEmpty(userBatteryTypes) && CollectionUtils.isEmpty(memberCardBatteryTypes)) {
             return true;
         }
         
-//        if (CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes)) {
-//            return false;
-//        }
+        // 单型号套餐续费已被排除，非灵活续费场景下，只有有一个为单型号，就不匹配
+        if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+            if ((CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes))) {
+                return false;
+            }
+        }
         
+        // 灵活续费时，不校验型号，非灵活续费，套餐型号应当包含用户绑定的型号
         return !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) || CollectionUtils.containsAll(memberCardBatteryTypes,
                 userBatteryTypes);
-        
-        
-        
     }
 }
