@@ -33,7 +33,7 @@ public class RentRefundAuditSendHandler extends AbstractWechatOfficialAccountSen
         Map<String, String> params = new HashMap<>();
         params.put("first", "您好，有用户提交了退租申请");
         params.put("keyword1", notify.getUserName());
-        params.put("keyword2", notify.getBusinessCode());
+        params.put("keyword2", "退租审核");
         params.put("keyword3", notify.getApplyTime());
         params.put("remark", "请您尽快审核");
         return params;

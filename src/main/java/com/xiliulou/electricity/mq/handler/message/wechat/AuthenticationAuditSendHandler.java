@@ -29,7 +29,7 @@ public class AuthenticationAuditSendHandler extends AbstractWechatOfficialAccoun
         Map<String, String> params = new HashMap<>();
         params.put("first", "您好，有用户提交了实名认证申请");
         params.put("keyword1", notify.getUserName());
-        params.put("keyword2", notify.getBusinessCode());
+        params.put("keyword2", "实名认证审核");
         params.put("keyword3", notify.getAuthTime());
         params.put("remark", "请您尽快审核");
         return params;
