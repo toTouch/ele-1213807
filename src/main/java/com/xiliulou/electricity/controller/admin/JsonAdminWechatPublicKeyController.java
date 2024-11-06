@@ -33,13 +33,13 @@ public class JsonAdminWechatPublicKeyController extends AbstractFranchiseeDataPe
     }
     
     
-    @PostMapping(value = "/uploadFile")
-    public R<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId) {
+    @PostMapping(value = "/save")
+    public R<?> save(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId) {
         return wechatPublicKeyService.uploadFile(file, franchiseeId);
     }
     
     @DeleteMapping
-    public R delete(@Validated @NotNull @RequestParam("id") Long id) {
+    public R<?> delete(@Validated @NotNull @RequestParam("id") Long id) {
         wechatPublicKeyService.delete(id);
         return R.ok();
     }

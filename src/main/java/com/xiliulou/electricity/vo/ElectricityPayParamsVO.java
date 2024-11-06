@@ -116,17 +116,4 @@ public class ElectricityPayParamsVO implements Serializable {
      */
     private String franchiseeName;
     
-    /**
-     * <p>
-     *    Description: 微信支付平台公钥ID
-     * </p>
-     */
-    private String pubKeyId;
-    
-    /**
-     * <p>
-     *    Description: 微信公钥子表的ID
-     * </p>
-     */
-    private Long wechatPubKeyId;
 }
