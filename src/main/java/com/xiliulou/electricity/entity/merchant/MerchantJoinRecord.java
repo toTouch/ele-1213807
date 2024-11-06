@@ -135,4 +135,9 @@ public class MerchantJoinRecord {
      */
     private Long successTime;
     
+    /**
+     * 参与开始日期 yyyy-MM-dd
+     */
+    private String monthDate;
+    
 }

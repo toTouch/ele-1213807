@@ -187,7 +187,7 @@ public class JsonUserMerchantPromotionFeeController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        return merchantPromotionFeeService.statisticUser(type, uid, beginTime, endTime, user.getType());
+        return merchantPromotionFeeService.statisticUserV2(type, uid, beginTime, endTime, user.getType());
     }
     
     /**

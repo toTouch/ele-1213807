@@ -5345,6 +5345,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //更新柜机deviceSecret
             ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
             electricityCabinetUpdate.setId(electricityCabinet.getId());
+            electricityCabinetUpdate.setProductKey(electricityCabinet.getProductKey());
+            electricityCabinetUpdate.setDeviceName(electricityCabinet.getDeviceName());
             electricityCabinetUpdate.setDeviceSecret(queryDeviceDetailResult.getDeviceSecret());
             electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
             electricityCabinetService.update(electricityCabinetUpdate);
