@@ -181,8 +181,10 @@ import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.iot.entity.response.QueryDeviceDetailResult;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
+import com.xiliulou.iot.service.RegisterDeviceService;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
@@ -457,6 +459,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private ExchangeExceptionHandlerService exceptionHandlerService;
+    
+    @Autowired
+    private RegisterDeviceService registerDeviceService;
+    
     
     /**
      * 根据主键ID集获取柜机基本信息
@@ -1932,6 +1938,60 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             map.put("command", "cell_update_down");
         }
         operateRecordUtil.record(null, map);
+        return R.ok(sessionId);
+    }
+    
+    @Override
+    public R sendCommand(EleOuterCommandQuery eleOuterCommandQuery) {
+        // 不合法的参数
+        if (Objects.isNull(eleOuterCommandQuery.getCommand()) || Objects.isNull(eleOuterCommandQuery.getDeviceName()) || Objects.isNull(eleOuterCommandQuery.getProductKey())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+    
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
+        eleOuterCommandQuery.setSessionId(sessionId);
+    
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(eleOuterCommandQuery.getProductKey(), eleOuterCommandQuery.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+    
+        // 换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), electricityCabinet.getPattern());
+        if (!eleResult) {
+            return R.fail("100004", "柜机不在线");
+        }
+    
+        if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
+            return R.fail("ELECTRICITY.0036", "不合法的命令");
+        }
+    
+        Map<String, Object> dataMap = null;
+        if (CollectionUtils.isEmpty(eleOuterCommandQuery.getData())) {
+            dataMap = Maps.newHashMap();
+        } else {
+            dataMap = eleOuterCommandQuery.getData();
+        }
+    
+        dataMap.put("uid", NumberConstant.ONE_L);
+        dataMap.put("username", "admin");
+        eleOuterCommandQuery.setData(dataMap);
+    
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId()).data(eleOuterCommandQuery.getData())
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
+    
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
+        // 发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        Map<String, Object> map = BeanUtil.beanToMap(comm, false, true);
+        map.put("operateType", 1);
+        map.put("deviceName", StringUtils.isBlank(electricityCabinet.getName()) ? electricityCabinet.getDeviceName() : electricityCabinet.getName());
+        if (comm.getCommand().equals(ELE_COMMAND_CELL_UPDATE) && eleOuterCommandQuery.getData().containsKey("lockReason")) {
+            map.put("command", "cell_update_down");
+        }
+//        operateRecordUtil.record(null, map);
         return R.ok(sessionId);
     }
     
@@ -5256,19 +5316,55 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R updateCabinetPattern(EleCabinetPatternQuery query) {
+        ElectricityCabinet electricityCabinet = this.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        String deviceSecret = electricityCabinet.getDeviceSecret();
+        
         //判断三元组是否在设备列表中存在,若不存在，新增
-        if (Objects.isNull(eleDeviceCodeService.existsDeviceName(query.getDeviceName()))) {
+        EleDeviceCode deviceCodeCache = eleDeviceCodeService.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(deviceCodeCache)) {
             long time = System.currentTimeMillis();
             EleDeviceCode deviceCode = new EleDeviceCode();
             deviceCode.setProductKey(query.getProductKey());
             deviceCode.setDeviceName(query.getDeviceName());
-            deviceCode.setSecret(SecureUtil.hmacMd5(query.getProductKey() + query.getDeviceName()).digestHex(String.valueOf(time)));
+            deviceCode.setSecret(StringUtils.isBlank(deviceSecret)?SecureUtil.hmacMd5(query.getProductKey() + query.getDeviceName()).digestHex(String.valueOf(time)):deviceSecret);
             deviceCode.setOnlineStatus(EleCabinetConstant.STATUS_OFFLINE);
             deviceCode.setRemark("");
             deviceCode.setDelFlag(CommonConstant.DEL_N);
             deviceCode.setCreateTime(time);
             deviceCode.setUpdateTime(time);
             eleDeviceCodeService.insert(deviceCode);
+        }
+
+        deviceCodeCache = eleDeviceCodeService.queryBySnFromCache(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(deviceCodeCache)) {
+            return R.fail("100488", "设备不存在");
+        }
+
+        //如果没有deviceSecret，或者柜机表与设备表的deviceSecret不一致
+        if (StringUtils.isBlank(deviceSecret) || !Objects.equals(deviceSecret, deviceCodeCache.getSecret())) {
+            QueryDeviceDetailResult queryDeviceDetailResult = registerDeviceService.queryDeviceDetail(query.getProductKey(), query.getDeviceName());
+            if (Objects.isNull(queryDeviceDetailResult) || StringUtils.isBlank(queryDeviceDetailResult.getDeviceSecret())) {
+                log.warn("ELE WARN!not found deviceDetailResult,p={},d={}", query.getProductKey(), query.getDeviceName());
+                return R.fail("100218", "iot消息发送失败");
+            }
+
+            //更新柜机deviceSecret
+            ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+            electricityCabinetUpdate.setId(electricityCabinet.getId());
+            electricityCabinetUpdate.setDeviceSecret(queryDeviceDetailResult.getDeviceSecret());
+            electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetService.update(electricityCabinetUpdate);
+
+            //更新设备deviceSecret
+            EleDeviceCode deviceCodeUpdate = new EleDeviceCode();
+            deviceCodeUpdate.setId(deviceCodeCache.getId());
+            deviceCodeUpdate.setSecret(queryDeviceDetailResult.getDeviceSecret());
+            deviceCodeUpdate.setUpdateTime(System.currentTimeMillis());
+            eleDeviceCodeService.updateById(deviceCodeUpdate, query.getProductKey(), query.getDeviceName());
         }
         
         String apiAddress = eleCommonConfig.getApiAddress();
@@ -5286,6 +5382,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
         commandQuery.setData(params);
         return this.sendCommandToEleForOuter(commandQuery);
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityCabinetBO> listByIdList(List<Integer> cabinetIdList) {
+        return electricityCabinetMapper.selectListByIdList(cabinetIdList);
     }
     
     @Override

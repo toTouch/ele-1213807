@@ -124,6 +124,11 @@ public interface MqProducerConstant {
      * 免押topic
      */
     String FREE_DEPOSIT_TOPIC_NAME = "FREE_DEPOSIT_TOPIC";
+    
+    /**
+     * 电池回收topic
+     */
+    String BATTERY_RECYCLE_TOPIC_NAME = "BATTERY_RECYCLE_TOPIC";
 
     /**
      * 免押tag

@@ -50,6 +50,13 @@
                     #{batterySn}
                 </foreach>
             </if>
+            
+            <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+                AND franchisee_id IN
+                <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                    #{franchiseeId}
+                </foreach>
+            </if>
         </where>
     </select>
     
