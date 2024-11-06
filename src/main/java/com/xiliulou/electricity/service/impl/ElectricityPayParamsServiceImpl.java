@@ -23,7 +23,6 @@ import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.queryModel.WechatPublicKeyQueryModel;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -94,9 +93,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Resource
     private ProfitSharingConfigService profitSharingConfigService;
     
-    @Resource
-    private WechatPublicKeyService wechatPublicKeyService;
-    
     @Override
     public R insert(ElectricityPayParamsRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -129,9 +125,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         insert.setCreateTime(System.currentTimeMillis());
         insert.setUpdateTime(System.currentTimeMillis());
         baseMapper.insert(insert);
-        if (Objects.nonNull(request.getPubKeyId())){
-            saveWechatPublicKeyId(request,tenantId, ObjectUtils.defaultIfNull(insert.getId(),NumberConstant.NEGATIVE_ONE).longValue());
-        }
         // 缓存删除
         redisService.delete(buildCacheKey(tenantId, insert.getFranchiseeId()));
         
@@ -185,10 +178,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         electricityPayParamsTxService.update(update, franchiseePayParamIds);
         
-        if (Objects.nonNull(request.getPubKeyId())){
-            saveWechatPublicKeyId(request,tenantId,ObjectUtils.defaultIfNull(update.getId(),NumberConstant.NEGATIVE_ONE).longValue());
-        }
-        
         // 删除缓存
         List<String> delKeys = Optional.ofNullable(syncFranchiseePayParam).orElse(Collections.emptyList()).stream().map(v -> buildCacheKey(v.getTenantId(), v.getFranchiseeId()))
                 .collect(Collectors.toList());
@@ -228,11 +217,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         // 逻辑删除
         electricityPayParamsTxService.delete(id, tenantId);
         
-        WechatPublicKeyBO publicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), payParams.getFranchiseeId());
-        if (Objects.nonNull(publicKeyBO)){
-            wechatPublicKeyService.delete(publicKeyBO.getId());
-        }
-        
         // 缓存删除
         redisService.delete(buildCacheKey(tenantId, payParams.getFranchiseeId()));
         wechatPaymentCertificateService.deleteCache(tenantId, payParams.getFranchiseeId());
@@ -252,21 +236,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         if (CollectionUtils.isEmpty(voList)){
             return List.of();
         }
-        
-        List<Long> franchiseeIds = voList.stream().map(ElectricityPayParamsVO::getFranchiseeId).filter(Objects::nonNull).collect(Collectors.toList());
-        List<WechatPublicKeyBO> publicKeyBOS = wechatPublicKeyService.queryListByTenantIdFromCache(tenantId.longValue(), franchiseeIds);
-        if (CollectionUtils.isEmpty(publicKeyBOS)){
-            return voList;
-        }
-        
-        Map<Long, WechatPublicKeyBO> publicKeyBOMap = publicKeyBOS.stream().collect(Collectors.toMap(WechatPublicKeyBO::getPayParamsId, Function.identity() , (k1,k2)->k2));
-        for (ElectricityPayParamsVO vo : voList) {
-            if (publicKeyBOMap.containsKey(vo.getId().longValue())){
-                vo.setPubKeyId(publicKeyBOMap.get(vo.getId().longValue()).getPubKeyId());
-                vo.setWechatPubKeyId(publicKeyBOMap.get(vo.getId().longValue()).getId());
-            }
-        }
-        
         return voList;
     }
     
@@ -546,27 +515,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         }
         
         return null;
-    }
-    
-    private void saveWechatPublicKeyId(ElectricityPayParamsRequest request, Integer tenantId , Long payParamsId){
-        if (Objects.nonNull(request.getPubKeyId())){
-            WechatPublicKeyBO bo = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), request.getFranchiseeId());
-            if (Objects.isNull(bo)){
-                WechatPublicKeyBO insert = WechatPublicKeyBO.builder()
-                        .payParamsId(ObjectUtils.defaultIfNull(payParamsId, NumberConstant.NEGATIVE_ONE))
-                        .tenantId(tenantId.longValue())
-                        .franchiseeId(request.getFranchiseeId())
-                        .pubKeyId(StringUtils.defaultIfEmpty(request.getPubKeyId(), StringConstant.EMPTY))
-                        .uploadTime(NumberConstant.NEGATIVE_ONE)
-                        .pubKey(StringConstant.EMPTY)
-                        .build();
-                wechatPublicKeyService.save(insert);
-                return;
-            }
-            bo.setPayParamsId(ObjectUtils.defaultIfNull(payParamsId, NumberConstant.NEGATIVE_ONE));
-            bo.setPubKeyId(StringUtils.defaultIfEmpty(request.getPubKeyId(), StringConstant.EMPTY));
-            wechatPublicKeyService.update(bo);
-        }
     }
     
     
