@@ -84,6 +84,15 @@
         where del_flag=0
         and tenant_id=#{tenantId}
     </select>
+    <select id="selectListByAppId" resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and merchant_min_pro_app_id=#{merchantMinProAppId}
+    </select>
     
     
     <!--新增所有列-->

@@ -84,4 +84,13 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
      */
     List<Long> selectFranchiseeIdsByTenantId(@Param("tenantId") Integer tenantId);
     
+    /**
+     * 根据appid查询
+     *
+     * @param merchantMinProAppId
+     * @author caobotao.cbt
+     * @date 2024/11/6 16:59
+     */
+    List<ElectricityPayParams> selectListByAppId(@Param("merchantMinProAppId") String merchantMinProAppId);
+    
 }

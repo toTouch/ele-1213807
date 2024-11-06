@@ -48,7 +48,7 @@
         where tenant_id = #{tenantId} and del_flag = 0 order by id limit 1
     </select>
     
-    <select id="selectByAppId" resultMap="AlipayAppConfigMap">
+    <select id="selectListByAppId" resultMap="AlipayAppConfigMap">
         select
         <include refid="base_column"/>
         from t_alipay_app_config

@@ -175,6 +175,20 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 return R.failMsg("加盟商不存在");
             }
             franchiseeName = franchisee.getName();
+            
+            // 非默认配置不更新appid
+            if (Objects.nonNull(request.getMerchantMinProAppId()) && !request.getMerchantMinProAppId().equals(oldPayParams.getMerchantMinProAppId())) {
+                log.warn("ElectricityPayParamsServiceImpl.update WARN! merchantMinProAppId does not support update tenantId={},franchiseeid={}", tenantId,
+                        oldPayParams.getFranchiseeId());
+                request.setMerchantMinProAppId(oldPayParams.getMerchantMinProAppId());
+                request.setMerchantMinProAppSecert(oldPayParams.getMerchantMinProAppSecert());
+            }
+            
+        }
+        
+        // 校验appId
+        if (!this.updateCheckAppId(oldPayParams, request, tenantId)) {
+            return R.failMsg("该小程序appId已被使用，请勿重复使用!");
         }
         
         // 需要同步的加盟商配置
@@ -230,7 +244,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
         //删除公钥配置
         WechatPublicKeyBO publicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), payParams.getFranchiseeId());
-        if (Objects.nonNull(publicKeyBO)){
+        if (Objects.nonNull(publicKeyBO)) {
             wechatPublicKeyService.remove(publicKeyBO.getId());
         }
         
@@ -508,6 +522,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             if (CollectionUtils.isNotEmpty(electricityPayParams)) {
                 return "默认配置已存在,请勿重复添加";
             }
+            // 查询appid
+            List<ElectricityPayParams> byAppId = baseMapper.selectListByAppId(request.getMerchantMinProAppId());
+            if (CollectionUtils.isNotEmpty(byAppId)) {
+                return "该小程序appId已被使用，请勿重复使用!";
+            }
+            
         } else {
             // 运营商配置
             if (Objects.isNull(franchiseeId)) {
@@ -644,4 +664,24 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
     }
     
+    
+    private boolean updateCheckAppId(ElectricityPayParams payParams, ElectricityPayParamsRequest request, Integer curTenantId) {
+        if (Objects.isNull(request.getMerchantMinProAppId()) || Objects.equals(request.getMerchantMinProAppId(), payParams.getMerchantMinProAppId())) {
+            // 未更新
+            return true;
+        }
+        List<ElectricityPayParams> byAppId = baseMapper.selectListByAppId(request.getMerchantMinProAppId());
+        
+        if (CollectionUtils.isEmpty(byAppId)) {
+            return true;
+        }
+        
+        for (ElectricityPayParams electricityPayParams : byAppId) {
+            if (!Objects.equals(electricityPayParams.getTenantId(), curTenantId)) {
+                // 当前配置不属于此租户
+                return false;
+            }
+        }
+        return true;
+    }
 }
