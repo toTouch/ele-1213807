@@ -49,7 +49,7 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     }
     
     @Override
-    public List<String> checkBatteryTypeWithMemberCard(Long uid, String batteryType, List<String> userBatteryTypes) {
+    public List<String> getBatteryTypesForCheck(Long uid, String batteryType, List<String> userBatteryTypes) {
         // 用户当前套餐不分型号，不作处理
         if (CollectionUtils.isEmpty(userBatteryTypes)) {
             return List.of();

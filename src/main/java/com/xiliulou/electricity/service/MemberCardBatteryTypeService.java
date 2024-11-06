@@ -18,7 +18,7 @@ public interface MemberCardBatteryTypeService {
     
     List<String> selectBatteryTypeByMid(Long id);
     
-    List<String> checkBatteryTypeWithMemberCard(Long uid, String batteryType, List<String> userBatteryTypes);
+    List<String> getBatteryTypesForCheck(Long uid, String batteryType, List<String> userBatteryTypes);
     
     /**
      * 检查用户绑定的电池型号、套餐绑定的电池型号、租户配置是否相符，true为符合，false为不符合

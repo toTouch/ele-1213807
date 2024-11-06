@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -45,7 +44,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
@@ -118,7 +116,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -928,13 +925,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             } else {
                 dataMap.put("model_type", true);
                 if (Objects.nonNull(electricityBattery)) {
-                    // 需要根据电池与用户绑定的电池型号确认是否需要取缓存内的电池型号用于还电池校验
-                    List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-                    oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
-                    if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-                        batteryTypeList = oldBatteryTypes;
-                    }
-                    
                     dataMap.put("multiBatteryModelName", electricityBattery.getModel());
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
                 } else {
@@ -943,6 +933,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     //获取用户绑定的电池型号
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
                 }
+            }
+            
+            // 需要根据电池与用户绑定的电池型号确认是否需要取缓存内的电池型号用于还电池校验
+            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), (String) dataMap.get("multiBatteryModelName"), batteryTypeList);
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
             }
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder()

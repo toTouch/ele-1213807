@@ -95,15 +95,15 @@ public class PlaceOrderChainManager {
     private final UserInfoExtraService userInfoExtraService;
     
     
-    private final HashMap<Integer, AbstractPlaceOrderHandler> firstNodes = new HashMap<>();
+    private final HashMap<Integer, AbstractPlaceOrderHandler> FIRST_NODES = new HashMap<>();
     
     @PostConstruct
     public void init() {
-        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT, depositVerificationHandler);
-        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD, depositVerificationHandler);
-        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD, memberCardVerificationHandler);
-        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE, memberCardVerificationHandler);
-        firstNodes.put(PlaceOrderConstant.PLACE_ORDER_ALL, depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT, depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_DEPOSIT_AND_MEMBER_CARD, depositVerificationHandler);
+        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD, memberCardVerificationHandler);
+        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_MEMBER_CARD_AND_INSURANCE, memberCardVerificationHandler);
+        FIRST_NODES.put(PlaceOrderConstant.PLACE_ORDER_ALL, depositVerificationHandler);
     }
     
     /**
@@ -116,7 +116,7 @@ public class PlaceOrderChainManager {
         }
         
         Integer placeOrderType = context.getPlaceOrderQuery().getPlaceOrderType();
-        AbstractPlaceOrderHandler firstNode = firstNodes.get(placeOrderType);
+        AbstractPlaceOrderHandler firstNode = FIRST_NODES.get(placeOrderType);
         if (Objects.isNull(firstNode)) {
             log.error("Place order error! 无相应业务的首节点，PlaceOrderQuery={}", context.getPlaceOrderQuery());
             return R.fail("302002", "业务类型错误，请联系客服");

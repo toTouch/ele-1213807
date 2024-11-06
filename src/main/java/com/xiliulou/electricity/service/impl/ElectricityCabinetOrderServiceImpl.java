@@ -12,7 +12,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
@@ -77,7 +76,6 @@ import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordSer
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
@@ -2403,7 +2401,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         List<String> oldBatteryTypes = null;
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-            oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
+            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
         }
         
         
@@ -3199,7 +3197,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         List<String> oldBatteryTypes = null;
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-            oldBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeWithMemberCard(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
+            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypes);
         }
         
         // 分配满电仓门
