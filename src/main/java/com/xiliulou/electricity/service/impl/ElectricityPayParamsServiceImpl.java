@@ -142,13 +142,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         if (!this.idempotentCheck()) {
             return R.failMsg("操作频繁");
         }
-        if (Objects.nonNull(request.getConfigType())){
+        if (Objects.nonNull(request.getConfigType())) {
             ElectricityPayParamsCertTypeEnum certTypeEnum = ElectricityPayParamsCertTypeEnum.getByType(request.getCertType());
             if (Objects.isNull(certTypeEnum)) {
                 return R.failMsg("certType 错误");
             }
         }
-        
         
         Integer tenantId = TenantContextHolder.getTenantId();
         request.setTenantId(tenantId);
@@ -427,6 +426,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 qryDbList.add(fid);
             } else if (Objects.nonNull(cache.getId())) {
                 // 缓存存在 并且有id 则说明当前加盟商已配置
+                if (Objects.isNull(cache.getCertType())) {
+                    // 防止缓存未清除引起的支付失败
+                    cache.setCertType(ElectricityPayParamsCertTypeEnum.PLATFORM_CERTIFICATE.getType());
+                }
                 payParams.add(cache);
             }
         });
