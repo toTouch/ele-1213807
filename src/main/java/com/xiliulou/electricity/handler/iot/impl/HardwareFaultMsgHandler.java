@@ -99,7 +99,6 @@ public class HardwareFaultMsgHandler extends AbstractElectricityIotHandler {
         });
         return list;
     }
-    
 }
 
 @Data

@@ -19,6 +19,7 @@ import com.xiliulou.electricity.entity.PermissionTemplate;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.TenantNote;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.mapper.asset.AssetWarehouseMapper;
@@ -46,6 +47,9 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +57,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -369,19 +374,27 @@ public class TenantServiceImpl implements TenantService {
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(tenantVOS)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
-        tenantVOS.parallelStream().peek(item -> {
+    
+        List<Integer> tenantIdList = tenantVOS.stream().map(TenantVO::getId).collect(Collectors.toList());
+        List<TenantNote> tenantNoteList =  noteService.listByTenantIdList(tenantIdList);
+        Map<Integer, Long>  tenantNoteNumMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(tenantNoteList)) {
+            tenantNoteNumMap = tenantNoteList.stream().collect(Collectors.toMap(TenantNote::getTenantId, TenantNote::getNoteNum, (oldValue, newValue) -> newValue));
+        }
+        Map<Integer, Long> finalTenantNoteNumMap = tenantNoteNumMap;
+        tenantVOS.parallelStream().peek(item->{
             FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(item.getId());
             if (Objects.nonNull(freeDepositData)) {
                 item.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity());
                 item.setFyFreeDepositCapacity(freeDepositData.getFyFreeDepositCapacity());
                 item.setByStagesCapacity(freeDepositData.getByStagesCapacity());
             }
-            
+    
             // 查询短信次数
-            Optional.ofNullable(noteService.queryFromCacheByTenantId(item.getId())).ifPresent(tenantNote -> {
-                item.setNoteNum(tenantNote.getNoteNum());
-            });
+            if (finalTenantNoteNumMap.containsKey(item.getId())) {
+                item.setNoteNum(finalTenantNoteNumMap.get(item.getId()));
+            }
+          
         }).collect(Collectors.toList());
         
         return R.ok(tenantVOS);

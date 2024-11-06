@@ -693,6 +693,25 @@ public interface CacheConstant {
     
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
     
+    
+    /**
+     * 运维设置用户通知幂等锁
+     */
+    String CACHE_NOTIFY_USER_INFO_LOCK = "saas_electricity:notify:lock:%s";
+    
+    /**
+     * 运维设置用户通知缓存
+     */
+    String CACHE_NOTIFY_USER_INFO_OPENID = "saas_electricity:notify:openid:%s";
+    
+    
+    /**
+     * 运维设置用户通知缓存
+     */
+    String CACHE_NOTIFY_USER_INFO_PHONE = "saas_electricity:notify:phone:%s";
+    
+    
+    
     String CACHE_BATTERY_BATCH_IMPORT_LOCK = "cache_battery_batch_import_lock:";
     
     //角色权限绑定操作

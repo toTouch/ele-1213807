@@ -13,6 +13,14 @@
         from t_tenant_note
         where tenant_id = #{tenantId}
     </select>
+    <select id="selectListByTenantIdList" resultType="com.xiliulou.electricity.entity.TenantNote">
+        select id, tenant_id, note_num, recharge_time
+        from t_tenant_note
+        where tenant_id in
+        <foreach collection="tenantIdList" item="tenantId" separator="," open="(" close=")">
+            #{tenantId}
+        </foreach>
+    </select>
     
     <update id="reduceNoteNumById">
         update t_tenant_note
