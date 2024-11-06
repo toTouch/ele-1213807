@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.payparams.WechatCertificateCacheEntity;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
@@ -368,20 +369,22 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
      * @date 2024/10/31 16:35
      */
     private void buildWechatPlatformCertificate(WechatPayParamsDetails details) throws WechatPayException {
-        WechatPlatformPublicKey publicKey = this.queryWechatPlatformPublicKey(details.getTenantId(), details.getFranchiseeId());
         
-        if (Objects.nonNull(publicKey)) {
-            // 公钥优先级高
+        if (ElectricityPayParamsCertTypeEnum.PLATFORM_CERTIFICATE.getType().equals(details.getCertType())) {
+            // 证书模式
+            HashMap<BigInteger, X509Certificate> map = this.queryWechatPlatformCertificateMap(details);
+            if (MapUtils.isEmpty(map)) {
+                return;
+            }
+            
+            details.setWechatV3Certificate(new WechatPlatformCertificate(map));
+        } else if (ElectricityPayParamsCertTypeEnum.PLATFORM_PUBLIC_KEY.getType().equals(details.getCertType())) {
+            
+            // 平台公钥
+            WechatPlatformPublicKey publicKey = this.queryWechatPlatformPublicKey(details.getTenantId(), details.getFranchiseeId());
             details.setWechatV3Certificate(publicKey);
-            return;
         }
         
-        HashMap<BigInteger, X509Certificate> map = this.queryWechatPlatformCertificateMap(details);
-        if (MapUtils.isEmpty(map)) {
-            return;
-        }
-        
-        details.setWechatV3Certificate(new WechatPlatformCertificate(map));
     }
     
     /**
@@ -392,26 +395,46 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
      * @date 2024/10/31 16:35
      */
     private void batchBuildWechatPlatformCertificate(Integer tenantId, List<WechatPayParamsDetails> detailsList) {
-        Map<Long, WechatPayParamsDetails> franchiseeIdMap = detailsList.stream().collect(Collectors.toMap(WechatPayParamsDetails::getFranchiseeId, v -> v, (k1, k2) -> k1));
+        
+        Map<Integer, List<WechatPayParamsDetails>> certMap = detailsList.stream().collect(Collectors.groupingBy(WechatPayParamsDetails::getCertType));
+        
+        List<WechatPayParamsDetails> publicKeyPayParams = certMap.get(ElectricityPayParamsCertTypeEnum.PLATFORM_PUBLIC_KEY.getType());
+        
+        if (CollectionUtils.isNotEmpty(publicKeyPayParams)) {
+            
+            this.batchBuildWechatPlatformPublicKey(tenantId, publicKeyPayParams);
+            
+        }
+        
+        List<WechatPayParamsDetails> buildWechatPlatformCertificates = certMap.get(ElectricityPayParamsCertTypeEnum.PLATFORM_CERTIFICATE.getType());
+        if (CollectionUtils.isEmpty(buildWechatPlatformCertificates)) {
+            
+            //构建平台证书
+            this.batchBuildWechatPlatformCertificateMap(buildWechatPlatformCertificates);
+        }
+        
+    }
+    
+    /**
+     * 批量构建平台公钥
+     *
+     * @param publicKeyPayParams
+     * @author caobotao.cbt
+     * @date 2024/11/6 14:02
+     */
+    private void batchBuildWechatPlatformPublicKey(Integer tenantId, List<WechatPayParamsDetails> publicKeyPayParams) {
+        
+        Map<Long, WechatPayParamsDetails> franchiseeIdMap = publicKeyPayParams.stream().collect(Collectors.toMap(WechatPayParamsDetails::getFranchiseeId, v -> v, (k1, k2) -> k1));
         
         Map<Long, WechatPlatformPublicKey> franchiseeIdPubKeyMap = this.queryMapWechatPlatformPublicKey(tenantId, franchiseeIdMap.keySet());
         
-        List<WechatPayParamsDetails> buildWechatPlatformCertificates = new ArrayList<>();
         franchiseeIdMap.forEach((fid, details) -> {
             WechatPlatformPublicKey publicKey = franchiseeIdPubKeyMap.get(fid);
             if (Objects.nonNull(publicKey)) {
                 details.setWechatV3Certificate(publicKey);
                 return;
             }
-            // 需要查询平台证书
-            buildWechatPlatformCertificates.add(details);
         });
-        
-        if (CollectionUtils.isEmpty(buildWechatPlatformCertificates)) {
-            return;
-        }
-        //构建平台证书
-        this.batchBuildWechatPlatformCertificateMap(buildWechatPlatformCertificates);
     }
     
     /**

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.bo.wechat;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingReceiverConfig;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigReceiverStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
 import com.xiliulou.core.base.enums.ChannelEnum;
@@ -114,6 +115,15 @@ public class WechatPayParamsDetails<T extends WechatV3Certificate> extends BaseP
      * 私钥
      */
     private PrivateKey privateKey;
+    
+    
+    
+    /**
+     * 微信凭证类型
+     *
+     * @see ElectricityPayParamsCertTypeEnum
+     */
+    private Integer certType;
     
     
     /**

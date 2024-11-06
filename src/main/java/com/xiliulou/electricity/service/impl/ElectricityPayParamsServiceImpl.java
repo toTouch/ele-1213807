@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
@@ -141,6 +142,13 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         if (!this.idempotentCheck()) {
             return R.failMsg("操作频繁");
         }
+        if (Objects.nonNull(request.getConfigType())){
+            ElectricityPayParamsCertTypeEnum certTypeEnum = ElectricityPayParamsCertTypeEnum.getByType(request.getCertType());
+            if (Objects.isNull(certTypeEnum)) {
+                return R.failMsg("certType 错误");
+            }
+        }
+        
         
         Integer tenantId = TenantContextHolder.getTenantId();
         request.setTenantId(tenantId);
@@ -233,7 +241,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         List<ElectricityPayParams> params = baseMapper.selectByTenantId(tenantId);
         List<ElectricityPayParamsVO> voList = ElectricityPayParamsConverter.qryDoToVos(params);
         this.buildFranchiseeName(tenantId, voList);
-        if (CollectionUtils.isEmpty(voList)){
+        if (CollectionUtils.isEmpty(voList)) {
             return List.of();
         }
         return voList;
@@ -277,7 +285,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     public ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId) {
         return baseMapper.selectByTenantIdAndWechatMerchantId(tenantId, wechatMerchantId);
     }
-    
     
     
     @Override
@@ -475,6 +482,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Integer tenantId = request.getTenantId();
         Long franchiseeId = request.getFranchiseeId();
         Integer configType = request.getConfigType();
+        
+        ElectricityPayParamsCertTypeEnum certTypeEnum = ElectricityPayParamsCertTypeEnum.getByType(request.getCertType());
+        if (Objects.isNull(certTypeEnum)) {
+            return "certType 错误";
+        }
         
         if (ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(configType)) {
             // 默认配置
