@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_I
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class InsurancePlaceOrderHandler extends AbstractPlaceOrderHandler {
     
     @PostConstruct

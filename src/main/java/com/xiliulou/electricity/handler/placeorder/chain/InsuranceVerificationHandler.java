@@ -2,16 +2,16 @@ package com.xiliulou.electricity.handler.placeorder.chain;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.exception.BizException;
-import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_INSURANCE;
@@ -23,13 +23,13 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_I
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class InsuranceVerificationHandler extends AbstractPlaceOrderHandler {
     
-    @Resource
-    private InsurancePlaceOrderHandler insurancePlaceOrderHandler;
+    private final InsurancePlaceOrderHandler insurancePlaceOrderHandler;
     
-    @Resource
-    private FranchiseeInsuranceService franchiseeInsuranceService;
+    private final FranchiseeInsuranceService franchiseeInsuranceService;
+    
     
     @PostConstruct
     public void init() {

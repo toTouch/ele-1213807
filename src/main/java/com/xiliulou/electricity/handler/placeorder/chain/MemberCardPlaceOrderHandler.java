@@ -16,12 +16,12 @@ import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Set;
@@ -36,16 +36,15 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_M
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class MemberCardPlaceOrderHandler extends AbstractPlaceOrderHandler {
     
-    @Resource
-    private InsuranceVerificationHandler insuranceVerificationHandler;
+    private final InsuranceVerificationHandler insuranceVerificationHandler;
     
-    @Resource
-    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    private final ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
-    @Resource
-    private UserBatteryMemberCardService userBatteryMemberCardService;
+    private final UserBatteryMemberCardService userBatteryMemberCardService;
+    
     
     @PostConstruct
     public void init() {

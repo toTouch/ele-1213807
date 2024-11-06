@@ -13,11 +13,11 @@ import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -30,10 +30,10 @@ import static com.xiliulou.electricity.constant.PlaceOrderConstant.PLACE_ORDER_D
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class DepositPlaceOrderHandler extends AbstractPlaceOrderHandler {
     
-    @Resource
-    private MemberCardVerificationHandler memberCardVerificationHandler;
+    private final MemberCardVerificationHandler memberCardVerificationHandler;
     
     @PostConstruct
     public void init() {

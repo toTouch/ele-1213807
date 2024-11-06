@@ -202,6 +202,12 @@ public class PlaceOrderChainManager {
         }
         context.setElectricityCabinet(electricityCabinet);
         
+        if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
+                batteryMemberCard.getFranchiseeId())) {
+            log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), placeOrderQuery.getMemberCardId());
+            return R.fail("100349", "用户加盟商与套餐加盟商不一致");
+        }
+        
         context.setOrderList(new ArrayList<>());
         context.setOrderTypeList(new ArrayList<>());
         context.setAllPayAmount(new ArrayList<>());
