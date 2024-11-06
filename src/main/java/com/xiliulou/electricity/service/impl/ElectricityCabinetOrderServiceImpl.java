@@ -1315,6 +1315,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 如果超过5分钟或者返回false，前端不进行弹窗
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        
+        // 判断用户绑定的电池与当前正在使用的套餐，电池型号是否匹配，返回是否需要进行灵活续费后的电池转换
+        Triple<Boolean, String, Object> checkFlexibleRenewal = checkFlexibleRenewal(vo, electricityBattery, userInfo);
+        if (!checkFlexibleRenewal.getLeft()) {
+            return checkFlexibleRenewal;
+        }
+        
         return Triple.of(true, null, vo);
         
     }
