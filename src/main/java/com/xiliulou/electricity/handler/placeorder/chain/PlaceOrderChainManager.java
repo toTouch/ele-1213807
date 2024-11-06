@@ -128,7 +128,7 @@ public class PlaceOrderChainManager {
     
     /**
      * 公共校验，以及获取相关数据传递给执行链路使用
-     *
+     * TODO SJP 下次有购买需求，将前置校验按照校验对象拆分handler，目前按照业务类型拆分不适合扩展和复用
      * @param context 业务参数
      */
     private R<Object> commonVerification(PlaceOrderContext context) throws Exception {

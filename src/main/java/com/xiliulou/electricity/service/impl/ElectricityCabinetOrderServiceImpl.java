@@ -1304,7 +1304,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 多次换电拦截
         if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
             LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).build();
-            Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.CHECK.getCode());
+            Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.CHECK.getCode());
             if (pair.getLeft()) {
                 return Triple.of(true, null, pair.getRight());
             }
@@ -1327,23 +1327,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     /**
      * @return Boolean=false继续走正常换电
      */
-    private Pair<Boolean, Object> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+    private Pair<Boolean, ExchangeUserSelectVo> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
             LessTimeExchangeDTO exchangeDTO, Integer code) {
         if (Objects.equals(exchangeDTO.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
             log.info("OrderV3 INFO! not same cabinet, normal exchange");
             return Pair.of(false, null);
         }
         
-        // 判断是直接开门还是让前端再调一次V3接口
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        checkFlexibleRenewal(vo, electricityBattery, userInfo);
-       
         Long uid = userInfo.getUid();
         ElectricityCabinetOrder lastOrder = electricityCabinetOrderMapper.selectLatelyExchangeOrder(uid, System.currentTimeMillis());
         if (Objects.isNull(lastOrder)) {
             log.warn("OrderV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder is null, currentUid is {}", uid);
-            // 只租了一次电就灵活续费了的场景，检查结束后，如果是正常换电，直接去分配电池
-            return Pair.of(!Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()), vo);
+            return Pair.of(false, null);
         }
         
         // 默认取5分钟的订单，可选择配置
@@ -1351,13 +1346,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("OrderV3 INFO! lessTimeExchangeTwoCountAssert.scanTime is {} ,currentTime is {}", scanTime, System.currentTimeMillis());
         
         if (System.currentTimeMillis() - lastOrder.getCreateTime() > scanTime) {
-            if (!Objects.equals(OrderCheckEnum.ORDER.getCode(), code)) {
-                log.warn("OrderV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 5 minutes,lastOrderId is {} ", lastOrder.getOrderId());
-                return Pair.of(false, null);
-            } else {
-                // 上一次是换电，检查结束后，如果是正常换电，直接去分配电池
-                return Pair.of(!Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()), vo);
-            }
+            log.warn("OrderV3 WARN! lowTimeExchangeTwoCountAssert.lastOrder over 5 minutes,lastOrderId is {} ", lastOrder.getOrderId());
+            return Pair.of(false, null);
         }
         
         // 扫码柜机和订单不是同一个柜机进行处理
@@ -1375,7 +1365,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Pair<Boolean, Object> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityBattery electricityBattery, ElectricityCabinetOrder lastOrder) {
+    private Pair<Boolean, ExchangeUserSelectVo> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityBattery electricityBattery, ElectricityCabinetOrder lastOrder) {
         // 用户绑定的电池为空，走正常换电
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("OrderV3 WARN! scan eid not equal order eid, userBindingBatterySn is null, uid is {}", userInfo.getUid());
@@ -1434,7 +1424,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return true;
     }
     
-    private Pair<Boolean, Object> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+    private Pair<Boolean, ExchangeUserSelectVo> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
             UserInfo userInfo) {
         // 上次成功不可能为空
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
@@ -1481,7 +1471,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
-    private Pair<Boolean, Object> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo, Integer code) {
+    private Pair<Boolean, ExchangeUserSelectVo> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo, Integer code) {
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
         vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
@@ -1506,7 +1496,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Pair.of(false, null);
     }
     
-    private Pair<Boolean, Object> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
+    private Pair<Boolean, ExchangeUserSelectVo> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
             UserInfo userInfo) {
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
@@ -1554,7 +1544,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Pair<Boolean, Object> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
+    private Pair<Boolean, ExchangeUserSelectVo> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo, ElectricityCabinet cabinet,
             UserInfo userInfo,Integer code) {
         
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
@@ -3173,8 +3163,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
-                if (pair.getLeft()) {
+                Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
+                
+                // 判断是直接开门还是让前端再调一次V3接口
+                ExchangeUserSelectVo vo = Objects.isNull(pair.getRight()) ? new ExchangeUserSelectVo() : pair.getRight();
+                checkFlexibleRenewal(vo, electricityBattery, userInfo);
+                
+                if (pair.getLeft() || !Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
                 }
@@ -3316,7 +3311,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 
                 LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
-                Pair<Boolean, Object> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
+                Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());
