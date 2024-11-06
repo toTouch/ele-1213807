@@ -83,7 +83,7 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
         batteryChargeConfigQuery.setCreateTime(System.currentTimeMillis());
         batteryChargeConfigQuery.setUpdateTime(System.currentTimeMillis());
         batteryChargeConfigService.insertOrUpdate(batteryChargeConfigQuery);
-        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), "ok", 30L,
+        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), "ok", 60L,
                 TimeUnit.SECONDS);
     }
 

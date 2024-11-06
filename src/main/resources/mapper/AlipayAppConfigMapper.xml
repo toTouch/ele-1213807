@@ -28,7 +28,7 @@
         update
             t_alipay_app_config
         set del_flag   = 1,
-            update_time=now()
+            update_time=UNIX_TIMESTAMP()*1000
         where id = #{id}
           and tenant_id = #{tenantId}
     </update>

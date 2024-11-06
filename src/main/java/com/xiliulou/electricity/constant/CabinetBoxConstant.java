@@ -21,4 +21,6 @@ public class CabinetBoxConstant {
      * 异常锁仓原因
      */
     public static final Integer LOCK_REASON_EXCEPTION = 1008;
+    
+    public static final Integer LOCK_REASON_OTHER = 50006;
 }

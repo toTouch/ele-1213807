@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
 import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -101,6 +102,8 @@ public interface ElectricityCabinetService {
     
     R sendCommandToEleForOuter(EleOuterCommandQuery eleOuterCommandQuery);
     
+    R sendCommand(EleOuterCommandQuery eleOuterCommandQuery);
+    
     String acquireDeviceBindServerIp(String productKey, String deviceName);
     
     R queryByDeviceOuter(String productKey, String deviceName);
@@ -137,7 +140,7 @@ public interface ElectricityCabinetService {
     
     Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version);
     
-    Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version);
+    Pair<Boolean, Integer> selectCellExchangeFindUsableEmptyCellNo(Integer eid, String version, Long uid);
     
     R getFranchisee(String productKey, String deviceName);
     
@@ -263,22 +266,7 @@ public interface ElectricityCabinetService {
     Integer existsByAreaId(Long areaId);
     
     List<AreaCabinetNumBO> countByAreaGroup(List<Long> areaIdList);
-    
-    /**
-     * <p>
-     * Description: queryIdsBySnArray
-     * </p>
-     *
-     * @param snList             snList
-     * @param tenantId           tenantId
-     * @param sourceFranchiseeId sourceFranchiseeId
-     * @return java.util.List<java.lang.Long>
-     * <p>Project: ElectricityCabinetService</p>
-     * <p>Copyright: Copyright (c) 2024</p>
-     * <p>Company: www.xiliulou.com</p>
-     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
-     * @since V1.0 2024/3/18
-     */
+
     Map<String, Long> listIdsBySnArray(List<String> snList, Integer tenantId, Long sourceFranchiseeId);
     
     List<Integer> listIdsByName(String name);
@@ -293,4 +281,6 @@ public interface ElectricityCabinetService {
     R listSuperAdminPage(ElectricityCabinetQuery electricityCabinetQuery);
     
     R updateCabinetPattern(EleCabinetPatternQuery query);
+    
+    List<ElectricityCabinetBO> listByIdList(List<Integer> cabinetIdList);
 }
