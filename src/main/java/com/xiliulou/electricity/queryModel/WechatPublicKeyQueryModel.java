@@ -25,7 +25,7 @@ public class WechatPublicKeyQueryModel {
     public Long id;
     
     // 租户id
-    public Long tenantId;
+    public Integer tenantId;
     
     // 公钥ID
     public String pubKeyId;

@@ -446,7 +446,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
      * @date 2024/10/31 16:50
      */
     private Map<Long, WechatPlatformPublicKey> queryMapWechatPlatformPublicKey(Integer tenantId, Set<Long> franchiseeIds) {
-        List<WechatPublicKeyBO> wechatPublicKeyBOS = wechatPublicKeyService.queryListByTenantIdFromCache(tenantId.longValue(), new ArrayList<>(franchiseeIds));
+        List<WechatPublicKeyBO> wechatPublicKeyBOS = wechatPublicKeyService.queryListByTenantIdFromCache(tenantId, new ArrayList<>(franchiseeIds));
         wechatPublicKeyBOS = Optional.ofNullable(wechatPublicKeyBOS).orElse(Collections.emptyList());
         Map<Long, WechatPlatformPublicKey> map = Maps.newHashMapWithExpectedSize(wechatPublicKeyBOS.size());
         
@@ -470,7 +470,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
      * @date 2024/10/31 16:25
      */
     private WechatPlatformPublicKey queryWechatPlatformPublicKey(Integer tenantId, Long franchiseeId) {
-        WechatPublicKeyBO wechatPublicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), franchiseeId);
+        WechatPublicKeyBO wechatPublicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId, franchiseeId);
         if (Objects.isNull(wechatPublicKeyBO)) {
             return null;
         }

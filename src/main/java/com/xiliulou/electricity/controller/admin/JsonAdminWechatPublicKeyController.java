@@ -50,7 +50,7 @@ public class JsonAdminWechatPublicKeyController extends AbstractFranchiseeDataPe
     public R<?> save(@RequestBody @Validated(value = CreateGroup.class) WechatPublicKeyRequest request) {
         checkUserDataScope();
         WechatPublicKeyBO build = WechatPublicKeyBO.builder().payParamsId(request.getPayParamsId()).pubKey(request.getPubKey())
-                .franchiseeId(request.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId().longValue()).pubKeyId(request.getPubKeyId()).uploadTime(System.currentTimeMillis()).build();
+                .franchiseeId(request.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).pubKeyId(request.getPubKeyId()).uploadTime(System.currentTimeMillis()).build();
         return wechatPublicKeyService.saveOrUpdate(build);
     }
     
@@ -58,7 +58,7 @@ public class JsonAdminWechatPublicKeyController extends AbstractFranchiseeDataPe
     public R<?> edit(@RequestBody @Validated(value = UpdateGroup.class) WechatPublicKeyRequest request) {
         checkUserDataScope();
         WechatPublicKeyBO build = WechatPublicKeyBO.builder().id(request.getId()).payParamsId(request.getPayParamsId()).pubKey(request.getPubKey())
-                .franchiseeId(request.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId().longValue()).pubKeyId(request.getPubKeyId()).uploadTime(System.currentTimeMillis()).build();
+                .franchiseeId(request.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId()).pubKeyId(request.getPubKeyId()).uploadTime(System.currentTimeMillis()).build();
         return wechatPublicKeyService.saveOrUpdate(build);
     }
     
@@ -66,7 +66,7 @@ public class JsonAdminWechatPublicKeyController extends AbstractFranchiseeDataPe
     @GetMapping
     public R<?> queryByTenantId(@Validated @NotNull @RequestParam("franchiseeId") Long franchiseeId) {
         checkUserDataScope();
-        WechatPublicKeyBO wechatPublicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(TenantContextHolder.getTenantId().longValue(), franchiseeId);
+        WechatPublicKeyBO wechatPublicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(TenantContextHolder.getTenantId(), franchiseeId);
         return R.ok(convertVO(wechatPublicKeyBO));
     }
     
