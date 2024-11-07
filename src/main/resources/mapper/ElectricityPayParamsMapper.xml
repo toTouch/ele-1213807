@@ -90,6 +90,7 @@
         from
         <include refid="table_name"/>
         where del_flag=0
+        and
         merchant_min_pro_app_id=#{merchantMinProAppId}
     </select>
     
