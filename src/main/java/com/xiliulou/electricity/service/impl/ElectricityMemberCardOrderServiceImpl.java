@@ -85,8 +85,6 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMappe
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.mq.producer.MessageSendProducer;
-import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -153,13 +151,9 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
-import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -3091,7 +3085,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, null, electricityConfig);
         if (!matchOrNot) {
             return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
         }
@@ -3310,7 +3304,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeWithUser(userBatteryTypes, batteryMemberCard, electricityConfig);
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
         if (!matchOrNot) {
             return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
         }

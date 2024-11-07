@@ -378,17 +378,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "302003", "运营商配置异常，请联系客服");
             }
             
-            // 灵活续费电池型号校验
+            // 灵活续费电池型号及押金校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-            if (CollectionUtils.isNotEmpty(batteryTypeByMid) && !CollectionUtils.containsAll(batteryTypeByMid, userBatteryTypes)) {
-                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
-            }
-            
-            // 灵活续费押金校验
-            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.queryByUid(userInfo.getUid());
-            if (Objects.nonNull(userBatteryDeposit) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
-                    userBatteryDeposit.getBatteryDeposit(), batteryMemberCard.getDeposit())) {
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, null, electricityConfig);
+            if (!matchOrNot) {
                 return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             
@@ -681,16 +674,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "302003", "运营商配置异常，请联系客服");
             }
             
-            // 灵活续费电池型号校验
+            // 灵活续费电池型号及押金校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            List<String> batteryTypeByMid = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
-            if (CollectionUtils.isNotEmpty(batteryTypeByMid) && CollectionUtils.containsAll(batteryTypeByMid, userBatteryTypes)) {
-                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
-            }
-            
-            // 灵活续费押金校验
-            if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(userBatteryDeposit.getBatteryDeposit(),
-                    batteryMemberCard.getDeposit())) {
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
+            if (!matchOrNot) {
                 return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
             

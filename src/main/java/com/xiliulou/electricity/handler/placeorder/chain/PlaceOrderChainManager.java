@@ -221,7 +221,6 @@ public class PlaceOrderChainManager {
         context.setOrderTypeList(new ArrayList<>());
         context.setAllPayAmount(new ArrayList<>());
         context.setTotalAmount(BigDecimal.valueOf(0));
-        
         return R.ok();
     }
     

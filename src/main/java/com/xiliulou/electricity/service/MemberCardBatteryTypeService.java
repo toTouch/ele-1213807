@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 
 import java.util.List;
 
@@ -25,8 +26,10 @@ public interface MemberCardBatteryTypeService {
      *
      * @param userBatteryTypeList 用户绑定的电池型号
      * @param memberCard          套餐
+     * @param userBatteryDeposit  用户押金
      * @param electricityConfig   租户配置
      * @return 检查结果
      */
-    boolean checkBatteryTypeWithUser(List<String> userBatteryTypeList, BatteryMemberCard memberCard, ElectricityConfig electricityConfig);
+    boolean checkBatteryTypeAndDepositWithUser(List<String> userBatteryTypeList, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit,
+            ElectricityConfig electricityConfig);
 }

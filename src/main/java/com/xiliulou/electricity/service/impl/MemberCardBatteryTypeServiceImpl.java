@@ -5,6 +5,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.mapper.MemberCardBatteryTypeMapper;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
@@ -65,7 +66,16 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     }
     
     @Override
-    public boolean checkBatteryTypeWithUser(List<String> userBatteryTypes, BatteryMemberCard memberCard, ElectricityConfig electricityConfig) {
+    public boolean checkBatteryTypeAndDepositWithUser(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit,
+            ElectricityConfig electricityConfig) {
+        // 灵活续费押金校验
+        if (Objects.nonNull(userBatteryDeposit) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
+                userBatteryDeposit.getBatteryDeposit(), memberCard.getDeposit())) {
+            // TODO SJP
+            log.info("调试，押金错误");
+            return false;
+        }
+        
         List<String> memberCardBatteryTypes = selectBatteryTypeByMid(memberCard.getId());
         
         // 单型号套餐续费
