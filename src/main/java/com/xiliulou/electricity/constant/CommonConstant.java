@@ -89,4 +89,6 @@ public interface CommonConstant {
     
     Integer ZERO = 0;
     
+    String INIT_FQA_URL="classpath:initTemplate/initFaq.properties";
+    
 }

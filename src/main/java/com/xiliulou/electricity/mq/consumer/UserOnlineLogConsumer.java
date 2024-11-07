@@ -92,7 +92,7 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
     // Send device notification
     private void sendDeviceNotification(UserEleOnlineLog eleOnlineLog) {
         ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(eleOnlineLog.getElectricityId());
-        maintenanceUserNotifyConfigService.sendDeviceNotifyMq(cabinet, eleOnlineLog.getStatus(),
+        maintenanceUserNotifyConfigService.sendDeviceNotify(cabinet, eleOnlineLog.getStatus(),
                 eleOnlineLog.getAppearTime());
     }
 

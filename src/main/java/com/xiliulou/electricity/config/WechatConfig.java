@@ -103,5 +103,17 @@ public class WechatConfig implements BasePayCallBackConfig{
      * 电池套餐退租金回调
      */
     private String batteryRentRefundCallBackUrl;
+    
+    
+    /**
+     * 运维设置公众号消息通知appid
+     */
+    private String notifyUserInfoAppId;
+    
+    
+    /**
+     * 运维设置公众号消息通知Secret
+     */
+    private String notifyUserInfoSecret;
 
 }

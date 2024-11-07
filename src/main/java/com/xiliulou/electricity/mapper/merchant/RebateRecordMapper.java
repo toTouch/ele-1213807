@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionEmployeeDetailSp
 import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
@@ -53,4 +54,6 @@ public interface RebateRecordMapper extends BaseMapper<RebateRecord> {
     List<RebateRecord> selectRebatedByUid(@Param("uid") Long uid, @Param("memberCardId") Long memberCardId, @Param("merchantId") Long merchantId, @Param("currentLevel") String currentLevel);
     
     Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId);
+    
+    List<MerchantStatisticsUserVO> selectListRenewal(MerchantPromotionRenewalQueryModel renewalQueryModel);
 }

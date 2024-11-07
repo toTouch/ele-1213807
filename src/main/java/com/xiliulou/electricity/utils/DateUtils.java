@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -87,10 +88,10 @@ public class DateUtils {
     public static long getTimeAgoEndTime(int day) {
         // 获取当前日期减去day天的日期和时间
         LocalDateTime localDateTime = LocalDateTime.of(LocalDate.now().minusDays(day), LocalTime.MAX);
-    
+        
         // 转换为Instant，并指定时区为东八区
         Instant instant = localDateTime.atZone(ZoneOffset.of("+8")).toInstant();
-    
+        
         // 返回毫秒数
         return instant.toEpochMilli();
     }
@@ -290,6 +291,7 @@ public class DateUtils {
     
     /**
      * 获取具体天数前的时间
+     *
      * @param minusDay
      * @return
      */
@@ -365,17 +367,40 @@ public class DateUtils {
         return startOfDay.toInstant().toEpochMilli();
     }
     
-    public static long getEndOfDayTimestamp(long timestamp){
+    public static long getEndOfDayTimestamp(long timestamp) {
         // 将时间戳转换为Instant对象
         Instant instant = Instant.ofEpochMilli(timestamp);
-    
+        
         // 转换为LocalDateTime并设置为当天的开始时间
         LocalDateTime localDateTime = instant.atZone(CHINA_ZONE_ID).toLocalDate().atStartOfDay();
-    
+        
         // 计算当天的最后一刻（即23:59:59.999）
         LocalDateTime endOfDay = localDateTime.plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MILLIS);
-    
+        
         // 再次转换回时间戳
         return endOfDay.atZone(CHINA_ZONE_ID).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 剩余时间戳转化为剩余 x天 x时
+     */
+    public static String convertExpireTime(long expireTime) {
+        Instant now = Instant.now();
+        Instant target = Instant.ofEpochMilli(expireTime);
+        Duration duration = Duration.between(now, target);
+        
+        if (duration.isNegative()) {
+            return "0天0小时";
+        } else {
+            long hours = duration.toHours();
+            long days = hours / 24;
+            hours = hours % 24;
+            
+            if (hours < 1) {
+                return "不足1小时";
+            } else {
+                return days + "天" + hours + "小时";
+            }
+        }
     }
 }

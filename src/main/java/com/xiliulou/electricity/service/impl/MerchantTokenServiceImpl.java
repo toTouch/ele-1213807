@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.query.merchant.MerchantLoginRequest;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
@@ -89,6 +90,9 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     @Autowired
     JwtTokenManager jwtTokenManager;
     
+    @Resource
+    private ServicePhoneService servicePhoneService;
+    
     @Override
     public Triple<Boolean, String, Object> login(HttpServletRequest request, MerchantLoginRequest merchantLoginRequest) {
         String clientId = request.getHeader(TokenConstant.SINGLE_HEADER_TOKEN_CLIENT_ID_KEY);
@@ -101,12 +105,11 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
             return Triple.of(false, null, "操作频繁,请稍后再试");
         }
         
-        
         long now = System.currentTimeMillis();
         
         try {
-            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, merchantConfig.getMerchantAppletId(),
-                    merchantConfig.getMerchantAppletSecret(), merchantLoginRequest.getCode());
+            String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL, merchantConfig.getMerchantAppletId(), merchantConfig.getMerchantAppletSecret(),
+                    merchantLoginRequest.getCode());
             
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("call wxpro get openId message is {}", bodyStr);
@@ -180,11 +183,11 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                     }
                     
                     UserOauthBind oauthBind = UserOauthBind.builder().createTime(now).updateTime(now).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).uid(e.getUid())
-                            .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(openid).source(UserOauthBind.SOURCE_WX_PRO)
-                            .status(UserOauthBind.STATUS_BIND).build();
+                            .accessToken("").refreshToken("").thirdNick("").tenantId(tenantId).thirdId(openid).source(UserOauthBind.SOURCE_WX_PRO).status(UserOauthBind.STATUS_BIND)
+                            .build();
                     userOauthBindService.insert(oauthBind);
                 } else {
-                    UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(e.getUid(), tenantId,UserOauthBind.SOURCE_WX_PRO);
+                    UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndSource(e.getUid(), tenantId, UserOauthBind.SOURCE_WX_PRO);
                     
                     if (ObjectUtils.isNotEmpty(userOauthBind) && !openid.equals(userOauthBind.getThirdId())) {
                         log.warn("merchant token login warning. the uid is bind other third id. uid is {}", e.getUid());
@@ -216,7 +219,8 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
                 merchantLoginVO.setTenantId(tenantId.longValue());
                 merchantLoginVO.setTenantName(tenant.getName());
                 merchantLoginVO.setTenantCode(tenant.getCode());
-                merchantLoginVO.setServicePhone(redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId));
+                merchantLoginVO.setServicePhone(userService.selectServicePhone(tenantId));
+                merchantLoginVO.setServicePhones(servicePhoneService.listPhones(tenantId));
                 return merchantLoginVO;
             }).filter(Objects::nonNull).collect(Collectors.toList());
             return Triple.of(true, null, loginVOS);
@@ -228,8 +232,7 @@ public class MerchantTokenServiceImpl implements MerchantTokenService {
     }
     
     private Pair<Boolean, List<UserOauthBind>> checkOpenIdExists(String openid, Integer tenantId) {
-        List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid,
-                UserOauthBind.SOURCE_WX_PRO, tenantId);
+        List<UserOauthBind> userOauthBindList = userOauthBindService.selectListOauthByOpenIdAndSource(openid, UserOauthBind.SOURCE_WX_PRO, tenantId);
         return CollectionUtils.isNotEmpty(userOauthBindList) ? Pair.of(true, userOauthBindList) : Pair.of(false, null);
     }
     

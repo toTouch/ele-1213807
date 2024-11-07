@@ -7,15 +7,15 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.query.MaintenanceUserNotifyConfigQuery;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.MaintenanceUserNotifyConfigVo;
-import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     @Autowired
     RedisService redisService;
     @Autowired
-    RocketMqService rocketMqService;
+    MessageSendProducer messageSendProducer;
     @Autowired
     WechatConfig wechatConfig;
 
@@ -199,7 +199,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     }
 
     @Override
-    public void sendDeviceNotifyMq(ElectricityCabinet electricityCabinet, String status, String time) {
+    public void sendDeviceNotify(ElectricityCabinet electricityCabinet, String status, String time) {
         MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
             return;
@@ -212,21 +212,22 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
         phones.forEach(p -> {
-            MqNotifyCommon<MqDeviceNotify> query = new MqNotifyCommon<>();
+            MqNotifyCommon<DeviceNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.P_DEVICE);
+            query.setType(SendMessageTypeEnum.DEVICE_LOGIN_NOTIFY.getType());
+            query.setTenantId(electricityCabinet.getTenantId());
 
-            MqDeviceNotify mqDeviceNotify = new MqDeviceNotify();
-            mqDeviceNotify.setProductKey(electricityCabinet.getProductKey());
-            mqDeviceNotify.setDeviceSn(electricityCabinet.getDeviceName());
-            mqDeviceNotify.setOccurTime(time);
-            mqDeviceNotify.setStatus(status);
-            mqDeviceNotify.setProjectName(MqNotifyCommon.PROJECT_NAME);
-            mqDeviceNotify.setDeviceName(electricityCabinet.getName());
-            query.setData(mqDeviceNotify);
+            DeviceNotify deviceNotify = new DeviceNotify();
+            deviceNotify.setProductKey(electricityCabinet.getProductKey());
+            deviceNotify.setDeviceSn(electricityCabinet.getDeviceName());
+            deviceNotify.setOccurTime(time);
+            deviceNotify.setStatus(status);
+            deviceNotify.setProjectName(MqNotifyCommon.PROJECT_NAME);
+            deviceNotify.setDeviceName(electricityCabinet.getName());
+            query.setData(deviceNotify);
 
-            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", status.equals(ElectricityCabinet.IOT_STATUS_OFFLINE) ? 4 : 0);
+            Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", status.equals(ElectricityCabinet.IOT_STATUS_OFFLINE) ? 4 : 0);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
             }
@@ -237,35 +238,36 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
 
     }
 
-    @Override
-    public void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String occurTime) {
-        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
-        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
-            return;
-        }
-
-        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_HARDWARE_INFO) != MaintenanceUserNotifyConfig.P_HARDWARE_INFO) {
-            return;
-        }
-
-        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
-        phones.forEach(p -> {
-            MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
-            query.setPhone(p);
-            query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.P_HARDWARE_INFO);
-
-            MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
-            mqHardwareNotify.setDeviceName(electricityCabinet.getName());
-            mqHardwareNotify.setOccurTime(occurTime);
-            mqHardwareNotify.setErrMsg(String.format("%s号仓门发生异常，已被锁定！", cellNo));
-            mqHardwareNotify.setProjectTitle(MqHardwareNotify.LOCK_CELL_PROJECT_TITLE);
-            query.setData(mqHardwareNotify);
-
-            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), String.valueOf(MqNotifyCommon.TYPE_HARDWARE_INFO), sessionId, 0);
-
-        });
-    }
+//    @Override
+//    public void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String occurTime) {
+//        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
+//        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
+//            return;
+//        }
+//
+//        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_HARDWARE_INFO) != MaintenanceUserNotifyConfig.P_HARDWARE_INFO) {
+//            return;
+//        }
+//
+//        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
+//        phones.forEach(p -> {
+//            MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
+//            query.setPhone(p);
+//            query.setTime(System.currentTimeMillis());
+//            query.setType(SendMessageTypeEnum.HARDWARE_INFO_NOTIFY.getType());
+//            query.setTenantId(electricityCabinet.getTenantId());
+//
+//            MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
+//            mqHardwareNotify.setDeviceName(electricityCabinet.getName());
+//            mqHardwareNotify.setOccurTime(occurTime);
+//            mqHardwareNotify.setErrMsg(String.format("%s号仓门发生异常，已被锁定！", cellNo));
+//            mqHardwareNotify.setProjectTitle(MqHardwareNotify.LOCK_CELL_PROJECT_TITLE);
+//            query.setData(mqHardwareNotify);
+//
+//            messageSendProducer.sendAsyncMsg(query, String.valueOf(MqNotifyCommon.TYPE_HARDWARE_INFO), sessionId, 0);
+//
+//        });
+//    }
 
     @Override
     public void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet) {
@@ -287,6 +289,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
             query.setType(MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD);
+            query.setTenantId(electricityCabinet.getTenantId());
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
@@ -296,7 +299,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             mqHardwareNotify.setProjectTitle(MqHardwareNotify.USER_UPLOAD_EXCEPTION);
             query.setData(mqHardwareNotify);
 
-            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 3);
+            Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", 3);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
             }
@@ -319,21 +322,22 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
         phones.forEach(p -> {
-            MqNotifyCommon<MqDeviceNotify> query = new MqNotifyCommon<>();
+            MqNotifyCommon<DeviceNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.P_DEVICE);
+            query.setType(SendMessageTypeEnum.DEVICE_LOGIN_NOTIFY.getType());
+            query.setTenantId(tenantId);
 
-            MqDeviceNotify mqDeviceNotify = new MqDeviceNotify();
-            mqDeviceNotify.setProductKey("test");
-            mqDeviceNotify.setDeviceSn("test");
-            mqDeviceNotify.setOccurTime("test");
-            mqDeviceNotify.setStatus("test");
-            mqDeviceNotify.setProjectName(MqNotifyCommon.PROJECT_NAME);
-            mqDeviceNotify.setDeviceName("test");
-            query.setData(mqDeviceNotify);
+            DeviceNotify deviceNotify = new DeviceNotify();
+            deviceNotify.setProductKey("test");
+            deviceNotify.setDeviceSn("test");
+            deviceNotify.setOccurTime("test");
+            deviceNotify.setStatus("test");
+            deviceNotify.setProjectName(MqNotifyCommon.PROJECT_NAME);
+            deviceNotify.setDeviceName("test");
+            query.setData(deviceNotify);
 
-            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
+            Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", 0);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", "test", result.getRight());
             }

@@ -146,11 +146,10 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         // 模糊返回全部
         if (!StringUtils.isEmpty(faqQuery.getTitle())) {
             return faqVos.stream().map(e -> {
-                        FaqVo faqVo = new FaqVo();
-                        BeanUtils.copyProperties(e, faqVo);
-                        return faqVo;
-                    }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort))
-                    .collect(Collectors.toList());
+                FaqVo faqVo = new FaqVo();
+                BeanUtils.copyProperties(e, faqVo);
+                return faqVo;
+            }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort)).collect(Collectors.toList());
         }
         
         // 默认获取第一个分类
@@ -161,8 +160,7 @@ public class FaqV2ServiceImpl implements FaqV2Service {
             FaqVo faqVo = new FaqVo();
             BeanUtils.copyProperties(e, faqVo);
             return faqVo;
-        }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort))
-                .collect(Collectors.toList());
+        }).sorted(Comparator.comparing(FaqVo::getTypeSort).thenComparing(FaqVo::getSort)).collect(Collectors.toList());
     }
     
     @Override
@@ -171,8 +169,9 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         if (CollectionUtil.isEmpty(faqVos)) {
             return null;
         }
-        return faqVos.stream().filter(e -> Objects.equals(e.getOnShelf(), FaqV2.SHELF_TYPE )).collect(Collectors.toList());
+        return faqVos.stream().filter(e -> Objects.equals(e.getOnShelf(), FaqV2.SHELF_TYPE)).collect(Collectors.toList());
     }
+    
     @Override
     public R updateFaqReqSort(AdminFaqReq faqReq) {
         FaqV2 faq = this.queryEntity(faqReq.getId());
@@ -190,6 +189,11 @@ public class FaqV2ServiceImpl implements FaqV2Service {
         faq.setUpdateTime(System.currentTimeMillis());
         faqV2Mapper.updateByPrimaryKeySelective(faq);
         return R.ok();
+    }
+    
+    @Override
+    public Integer batchInsert(List<FaqV2> list) {
+        return faqV2Mapper.batchInsert(list);
     }
     
     

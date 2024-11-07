@@ -39,6 +39,7 @@ import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceUpdateQuery;
+import com.xiliulou.electricity.request.user.ResetPasswordRequest;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -47,6 +48,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.ServicePhoneService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -64,6 +66,7 @@ import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizS
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ServicePhoneVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserSearchVO;
@@ -184,6 +187,9 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private UserInfoGroupBizService userInfoGroupBizService;
+    
+    @Resource
+    private ServicePhoneService servicePhoneService;
     
     /**
      * 启用锁定用户
@@ -551,6 +557,40 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> listByPhones(List<String> phoneList, Integer tenantId, Integer type) {
         return userMapper.selectListByPhones(phoneList, tenantId, type);
+    }
+    
+    @Slave
+    @Override
+    public List<UserSearchVO> listTenantUsers(Integer tenantId) {
+        return userMapper.selectListTenantUsers(tenantId);
+    }
+    
+    @Override
+    public R updateTenantPassword(ResetPasswordRequest request) {
+        Integer tenantId = request.getTenantId();
+        Long uid = request.getUid();
+        
+        User oldUser = this.queryByUidFromCache(uid);
+        if (Objects.isNull(oldUser) || Objects.equals(oldUser.getDelFlag(), User.DEL_DEL) || !Objects.equals(oldUser.getUserType(), User.TYPE_USER_NORMAL_ADMIN) || !Objects.equals(
+                oldUser.getDataType(), User.DATA_TYPE_OPERATE) || !Objects.equals(oldUser.getTenantId(), tenantId)) {
+            log.warn("Update tenant password warn! not found user, uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 解密密码
+        String decryptPassword = decryptPassword(request.getPassword());
+        if (StringUtils.isBlank(decryptPassword)) {
+            log.error("UpdateTenantPassword ERROR! decryptPassword error! tenantId={},uid={},password={}", tenantId, uid, request.getPassword());
+            return R.fail("系统错误!");
+        }
+        
+        User updateUser = new User();
+        updateUser.setUid(oldUser.getUid());
+        updateUser.setLoginPwd(customPasswordEncoder.encode(decryptPassword));
+        updateUser.setUpdateTime(System.currentTimeMillis());
+        Integer update = this.updateUser(updateUser, oldUser);
+        
+        return update > 0 ? R.ok() : R.fail("修改密码失败!");
     }
     
     @Override
@@ -929,7 +969,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
         return this.userMapper.queryCount(null, null, null, null, startTime, endTime, tenantId);
-//        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
+        //        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
     
     @Override
@@ -1036,16 +1076,11 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public String selectServicePhone(Integer tenantId) {
-        String cachePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        //        if (StringUtils.isNotBlank(cachePhone)) {
-        //            return cachePhone;
-        //        }
-        //
-        //        String phone = null;
-        //        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
-        //        if (CollectionUtils.isNotEmpty(userList)) {
-        //            phone = userList.get(0).getPhone();
-        //        }
+        String cachePhone = StringUtils.EMPTY;
+        List<ServicePhoneVO> servicePhoneList = servicePhoneService.listPhones(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isNotEmpty(servicePhoneList)) {
+            cachePhone = servicePhoneList.get(0).getPhone();
+        }
         
         return cachePhone;
     }

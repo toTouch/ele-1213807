@@ -33,3 +33,7 @@ management:
 rocketmq:
   producer:
     send-message-timeout: 6000
+
+wechat:
+  notifyUserInfoAppId:
+  notifyUserInfoSecret:

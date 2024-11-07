@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.merchant.MerchantPromotionFeeQueryModel;
 import com.xiliulou.electricity.query.merchant.MerchantPromotionRenewalQueryModel;
 import com.xiliulou.electricity.request.merchant.RebateRecordRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionEmployeeDetailSpecificsVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import com.xiliulou.electricity.vo.merchant.RebateRecordVO;
 
 import java.math.BigDecimal;
@@ -57,4 +58,6 @@ public interface RebateRecordService {
     List<RebateRecord> listRebatedByUid(Long uid, Long memberCardId, Long merchantId, String currentLevel);
     
     Integer existsExpireRebateRecordByOriginalOrderId(String originalOrderId);
+    
+    List<MerchantStatisticsUserVO> listRenewal(MerchantPromotionRenewalQueryModel renewalQueryModel);
 }

@@ -1,9 +1,15 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.google.api.client.util.Lists;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.PhoneUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.DateFormatConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantChannelEmployeeBindHistoryConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
@@ -50,6 +56,7 @@ import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeMerchantVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeRenewalVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionFeeScanCodeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantPromotionMerchantDetailVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisIncomeVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisMerchantVO;
 import com.xiliulou.electricity.vo.merchant.PromotionFeeStatisticAnalysisPurchaseVO;
@@ -68,11 +75,14 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -115,6 +125,9 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
     
     @Resource
     private MerchantChannelEmployeeBindHistoryService merchantChannelEmployeeBindHistoryService;
+    
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("MERCHANT-PROMOTION-USER-STATISTICS-THREAD-POOL", 3, "merchantPromotionUserStatisticsThread:");
+    
     
     @Override
     public R queryMerchantEmployees(Long merchantUid) {
@@ -367,6 +380,7 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
             long endOfDayTimestamp = DateUtils.getEndOfDayTimestamp(startTime);
             
             if (Objects.nonNull(dtoList)) {
+                // 渠道员推广费带商户条件搜索
                 scanCodeNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, null, dtoList);
                 purchaseNum = buildScanCodeCount(type, uid, startTime, endOfDayTimestamp, MerchantJoinRecordConstant.STATUS_SUCCESS, dtoList);
                 renewalNum = buildRenewalNum(type, uid, startTime, endOfDayTimestamp, dtoList);
@@ -403,6 +417,326 @@ public class MerchantPromotionFeeServiceImpl implements MerchantPromotionFeeServ
         userVO.setRenewalVOList(renewalVOList);
         
         return R.ok(userVO);
+    }
+    
+    public R statisticUserV2(Integer type, Long uid, Long beginTime, Long endTime, Integer userType) {
+        if (!PromotionFeeQueryTypeEnum.contains(type)) {
+            return R.fail("300850", "该类型用户不存在");
+        }
+        
+        // 渠道员登录并且查询的是商户数据
+        boolean channelEmployeeFlag = false;
+        
+        if (Objects.equals(userType, User.TYPE_USER_CHANNEL) && Objects.equals(type, PromotionFeeQueryTypeEnum.MERCHANT.getCode())) {
+            channelEmployeeFlag = true;
+        }
+        
+        boolean finalChannelEmployeeFlag = channelEmployeeFlag;
+    
+        // 查询扫码人数
+        List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = new ArrayList<>();
+        CompletableFuture<List<MerchantStatisticsUserVO>> merchantStatisticsUserInfo = CompletableFuture.supplyAsync(
+                () -> queryMerchantJoinRecord(type, uid, beginTime, endTime, null, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
+            if (ObjectUtils.isNotEmpty(result)) {
+                merchantStatisticsUserVOS.addAll(result);
+            }
+        
+            if (e != null) {
+                log.error("MERCHANT PROMOTION FEE QUERY ERROR!, merchant statistics error", e);
+            }
+        });
+    
+        // 查询新增人数
+        List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS = new ArrayList<>();
+        CompletableFuture<List<MerchantStatisticsUserVO>> merchantAddStatisticsUserInfo = CompletableFuture.supplyAsync(
+                () -> queryMerchantJoinRecord(type, uid, beginTime, endTime, MerchantJoinRecordConstant.STATUS_SUCCESS, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
+            if (ObjectUtils.isNotEmpty(result)) {
+                merchantAddStatisticsUserVOS.addAll(result);
+            }
+        
+            if (e != null) {
+                log.error("MERCHANT PROMOTION FEE QUERY ERROR!, merchant add statistics error", e);
+            }
+        });
+        
+        // 查询续费人数
+        List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS = new ArrayList<>();
+        CompletableFuture<List<MerchantStatisticsUserVO>> merchantRenewalStatisticsUserInfo = CompletableFuture.supplyAsync(
+                () -> queryRenewalNum(type, uid, beginTime, endTime, finalChannelEmployeeFlag), threadPool).whenComplete((result, e) -> {
+            if (ObjectUtils.isNotEmpty(result)) {
+                merchantRenewalStatisticsUserVOS.addAll(result);
+            }
+        
+            if (e != null) {
+                log.error("MERCHANT PROMOTION FEE QUERY ERROR!, merchant renewal statistics error", e);
+            }
+        });
+    
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(merchantStatisticsUserInfo, merchantAddStatisticsUserInfo, merchantRenewalStatisticsUserInfo);
+        
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("merchant user statistics query summary browsing error for merchant query", e);
+        }
+    
+        return dealStaticUserResult(beginTime, endTime, merchantRenewalStatisticsUserVOS, merchantAddStatisticsUserVOS, merchantStatisticsUserVOS);
+        
+    }
+    
+    private R dealStaticUserResult(Long beginTime, Long endTime, List<MerchantStatisticsUserVO> merchantRenewalStatisticsUserVOS, List<MerchantStatisticsUserVO> merchantAddStatisticsUserVOS, List<MerchantStatisticsUserVO> merchantStatisticsUserVOS) {
+        PromotionFeeStatisticAnalysisUserVO userVO = new PromotionFeeStatisticAnalysisUserVO();
+        List<PromotionFeeStatisticAnalysisUserScanCodeVO> scanCodeVOList = new ArrayList<>();
+    
+        List<PromotionFeeStatisticAnalysisPurchaseVO> purchaseVOList = new ArrayList<>();
+    
+        List<PromotionFeeStatisticAnalysisRenewalVO> renewalVOList = new ArrayList<>();
+        
+        Map<String, Integer> merchantRenewalUserMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantRenewalStatisticsUserVOS)) {
+            merchantRenewalUserMap = merchantRenewalStatisticsUserVOS.stream().filter(item -> Objects.nonNull(item.getScanCodeCount()))
+                    .collect(Collectors.groupingBy(MerchantStatisticsUserVO::getMonthDate, Collectors.summingInt(MerchantStatisticsUserVO::getScanCodeCount)));
+        }
+    
+        Map<String, Integer> merchantAddUserMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantAddStatisticsUserVOS)) {
+            merchantAddUserMap = merchantAddStatisticsUserVOS.stream().filter(item -> Objects.nonNull(item.getScanCodeCount()))
+                    .collect(Collectors.groupingBy(MerchantStatisticsUserVO::getMonthDate, Collectors.summingInt(MerchantStatisticsUserVO::getScanCodeCount)));
+        }
+    
+        Map<String, Integer> merchantScanCodeMap = new HashMap<>();
+        if (ObjectUtils.isNotEmpty(merchantStatisticsUserVOS)) {
+            merchantScanCodeMap = merchantStatisticsUserVOS.stream().filter(item -> Objects.nonNull(item.getScanCodeCount()))
+                    .collect(Collectors.groupingBy(MerchantStatisticsUserVO::getMonthDate, Collectors.summingInt(MerchantStatisticsUserVO::getScanCodeCount)));
+        }
+    
+        List<DateTime> dateTimes = DateUtil.rangeToList(new Date(beginTime), new Date(endTime), DateField.DAY_OF_MONTH);
+        for (DateTime dateTime : dateTimes) {
+            String monthDateStr = DateUtil.format(dateTime, DateFormatConstant.MONTH_DAY_DATE_FORMAT);
+            
+            // 扫码人数
+            Integer scanCodeNum = NumberConstant.ZERO;
+            if (merchantScanCodeMap.containsKey(monthDateStr) ) {
+                scanCodeNum = merchantScanCodeMap.get(monthDateStr);
+            }
+            
+            PromotionFeeStatisticAnalysisUserScanCodeVO scanCodeVO = new PromotionFeeStatisticAnalysisUserScanCodeVO();
+            scanCodeVO.setScanCodeNum(scanCodeNum);
+            scanCodeVO.setStatisticTime(monthDateStr);
+            scanCodeVOList.add(scanCodeVO);
+            
+            
+            // 新增人数
+            Integer purchaseNum = NumberConstant.ZERO;
+            if (merchantAddUserMap.containsKey(monthDateStr) ) {
+                purchaseNum = merchantAddUserMap.get(monthDateStr);
+            }
+            
+            PromotionFeeStatisticAnalysisPurchaseVO purchaseVO = new PromotionFeeStatisticAnalysisPurchaseVO();
+            purchaseVO.setPurchaseNum(purchaseNum);
+            purchaseVO.setStatisticTime(monthDateStr);
+            purchaseVOList.add(purchaseVO);
+            
+            // 续费人数
+            Integer renewalNum = NumberConstant.ZERO;
+            if (merchantRenewalUserMap.containsKey(monthDateStr) ) {
+                renewalNum = merchantRenewalUserMap.get(monthDateStr);
+            }
+            
+            PromotionFeeStatisticAnalysisRenewalVO renewalVO = new PromotionFeeStatisticAnalysisRenewalVO();
+            renewalVO.setRenewalNum(renewalNum);
+            renewalVO.setStatisticTime(monthDateStr);
+            renewalVOList.add(renewalVO);
+        }
+    
+        userVO.setPurchaseVOList(purchaseVOList);
+        userVO.setScanCodeVOList(scanCodeVOList);
+        userVO.setRenewalVOList(renewalVOList);
+        
+        return R.ok(userVO);
+    }
+    
+    private List<MerchantStatisticsUserVO> queryRenewalNum(Integer type, Long uid, Long startTime, Long endTime, boolean channelEmployeeFlag) {
+        if (channelEmployeeFlag) {
+            //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
+            //统计收入
+            MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).uid(uid)
+                    .userType(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).startTime(startTime).endTime(endTime)
+                    .rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).channelEmployeeUid(SecurityUtils.getUid()).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND)
+                    .build();
+            
+            return rebateRecordService.listRenewal(renewalQueryModel);
+        } else {
+            //昨日续费次数：购买指定套餐时间=昨日0点～今日0点，且套餐购买次数>1的购买成功次数
+            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
+                type = PromotionFeeQueryTypeEnum.MERCHANT.getCode();
+            }
+            
+            if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
+                MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                        .channelEmployeeUid(uid).startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL)
+                        .refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
+                return rebateRecordService.listRenewal(renewalQueryModel);
+            }
+            
+            MerchantPromotionRenewalQueryModel renewalQueryModel = MerchantPromotionRenewalQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).userType(type).uid(uid)
+                    .startTime(startTime).endTime(endTime).rebateType(MerchantConstant.MERCHANT_REBATE_TYPE_RENEWAL).refundFlag(MerchantConstant.REBATE_IS_NOT_REFUND).build();
+            return rebateRecordService.listRenewal(renewalQueryModel);
+        }
+    }
+    
+    private List<MerchantStatisticsUserVO> queryMerchantJoinRecord(Integer type, Long uid, Long startTime, Long endTime, Integer status, boolean channelEmployeeFlag) {
+        // 根据是否成功然后修改查询逻辑
+        if (Objects.nonNull(status) && Objects.equals(status, MerchantJoinRecordConstant.STATUS_SUCCESS)) {
+            return buildMerchantJoinRecordSuccessCount(type, uid, startTime, endTime, status, channelEmployeeFlag);
+        }
+        
+        return buildMerchantJoinRecordCommonCount(type, uid, startTime, endTime, status, channelEmployeeFlag);
+    }
+    
+    private List<MerchantStatisticsUserVO> buildMerchantJoinRecordCommonCount(Integer type, Long uid, Long startTime, Long endTime, Integer status, boolean channelEmployeeFlag) {
+        if (channelEmployeeFlag) {
+            //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+            MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                    .channelEmployeeUid(SecurityUtils.getUid()).status(status).type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).build();
+        
+            scanCodeQueryModel.setStartTime(startTime);
+            scanCodeQueryModel.setEndTime(endTime);
+            List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = merchantJoinRecordService.listJoinNumByCondition(scanCodeQueryModel);
+    
+    
+            MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+            // 员工扫码人数
+            List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
+            if (ObjectUtils.isEmpty(merchantEmployees)) {
+                return merchantStatisticsUserVOS;
+            }
+    
+            List<Long> employeeIds = merchantEmployees.parallelStream().map(MerchantEmployee::getUid).collect(Collectors.toList());
+            List<MerchantStatisticsUserVO> scanCodeByEmployee = merchantJoinRecordService.listEmployeeJoinNum(employeeIds, startTime, endTime, status,
+                    TenantContextHolder.getTenantId(), SecurityUtils.getUid());
+            if (ObjectUtils.isEmpty(scanCodeByEmployee)) {
+                return merchantStatisticsUserVOS;
+            }
+    
+            merchantStatisticsUserVOS.addAll(scanCodeByEmployee);
+            
+            return merchantStatisticsUserVOS;
+        } else {
+            //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
+            
+                // 商户扫码人数
+                MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                        .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = merchantJoinRecordService.listJoinNumByCondition(scanCodeQueryModel);
+            
+                MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
+                        .tenantId(TenantContextHolder.getTenantId()).build();
+            
+                // 员工扫码人数
+                List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
+                if (ObjectUtils.isEmpty(merchantEmployees)) {
+                    return merchantStatisticsUserVOS;
+                }
+    
+                List<Long> employeeIds = merchantEmployees.parallelStream().map(MerchantEmployee::getUid).collect(Collectors.toList());
+                List<MerchantStatisticsUserVO> scanCodeByEmployee = merchantJoinRecordService.listEmployeeJoinNum(employeeIds, startTime, endTime, status, TenantContextHolder.getTenantId(),
+                        null);
+    
+                if (ObjectUtils.isEmpty(scanCodeByEmployee)) {
+                    return merchantStatisticsUserVOS;
+                }
+    
+                merchantStatisticsUserVOS.addAll(scanCodeByEmployee);
+                
+                return merchantStatisticsUserVOS;
+            } else if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
+                // 商户扫码人数
+                MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                        .channelEmployeeUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                return merchantJoinRecordService.listJoinNumByCondition(scanCodeQueryModel);
+            } else {
+                //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+                MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
+                        .uid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                return merchantJoinRecordService.listJoinNumByCondition(scanCodeQueryModel);
+            }
+        }
+    }
+    
+    private List<MerchantStatisticsUserVO> buildMerchantJoinRecordSuccessCount(Integer type, Long uid, Long startTime, Long endTime, Integer status, boolean channelEmployeeFlag) {
+        if (channelEmployeeFlag) {
+            //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+            MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                    .channelEmployeeUid(SecurityUtils.getUid()).status(status).type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).build();
+            
+            scanCodeQueryModel.setStartTime(startTime);
+            scanCodeQueryModel.setEndTime(endTime);
+            List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = merchantJoinRecordService.listSuccessJoinNumByCondition(scanCodeQueryModel);
+            
+            MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+            
+            // 员工扫码人数
+            List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
+            if (ObjectUtils.isEmpty(merchantEmployees)) {
+                return merchantStatisticsUserVOS;
+            }
+            
+            List<Long> employeeIds = merchantEmployees.parallelStream().map(MerchantEmployee::getUid).collect(Collectors.toList());
+            List<MerchantStatisticsUserVO> employeeSuccessJoinNum = merchantJoinRecordService.listEmployeeSuccessJoinNum(employeeIds, startTime, endTime, status,
+                    TenantContextHolder.getTenantId(), SecurityUtils.getUid());
+            
+            if (ObjectUtils.isEmpty(employeeSuccessJoinNum)) {
+                return merchantStatisticsUserVOS;
+            }
+            
+            merchantStatisticsUserVOS.addAll(employeeSuccessJoinNum);
+            
+            return merchantStatisticsUserVOS;
+        } else {
+            //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+            if (Objects.equals(PromotionFeeQueryTypeEnum.MERCHANT_AND_MERCHANT_EMPLOYEE.getCode(), type)) {
+                
+                // 商户扫码人数
+                MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                        .type(PromotionFeeQueryTypeEnum.MERCHANT.getCode()).uid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                List<MerchantStatisticsUserVO> merchantStatisticsUserVOS = merchantJoinRecordService.listSuccessJoinNumByCondition(scanCodeQueryModel);
+                
+                MerchantPromotionEmployeeDetailQueryModel employeeDetailQueryModel = MerchantPromotionEmployeeDetailQueryModel.builder().uid(uid)
+                        .tenantId(TenantContextHolder.getTenantId()).build();
+                
+                // 员工扫码人数
+                List<MerchantEmployee> merchantEmployees = merchantEmployeeService.selectByMerchantUid(employeeDetailQueryModel);
+                if (ObjectUtils.isEmpty(merchantEmployees)) {
+                    return merchantStatisticsUserVOS;
+                }
+    
+                List<Long> employeeIds = merchantEmployees.parallelStream().map(MerchantEmployee::getUid).collect(Collectors.toList());
+                List<MerchantStatisticsUserVO> employeeSuccessJoinNum = merchantJoinRecordService.listEmployeeSuccessJoinNum(employeeIds, startTime, endTime, status, TenantContextHolder.getTenantId(),
+                        null);
+    
+                if (ObjectUtils.isEmpty(employeeSuccessJoinNum)) {
+                    return merchantStatisticsUserVOS;
+                }
+    
+                merchantStatisticsUserVOS.addAll(employeeSuccessJoinNum);
+    
+                return merchantStatisticsUserVOS;
+            } else if (Objects.equals(PromotionFeeQueryTypeEnum.CHANNEL_EMPLOYEE.getCode(), type)) {
+                // 商户扫码人数
+                MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId())
+                        .channelEmployeeUid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                return merchantJoinRecordService.listSuccessJoinNumByCondition(scanCodeQueryModel);
+            } else {
+                //昨日扫码人数：扫码绑定时间=昨日0点～今日0点；
+                MerchantPromotionScanCodeQueryModel scanCodeQueryModel = MerchantPromotionScanCodeQueryModel.builder().tenantId(TenantContextHolder.getTenantId()).type(type)
+                        .uid(uid).startTime(startTime).status(status).endTime(endTime).build();
+                return merchantJoinRecordService.listSuccessJoinNumByCondition(scanCodeQueryModel);
+            }
+        }
     }
     
     @Override

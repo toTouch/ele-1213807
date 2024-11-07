@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.notify.NotifyUserInfoMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.notify.NotifyUserInfo" id="NotifyUserInfoMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="openId" column="open_id" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="isLock" column="is_lock" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <sql id="base_column">
+        id
+        , user_name, phone, nick_name, open_id, create_time, update_time, del_flag, is_lock
+    </sql>
+    
+    <sql id="table_name">
+        t_notify_user_info
+    </sql>
+    
+    
+    <select id="selectByOpenId" resultMap="NotifyUserInfoMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0 and open_id = #{openId} limit 1
+    </select>
+    
+    <select id="selectByPhone" resultMap="NotifyUserInfoMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0 and phone = #{phone} limit 1
+    </select>
+    
+    
+    <select id="selectList" resultMap="NotifyUserInfoMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag = 0
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectById" resultMap="NotifyUserInfoMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag = 0 and id=#{id}
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into<include refid="table_name"/>(user_name, phone, nick_name, open_id, create_time, update_time)
+        values (#{userName}, #{phone}, #{nickName}, #{openId},now(),now())
+    </insert>
+    
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update
+        <include refid="table_name"/>
+        <set>
+            user_name = #{userName},
+            phone = #{phone},
+            update_time =now()
+        </set>
+        where id = #{id}
+    </update>
+
+
+</mapper>
+

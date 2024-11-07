@@ -40,6 +40,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CheckPayParamsResultEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.enums.RefundPayOptTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
@@ -48,6 +49,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -179,6 +181,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Autowired
     RocketMqService rocketMqService;
+    
+    @Autowired
+    MessageSendProducer messageSendProducer;
     
     @Autowired
     UserInfoExtraService userInfoExtraService;
@@ -318,8 +323,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Override
     public BatteryMembercardRefundOrder selectByRefundOrderNo(String orderNo) {
-        return this.batteryMembercardRefundOrderMapper.selectOne(
-                new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, orderNo));
+        return this.batteryMembercardRefundOrderMapper
+                .selectOne(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, orderNo));
     }
     
     @Override
@@ -437,14 +442,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100247", "用户信息不存在");
             }
             
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.equals(
-                    userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects
+                    .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryMemberCard,uid={}", user.getUid());
                 return Triple.of(false, "100289", "电池套餐暂停中");
             }
             
-            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.nonNull(
-                    userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
+            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects
+                    .nonNull(userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! exist not use batteryMemberCard,uid={}", userInfo.getUid());
                 return Triple.of(false, "100296", "请先退未使用的套餐");
             }
@@ -460,16 +465,16 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100247", "用户信息不存在");
             }
             
-            Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                    batteryMemberCard, serviceFeeUserInfo);
+            Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                    .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
             if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
                 return Triple.of(false, "100220", "用户存在电池服务费");
             }
             
             List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userInfo.getUid());
-            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)
-                    && CollectionUtils.isEmpty(userBatteryMemberCardPackages)) {
+            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && CollectionUtils
+                    .isEmpty(userBatteryMemberCardPackages)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", user.getUid());
                 return Triple.of(false, "100284", "未归还电池");
             }
@@ -585,8 +590,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
-        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.nonNull(
-                userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects
+                .nonNull(userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! exist not use batteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(false, "100296", "请先退未使用的套餐");
         }
@@ -596,8 +601,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100374", "换电套餐已过期");
         }
         
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
-                UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects
+                .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
             return Triple.of(false, "100289", "电池套餐暂停中");
         }
@@ -614,8 +619,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
-        Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                batteryMemberCard, serviceFeeUserInfo);
+        Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
+                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", userInfo.getUid());
             return Triple.of(false, "100220", "用户存在电池服务费");
@@ -628,8 +633,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
         
         List<UserBatteryMemberCardPackage> userBatteryMemberCardPackages = userBatteryMemberCardPackageService.selectByUid(userInfo.getUid());
-        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)
-                && CollectionUtils.isEmpty(userBatteryMemberCardPackages)) {
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && CollectionUtils
+                .isEmpty(userBatteryMemberCardPackages)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", userInfo.getUid());
             return Triple.of(false, "100284", "未归还电池");
         }
@@ -878,16 +883,16 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis());
                 userBatteryMemberCardUpdate.setOrderRemainingNumber(NumberConstant.ZERO_L);
                 userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - userBatteryMemberCard.getOrderRemainingNumber());
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(
-                        userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
+                userBatteryMemberCardUpdate
+                        .setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
                 userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
                 userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
                 
                 ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(
-                        serviceFeeUserInfo.getServiceFeeGenerateTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
+                serviceFeeUserInfoUpdate
+                        .setServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime() - (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()));
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfo);
             }
@@ -1026,11 +1031,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             MqNotifyCommon<RentRefundAuditMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_RENT_REFUND_AUDIT);
+            abnormalMessageNotifyCommon.setType(SendMessageTypeEnum.REFUND_RENT_AUDIT_NOTIFY.getType());
             abnormalMessageNotifyCommon.setPhone(item);
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
+            abnormalMessageNotifyCommon.setTenantId(userInfo.getTenantId());
             
-            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(abnormalMessageNotifyCommon), "", "", 0);
+            messageSendProducer.sendAsyncMsg(abnormalMessageNotifyCommon, "", "", 0);
         });
     }
     

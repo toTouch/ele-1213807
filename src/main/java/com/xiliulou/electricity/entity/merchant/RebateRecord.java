@@ -139,4 +139,9 @@ public class RebateRecord {
      * 更新时间
      */
     private Long updateTime;
+    
+    /**
+     * 创建日期 yyyy-MM-dd
+     */
+    private String monthDate;
 }
