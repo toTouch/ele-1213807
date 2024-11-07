@@ -65,7 +65,7 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
-    WechatPublicKeyBO queryByTenantIdFromCache(Long tenantId, Long franchiseeId);
+    WechatPublicKeyBO queryByTenantIdFromCache(Integer tenantId, Long franchiseeId);
     
     /**
      * <p>
@@ -81,7 +81,7 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
-    WechatPublicKeyBO queryByTenantIdFromDB(Long tenantId, Long franchiseeId);
+    WechatPublicKeyBO queryByTenantIdFromDB(Integer tenantId, Long franchiseeId);
     
     /**
      * <p>Title: queryListByTenantIdFromDB </p>
@@ -98,7 +98,7 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
-    List<WechatPublicKeyBO> queryListByTenantIdFromDB(Long tenantId, List<Long> franchiseeIds);
+    List<WechatPublicKeyBO> queryListByTenantIdFromDB(Integer tenantId, List<Long> franchiseeIds);
     
     /**
      * <p>Title: queryListByTenantIdFromCache </p>
@@ -115,7 +115,7 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
-    List<WechatPublicKeyBO> queryListByTenantIdFromCache(Long tenantId, List<Long> franchiseeIds);
+    List<WechatPublicKeyBO> queryListByTenantIdFromCache(Integer tenantId, List<Long> franchiseeIds);
     
     /**
      * <p>Title: clearCache </p>
@@ -131,7 +131,7 @@ public interface WechatPublicKeyService {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/1
      */
-    void clearCache(Long tenantId, Long franchiseeId);
+    void clearCache(Integer tenantId, Long franchiseeId);
     
     /**
      * <p>Title: save </p>

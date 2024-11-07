@@ -23,7 +23,7 @@ public class WechatPublicKeyBO {
     private Long id;
     
     // 租户id
-    private Long tenantId;
+    private Integer tenantId;
     
     // 公钥ID
     private String pubKeyId;

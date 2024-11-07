@@ -84,7 +84,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     @Override
-    public WechatPublicKeyBO queryByTenantIdFromCache(Long tenantId, Long franchiseeId) {
+    public WechatPublicKeyBO queryByTenantIdFromCache(Integer tenantId, Long franchiseeId) {
         if (Objects.isNull(tenantId)) {
             return null;
         }
@@ -103,7 +103,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     @Override
-    public WechatPublicKeyBO queryByTenantIdFromDB(Long tenantId, Long franchiseeId) {
+    public WechatPublicKeyBO queryByTenantIdFromDB(Integer tenantId, Long franchiseeId) {
         WechatPublicKeyEntity entity = this.wechatPublicKeyMapper.selectByQueryModel(WechatPublicKeyQueryModel.builder().tenantId(tenantId).franchiseeId(franchiseeId).build());
         if (Objects.isNull(entity)) {
             return null;
@@ -112,7 +112,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     @Override
-    public List<WechatPublicKeyBO> queryListByTenantIdFromDB(Long tenantId, List<Long> franchiseeIds) {
+    public List<WechatPublicKeyBO> queryListByTenantIdFromDB(Integer tenantId, List<Long> franchiseeIds) {
         if (Objects.isNull(tenantId)) {
             return List.of();
         }
@@ -125,7 +125,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     @Override
-    public List<WechatPublicKeyBO> queryListByTenantIdFromCache(Long tenantId, List<Long> franchiseeIds) {
+    public List<WechatPublicKeyBO> queryListByTenantIdFromCache(Integer tenantId, List<Long> franchiseeIds) {
         if (Objects.isNull(tenantId)) {
             return List.of();
         }
@@ -157,7 +157,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     @Override
-    public void clearCache(Long tenantId, Long franchiseeId) {
+    public void clearCache(Integer tenantId, Long franchiseeId) {
         if (Objects.isNull(tenantId)) {
             return;
         }
@@ -219,7 +219,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     
     @Override
     public R<?> uploadFile(MultipartFile file, Long franchiseeId) {
-        Long tenantId = TenantContextHolder.getTenantId().longValue();
+        Integer tenantId = TenantContextHolder.getTenantId();
         if (Objects.isNull(file)) {
             return R.failMsg("上传公钥不能为空");
         }
@@ -315,7 +315,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         return entity;
     }
     
-    private List<String> builderCacheKey(Long tenantId, List<Long> franchiseeIds) {
+    private List<String> builderCacheKey(Integer tenantId, List<Long> franchiseeIds) {
         if (CollectionUtils.isEmpty(franchiseeIds)) {
             return Collections.emptyList();
         }

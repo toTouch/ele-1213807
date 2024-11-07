@@ -243,7 +243,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         electricityPayParamsTxService.delete(id, tenantId);
         
         //删除公钥配置
-        WechatPublicKeyBO publicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), payParams.getFranchiseeId());
+        WechatPublicKeyBO publicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId, payParams.getFranchiseeId());
         if (Objects.nonNull(publicKeyBO)) {
             wechatPublicKeyService.remove(publicKeyBO.getId());
         }
