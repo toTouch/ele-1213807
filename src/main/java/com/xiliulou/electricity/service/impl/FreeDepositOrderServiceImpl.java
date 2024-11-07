@@ -1567,13 +1567,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             log.warn("FREE DEPOSIT HYBRID WARN! user not auth,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-    
-        // 是否限制套餐购买次数
-        Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
-        if (limitPurchase.getLeft()) {
-            log.warn("FreeBatteryDepositHybridOrderV3 WARN! user limit purchase,uid={}", userInfo.getUid());
-            return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
-        }
         
         // 检查是否为自主续费状态
         Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(uid);
@@ -1616,6 +1609,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(batteryMemberCard)) {
             log.warn("FREE DEPOSIT WARN!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        
+        Boolean advanceRenewalResult = batteryMemberCardService.checkIsAdvanceRenewal(batteryMemberCard, userBatteryMemberCard);
+        if (!advanceRenewalResult) {
+            log.warn("FREE DEPOSIT WARN! not allow advance renewal,uid={}", userInfo.getUid());
+            return Triple.of(false, "100439", "您当前有生效中的套餐，无须重复购买，请联系客服后操作");
+        }
+        
+        // 是否限制套餐购买次数
+        Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
+        if (limitPurchase.getLeft()) {
+            log.warn("FREE DEPOSIT WARN! user limit purchase,uid={}", userInfo.getUid());
+            return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
         }
         
         BasePayConfig payParamConfig = null;

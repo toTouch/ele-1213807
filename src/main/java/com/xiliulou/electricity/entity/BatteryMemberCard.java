@@ -86,6 +86,16 @@ public class BatteryMemberCard {
     private Long useCount;
     
     /**
+     * 是否限制提前续费，0:不限制,1:限制
+     */
+    private Integer advanceRenewal;
+    
+    /**
+     * 提前续费天数
+     */
+    private Integer advanceRenewalDay;
+    
+    /**
      * 优惠券id
      */
     private Integer couponId;
@@ -228,4 +238,11 @@ public class BatteryMemberCard {
     public static final Integer FREE_DEPOSIT = 0;
     
     public static final Integer UN_FREE_DEPOSIT = 1;
+    
+    /**
+     * 是否限制提前续费，0:不限制,1:限制
+     */
+    public static final Integer ADVANCE_RENEWAL_UNLIMIT = 0;
+    
+    public static final Integer ADVANCE_RENEWAL_LIMIT = 1;
 }
