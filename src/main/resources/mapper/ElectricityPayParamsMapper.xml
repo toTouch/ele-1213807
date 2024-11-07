@@ -142,7 +142,7 @@
             <if test="paternerKey != null and paternerKey != ''">
                 paterner_key = #{paternerKey},
             </if>
-            <if test="certType != null and certType != ''">
+            <if test="certType != null">
                 cert_type = #{certType},
             </if>
         </set>
