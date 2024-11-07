@@ -1614,7 +1614,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         
         Boolean advanceRenewalResult = batteryMemberCardService.checkIsAdvanceRenewal(batteryMemberCard, userBatteryMemberCard);
-        if (advanceRenewalResult) {
+        if (!advanceRenewalResult) {
             log.warn("FREE DEPOSIT WARN! not allow advance renewal,uid={}", userInfo.getUid());
             return Triple.of(false, "100439", "您当前有生效中的套餐，无须重复购买，请联系客服后操作");
         }
