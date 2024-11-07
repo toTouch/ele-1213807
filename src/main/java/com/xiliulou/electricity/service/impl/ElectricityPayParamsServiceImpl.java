@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
@@ -8,15 +9,19 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.pay.WechatPublicKeyBO;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.WechatPaymentCertificate;
 import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
@@ -24,6 +29,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.WechatPaymentCertificateService;
 import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
+import com.xiliulou.electricity.service.pay.WechatPublicKeyService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingConfigService;
 import com.xiliulou.electricity.service.transaction.ElectricityPayParamsTxService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -32,6 +38,7 @@ import com.xiliulou.electricity.vo.ElectricityPayParamsVO;
 import com.xiliulou.electricity.vo.FranchiseeIdNameVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +94,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     @Resource
     private ProfitSharingConfigService profitSharingConfigService;
     
+    @Resource
+    private WechatPublicKeyService wechatPublicKeyService;
+    
+    
     @Override
     public R insert(ElectricityPayParamsRequest request) {
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -135,6 +146,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         if (!this.idempotentCheck()) {
             return R.failMsg("操作频繁");
         }
+        if (Objects.nonNull(request.getConfigType())) {
+            ElectricityPayParamsCertTypeEnum certTypeEnum = ElectricityPayParamsCertTypeEnum.getByType(request.getCertType());
+            if (Objects.isNull(certTypeEnum)) {
+                return R.failMsg("certType 错误");
+            }
+        }
         
         Integer tenantId = TenantContextHolder.getTenantId();
         request.setTenantId(tenantId);
@@ -158,6 +175,20 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 return R.failMsg("加盟商不存在");
             }
             franchiseeName = franchisee.getName();
+            
+            // 非默认配置不更新appid
+            if (Objects.nonNull(request.getMerchantMinProAppId()) && !request.getMerchantMinProAppId().equals(oldPayParams.getMerchantMinProAppId())) {
+                log.warn("ElectricityPayParamsServiceImpl.update WARN! merchantMinProAppId does not support update tenantId={},franchiseeid={}", tenantId,
+                        oldPayParams.getFranchiseeId());
+                request.setMerchantMinProAppId(oldPayParams.getMerchantMinProAppId());
+                request.setMerchantMinProAppSecert(oldPayParams.getMerchantMinProAppSecert());
+            }
+            
+        }
+        
+        // 校验appId
+        if (!this.updateCheckAppId(oldPayParams, request, tenantId)) {
+            return R.failMsg("该小程序appId已被使用，请勿重复使用!");
         }
         
         // 需要同步的加盟商配置
@@ -211,6 +242,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         // 逻辑删除
         electricityPayParamsTxService.delete(id, tenantId);
         
+        //删除公钥配置
+        WechatPublicKeyBO publicKeyBO = wechatPublicKeyService.queryByTenantIdFromCache(tenantId.longValue(), payParams.getFranchiseeId());
+        if (Objects.nonNull(publicKeyBO)) {
+            wechatPublicKeyService.remove(publicKeyBO.getId());
+        }
+        
         // 缓存删除
         redisService.delete(buildCacheKey(tenantId, payParams.getFranchiseeId()));
         wechatPaymentCertificateService.deleteCache(tenantId, payParams.getFranchiseeId());
@@ -227,6 +264,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         List<ElectricityPayParams> params = baseMapper.selectByTenantId(tenantId);
         List<ElectricityPayParamsVO> voList = ElectricityPayParamsConverter.qryDoToVos(params);
         this.buildFranchiseeName(tenantId, voList);
+        if (CollectionUtils.isEmpty(voList)) {
+            return List.of();
+        }
         return voList;
     }
     
@@ -268,7 +308,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     public ElectricityPayParams queryByWechatMerchantId(Integer tenantId, String wechatMerchantId) {
         return baseMapper.selectByTenantIdAndWechatMerchantId(tenantId, wechatMerchantId);
     }
-    
     
     
     @Override
@@ -411,6 +450,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
                 qryDbList.add(fid);
             } else if (Objects.nonNull(cache.getId())) {
                 // 缓存存在 并且有id 则说明当前加盟商已配置
+                if (Objects.isNull(cache.getCertType())) {
+                    // 防止缓存未清除引起的支付失败
+                    cache.setCertType(ElectricityPayParamsCertTypeEnum.PLATFORM_CERTIFICATE.getType());
+                }
                 payParams.add(cache);
             }
         });
@@ -467,6 +510,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Long franchiseeId = request.getFranchiseeId();
         Integer configType = request.getConfigType();
         
+        ElectricityPayParamsCertTypeEnum certTypeEnum = ElectricityPayParamsCertTypeEnum.getByType(request.getCertType());
+        if (Objects.isNull(certTypeEnum)) {
+            return "certType 错误";
+        }
+        
         if (ElectricityPayParamsConfigEnum.DEFAULT_CONFIG.getType().equals(configType)) {
             // 默认配置
             // 查询默认配置是否存在
@@ -474,6 +522,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             if (CollectionUtils.isNotEmpty(electricityPayParams)) {
                 return "默认配置已存在,请勿重复添加";
             }
+            // 查询appid
+            List<ElectricityPayParams> byAppId = baseMapper.selectListByAppId(request.getMerchantMinProAppId());
+            if (CollectionUtils.isNotEmpty(byAppId)) {
+                return "该小程序appId已被使用，请勿重复使用!";
+            }
+            
         } else {
             // 运营商配置
             if (Objects.isNull(franchiseeId)) {
@@ -610,4 +664,24 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         
     }
     
+    
+    private boolean updateCheckAppId(ElectricityPayParams payParams, ElectricityPayParamsRequest request, Integer curTenantId) {
+        if (Objects.isNull(request.getMerchantMinProAppId()) || Objects.equals(request.getMerchantMinProAppId(), payParams.getMerchantMinProAppId())) {
+            // 未更新
+            return true;
+        }
+        List<ElectricityPayParams> byAppId = baseMapper.selectListByAppId(request.getMerchantMinProAppId());
+        
+        if (CollectionUtils.isEmpty(byAppId)) {
+            return true;
+        }
+        
+        for (ElectricityPayParams electricityPayParams : byAppId) {
+            if (!Objects.equals(electricityPayParams.getTenantId(), curTenantId)) {
+                // 当前配置不属于此租户
+                return false;
+            }
+        }
+        return true;
+    }
 }

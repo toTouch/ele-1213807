@@ -19,12 +19,13 @@
         <result property="paternerKey" column="paterner_key" jdbcType="VARCHAR"/>
         <result property="configType" column="config_type" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
+        <result property="certType" column="cert_type" jdbcType="TINYINT"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
     </resultMap>
     
     <sql id="base_column">
         id
-        , office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
+        , office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id,cert_type, del_flag
     </sql>
     
     <sql id="table_name">
@@ -45,126 +46,7 @@
         </foreach>
     </select>
     
-    <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="ElectricityPayParamsMap">
-        select
-        id, office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id, wechat_merchant_certificate_sno,
-        wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type, franchisee_id, del_flag
-        from t_electricity_pay_params
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="officeAccountAppId != null and officeAccountAppId != ''">
-                and office_account_app_id = #{officeAccountAppId}
-            </if>
-            <if test="officeAccountAppSecret != null and officeAccountAppSecret != ''">
-                and office_account_app_secret = #{officeAccountAppSecret}
-            </if>
-            <if test="merchantMinProAppId != null and merchantMinProAppId != ''">
-                and merchant_min_pro_app_id = #{merchantMinProAppId}
-            </if>
-            <if test="merchantMinProAppSecert != null and merchantMinProAppSecert != ''">
-                and merchant_min_pro_app_secert = #{merchantMinProAppSecert}
-            </if>
-            <if test="wechatMerchantId != null and wechatMerchantId != ''">
-                and wechat_merchant_id = #{wechatMerchantId}
-            </if>
-            <if test="wechatMerchantCertificateSno != null and wechatMerchantCertificateSno != ''">
-                and wechat_merchant_certificate_sno = #{wechatMerchantCertificateSno}
-            </if>
-            <if test="wechatMerchantPrivateKeyPath != null and wechatMerchantPrivateKeyPath != ''">
-                and wechat_merchant_private_key_path = #{wechatMerchantPrivateKeyPath}
-            </if>
-            <if test="wechatV3ApiKey != null and wechatV3ApiKey != ''">
-                and wechat_v3_api_key = #{wechatV3ApiKey}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="apiName != null and apiName != ''">
-                and api_name = #{apiName}
-            </if>
-            <if test="paternerKey != null and paternerKey != ''">
-                and paterner_key = #{paternerKey}
-            </if>
-            <if test="configType != null">
-                and config_type = #{configType}
-            </if>
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-        </where>
-        limit #{pageable.offset}, #{pageable.pageSize}
-    </select>
     
-    <!--统计总行数-->
-    <select id="count" resultType="java.lang.Long">
-        select count(1)
-        from t_electricity_pay_params
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="officeAccountAppId != null and officeAccountAppId != ''">
-                and office_account_app_id = #{officeAccountAppId}
-            </if>
-            <if test="officeAccountAppSecret != null and officeAccountAppSecret != ''">
-                and office_account_app_secret = #{officeAccountAppSecret}
-            </if>
-            <if test="merchantMinProAppId != null and merchantMinProAppId != ''">
-                and merchant_min_pro_app_id = #{merchantMinProAppId}
-            </if>
-            <if test="merchantMinProAppSecert != null and merchantMinProAppSecert != ''">
-                and merchant_min_pro_app_secert = #{merchantMinProAppSecert}
-            </if>
-            <if test="wechatMerchantId != null and wechatMerchantId != ''">
-                and wechat_merchant_id = #{wechatMerchantId}
-            </if>
-            <if test="wechatMerchantCertificateSno != null and wechatMerchantCertificateSno != ''">
-                and wechat_merchant_certificate_sno = #{wechatMerchantCertificateSno}
-            </if>
-            <if test="wechatMerchantPrivateKeyPath != null and wechatMerchantPrivateKeyPath != ''">
-                and wechat_merchant_private_key_path = #{wechatMerchantPrivateKeyPath}
-            </if>
-            <if test="wechatV3ApiKey != null and wechatV3ApiKey != ''">
-                and wechat_v3_api_key = #{wechatV3ApiKey}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="apiName != null and apiName != ''">
-                and api_name = #{apiName}
-            </if>
-            <if test="paternerKey != null and paternerKey != ''">
-                and paterner_key = #{paternerKey}
-            </if>
-            <if test="configType != null">
-                and config_type = #{configType}
-            </if>
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-        </where>
-    </select>
     <select id="selectByTenantId" resultMap="ElectricityPayParamsMap">
         select
         <include refid="base_column"/>
@@ -202,64 +84,34 @@
         where del_flag=0
         and tenant_id=#{tenantId}
     </select>
-
+    <select id="selectListByAppId" resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and tenant_id=#{tenantId}
+        and merchant_min_pro_app_id=#{merchantMinProAppId}
+    </select>
+    
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
                                              wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name,
-                                             paterner_key, config_type, franchisee_id)
+                                             paterner_key, config_type, franchisee_id, cert_type)
         values (#{officeAccountAppId}, #{officeAccountAppSecret}, #{merchantMinProAppId}, #{merchantMinProAppSecert}, #{wechatMerchantId}, #{wechatMerchantCertificateSno},
-                #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId})
+                #{wechatMerchantPrivateKeyPath}, #{wechatV3ApiKey}, #{createTime}, #{updateTime}, #{tenantId}, #{apiName}, #{paternerKey}, #{configType}, #{franchiseeId},
+                #{certType})
     </insert>
     
-    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
-        wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
-        franchisee_id)
-        values
-        <foreach collection="entities" item="entity" separator=",">
-            (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
-            #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
-            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId})
-        </foreach>
-    </insert>
-    
-    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into t_electricity_pay_params(office_account_app_id, office_account_app_secret, merchant_min_pro_app_id, merchant_min_pro_app_secert, wechat_merchant_id,
-        wechat_merchant_certificate_sno, wechat_merchant_private_key_path, wechat_v3_api_key, create_time, update_time, tenant_id, api_name, paterner_key, config_type,
-        franchisee_id, del_flag)
-        values
-        <foreach collection="entities" item="entity" separator=",">
-            (#{entity.officeAccountAppId}, #{entity.officeAccountAppSecret}, #{entity.merchantMinProAppId}, #{entity.merchantMinProAppSecert}, #{entity.wechatMerchantId},
-            #{entity.wechatMerchantCertificateSno}, #{entity.wechatMerchantPrivateKeyPath}, #{entity.wechatV3ApiKey}, #{entity.createTime}, #{entity.updateTime},
-            #{entity.tenantId}, #{entity.apiName}, #{entity.paternerKey}, #{entity.configType}, #{entity.franchiseeId}, #{entity.delFlag})
-        </foreach>
-        on duplicate key update
-        office_account_app_id = values(office_account_app_id),
-        office_account_app_secret = values(office_account_app_secret),
-        merchant_min_pro_app_id = values(merchant_min_pro_app_id),
-        merchant_min_pro_app_secert = values(merchant_min_pro_app_secert),
-        wechat_merchant_id = values(wechat_merchant_id),
-        wechat_merchant_certificate_sno = values(wechat_merchant_certificate_sno),
-        wechat_merchant_private_key_path = values(wechat_merchant_private_key_path),
-        wechat_v3_api_key = values(wechat_v3_api_key),
-        create_time = values(create_time),
-        update_time = values(update_time),
-        tenant_id = values(tenant_id),
-        api_name = values(api_name),
-        paterner_key = values(paterner_key),
-        config_type = values(config_type),
-        franchisee_id = values(franchisee_id),
-        del_flag = values(del_flag)
-    </insert>
     
     <!--通过主键修改数据-->
     <update id="update">
         update
         <include refid="table_name"/>
         <set>
-            update_time = now(),
+            update_time = UNIX_TIMESTAMP()*1000,
             <if test="officeAccountAppId != null and officeAccountAppId != ''">
                 office_account_app_id = #{officeAccountAppId},
             </if>
@@ -290,6 +142,9 @@
             <if test="paternerKey != null and paternerKey != ''">
                 paterner_key = #{paternerKey},
             </if>
+            <if test="certType != null and certType != ''">
+                cert_type = #{certType},
+            </if>
         </set>
         where id = #{id} and tenant_id=#{tenantId}
     </update>
@@ -297,14 +152,14 @@
     <update id="logicalDelete">
         update
         <include refid="table_name"/>
-        set del_flag = 1,update_time=now()
+        set del_flag = 1,update_time=UNIX_TIMESTAMP()*1000
         where id=#{id} and tenant_id=#{tenantId}
     </update>
     <update id="updateSync">
         update
         <include refid="table_name"/>
         <set>
-            update_time = now(),
+            update_time = UNIX_TIMESTAMP()*1000,
             <if test="update.merchantMinProAppId != null and update.merchantMinProAppId != ''">
                 merchant_min_pro_app_id = #{update.merchantMinProAppId},
             </if>

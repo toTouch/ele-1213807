@@ -41,7 +41,11 @@ public class NumberConstant {
     
     public static final Long ONE_L = 1L;
     
+    public static final Long NEGATIVE_ONE = -1L;
+    
     public static final Long MINUS_ONE_L = 1L;
+    
+    public static final Long A_THOUSAND = 1000L;
     
     public static final Double ZERO_D = 0D;
     
