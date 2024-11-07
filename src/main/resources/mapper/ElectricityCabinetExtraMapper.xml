@@ -24,6 +24,12 @@
     <update id="update">
         update t_electricity_cabinet_extra
         <set>
+            <if test="rent_tab_type != null">
+                rent_tab_type = #{rentTabType},
+            </if>
+            <if test="return_tab_type != null">
+                return_tab_type = #{returnTabType},
+            </if>
             <if test="batteryCountType != null">
                 battery_count_type = #{batteryCountType},
             </if>
