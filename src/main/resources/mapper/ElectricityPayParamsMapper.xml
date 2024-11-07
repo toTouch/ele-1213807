@@ -94,6 +94,17 @@
         merchant_min_pro_app_id=#{merchantMinProAppId}
     </select>
     
+    <select id="selectByTenantIdAndId" resultMap="ElectricityPayParamsMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="table_name"/>
+        where del_flag=0
+        and
+        tenant_id=#{tenantId}
+        and id=#{id}
+    </select>
+    
     
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
@@ -155,6 +166,7 @@
         set del_flag = 1,update_time=UNIX_TIMESTAMP()*1000
         where id=#{id} and tenant_id=#{tenantId}
     </update>
+    
     <update id="updateSync">
         update
         <include refid="table_name"/>

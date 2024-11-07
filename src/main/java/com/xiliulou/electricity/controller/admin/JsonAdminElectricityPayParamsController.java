@@ -71,7 +71,7 @@ public class JsonAdminElectricityPayParamsController extends AbstractFranchiseeD
     
     @DeleteMapping(value = "/admin/electricityPayParams/{id}")
     @Log(title = "删除支付参数")
-    public R delete(@PathVariable("id") Long id) {
+    public R delete(@PathVariable("id") Integer id) {
         return electricityPayParamsService.delete(id);
     }
     

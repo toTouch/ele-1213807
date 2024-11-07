@@ -34,7 +34,7 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
      * @author caobotao.cbt
      * @date 2024/6/12 13:51
      */
-    int logicalDelete(@Param("id") Long id, @Param("tenantId") Integer tenantId);
+    int logicalDelete(@Param("id") Integer id, @Param("tenantId") Integer tenantId);
     
     /**
      * 根据租户id查询全部
@@ -93,4 +93,13 @@ public interface ElectricityPayParamsMapper extends BaseMapper<ElectricityPayPar
      */
     List<ElectricityPayParams> selectListByAppId(@Param("merchantMinProAppId") String merchantMinProAppId);
     
+    /**
+     * 根据id+租户id查询
+     *
+     * @param id
+     * @param tenantId
+     * @author caobotao.cbt
+     * @date 2024/11/7 15:22
+     */
+    ElectricityPayParams selectByTenantIdAndId(@Param("tenantId") Integer tenantId,@Param("id") Integer id);
 }

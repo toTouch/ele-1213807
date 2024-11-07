@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -13,8 +11,6 @@ import com.xiliulou.electricity.bo.pay.WechatPublicKeyBO;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -156,8 +152,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Integer tenantId = TenantContextHolder.getTenantId();
         request.setTenantId(tenantId);
         // 校验参数
-        ElectricityPayParams oldPayParams = baseMapper.selectOne(
-                new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, request.getId()).eq(ElectricityPayParams::getTenantId, request.getTenantId()));
+        ElectricityPayParams oldPayParams = baseMapper.selectByTenantIdAndId(request.getTenantId(), request.getId());
+        
         if (Objects.isNull(oldPayParams)) {
             return R.failMsg("数据不存在");
         }
@@ -216,7 +212,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     
     @Override
-    public R delete(Long id) {
+    public R delete(Integer id) {
         
         if (!this.idempotentCheck()) {
             return R.failMsg("操作频繁");
@@ -225,8 +221,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         Integer tenantId = TenantContextHolder.getTenantId();
         
         // 校验参数
-        ElectricityPayParams payParams = baseMapper
-                .selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getId, id).eq(ElectricityPayParams::getTenantId, tenantId));
+        ElectricityPayParams payParams = baseMapper.selectByTenantIdAndId(tenantId, id);
         
         if (Objects.isNull(payParams)) {
             return R.failMsg("数据不存在");
@@ -374,9 +369,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     
     @Override
     public ElectricityPayParams selectTenantId(String appId) {
-        //        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
-        List<ElectricityPayParams> electricityPayParams = baseMapper
-                .selectList(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+        List<ElectricityPayParams> electricityPayParams = baseMapper.selectListByAppId(appId);
         if (CollectionUtils.isEmpty(electricityPayParams)) {
             return null;
         }
