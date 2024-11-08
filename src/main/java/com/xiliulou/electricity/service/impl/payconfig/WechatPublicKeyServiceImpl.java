@@ -15,6 +15,8 @@ import com.xiliulou.electricity.queryModel.WechatPublicKeyQueryModel;
 import com.xiliulou.electricity.request.payparams.WechatPublicKeyRequest;
 import com.xiliulou.electricity.service.pay.WechatPublicKeyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.pay.weixin.util.RSAUtils;
+import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -258,9 +260,9 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             return R.failMsg("操作频繁!");
         }
         try {
-            if (!request.getPubKey().startsWith(StringConstant.PREFIX_PUBLIC_KEY) || !request.getPubKey().endsWith(StringConstant.SUFFIX_PUBLIC_KEY)){
-                return R.failMsg("请上传正确的证书!");
-            }
+//            if (!request.getPubKey().startsWith(StringConstant.PREFIX_PUBLIC_KEY) || !request.getPubKey().endsWith(StringConstant.SUFFIX_PUBLIC_KEY)){
+//                return R.failMsg("请上传正确的证书!");
+//            }
             String pubKey = formatPublicKey(request.getPubKey());
             if (Objects.isNull(request.getFranchiseeId())){
                 request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
