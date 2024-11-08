@@ -28,6 +28,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
+import com.xiliulou.electricity.config.CabinetConfig;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -191,8 +192,10 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
+import io.undertow.server.session.SessionIdGenerator;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -467,6 +470,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     private RegisterDeviceService registerDeviceService;
+    
+    @Resource
+    private CabinetConfig cabinetConfig;
     
     
     /**
@@ -4952,6 +4958,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     .updateTime(electricityCabinetInsert.getUpdateTime()).build();
             electricityCabinetExtraService.insertOne(electricityCabinetExtra);
         });
+        
+        // 下发重启命令
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("password", cabinetConfig.getInitPassword());
+        dataMap.put("uid", SecurityUtils.getUid());
+        dataMap.put("username", SecurityUtils.getUserInfo().getUsername());
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
+                .productKey(electricityCabinetInsert.getProductKey()).deviceName(electricityCabinetInsert.getDeviceName())
+                .command(ElectricityIotConstant.ELE_COMMAND_CUPBOARD_RESTART).build();
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinetInsert);
         
         // 生成迁移记录
         cabinetMoveHistoryService.insert(buildCabinetMoveHistory(testFactoryCabinet, electricityCabinetInsert));
