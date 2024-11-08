@@ -1991,17 +1991,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return true;
     }
     
-    private void sendFreezeEntityMessage(UserInfo userInfo) {
-        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildFreezeEntityMessageNotify(userInfo);
-        if (CollectionUtils.isEmpty(messageNotifyList)) {
-            return;
-        }
-        
-        messageNotifyList.forEach(i -> {
-            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
-            log.info("FREEZE ENTITY INFO! user authentication audit notify,msg={},uid={}", JsonUtil.toJson(i), userInfo.getUid());
-        });
-    }
     
     private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildFreezeEntityMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());

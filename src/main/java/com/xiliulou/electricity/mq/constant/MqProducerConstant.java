@@ -41,7 +41,9 @@ public interface MqProducerConstant {
 
     /**
      * 运维通知 topic
+     * @see MqProducerConstant#MESSAGE_SEND_SAAS_TOPIC
      */
+    @Deprecated
     String TOPIC_MAINTENANCE_NOTIFY = "MAINTENANCE_NOTIFY";
 
     /**
@@ -118,12 +120,24 @@ public interface MqProducerConstant {
     /**
      * 站内信所在新项目主题TAG
      */
-    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME = "SITE_MESSAGE";
+    String MQ_TOPIC_SITE_MESSAGE_TAG_NAME="SITE_MESSAGE";
+    
+    
+    /**
+     * 运维通知 topic
+     */
+    String MESSAGE_SEND_SAAS_TOPIC = "message_send_saas_topic";
+    
 
     /**
      * 免押topic
      */
     String FREE_DEPOSIT_TOPIC_NAME = "FREE_DEPOSIT_TOPIC";
+    
+    /**
+     * 电池回收topic
+     */
+    String BATTERY_RECYCLE_TOPIC_NAME = "BATTERY_RECYCLE_TOPIC";
 
     /**
      * 免押tag

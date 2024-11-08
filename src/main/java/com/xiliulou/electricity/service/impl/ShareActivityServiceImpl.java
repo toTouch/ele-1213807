@@ -268,7 +268,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                 for (ShareActivityRuleQuery shareActivityRuleQuery : shareActivityRuleQueryList) {
                     ShareActivityRule.ShareActivityRuleBuilder activityBindCouponBuild = ShareActivityRule.builder().activityId(shareActivity.getId())
                             .couponId(shareActivityRuleQuery.getCouponId()).triggerCount(shareActivityRuleQuery.getTriggerCount()).createTime(System.currentTimeMillis())
-                            .updateTime(System.currentTimeMillis());
+                            .updateTime(System.currentTimeMillis()).tenantId(tenantId);
                     ShareActivityRule shareActivityRule = activityBindCouponBuild.build();
                     shareActivityRuleService.insert(shareActivityRule);
                 }
@@ -1107,6 +1107,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         DbUtils.dbOperateSuccessThenHandleCache(Math.toIntExact(id), (identification) -> {
             redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + identification);
         });
+        
+        // 逻辑删除活动与优惠券的关联关系
+        shareActivityRuleService.removeByActivityId(id, shareActivity.getTenantId());
         
         if (Objects.equals(shareActivity.getStatus(), ShareActivity.STATUS_OFF)) {
             return R.ok(count);

@@ -4,5 +4,5 @@ import com.xiliulou.electricity.entity.MQMailMessageNotify;
 
 public interface MailService {
 
-    void sendVersionNotificationEmailToMQ(MQMailMessageNotify mailMessage);
+    void sendVersionNotificationEmailToMQ(MQMailMessageNotify mailMessage, Integer tenantId);
 }

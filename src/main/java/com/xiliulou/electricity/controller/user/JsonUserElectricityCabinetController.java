@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -12,7 +11,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -183,8 +186,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
     public R getServicePhone() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        String phone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        return R.ok(phone);
+        return R.ok(userService.selectServicePhone(tenantId));
     }
     
     @PostMapping("/user/address")

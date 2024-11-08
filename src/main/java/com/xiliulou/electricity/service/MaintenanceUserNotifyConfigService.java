@@ -81,9 +81,9 @@ public interface MaintenanceUserNotifyConfigService {
 
     Pair<Boolean, Object> updateConfig(MaintenanceUserNotifyConfigQuery query);
 
-    void sendDeviceNotifyMq(ElectricityCabinet electricityCabinet, String status, String time);
+    void sendDeviceNotify(ElectricityCabinet electricityCabinet, String status, String time);
 
-    void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String s);
+//    void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String s);
 
     void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet);
 

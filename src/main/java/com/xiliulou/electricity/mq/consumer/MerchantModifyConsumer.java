@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mq.consumer;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -37,6 +39,7 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -239,6 +242,7 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     rebateRecord.setTenantId(item.getTenantId());
                     rebateRecord.setCreateTime(System.currentTimeMillis());
                     rebateRecord.setUpdateTime(System.currentTimeMillis());
+                    rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
     
                     //商户禁用后，不给商户返利；渠道员禁用，不返利
                     if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -147,5 +148,11 @@ public class TenantNoteServiceImpl implements TenantNoteService {
         });
         
         return i;
+    }
+    
+    @Override
+    @Slave
+    public List<TenantNote> listByTenantIdList(List<Integer> tenantIdList) {
+        return noteMapper.selectListByTenantIdList(tenantIdList);
     }
 }

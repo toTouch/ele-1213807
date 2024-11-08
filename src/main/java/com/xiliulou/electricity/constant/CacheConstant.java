@@ -71,6 +71,7 @@ public interface CacheConstant {
     //门店缓存
     String CACHE_STORE = "store:";
     
+    @Deprecated
     String CACHE_SERVICE_PHONE = "CACHE_SERVICE_PHONE:";
     
     //下单加锁缓存
@@ -692,6 +693,25 @@ public interface CacheConstant {
     
     String CACHE_CHANNEL_USER_EXIT_ALL_LOCK = "cache_channel_user_exit_all_lock:";
     
+    
+    /**
+     * 运维设置用户通知幂等锁
+     */
+    String CACHE_NOTIFY_USER_INFO_LOCK = "saas_electricity:notify:lock:%s";
+    
+    /**
+     * 运维设置用户通知缓存
+     */
+    String CACHE_NOTIFY_USER_INFO_OPENID = "saas_electricity:notify:openid:%s";
+    
+    
+    /**
+     * 运维设置用户通知缓存
+     */
+    String CACHE_NOTIFY_USER_INFO_PHONE = "saas_electricity:notify:phone:%s";
+    
+    
+    
     String CACHE_BATTERY_BATCH_IMPORT_LOCK = "cache_battery_batch_import_lock:";
     
     //角色权限绑定操作
@@ -772,7 +792,7 @@ public interface CacheConstant {
      * 免押信息用户key
      */
     String CAR_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "car_free_deposit_user_info_lock_key:%s:%s";
- 
+    
     
     String UN_FREE_DEPOSIT_USER_INFO_LOCK_KEY = "un_free_deposit_user_lock_order:%s";
     
@@ -837,6 +857,12 @@ public interface CacheConstant {
      */
     String ORDER_FOR_BATTERY_WITH_BUSINESS_STATUS_LEASE = "order_for_battery:%s";
     
+    /**
+     * 商户电池回收订单保存用户id
+     */
+    String BATTERY_RECYCLE_SAVE_UID = "battery_recycle_save_uid:";
+    String BATTERY_RECYCLE_BATCH_NO = "battery_recycle_batch_no:%s:%s";
+    
     
     /**
      * 异常柜机格挡redis
@@ -848,5 +874,15 @@ public interface CacheConstant {
      * 异常满电仓redis
      */
     String EXCEPTION_FULL_EID_KEY = "exception_full_eid:%d";
+    
+    /**
+     * 客服电话缓存
+     */
+    String SERVICE_PHONE = "service_phone:";
+    
+    /**
+     * 客服电话缓存LOCK
+     */
+    String SERVICE_PHONE_LOCK_KEY = "service_phone_lock:";
 }
 

@@ -14,4 +14,8 @@ public class TenantNoteConstant {
     public final static Long NOTE_NUM_SECOND = 0L;
     
     public final static Long NOTE_NUM_THIRD = -100L;
+    
+    public final static String PLATFORM_NAME_FILED = "platformName";
+    
+    public final static String NOTE_NUM_FILED = "noteNum";
 }
