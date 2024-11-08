@@ -3171,7 +3171,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 
                 if (pair.getLeft() || !Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                     // 返回让前端选择
-                    return Triple.of(true, null, pair.getRight());
+                    return Triple.of(true, null, vo);
                 }
             }
         }
