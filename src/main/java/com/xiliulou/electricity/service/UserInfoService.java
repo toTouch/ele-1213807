@@ -76,7 +76,7 @@ public interface UserInfoService extends IService<UserInfo> {
     
     UserInfo queryByUidFromCache(Long uid);
     
-    UserInfo queryByUidFromDb(Long uid);
+    UserInfo queryByUidFromDbIncludeDelUser(Long uid);
     
     Integer homeOne(Long first, Long now, Integer tenantId);
     

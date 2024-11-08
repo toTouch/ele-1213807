@@ -28,7 +28,6 @@ import com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO;
 import com.xiliulou.electricity.vo.DivisionAccountRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -129,7 +126,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             DivisionAccountRecordVO divisionAccountRecordVO = new DivisionAccountRecordVO();
             BeanUtils.copyProperties(item, divisionAccountRecordVO);
 
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
             divisionAccountRecordVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
 
             DivisionAccountConfig accountConfig = divisionAccountConfigService.queryByIdFromDB(item.getDivisionAccountConfigId());

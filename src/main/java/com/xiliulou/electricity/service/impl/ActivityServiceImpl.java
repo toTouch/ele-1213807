@@ -226,7 +226,7 @@ public class ActivityServiceImpl implements ActivityService {
                     return Triple.of(false, "110002", "当前换电套餐已暂停");
                 }
                 
-                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
                 if (Objects.isNull(userInfo)) {
                     log.warn("handle activity error ! Not found userInfo, joinUid={}", uid);
                     return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
@@ -253,7 +253,7 @@ public class ActivityServiceImpl implements ActivityService {
                 }
                 
                 Long uid = carRentalPackageOrderPo.getUid();
-                UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
                 if (Objects.isNull(userInfo)) {
                     log.warn("Activity flow for car Rental or car with battery package error! Not found userInfo, joinUid={}", uid);
                     return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
