@@ -176,22 +176,6 @@ public interface WechatPublicKeyService {
     int remove(Long id);
     
     /**
-     * <p>Title: uploadFile </p>
-     * <p>Project: WechatPublicKeyService</p>
-     * <p>Copyright: Copyright (c) 2024</p>
-     * <p>Company: www.xiliulou.com</p>
-     * <p>Description: 上传微信公钥信息</p>
-     *
-     * @param file         file
-     * @param franchiseeId franchiseeId
-     * @return com.xiliulou.core.web.R<?>
-     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
-     * @since V1.0 2024/11/1
-     */
-    @Deprecated
-    R<?> uploadFile(MultipartFile file, Long franchiseeId);
-    
-    /**
      * <p>Title: saveOrUpdate </p>
      * <p>Project: WechatPublicKeyService</p>
      * <p>Copyright: Copyright (c) 2024</p>

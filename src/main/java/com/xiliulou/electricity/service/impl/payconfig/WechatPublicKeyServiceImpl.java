@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.payconfig;
 
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -8,23 +9,18 @@ import com.xiliulou.electricity.bo.pay.WechatPublicKeyBO;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.payparams.WechatPublicKeyEntity;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.WechatPublicKeyMapper;
 import com.xiliulou.electricity.queryModel.WechatPublicKeyQueryModel;
-import com.xiliulou.electricity.request.payparams.WechatPublicKeyRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.pay.WechatPublicKeyService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.pay.weixin.util.RSAUtils;
-import com.xiliulou.pay.weixinv3.util.WechatCertificateUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,9 +51,16 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     
     private final WechatPublicKeyMapper wechatPublicKeyMapper;
     
-    public WechatPublicKeyServiceImpl(RedisService redisService, WechatPublicKeyMapper wechatPublicKeyMapper) {
+    private final FranchiseeService franchiseeService;
+    
+    private final OperateRecordUtil operateRecordUtil;
+    
+    public WechatPublicKeyServiceImpl(RedisService redisService, WechatPublicKeyMapper wechatPublicKeyMapper, FranchiseeService franchiseeService,
+            OperateRecordUtil operateRecordUtil) {
         this.redisService = redisService;
         this.wechatPublicKeyMapper = wechatPublicKeyMapper;
+        this.franchiseeService = franchiseeService;
+        this.operateRecordUtil = operateRecordUtil;
     }
     
     @Override
@@ -91,8 +94,8 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             return null;
         }
         if (redisService.hasKey(String.format(WX_PUBLIC_KEY_CACHE_KEY_TENANT, tenantId, ObjectUtils.defaultIfNull(franchiseeId, "")))) {
-            return JsonUtil.fromJson(redisService.get(String.format(WX_PUBLIC_KEY_CACHE_KEY_TENANT, tenantId, ObjectUtils.defaultIfNull(franchiseeId, ""))),
-                    WechatPublicKeyBO.class);
+            return JsonUtil
+                    .fromJson(redisService.get(String.format(WX_PUBLIC_KEY_CACHE_KEY_TENANT, tenantId, ObjectUtils.defaultIfNull(franchiseeId, ""))), WechatPublicKeyBO.class);
         }
         
         WechatPublicKeyBO wechatPublicKeyBO = queryByTenantIdFromDB(tenantId, franchiseeId);
@@ -118,8 +121,8 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         if (Objects.isNull(tenantId)) {
             return List.of();
         }
-        List<WechatPublicKeyEntity> entityList = this.wechatPublicKeyMapper.selectListByQueryModel(
-                WechatPublicKeyQueryModel.builder().tenantId(tenantId).franchiseeIds(franchiseeIds).build());
+        List<WechatPublicKeyEntity> entityList = this.wechatPublicKeyMapper
+                .selectListByQueryModel(WechatPublicKeyQueryModel.builder().tenantId(tenantId).franchiseeIds(franchiseeIds).build());
         if (Objects.nonNull(entityList)) {
             return entityList.stream().map(this::convertBO).collect(Collectors.toList());
         }
@@ -138,8 +141,8 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             if (CollectionUtils.isEmpty(entities)) {
                 return List.of();
             }
-            Map<String, String> collect = entities.stream().collect(
-                    Collectors.toMap(wechatPublicKeyBO -> String.format(WX_PUBLIC_KEY_CACHE_KEY_TENANT, wechatPublicKeyBO.getTenantId(), wechatPublicKeyBO.getFranchiseeId()),
+            Map<String, String> collect = entities.stream().collect(Collectors
+                    .toMap(wechatPublicKeyBO -> String.format(WX_PUBLIC_KEY_CACHE_KEY_TENANT, wechatPublicKeyBO.getTenantId(), wechatPublicKeyBO.getFranchiseeId()),
                             JsonUtil::toJson));
             redisService.multiSet(collect);
             return entities;
@@ -169,7 +172,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             return;
         }
         
-        WechatPublicKeyBO bo = JsonUtil.fromJson(redisService.get(cacheKeyByTenantId),WechatPublicKeyBO.class);
+        WechatPublicKeyBO bo = JsonUtil.fromJson(redisService.get(cacheKeyByTenantId), WechatPublicKeyBO.class);
         if (Objects.isNull(bo)) {
             return;
         }
@@ -219,75 +222,66 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         return result;
     }
     
-    @Override
-    public R<?> uploadFile(MultipartFile file, Long franchiseeId) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        if (Objects.isNull(file)) {
-            return R.failMsg("上传公钥不能为空");
-        }
-        if (Objects.isNull(franchiseeId)) {
-            franchiseeId = MultiFranchiseeConstant.DEFAULT_FRANCHISEE;
-        }
-        
-        if (!redisService.setNx(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, tenantId, franchiseeId), StringConstant.EMPTY, NumberConstant.FIVE * NumberConstant.A_THOUSAND,
-                false)) {
-            return R.failMsg("操作频繁!");
-        }
-        
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String pubKeyStr = br.lines().collect(Collectors.joining(StringConstant.CHANGE_ROW));
-            WechatPublicKeyBO publicKeyBO = this.queryByTenantIdFromCache(tenantId, franchiseeId);
-            if (Objects.isNull(publicKeyBO)) {
-                WechatPublicKeyBO insert = WechatPublicKeyBO.builder().pubKey(pubKeyStr).uploadTime(System.currentTimeMillis()).pubKeyId(StringConstant.EMPTY)
-                        .payParamsId(NumberConstant.NEGATIVE_ONE).franchiseeId(franchiseeId).tenantId(tenantId).build();
-                return this.save(insert) > NumberConstant.ZERO ? R.ok() : R.fail("证书上传失败，请重试！");
-            }
-            
-            publicKeyBO.setPubKey(pubKeyStr);
-            publicKeyBO.setUploadTime(System.currentTimeMillis());
-            return this.update(publicKeyBO) > NumberConstant.ZERO ? R.ok() : R.fail("证书上传失败，请重试！");
-        } catch (Exception e) {
-            log.error("certificate get error, tenantId={}", tenantId , e);
-            return R.fail("证书内容获取失败，请重试！");
-        } finally {
-            redisService.remove(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, tenantId, franchiseeId));
-        }
-    }
     
     @Override
     public R<?> saveOrUpdate(WechatPublicKeyBO request) {
-        if (!redisService.setNx(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, request.getTenantId(), request.getFranchiseeId()), StringConstant.EMPTY, NumberConstant.FIVE * NumberConstant.A_THOUSAND, false)){
+        if (!redisService.setNx(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, request.getTenantId(), request.getFranchiseeId()), StringConstant.EMPTY,
+                NumberConstant.FIVE * NumberConstant.A_THOUSAND, false)) {
             return R.failMsg("操作频繁!");
         }
+        
+        String franchiseeName = MultiFranchiseeConstant.DEFAULT_FRANCHISEE_NAME;
         try {
-//            if (!request.getPubKey().startsWith(StringConstant.PREFIX_PUBLIC_KEY) || !request.getPubKey().endsWith(StringConstant.SUFFIX_PUBLIC_KEY)){
-//                return R.failMsg("请上传正确的证书!");
-//            }
+            //            if (!request.getPubKey().startsWith(StringConstant.PREFIX_PUBLIC_KEY) || !request.getPubKey().endsWith(StringConstant.SUFFIX_PUBLIC_KEY)){
+            //                return R.failMsg("请上传正确的证书!");
+            //            }
             String pubKey = formatPublicKey(request.getPubKey());
-            if (Objects.isNull(request.getFranchiseeId())){
+            
+            if (Objects.isNull(request.getFranchiseeId())) {
                 request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+                Franchisee franchisee = this.queryFranchisee(request.getTenantId(), request.getFranchiseeId());
+                if (Objects.isNull(franchisee)) {
+                    return R.failMsg("加盟商不存在");
+                }
+                franchiseeName = franchisee.getName();
             }
             
             request.setPubKey(pubKey);
             WechatPublicKeyBO publicKeyBO = this.queryByTenantIdFromCache(request.getTenantId(), request.getFranchiseeId());
-            if (Objects.isNull(request.getId())){
-                if (Objects.nonNull(publicKeyBO)){
+            if (Objects.isNull(request.getId())) {
+                if (Objects.nonNull(publicKeyBO)) {
                     return R.failMsg("当前商户已存在证书，请勿继续新增！");
                 }
                 return this.save(request) > NumberConstant.ZERO ? R.ok() : R.fail("证书保存失败，请重试！");
             }
             publicKeyBO = this.queryByIdFromCache(request.getId());
-            if (Objects.isNull(publicKeyBO)){
+            if (Objects.isNull(publicKeyBO)) {
                 return R.failMsg("证书不存在，请先上传证书！");
             }
             publicKeyBO.setPubKeyId(request.getPubKeyId());
             publicKeyBO.setPubKey(request.getPubKey());
             publicKeyBO.setUploadTime(System.currentTimeMillis());
             return this.update(publicKeyBO) > NumberConstant.ZERO ? R.ok() : R.fail("证书保存失败，请重试！");
-        }finally {
+        } finally {
+            this.operateRecord(request, franchiseeName);
             redisService.remove(String.format(WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE, request.getTenantId(), request.getFranchiseeId()));
         }
         
+    }
+    
+    /**
+     * 记录操作日志
+     *
+     * @param request
+     * @param franchiseeName
+     * @author caobotao.cbt
+     * @date 2024/11/11 11:05
+     */
+    private void operateRecord(WechatPublicKeyBO request, String franchiseeName) {
+        Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
+        record.put("franchiseeName", franchiseeName);
+        record.put("publicKeyId", request.getPubKeyId());
+        operateRecordUtil.record(null,record);
     }
     
     
@@ -325,8 +319,21 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
     }
     
     private String formatPublicKey(String publicKey) {
-        return publicKey.replace(StringConstant.PREFIX_PUBLIC_KEY, StringConstant.EMPTY)
-                .replace(StringConstant.SUFFIX_PUBLIC_KEY, StringConstant.EMPTY)
+        return publicKey.replace(StringConstant.PREFIX_PUBLIC_KEY, StringConstant.EMPTY).replace(StringConstant.SUFFIX_PUBLIC_KEY, StringConstant.EMPTY)
                 .replaceAll(SPACES, StringConstant.EMPTY);
+    }
+    
+    
+    /**
+     * 加盟商查询
+     *
+     * @author caobotao.cbt
+     */
+    private Franchisee queryFranchisee(Integer tenantId, Long franchiseeId) {
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(), tenantId)) {
+            return null;
+        }
+        return franchisee;
     }
 }
