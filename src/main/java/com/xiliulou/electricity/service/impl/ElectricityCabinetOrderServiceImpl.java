@@ -2476,11 +2476,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100218", "下单消息发送失败");
         }
         
-        // 命令下发成功再删除缓存
-        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-            redisService.delete(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
-        }
-        
         return Triple.of(true, null, electricityCabinetOrder.getOrderId());
     }
     
@@ -3271,11 +3266,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
         if (Boolean.FALSE.equals(result.getLeft())) {
             return Triple.of(false, "100218", "下单消息发送失败");
-        }
-        
-        // 命令下发成功再删除缓存
-        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-            redisService.delete(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
         }
         
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
