@@ -186,7 +186,7 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         if (CollectionUtils.isEmpty(memberCardBatteryTypes) || !CollectionUtils.containsAll(memberCardBatteryTypes, userBindBatteryTypes)) {
             // 灵活续费后，新转换为使用状态的套餐电池型号与原绑定的电池型号不相符，旧电池型号保存时间为新套餐的全部时长
             long validDays = electricityMemberCardOrder.getValidDays();
-            redisService.saveWithString(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, electricityMemberCardOrder.getUid()), JsonUtil.toJson(userBindBatteryTypes), validDays, TimeUnit.DAYS);
+            redisService.saveWithString(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, electricityMemberCardOrder.getUid()), userBindBatteryTypes, validDays, TimeUnit.DAYS);
         } else {
             // 非灵活续费购买或续费，新套餐的电池型号包含了旧套餐的电池型号
             if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
