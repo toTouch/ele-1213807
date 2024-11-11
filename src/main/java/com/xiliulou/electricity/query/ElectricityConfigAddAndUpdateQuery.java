@@ -196,6 +196,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 换电套餐购买限制次数，默认1次
      */
+    @Range(min = 1, message = "换电套餐购买限制次数必须是大于0的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer eleLimitCount;
     
     public static Double MIN_NORM = 50.00;
