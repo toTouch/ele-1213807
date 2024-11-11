@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.PlaceOrderQuery;
@@ -33,6 +34,7 @@ import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.security.bean.TokenUser;
@@ -93,6 +95,8 @@ public class PlaceOrderChainManager {
     private final ElectricityConfigService electricityConfigService;
     
     private final UserInfoExtraService userInfoExtraService;
+    
+    private final EnterpriseChannelUserService enterpriseChannelUserService;
     
     
     private final HashMap<Integer, AbstractPlaceOrderHandler> FIRST_NODES = new HashMap<>();
@@ -161,6 +165,13 @@ public class PlaceOrderChainManager {
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.warn("PLACE ORDER WARN! user not auth,uid={}", uid);
             return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        
+        // 检查是否为自主续费状态
+        Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
+        if (!userRenewalStatus) {
+            log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", userInfo.getUid(), placeOrderQuery.getMemberCardId());
+            throw new BizException("000088", "您已是渠道用户，请联系对应站点购买套餐");
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());

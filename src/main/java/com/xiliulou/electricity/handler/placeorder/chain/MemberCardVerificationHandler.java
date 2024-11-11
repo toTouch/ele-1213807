@@ -58,8 +58,6 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     
     private final BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
     
-    private final EnterpriseChannelUserService enterpriseChannelUserService;
-    
     
     @PostConstruct
     public void init() {
@@ -76,13 +74,6 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         // 查询用户分组供后续校验使用
         List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
                 UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
-        
-        // 检查是否为自主续费状态
-        Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
-        if (!userRenewalStatus) {
-            log.warn("BATTERY MEMBER ORDER WARN! user renewal status is false, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
-            throw new BizException("000088", "您已是渠道用户，请联系对应站点购买套餐");
-        }
         
         UserBatteryDeposit userBatteryDeposit = null;
         
