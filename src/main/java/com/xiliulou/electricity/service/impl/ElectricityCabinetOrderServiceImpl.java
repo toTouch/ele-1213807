@@ -3556,7 +3556,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVo vo, ElectricityBattery battery, UserInfo userInfo) {
         // 缓存内没数据表示，没有经过套餐转换，正常换电
-        List<String> oldBatteryTypes = redisService.getWithList(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()), String.class);
+        String listStr = redisService.get(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
+        if (StringUtils.isBlank(listStr) || StringUtils.isEmpty(listStr)) {
+            return Triple.of(true, null, null);
+        }
+        
+        List<String> oldBatteryTypes = JsonUtil.fromJsonArray(listStr, String.class);
         if (CollectionUtils.isEmpty(oldBatteryTypes)) {
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
             return Triple.of(true, null, null);

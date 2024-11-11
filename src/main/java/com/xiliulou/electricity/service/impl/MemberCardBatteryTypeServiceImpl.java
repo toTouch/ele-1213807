@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -11,10 +12,12 @@ import com.xiliulou.electricity.mapper.MemberCardBatteryTypeMapper;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -62,7 +65,12 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
         }
         
         // 不匹配时，从缓存内获取旧套餐的电池型号
-        return redisService.getWithList(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, uid), String.class);
+        String listStr = redisService.get(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, uid));
+        if (StringUtils.isBlank(listStr) || StringUtils.isEmpty(listStr)) {
+            return List.of();
+        }
+        
+        return JsonUtil.fromJsonArray(listStr, String.class);
     }
     
     @Override
