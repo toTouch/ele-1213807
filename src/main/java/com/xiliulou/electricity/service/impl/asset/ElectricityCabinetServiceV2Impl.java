@@ -18,6 +18,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
+import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -266,6 +267,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
             //缓存柜机GEO信息
             electricityCabinetService.addElectricityCabinetLocToGeo(electricityCabinet);
             
+            // 默认设置租电规则为全部可租电，最少保留一块电池
+            ElectricityCabinetExtra cabinetExtra = new ElectricityCabinetExtra();
+            cabinetExtra.setEid(Long.valueOf(electricityCabinet.getId()));
+            cabinetExtra.setRentTabType(RentReturnNormEnum.ALL_RENT.getCode());
+            cabinetExtra.setReturnTabType(RentReturnNormEnum.MIN_RETURN.getCode());
+            cabinetExtra.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetExtraService.update(cabinetExtra);
+            
             // 异步记录
             List<ElectricityCabinetBO> electricityCabinetBOList = electricityCabinetMapper.selectListByIdList(List.of(outWarehouseRequest.getId()));
             if (CollectionUtils.isNotEmpty(electricityCabinetBOList)) {
@@ -406,6 +415,14 @@ public class ElectricityCabinetServiceV2Impl implements ElectricityCabinetV2Serv
         }
         
         electricityCabinetList.forEach(item -> {
+            // 默认设置租电规则为全部可租电，最少保留一块电池
+            ElectricityCabinetExtra cabinetExtra = new ElectricityCabinetExtra();
+            cabinetExtra.setEid(Long.valueOf(item.getId()));
+            cabinetExtra.setRentTabType(RentReturnNormEnum.ALL_RENT.getCode());
+            cabinetExtra.setReturnTabType(RentReturnNormEnum.MIN_RETURN.getCode());
+            cabinetExtra.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetExtraService.update(cabinetExtra);
+            
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + item.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + item.getProductKey() + item.getDeviceName());
             //缓存柜机GEO信息

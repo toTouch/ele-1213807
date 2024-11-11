@@ -1904,7 +1904,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();
             BeanUtils.copyProperties(eleCabinetUsedRecord, eleCabinetUsedRecordVO);
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(eleCabinetUsedRecord.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(eleCabinetUsedRecord.getUid());
             if (Objects.nonNull(userInfo)) {
                 eleCabinetUsedRecordVO.setUserName(userInfo.getName());
                 eleCabinetUsedRecordVO.setPhone(userInfo.getPhone());

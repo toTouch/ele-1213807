@@ -310,8 +310,8 @@
           AND tenant_id = #{tenantId} LIMIT 1
     </select>
     
-    <select id="selectByPageForUser" resultMap="BatteryMemberCardTypeMap">
-        select
+    <select id="selectByPageForUser" resultMap="BatteryMemberCardTypePageMap">
+        select distinct
         bmc.id,
         bmc.name,
         bmc.deposit,
@@ -319,6 +319,7 @@
         bmc.rent_price_unit,
         bmc.valid_days,
         bmc.remark,
+        bmc.business_type,
         bmc.rent_unit,
         bmc.franchisee_id,
         bmc.rent_type,
@@ -337,10 +338,7 @@
         bmc.user_info_group_ids,
         bmc.group_type,
         bmc.installment_service_fee,
-        bmc.down_payment,
-        bmc.business_type,
-        mcbt.id as mcbt_id,
-        mcbt.battery_type battery_type
+        bmc.down_payment
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
@@ -614,7 +612,7 @@
     </update>
     
     <!--根据条件查询企业渠道套餐信息-->
-    <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypeMap">
+    <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypePageMap">
         select
         bmc.id,
         bmc.name,
@@ -636,9 +634,7 @@
         bmc.free_deposite,
         bmc.service_charge,
         bmc.installment_service_fee,
-        bmc.down_payment,
-        mcbt.id as mcbt_id,
-        mcbt.battery_type battery_type
+        bmc.down_payment
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>

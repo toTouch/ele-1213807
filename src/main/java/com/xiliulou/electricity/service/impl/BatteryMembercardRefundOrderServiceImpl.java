@@ -261,7 +261,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             BatteryMembercardRefundOrderVO batteryMembercardRefundOrderVO = new BatteryMembercardRefundOrderVO();
             BeanUtils.copyProperties(item, batteryMembercardRefundOrderVO);
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
             batteryMembercardRefundOrderVO.setName(Objects.isNull(userInfo) ? "" : userInfo.getName());
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
@@ -1147,7 +1147,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 batteryMembercardRefundOrderVO.setTenantName(Objects.isNull(tenant) ? null : tenant.getName());
             }
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
             batteryMembercardRefundOrderVO.setName(Objects.isNull(userInfo) ? "" : userInfo.getName());
             
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
