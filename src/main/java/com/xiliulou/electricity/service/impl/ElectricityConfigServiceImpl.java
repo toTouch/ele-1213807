@@ -221,6 +221,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
             electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
             electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
+            electricityConfig.setFreezeAutoReviewDays(electricityConfigAddAndUpdateQuery.getFreezeAutoReviewDays());
+            electricityConfig.setPackageFreezeCount(electricityConfigAddAndUpdateQuery.getPackageFreezeCount());
+            electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -261,6 +264,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
         electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
+        electricityConfig.setFreezeAutoReviewDays(electricityConfigAddAndUpdateQuery.getFreezeAutoReviewDays());
+        electricityConfig.setPackageFreezeCount(electricityConfigAddAndUpdateQuery.getPackageFreezeCount());
+        electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
         
         electricityConfigMapper.update(electricityConfig);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -367,6 +373,39 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
         
         return tenantConfigVO;
+    }
+    
+    @Override
+    public Boolean checkFreezeAutoReview(Integer tenantId, Integer days) {
+        ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig) || electricityConfig.getFreezeAutoReviewDays() == 0 || electricityConfig.getFreezeAutoReviewDays() < days) {
+            return Boolean.FALSE;
+        }
+        
+        return Boolean.TRUE;
+    }
+    
+    @Override
+    public R<Object> checkFreeCountAndDays(Integer tenantId, Integer count, Integer days) {
+        ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig)) {
+            return R.fail("301031", "未找到租户配置信息");
+        }
+        
+        if (Objects.equals(electricityConfig.getPackageFreezeCount(), 0)) {
+            if (days > 60) {
+                return R.fail("301033", "超出每次最长天数，请修改");
+            }
+        } else {
+            if (electricityConfig.getPackageFreezeCount() <= count) {
+                return R.fail("301032", "冻结次数已用完，请稍后再试");
+            }
+            if (days > electricityConfig.getPackageFreezeDays()) {
+                return R.fail("301033", "超出每次最长天数，请修改");
+            }
+        }
+        
+        return R.ok();
     }
     
     @Override

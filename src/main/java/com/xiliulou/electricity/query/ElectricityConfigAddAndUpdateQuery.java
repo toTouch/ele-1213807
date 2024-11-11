@@ -199,6 +199,22 @@ public class ElectricityConfigAddAndUpdateQuery {
     @Range(min = 1, message = "换电套餐购买限制次数必须是大于0的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer eleLimitCount;
     
+    /**
+     * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
+     */
+    private Integer freezeAutoReviewDays;
+    
+    /**
+     * 套餐冻结次数限制，0-不限次，其他为用户端申请冻结最大次数
+     */
+    private Integer packageFreezeCount;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60，packageFreezeCount 为其他数值时根据 packageFreezeDays 限制申请冻结最大天数
+     */
+    private Integer packageFreezeDays;
+    
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;
