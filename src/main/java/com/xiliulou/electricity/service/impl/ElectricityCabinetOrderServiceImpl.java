@@ -1964,6 +1964,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
         }
         
+        // 开启灵活续费时，获取旧电池型号
+        List<String> oldBatteryTypes = null;
+        if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), electricityBattery.getModel(), userBatteryTypeList);
+        }
+        
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                 .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.EXCHANGE_BATTERY, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                 .electricityCabinetId(selectBox.getElectricityCabinetId()).oldCellNo(usableEmptyCellNo.getRight()).newCellNo(Integer.parseInt(selectBox.getCellNo()))
@@ -2003,6 +2009,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(userBatteryTypeList));
             }
+        }
+        
+        // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
+        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+            commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
+            commandData.put("newBatteryModelNameList", JsonUtil.toJson(userBatteryTypeList));
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
