@@ -3180,7 +3180,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 } else {
                     vo = pair.getRight();
                 }
-                checkFlexibleRenewal(vo, electricityBattery, userInfo);
+                
+                Triple<Boolean, String, Object> flexibleRenewalTriple = checkFlexibleRenewal(vo, electricityBattery, userInfo);
+                if (!flexibleRenewalTriple.getLeft()) {
+                    return flexibleRenewalTriple;
+                }
                 
                 if (pair.getLeft() || !Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                     // 返回让前端选择
@@ -3564,6 +3568,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 缓存内没数据表示，没有经过套餐转换，正常换电
         String listStr = redisService.get(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
         if (StringUtils.isBlank(listStr) || StringUtils.isEmpty(listStr)) {
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
             return Triple.of(true, null, null);
         }
         
