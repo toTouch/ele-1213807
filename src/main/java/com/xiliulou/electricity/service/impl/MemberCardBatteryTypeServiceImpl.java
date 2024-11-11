@@ -83,7 +83,7 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
             return true;
         }
         
-        // 单型号套餐续费已被排除，非灵活续费场景下，只有有一个为单型号，就不匹配
+        // 单型号套餐续费已被排除，非灵活续费场景下，只要有一个为单型号，就不匹配
         if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
             if ((CollectionUtils.isEmpty(userBatteryTypes) || CollectionUtils.isEmpty(memberCardBatteryTypes))) {
                 return false;

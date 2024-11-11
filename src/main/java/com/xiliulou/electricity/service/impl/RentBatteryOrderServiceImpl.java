@@ -948,12 +948,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
             //为逾期用户清除备注
             overdueUserRemarkPublish.publish(user.getUid(), OverdueType.BATTERY.getCode(), user.getTenantId());
-            
-            // 命令下发成功再删除缓存
-            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-                redisService.delete(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, userInfo.getUid()));
-            }
-            
             return R.ok(orderId);
         } catch (BizException e) {
             throw new BizException(e.getErrCode(), e.getErrMsg());

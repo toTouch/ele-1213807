@@ -86,7 +86,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         
         UserBatteryDeposit userBatteryDeposit = null;
         
-        // 不支付押金时，需要校验押金缴纳状态
+        // 续费套餐时，需要校验押金缴纳状态
         if ((placeOrderType & PLACE_ORDER_DEPOSIT) != PLACE_ORDER_DEPOSIT) {
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 log.warn("BATTERY DEPOSIT WARN! user not pay deposit,uid={} ", userInfo.getUid());
@@ -136,10 +136,8 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             }
         }
         
-        // 灵活续费电池型号校验
+        // 灵活续费押金及电池型号校验
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        
-        // 灵活续费押金校验
         boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
         if (!matchOrNot) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
