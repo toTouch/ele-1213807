@@ -3173,7 +3173,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.ORDER.getCode());
                 
                 // 判断是直接开门还是让前端再调一次V3接口
-                ExchangeUserSelectVo vo = Objects.isNull(pair.getRight()) ? new ExchangeUserSelectVo() : pair.getRight();
+                ExchangeUserSelectVo vo;
+                if (Objects.isNull(pair.getRight())) {
+                    vo = new ExchangeUserSelectVo();
+                    vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+                } else {
+                    vo = pair.getRight();
+                }
                 checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 
                 if (pair.getLeft() || !Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
