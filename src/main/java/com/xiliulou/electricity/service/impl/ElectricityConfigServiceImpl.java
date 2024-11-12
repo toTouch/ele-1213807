@@ -393,18 +393,17 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         
         if (Objects.equals(electricityConfig.getPackageFreezeCount(), 0)) {
-            if (days > 60) {
+            if (days > ElectricityConfig.FREEZE_DAYS_MAX) {
                 return R.fail("301033", "超出每次最长天数，请修改");
             }
         } else {
-            if (electricityConfig.getPackageFreezeCount() <= count) {
+            if (count >= electricityConfig.getPackageFreezeCount()) {
                 return R.fail("301032", "冻结次数已用完，请稍后再试");
             }
             if (days > electricityConfig.getPackageFreezeDays()) {
                 return R.fail("301033", "超出每次最长天数，请修改");
             }
         }
-        
         return R.ok();
     }
     

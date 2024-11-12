@@ -46,7 +46,7 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
      * 校验用户端申请冻结时，申请冻结次数与天数是否符合配置
      *
      * @param tenantId 租户id
-     * @param count    本月内申请冻结次数
+     * @param count    本月内申请冻结次数，为审核通过的冻结记录数量
      * @param days     被校验的冻结申请的冻结天数
      * @return 校验结果
      */

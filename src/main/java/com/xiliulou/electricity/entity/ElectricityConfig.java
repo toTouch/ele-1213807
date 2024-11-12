@@ -385,4 +385,9 @@ public class ElectricityConfig {
      * 关闭对换电套餐购买次数的限制
      */
     public static Integer ELE_LIMIT_CLOSE = 1;
+    
+    /**
+     * 租户未设置最大天数时，套餐冻结最大天数限制
+     */
+    public static Integer FREEZE_DAYS_MAX = 60;
 }
