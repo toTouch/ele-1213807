@@ -110,6 +110,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1301,27 +1302,35 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //查询用户绑定的电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
-        // 多次换电拦截
-        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).build();
-            Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.CHECK.getCode());
-            if (pair.getLeft()) {
-                return Triple.of(true, null, pair.getRight());
-            }
-        }
-        
-        // 如果超过5分钟或者返回false，前端不进行弹窗
         ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
-        
         // 判断用户绑定的电池与当前正在使用的套餐，电池型号是否匹配，返回是否需要进行灵活续费后的电池转换
         Triple<Boolean, String, Object> checkFlexibleRenewal = checkFlexibleRenewal(vo, electricityBattery, userInfo);
         if (!checkFlexibleRenewal.getLeft()) {
             return checkFlexibleRenewal;
         }
         
-        return Triple.of(true, null, vo);
+        // 多次换电拦截
+        if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
+            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).build();
+            Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.CHECK.getCode());
+            if (pair.getLeft()) {
+                // 设置返回灵活续费相关参数
+                ExchangeUserSelectVo returnVo;
+                if (Objects.isNull(pair.getRight())) {
+                    returnVo = vo;
+                } else {
+                    returnVo = pair.getRight();
+                    returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
+                    returnVo.setOldVoltage(vo.getOldVoltage());
+                    returnVo.setNewVoltage(vo.getNewVoltage());
+                }
+                return Triple.of(true, null, returnVo);
+            }
+        }
         
+        // 如果超过5分钟或者返回false，前端不进行弹窗
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        return Triple.of(true, null, vo);
     }
     
     /**
