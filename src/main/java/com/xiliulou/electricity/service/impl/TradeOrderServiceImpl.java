@@ -593,13 +593,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
             
-            // 是否限制套餐购买次数
-            Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
-            if (limitPurchase.getLeft()) {
-                log.warn("PayMemberCardAndInsurance WARN! user limit purchase,uid={}", userInfo.getUid());
-                return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
-            }
-            
             // 检查是否为自主续费状态
             Boolean userRenewalStatus = enterpriseChannelUserService.checkRenewalStatusByUid(userInfo.getUid());
             if (!userRenewalStatus) {
@@ -618,8 +611,22 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
             }
             
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(query.getPaymentChannel(), tenantId, batteryMemberCard.getFranchiseeId(),
-                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+            
+            Boolean advanceRenewalResult = batteryMemberCardService.checkIsAdvanceRenewal(batteryMemberCard, userBatteryMemberCard);
+            if (!advanceRenewalResult) {
+                log.warn("BATTERY MEMBER CARD WARN! not allow advance renewal,uid={}", userInfo.getUid());
+                return Triple.of(false, "100439", "您当前有生效中的套餐，无须重复购买，请联系客服后操作");
+            }
+            
+            // 是否限制套餐购买次数
+            Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
+            if (limitPurchase.getLeft()) {
+                log.warn("PayMemberCardAndInsurance WARN! user limit purchase,uid={}", userInfo.getUid());
+                return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
+            }
+            
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(query.getPaymentChannel(), tenantId, batteryMemberCard.getFranchiseeId(),Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
             if (Objects.isNull(payParamConfig)) {
                 log.warn("BATTERY DEPOSIT WARN!not found pay params,uid={}", userInfo.getUid());
                 return Triple.of(false, "100307", "未配置支付参数!");
@@ -627,13 +634,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(userInfo.getUid(), tenantId, query.getPaymentChannel());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-                log.warn("BATTERY DEPOSIT WARN!not found useroauthbind or thirdid is null,uid={}", userInfo.getUid());
+                log.warn("BATTERY DEPOSIT WARN!not found user oauth bind or thirdid is null,uid={}", userInfo.getUid());
                 return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
             }
             
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
-                log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                log.warn("BATTERY MEMBER CARD WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0001", "用户信息不存在");
             }
             
@@ -765,7 +772,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
-    
     
     /**
      * 处理混合支付总金额为0的场景

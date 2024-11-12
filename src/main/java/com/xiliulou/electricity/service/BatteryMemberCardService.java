@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
@@ -126,4 +127,10 @@ public interface BatteryMemberCardService {
      * @return 检查结果
      */
     Triple<Boolean, String, Object> checkUserInfoGroupWithMemberCard(UserInfo userInfo, Long franchiseeId, BatteryMemberCard memberCard, Integer source);
+    
+    /**
+     * 检查是否可以提前续费
+     */
+    Boolean checkIsAdvanceRenewal(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
+    
 }
