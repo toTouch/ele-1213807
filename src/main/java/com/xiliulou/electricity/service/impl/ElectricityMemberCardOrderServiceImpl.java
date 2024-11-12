@@ -3309,6 +3309,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
         }
         
+        if (batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) > 0) {
+            return Triple.of(false, "100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
+        }
+        
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard,
                 null, null);
         
