@@ -102,6 +102,10 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
                 log.warn("BATTERY DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
                 throw new BizException("100018", "套餐租金退款审核中");
             }
+            
+            if (batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) > 0) {
+                throw new BizException("100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
+            }
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
