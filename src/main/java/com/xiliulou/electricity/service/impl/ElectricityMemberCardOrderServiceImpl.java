@@ -774,6 +774,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         
+        // 校验申请冻结次数与申请天数是否符合租户配置
+        Integer recordCount = eleDisableMemberCardRecordService.countDisabledRecordThisMonth(userInfo.getUid());
+        R<Object> checkR = electricityConfigService.checkFreeCountAndDays(userInfo.getTenantId(), recordCount, disableCardDays);
+        if (!checkR.isSuccess()) {
+            return checkR;
+        }
+        
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
             log.warn("DISABLE MEMBER CARD WARN! user is rent deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
@@ -873,7 +880,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .batteryMemberCardId(userBatteryMemberCard.getMemberCardId()).chooseDays(disableCardDays)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME).chargeRate(batteryMemberCard.getServiceCharge()).applyReason(applyReason)
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).source(EleDisableMemberCardRecord.SOURCE_USER).build();
         
         ServiceFeeUserInfo insertOrUpdateServiceFeeUserInfo = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .uid(user.getUid()).updateTime(System.currentTimeMillis()).build();
@@ -1299,7 +1306,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .status(UserBatteryMemberCard.MEMBER_CARD_DISABLE).tenantId(userInfo.getTenantId()).uid(uid).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                 .chargeRate(batteryMemberCard.getServiceCharge()).chooseDays(days).disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableMemberCardTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).auditorId(SecurityUtils.getUserInfo().getUid()).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).auditorId(SecurityUtils.getUserInfo().getUid())
+                .source(EleDisableMemberCardRecord.SOURCE_BACKGROUND).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         
         // 更新用户套餐状态为暂停

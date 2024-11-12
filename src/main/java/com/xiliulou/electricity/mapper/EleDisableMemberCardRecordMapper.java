@@ -27,4 +27,6 @@ public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableM
             @Param("tenantId") Integer tenantId);
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
+    
+    Integer countDisabledRecordThisMonth(@Param("uid") Long uid, @Param("beginTime") Long beginTime);
 }

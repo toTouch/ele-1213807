@@ -121,6 +121,10 @@
         where disable_member_card_no = #{disableMemberCardNo} and tenant_id = #{tenantId}
     </select>
     
+    <select id="countDisabledRecordThisMonth" resultType="java.lang.Integer">
+        select count(1) from t_ele_disable_member_card_record where uid = #{uid} and create_time > #{beginTime} and source = 1 and status = 1
+    </select>
+    
     <update id="updatePhoneByUid">
         update t_ele_disable_member_card_record set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>

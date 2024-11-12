@@ -30,6 +30,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.EnableMemberCardRecordService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
@@ -53,6 +54,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,6 +118,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     
     @Resource
     private EnableMemberCardRecordService enableMemberCardRecordService;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
     
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
@@ -207,6 +215,13 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(franchisee)) {
             log.warn("ELECTRICITY  WARN! not found franchisee,uid={}", eleDisableMemberCardRecord.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+        
+        // 校验申请冻结次数与申请天数是否符合租户配置
+        Integer recordCount = countDisabledRecordThisMonth(userInfo.getUid());
+        R<Object> checkR = electricityConfigService.checkFreeCountAndDays(userInfo.getTenantId(), recordCount, eleDisableMemberCardRecord.getChooseDays());
+        if (!checkR.isSuccess()) {
+            return checkR;
         }
         
         // 判断用户是否购买套餐
@@ -414,6 +429,22 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             sendUserOperateRecord(eleDisableMemberCardRecord, UserBatteryMemberCard.MEMBER_CARD_DISABLE);
         }
         return R.ok();
+    }
+    
+    @Slave
+    @Override
+    public Integer countDisabledRecordThisMonth(Long uid) {
+        // 获取当前日期
+        LocalDate today = LocalDate.now();
+        // 调整为当月第一天
+        LocalDate firstDayOfMonth = today.withDayOfMonth(1);
+        // 转换为当天的起始时间（午夜12点）
+        LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
+        // 结合系统默认时区，转换为带时区的日期时间
+        ZonedDateTime zonedDateTime = startOfMonth.atZone(ZoneId.systemDefault());
+        Long beginTime = zonedDateTime.toInstant().toEpochMilli();
+        
+        return eleDisableMemberCardRecordMapper.countDisabledRecordThisMonth(uid, beginTime);
     }
     
     
