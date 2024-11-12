@@ -1315,15 +1315,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO, OrderCheckEnum.CHECK.getCode());
             if (pair.getLeft()) {
                 // 设置返回灵活续费相关参数
-                ExchangeUserSelectVo returnVo;
-                if (Objects.isNull(pair.getRight())) {
-                    returnVo = vo;
-                } else {
-                    returnVo = pair.getRight();
-                    returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
-                    returnVo.setOldVoltage(vo.getOldVoltage());
-                    returnVo.setNewVoltage(vo.getNewVoltage());
-                }
+                ExchangeUserSelectVo returnVo = pair.getRight();
+                returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
+                returnVo.setOldVoltage(vo.getOldVoltage());
+                returnVo.setNewVoltage(vo.getNewVoltage());
+                
                 return Triple.of(true, null, returnVo);
             }
         }
