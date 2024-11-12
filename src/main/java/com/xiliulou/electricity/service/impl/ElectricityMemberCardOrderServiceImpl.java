@@ -974,6 +974,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
         
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryMemberCard.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            return R.fail("120203", "加盟商不存在");
+        }
+        
         if (Boolean.TRUE.equals(userBatteryMemberCardService.verifyUserBatteryMembercardEffective(batteryMemberCard, userBatteryMemberCard))) {
             log.warn("DISABLE MEMBER CARD WARN! userBatteryMemberCard expire,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("100298", "换电套餐已过期，无法进行暂停操作");
@@ -1009,19 +1014,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("DISABLE MEMBER CARD WARN! channel user exit,uid={}", userInfo.getUid());
             return R.fail("120308", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
         }
+        
+        Boolean autoReviewOrNot = electricityConfigService.checkFreezeAutoReview(userInfo.getTenantId(), disableCardDays);
+        
         String generateOrderId = generateOrderId(user.getUid());
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId)
-                .memberCardName(batteryMemberCard.getName()).phone(userInfo.getPhone()).userName(userInfo.getName()).status(EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW)
+                .memberCardName(batteryMemberCard.getName()).phone(userInfo.getPhone()).userName(userInfo.getName()).status(autoReviewOrNot ? EleDisableMemberCardRecord.MEMBER_CARD_DISABLE : EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW)
                 .uid(userInfo.getUid()).tenantId(userInfo.getTenantId()).uid(user.getUid()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                 .batteryMemberCardId(userBatteryMemberCard.getMemberCardId()).chooseDays(disableCardDays)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME).chargeRate(batteryMemberCard.getServiceCharge()).applyReason(applyReason)
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         
         ServiceFeeUserInfo insertOrUpdateServiceFeeUserInfo = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .uid(user.getUid()).updateTime(System.currentTimeMillis()).build();
         
+        // 自动审核后续处理
+        if (autoReviewOrNot) {
+            eleDisableMemberCardRecord.setDisableMemberCardTime(System.currentTimeMillis());
+            eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
+            
+            return eleDisableMemberCardRecordService.handleDisableMemberCard(userInfo, userBatteryMemberCard, eleDisableMemberCardRecord, franchisee, batteryMemberCard, false);
+        }
+        
+        eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
         
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
