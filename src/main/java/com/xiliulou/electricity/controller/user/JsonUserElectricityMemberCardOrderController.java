@@ -131,9 +131,10 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     /**
      * 不限制时间停启卡
      */
+    @Deprecated
     @PutMapping("user/memberCard/openOrDisableMemberCard")
     public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus) {
-        return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
+        return R.fail("000001", "小程序版本过低，请升级小程序");
     }
     
     /**

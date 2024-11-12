@@ -272,10 +272,12 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateServiceFeeUserInfo.setDisableMemberCardNo("");
             updateServiceFeeUserInfo.setPauseOrderNo("");
             serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
+            
             sendUserOperateRecord(eleDisableMemberCardRecord, status);
             return R.ok();
         } else {
             // 同意停卡
+            eleDisableMemberCardRecord.setDisableMemberCardTime(updateEleDisableMemberCardRecord.getDisableMemberCardTime());
             return handleDisableMemberCard(userInfo, userBatteryMemberCard, eleDisableMemberCardRecord, franchisee, batteryMemberCard, true);
         }
     }
