@@ -8,22 +8,27 @@ import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.handler.placeorder.AbstractPlaceOrderHandler;
 import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetailQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -58,6 +63,12 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
     
     private final BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
     
+    private final BatteryMemberCardService batteryMemberCardService;
+    
+    private final UserInfoExtraService userInfoExtraService;
+    
+    private final UserBatteryMemberCardService userBatteryMemberCardService;
+    
     
     @PostConstruct
     public void init() {
@@ -80,26 +91,26 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         // 续费套餐时，需要校验押金缴纳状态
         if ((placeOrderType & PLACE_ORDER_DEPOSIT) != PLACE_ORDER_DEPOSIT) {
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                log.warn("BATTERY DEPOSIT WARN! user not pay deposit,uid={} ", userInfo.getUid());
+                log.warn("PLACE ORDER WARN! user not pay deposit,uid={} ", userInfo.getUid());
                 throw new BizException("ELECTRICITY.0049", "未缴纳押金");
             }
             
             userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
-                log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
+                log.warn("PLACE ORDER WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());
                 throw new BizException("ELECTRICITY.0001", "用户信息不存在");
             }
             
             // 是否有正在进行中的退押
             Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
-                log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", userInfo.getUid());
+                log.warn("PLACE ORDER WARN! have refunding order,uid={}", userInfo.getUid());
                 throw new BizException("ELECTRICITY.0047", "电池押金退款中");
             }
             
             List<BatteryMembercardRefundOrder> batteryMembercardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(userInfo.getUid());
             if (CollectionUtils.isNotEmpty(batteryMembercardRefundOrders)) {
-                log.warn("BATTERY DEPOSIT WARN! battery membercard refund review,uid={}", userInfo.getUid());
+                log.warn("PLACE ORDER WARN! battery membercard refund review,uid={}", userInfo.getUid());
                 throw new BizException("100018", "套餐租金退款审核中");
             }
             
@@ -126,7 +137,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             
             // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
             if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-                log.warn("INTEGRATED PAYMENT WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
+                log.warn("PLACE ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
                 throw new BizException("100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
         }
@@ -136,6 +147,21 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
         boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
         if (!matchOrNot) {
             throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        
+        Boolean advanceRenewalResult = batteryMemberCardService.checkIsAdvanceRenewal(batteryMemberCard, userBatteryMemberCard);
+        if (!advanceRenewalResult) {
+            log.warn("PLACE ORDER WARN! not allow advance renewal,uid={}", userInfo.getUid());
+            throw new BizException("100439", "您当前有生效中的套餐，无须重复购买，请联系客服后操作");
+        }
+        
+        // 是否限制套餐购买次数
+        Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), userInfo.getTenantId());
+        if (limitPurchase.getLeft()) {
+            log.warn("PLACE ORDER WARN! user limit purchase,uid={}", userInfo.getUid());
+            throw new BizException( limitPurchase.getMiddle(), limitPurchase.getRight());
         }
         
         fireProcess(context, result, placeOrderType);

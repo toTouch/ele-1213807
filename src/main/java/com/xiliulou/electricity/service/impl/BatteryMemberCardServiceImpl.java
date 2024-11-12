@@ -1150,7 +1150,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Boolean.TRUE;
         }
         
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())) {
+        if (Objects.isNull(userBatteryMemberCard) || StringUtils.isEmpty(userBatteryMemberCard.getOrderId()) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())) {
             return Boolean.TRUE;
         }
         
