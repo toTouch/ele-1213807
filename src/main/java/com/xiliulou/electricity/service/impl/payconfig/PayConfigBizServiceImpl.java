@@ -6,8 +6,12 @@ package com.xiliulou.electricity.service.impl.payconfig;
 
 import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
+import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
+import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.pay.base.exception.PayException;
@@ -35,6 +39,9 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
     
     @Resource
     private WechatPayParamsBizService wechatPayParamsBizService;
+    
+    @Resource
+    private ElectricityPayParamsService electricityPayParamsService;
     
     
     @Override
@@ -94,6 +101,27 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
         } catch (PayException e) {
             log.warn("PayConfigBizServiceImpl.checkConfigConsistency WARN!  PayException:", e);
             return false;
+        }
+    }
+    
+    @Override
+    public BasePayConfig querySimplePrecisePayParams(String paymentChannel, Integer tenantId, Long franchiseeId) throws PayException {
+        
+        if (ChannelEnum.WECHAT.getCode().equals(paymentChannel)) {
+            // 微信
+            ElectricityPayParams payParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            if (Objects.isNull(payParams)){
+                return null;
+            }
+            WechatPayParamsDetails wechatPayParamsDetails = ElectricityPayParamsConverter.qryDoToDetails(payParams);
+            return wechatPayParamsDetails;
+        } else if (ChannelEnum.ALIPAY.getCode().equals(paymentChannel)) {
+            // 支付宝
+            return alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+        
+        } else {
+            log.error("ERROR ! paymentChannel = {}, not supports", paymentChannel);
+            throw new PayException("paymentChannel=" + paymentChannel + "，not supports");
         }
     }
     
