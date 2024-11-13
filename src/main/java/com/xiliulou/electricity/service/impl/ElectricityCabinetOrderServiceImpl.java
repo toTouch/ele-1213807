@@ -3171,7 +3171,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
                         OrderCheckEnum.ORDER.getCode());
                 
-                // 判断是直接开门还是让前端再调一次V3接口
+                // 二次扫码校验通过，非二次扫码时，实例化vo对象用于灵活续费校验，灵活续费校验也通过才能放行去直接换电
                 ExchangeUserSelectVo vo;
                 if (Objects.isNull(pair.getRight())) {
                     vo = new ExchangeUserSelectVo();
@@ -3180,9 +3180,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     vo = pair.getRight();
                 }
                 
-                Triple<Boolean, String, Object> flexibleRenewalTriple = checkFlexibleRenewal(vo, electricityBattery, userInfo);
-                if (!flexibleRenewalTriple.getLeft()) {
-                    return flexibleRenewalTriple;
+                // 二次扫码上一次换电订单成功，并且新电池在仓时，不做灵活续费校验
+                if (!Objects.equals(vo.getLastExchangeIsSuccess(), ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS) || !Objects.equals(vo.getIsBatteryInCell(), ExchangeUserSelectVo.BATTERY_IN_CELL)) {
+                    checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
                 
                 if (pair.getLeft() || !Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
