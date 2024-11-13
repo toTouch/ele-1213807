@@ -237,7 +237,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
             //            }
             String pubKey = formatPublicKey(request.getPubKey());
             
-            if (Objects.isNull(request.getFranchiseeId())) {
+            if (Objects.nonNull(request.getFranchiseeId())) {
                 request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
                 Franchisee franchisee = this.queryFranchisee(request.getTenantId(), request.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
