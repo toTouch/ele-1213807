@@ -36,7 +36,7 @@ public class ElectricityPayParamsTxServiceImpl implements ElectricityPayParamsTx
     private WechatWithdrawalCertificateMapper wechatWithdrawalCertificateMapper;
     
     @Override
-    public void delete(Long id, Integer tenantId) {
+    public void delete(Integer id, Integer tenantId) {
         electricityPayParamsMapper.logicalDelete(id, tenantId);
         wechatPaymentCertificateMapper.logicalDeleteByPayParamsId(id, tenantId);
         wechatWithdrawalCertificateMapper.logicalDeleteByPayParamsId(id, tenantId);

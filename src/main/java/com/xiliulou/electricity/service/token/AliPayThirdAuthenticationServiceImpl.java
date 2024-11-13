@@ -185,6 +185,7 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
             AlipayUserPhoneDTO alipayUserPhoneDTO = JsonUtil.fromJson(plainData, AlipayUserPhoneDTO.class);
             if (!DECRYPT_ALIPAY_FLAG.equals(alipayUserPhoneDTO.getMsg())) {
                 log.error("ALIPAY TOKEN ERROR!convert user phone failed,msg={}", plainData);
+                throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
             }
             
             phone = alipayUserPhoneDTO.getMobile();

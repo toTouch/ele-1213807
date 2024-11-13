@@ -94,7 +94,7 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
      * @author caobotao.cbt
      * @date 2024/6/12 17:55
      */
-    R delete(Long id);
+    R delete(Integer id);
     
     /**
      * 根据租户id查询

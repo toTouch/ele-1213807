@@ -19,8 +19,8 @@ import java.util.Optional;
 @Getter
 public enum DeviceStatusEnum {
     
-    DEVICE_ONLINE("ONLINE", "上线", "-"),
-    DEVICE_OFFLINE("OFFLINE", "下线", "请及时在运维端查看设备状态，长时间离线，请检查网络和流量，您任何疑问请联系西六楼客服");
+    DEVICE_ONLINE("online", "上线", "-"),
+    DEVICE_OFFLINE("offline", "下线", "请及时在运维端查看设备状态，长时间离线，请检查网络和流量，您任何疑问请联系西六楼客服");
     
     
     DeviceStatusEnum(String status, String statusMsg, String remarkMsg) {
@@ -52,6 +52,13 @@ public enum DeviceStatusEnum {
      */
     public static Optional<DeviceStatusEnum> getByStatus(String status) {
         DeviceStatusEnum deviceStatusEnum = map.get(status);
+        if (deviceStatusEnum == null) {
+            if (DEVICE_ONLINE.getStatus().equalsIgnoreCase(status)) {
+                return Optional.of(DEVICE_ONLINE);
+            }else if (DEVICE_OFFLINE.getStatus().equalsIgnoreCase(status)){
+                return Optional.of(DEVICE_OFFLINE);
+            }
+        }
         return Optional.ofNullable(deviceStatusEnum);
     }
 }

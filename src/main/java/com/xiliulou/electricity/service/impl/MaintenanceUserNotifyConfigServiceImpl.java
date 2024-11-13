@@ -200,12 +200,15 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
 
     @Override
     public void sendDeviceNotify(ElectricityCabinet electricityCabinet, String status, String time) {
+        
         MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
+            log.info("MaintenanceUserNotifyConfig not exist tenantId={}",electricityCabinet.getTenantId());
             return;
         }
 
         if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_DEVICE) != MaintenanceUserNotifyConfig.P_DEVICE) {
+            log.info("not meet the conditions tenantId={}，permissions={}",maintenanceUserNotifyConfig.getPermissions(),electricityCabinet.getTenantId());
             return;
         }
 
@@ -227,7 +230,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             deviceNotify.setDeviceName(electricityCabinet.getName());
             query.setData(deviceNotify);
 
-            Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", status.equals(ElectricityCabinet.IOT_STATUS_OFFLINE) ? 4 : 0);
+            Pair<Boolean, String> result = messageSendProducer.sendSyncMsg(query, "", "", 0);
             if (!result.getLeft()) {
                 log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
             }
