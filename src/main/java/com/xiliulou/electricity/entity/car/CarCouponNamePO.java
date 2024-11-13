@@ -35,8 +35,22 @@ public class CarCouponNamePO {
     
     /**
      * <p>
+     * Description: 类型1--减免券，2--折扣券，3--天数券
+     * </p>
+     */
+    private Integer discountType;
+    
+    /**
+     * <p>
      * Description: 优惠券金额
      * </p>
      */
     private BigDecimal amount;
+    
+    /**
+     * <p>
+     * Description: 天数
+     * </p>
+     */
+    private Integer count;
 }

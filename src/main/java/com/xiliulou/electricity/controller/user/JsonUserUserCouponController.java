@@ -30,7 +30,7 @@ public class JsonUserUserCouponController {
     
     //我的优惠券查询
     //status 1--未使用  2--已使用  3--已过期
-    //type  1--减免券，2--打折券，3-体验劵
+    //type  1--减免券，2--打折券，3-天数券
     //TODO 优化  （加分页）
     @Deprecated
     @GetMapping(value = "/user/userCoupon/queryMyCoupon")

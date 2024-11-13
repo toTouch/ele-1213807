@@ -7,6 +7,7 @@ package com.xiliulou.electricity.service.token;
 
 import com.google.common.collect.Lists;
 import com.xiliulou.core.i18n.MessageUtils;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.entity.NewUserActivity;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import com.xiliulou.electricity.ttl.TtlXllThreadPoolExecutorsSupport;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
@@ -41,6 +43,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * description:
@@ -73,6 +77,9 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
     
     @Resource
     private UserCouponService userCouponService;
+    
+    
+    private final ExecutorService executorService = TtlXllThreadPoolExecutorsSupport.get(XllThreadPoolExecutors.newFixedThreadPool("login-activity-pool" ,1,"login-activity-"));
     
     public SecurityUser login(LoginModel loginModel) {
         
@@ -267,12 +274,18 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
         if (Objects.nonNull(newUserActivity)) {
             log.info("send the coupon to new user after logon, activity info = {}, user info = {}", newUserActivity.getId(), insert.getUid());
             //优惠券
-            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(newUserActivity.getCouponId())) {
-                //发放优惠券
-                Long[] uids = new Long[1];
-                uids[0] = insert.getUid();
-                log.info("uids is -->{}", uids[0]);
-                userCouponService.batchRelease(newUserActivity.getCouponId(), uids, newUserActivity.getId().longValue());
+            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
+                //异步批量发放优惠券
+                CompletableFuture.runAsync(()-> userCouponService.batchSendCouponByNewActive(newUserActivity.getId(), insert.getUid(),newUserActivity.getCoupons()),executorService)
+                        .exceptionally(ex->{
+                            log.error("send coupon to new user error", ex);
+                            return null;
+                        });
+//                //发放优惠券
+//                Long[] uids = new Long[1];
+//                uids[0] = insert.getUid();
+//                log.info("uids is -->{}", uids[0]);
+//                userCouponService.batchRelease(newUserActivity.getCouponId(), uids, newUserActivity.getId().longValue());
             }
         }
         

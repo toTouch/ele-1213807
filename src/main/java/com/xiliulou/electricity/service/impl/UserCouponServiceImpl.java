@@ -308,6 +308,50 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
     
     @Override
+    public boolean batchSendCouponByNewActive(Integer activityId, Long uid, List<Long> couponIds) {
+        if (Objects.isNull(uid) || CollectionUtils.isEmpty(couponIds) || Objects.isNull(activityId)) {
+            log.warn("batchSendCouponByNewActive  WARNING! params is illegal ! uid:{},couponIds:{},activityId:{}", uid, couponIds, activityId);
+            return false;
+        }
+        List<Coupon> couponList = couponService.queryListByIdsFromDB(couponIds);
+        
+        if (CollectionUtils.isEmpty(couponList)){
+            log.warn("Coupon  WARNING! not found coupon ! couponIds:{} ", couponList);
+            return false;
+        }
+        
+        //查询用户手机号
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.warn("batchSendCouponByNewActive  WARNING! not found user,uid:{} ", uid);
+            return false;
+        }
+        List<UserCoupon> sendCouponList = new ArrayList<>();
+        for (Coupon coupon : couponList) {
+            UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).couponId(coupon.getId())
+                    .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                    .tenantId(coupon.getTenantId())
+                    .couponType(CouponTypeEnum.REGISTER_ACTIVITIES.getCode())
+                    .couponWay(activityId.longValue());
+            //优惠券过期时间
+            
+            LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+            couponBuild.deadline(TimeUtils.convertTimeStamp(now));
+            couponBuild.uid(uid);
+            couponBuild.phone(user.getPhone());
+            sendCouponList.add(couponBuild.build());
+        }
+        
+        if (CollectionUtils.isEmpty(sendCouponList)){
+            return false;
+        }
+        
+        userCouponMapper.batchInsert(sendCouponList);
+        
+        return true;
+    }
+    
+    @Override
     public R adminBatchRelease(Integer id, Long[] uids) {
         //用户区分
         TokenUser operateUser = SecurityUtils.getUserInfo();

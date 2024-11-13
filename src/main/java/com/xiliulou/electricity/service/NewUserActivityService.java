@@ -16,7 +16,8 @@ import java.util.List;
  * @since 2021-04-14 09:27:12
  */
 public interface NewUserActivityService {
-
+    
+    String[] IGNORE_ATTRIBUTES = {"couponArrays"};
 
       /**
      * 通过ID查询单条数据从缓存

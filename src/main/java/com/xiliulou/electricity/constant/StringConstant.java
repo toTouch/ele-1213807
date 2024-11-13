@@ -17,5 +17,7 @@ public interface StringConstant {
     String PERCENT = "%";
     
     String SPACE = " ";
+    
+    String EMPTY_JSON_ARR="[]";
 
 }

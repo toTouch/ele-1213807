@@ -593,10 +593,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             carRentalPackageVo.setCouponIds(couponIds);
             
             if (!CollectionUtils.isEmpty(collect)) {
-                CarCouponVO couponVO = collect.stream().max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
-                carRentalPackageVo.setCouponName(couponVO.getName());
-                carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
-                carRentalPackageVo.setCouponId(couponVO.getId());
+                CarCouponVO couponVO = collect.stream().filter(c->Objects.equals(c.getDiscountType(),Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
+                if (Objects.nonNull(couponVO)){
+                    carRentalPackageVo.setCouponName(couponVO.getName());
+                    carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
+                    carRentalPackageVo.setCouponId(couponVO.getId());
+                }
             }
         }
         return carRentalPackageVo;

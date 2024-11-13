@@ -55,6 +55,8 @@ public interface UserCouponService {
     
     R batchRelease(Integer id, Long[] uids, Long newActiveId);
     
+    boolean batchSendCouponByNewActive(Integer activityId, Long uid,List<Long> couponIds);
+    
     R adminBatchRelease(Integer id, Long[] uids);
     
     R destruction(Long[] couponIds);

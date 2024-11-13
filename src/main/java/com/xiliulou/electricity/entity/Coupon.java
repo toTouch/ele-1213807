@@ -113,8 +113,14 @@ public class Coupon {
      * @see SpecificPackagesEnum
      */
     private Integer specificPackages;
+    
+    /**
+     * -1 -- 不限制,0 -- 租车，1 -- 租电，2 -- 车电一体
+     */
+    private Integer useScope;
 
     public static final Integer SUPERPOSITION_NO = 0;
+    
     public static final Integer SUPERPOSITION_YES = 1;
 
     public static final Integer DEL_NORMAL = 0;
@@ -133,8 +139,8 @@ public class Coupon {
     //打折劵
     public static final Integer DISCOUNT=2;
 
-    //体验劵
-    public static final Integer EXPERIENCE=3;
+    //天数券
+    public static final Integer DAY_VOUCHER=3;
 
     //平台劵
     public static final Integer TYPE_SYSTEM = 1;
