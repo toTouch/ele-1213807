@@ -464,7 +464,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         
         if (Objects.equals(optModel.getGiveCoupon(), YesNoEnum.YES.getCode()) && (CollectionUtil.isEmpty(optModel.getCouponIds())
                 || optModel.getCouponIds().size() > COUPON_MAX_LIMIT)) {
-            throw new BizException("300833", "优惠劵最多支持发6张");
+            throw new BizException("300833", "优惠劵最多支持发10张");
         }
         
         if (Objects.equals(optModel.getIsUserGroup(), YesNoEnum.NO.getCode()) && (CollectionUtil.isEmpty(optModel.getUserGroupIds())

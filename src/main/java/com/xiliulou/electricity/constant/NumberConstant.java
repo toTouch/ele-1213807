@@ -60,4 +60,6 @@ public class NumberConstant {
     public static final BigDecimal TWENTY_FIVE_DB = BigDecimal.valueOf(25);
     
     public static final BigDecimal SEVENTY_FIVE_DB = BigDecimal.valueOf(75);
+    
+    public static final int NUMBER_10 = 10;
 }

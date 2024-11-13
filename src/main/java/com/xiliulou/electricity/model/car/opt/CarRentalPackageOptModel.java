@@ -271,7 +271,7 @@ public class CarRentalPackageOptModel implements Serializable {
     private Integer isUserGroup;
     
     
-    public static final Integer COUPON_MAX_LIMIT = 6;
+    public static final Integer COUPON_MAX_LIMIT = 10;
     
     public static final Integer USER_GROUP_MAX_LIMIT = 10;
 }

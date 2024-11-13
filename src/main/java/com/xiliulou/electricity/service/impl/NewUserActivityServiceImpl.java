@@ -109,6 +109,10 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			log.error("Coupon  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
+		
+		if (CollectionUtils.isNotEmpty(newUserActivityAddAndUpdateQuery.getCouponArrays()) && newUserActivityAddAndUpdateQuery.getCouponArrays().size() > NumberConstant.NUMBER_10){
+			return R.fail("ELECTRICITY.10302", "单个奖励条件最多10张");
+		}
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();

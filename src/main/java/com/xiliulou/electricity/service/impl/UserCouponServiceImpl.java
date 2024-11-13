@@ -678,7 +678,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             //查询优惠券是否在活动中间
             for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-                if (Objects.equals(shareActivityRule.getCouponId(), couponId)) {
+                if (CollectionUtils.isNotEmpty(shareActivityRule.getCoupons()) && shareActivityRule.getCoupons().contains(Long.valueOf(couponId))) {
                     if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
@@ -715,7 +715,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             //查询优惠券是否在活动中间
             for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-                if (Objects.equals(shareActivityRule.getCouponId(), couponId)) {
+                if (CollectionUtils.isNotEmpty(shareActivityRule.getCoupons()) && shareActivityRule.getCoupons().contains(Long.valueOf(couponId))) {
                     if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
