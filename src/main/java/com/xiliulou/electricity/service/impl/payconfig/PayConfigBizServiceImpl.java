@@ -4,14 +4,14 @@
 
 package com.xiliulou.electricity.service.impl.payconfig;
 
+import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
+import com.xiliulou.electricity.service.AlipayAppConfigService;
+import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
-import com.xiliulou.pay.alipay.exception.AliPayException;
 import com.xiliulou.pay.base.exception.PayException;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +31,10 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
     
     
     @Resource
-    private PayConfigFactory payConfigFactory;
+    private AlipayAppConfigService alipayAppConfigService;
+    
+    @Resource
+    private WechatPayParamsBizService wechatPayParamsBizService;
     
     
     @Override
@@ -43,7 +46,18 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
             throw new PayException("参数错误");
         }
         
-        return commonQuery(payConfigFactory.getStrategy(paymentChannel), paymentChannel, tenantId, franchiseeId, queryProfitSharingConfig);
+        if (ChannelEnum.WECHAT.getCode().equals(paymentChannel)) {
+            // 微信
+            return wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, franchiseeId, queryProfitSharingConfig);
+            
+        } else if (ChannelEnum.ALIPAY.getCode().equals(paymentChannel)) {
+            // 支付宝
+            return alipayAppConfigService.queryByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            
+        } else {
+            log.error("ERROR ! paymentChannel = {}, not supports", paymentChannel);
+            throw new PayException("paymentChannel=" + paymentChannel + "，not supports");
+        }
     }
     
     @Override
@@ -55,7 +69,19 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
             throw new PayException("参数错误");
         }
         
-        return commonQuery(payConfigFactory.getPreciseStrategy(paymentChannel), paymentChannel, tenantId, franchiseeId, queryProfitSharingConfig);
+        if (ChannelEnum.WECHAT.getCode().equals(paymentChannel)) {
+            // 微信
+            return wechatPayParamsBizService.getPreciseCacheByTenantIdAndFranchiseeId(tenantId, franchiseeId, queryProfitSharingConfig);
+            
+        } else if (ChannelEnum.ALIPAY.getCode().equals(paymentChannel)) {
+            // 支付宝
+            return alipayAppConfigService.queryPreciseByTenantIdAndFranchiseeId(tenantId, franchiseeId);
+            
+        } else {
+            log.error("ERROR ! paymentChannel = {}, not supports", paymentChannel);
+            throw new PayException("paymentChannel=" + paymentChannel + "，not supports");
+        }
+        
     }
     
     @Override
@@ -69,26 +95,6 @@ public class PayConfigBizServiceImpl implements PayConfigBizService {
             log.warn("PayConfigBizServiceImpl.checkConfigConsistency WARN!  PayException:", e);
             return false;
         }
-    }
-    
-    
-    /**
-     * 统一查询
-     *
-     * @param payConfigStrategy
-     * @param paymentChannel
-     * @param tenantId
-     * @param franchiseeId
-     * @author caobotao.cbt
-     * @date 2024/7/18 14:40
-     */
-    private BasePayConfig commonQuery(PayConfigFactory.PayConfigStrategy payConfigStrategy, String paymentChannel, Integer tenantId, Long franchiseeId,
-            Set<ProfitSharingQueryDetailsEnum> queryProfitSharingConfig) throws PayException {
-        if (Objects.isNull(payConfigStrategy)) {
-            log.warn("PayParamsBizServiceImpl.commonQuery WARN! paymentChannel:{} is not found", paymentChannel);
-            return null;
-        }
-        return payConfigStrategy.execute(tenantId, franchiseeId, queryProfitSharingConfig);
     }
     
     

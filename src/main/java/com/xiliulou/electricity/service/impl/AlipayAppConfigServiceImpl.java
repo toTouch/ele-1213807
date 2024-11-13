@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.pay.AlipayAppConfigBizDetails;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -11,10 +12,12 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.converter.AlipayAppConfigConverter;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.enums.AliPayConfigTypeEnum;
 import com.xiliulou.electricity.mapper.AlipayAppConfigMapper;
 import com.xiliulou.electricity.query.AlipayAppConfigQuery;
+import com.xiliulou.electricity.request.payparams.ElectricityPayParamsRequest;
 import com.xiliulou.electricity.service.AlipayAppConfigService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -113,8 +116,14 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
         List<AlipayAppConfig> existAlipayAppConfigs = queryFromCacheList(tenantId, Sets.newHashSet(query.getFranchiseeId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE));
         
         //运营商配置
-        if (AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(query.getConfigType()) && CollectionUtils.isNotEmpty(existAlipayAppConfigs)) {
-            return Triple.of(false, "100441", "默认配置已存在,请勿重复添加");
+        if (AliPayConfigTypeEnum.DEFAULT_CONFIG.getType().equals(query.getConfigType())) {
+            if (CollectionUtils.isNotEmpty(existAlipayAppConfigs)) {
+                return Triple.of(false, "100441", "默认配置已存在,请勿重复添加");
+            }
+            List<AlipayAppConfig> alipayAppConfigs = queryListByAppId(query.getAppId());
+            if (CollectionUtils.isNotEmpty(alipayAppConfigs)) {
+                return Triple.of(false, "100447", "该小程序appId已被使用，请勿重复使用!");
+            }
         }
         
         Map<Long, AlipayAppConfig> existMap = Optional.ofNullable(existAlipayAppConfigs).orElse(Collections.emptyList()).stream()
@@ -166,6 +175,17 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
             if (Objects.isNull(franchisee)) {
                 return Triple.of(false, "100106", "加盟商不存在");
             }
+            // 非默认配置不更新appid
+            if (Objects.nonNull(query.getAppId()) && !query.getAppId().equals(alipayAppConfig.getAppId())) {
+                log.warn("e WARN! appid does not support update tenantId={},franchiseeid={}", tenantId, alipayAppConfig.getFranchiseeId());
+                query.setAppId(alipayAppConfig.getAppId());
+            }
+            
+        }
+        
+        // 校验appId
+        if (!this.updateCheckAppId(alipayAppConfig, query, tenantId)) {
+            return Triple.of(false, "100447", "该小程序appId已被使用，请勿重复使用!");
         }
         
         //获取所有需要同步的加盟商配置
@@ -228,7 +248,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
             return Triple.of(false, "100446", "默认配置不可删除");
         }
         
-        alipayAppConfigMapper.logicalDelete(alipayAppConfig.getId(),alipayAppConfig.getTenantId());
+        alipayAppConfigMapper.logicalDelete(alipayAppConfig.getId(), alipayAppConfig.getTenantId());
         
         redisService.delete(buildCacheKey(tenantId, alipayAppConfig.getFranchiseeId()));
         
@@ -242,7 +262,7 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
     @Slave
     @Override
     public List<AlipayAppConfig> queryListByAppId(String appId) {
-        return this.alipayAppConfigMapper.selectByAppId(appId);
+        return this.alipayAppConfigMapper.selectListByAppId(appId);
     }
     
     @Slave
@@ -388,5 +408,25 @@ public class AlipayAppConfigServiceImpl implements AlipayAppConfigService {
      */
     private String buildCacheKey(Integer tenantId, Long franchiseeId) {
         return String.format(CacheConstant.ELE_ALI_PAY_PARAMS_KEY, tenantId, franchiseeId);
+    }
+    
+    private boolean updateCheckAppId(AlipayAppConfig alipayAppConfig, AlipayAppConfigQuery request, Integer curTenantId) {
+        if (Objects.isNull(request.getAppId()) || Objects.equals(request.getAppId(), alipayAppConfig.getAppId())) {
+            // 未更新
+            return true;
+        }
+        List<AlipayAppConfig> byAppId = alipayAppConfigMapper.selectListByAppId(request.getAppId());
+        
+        if (CollectionUtils.isEmpty(byAppId)) {
+            return true;
+        }
+        
+        for (AlipayAppConfig config : byAppId) {
+            if (!Objects.equals(config.getTenantId(), curTenantId)) {
+                // 当前配置不属于此租户
+                return false;
+            }
+        }
+        return true;
     }
 }
