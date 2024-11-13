@@ -1565,7 +1565,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), query.getMemberId());
-            return Triple.of(false, "ELECTRICITY.100000", acquireUserBatteryServiceFeeResult.getRight());
+            return Triple.of(false, "100220", "用户存在电池服务费");
         }
         
         // 多加盟商版本增加：加盟商一致性校验
