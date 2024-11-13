@@ -232,18 +232,16 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         
         String franchiseeName = MultiFranchiseeConstant.DEFAULT_FRANCHISEE_NAME;
         try {
-            //            if (!request.getPubKey().startsWith(StringConstant.PREFIX_PUBLIC_KEY) || !request.getPubKey().endsWith(StringConstant.SUFFIX_PUBLIC_KEY)){
-            //                return R.failMsg("请上传正确的证书!");
-            //            }
             String pubKey = formatPublicKey(request.getPubKey());
             
-            if (Objects.nonNull(request.getFranchiseeId())) {
-                request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
+            if (Objects.nonNull(request.getFranchiseeId()) && !Objects.equals(request.getFranchiseeId(), MultiFranchiseeConstant.DEFAULT_FRANCHISEE)) {
                 Franchisee franchisee = this.queryFranchisee(request.getTenantId(), request.getFranchiseeId());
                 if (Objects.isNull(franchisee)) {
                     return R.failMsg("加盟商不存在");
                 }
                 franchiseeName = franchisee.getName();
+            } else {
+                request.setFranchiseeId(MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
             }
             
             request.setPubKey(pubKey);
@@ -281,7 +279,7 @@ public class WechatPublicKeyServiceImpl implements WechatPublicKeyService {
         Map<String, String> record = Maps.newHashMapWithExpectedSize(1);
         record.put("franchiseeName", franchiseeName);
         record.put("publicKeyId", request.getPubKeyId());
-        operateRecordUtil.record(null,record);
+        operateRecordUtil.record(null, record);
     }
     
     
