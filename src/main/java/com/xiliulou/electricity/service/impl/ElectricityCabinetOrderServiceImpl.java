@@ -3167,7 +3167,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
+                LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange())
+                        .secondFlexibleRenewal(orderQuery.getSecondFlexibleRenewal()).build();
                 Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
                         OrderCheckEnum.ORDER.getCode());
                 
@@ -3181,7 +3182,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
                 
                 // 二次扫码上一次换电订单成功，并且新电池在仓时，不做灵活续费校验
-                if (!Objects.equals(vo.getLastExchangeIsSuccess(), ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS) || !Objects.equals(vo.getIsBatteryInCell(), ExchangeUserSelectVo.BATTERY_IN_CELL)) {
+                if (!Objects.equals(vo.getLastExchangeIsSuccess(), ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS) || !Objects.equals(vo.getIsBatteryInCell(),
+                        ExchangeUserSelectVo.BATTERY_IN_CELL)) {
                     checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
                 
