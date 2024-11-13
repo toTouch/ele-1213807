@@ -318,16 +318,19 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                         return Triple.of(false, "120143", "用户套餐冻结审核中，不允许操作");
                     }
                     
+                    // 绑定的套餐
+                    BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    if (Objects.isNull(userBindBatteryMemberCard)) {
+                        return Triple.of(false, "110210", "用户绑定的套餐不存在");
+                    }
+                    
                     // 是否有滞纳金
                     Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo,
-                            userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                            userBatteryMemberCard, userBindBatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                     if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                         log.warn("MeiTuan order redeem fail! user exist battery service fee,uid={},mid={}", uid, userBatteryMemberCard.getMemberCardId());
                         return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
                     }
-                    
-                    // 绑定的套餐
-                    BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                     
                     // 电池型号是否匹配
                     List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(uid);

@@ -3078,8 +3078,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100247", "用户套餐冻结中，不允许操作");
         }
         
+        BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(userBindbatteryMemberCard)) {
+            return Triple.of(false, "110210", "用户绑定的套餐不存在");
+        }
+        
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
@@ -3219,17 +3224,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, null, null);
         }
         
-        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getMembercardId());
-        if (Objects.isNull(batteryMemberCard)) {
+        BatteryMemberCard batteryMemberCardToBuy = batteryMemberCardService.queryByIdFromCache(query.getMembercardId());
+        if (Objects.isNull(batteryMemberCardToBuy)) {
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
         
-        if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
+        if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCardToBuy.getStatus())) {
             return Triple.of(false, "100275", "电池套餐不可用");
         }
         
         // 检查用户与套餐的用户分组是否匹配
-        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(), batteryMemberCard,
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCardToBuy.getFranchiseeId(), batteryMemberCardToBuy,
                 CHECK_USERINFO_GROUP_ADMIN);
         
         if (Boolean.FALSE.equals(checkTriple.getLeft())) {
@@ -3255,7 +3260,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 判断套餐是否为免押套餐
-        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !Objects.equals(batteryMemberCard.getFreeDeposite(),
+        if (Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) && !Objects.equals(batteryMemberCardToBuy.getFreeDeposite(),
                 BatteryMemberCard.YES)) {
             log.warn("ELE DEPOSIT WARN! batteryMemberCard is illegal,uid={},mid={}", userInfo.getUid(), query.getMembercardId());
             return Triple.of(false, "100483", "电池套餐不合法");
@@ -3271,7 +3276,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
             // 免押后给用户绑定套餐
-            return freeDepositBindUserMembercerd(userInfo, batteryMemberCard);
+            return freeDepositBindUserMembercerd(userInfo, batteryMemberCardToBuy);
         }
         
         if (Objects.equals(UserBatteryMemberCard.MEMBER_CARD_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
@@ -3285,15 +3290,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(userBindbatteryMemberCard)) {
+            return Triple.of(false, "110210", "用户绑定的套餐不存在");
+        }
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
-                batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
         }
         
-        ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCard, userBatteryMemberCard, userBindbatteryMemberCard,
+        ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCardToBuy, userBatteryMemberCard, userBindbatteryMemberCard,
                 null, null);
         
         // 8. 处理分账
@@ -3312,11 +3320,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         activityProcessDTO.setTraceId(IdUtil.simpleUUID());
         activityService.asyncProcessActivity(activityProcessDTO);
         
-        sendUserCoupon(batteryMemberCard, memberCardOrder);
+        sendUserCoupon(batteryMemberCardToBuy, memberCardOrder);
         Map<String, Object> map = new HashMap<>();
         map.put("username", userInfo.getName());
         map.put("phone", userInfo.getPhone());
-        map.put("packageName", batteryMemberCard.getName());
+        map.put("packageName", batteryMemberCardToBuy.getName());
         operateRecordUtil.record(null, map);
         return Triple.of(true, null, null);
     }
