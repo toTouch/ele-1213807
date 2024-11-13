@@ -160,7 +160,7 @@ public class UserCoupon {
     //打折劵
     public static final Integer DISCOUNT = 2;
     
-    //体验劵
+    //天数券
     public static final Integer DAYS = 3;
     
     //核销人

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserDayCouponService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,9 @@ public class JsonUserUserCouponController {
      */
     @Autowired
     private UserCouponService userCouponService;
+    
+    @Autowired
+    private UserDayCouponService userDayCouponService;
     
     //我的优惠券查询
     //status 1--未使用  2--已使用  3--已过期
@@ -78,4 +82,8 @@ public class JsonUserUserCouponController {
         return userCouponService.getShareCoupon(activityId, couponId);
     }
     
+    @PostMapping(value = "/user/userCoupon/useDayCoupon")
+    public R useDayCoupon(@RequestParam("id") Integer id) {
+        return userDayCouponService.useDayCoupon(id);
+    }
 }
