@@ -465,8 +465,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100247", "用户信息不存在");
             }
             
+            // 绑定的套餐
+            BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(userBindBatteryMemberCard)) {
+                return Triple.of(false, "110210", "用户绑定的套餐不存在");
+            }
+            
             Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
-                    .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+                    .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, userBindBatteryMemberCard, serviceFeeUserInfo);
             if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
                 return Triple.of(false, "100220", "用户存在电池服务费");
@@ -619,8 +625,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100247", "用户信息不存在");
         }
         
+        // 绑定的套餐
+        BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(userBindBatteryMemberCard)) {
+            return Triple.of(false, "110210", "用户绑定的套餐不存在");
+        }
+        
         Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
-                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+                .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, userBindBatteryMemberCard, serviceFeeUserInfo);
         if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", userInfo.getUid());
             return Triple.of(false, "100220", "用户存在电池服务费");
