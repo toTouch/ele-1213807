@@ -48,7 +48,7 @@
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tc.franchisee_id as franchiseeId,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tc.description, tc.specific_packages,
-        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay',tc.count AS 'count'
+        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay',tc.count AS 'count', tc.use_scope AS 'useScope'
         from t_user_coupon as tuc
         left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>

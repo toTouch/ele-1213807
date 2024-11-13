@@ -174,6 +174,7 @@ public class CouponServiceImpl implements CouponService {
             if (Objects.isNull(couponQuery.getUseScope())) {
                 return R.fail("ELECTRICITY.0075", "使用范围不能为空");
             }
+            couponQuery.setSuperposition(Coupon.SUPERPOSITION_YES);
         }
         
         //检查优惠券名称是否已经存在

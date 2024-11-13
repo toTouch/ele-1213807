@@ -169,4 +169,9 @@ public class UserCouponVO {
      */
     private Integer count;
     
+    /**
+     * 使用范围
+     */
+    private Integer useScope;
+    
 }
