@@ -185,6 +185,15 @@
             <if test="eleLimitCount != null">
                 ele_limit_count = #{eleLimitCount},
             </if>
+            <if test="freezeAutoReviewDays != null">
+                freeze_auto_review_days = #{freezeAutoReviewDays},
+            </if>
+            <if test="packageFreezeCount != null">
+                package_freeze_count = #{packageFreezeCount},
+            </if>
+            <if test="packageFreezeDays != null">
+                package_freeze_days = #{packageFreezeDays},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}
