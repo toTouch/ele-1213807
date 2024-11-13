@@ -161,6 +161,8 @@ import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
+import com.xiliulou.electricity.vo.BatchImportCabinetFailVO;
+import com.xiliulou.electricity.vo.BatchImportCabinetVo;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
@@ -228,6 +230,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -4762,12 +4765,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        Triple<Boolean, String, Object> verifyBatchImportResult = verifyBatchImportParams(list);
-        if (Boolean.FALSE.equals(verifyBatchImportResult.getLeft())) {
-            return verifyBatchImportResult;
+        if (CollUtil.isEmpty(list)) {
+            return Triple.of(false, "ELECTRICITY.0007", "导入数据不能为空");
         }
         
-        for (ElectricityCabinetImportQuery query : list) {
+        List<BatchImportCabinetFailVO> cabinetFailList = CollUtil.newArrayList();
+        List<ElectricityCabinetImportQuery> cabinetSuccessList = CollUtil.newArrayList();
+        verifyBatchImportParams(list, cabinetFailList, cabinetSuccessList);
+        
+        for (ElectricityCabinetImportQuery query : cabinetSuccessList) {
             ElectricityCabinet electricityCabinet = new ElectricityCabinet();
             BeanUtils.copyProperties(query, electricityCabinet);
             electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
@@ -4800,7 +4806,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
         
-        return Triple.of(true, null, null);
+        return Triple.of(true, null, BatchImportCabinetVo.builder().successCount(cabinetSuccessList.size()).failCount(cabinetFailList.size()).failVOS(cabinetFailList).build());
     }
     
     @Override
@@ -4990,30 +4996,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return cabinetModelInsert;
     }
     
-    private Triple<Boolean, String, Object> verifyBatchImportParams(List<ElectricityCabinetImportQuery> list) {
-        Set<String> deviceNameSet = list.stream().map(ElectricityCabinetImportQuery::getDeviceName).collect(Collectors.toSet());
-        if (deviceNameSet.size() != list.size()) {
-            return Triple.of(false, "", "三元组重复");
+    private void verifyBatchImportParams(List<ElectricityCabinetImportQuery> list, List<BatchImportCabinetFailVO> cabinetFailVOS,
+            List<ElectricityCabinetImportQuery> cabinetSuccessList) {
+        
+        // 去重
+        List<ElectricityCabinetImportQuery> distinctList = list.stream().filter(e -> {
+            Set<ElectricityCabinetImportQuery> seen = new HashSet<>();
+            return seen.add(e);
+        }).collect(Collectors.toList());
+        
+        if (distinctList.size() != list.size()) {
+            // 差集
+            List<ElectricityCabinetImportQuery> difference = new ArrayList<>(list);
+            difference.removeAll(distinctList);
+            difference.stream().forEach(e -> {
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(e.getDeviceName()).reason("三元组重复").build());
+            });
         }
         
-        for (ElectricityCabinetImportQuery cabinetImportQuery : list) {
+        for (ElectricityCabinetImportQuery cabinetImportQuery : distinctList) {
             ElectricityCabinet electricityCabinet = this.queryByProductAndDeviceName(cabinetImportQuery.getProductKey(), cabinetImportQuery.getDeviceName());
             if (Objects.nonNull(electricityCabinet)) {
-                return Triple.of(false, "", "三元组已存在");
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(cabinetImportQuery.getDeviceName()).reason("三元组已存在").build());
+                continue;
             }
             
             Store store = storeService.queryByIdFromCache(cabinetImportQuery.getStoreId());
             if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
-                return Triple.of(false, "", "门店不存在");
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(cabinetImportQuery.getDeviceName()).reason("门店不存在").build());
+                continue;
             }
             
             ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(cabinetImportQuery.getModelId());
             if (Objects.isNull(cabinetModel) || !Objects.equals(cabinetModel.getTenantId(), TenantContextHolder.getTenantId())) {
-                return Triple.of(false, "", "柜机型号不存在");
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(cabinetImportQuery.getDeviceName()).reason("柜机型号不存在").build());
+                continue;
             }
+            cabinetSuccessList.add(cabinetImportQuery);
         }
         
-        return Triple.of(true, null, null);
     }
     
     @Slave
