@@ -52,6 +52,13 @@ public enum DeviceStatusEnum {
      */
     public static Optional<DeviceStatusEnum> getByStatus(String status) {
         DeviceStatusEnum deviceStatusEnum = map.get(status);
+        if (deviceStatusEnum == null) {
+            if (DEVICE_ONLINE.getStatus().equalsIgnoreCase(status)) {
+                return Optional.of(DEVICE_ONLINE);
+            }else if (DEVICE_OFFLINE.getStatus().equalsIgnoreCase(status)){
+                return Optional.of(DEVICE_OFFLINE);
+            }
+        }
         return Optional.ofNullable(deviceStatusEnum);
     }
 }
