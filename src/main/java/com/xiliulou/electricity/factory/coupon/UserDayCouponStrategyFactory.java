@@ -49,8 +49,8 @@ public class UserDayCouponStrategyFactory implements CommandLineRunner {
         }
     }
     
-    public DayCouponStrategy getDayCouponStrategy(final Long uid) {
-        if (Objects.isNull(uid)){
+    public DayCouponStrategy getDayCouponStrategy(final Integer tenantId,final Long uid) {
+        if (Objects.isNull(uid) || Objects.isNull(tenantId)){
             log.warn("UserDayCouponStrategyFactory.getDayCouponStrategy FAILED! uid is null!");
             return null;
         }
@@ -61,7 +61,7 @@ public class UserDayCouponStrategyFactory implements CommandLineRunner {
             log.warn("UserDayCouponStrategyFactory.getDayCouponStrategy FAILED! strategyList is empty!");
             return null;
         }
-        return strategyList.stream().filter(strategy -> strategy.isPackageInUse(uid))
+        return strategyList.stream().filter(strategy -> strategy.isPackageInUse(tenantId,uid))
                 .findFirst().orElse( null);
     }
 }

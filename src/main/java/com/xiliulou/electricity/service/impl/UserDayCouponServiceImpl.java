@@ -10,6 +10,7 @@ import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.DayCouponStrategy;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserDayCouponService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,12 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             return R.failMsg("请选择正确的优惠券使用");
         }
         
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        if (Objects.isNull(tenantId)){
+            return R.failMsg("暂无使用权限");
+        }
+        
         //判断用户相关
         TokenUser userInfo = SecurityUtils.getUserInfo();
         if (Objects.isNull(userInfo)){
@@ -70,14 +77,14 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
         
         //判断套餐相关
         Long uid = userInfo.getUid();
-        DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(uid);
+        DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(tenantId,uid);
         if (Objects.isNull(strategy)){
             return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
         }
-        if (strategy.isLateFee(uid)){
+        if (strategy.isLateFee(tenantId,uid)){
             return R.failMsg("您有未缴纳的滞纳金，暂无法使用，请缴纳后使用");
         }
-        Pair<Boolean, Boolean> freezeOrAudit = strategy.isFreezeOrAudit(uid);
+        Pair<Boolean, Boolean> freezeOrAudit = strategy.isFreezeOrAudit(tenantId,uid);
         if (Objects.nonNull(freezeOrAudit)){
             if (Objects.nonNull(freezeOrAudit.getLeft()) && freezeOrAudit.getLeft()){
                 return R.failMsg("您当前套餐已冻结，暂无法使用，请启用后使用");
@@ -86,10 +93,10 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.failMsg("您有在申请的冻结套餐，暂无法使用，请启用后使用");
             }
         }
-        if (strategy.isOverdue(uid)){
+        if (strategy.isOverdue(tenantId,uid)){
             return R.failMsg("您当前套餐已过期，请先购买换电/租车/车电一体套餐后使用");
         }
-        if (strategy.isReturnTheDeposit(uid)){
+        if (strategy.isReturnTheDeposit(tenantId,uid)){
             return R.failMsg("您已退押，暂无法使用，请缴纳押金后使用");
         }
         
@@ -99,6 +106,6 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             return R.failMsg("请选择正确的优惠券使用");
         }
         
-        return strategy.process(coupon, uid) ? R.ok() : R.failMsg("优惠券使用失败,请刷新后重试");
+        return strategy.process(coupon, tenantId,uid) ? R.ok() : R.failMsg("优惠券使用失败,请刷新后重试");
     }
 }
