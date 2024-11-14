@@ -2,9 +2,11 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuery;
 import com.xiliulou.electricity.query.enterprise.EnterpriseMemberCardQuery;
+import com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardAndTypeVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import org.apache.ibatis.annotations.Param;
@@ -49,9 +51,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     
     List<BatteryMemberCard> selectBySearchV2(BatteryMemberCardQuery query);
     
-    @Deprecated
-    List<BatteryMemberCard> selectBySearch(BatteryMemberCardQuery query);
-    
     Integer checkMembercardExist(@Param("name") String name, @Param("tenantId") Integer tenantId);
     
     List<BatteryMemberCardAndTypeVO> selectByPageForUser(BatteryMemberCardQuery query);
@@ -82,6 +81,8 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     List<BatteryMemberCardVO> selectListMemberCardForSort(@Param("query") BatteryMemberCardQuery query);
     
     List<BatteryMemberCardAndTypeVO> selectListSuperAdminPage(BatteryMemberCardQuery query);
+    
+    List<BatteryAndCarMemberCardVO> listBatteryAndCarMember(BatteryCarMemberListQuery query);
     
     /**
      * 根据id查询

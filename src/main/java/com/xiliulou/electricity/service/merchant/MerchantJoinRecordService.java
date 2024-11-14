@@ -15,6 +15,7 @@ import com.xiliulou.electricity.request.merchant.MerchantJoinScanRequest;
 import com.xiliulou.electricity.request.merchant.MerchantScanCodeRecordPageRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantScanCodeRecordVO;
 
 import java.util.List;
@@ -122,7 +123,17 @@ public interface MerchantJoinRecordService {
     
     R canJoinActivity(UserInfo userInfo, UserInfoExtra userInfoExtra, Integer shareActivityId, Integer shareActivityType);
     
+    List<MerchantStatisticsUserVO> listSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
+    
+    List<MerchantStatisticsUserVO> listEmployeeSuccessJoinNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
+    
+    List<MerchantStatisticsUserVO> listJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);
+    
+    List<MerchantStatisticsUserVO> listEmployeeJoinNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid);
+    
     List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
     
     Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
+    
+    MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId);
 }

@@ -45,7 +45,6 @@ public class JsonAdminFailureAlarmController {
     @Resource
     private FailureAlarmService failureAlarmService;
     
-    
     /**
      * 保存
      *

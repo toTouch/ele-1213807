@@ -163,7 +163,7 @@ public class UserChannelServiceImpl implements UserChannelService {
             UserChannelVo vo = new UserChannelVo();
             BeanUtils.copyProperties(item, vo);
     
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
             if (Objects.nonNull(userInfo)) {
                 vo.setName(userInfo.getName());
                 vo.setPhone(userInfo.getPhone());
@@ -199,7 +199,7 @@ public class UserChannelServiceImpl implements UserChannelService {
             UserChannelVo vo = new UserChannelVo();
             BeanUtils.copyProperties(item, vo);
 
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
             if (Objects.nonNull(userInfo)) {
                 vo.setName(userInfo.getName());
                 vo.setPhone(userInfo.getPhone());

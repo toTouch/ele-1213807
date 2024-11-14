@@ -39,7 +39,7 @@ public interface WechatPaymentCertificateMapper extends BaseMapper<WechatPayment
      * @author caobotao.cbt
      * @date 2024/6/12 13:51
      */
-    int logicalDeleteByPayParamsId(@Param("payParamsId") Long payParamsId, @Param("tenantId") Integer tenantId);
+    int logicalDeleteByPayParamsId(@Param("payParamsId") Integer payParamsId, @Param("tenantId") Integer tenantId);
     
     /**
      * 查询微信支付证书

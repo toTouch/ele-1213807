@@ -46,7 +46,6 @@ public class ChannelSourceFilter implements Filter {
         }
         
         try {
-            log.info("channel : {}", ChannelSourceContextHolder.get());
             filterChain.doFilter(request, servletResponse);
         } finally {
             TenantContextHolder.clear();

@@ -1,16 +1,21 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantJoinRecordConstant;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.merchant.Merchant;
@@ -25,14 +30,16 @@ import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
+import com.xiliulou.electricity.request.userinfo.UserInfoLimitRequest;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.merchant.MerchantAttrService;
 import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantJoinRecordService;
@@ -41,19 +48,24 @@ import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.merchant.RebateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.merchant.MerchantForModifyInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import com.xiliulou.electricity.vo.merchant.MerchantVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -108,10 +120,16 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     ChannelActivityHistoryService channelActivityHistoryService;
     
     @Resource
-    private UserService userService;
+    private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
     
     @Resource
-    private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
+    private ElectricityConfigService electricityConfigService;
+    
+    @Resource
+    private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+    
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
     
     @Override
     public UserInfoExtra queryByUidFromDB(Long uid) {
@@ -200,7 +218,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        //        MerchantAttr merchantAttr = merchantAttrService.queryByTenantId(merchant.getTenantId());
         MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(merchant.getFranchiseeId());
         if (Objects.isNull(merchantAttr)) {
             log.warn("BIND MERCHANT WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
@@ -350,13 +367,13 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         String inviterName = StringUtils.EMPTY;
         Long merchantId = NumberConstant.ZERO_L;
         if (Objects.equals(activitySource, UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode())) {
-            Merchant merchant = merchantService.queryByUid(inviterUid);
-            if (Objects.nonNull(merchant)) {
-                inviterName = merchant.getName();
-                merchantId = merchant.getId();
+            MerchantInviterVO merchantInviterVO = this.judgeInviterTypeForMerchant(uid, inviterUid, userInfoExtra.getTenantId());
+            if (Objects.nonNull(merchantInviterVO)) {
+                inviterName = merchantInviterVO.getInviterName();
+                merchantId = merchantInviterVO.getMerchantId();
             }
         } else {
-            inviterName = Optional.ofNullable(userInfoService.queryByUidFromDb(inviterUid)).map(UserInfo::getName).orElse("");
+            inviterName = Optional.ofNullable(userInfoService.queryByUidFromDbIncludeDelUser(inviterUid)).map(UserInfo::getName).orElse("");
         }
         
         return MerchantInviterVO.builder().uid(uid).inviterUid(inviterUid).inviterName(inviterName).inviterSource(activitySource).merchantId(merchantId).build();
@@ -475,7 +492,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 UserInfoExtra insertUserInfoExtra = UserInfoExtra.builder().merchantId(merchantId).channelEmployeeUid(merchant.getChannelEmployeeUid()).uid(uid).tenantId(tenantId)
                         .delFlag(MerchantConstant.DEL_NORMAL).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                         .activitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).inviterUid(newInviterUid)
-                        .latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).build();
+                        .latestActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).eleLimit(UserInfoExtraConstant.ELE_LIMIT_YES).build();
                 
                 this.insert(insertUserInfoExtra);
             }
@@ -497,6 +514,31 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid);
         }
+    }
+    
+    @Override
+    public MerchantInviterVO judgeInviterTypeForMerchant(Long joinUid, Long inviterUid, Integer tenantId) {
+        Merchant merchant1 = merchantService.queryByUid(inviterUid);
+        String inviterName = "";
+        Long merchantId = null;
+        if (Objects.nonNull(merchant1)) {
+            // 邀请人是商户
+            inviterName = merchant1.getName();
+            merchantId = merchant1.getId();
+        } else {
+            // 邀请人是场地员工
+            MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.querySuccessRecordByJoinUid(joinUid, tenantId);
+            if (Objects.nonNull(merchantJoinRecord) && Objects.equals(merchantJoinRecord.getInviterType(), MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE)) {
+                Merchant merchant2 = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
+                if (Objects.nonNull(merchant2)) {
+                    inviterName = merchant2.getName();
+                    merchantId = merchant2.getId();
+                }
+            }
+        }
+        
+        return MerchantInviterVO.builder().uid(joinUid).inviterUid(inviterUid).inviterName(inviterName)
+                .inviterSource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode()).merchantId(merchantId).build();
     }
     
     private MerchantJoinRecord assembleRecord(Long merchantId, Long inviterUid, Long joinUid, Long channelEmployeeUid, MerchantAttr merchantAttr, Integer tenantId,
@@ -529,11 +571,107 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
         
+        // 创建日期
+        String monthDate = DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT);
+        
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).inviterUid(inviterUid)
                 .inviterType(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_SELF).joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime)
                 .status(MerchantJoinRecordConstant.STATUS_SUCCESS).protectionTime(protectionExpireTime).protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL)
                 .delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId).modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_YES)
-                .franchiseeId(franchiseeId).successTime(nowTime).build();
+                .franchiseeId(franchiseeId).successTime(nowTime).monthDate(monthDate).build();
+    }
+    
+    @Override
+    public Triple<Boolean, String, String> isLimitPurchase(Long uid, Integer tenantId) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, null, null);
+        }
+        
+        if (Objects.equals(electricityConfig.getEleLimit(), ElectricityConfig.ELE_LIMIT_CLOSE)) {
+            return Triple.of(false, null, null);
+        }
+        
+        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            return Triple.of(false, null, null);
+        }
+        
+        if (Objects.equals(userInfoExtra.getEleLimit(), UserInfoExtraConstant.ELE_LIMIT_NO)) {
+            return Triple.of(false, null, null);
+        }
+        
+        List<UserBatteryMemberCardPackage> packageList = userBatteryMemberCardPackageService.selectByUid(uid);
+        if (CollectionUtils.isEmpty(packageList)) {
+            return Triple.of(false, null, null);
+        }
+        
+        if (Objects.isNull(electricityConfig.getEleLimitCount())) {
+            return Triple.of(false, null, null);
+        }
+    
+        if (countOnlineOrder(packageList) >= electricityConfig.getEleLimitCount()) {
+            return Triple.of(true, "120151", "您已购买了多个尚未使用的换电套餐，为保障您的资金安全，请联系客服后购买");
+        }
+        
+        return Triple.of(false, null, null);
+    }
+    
+    private Integer countOnlineOrder(List<UserBatteryMemberCardPackage> packageList) {
+        Integer count = 0;
+        
+        List<String> orderIdList = packageList.stream().map(UserBatteryMemberCardPackage::getOrderId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            return count;
+        }
+    
+        List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.queryListByOrderIds(orderIdList);
+        if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
+            return count;
+        }
+    
+        for (ElectricityMemberCardOrder electricityMemberCardOrder : electricityMemberCardOrders) {
+            if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+    
+    @Override
+    public R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds) {
+        Long uid = request.getUid();
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+        
+        if (Objects.isNull(userInfo) || Objects.isNull(userInfoExtra) || !Objects.equals(userInfoExtra.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.warn("UpdateEleLimit warn! not found user, uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        // 加盟商一致性校验
+        Long franchiseeId = userInfo.getFranchiseeId();
+        if (Objects.nonNull(franchiseeId) && CollectionUtils.isNotEmpty(franchiseeIds) && !franchiseeIds.contains(franchiseeId)) {
+            log.warn("UpdateEleLimit warn! Franchisees are different, franchiseeIds={}, franchiseeId={}", franchiseeIds, franchiseeId);
+            return R.fail("120240", "当前加盟商无权限操作");
+        }
+        
+        int update = userInfoExtraMapper.updateByUid(UserInfoExtra.builder().eleLimit(request.getEleLimit()).uid(uid).build());
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            redisService.delete(CacheConstant.CACHE_USER_INFO_EXTRA + userInfoExtra.getUid());
+        });
+        
+        if (update > 0) {
+            Map<String, Object> oldMap = new HashMap<>();
+            oldMap.put("eleLimit", userInfoExtra.getEleLimit());
+            Map<String, Object> newMap = new HashMap<>();
+            newMap.put("user", userInfo.getName() + "/" + userInfo.getPhone());
+            newMap.put("eleLimit", request.getEleLimit());
+            operateRecordUtil.record(oldMap, newMap);
+        }
+        
+        return R.ok(update);
     }
 }

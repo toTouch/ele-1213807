@@ -5,7 +5,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.query.ShareActivityPageQuery;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -159,4 +161,21 @@ public class JsonAdminNewUserActivityController {
 		}
 		return newUserActivityService.removeById(id);
 	}
+	
+	
+	/**
+	 * 获取用户活动
+	 *
+	 * @return R
+	 */
+	@PostMapping(value = "/admin/newUserActivity/listNewUserActivity")
+	public R listNewUserActivity(@RequestBody NewUserActivityPageQuery query) {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		return R.ok(newUserActivityService.listNewUserActivity(query));
+	}
+
 }

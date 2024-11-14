@@ -242,7 +242,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	        vo.setStartTime(sdf.format(date));
             vo.setStatus(queryStatus(item.getStatus()));
 	
-	        UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+	        UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
 	        if (Objects.nonNull(userInfo)) {
 		        vo.setName(userInfo.getName());
 		        vo.setPhone(userInfo.getPhone());
@@ -275,7 +275,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		
 		for(JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO : joinShareMoneyActivityHistoryVOS){
 			Long inviterUid = joinShareMoneyActivityHistoryVO.getInviterUid();
-			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
+			UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(inviterUid);
 			if(Objects.nonNull(userInfo)){
 				joinShareMoneyActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareMoneyActivityHistoryVO.setInviterPhone(userInfo.getPhone());

@@ -67,5 +67,10 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
         
         return eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, tenantId);
     }
-
+    
+    @Override
+    public EleUserEsignRecord queryEsignFinishedRecordByUser(Long uid, Long tenantId) {
+        return eleUserEsignRecordMapper.selectEsignFinishedRecordByUser(uid, tenantId);
+    }
+    
 }

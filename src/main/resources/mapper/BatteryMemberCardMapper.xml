@@ -16,6 +16,8 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
         <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="advanceRenewal" column="advance_renewal" jdbcType="INTEGER"/>
+        <result property="advanceRenewalDay" column="advance_renewal_day" jdbcType="INTEGER"/>
         <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
         <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
         <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
@@ -48,6 +50,8 @@
         <result property="sendCoupon" column="send_coupon" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="advanceRenewal" column="advance_renewal" jdbcType="INTEGER"/>
+        <result property="advanceRenewalDay" column="advance_renewal_day" jdbcType="INTEGER"/>
         <result property="useCount" column="use_count" jdbcType="INTEGER"/>
         <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
         <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
@@ -86,6 +90,8 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
         <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="advanceRenewal" column="advance_renewal" jdbcType="INTEGER"/>
+        <result property="advanceRenewalDay" column="advance_renewal_day" jdbcType="INTEGER"/>
         <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
         <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
         <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
@@ -125,6 +131,8 @@
                status,
                limit_count,
                use_count,
+               advance_renewal,
+               advance_renewal_day,
                coupon_id,
                is_refund,
                refund_limit,
@@ -189,51 +197,11 @@
         limit #{offset}, #{size}
     </select>
     
-    <select id="selectBySearch" resultMap="BatteryMemberCardMap">
-        select
-        id, name
-        from t_battery_member_card
-        <where>
-            case
-                when #{catchEnterprise} = 1 then business_type in (0, 2, 4)
-                else business_type = 0
-            end
-            <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="name != null and name != ''">
-                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
-            </if>
-            <if test="rentType != null and rentType==1">
-                and rent_type in (1,0)
-            </if>
-            <if test="rentType != null and rentType==2">
-                and rent_type in (2,0)
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="franchiseeIds != null">
-                and franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
-        order by id desc
-        limit #{offset}, #{size}
-    </select>
-    
     <select id="selectByPage" resultMap="BatteryMemberCardTypePageMap">
         select
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
-        tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
+        tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.advance_renewal, tbmc.advance_renewal_day,
+        tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
         tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
         tbmc.user_info_group_ids, tbmc.group_type, tbmc.installment_service_fee, tbmc.down_payment
         from t_battery_member_card tbmc
@@ -303,7 +271,8 @@
     
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select
-        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,status, limit_count, use_count, coupon_id, is_refund,
+        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,status, limit_count, use_count,
+        advance_renewal, advance_renewal_day, coupon_id, is_refund,
         refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time, sort_param, group_type, coupon_ids, user_info_group_ids,installment_service_fee,
         down_payment
         from t_battery_member_card
@@ -351,8 +320,8 @@
           AND tenant_id = #{tenantId} LIMIT 1
     </select>
     
-    <select id="selectByPageForUser" resultMap="BatteryMemberCardTypeMap">
-        select
+    <select id="selectByPageForUser" resultMap="BatteryMemberCardTypePageMap">
+        select distinct
         bmc.id,
         bmc.name,
         bmc.deposit,
@@ -360,6 +329,7 @@
         bmc.rent_price_unit,
         bmc.valid_days,
         bmc.remark,
+        bmc.business_type,
         bmc.rent_unit,
         bmc.franchisee_id,
         bmc.rent_type,
@@ -378,10 +348,7 @@
         bmc.user_info_group_ids,
         bmc.group_type,
         bmc.installment_service_fee,
-        bmc.down_payment,
-        bmc.business_type,
-        mcbt.id as mcbt_id,
-        mcbt.battery_type battery_type
+        bmc.down_payment
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
@@ -529,7 +496,7 @@
         from t_battery_member_card
         where name = #{name}
           and del_flag = 0
-          and business_type in (0, 2)
+          and business_type in (0, 2, 4)
           and tenant_id = #{tenantId} LIMIT 1
     </select>
     
@@ -592,6 +559,12 @@
             </if>
             <if test="useCount != null">
                 use_count = #{useCount},
+            </if>
+            <if test="advanceRenewal != null">
+                advance_renewal = #{advanceRenewal},
+            </if>
+            <if test="advanceRenewalDay != null">
+                advance_renewal_day = #{advanceRenewalDay},
             </if>
             <if test="isRefund != null">
                 is_refund = #{isRefund},
@@ -657,7 +630,7 @@
     </delete>
     
     <!--根据条件查询企业渠道套餐信息-->
-    <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypeMap">
+    <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypePageMap">
         select
         bmc.id,
         bmc.name,
@@ -679,9 +652,7 @@
         bmc.free_deposite,
         bmc.service_charge,
         bmc.installment_service_fee,
-        bmc.down_payment,
-        mcbt.id as mcbt_id,
-        mcbt.battery_type battery_type
+        bmc.down_payment
         from t_battery_member_card bmc
         left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
@@ -768,7 +739,6 @@
         </where>
     </select>
     
-    
     <select id="selectByPageForMerchant" resultMap="BatteryMemberCardMap">
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
@@ -833,7 +803,7 @@
     </select>
     <sql id="column">
         tbmc.id, tbmc.name, tbmc.deposit, tbmc.rent_price, tbmc.rent_price_unit, tbmc.valid_days, tbmc.rent_unit, tbmc.franchisee_id, tbmc.rent_type, tbmc.send_coupon,
-        tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
+        tbmc.status, tbmc.limit_count, tbmc.use_count, tbmc.advance_renewal, tbmc.advance_renewal_day,tbmc.coupon_id, tbmc.is_refund, tbmc.refund_limit, tbmc.free_deposite,
         tbmc.service_charge, tbmc.remark, tbmc.business_type, tbmc.del_flag, tbmc.tenant_id, tbmc.create_time, tbmc.update_time, tbmc.sort_param, tbmc.coupon_ids,
         tbmc.user_info_group_ids, tbmc.group_type, tbmc.tenant_id, tbmc.installment_service_fee, tbmc.down_payment
     </sql>
@@ -908,6 +878,38 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+    </select>
+    
+    <select id="listBatteryAndCarMember" resultType="com.xiliulou.electricity.vo.BatteryAndCarMemberCardVO">
+        SELECT id, name
+        from (SELECT id, name
+        from t_battery_member_card
+        where tenant_id = #{tenantId} and del_flag = 0 and business_type in (0,4)
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        union all
+        SELECT id, name
+        from t_car_rental_package
+        where tenant_id = #{tenantId} and del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        ) u
+        limit #{offset}
+        , #{size}
     </select>
 
 </mapper>

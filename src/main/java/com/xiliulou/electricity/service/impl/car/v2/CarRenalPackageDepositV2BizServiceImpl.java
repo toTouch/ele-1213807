@@ -6,11 +6,9 @@ import com.xiliulou.core.hash.MD5Utils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.bo.FreeDepositUrlCacheBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
-import com.xiliulou.electricity.converter.ElectricityPayParamsConverter;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
@@ -82,10 +80,6 @@ import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BasePayRequest;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
-import com.xiliulou.pay.weixinv3.v2.query.WechatV3RefundRequest;
 import com.xiliulou.pay.weixinv3.v2.service.WechatV3JsapiInvokeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -662,8 +656,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                 userBatteryDepositService.deleteByUid(memberTermEntity.getUid());
             }
             
-            // 删除用户分组
-            userInfoGroupDetailService.handleAfterRefundDeposit(memberTermEntity.getUid());
         }
     }
     
@@ -787,51 +779,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
         BasePayRequest basePayRequest = payConfigConverter.converterOrderRefund(model);
         
         return payServiceDispatcher.refund(basePayRequest);
-    }
-    
-    /**
-     * 调用微信支付
-     *
-     * @param refundOrder
-     * @return
-     * @throws WechatPayException
-     */
-    private WechatJsapiRefundResultDTO wxRefund(RefundOrder refundOrder) throws WechatPayException {
-        //第三方订单号
-        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
-        if (ObjectUtils.isEmpty(electricityTradeOrder)) {
-            log.warn("CarRenalPackageDepositBizService.wxRefund failed, not found t_electricity_trade_order. orderId is {}", refundOrder.getOrderId());
-            throw new BizException("300000", "数据有误");
-        }
-        
-        //调用退款
-        WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
-        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
-        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId());
-        
-        WechatV3RefundRequest wechatV3RefundRequest = new WechatV3RefundRequest();
-        wechatV3RefundRequest.setRefundId(refundOrder.getRefundOrderNo());
-        wechatV3RefundRequest.setOrderId(electricityTradeOrder.getTradeOrderNo());
-        wechatV3RefundRequest.setReason("押金退款");
-        wechatV3RefundRequest.setNotifyUrl(wechatConfig.getCarDepositRefundCallBackUrl() + electricityTradeOrder.getTenantId() + "/" + electricityTradeOrder.getPayFranchiseeId());
-        wechatV3RefundRequest.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3RefundRequest.setTotal(electricityTradeOrder.getTotalFee().intValue());
-        wechatV3RefundRequest.setCurrency("CNY");
-        
-        // 调用支付配置参数
-        WechatPayParamsDetails wechatPayParamsDetails = null;
-        try {
-            wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(electricityTradeOrder.getTenantId(),
-                    electricityTradeOrder.getPayFranchiseeId());
-        } catch (Exception e) {
-            // 缓存问题，事务在管理其中没有提交，但是缓存已经存在，所以需要删除一次缓存
-            carRentalPackageMemberTermService.deleteCache(electricityTradeOrder.getTenantId(), electricityTradeOrder.getUid());
-            throw new BizException("PAY_TRANSFER.0021", "支付配置有误，请检查相关配置");
-        }
-        
-        wechatV3RefundRequest.setCommonRequest(ElectricityPayParamsConverter.qryDetailsToCommonRequest(wechatPayParamsDetails));
-        
-        return wechatV3JsapiInvokeService.refund(wechatV3RefundRequest);
     }
     
     
@@ -1248,8 +1195,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                     
-                    // 删除用户分组
-                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
                 
                 // 线上，调用微信退款
@@ -1319,8 +1264,6 @@ public class CarRenalPackageDepositV2BizServiceImpl implements CarRenalPackageDe
                         userBatteryDepositService.deleteByUid(depositPayEntity.getUid());
                     }
                     
-                    // 删除用户分组
-                    userInfoGroupDetailService.handleAfterRefundDeposit(depositPayEntity.getUid());
                 }
                 
                 // 免押

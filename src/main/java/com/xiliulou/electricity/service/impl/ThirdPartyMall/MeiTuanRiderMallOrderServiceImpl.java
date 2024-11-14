@@ -242,7 +242,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             
             // 判断套餐用户分组和用户的用户分组是否匹配
             List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(
-                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).build());
+                    UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).franchiseeId(batteryMemberCard.getFranchiseeId()).build());
             if (CollectionUtils.isNotEmpty(userInfoGroups)) {
                 if (Objects.equals(batteryMemberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
                     log.warn("MeiTuan order redeem fail! batteryMemberCard down, uid={}, mid={}", uid, memberCardId);
@@ -260,16 +260,16 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     log.warn("MeiTuan order redeem fail! SystemGroup cannot purchase useInfoGroup memberCard, uid={}, mid={}", uid, memberCardId);
                     return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
                 }
-            }
-            
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-                log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
-                return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
-            }
-            
-            if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
-                log.warn("MeiTuan order redeem fail! New use cannot purchase old rentType memberCard, uid={}, mid={}", uid, memberCardId);
-                return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
+                
+                if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+                    log.warn("MeiTuan order redeem fail! Old use cannot purchase new rentType memberCard, uid={}, mid={}", uid, memberCardId);
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
+                }
+                
+                if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
+                    log.warn("MeiTuan order redeem fail! New use cannot purchase old rentType memberCard, uid={}, mid={}", uid, memberCardId);
+                    return Triple.of(false, "120138", "所属分组与套餐不匹配，无法兑换，请联系客服处理");
+                }
             }
             
             Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> pair;
@@ -318,16 +318,16 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                         return Triple.of(false, "120143", "用户套餐冻结审核中，不允许操作");
                     }
                     
+                    // 绑定的套餐
+                    BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    
                     // 是否有滞纳金
                     Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo,
-                            userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+                            userBatteryMemberCard, userBindBatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
                     if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
                         log.warn("MeiTuan order redeem fail! user exist battery service fee,uid={},mid={}", uid, userBatteryMemberCard.getMemberCardId());
                         return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
                     }
-                    
-                    // 绑定的套餐
-                    BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
                     
                     // 电池型号是否匹配
                     List<String> userBindBatteryTypes = userBatteryTypeService.selectByUid(uid);
@@ -559,7 +559,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
-        List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).tenantId(tenantId).build());
+        List<UserInfoGroupNamesBO> userInfoGroups = userInfoGroupDetailService.listGroupByUid(UserInfoGroupDetailQuery.builder().uid(userInfo.getUid()).franchiseeId(
+                userInfo.getFranchiseeId()).build());
         
         if (CollectionUtils.isNotEmpty(userInfoGroups)) {
             // 自定义用户分组用户不可购买系统分组套餐：限制
@@ -580,18 +581,18 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("MeiTuanLimitTradeCheck warn! SystemGroup cannot purchase useInfoGroup memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
                 return limit;
             }
-        }
-        
-        // 老用户不可购买新套餐：限制
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
-            return limit;
-        }
-        
-        // 新用户不可购买续费套餐：限制
-        if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
-            log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
-            return limit;
+            
+            // 老用户不可购买新套餐：限制
+            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
+                log.warn("MeiTuanLimitTradeCheck warn! Old use cannot purchase new rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+                return limit;
+            }
+            
+            // 新用户不可购买续费套餐：限制
+            if (Objects.equals(userInfo.getPayCount(), 0) && BatteryMemberCard.RENT_TYPE_OLD.equals(batteryMemberCard.getRentType())) {
+                log.warn("MeiTuanLimitTradeCheck warn! New use cannot purchase old rentType memberCard, phone={}, uid={}, mid={}", phone, userInfo.getUid(), memberCardId);
+                return limit;
+            }
         }
         
         return noLimit;

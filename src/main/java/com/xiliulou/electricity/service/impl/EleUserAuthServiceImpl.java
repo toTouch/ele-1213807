@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.converter.storage.StorageConverter;
@@ -17,11 +16,12 @@ import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserAuthMessage;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
 import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
-import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.mq.producer.MessageSendProducer;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -87,6 +87,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
     @Autowired
     RocketMqService rocketMqService;
+    
+    @Autowired
+    MessageSendProducer messageSendProducer;
+    
     
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
@@ -284,7 +288,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
         
         messageNotifyList.forEach(i -> {
-            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+            messageSendProducer.sendAsyncMsg(i, "", "", 0);
         });
     }
     
@@ -314,9 +318,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             
             MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
             authMessageNotifyCommon.setTime(System.currentTimeMillis());
-            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_AUTHENTICATION_AUDIT);
+            authMessageNotifyCommon.setType(SendMessageTypeEnum.AUTHENTICATION_AUDIT_NOTIFY.getType());
             authMessageNotifyCommon.setPhone(item);
             authMessageNotifyCommon.setData(messageNotify);
+            authMessageNotifyCommon.setTenantId(userInfo.getTenantId());
             return authMessageNotifyCommon;
         }).collect(Collectors.toList());
     }

@@ -110,7 +110,7 @@ public class AdminSupperServiceImpl implements AdminSupperService {
         List<String> batterySnDistinctList = batterySnList.stream().distinct().collect(Collectors.toList());
         
         // 根据参数获取电池数据
-        List<ElectricityBattery> dbBatteryList = electricityBatteryMapper.selectListBySnList(tenantId, batterySnDistinctList);
+        List<ElectricityBattery> dbBatteryList = electricityBatteryMapper.selectListBySnList(tenantId, batterySnDistinctList, null);
         if (CollectionUtils.isEmpty(dbBatteryList)) {
             log.warn("delBatteryBySnList failed. The dbBatteryList is empty.");
             return Pair.of(null, batterySnDistinctList);

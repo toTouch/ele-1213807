@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mq.consumer;
 
 import java.util.Objects;
 
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
@@ -44,6 +45,7 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
     @Override
     public void onMessage(String message) {
         try {
+            TtlTraceIdSupport.set();
             UserEleOnlineLog eleOnlineLog = JsonUtil.fromJson(message, UserEleOnlineLog.class);
             if (Objects.isNull(eleOnlineLog)) {
                 log.warn("Invalid message format: {}", message);
@@ -58,6 +60,8 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
 
         } catch (Exception e) {
             log.error("User online log consumer error! msg = {}", message, e);
+        }finally {
+            TtlTraceIdSupport.clear();
         }
 
     }
@@ -92,7 +96,11 @@ public class UserOnlineLogConsumer implements RocketMQListener<String> {
     // Send device notification
     private void sendDeviceNotification(UserEleOnlineLog eleOnlineLog) {
         ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(eleOnlineLog.getElectricityId());
-        maintenanceUserNotifyConfigService.sendDeviceNotifyMq(cabinet, eleOnlineLog.getStatus(),
+        if (Objects.isNull(cabinet)){
+            log.info("cabinet not exit ! id={}",eleOnlineLog.getElectricityId());
+            return;
+        }
+        maintenanceUserNotifyConfigService.sendDeviceNotify(cabinet, eleOnlineLog.getStatus(),
                 eleOnlineLog.getAppearTime());
     }
 

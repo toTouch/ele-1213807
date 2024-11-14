@@ -131,6 +131,7 @@
         from t_new_faq
         where id = #{id,jdbcType=BIGINT}
     </delete>
+    
     <delete id="removeByIds">
         delete
         from t_new_faq
@@ -139,6 +140,7 @@
             #{id}
         </foreach>
     </delete>
+    
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqV2" useGeneratedKeys="true">
         insert into t_new_faq
         ( id, type_id, title
@@ -150,6 +152,7 @@
                , #{tenantId,jdbcType=INTEGER}, #{opUser,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}
                , #{updateTime,jdbcType=BIGINT})
     </insert>
+    
     <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.xiliulou.electricity.entity.faq.FaqV2" useGeneratedKeys="true">
         insert into t_new_faq
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -177,6 +180,16 @@
             <if test="updateTime != null">update_time = #{updateTime,jdbcType=BIGINT},</if>
         </trim>
     </insert>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_new_faq
+        (type_id, title, answer, on_shelf, sort, tenant_id, op_user, create_time, update_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.typeId},#{item.title},#{item.answer},#{item.onShelf},#{item.sort},#{item.tenantId},#{item.opUser},#{item.createTime},#{item.updateTime})
+        </foreach>
+    </insert>
+    
     <update id="updateByPrimaryKeySelective" parameterType="com.xiliulou.electricity.entity.faq.FaqV2">
         update t_new_faq
         <set>
@@ -210,6 +223,7 @@
         </set>
         where id = #{id,jdbcType=BIGINT}
     </update>
+    
     <update id="updateByPrimaryKey" parameterType="com.xiliulou.electricity.entity.faq.FaqV2">
         update t_new_faq
         set type_id     = #{typeId,jdbcType=BIGINT},

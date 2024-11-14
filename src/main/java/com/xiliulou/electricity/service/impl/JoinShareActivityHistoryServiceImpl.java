@@ -240,7 +240,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 			date.setTime(item.getExpiredTime());
 			vo.setExpiredTime(sdf.format(date));
 			
-			UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+			UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(item.getUid());
 			if (Objects.nonNull(userInfo)) {
 				vo.setName(userInfo.getName());
 				vo.setPhone(userInfo.getPhone());
@@ -269,7 +269,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 				.queryParticipants(jsonShareActivityHistoryQuery);
 		for(JoinShareActivityHistoryVO joinShareActivityHistoryVO : joinShareActivityHistoryVOList){
 			Long inviterUid = joinShareActivityHistoryVO.getInviterUid();
-			UserInfo userInfo = userInfoService.queryByUidFromDb(inviterUid);
+			UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(inviterUid);
 			if(Objects.nonNull(userInfo)){
 				joinShareActivityHistoryVO.setInviterName(userInfo.getName());
 				joinShareActivityHistoryVO.setInviterPhone(userInfo.getPhone());

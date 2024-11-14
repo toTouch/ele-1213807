@@ -325,4 +325,12 @@
           and cell_no = #{oldCellNo}
           and create_time &gt; #{createTime} order by create_time  limit 1
     </select>
+    
+    <select id="selectListByOrderIdList" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
+        select order_id,uid from  t_rent_battery_order
+        where  order_id in
+        <foreach collection="orderIdList" open="(" close=")" item="orderId" separator=",">
+            #{orderId}
+        </foreach>
+    </select>
 </mapper>

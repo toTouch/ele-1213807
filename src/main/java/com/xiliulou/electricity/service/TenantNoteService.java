@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.TenantNote;
 import com.xiliulou.electricity.request.tenantNote.TenantRechargeRequest;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.List;
+
 /**
  * @author maxiaodong
  * @date 2023/12/27 20:31
@@ -23,4 +25,6 @@ public interface TenantNoteService {
     void deleteCache(Integer tenantId);
     
     int reduceNoteNumById(TenantNote tenantNote);
+    
+    List<TenantNote> listByTenantIdList(List<Integer> tenantIdList);
 }

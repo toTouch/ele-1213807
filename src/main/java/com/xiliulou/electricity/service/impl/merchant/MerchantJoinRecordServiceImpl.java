@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.merchant;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
@@ -9,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.constant.merchant.MerchantConstant;
@@ -57,6 +59,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.merchant.MerchantEmployeeVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinRecordVO;
 import com.xiliulou.electricity.vo.merchant.MerchantJoinUserVO;
+import com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO;
 import com.xiliulou.electricity.vo.merchant.MerchantScanCodeRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -70,6 +73,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,7 +206,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             try {
                 decrypt = QrCodeUtils.codeDeCoder(code);
             } catch (Exception e) {
-                log.error("MERCHANT JOIN ERROR! decode fail, joinUid={}, code={}", joinUid, code);
+                log.error("MERCHANT JOIN ERROR! decode fail, joinUid={}, code={}", joinUid, code, e);
             }
             
             if (StringUtils.isBlank(decrypt)) {
@@ -235,7 +239,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
                 inviterType = Integer.parseInt(inviterTypeStr);
             } catch (NumberFormatException e) {
                 log.error("MERCHANT JOIN ERROR! Invalid format, joinUid={}, merchantIdStr={}, inviterUidStr={}, inviterTypeStr={}", joinUid, merchantIdStr, inviterUidStr,
-                        inviterTypeStr);
+                        inviterTypeStr, e);
                 return R.fail("120105", "该二维码暂时无法使用,请稍后再试");
             }
             
@@ -342,12 +346,15 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
             expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
+    
+        // 创建日期
+        String monthDate = DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT);
         
         // 生成参与记录
         return MerchantJoinRecord.builder().merchantId(merchantId).channelEmployeeUid(channelEmployeeUid).placeId(placeId).inviterUid(inviterUid).inviterType(inviterType)
                 .joinUid(joinUid).startTime(nowTime).expiredTime(expiredTime).status(MerchantJoinRecordConstant.STATUS_INIT).protectionTime(protectionExpireTime)
                 .protectionStatus(MerchantJoinRecordConstant.PROTECTION_STATUS_NORMAL).delFlag(NumberConstant.ZERO).createTime(nowTime).updateTime(nowTime).tenantId(tenantId)
-                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).franchiseeId(franchiseeId).build();
+                .modifyInviter(MerchantJoinRecordConstant.MODIFY_INVITER_NO).franchiseeId(franchiseeId).monthDate(monthDate).build();
     }
     
     @Slave
@@ -447,6 +454,10 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             Long franchiseeId = merchantJoinRecord.getFranchiseeId();
             if (Objects.nonNull(franchiseeId)) {
                 vo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+            }
+            
+            if (Objects.isNull(merchantJoinRecord.getSuccessTime()) || Objects.equals(merchantJoinRecord.getSuccessTime(), NumberConstant.ZERO_L)) {
+                vo.setSuccessTime(merchantJoinRecord.getCreateTime());
             }
             
             voList.add(vo);
@@ -713,10 +724,16 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         return merchantJoinRecordMapper.countScanCodeRecord(request);
     }
     
+    @Slave
+    @Override
+    public MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId) {
+        return merchantJoinRecordMapper.selectRemoveSuccessRecord(joinUid, inviterUid, tenantId);
+    }
+    
     @Override
     public List<MerchantScanCodeRecordVO> listScanCodeRecordPage(MerchantScanCodeRecordPageRequest request) {
         if (StrUtil.isNotBlank(request.getPhone())) {
-            if (!PhoneUtils.isChinaPhoneNum(request.getPhone())){
+            if (!PhoneUtils.isChinaPhoneNum(request.getPhone())) {
                 return new ArrayList<>();
             }
             List<UserInfo> userList = userInfoService.queryListUserInfoByPhone(request.getPhone());
@@ -729,6 +746,7 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             List<String> orderIdList = orderList.stream().map(ElectricityMemberCardOrder::getOrderId).collect(Collectors.toList());
             request.setOrderIdList(orderIdList);
         }
+        
         // 加盟商权限
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         if (!pair.getLeft()) {
@@ -755,7 +773,6 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
             List<UserInfo> userInfo = userInfoService.listByUidList(uidList);
             userInfoMap = userInfo.stream().collect(Collectors.toMap(UserInfo::getUid, Function.identity(), (k1, k2) -> k1));
         }
-        
         
         Map<String, ElectricityMemberCardOrder> finalMemberCardOrderMap = memberCardOrderMap;
         Map<Long, UserInfo> finalUserInfoMap = userInfoMap;
@@ -795,4 +812,28 @@ public class MerchantJoinRecordServiceImpl implements MerchantJoinRecordService 
         }).collect(Collectors.toList());
     }
     
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.selectListSuccessJoinNumByCondition(scanCodeQueryModel);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listEmployeeSuccessJoinNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid) {
+        return merchantJoinRecordMapper.selectListEmployeeSuccessJoinNum(employeeIds, startTime, endTime, status, tenantId, uid);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel) {
+        return merchantJoinRecordMapper.selectListJoinNumByCondition(scanCodeQueryModel);
+    }
+    
+    @Override
+    @Slave
+    public List<MerchantStatisticsUserVO> listEmployeeJoinNum(List<Long> employeeIds, Long startTime, Long endTime, Integer status, Integer tenantId, Long uid) {
+        return merchantJoinRecordMapper.selectListEmployeeJoinNum(employeeIds, startTime, endTime, status, tenantId, uid);
+    }
 }

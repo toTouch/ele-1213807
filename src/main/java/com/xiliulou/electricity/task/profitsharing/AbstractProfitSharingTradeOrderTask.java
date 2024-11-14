@@ -37,6 +37,7 @@ import com.xiliulou.electricity.task.profitsharing.base.AbstractProfitSharingTas
 import com.xiliulou.electricity.task.profitsharing.support.PayParamsQuerySupport;
 import com.xiliulou.electricity.tx.profitsharing.ProfitSharingOrderTxService;
 import com.xiliulou.electricity.tx.profitsharing.ProfitSharingTradeOrderTxService;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.pay.profitsharing.ProfitSharingServiceAdapter;
 import lombok.AllArgsConstructor;
@@ -125,6 +126,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         queryModel.setStartId(0L);
         queryModel.setChannel(this.getChannel());
         queryModel.setNotNullThirdOrderNo(YesNoEnum.YES.getCode());
+        queryModel.setEndTime(DateUtils.getTodayStartTimeStamp());
         
         // 租户+加盟商 -> 支付配置
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();

@@ -46,6 +46,11 @@ public interface MqConsumerConstant {
     String PROFIT_SHARING_ORDER_GROUP = "PROFIT_SHARING_ORDER_GROUP";
     
     /**
+     * 电池回收消费组
+     */
+    String BATTERY_RECYCLE_GROUP = "BATTERY_RECYCLE_GROUP";
+    
+    /**
      * 分账订单退款消费组
      */
     String PROFIT_SHARING_ORDER_REFUND_GROUP = "PROFIT_SHARING_ORDER_REFUND_GROUP";
@@ -54,6 +59,13 @@ public interface MqConsumerConstant {
      * 电池电压电流变化 consumer group
      */
     String BATTERY_CHARGE_ATTR_CHANGE_GROUP = "battery_charge_attr_change_group";
+    
+    
+    /**
+     * 消息发送group
+     */
+    String MESSAGE_SEND_SAAS_GROUP = "message_send_saas_group";
+    
     
     
     /**

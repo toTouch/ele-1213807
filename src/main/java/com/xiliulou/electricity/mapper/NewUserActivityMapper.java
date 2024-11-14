@@ -2,7 +2,9 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -43,4 +45,6 @@ public interface NewUserActivityMapper extends BaseMapper<NewUserActivity>{
      * @since V1.0 2024/3/14
      */
     int removeById(@Param("id") Long id,@Param("tenantId") Long tenantId);
+    
+    List<ShareAndUserActivityVO> listNewUserActivity(NewUserActivityPageQuery query);
 }

@@ -40,7 +40,6 @@ public class ElectricityIotConstant {
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
-    public static final String NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER = "highTemperatureAlarmHandler";
 
     /**
      * 核心板上报数据处理
@@ -333,12 +332,7 @@ public class ElectricityIotConstant {
      * 同步电池型号
      */
     public static final String TAKE_BATTERY_MODE = "take_battery_mode";
-
-    /**
-     * 高温告警
-     */
-    public static final String TEMPERATURE_WARNING = "temperature_warning";
-
+    
     /**
      * 电费计算上报
      */
@@ -387,6 +381,11 @@ public class ElectricityIotConstant {
     public static final String OPEN_FULL_CELL_RSP = "open_full_cell_rsp";
    
     public static final String OPEN_FULL_CELL_ACK = "open_full_cell_ack";
+    
+    /**
+     * 柜机重启
+     */
+    public static final String REMOTE_SHELL = "remote_shell";
 
 
     static {
@@ -473,6 +472,7 @@ public class ElectricityIotConstant {
         SEND_COMMAND_SETS.add(CUPBOARD_RESUME_CYCLE);
         SEND_COMMAND_SETS.add(ELE_CELL_OPEN_CHARGE);
         SEND_COMMAND_SETS.add(ELE_BATTERY_OFFLINE_PASSWORD_RESET);
+        SEND_COMMAND_SETS.add(REMOTE_SHELL);
 
 
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -498,6 +498,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_CELL_OPEN_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_CELL_CLOSE_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(CUPBOARD_RESUME_CYCLE, NORMAL_ELE_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(REMOTE_SHELL, NORMAL_ELE_OPERATE_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
@@ -592,12 +593,7 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(READ_OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
-
-        /**
-         * 高温告警
-         */
-        COMMAND_HANDLER_MAPS.put(TEMPERATURE_WARNING, NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER);
-
+        
         COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT, NORMAL_ELE_CHARGE_POWER_HANDLER);
         COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT_ACK, NORMAL_ELE_CHARGE_POWER_HANDLER);
 

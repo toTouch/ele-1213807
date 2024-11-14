@@ -57,4 +57,15 @@ public class UserCouponQuery {
     private Integer superposition;
     
     private Long franchiseeId;
+    
+    
+    /**
+     * 发券类型
+     */
+    private List<Integer> couponType;
+    
+    /**
+     * 发券方式
+     */
+    private Long couponWay;
 }

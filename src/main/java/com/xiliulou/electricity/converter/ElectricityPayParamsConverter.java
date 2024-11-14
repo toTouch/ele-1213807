@@ -33,7 +33,7 @@ public class ElectricityPayParamsConverter {
         wechatProfitSharingCommonRequest.setMerchantId(wechatPayParamsDetails.getWechatMerchantId());
         wechatProfitSharingCommonRequest.setCertificateSerialNo(wechatPayParamsDetails.getWechatMerchantCertificateSno());
         wechatProfitSharingCommonRequest.setPrivateKey(wechatPayParamsDetails.getPrivateKey());
-        wechatProfitSharingCommonRequest.setX509CertificateHashMap(wechatPayParamsDetails.getWechatPlatformCertificateMap());
+        wechatProfitSharingCommonRequest.setCertificateParam(wechatPayParamsDetails.getWechatV3Certificate());
         return wechatProfitSharingCommonRequest;
         
     }
@@ -89,7 +89,7 @@ public class ElectricityPayParamsConverter {
      */
     public static WechatV3CommonRequest qryDetailsToCommonRequest(WechatPayParamsDetails payParamsDetails) {
         return WechatV3CommonRequest.builder().merchantApiV3Key(payParamsDetails.getWechatV3ApiKey()).merchantId(payParamsDetails.getWechatMerchantId())
-                .merchantCertificateSerialNo(payParamsDetails.getWechatMerchantCertificateSno()).wechatPlatformCertificateMap(payParamsDetails.getWechatPlatformCertificateMap())
+                .merchantCertificateSerialNo(payParamsDetails.getWechatMerchantCertificateSno()).certificateParam(payParamsDetails.getWechatV3Certificate())
                 .privateKey(payParamsDetails.getPrivateKey()).build();
     }
     

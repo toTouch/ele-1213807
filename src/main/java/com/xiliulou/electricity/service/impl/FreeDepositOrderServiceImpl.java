@@ -6,15 +6,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.FreeDepositUrlCacheBO;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.bo.AuthPayStatusBO;
-import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -56,7 +52,6 @@ import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
-import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigStatusEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
@@ -102,17 +97,16 @@ import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.WechatPayParamsBizService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -142,7 +136,6 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriUtils;
 
 import javax.annotation.Resource;
@@ -155,9 +148,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK_USERINFO_GROUP_ADMIN;
 
 /**
  * (FreeDepositOrder)表服务实现类
@@ -288,12 +282,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Resource
     CarRentalPackageDepositPayService carRentalPackageDepositPayService;
     
-    @Resource
-    UserInfoGroupDetailService userInfoGroupDetailService;
-    
-    @Resource
-    private WechatPayParamsBizService wechatPayParamsBizService;
-    
     @Autowired
     private PayConfigBizService payConfigBizService;
     
@@ -309,7 +297,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Resource
     private FreeDepositConfig freeDepositConfig;
     
-    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     
     /**
@@ -734,7 +723,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setUid(uid);
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(uid);
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
             Long boundFranchiseeId = userInfo.getFranchiseeId();
             if (Objects.isNull(boundFranchiseeId) || Objects.equals(boundFranchiseeId, NumberConstant.ZERO_L)) {
                 userInfoUpdate.setFranchiseeId(Long.valueOf(franchiseeId));
@@ -1622,6 +1611,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
         
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        
+        Boolean advanceRenewalResult = batteryMemberCardService.checkIsAdvanceRenewal(batteryMemberCard, userBatteryMemberCard);
+        if (!advanceRenewalResult) {
+            log.warn("FREE DEPOSIT WARN! not allow advance renewal,uid={}", userInfo.getUid());
+            return Triple.of(false, "100439", "您当前有生效中的套餐，无须重复购买，请联系客服后操作");
+        }
+        
+        // 是否限制套餐购买次数
+        Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
+        if (limitPurchase.getLeft()) {
+            log.warn("FREE DEPOSIT WARN! user limit purchase,uid={}", userInfo.getUid());
+            return Triple.of(false, limitPurchase.getMiddle(), limitPurchase.getRight());
+        }
+        
         BasePayConfig payParamConfig = null;
         try {
             payParamConfig = payConfigBizService.queryPayParams(query.getPaymentChannel(), tenantId, batteryMemberCard.getFranchiseeId(),
@@ -1658,11 +1662,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
-        // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-        if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(batteryMemberCard.getRentType())) {
-            log.warn("FREE BATTERY DEPOSIT HYBRID ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(),
-                    query.getMemberCardId());
-            return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+        // 判断套餐用户分组和用户的用户分组是否匹配
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
+                batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
+        
+        if (Boolean.FALSE.equals(checkTriple.getLeft())) {
+            return checkTriple;
         }
         
         // 是否有正在进行中的退押
@@ -2130,9 +2135,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 
                 // 删除用户电池服务费
                 serviceFeeUserInfoService.deleteByUid(freeDepositOrder.getUid());
-                
-                // 删除用户分组
-                userInfoGroupDetailService.handleAfterRefundDeposit(freeDepositOrder.getUid());
             }
         }
     }

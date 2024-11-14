@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,12 +16,14 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -63,6 +64,7 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
@@ -74,6 +76,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
@@ -112,7 +115,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -133,6 +135,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -246,6 +249,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     private ElectricityCabinetChooseCellConfigService chooseCellConfigService;
+    
+    @Autowired
+    private EleUserEsignRecordService eleUserEsignRecordService;
+    
+    @Resource
+    private ExchangeExceptionHandlerService exceptionHandlerService;
     
     /**
      * 吞电池优化版本
@@ -380,6 +389,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.warn("RENT BATTERY WARN! user rent battery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0045", "已绑定电池");
             }
+            
+            //电子签署拦截
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
+                EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordService.queryEsignFinishedRecordByUser(user.getUid(), Long.valueOf(user.getTenantId()));
+                if (Objects.isNull(eleUserEsignRecord)) {
+                    return R.fail("100329", "请先完成电子签名");
+                }
+            }
+            
             
             Triple<Boolean, String, Object> rentBatteryResult = null;
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -980,6 +999,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(true, cellNo, null);
         }
         
+        // 过滤异常的仓内号
+        Pair<Boolean, List<ElectricityCabinetBox>> filterEmptyExchangeCellPair = exceptionHandlerService.filterEmptyExceptionCell(eid, emptyCellList);
+        if (filterEmptyExchangeCellPair.getLeft()) {
+            return Triple.of(true,
+                    Integer.parseInt(filterEmptyExchangeCellPair.getRight().get(ThreadLocalRandom.current().nextInt(filterEmptyExchangeCellPair.getRight().size())).getCellNo()), null);
+        }
+        emptyCellList = filterEmptyExchangeCellPair.getRight();
+        
+        
         // 舒适换电分配空仓
         Pair<Boolean, Integer> comfortExchangeGetEmptyCellPair = chooseCellConfigService.comfortExchangeGetEmptyCell(uid, emptyCellList);
         if (comfortExchangeGetEmptyCellPair.getLeft()) {
@@ -1512,6 +1540,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return null;
         }
         
+        // 过滤异常满电仓门
+        Pair<Boolean, List<ElectricityCabinetBox>> filterFullExceptionCellPair = exceptionHandlerService.filterFullExceptionCell(usableBoxes);
+        if (filterFullExceptionCellPair.getLeft()) {
+            return ruleAllotCell(userInfo, filterFullExceptionCellPair.getRight());
+        }
+        usableBoxes = filterFullExceptionCellPair.getRight();
+        
         // 舒适换电
         Pair<Boolean, ElectricityCabinetBox> satisfyComfortExchange = chooseCellConfigService.comfortExchangeGetFullCell(userInfo.getUid(), usableBoxes, fullyCharged);
         if (satisfyComfortExchange.getLeft()) {
@@ -1519,6 +1554,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         
         return ruleAllotCell(userInfo, usableBoxes);
+    }
+    
+    @Override
+    @Slave
+    public List<RentBatteryOrder> listByOrderIdList(Set<String> returnOrderIdList) {
+        return rentBatteryOrderMapper.selectListByOrderIdList(returnOrderIdList);
     }
     
     
@@ -1852,7 +1893,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();
             BeanUtils.copyProperties(eleCabinetUsedRecord, eleCabinetUsedRecordVO);
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(eleCabinetUsedRecord.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(eleCabinetUsedRecord.getUid());
             if (Objects.nonNull(userInfo)) {
                 eleCabinetUsedRecordVO.setUserName(userInfo.getName());
                 eleCabinetUsedRecordVO.setPhone(userInfo.getPhone());

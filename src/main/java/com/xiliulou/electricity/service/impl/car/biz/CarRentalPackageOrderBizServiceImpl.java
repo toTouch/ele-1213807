@@ -55,6 +55,7 @@ import com.xiliulou.electricity.enums.ActivityEnum;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CallBackEnums;
+import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
@@ -872,7 +873,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 1.3 查询用户当前所在分组
             Set<Long> groupIds = new HashSet<>();
-            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).franchiseeId(buyOptModel.getFranchiseeId().longValue()).build();
             List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
             if (!CollectionUtils.isEmpty(vos)) {
                 groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
@@ -1990,17 +1991,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return true;
     }
     
-    private void sendFreezeEntityMessage(UserInfo userInfo) {
-        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildFreezeEntityMessageNotify(userInfo);
-        if (CollectionUtils.isEmpty(messageNotifyList)) {
-            return;
-        }
-        
-        messageNotifyList.forEach(i -> {
-            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
-            log.info("FREEZE ENTITY INFO! user authentication audit notify,msg={},uid={}", JsonUtil.toJson(i), userInfo.getUid());
-        });
-    }
     
     private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildFreezeEntityMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
@@ -2855,7 +2845,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 1.3 查询用户当前所在分组
             Set<Long> groupIds = new HashSet<>();
-            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().uid(uid).build();
+            UserInfoGroupDetailQuery detailQuery = UserInfoGroupDetailQuery.builder().franchiseeId(buyOptModel.getFranchiseeId().longValue()).uid(uid).build();
             List<UserInfoGroupNamesBO> vos = userInfoGroupDetailService.listGroupByUid(detailQuery);
             if (!CollectionUtils.isEmpty(vos)) {
                 groupIds.addAll(vos.stream().map(UserInfoGroupNamesBO::getGroupId).collect(Collectors.toSet()));
@@ -3515,6 +3505,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         userCouponDTO.setUid(uid);
                         userCouponDTO.setSourceOrderNo(buyOrderNo);
                         userCouponDTO.setTraceId(UUID.randomUUID().toString().replaceAll("-", ""));
+                        userCouponDTO.setCouponType(CouponTypeEnum.CAR_BUY_PACKAGE.getCode());
+                        userCouponDTO.setPackageId(memberTermEntity.getRentalPackageId());
                         userCouponService.asyncSendCoupon(userCouponDTO);
                     }
                 }
