@@ -25,7 +25,7 @@ public class DeleteBatteryListVo {
     
     @Data
     @Builder
-    public class DeleteBatteryFailVo {
+    public static class DeleteBatteryFailVo {
         
         private String batteryName;
         
