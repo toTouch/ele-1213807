@@ -3580,6 +3580,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        // TODO SJP
+        log.info("调试，model={}，batteryTypes={}", battery.getModel(), batteryTypes.toString());
         if (CollectionUtils.isEmpty(batteryTypes) || batteryTypes.contains(battery.getModel())) {
             // 标准型号套餐，不存在电池型号转换，正常换电
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
