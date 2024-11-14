@@ -3580,8 +3580,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        // TODO SJP
-        log.info("调试，model={}，batteryTypes={}", battery.getModel(), batteryTypes.toString());
         if (CollectionUtils.isEmpty(batteryTypes) || batteryTypes.contains(battery.getModel())) {
             // 标准型号套餐，不存在电池型号转换，正常换电
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
@@ -3605,7 +3603,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setOldVoltage(batteryModel.substring(batteryModel.indexOf("_") + 1, batteryModel.indexOf("V")));
         vo.setNewVoltage(cardBatteryType.substring(batteryModel.indexOf("_") + 1, batteryModel.indexOf("V")));
         
-        if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
+        if (Objects.equals(vo.getOldVoltage(), vo.getNewVoltage())) {
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+        }else if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
             vo.setFlexibleRenewal(FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode());
         } else {
             vo.setFlexibleRenewal(FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode());
