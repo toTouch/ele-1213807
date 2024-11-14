@@ -3079,9 +3079,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(userBindbatteryMemberCard)) {
-            return Triple.of(false, "110210", "用户绑定的套餐不存在");
-        }
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                 userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
@@ -3290,9 +3287,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(userBindbatteryMemberCard)) {
-            return Triple.of(false, "110210", "用户绑定的套餐不存在");
-        }
         
         Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                 userBindbatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));

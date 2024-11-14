@@ -666,9 +666,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.isNull(userBindbatteryMemberCard)) {
-                return Triple.of(false, "110210", "用户绑定的套餐不存在");
-            }
             
             // 获取扫码柜机
             ElectricityCabinet electricityCabinet = null;

@@ -467,9 +467,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             
             // 绑定的套餐
             BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.isNull(userBindBatteryMemberCard)) {
-                return Triple.of(false, "110210", "用户绑定的套餐不存在");
-            }
             
             Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
                     .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, userBindBatteryMemberCard, serviceFeeUserInfo);
@@ -627,9 +624,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         
         // 绑定的套餐
         BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        if (Objects.isNull(userBindBatteryMemberCard)) {
-            return Triple.of(false, "110210", "用户绑定的套餐不存在");
-        }
         
         Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService
                 .acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, userBindBatteryMemberCard, serviceFeeUserInfo);

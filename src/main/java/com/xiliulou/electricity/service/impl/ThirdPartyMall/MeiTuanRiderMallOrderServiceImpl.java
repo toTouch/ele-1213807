@@ -320,9 +320,6 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                     
                     // 绑定的套餐
                     BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                    if (Objects.isNull(userBindBatteryMemberCard)) {
-                        return Triple.of(false, "110210", "用户绑定的套餐不存在");
-                    }
                     
                     // 是否有滞纳金
                     Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo,

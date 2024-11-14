@@ -1242,12 +1242,8 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             
             //判断是否存在滞纳金
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            
             // 绑定的套餐
             BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-            if (Objects.isNull(userBindBatteryMemberCard)) {
-                return Triple.of(false, "110210", "用户绑定的套餐不存在");
-            }
             
             Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard,
                     userBindBatteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
