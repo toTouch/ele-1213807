@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -50,27 +51,6 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     @Override
     public List<String> selectBatteryTypeByMid(Long mid) {
         return this.memberCardBatteryTypeMapper.selectBatteryTypeByMid(mid);
-    }
-    
-    @Override
-    public List<String> getBatteryTypesForCheck(Long uid, String batteryType, List<String> userBatteryTypes) {
-        // 用户当前套餐不分型号，不作处理
-        if (CollectionUtils.isEmpty(userBatteryTypes)) {
-            return List.of();
-        }
-        
-        // 用户当前绑定的电池也就是要还的电池和当前套餐匹配，不作处理
-        if (userBatteryTypes.contains(batteryType)) {
-            return List.of();
-        }
-        
-        // 不匹配时，从缓存内获取旧套餐的电池型号
-        String listStr = redisService.get(String.format(CacheConstant.BATTERY_MEMBER_CARD_TRANSFORM, uid));
-        if (StringUtils.isBlank(listStr) || StringUtils.isEmpty(listStr)) {
-            return List.of();
-        }
-        
-        return JsonUtil.fromJsonArray(listStr, String.class);
     }
     
     @Override

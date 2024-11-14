@@ -936,7 +936,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             
             // 需要根据电池与用户绑定的电池型号确认是否需要取缓存内的电池型号用于还电池校验
-            oldBatteryTypes = memberCardBatteryTypeService.getBatteryTypesForCheck(userInfo.getUid(), (String) dataMap.get("multiBatteryModelName"), batteryTypeList);
+            oldBatteryTypes = electricityCabinetOrderService.getBatteryTypesForCheck(userInfo, electricityBattery, batteryTypeList);
             if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
                 dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
             }
@@ -1881,8 +1881,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId) {
-        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId);
+    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId, String status) {
+        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId, status);
     }
     
     @Slave

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
@@ -18,8 +19,6 @@ public interface MemberCardBatteryTypeService {
     Integer batchInsert(List<MemberCardBatteryType> buildMemberCardBatteryTypeList);
     
     List<String> selectBatteryTypeByMid(Long id);
-    
-    List<String> getBatteryTypesForCheck(Long uid, String batteryType, List<String> userBatteryTypes);
     
     /**
      * 检查用户绑定的电池型号、套餐绑定的电池型号、租户配置是否相符，true为符合，false为不符合

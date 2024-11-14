@@ -889,10 +889,5 @@ public interface CacheConstant {
      * 用户端及后台下单接口锁
      */
     String ELE_CACHE_PLACE_ORDER_LOCK_KEY = "ele_cache_place_order_lock_key:";
-    
-    /**
-     * 灵活续费套餐转换之后，保存上一个套餐的电池型号，换电、还电池时下发给安卓校验旧电池
-     */
-    String BATTERY_MEMBER_CARD_TRANSFORM = "battery_member_card_transform:%d";
 }
 
