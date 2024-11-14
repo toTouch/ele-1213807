@@ -117,6 +117,13 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             if (batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) > 0) {
                 throw new BizException("100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
             }
+            
+            // 灵活续费押金及电池型号校验
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
+            if (!matchOrNot) {
+                throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
+            }
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配
@@ -140,13 +147,6 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
                 log.warn("PLACE ORDER WARN! The rent type of current package is a new rental package, uid={}, mid={}", userInfo.getUid(), batteryMemberCard.getId());
                 throw new BizException("100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
             }
-        }
-        
-        // 灵活续费押金及电池型号校验
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
-        if (!matchOrNot) {
-            throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());

@@ -150,13 +150,6 @@ public class PlaceOrderChainManager {
         }
         context.setUserInfo(userInfo);
         
-        // 是否限制套餐购买次数
-        Triple<Boolean, String, String> limitPurchase = userInfoExtraService.isLimitPurchase(userInfo.getUid(), tenantId);
-        if (limitPurchase.getLeft()) {
-            log.warn("PLACE ORDER WARN! user limit purchase,uid={}", userInfo.getUid());
-            return R.fail(limitPurchase.getMiddle(), limitPurchase.getRight());
-        }
-        
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.warn("PLACE ORDER WARN! user is unUsable,uid={}", uid);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
