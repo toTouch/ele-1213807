@@ -34,15 +34,15 @@ public class WechatAccessTokenSeviceImpl implements WechatAccessTokenSevice {
     @Override
     public Pair<Boolean, Object> getAccessToken(String appId, String secret) {
 
-        String accessToken = null;
-        accessToken = (String) redisService.get(WeChatConstant.ACCESS_TOKEN_KEY + appId);
+        String accessToken;
+        accessToken = redisService.get(WeChatConstant.ACCESS_TOKEN_KEY + appId);
         if (StringUtils.isEmpty(accessToken)) {
             String getAccessToken = WeChatConstant.ACCESS_TOKEN_URL + appId + "&secret=" + secret;
             String result = HttpUtil.get(getAccessToken);
             accessToken = JSONUtil.toBean(result, AccessTokenVo.class).getAccessToken();
-            log.info("微信获取accessToken结果：" + result);
+            log.info("WeChat obtains the result of accessing Token : {}", result);
             if (ObjectUtil.isEmpty(accessToken)) {
-                log.warn("WX_MP SEND_TEMPLATE WARN!GET ACCESS_TOKEN ERROR,MSG:{},APPID:{},SECRET:{}", result, appId, secret);
+                log.warn("GET ACCESS_TOKEN FAILED,RESULT:{},APPID:{},SECRET:{}", result, appId, secret);
                 return Pair.of(false, "获取微信accessToken失败!");
             } else {
                 //token有效期 7200秒,redis 保存6000秒
