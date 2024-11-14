@@ -665,7 +665,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
             
-            BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            BatteryMemberCard userBindBatteryMemberCard = Objects.isNull(userBatteryMemberCard) ? null : batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             
             // 获取扫码柜机
             ElectricityCabinet electricityCabinet = null;
@@ -674,7 +674,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 套餐订单
-            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCardToBuy, query, electricityCabinet, payParamConfig, userBindbatteryMemberCard);
+            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, batteryMemberCardToBuy, query, electricityCabinet, payParamConfig, userBindBatteryMemberCard);
             if (Boolean.FALSE.equals(generateMemberCardOrderResult.getLeft())) {
                 return generateMemberCardOrderResult;
             }
