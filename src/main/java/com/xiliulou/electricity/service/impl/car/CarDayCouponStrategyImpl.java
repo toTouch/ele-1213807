@@ -2,12 +2,21 @@ package com.xiliulou.electricity.service.impl.car;
 
 
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.enums.DayCouponUseScope;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
 import com.xiliulou.electricity.service.DayCouponStrategy;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -27,33 +36,79 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     
     private final CarRentalPackageMemberTermService carRentalPackageMemberTermService;
     
+    private final CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
+    
+    @Override
+    public DayCouponUseScope getScope(Integer tenantId, Long uid) {
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus())){
+            if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode())){
+                return DayCouponUseScope.BOTH;
+            }
+            if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR.getCode())){
+                return DayCouponUseScope.CAR;
+            }
+        }
+        return DayCouponUseScope.UNKNOWN;
+    }
+    
     @Override
     public boolean isLateFee(Integer tenantId, Long uid) {
-        return false;
+        BigDecimal bigDecimal = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+        return Objects.nonNull(bigDecimal) && bigDecimal.compareTo(BigDecimal.ZERO) > 0;
     }
     
     @Override
     public Pair<Boolean, Boolean> isFreezeOrAudit(Integer tenantId, Long uid) {
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (Objects.nonNull(memberTermPo)){
+            return Pair.of(MemberTermStatusEnum.FREEZE.getCode().equals(memberTermPo.getStatus()), MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermPo.getStatus()));
+        }
         return null;
     }
     
     @Override
     public boolean isOverdue(Integer tenantId, Long uid) {
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus()) && Objects.nonNull(memberTermPo.getDueTimeTotal())){
+            return System.currentTimeMillis() >= memberTermPo.getDueTimeTotal();
+        }
         return false;
     }
     
     @Override
     public boolean isReturnTheDeposit(Integer tenantId, Long uid) {
-        return false;
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        return Objects.nonNull(memberTermPo) && MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode().equals(memberTermPo.getStatus());
     }
     
     @Override
     public boolean isPackageInUse(Integer tenantId, Long uid) {
-        return false;
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        return Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus()) && Objects.nonNull(memberTermPo.getDueTime());
     }
     
     @Override
-    public boolean process(Coupon coupon, Integer tenantId, Long uid) {
-        return false;
+    public Pair<Boolean,Long> process(Coupon coupon, Integer tenantId, Long uid) {
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (Objects.isNull(memberTermPo)){
+            return Pair.of(false,null);
+        }
+        Integer day = coupon.getCount();
+        long millis = TimeUnit.DAYS.toMillis(day);
+        Long dueTimeTotal = memberTermPo.getDueTimeTotal();
+        Long dueTime = memberTermPo.getDueTime();
+        CarRentalPackageMemberTermPo update = new CarRentalPackageMemberTermPo();
+        update.setId(memberTermPo.getId());
+        if (Objects.nonNull(dueTime)){
+            update.setDueTime(millis+dueTime);
+        }
+        if (Objects.nonNull(dueTimeTotal)){
+            update.setDueTimeTotal(millis+dueTimeTotal);
+        }
+        update.setUpdateTime(System.currentTimeMillis());
+        update.setRemark("使用天数券");
+        carRentalPackageMemberTermService.updateById(update);
+        return Pair.of(true,memberTermPo.getRentalPackageId());
     }
 }
