@@ -1306,11 +1306,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
                     OrderCheckEnum.CHECK.getCode());
             if (pair.getLeft()) {
-                // 设置返回灵活续费相关参数
+                // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
                 ExchangeUserSelectVo returnVo = pair.getRight();
-                returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
-                returnVo.setOldVoltage(vo.getOldVoltage());
-                returnVo.setNewVoltage(vo.getNewVoltage());
+                if (Objects.equals(vo.getIsSatisfySelfOpen(), ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN) || Objects.equals(vo.getIsBatteryInCell(),
+                        ExchangeUserSelectVo.BATTERY_NOT_CELL)) {
+                    returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
+                    returnVo.setOldVoltage(vo.getOldVoltage());
+                    returnVo.setNewVoltage(vo.getNewVoltage());
+                }
                 
                 return Triple.of(true, null, returnVo);
             }
@@ -3181,9 +3184,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     vo = pair.getRight();
                 }
                 
-                // 二次扫码上一次换电订单成功，并且新电池在仓时，不做灵活续费校验
-                if (!Objects.equals(vo.getLastExchangeIsSuccess(), ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS) || !Objects.equals(vo.getIsBatteryInCell(),
-                        ExchangeUserSelectVo.BATTERY_IN_CELL)) {
+                // 二次扫码校验结果为false，需要校验灵活续费
+                // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
+                if (!pair.getLeft() || Objects.equals(vo.getIsSatisfySelfOpen(), ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN) || Objects.equals(vo.getIsBatteryInCell(),
+                        ExchangeUserSelectVo.BATTERY_NOT_CELL)) {
                     checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
                 
