@@ -30,7 +30,7 @@ public interface DayCouponStrategy {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean isLateFee(Long uid);
+    boolean isLateFee(Integer tenantId,Long uid);
     
     /**
      * <p>Title: isFreeze </p>
@@ -45,7 +45,7 @@ public interface DayCouponStrategy {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    Pair<Boolean,Boolean> isFreezeOrAudit(Long uid);
+    Pair<Boolean,Boolean> isFreezeOrAudit(Integer tenantId,Long uid);
     
     /**
      * <p>Title: isOverdue </p>
@@ -59,7 +59,7 @@ public interface DayCouponStrategy {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean isOverdue(Long uid);
+    boolean isOverdue(Integer tenantId,Long uid);
     
     /**
      * <p>Title: isReturnTheDeposit </p>
@@ -73,7 +73,7 @@ public interface DayCouponStrategy {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean isReturnTheDeposit(Long uid);
+    boolean isReturnTheDeposit(Integer tenantId,Long uid);
     
     /**
      * <p>Title: isPackageInUse </p>
@@ -87,7 +87,7 @@ public interface DayCouponStrategy {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean isPackageInUse(Long uid);
+    boolean isPackageInUse(Integer tenantId,Long uid);
     
     /**
      * <p>Title: process </p>
@@ -103,6 +103,6 @@ public interface DayCouponStrategy {
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean process(Coupon coupon, Long uid);
+    boolean process(Coupon coupon, Integer tenantId, Long uid);
     
 }
