@@ -21,5 +21,15 @@ public class DeleteBatteryListVo {
     private Integer failCount;
     
     
-    private List<String> failedSnList;
+    private List<DeleteBatteryFailVo> failedSnList;
+    
+    @Data
+    @Builder
+    public class DeleteBatteryFailVo {
+        
+        private String batteryName;
+        
+        private String reason;
+    }
+    
 }

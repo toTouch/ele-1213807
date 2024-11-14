@@ -1668,26 +1668,33 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         // 加盟商
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
         
+        // 定义失败的 SN 集
+        List<DeleteBatteryListVo.DeleteBatteryFailVo> batterySnFailList = new ArrayList<>();
+        // 定义等待删除的电池
+        List<ElectricityBattery> batteryWaitList = new ArrayList<>();
+        
         // 根据参数获取电池数据
         List<ElectricityBattery> dbBatteryList = electricitybatterymapper.selectListBySnList(tenantId, batterySnDistinctList, pair.getRight());
         if (CollUtil.isEmpty(dbBatteryList)) {
-            log.warn("delBatteryBySnList failed. The dbBatteryList is empty.");
-            return R.fail("100602", "电池未找到");
+            // 找不到，直接返回
+            batterySnDistinctList.forEach(e->{
+                batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("找不到电池").build());
+            });
+            DeleteBatteryListVo vo = DeleteBatteryListVo.builder().successCount(0).failCount(batterySnFailList.size()).failedSnList(batterySnFailList).build();
+            return R.ok(vo);
         }
         
         // 获取 DB 数据的 SN 集
         List<String> dbBatterySnList = dbBatteryList.stream().map(ElectricityBattery::getSn).collect(Collectors.toList());
-        // 定义失败的 SN 集
-        List<String> batterySnFailList = new ArrayList<>();
-        // 定义等待删除的电池
-        List<ElectricityBattery> batteryWaitList = new ArrayList<>();
         
         // 比对入参和查询结果是否一致
         if (batterySnDistinctList.size() != dbBatterySnList.size()) {
             // 若不一致，差集比对，记录下来，以便返回
             List<String> batterySnDiffList = batterySnDistinctList.stream().filter(batterySn -> !dbBatterySnList.contains(batterySn)).collect(Collectors.toList());
             // 非自己的电池，属于失败电池
-            batterySnFailList.addAll(batterySnDiffList);
+            batterySnDiffList.forEach(e->{
+                batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("非自己的电池").build());
+            });
         }
         
         batteryWaitList.addAll(dbBatteryList);
