@@ -1595,6 +1595,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     backSelfOpen(lastOrder.getOldCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
                     vo.setBeginSelfOpen(ExchangeUserSelectVo.BEGIN_SELF_OPEN);
                     vo.setCell(lastOrder.getOldCellNo());
+                } else {
+                    checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
                 
                 // 灵活续费为换电时，不开仓不分配电池，返回给前端等待第二次调用V3多次扫码
