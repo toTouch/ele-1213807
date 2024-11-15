@@ -817,6 +817,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setFreeDeposite(query.getFreeDeposite());
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
+        batteryMemberCardUpdate.setAdvanceRenewal( query.getAdvanceRenewal());
+        batteryMemberCardUpdate.setAdvanceRenewalDay(query.getAdvanceRenewalDay());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardUpdate.setUserInfoGroupIds(Objects.isNull(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         batteryMemberCardUpdate.setGroupType(query.getGroupType());
@@ -917,6 +919,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCard.setUpdateTime(System.currentTimeMillis());
         batteryMemberCard.setSortParam(System.currentTimeMillis());
         batteryMemberCard.setTenantId(TenantContextHolder.getTenantId());
+        batteryMemberCard.setAdvanceRenewal(Objects.isNull(query.getAdvanceRenewal()) ? BatteryMemberCard.ADVANCE_RENEWAL_UNLIMIT : query.getAdvanceRenewal());
+        batteryMemberCard.setAdvanceRenewalDay(Objects.isNull(query.getAdvanceRenewalDay()) ? 10 : query.getAdvanceRenewalDay());
         batteryMemberCard.setUserInfoGroupIds(CollectionUtils.isEmpty(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
         if (Objects.equals(query.getSendCoupon(), BatteryMemberCard.SEND_COUPON_NO)) {
             batteryMemberCard.setCouponIds(null);
@@ -1109,6 +1113,31 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         return Triple.of(true, null, null);
+    }
+    
+    /**
+     * 检查该套餐是否可以提前续费
+     */
+    @Override
+    public Boolean checkIsAdvanceRenewal(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard) {
+        if (Objects.isNull(batteryMemberCard.getAdvanceRenewal()) || Objects.isNull(batteryMemberCard.getAdvanceRenewalDay())) {
+            return Boolean.TRUE;
+        }
+        
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())) {
+            return Boolean.TRUE;
+        }
+        
+        if (Objects.equals(BatteryMemberCard.ADVANCE_RENEWAL_UNLIMIT, batteryMemberCard.getAdvanceRenewal())) {
+            return Boolean.TRUE;
+        }
+        
+        //判断套餐剩余天数是否小于限制天数
+        if (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis() < batteryMemberCard.getAdvanceRenewalDay() * 24 * 60 * 60 * 1000L) {
+            return Boolean.TRUE;
+        }
+        
+        return Boolean.FALSE;
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

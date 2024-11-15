@@ -166,7 +166,7 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
                     continue;
                 }
                 // 查询配置
-                BasePayConfig config = payConfigBizService.queryPayParams(channel, tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE,null);
+                BasePayConfig config = payConfigBizService.querySimplePrecisePayParams(channel, tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
                 if (Objects.isNull(config)) {
                     log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! channel={},tenantId={} BasePayConfig is null", channel, tenantId);
                     continue;
@@ -184,6 +184,7 @@ public class MiniTemplateMsgBizServiceImpl implements MiniTemplateMsgBizService 
             }
             return true;
         } catch (Exception e) {
+            log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! tenantId={},uid={}", tenantId,uid);
             log.warn("MiniTemplateMsgBizServiceImpl.sendMsg WARN! exception:", e);
             return false;
         }

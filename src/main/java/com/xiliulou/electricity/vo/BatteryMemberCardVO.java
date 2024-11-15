@@ -82,6 +82,16 @@ public class BatteryMemberCardVO {
     private Long useCount;
     
     /**
+     * 是否限制提前续费，0:不限制,1:限制
+     */
+    private Integer advanceRenewal;
+    
+    /**
+     * 提前续费天数
+     */
+    private Integer advanceRenewalDay;
+    
+    /**
      * 优惠券id
      */
     private Integer couponId;

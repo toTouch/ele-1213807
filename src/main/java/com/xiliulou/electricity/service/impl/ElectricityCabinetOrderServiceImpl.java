@@ -44,6 +44,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CellTypeEnum;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.OrderCheckEnum;
+import com.xiliulou.electricity.enums.OrderDataModeEnums;
 import com.xiliulou.electricity.enums.SelectionExchageEunm;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -66,6 +67,7 @@ import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.ElectricityAppConfigService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetPhysicsOperRecordService;
@@ -232,6 +234,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Resource
     private EleUserEsignRecordService eleUserEsignRecordService;
+    
+    @Resource
+    private ElectricityCabinetOrderHistoryService electricityCabinetOrderHistoryService;
     
     public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.19";
     
@@ -419,8 +424,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Slave
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+        Integer orderMode = electricityCabinetOrderQuery.getOrderMode();
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = null;
+        if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
+            electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        } else {
+            electricityCabinetOrderVOList = electricityCabinetOrderHistoryService.queryList(electricityCabinetOrderQuery);
+        }
         
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
         if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
             return R.ok(new ArrayList<>());
         }
@@ -541,7 +552,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     @Slave
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
+        Integer orderMode = electricityCabinetOrderQuery.getOrderMode();
+        if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
+            return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
+        } else {
+            return electricityCabinetOrderHistoryService.queryCount(electricityCabinetOrderQuery);
+        }
     }
     
     @Slave
@@ -624,7 +640,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Override
     public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
-        return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
+        Integer count = electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
+        Integer historyCount = electricityCabinetOrderHistoryService.homeOneCount(first, now, eleIdList, tenantId);
+        return count + historyCount;
     }
     
     @Slave
@@ -632,6 +650,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
         Integer countTotal = homeOneCount(first, now, eleIdList, tenantId);
         Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList, tenantId);
+        Integer historySuccessTotal = electricityCabinetOrderHistoryService.homeOneSuccess(first, now, eleIdList, tenantId);
+        successTotal += historySuccessTotal;
         if (successTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }
@@ -2743,7 +2763,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     @Slave
     public R listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
+        Integer orderMode = electricityCabinetOrderQuery.getOrderMode();
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = new ArrayList<>();
+        if (Objects.isNull(orderMode) || Objects.equals(orderMode, OrderDataModeEnums.CURRENT_ORDER.getCode())) {
+            electricityCabinetOrderMapper.selectListSuperAdminPage(electricityCabinetOrderQuery);
+        } else {
+            electricityCabinetOrderHistoryService.listSuperAdminPage(electricityCabinetOrderQuery);
+        }
+        
         if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
             return R.ok(new ArrayList<>());
         }

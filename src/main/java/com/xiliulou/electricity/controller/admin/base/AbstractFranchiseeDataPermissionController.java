@@ -5,9 +5,11 @@
 package com.xiliulou.electricity.controller.admin.base;
 
 import com.google.common.base.Objects;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.util.CollectionUtils;
@@ -66,5 +68,20 @@ public abstract class AbstractFranchiseeDataPermissionController {
         
     }
     
+    
+    protected void checkUserDataScope() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (java.util.Objects.isNull(tenantId)){
+            throw new BizException("ELECTRICITY.0066", "用户权限不足");
+        }
+        TokenUser userInfo = SecurityUtils.getUserInfo();
+        if (java.util.Objects.isNull(userInfo)) {
+            throw new BizException("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        if (!(SecurityUtils.isAdmin() || java.util.Objects.equals(userInfo.getDataType(), User.DATA_TYPE_OPERATE) || java.util.Objects.equals(userInfo.getDataType(), User.DATA_TYPE_FRANCHISEE))) {
+            throw new BizException("ELECTRICITY.0066", "用户权限不足");
+        }
+    }
     
 }
