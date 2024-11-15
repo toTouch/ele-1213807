@@ -3193,7 +3193,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
                 
-                if (pair.getLeft() || !Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+                // 二次扫码校验通过，灵活续费校验没通过时，若是不通柜机第二次调用V3接口，不能拦截
+                if (pair.getLeft() || (!Objects.equals(vo.getFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(orderQuery.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE))) {
                     // 返回让前端选择
                     return Triple.of(true, null, vo);
                 }
