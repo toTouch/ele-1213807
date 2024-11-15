@@ -806,7 +806,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet) {
         int delete = electricityCabinetMapper.deleteById(electricityCabinet.getId());
         DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
@@ -4869,9 +4868,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query) {
-        
         Store store = storeService.queryByIdFromCache(query.getStoreId());
         if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE ERROR!not found store,storeId={}", query.getStoreId());
