@@ -3,10 +3,12 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.enums.DayCouponUseScope;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.DayCouponStrategy;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +19,10 @@ import java.util.Objects;
  * @Author: SongJP
  * @Date: 2024/11/14 9:23
  */
-@Component
+@Slf4j
+@Component("MemberCardDayCouponStrategyImpl")
 @RequiredArgsConstructor
-public class DayCouponMemberCard implements DayCouponStrategy {
+public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     
     private final UserBatteryMemberCardService userBatteryMemberCardService;
     
@@ -27,27 +30,38 @@ public class DayCouponMemberCard implements DayCouponStrategy {
     
     
     @Override
-    public boolean isLateFee(Long uid) {
-        return false;
-    }
-    
-    @Override
-    public Pair<Boolean, Boolean> isFreezeOrAudit(Long uid) {
+    public DayCouponUseScope getScope(Integer tenantId, Long uid) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), 0L)) {
+            return DayCouponUseScope.UNKNOWN;
+        }
+        
+        
         return null;
     }
     
     @Override
-    public boolean isOverdue(Long uid) {
+    public boolean isLateFee(Integer tenantId, Long uid) {
         return false;
     }
     
     @Override
-    public boolean isReturnTheDeposit(Long uid) {
+    public Pair<Boolean, Boolean> isFreezeOrAudit(Integer tenantId, Long uid) {
+        return null;
+    }
+    
+    @Override
+    public boolean isOverdue(Integer tenantId, Long uid) {
         return false;
     }
     
     @Override
-    public boolean isPackageInUse(Long uid) {
+    public boolean isReturnTheDeposit(Integer tenantId, Long uid) {
+        return false;
+    }
+    
+    @Override
+    public boolean isPackageInUse(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
             return false;
@@ -63,7 +77,7 @@ public class DayCouponMemberCard implements DayCouponStrategy {
     }
     
     @Override
-    public boolean process(Coupon coupon, Long uid) {
-        return false;
+    public Pair<Boolean,Long> process(Coupon coupon, Integer tenantId, Long uid) {
+        return null;
     }
 }
