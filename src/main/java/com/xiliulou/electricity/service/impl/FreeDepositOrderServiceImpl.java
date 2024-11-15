@@ -2520,8 +2520,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.equals(flexibleRenewal, FreeDepositConstant.FLEXIBLE_RENEWAL)) {
             return memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, memberCard, userBatteryDeposit, electricityConfig);
         } else {
+            // 非灵活续费，押金必须相等
+            if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || userBatteryDeposit.getBatteryDeposit().compareTo(memberCard.getDeposit()) != 0) {
+                return Boolean.FALSE;
+            }
+            
             List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
             
+            // 用户绑定的型号为空，要么单型号，要么初次购买，加盟商隔离无法从单型号续费多型号
             if (CollectionUtils.isEmpty(userBatteryTypes)) {
                 return Boolean.TRUE;
             } else {
