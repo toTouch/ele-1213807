@@ -13,6 +13,7 @@ import com.xiliulou.electricity.bo.AuthPayStatusBO;
 import com.xiliulou.electricity.bo.FreeDepositOrderStatusBO;
 import com.xiliulou.electricity.config.FreeDepositConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.FreeDepositConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.dto.FreeDepositOrderDTO;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -1662,6 +1664,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
         }
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
+        // 灵活续费相关电池型号校验
+        Boolean checkBatteryTypes = checkBatteryTypes(query.getFlexibleRenewal(), uid, batteryMemberCard, userBatteryDeposit, electricityConfig);
+        if (!checkBatteryTypes) {
+            return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
         // 判断套餐用户分组和用户的用户分组是否匹配
         Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
                 batteryMemberCard, CHECK_USERINFO_GROUP_ADMIN);
@@ -2499,5 +2512,26 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return freeDepositVO;
         }
         return null;
+    }
+    
+    private Boolean checkBatteryTypes(Integer flexibleRenewal, Long uid, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, ElectricityConfig electricityConfig) {
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
+        
+        if (Objects.equals(flexibleRenewal, FreeDepositConstant.FLEXIBLE_RENEWAL)) {
+            return memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, memberCard, userBatteryDeposit, electricityConfig);
+        } else {
+            List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
+            
+            if (CollectionUtils.isEmpty(userBatteryTypes)) {
+                return Boolean.TRUE;
+            } else {
+                
+                if (CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+                    return Boolean.FALSE;
+                } else {
+                    return CollectionUtils.containsAll(memberCardBatteryTypes, userBatteryTypes);
+                }
+            }
+        }
     }
 }

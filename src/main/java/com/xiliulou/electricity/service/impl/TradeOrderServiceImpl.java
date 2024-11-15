@@ -38,7 +38,6 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderTypeEnum;
@@ -683,7 +682,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             // 灵活续费电池型号及押金校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
+            boolean matchOrNot = checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCard);
             if (!matchOrNot) {
                 return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
             }
@@ -1741,4 +1740,21 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, insuranceOrder);
     }
     
+    /**
+     * 校验用户绑定的电池型号和要购买的套餐是否匹配
+     */
+    private Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard) {
+        List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
+        
+        if (CollectionUtils.isEmpty(userBatteryTypes)) {
+            return Boolean.TRUE;
+        } else {
+            
+            if (CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+                return Boolean.FALSE;
+            } else {
+                return CollectionUtils.containsAll(memberCardBatteryTypes, userBatteryTypes);
+            }
+        }
+    }
 }
