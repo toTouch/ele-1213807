@@ -21,6 +21,9 @@
             <if test="tenantId != null ">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="discountType != null">
+                and discount_type = #{discountType}
+            </if>
             <if test="status != null ">
                 and status = #{status}
             </if>

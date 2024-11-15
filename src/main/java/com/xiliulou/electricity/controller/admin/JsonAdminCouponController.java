@@ -70,7 +70,7 @@ public class JsonAdminCouponController extends BaseController {
      */
     @GetMapping("/admin/coupon/search")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,@RequestParam("discountType") Integer discountType) {
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,@RequestParam(value = "discountType",required = false) Integer discountType) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
