@@ -1,17 +1,29 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.CouponDayRecordEntity;
+import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.enums.DayCouponUseScope;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.DayCouponStrategy;
+import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -28,7 +40,16 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     
     private final BatteryMemberCardService batteryMemberCardService;
     
+    private final ServiceFeeUserInfoService serviceFeeUserInfoService;
     
+    private final UserBatteryDepositService userBatteryDepositService;
+    
+    private final EleRefundOrderService eleRefundOrderService;
+    
+    private final ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    
+    @Slave
     @Override
     public DayCouponUseScope getScope(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
@@ -36,28 +57,71 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
             return DayCouponUseScope.UNKNOWN;
         }
         
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return DayCouponUseScope.UNKNOWN;
+        }
         
-        return null;
+        // 除了车电一体其他的套餐的处理逻辑一致，都归属到租电类型下
+        switch (batteryMemberCard.getBusinessType()) {
+            case 0:
+            case 2:
+            case 3:
+            case 4:
+                return DayCouponUseScope.BATTERY;
+            case 1:
+                return DayCouponUseScope.BOTH;
+            default:
+                return DayCouponUseScope.UNKNOWN;
+        }
     }
     
+    @Slave
     @Override
     public boolean isLateFee(Integer tenantId, Long uid) {
-        return false;
+        // 计算金额不为0表示有滞纳金
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(uid);
+        return !Objects.isNull(eleBatteryServiceFeeVO) && !Objects.isNull(eleBatteryServiceFeeVO.getBatteryServiceFee())
+                && eleBatteryServiceFeeVO.getBatteryServiceFee().compareTo(BigDecimal.ZERO) > 0;
     }
     
+    @Slave
     @Override
     public Pair<Boolean, Boolean> isFreezeOrAudit(Integer tenantId, Long uid) {
-        return null;
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        Boolean left = Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) ? Boolean.TRUE : Boolean.FALSE;
+        Boolean right = Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW) ? Boolean.TRUE : Boolean.FALSE;
+        return Pair.of(left, right);
     }
     
+    @Slave
     @Override
     public boolean isOverdue(Integer tenantId, Long uid) {
-        return false;
+        // 执行到此处正常来说不会出现 UserBatteryMemberCard 与 BatteryMemberCard 为空的情况，若出现，中断使用天数券的代码逻辑的执行
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            return true;
+        }
+        
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return true;
+        }
+        
+        return Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0;
     }
     
+    @Slave
     @Override
     public boolean isReturnTheDeposit(Integer tenantId, Long uid) {
-        return false;
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            return true;
+        }
+        
+        // 是否有正在进行中的退押
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+        return refundCount > 0;
     }
     
     @Override
@@ -77,7 +141,34 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     }
     
     @Override
-    public Pair<Boolean,Long> process(Coupon coupon, Integer tenantId, Long uid) {
+    public Pair<Boolean, Long> process(Coupon coupon, Integer tenantId, Long uid) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        
+        ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        if (Objects.isNull(memberCardOrder)) {
+            log.warn("DAY COUPON WARN! day coupon order does not exist");
+            return Pair.of(Boolean.FALSE, null);
+        }
+        
+        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
+        memberCardOrderUpdate.setMemberCardId(memberCardOrder.getId());
+        memberCardOrderUpdate.setValidDays(memberCardOrder.getValidDays() + coupon.getCount());
+        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        userBatteryMemberCardUpdate.setUid(uid);
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + coupon.getCount() * 24 * 60 * 60 * 1000L);
+        userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+        serviceFeeUserInfoUpdate.setUid(uid);
+        serviceFeeUserInfoUpdate.setTenantId(tenantId);
+        serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
+        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         return null;
     }
 }
