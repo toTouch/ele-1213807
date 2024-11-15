@@ -59,8 +59,6 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
         // 灵活续费押金校验
         if (Objects.nonNull(userBatteryDeposit) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode()) && !Objects.equals(
                 userBatteryDeposit.getBatteryDeposit(), memberCard.getDeposit())) {
-            // TODO SJP
-            log.info("调试，押金错误");
             return false;
         }
         

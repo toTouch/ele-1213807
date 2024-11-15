@@ -684,7 +684,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
             boolean matchOrNot = checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCard, userBatteryDeposit);
             if (!matchOrNot) {
-                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+                return Triple.of(false, "301029", "请联系管理员升级最新版本小程序");
             }
             
             // 获取扫码柜机
