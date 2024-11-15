@@ -82,7 +82,7 @@ public class JsonUserUserCouponController {
         return userCouponService.getShareCoupon(activityId, couponId);
     }
     
-    @PostMapping(value = "/user/userCoupon/useDayCoupon")
+    @GetMapping(value = "/user/userCoupon/useDayCoupon")
     public R useDayCoupon(@RequestParam("id") Integer id) {
         return userDayCouponService.useDayCoupon(id);
     }

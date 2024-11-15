@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.enums.DayCouponUseScope;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -17,6 +18,21 @@ import org.apache.commons.lang3.tuple.Pair;
  * @since V1.0 2024/11/13
  **/
 public interface DayCouponStrategy {
+
+    /**
+     * <p>Title: getScope </p>
+     * <p>Project: DayCouponStrategy</p>
+     * <p>Copyright: Copyright (c) 2024</p>
+     * <p>Company: www.xiliulou.com</p>
+     * <p>Description: 获取策略套餐的类型,</p>
+     * @see com.xiliulou.electricity.enums.DayCouponUseScope
+     * @param tenantId tenantId
+     * @param uid uid
+     * @return com.xiliulou.electricity.enums.DayCouponUseScope
+     * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
+     * @since V1.0 2024/11/14
+    */
+    DayCouponUseScope getScope(Integer tenantId,Long uid);
     
     /**
      * <p>Title: isLateFee </p>
@@ -97,12 +113,14 @@ public interface DayCouponStrategy {
      * <p>Description: 增加用户套餐天数</p>
      * <p>调用此接口时，前置校验已全部完成，仅实现增加天数逻辑即可</p>
      * <p>优惠券天数字段为 coupon.getCount() </p>
+     * <p>left --  业务是否成功 </p>
+     * <p>right -- 套餐id(成功必须返回) </p>
      * @param coupon coupon
      * @param uid uid
      * @return boolean
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean process(Coupon coupon, Integer tenantId, Long uid);
+    Pair<Boolean,Long> process(Coupon coupon, Integer tenantId, Long uid);
     
 }
