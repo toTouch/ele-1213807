@@ -327,6 +327,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
         tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
+        tenantConfigVO.setIsMoveFranchisee(ElectricityConfig.MOVE_FRANCHISEE_CLOSE);
         
         return tenantConfigVO;
     }
@@ -371,6 +372,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
         tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
+        tenantConfigVO.setIsMoveFranchisee(ElectricityConfig.MOVE_FRANCHISEE_CLOSE);
         
         return tenantConfigVO;
     }

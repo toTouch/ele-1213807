@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.WechatPublicKeyMapper">
+    <sql id="field">
+        `id`,
+        `tenant_id`,
+        `pub_key_id`,
+        `pub_key`,
+        `upload_time`,
+        `pay_params_id`,
+        `franchisee_id`,
+        `del_flag`,
+        `create_time`,
+        `update_time`
+    </sql>
+    
+    <insert id="insert">
+        INSERT INTO t_wechat_public_key(
+        <if test="id != null">`id`,</if>
+        <if test="tenantId != null">`tenant_id`,</if>
+        <if test="pubKeyId != null">`pub_key_id`,</if>
+        <if test="pubKey != null">`pub_key`,</if>
+        <if test="uploadTime != null">`upload_time`,</if>
+        <if test="payParamsId != null">`pay_params_id`,</if>
+        <if test="franchiseeId != null">`franchisee_id`,</if>
+        <if test="updateTime != null">`update_time`,</if>
+        `del_flag`,
+        create_time
+        ) VALUES (
+        <if test="id != null">#{id},</if>
+        <if test="tenantId != null">#{tenantId},</if>
+        <if test="pubKeyId != null">#{pubKeyId},</if>
+        <if test="pubKey != null">#{pubKey},</if>
+        <if test="uploadTime != null">#{uploadTime},</if>
+        <if test="payParamsId != null">#{payParamsId},</if>
+        <if test="franchiseeId != null">#{franchiseeId},</if>
+        <if test="updateTime != null">#{updateTime},</if>
+        0,
+        UNIX_TIMESTAMP()
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE t_wechat_public_key
+        <set>
+            <if test="tenantId != null">`tenant_id` = #{tenantId},</if>
+            <if test="pubKeyId != null">`pub_key_id` = #{pubKeyId},</if>
+            <if test="pubKey != null">`pub_key` = #{pubKey},</if>
+            <if test="uploadTime != null">`upload_time` = #{uploadTime},</if>
+            <if test="payParamsId != null">`pay_params_id` = #{payParamsId},</if>
+            <if test="franchiseeId != null">`franchisee_id` = #{franchiseeId},</if>
+            `update_time` = UNIX_TIMESTAMP()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <update id="removeById">
+        UPDATE t_wechat_public_key
+        SET `del_flag` = 1
+        WHERE `id` = #{id}
+    </update>
+    <select id="selectByQueryModel" resultType="com.xiliulou.electricity.entity.payparams.WechatPublicKeyEntity">
+        SELECT
+        <include refid="field"/>
+        FROM t_wechat_public_key
+        <where>
+            `del_flag` = 0
+            <if test="id != null">AND `id` = #{id}</if>
+            <if test="tenantId != null">AND `tenant_id` = #{tenantId}</if>
+            <if test="pubKeyId != null">AND `pub_key_id` = #{pubKeyId}</if>
+            <if test="pubKey != null">AND `pub_key` = #{pubKey}</if>
+            <if test="uploadTime != null">AND `upload_time` = #{uploadTime}</if>
+            <if test="payParamsId != null">AND `pay_params_id` = #{payParamsId}</if>
+            <if test="franchiseeId != null">AND `franchisee_id` = #{franchiseeId}</if>
+        </where>
+        ORDER BY `update_time` DESC
+        LIMIT 1
+    </select>
+    <select id="selectListByQueryModel"
+        resultType="com.xiliulou.electricity.entity.payparams.WechatPublicKeyEntity">
+        SELECT
+        <include refid="field"/>
+        FROM t_wechat_public_key
+        <where>
+            `del_flag` = 0
+            <if test="id != null">AND `id` = #{id}</if>
+            <if test="tenantId != null">AND `tenant_id` = #{tenantId}</if>
+            <if test="pubKeyId != null">AND `pub_key_id` = #{pubKeyId}</if>
+            <if test="pubKey != null">AND `pub_key` = #{pubKey}</if>
+            <if test="uploadTime != null">AND `upload_time` = #{uploadTime}</if>
+            <if test="payParamsId != null">AND `pay_params_id` = #{payParamsId}</if>
+            <if test="franchiseeId != null">AND `franchisee_id` = #{franchiseeId}</if>
+            <if test="franchiseeIds != null">
+                <foreach collection="franchiseeIds" item="itemId" separator="," open="AND `franchisee_id` IN (" close=")">
+                    #{itemId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY `update_time` DESC
+    </select>
+</mapper>

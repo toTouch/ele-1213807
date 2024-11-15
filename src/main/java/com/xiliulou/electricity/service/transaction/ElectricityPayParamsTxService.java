@@ -24,7 +24,7 @@ public interface ElectricityPayParamsTxService {
      * @author caobotao.cbt
      * @date 2024/6/13 10:24
      */
-    void delete(Long id, Integer tenantId);
+    void delete(Integer id, Integer tenantId);
     
     /**
      * 更新事务

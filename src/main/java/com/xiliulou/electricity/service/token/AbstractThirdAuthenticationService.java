@@ -83,8 +83,6 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
     
     public SecurityUser login(LoginModel loginModel) {
         
-        TtlTraceIdSupport.set();
-        
         Integer tenantId = TenantContextHolder.getTenantId();
         
         try {
@@ -131,8 +129,6 @@ public abstract class AbstractThirdAuthenticationService implements ThirdAuthent
         } catch (Exception e) {
             log.warn("AbstractThirdAuthenticationService.login Exception:", e);
             throw new AuthenticationServiceException("系统异常！");
-        } finally {
-            TtlTraceIdSupport.clear();
         }
     }
     
