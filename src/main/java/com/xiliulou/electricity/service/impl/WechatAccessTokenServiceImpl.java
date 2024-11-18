@@ -34,9 +34,6 @@ public class WechatAccessTokenServiceImpl extends AbstractWechatStableAccessToke
     @Autowired
     private RedisService redisService;
     
-    public WechatAccessTokenServiceImpl(WechatAccessTokenProperties wechatAccessTokenProperties, WechatAccessTokenService wechatAccessTokenService) {
-        super(wechatAccessTokenProperties, wechatAccessTokenService);
-    }
     
     @Override
     public Pair<Boolean, Object> getAccessToken(String appId, String secret) {
