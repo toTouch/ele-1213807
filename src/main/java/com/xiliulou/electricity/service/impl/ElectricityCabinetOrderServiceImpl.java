@@ -2039,12 +2039,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(userBatteryTypeList));
             }
-        }
-        
-        // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
-        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-            commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
-            commandData.put("newBatteryModelNameList", JsonUtil.toJson(userBatteryTypeList));
+            
+            // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
+                commandData.put("newBatteryModelNameList", JsonUtil.toJson(userBatteryTypeList));
+            }
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
@@ -2485,12 +2485,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
             }
-        }
-        
-        // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
-        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-            commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
-            commandData.put("newBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
+            
+            // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
+                commandData.put("newBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
+            }
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
@@ -3298,12 +3298,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 commandData.put("multiBatteryModelName", Objects.isNull(lastElectricityBattery) ? "UNKNOWN" : lastElectricityBattery.getModel());
                 commandData.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
             }
-        }
-        
-        // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
-        if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
-            commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
-            commandData.put("newBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
+            
+            // 灵活续费相关，经过前面的型号校验，如果返回了旧电池型号，那么本次换电一定在做电池交换，需要重新设置命令
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                commandData.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
+                commandData.put("newBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
+            }
         }
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + ":" + electricityCabinetOrder.getOrderId())
