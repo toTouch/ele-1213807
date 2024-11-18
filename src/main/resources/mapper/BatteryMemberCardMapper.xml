@@ -629,7 +629,7 @@
     
     <!--根据条件查询企业渠道套餐信息-->
     <select id="selectMemberCardsByEnterprise" resultMap="BatteryMemberCardTypePageMap">
-        select
+        select distinct
         bmc.id,
         bmc.name,
         bmc.deposit,

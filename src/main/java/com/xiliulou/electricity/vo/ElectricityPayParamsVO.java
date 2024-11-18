@@ -3,6 +3,7 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -115,4 +116,13 @@ public class ElectricityPayParamsVO implements Serializable {
      * 加盟商名称
      */
     private String franchiseeName;
+    
+    
+    /**
+     * 微信凭证类型
+     *
+     * @see ElectricityPayParamsCertTypeEnum
+     */
+    private Integer certType;
+    
 }

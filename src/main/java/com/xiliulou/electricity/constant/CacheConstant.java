@@ -846,6 +846,14 @@ public interface CacheConstant {
     
     String BATTERY_DEPOSIT_REFUND_AUDIT_LOCK_KEY = "saas_ele:battery_deposit_refund:%s";
 
+    // 微信支付公钥缓存
+    
+    String WX_PUBLIC_KEY_CACHE_KEY = "saas_ele:wx_public_key:%s";
+    
+    String WX_PUBLIC_KEY_CACHE_KEY_TENANT = "saas_ele:wx_public_key_tenant:%s_%s";
+    
+    String WX_PUBLIC_KEY_LOCK_KEY_FRANCHISEE = "saas_ele:wx_public_key_franchisee:%s_%s";
+    
     /**
      * 用户设备状态缓存
      */
