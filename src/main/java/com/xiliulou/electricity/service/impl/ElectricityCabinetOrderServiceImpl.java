@@ -1329,7 +1329,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
                 ExchangeUserSelectVo returnVo = pair.getRight();
                 if (Objects.equals(returnVo.getIsSatisfySelfOpen(), ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN) || Objects.equals(returnVo.getIsBatteryInCell(),
-                        ExchangeUserSelectVo.BATTERY_NOT_CELL) || Objects.equals(vo.getIsTheSameCabinet(), ExchangeUserSelectVo.NOT_SAME_CABINET)) {
+                        ExchangeUserSelectVo.BATTERY_NOT_CELL) || Objects.equals(returnVo.getIsTheSameCabinet(), ExchangeUserSelectVo.NOT_SAME_CABINET)) {
                     returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
                     returnVo.setOldVoltage(vo.getOldVoltage());
                     returnVo.setNewVoltage(vo.getNewVoltage());
