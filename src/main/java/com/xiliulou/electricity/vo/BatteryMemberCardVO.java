@@ -117,9 +117,14 @@ public class BatteryMemberCardVO {
     private Integer refundDepositeAudit;
     
     /**
-     * 服务费
+     * 套餐过期服务费
      */
     private BigDecimal serviceCharge;
+    
+    /**
+     * 套餐冻结服务费
+     */
+    private BigDecimal freezeServiceCharge;
     
     /**
      * 是否显示(0:显示,1:隐藏)
