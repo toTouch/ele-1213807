@@ -40,8 +40,11 @@ public class WechatAccessTokenServiceImpl extends AbstractWechatStableAccessToke
         
         if (wechatAccessTokenProperties.getEnableStable()) {
             // 开启稳定模式的token获取
+            log.info("getAccessToken by Stable appId:{}",appId);
             return super.getAccessToken(appId, secret);
         }
+    
+        log.info("getAccessToken appId:{}",appId);
         
         String accessToken;
         accessToken = redisService.get(WeChatConstant.ACCESS_TOKEN_KEY + appId);
