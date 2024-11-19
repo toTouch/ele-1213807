@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/12
+ *  Create date: 2024/6/12
  */
 
 package com.xiliulou.electricity.constant;
