@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,19 +60,20 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
             ElectricityConfig electricityConfig, UserInfo userInfo) {
         // 灵活续费押金校验
         Integer isEnableFlexibleRenewal = electricityConfig.getIsEnableFlexibleRenewal();
+        BigDecimal deposit = Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                : userBatteryDeposit.getBatteryDeposit();
         
         if (Objects.equals(isEnableFlexibleRenewal, FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode()) || Objects.equals(isEnableFlexibleRenewal,
                 FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode())) {
             
             // 必须修改为灵活续费之后才去判断大小，避免isEnableFlexibleRenewal为null时逻辑错误
-            if (Objects.isNull(userBatteryDeposit) || Objects.isNull(userBatteryDeposit.getBatteryDeposit())
-                    || memberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) > 0) {
+            if (Objects.isNull(deposit) || memberCard.getDeposit().compareTo(deposit) > 0) {
                 log.info("FLEXIBLE RENEWAL INFO! normal renewal deposit do not match! uid={}", userInfo.getUid());
                 return false;
             }
         } else {
             // 灵活续费关闭状态
-            if (!Objects.equals(userBatteryDeposit.getBatteryDeposit(), memberCard.getDeposit())) {
+            if (!Objects.equals(deposit, memberCard.getDeposit())) {
                 log.info("FLEXIBLE RENEWAL INFO! flexible renewal deposit do not match! uid={}", userInfo.getUid());
                 return false;
             }

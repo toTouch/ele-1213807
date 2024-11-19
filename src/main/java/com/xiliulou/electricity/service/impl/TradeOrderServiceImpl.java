@@ -1745,7 +1745,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
      */
     private Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee, UserInfo userInfo) {
         // 非灵活续费，押金必须相等，新旧型号加盟商都必须校验押金
-        if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || userBatteryDeposit.getBatteryDeposit().compareTo(memberCard.getDeposit()) != 0) {
+        BigDecimal deposit = Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
+        if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || deposit.compareTo(memberCard.getDeposit()) != 0) {
             log.info("BATTERY DEPOSIT INFO! deposit do not match. uid={}", userInfo.getUid());
             return Boolean.FALSE;
         }
