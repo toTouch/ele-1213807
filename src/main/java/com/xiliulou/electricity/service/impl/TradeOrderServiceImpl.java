@@ -377,13 +377,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "302003", "运营商配置异常，请联系客服");
             }
             
-            // 灵活续费电池型号及押金校验
-            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, null, electricityConfig);
-            if (!matchOrNot) {
-                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
-            }
-            
             // 押金订单
             Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, batteryMemberCard, electricityCabinet, payParamConfig);
             if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
@@ -680,9 +673,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "302003", "运营商配置异常，请联系客服");
             }
             
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+            }
+            
             // 灵活续费电池型号及押金校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit);
+            boolean matchOrNot = checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, franchisee);
             if (!matchOrNot) {
                 return Triple.of(false, "301031", "该套餐暂不支持购买，请重新选择");
             }
@@ -1745,10 +1743,15 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     /**
      * 校验用户绑定的电池型号和要购买的套餐是否匹配
      */
-    private Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit) {
-        // 非灵活续费，押金必须相等
+    private Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee) {
+        // 非灵活续费，押金必须相等，新旧型号加盟商都必须校验押金
         if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || userBatteryDeposit.getBatteryDeposit().compareTo(memberCard.getDeposit()) != 0) {
             return Boolean.FALSE;
+        }
+        
+        // 不分型号加盟商不校验灵活续费电池型号
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            return Boolean.TRUE;
         }
         
         List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
