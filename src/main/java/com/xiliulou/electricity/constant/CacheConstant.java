@@ -832,6 +832,11 @@ public interface CacheConstant {
     String CACHE_INSTALLMENT_AGREEMENT_PAY_NOTIFY_LOCK = "installment:agreement_pay_notify_lock:%d";
     
     /**
+     * 各类型套餐申请冻结锁，防止并发导致冻结次数超过限制
+     */
+    String CACHE_PACKAGE_FREEZE_COUNT_LOCK = "cache_package_freeze_count_lock:%d";
+    
+    /**
      * 设备信息缓存
      */
     String CACHE_DEVICE_CODE = "cache_device_code:";

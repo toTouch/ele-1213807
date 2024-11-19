@@ -42,4 +42,22 @@ public interface UserInfoExtraService {
     Triple<Boolean, String, String> isLimitPurchase(Long uid, Integer tenantId);
     
     R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds);
+    
+    /**
+     * 校验用户端申请冻结时，申请冻结次数是否符合配置，方法内会利用申请冻结的用户uid加锁3秒，防止并发导致超出限制
+     *
+     * @param tenantId 租户id
+     * @param uid      申请冻结用户uid
+     * @return 校验结果
+     */
+    R<Object> checkFreezeCount(Integer tenantId, Long uid);
+    
+    /**
+     * 增加或减少用户套餐冻结次数，
+     *
+     * @param uid  申请冻结用户uid
+     * @param type 操作类型，传递常量UserInfoExtraConstant.ADD_FREEZE_COUNT或UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT
+     * @return 执行结果
+     */
+    R<Object> changeFreezeCountForUser(Long uid, Integer type);
 }
