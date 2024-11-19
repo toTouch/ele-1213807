@@ -2035,7 +2035,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         freezeEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
         freezeEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         freezeEntity.setResidue(residue);
-        freezeEntity.setLateFee(packageOrderEntity.getLateFee());
+        freezeEntity.setLateFee(packageOrderEntity.getFreezeLateFee());
         freezeEntity.setApplyTerm(applyTerm);
         freezeEntity.setApplyReason(applyReason);
         freezeEntity.setApplyTime(System.currentTimeMillis());
@@ -2065,7 +2065,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageOrderSlippagePo buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageOrderPo packageOrderEntity, Long nowTime) {
         // 初始化标识
         boolean createFlag = false;
-        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
+        if (ObjectUtils.isEmpty(packageOrderEntity.getFreezeLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getFreezeLateFee()) >= 0) {
             // 不收取滞纳金
             return null;
         }
@@ -2100,7 +2100,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
         slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
-        slippageEntity.setLateFee(packageOrderEntity.getLateFee());
+        slippageEntity.setLateFee(packageOrderEntity.getFreezeLateFee());
         slippageEntity.setLateFeeStartTime(nowTime);
         slippageEntity.setPayState(PayStateEnum.UNPAID.getCode());
         slippageEntity.setTenantId(packageOrderEntity.getTenantId());
