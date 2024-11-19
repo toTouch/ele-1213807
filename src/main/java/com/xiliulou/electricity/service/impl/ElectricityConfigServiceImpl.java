@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.entity.AlipayAppConfig;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallConfig;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.MeiTuanRiderMallEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
@@ -45,6 +47,7 @@ import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,44 +123,44 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
-        //用户
+        // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        //操作频繁
+        // 操作频繁
         boolean result = redisService.setNx(CacheConstant.ELE_CONFIG_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         
-        //实名审核方式若为人脸核身
+        // 实名审核方式若为人脸核身
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsManualReview(), ElectricityConfig.FACE_REVIEW)) {
-            //是否购买资源包
+            // 是否购买资源包
             FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
             if (Objects.isNull(faceRecognizeData)) {
                 return R.fail("100334", "未购买人脸核身资源包，请联系管理员");
             }
             
-            //资源包是否可用
+            // 资源包是否可用
             if (faceRecognizeData.getFaceRecognizeCapacity() <= 0) {
                 return R.fail("100335", "人脸核身资源包余额不足，请充值");
             }
         }
         
-        //若开启免押
+        // 若开启免押
         if (Objects.nonNull(electricityConfigAddAndUpdateQuery.getFreeDepositType()) && !Objects.equals(electricityConfigAddAndUpdateQuery.getFreeDepositType(),
                 ElectricityConfig.FREE_DEPOSIT_TYPE_DEFAULT)) {
-            //检查免押配置
+            // 检查免押配置
             PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
                 return R.fail("100400", "免押功能未配置相关信息");
             }
         }
         
-        //若开启签名功能，需要检查签名相关信息是否已经配置
+        // 若开启签名功能，需要检查签名相关信息是否已经配置
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)) {
             EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
             if (Objects.isNull(eleEsignConfig) || StringUtils.isBlank(eleEsignConfig.getAppId()) || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
@@ -229,7 +232,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return R.ok();
         }
         
-        //如果选仓换电的配置有更新，则需要更新redis缓存
+        // 如果选仓换电的配置有更新，则需要更新redis缓存
         Integer selectionExchangeDB = electricityConfig.getIsSelectionExchange();
         Integer selectionExchangeUpdate = electricityConfigAddAndUpdateQuery.getIsSelectionExchange();
         if (Objects.nonNull(selectionExchangeDB) && !Objects.equals(selectionExchangeDB, selectionExchangeUpdate)) {
@@ -307,7 +310,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         
         TenantConfigVO tenantConfigVO = new TenantConfigVO();
         
-        //根据appId获取租户id
+        // 根据appId获取租户id
         ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
         if (Objects.isNull(electricityPayParams)) {
             log.warn("ELE WARN! not found tenant,appId={}", appId);
@@ -315,15 +318,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         }
         Integer tenantId = electricityPayParams.getTenantId();
         
-        //获取租户配置信息
+        // 获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
         
-        //获取租户模板id
+        // 获取租户模板id
         List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, ChannelEnum.WECHAT.getCode());
         tenantConfigVO.setTemplateConfigList(templateConfigList);
         
-        //获取客服电话
+        // 获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
         tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
@@ -360,15 +363,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             channel = ChannelEnum.ALIPAY.getCode();
         }
         
-        //获取租户配置信息
+        // 获取租户配置信息
         ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
         BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
         
-        //获取租户模板id
+        // 获取租户模板id
         List<String> templateConfigList = templateConfigService.queryTemplateIdByTenantIdChannel(tenantId, channel);
         tenantConfigVO.setTemplateConfigList(templateConfigList);
         
-        //获取客服电话
+        // 获取客服电话
         String servicePhone = userService.selectServicePhone(tenantId);
         tenantConfigVO.setServicePhone(servicePhone);
         tenantConfigVO.setServicePhones(servicePhoneService.listPhones(tenantId));
@@ -377,36 +380,37 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         return tenantConfigVO;
     }
     
+    @Slave
     @Override
-    public Boolean checkFreezeAutoReview(Integer tenantId, Integer days) {
+    public Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid) throws BizException{
+        Boolean autoReviewOrNot = Boolean.TRUE;
         ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
-        if (Objects.isNull(electricityConfig) || electricityConfig.getFreezeAutoReviewDays() == 0 || electricityConfig.getFreezeAutoReviewDays() < days) {
-            return Boolean.FALSE;
-        }
         
-        return Boolean.TRUE;
-    }
-    
-    @Override
-    public R<Object> checkFreeCountAndDays(Integer tenantId, Integer count, Integer days) {
-        ElectricityConfig electricityConfig = queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig)) {
-            return R.fail("301031", "未找到租户配置信息");
+            throw new BizException("301031", "未找到租户配置信息");
         }
         
-        if (Objects.equals(electricityConfig.getPackageFreezeCount(), 0)) {
-            if (days > ElectricityConfig.FREEZE_DAYS_MAX) {
-                return R.fail("301033", "超出每次最长天数，请修改");
+        // 校验是否可以自动审核
+        if (Objects.isNull(electricityConfig.getFreezeAutoReviewDays()) || electricityConfig.getFreezeAutoReviewDays() == 0
+                || electricityConfig.getFreezeAutoReviewDays() < days) {
+            log.info("FREEZE AUTO REVIEW CHECK！can not auto review. uid={}", uid);
+            autoReviewOrNot = Boolean.FALSE;
+        }
+        
+        // 校验申请冻结的天数是否合规
+        if (Objects.isNull(electricityConfig.getPackageFreezeDays()) || Objects.isNull(electricityConfig.getPackageFreezeCount()) || Objects.equals(
+                electricityConfig.getPackageFreezeCount(), 0)) {
+            if (Objects.isNull(days) || days > ElectricityConfig.FREEZE_DAYS_MAX) {
+                log.info("FREEZE DAYS CHECK！can not auto review. uid={}", uid);
+                throw new BizException("301033", "超出每次最长天数，请修改");
             }
         } else {
-            if (count >= electricityConfig.getPackageFreezeCount()) {
-                return R.fail("301032", "冻结次数已用完，请稍后再试");
-            }
-            if (days > electricityConfig.getPackageFreezeDays()) {
-                return R.fail("301033", "超出每次最长天数，请修改");
+            if (Objects.isNull(days) || days > electricityConfig.getPackageFreezeDays()) {
+                throw new BizException("301033", "超出每次最长天数，请修改");
             }
         }
-        return R.ok();
+        
+        return autoReviewOrNot;
     }
     
     @Override

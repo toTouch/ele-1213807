@@ -40,7 +40,6 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.EleUserOperateRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -85,8 +84,6 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMappe
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.mq.producer.MessageSendProducer;
-import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -144,6 +141,7 @@ import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
@@ -153,13 +151,9 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
-import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -172,7 +166,6 @@ import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.CouponSearchVo;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardInfoVO;
 import com.xiliulou.mq.service.RocketMqService;
@@ -447,6 +440,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     private InstallmentRecordService installmentRecordService;
+    
+    @Autowired
+    private UserInfoExtraService userInfoExtraService;
     
     /**
      * 根据用户ID查询对应状态的记录
@@ -775,8 +771,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 校验申请冻结次数与申请天数是否符合租户配置
-        Integer recordCount = eleDisableMemberCardRecordService.countDisabledRecordThisMonth(userInfo.getUid());
-        R<Object> checkR = electricityConfigService.checkFreeCountAndDays(userInfo.getTenantId(), recordCount, disableCardDays);
+        R<Object> checkR = userInfoExtraService.checkFreezeCount(userInfo.getTenantId(), userInfo.getUid());
         if (!checkR.isSuccess()) {
             return checkR;
         }
@@ -871,7 +866,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("120308", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
         }
         
-        Boolean autoReviewOrNot = electricityConfigService.checkFreezeAutoReview(userInfo.getTenantId(), disableCardDays);
+        Boolean autoReviewOrNot = electricityConfigService.checkFreezeAutoReviewAndDays(userInfo.getTenantId(), disableCardDays, userInfo.getUid());
         
         String generateOrderId = generateOrderId(user.getUid());
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId)

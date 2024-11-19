@@ -26,6 +26,7 @@ import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.UserInfoActivitySourceEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
@@ -62,6 +63,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -230,7 +234,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        //根据商户等级&套餐id获取返利套餐
+        // 根据商户等级&套餐id获取返利套餐
         RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(memberCardId, merchantLevel.getLevel());
         if (Objects.isNull(rebateConfig)) {
             log.warn("BIND MERCHANT WARN!rebateConfig is null,merchantId={},uid={},level={}", merchantJoinRecord.getMerchantId(), uid, merchantLevel.getLevel());
@@ -260,7 +264,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return;
         }
         
-        //邀请有效期内
+        // 邀请有效期内
         if (merchantAttrService.checkInvitationTime(merchantAttr, merchantJoinRecord.getStartTime())) {
             UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
             userInfoExtraUpdate.setUid(uid);
@@ -384,7 +388,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     public R modifyInviter(MerchantModifyInviterUpdateRequest merchantModifyInviterUpdateRequest, Long operator, List<Long> franchiseeIds) {
         Long uid = merchantModifyInviterUpdateRequest.getUid();
         
-        //操作频繁
+        // 操作频繁
         boolean result = redisService.setNx(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid, "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -551,22 +555,22 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         
         // 保护期过期时间
         long protectionExpireTime = nowTime;
-        //分钟转毫秒
+        // 分钟转毫秒
         if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
             protectionExpireTime += protectionTime * TimeConstant.MINUTE_MILLISECOND;
         }
-        //小时转毫秒
+        // 小时转毫秒
         if (Objects.equals(protectionTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
             protectionExpireTime += protectionTime * TimeConstant.HOURS_MILLISECOND;
         }
         
         // 参与有效期过期时间
         long expiredTime = nowTime;
-        //分钟转毫秒
+        // 分钟转毫秒
         if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_MINUTES)) {
             expiredTime += validTime * TimeConstant.MINUTE_MILLISECOND;
         }
-        //小时转毫秒
+        // 小时转毫秒
         if (Objects.equals(validTimeUnit, CommonConstant.TIME_UNIT_HOURS)) {
             expiredTime += validTime * TimeConstant.HOURS_MILLISECOND;
         }
@@ -610,7 +614,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (Objects.isNull(electricityConfig.getEleLimitCount())) {
             return Triple.of(false, null, null);
         }
-    
+        
         if (countOnlineOrder(packageList) >= electricityConfig.getEleLimitCount()) {
             return Triple.of(true, "120151", "您已购买了多个尚未使用的换电套餐，为保障您的资金安全，请联系客服后购买");
         }
@@ -625,12 +629,12 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (CollectionUtils.isEmpty(orderIdList)) {
             return count;
         }
-    
+        
         List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.queryListByOrderIds(orderIdList);
         if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
             return count;
         }
-    
+        
         for (ElectricityMemberCardOrder electricityMemberCardOrder : electricityMemberCardOrders) {
             if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT)) {
                 count++;
@@ -673,5 +677,90 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
         
         return R.ok(update);
+    }
+    
+    @Override
+    public R<Object> checkFreezeCount(Integer tenantId, Long uid) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig) || Objects.isNull(electricityConfig.getPackageFreezeCount())) {
+            return R.fail("301031", "未找到租户配置信息");
+        }
+        
+        boolean getLock = redisService.setNx(String.format(CacheConstant.CACHE_PACKAGE_FREEZE_COUNT_LOCK, uid), "1", 3 * 1000L, false);
+        if (!getLock) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+        
+        UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("CHECK FREEZE COUNT WARN! not found userInfo extra, uid={}", uid);
+            return R.fail("100247", "用户信息不存在");
+        }
+        
+        // 实时获取本月最小时间戳，判断记录版本是否过期
+        Long newMinTimeOfMonth = getMinTimeOfMonth();
+        if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
+            // 重置用户套餐冻结次数
+            setPackageFreezeCount(uid, newMinTimeOfMonth, 0);
+            return R.ok();
+        }
+        
+        if (!Objects.equals(electricityConfig.getPackageFreezeCount(), 0) && userInfoExtra.getPackageFreezeCount() >= electricityConfig.getPackageFreezeCount()) {
+            return R.fail("301032", "冻结次数已用完，请稍后再试");
+        }
+        return R.ok();
+    }
+    
+    @Override
+    public R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException {
+        UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("CHANGE FREEZE COUNT FOR USER WARN! not found userInfo extra, uid={}", uid);
+            return R.fail("100247", "用户信息不存在");
+        }
+        
+        // 实时获取本月最小时间戳，判断记录版本是否过期
+        Long newMinTimeOfMonth = getMinTimeOfMonth();
+        if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
+            
+            // 冻结记录版本过期时，增加和扣减场景下需要重置的次数不一样
+            int count;
+            if (Objects.equals(type, UserInfoExtraConstant.ADD_FREEZE_COUNT)) {
+                count = 1;
+            } else if (Objects.equals(type, UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT)) {
+                count = 0;
+            } else {
+                throw new BizException("操作类型错误");
+            }
+            
+            setPackageFreezeCount(uid, newMinTimeOfMonth, count);
+            return R.ok();
+        }
+        
+        int count;
+        if (Objects.equals(type, UserInfoExtraConstant.ADD_FREEZE_COUNT)) {
+            count = userInfoExtra.getPackageFreezeCount() + 1;
+        } else if (Objects.equals(type, UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT)) {
+            count = userInfoExtra.getPackageFreezeCount() - 1;
+        } else {
+            throw new BizException("操作类型错误");
+        }
+        setPackageFreezeCount(uid, null, count);
+        return R.ok();
+    }
+    
+    private Long getMinTimeOfMonth() {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
+        ZonedDateTime firstDayOfMonth = now.with(TemporalAdjusters.firstDayOfMonth()).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        return firstDayOfMonth.toInstant().toEpochMilli();
+    }
+    
+    private void setPackageFreezeCount(Long uid, Long newMinTimeOfMonth, Integer count) {
+        UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
+        userInfoExtraUpdate.setUid(uid);
+        userInfoExtraUpdate.setMinTimeOfMonth(newMinTimeOfMonth);
+        userInfoExtraUpdate.setPackageFreezeCount(count);
+        userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
+        updateByUid(userInfoExtraUpdate);
     }
 }

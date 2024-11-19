@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ElectricityConfigWxCustomerQuery;
 import com.xiliulou.electricity.vo.TenantConfigVO;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 
@@ -38,17 +39,9 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
      *
      * @param tenantId 租户id
      * @param days     申请冻结天数
-     * @return true-可自动审核，false-需人工审核
+     * @param uid      申请冻结用户uid
+     * @return 自动审核校验结果，true-自动审核，false-人工审核
+     * 若捕获到BizException，直接将其code、message组合成失败结果返回给前端即可
      */
-    Boolean checkFreezeAutoReview(Integer tenantId, Integer days);
-    
-    /**
-     * 校验用户端申请冻结时，申请冻结次数与天数是否符合配置
-     *
-     * @param tenantId 租户id
-     * @param count    本月内申请冻结次数，为审核通过的冻结记录数量
-     * @param days     被校验的冻结申请的冻结天数
-     * @return 校验结果
-     */
-    R<Object> checkFreeCountAndDays(Integer tenantId, Integer count, Integer days);
+    Boolean checkFreezeAutoReviewAndDays(Integer tenantId, Integer days, Long uid);
 }

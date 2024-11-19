@@ -52,12 +52,4 @@ public interface EleDisableMemberCardRecordService {
      */
     R<Object> handleDisableMemberCard(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, EleDisableMemberCardRecord eleDisableMemberCardRecord, Franchisee franchisee,
             BatteryMemberCard batteryMemberCard, Boolean sendOperateRecordOrNot);
-    
-    /**
-     * 统计一个用户本月内申请冻结并通过的次数
-     *
-     * @param uid 用户uid
-     * @return 次数
-     */
-    Integer countDisabledRecordThisMonth(Long uid);
 }

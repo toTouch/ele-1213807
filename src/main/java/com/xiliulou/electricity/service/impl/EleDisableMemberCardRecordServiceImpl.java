@@ -37,6 +37,7 @@ import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
@@ -121,6 +122,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     
     @Resource
     private ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    private UserInfoExtraService userInfoExtraService;
     
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
@@ -218,8 +222,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
         
         // 校验申请冻结次数与申请天数是否符合租户配置
-        Integer recordCount = countDisabledRecordThisMonth(userInfo.getUid());
-        R<Object> checkR = electricityConfigService.checkFreeCountAndDays(userInfo.getTenantId(), recordCount, eleDisableMemberCardRecord.getChooseDays());
+        R<Object> checkR = userInfoExtraService.checkFreezeCount(userInfo.getTenantId(), userInfo.getUid());
         if (!checkR.isSuccess()) {
             return checkR;
         }
@@ -429,22 +432,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             sendUserOperateRecord(eleDisableMemberCardRecord, UserBatteryMemberCard.MEMBER_CARD_DISABLE);
         }
         return R.ok();
-    }
-    
-    @Slave
-    @Override
-    public Integer countDisabledRecordThisMonth(Long uid) {
-        // 获取当前日期
-        LocalDate today = LocalDate.now();
-        // 调整为当月第一天
-        LocalDate firstDayOfMonth = today.withDayOfMonth(1);
-        // 转换为当天的起始时间（午夜12点）
-        LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
-        // 结合系统默认时区，转换为带时区的日期时间
-        ZonedDateTime zonedDateTime = startOfMonth.atZone(ZoneId.systemDefault());
-        Long beginTime = zonedDateTime.toInstant().toEpochMilli();
-        
-        return eleDisableMemberCardRecordMapper.countDisabledRecordThisMonth(uid, beginTime);
     }
     
     
