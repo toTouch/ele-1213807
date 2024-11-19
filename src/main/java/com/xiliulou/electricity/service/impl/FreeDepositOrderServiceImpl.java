@@ -1664,7 +1664,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         
         // 灵活续费相关电池型号校验
-        Boolean checkBatteryTypes = checkBatteryTypes(query.getFlexibleRenewal(), uid, batteryMemberCard, userBatteryDeposit, electricityConfig);
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        boolean checkBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig, userInfo);
         if (!checkBatteryTypes) {
             return Objects.isNull(query.getFlexibleRenewal()) ? Triple.of(false, "301029", "请联系管理员升级最新版本小程序")
                     : Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
@@ -2506,33 +2507,5 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return freeDepositVO;
         }
         return null;
-    }
-    
-    private Boolean checkBatteryTypes(Integer flexibleRenewal, Long uid, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, ElectricityConfig electricityConfig) {
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
-        
-        if (Objects.equals(flexibleRenewal, FreeDepositConstant.FLEXIBLE_RENEWAL)) {
-            return memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, memberCard, userBatteryDeposit, electricityConfig);
-        } else {
-            // 非灵活续费，押金必须相等
-            if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit())
-                    || userBatteryDeposit.getBatteryDeposit().compareTo(memberCard.getDeposit()) != 0) {
-                return Boolean.FALSE;
-            }
-            
-            List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
-            
-            // 用户绑定的型号为空，要么单型号，要么初次购买，加盟商隔离无法从单型号续费多型号
-            if (CollectionUtils.isEmpty(userBatteryTypes)) {
-                return Boolean.TRUE;
-            } else {
-                
-                if (CollectionUtils.isEmpty(memberCardBatteryTypes)) {
-                    return Boolean.FALSE;
-                } else {
-                    return CollectionUtils.containsAll(memberCardBatteryTypes, userBatteryTypes);
-                }
-            }
-        }
     }
 }

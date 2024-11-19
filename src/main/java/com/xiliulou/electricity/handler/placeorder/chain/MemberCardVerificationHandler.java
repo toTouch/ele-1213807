@@ -134,7 +134,7 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             
             // 灵活续费押金及电池型号校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig);
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig, userInfo);
             if (!matchOrNot) {
                 log.warn("PLACE ORDER WARN! deposit or batteryTypes not match,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
                 throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");

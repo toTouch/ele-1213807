@@ -680,7 +680,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             // 灵活续费电池型号及押金校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, franchisee);
+            boolean matchOrNot = checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, franchisee, userInfo);
             if (!matchOrNot) {
                 return Triple.of(false, "301031", "该套餐暂不支持购买，请重新选择");
             }
@@ -1743,14 +1743,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     /**
      * 校验用户绑定的电池型号和要购买的套餐是否匹配
      */
-    private Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee) {
+    private Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee, UserInfo userInfo) {
         // 非灵活续费，押金必须相等，新旧型号加盟商都必须校验押金
         if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || userBatteryDeposit.getBatteryDeposit().compareTo(memberCard.getDeposit()) != 0) {
+            log.info("BATTERY DEPOSIT INFO! deposit do not match. uid={}", userInfo.getUid());
             return Boolean.FALSE;
         }
         
         // 不分型号加盟商不校验灵活续费电池型号
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            log.info("BATTERY DEPOSIT INFO! old model type franchisee. uid={}", userInfo.getUid());
             return Boolean.TRUE;
         }
         
@@ -1758,10 +1760,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 用户绑定的型号为空，要么单型号，要么初次购买，加盟商隔离无法从单型号续费多型号
         if (CollectionUtils.isEmpty(userBatteryTypes)) {
+            log.info("BATTERY DEPOSIT INFO! first time to buy. uid={}", userInfo.getUid());
             return Boolean.TRUE;
         } else {
             
             if (CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+                log.info("BATTERY DEPOSIT INFO! memberCardBatteryTypes is null. uid={}", userInfo.getUid());
                 return Boolean.FALSE;
             } else {
                 return CollectionUtils.containsAll(memberCardBatteryTypes, userBatteryTypes);

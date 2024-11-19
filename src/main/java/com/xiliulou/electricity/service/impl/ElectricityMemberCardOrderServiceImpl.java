@@ -3086,12 +3086,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "302003", "运营商配置异常，请联系客服");
         }
         
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, null, electricityConfig);
-        if (!matchOrNot) {
-            return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
-        }
-        
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
@@ -3306,7 +3300,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, electricityConfig);
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, electricityConfig, userInfo);
         if (!matchOrNot) {
             return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
         }
