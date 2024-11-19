@@ -356,8 +356,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean insertPackage(CarRentalPackageOptModel optModel) {
-        if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName()) || !BasicEnum.isExist(optModel.getType(),
-                RentalPackageTypeEnum.class)) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName()) || !BasicEnum
+                .isExist(optModel.getType(), RentalPackageTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         
@@ -479,6 +479,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());
         batteryMemberCardEntity.setFreeDeposite(entity.getFreeDeposit());
         batteryMemberCardEntity.setServiceCharge(entity.getLateFee());
+        // 冻结滞纳金
+        batteryMemberCardEntity.setFreezeServiceCharge(entity.getFreezeLateFee());
         batteryMemberCardEntity.setRemark(entity.getRemark());
         batteryMemberCardEntity.setBusinessType(BatteryMemberCard.BUSINESS_TYPE_BATTERY_CAR);
         batteryMemberCardEntity.setDelFlag(DelFlagEnum.OK.getCode());
@@ -593,8 +595,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             carRentalPackageVo.setCouponIds(couponIds);
             
             if (!CollectionUtils.isEmpty(collect)) {
-                CarCouponVO couponVO = collect.stream().filter(c->Objects.equals(c.getDiscountType(),Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponVO::getAmount)).orElse(collect.get(0));
-                if (Objects.nonNull(couponVO)){
+                CarCouponVO couponVO = collect.stream().filter(c -> Objects.equals(c.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponVO::getAmount))
+                        .orElse(collect.get(0));
+                if (Objects.nonNull(couponVO)) {
                     carRentalPackageVo.setCouponName(couponVO.getName());
                     carRentalPackageVo.setGiveCouponAmount(couponVO.getAmount());
                     carRentalPackageVo.setCouponId(couponVO.getId());

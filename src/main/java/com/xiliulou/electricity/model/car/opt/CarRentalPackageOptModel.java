@@ -194,6 +194,13 @@ public class CarRentalPackageOptModel implements Serializable {
      */
     private BigDecimal lateFee;
     
+    
+    
+    /**
+     * 冻结滞纳金
+     */
+    private BigDecimal freezeLateFee;
+    
     /**
      * 套餐限制
      * <pre>

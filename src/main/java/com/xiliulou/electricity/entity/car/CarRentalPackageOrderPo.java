@@ -160,6 +160,11 @@ public class CarRentalPackageOrderPo extends BasicCarPo {
     private BigDecimal lateFee;
     
     /**
+     * 冻结滞纳金
+     */
+    private BigDecimal freezeLateFee;
+    
+    /**
      * 交易方式
      * <pre>
      *     1-线上
