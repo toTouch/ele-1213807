@@ -1992,38 +1992,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
     
     
-    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildFreezeEntityMessageNotify(UserInfo userInfo) {
-        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
-        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.warn("FREEZE ENTITY WARN! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
-            return Collections.EMPTY_LIST;
-        }
-        
-        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD) != MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD) {
-            log.info("FREEZE ENTITY INFO! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(), userInfo.getUid());
-            return Collections.EMPTY_LIST;
-        }
-        
-        List<String> phones = JsonUtil.fromJsonArray(notifyConfig.getPhones(), String.class);
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
-            log.warn("FREEZE ENTITY WARN! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
-            return Collections.EMPTY_LIST;
-        }
-        
-        return phones.parallelStream().map(item -> {
-            AuthenticationAuditMessageNotify messageNotify = new AuthenticationAuditMessageNotify();
-            messageNotify.setBusinessCode(StringUtils.isBlank(userInfo.getIdNumber()) ? "/" : userInfo.getIdNumber().substring(userInfo.getIdNumber().length() - 6));
-            messageNotify.setUserName(userInfo.getName());
-            messageNotify.setAuthTime(DateUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN));
-            
-            MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
-            authMessageNotifyCommon.setTime(System.currentTimeMillis());
-            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_DISABLE_MEMBER_CARD);
-            authMessageNotifyCommon.setPhone(item);
-            authMessageNotifyCommon.setData(messageNotify);
-            return authMessageNotifyCommon;
-        }).collect(Collectors.toList());
-    }
+    
     
     /**
      * 冻结套餐，最终TX事务保存落库<br /> 非对外
