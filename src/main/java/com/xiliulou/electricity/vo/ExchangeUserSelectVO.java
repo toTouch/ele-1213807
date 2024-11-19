@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExchangeUserSelectVo {
+public class ExchangeUserSelectVO {
     
     /**
      * 是否进入多次换电，1是，0否，前端根据这个字段判断是否弹窗

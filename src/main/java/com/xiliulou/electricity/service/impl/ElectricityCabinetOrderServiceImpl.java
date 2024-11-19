@@ -102,7 +102,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ExchangeOrderMsgShowVO;
 import com.xiliulou.electricity.vo.ExchangeUnFinishOrderVo;
-import com.xiliulou.electricity.vo.ExchangeUserSelectVo;
+import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -1259,6 +1259,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 判断用户信息
         Long uid = SecurityUtils.getUid();
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
         
         // 校验用户状态
         Triple<Boolean, String, Object> userStatus = verifyUserStatus(userInfo);
@@ -1270,6 +1273,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig.getIsSelectionExchange()) || Objects.equals(electricityConfig.getIsSelectionExchange(),
                 SelectionExchageEunm.DISABLE_SELECTION_EXCHANGE.getCode())) {
+            log.info("SelectionExchangeCheck EXCHANGE ORDER INFO! SelectionExchangeCheck is closed. uid={}", userInfo.getUid());
             return Triple.of(false, "100551", "选仓换电开关已关闭");
         }
         
@@ -1313,7 +1317,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 查询用户绑定的电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
         // 判断用户绑定的电池与当前正在使用的套餐，电池型号是否匹配，返回是否需要进行灵活续费后的电池转换
         Triple<Boolean, String, Object> checkFlexibleRenewal = checkFlexibleRenewal(vo, electricityBattery, userInfo);
         if (!checkFlexibleRenewal.getLeft()) {
@@ -1323,13 +1327,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 多次换电拦截
         if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
             LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).build();
-            Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
+            Pair<Boolean, ExchangeUserSelectVO> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
                     OrderCheckEnum.CHECK.getCode());
             if (pair.getLeft()) {
                 // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
-                ExchangeUserSelectVo returnVo = pair.getRight();
-                if (Objects.equals(returnVo.getIsSatisfySelfOpen(), ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN) || Objects.equals(returnVo.getIsBatteryInCell(),
-                        ExchangeUserSelectVo.BATTERY_NOT_CELL) || Objects.equals(returnVo.getIsTheSameCabinet(), ExchangeUserSelectVo.NOT_SAME_CABINET)) {
+                ExchangeUserSelectVO returnVo = pair.getRight();
+                if (Objects.equals(returnVo.getIsSatisfySelfOpen(), ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN) || Objects.equals(returnVo.getIsBatteryInCell(),
+                        ExchangeUserSelectVO.BATTERY_NOT_CELL) || Objects.equals(returnVo.getIsTheSameCabinet(), ExchangeUserSelectVO.NOT_SAME_CABINET)) {
                     returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
                     returnVo.setOldVoltage(vo.getOldVoltage());
                     returnVo.setNewVoltage(vo.getNewVoltage());
@@ -1340,14 +1344,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         // 如果超过5分钟或者返回false，前端不进行弹窗
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
         return Triple.of(true, null, vo);
     }
     
     /**
      * @return Boolean=false继续走正常换电
      */
-    private Pair<Boolean, ExchangeUserSelectVo> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+    private Pair<Boolean, ExchangeUserSelectVO> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
             LessTimeExchangeDTO exchangeDTO, Integer code) {
         if (Objects.equals(exchangeDTO.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
             log.info("OrderV3 INFO! not same cabinet, normal exchange");
@@ -1385,7 +1389,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Pair<Boolean, ExchangeUserSelectVo> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityBattery electricityBattery,
+    private Pair<Boolean, ExchangeUserSelectVO> scanCabinetNotEqualOrderCabinetHandler(UserInfo userInfo, ElectricityBattery electricityBattery,
             ElectricityCabinetOrder lastOrder) {
         // 用户绑定的电池为空，走正常换电
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
@@ -1407,7 +1411,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("OrderV3 ERROR! lastOrder.cabinet is null, eid is {}", lastOrder.getElectricityCabinetId());
                 return Pair.of(false, null);
             }
-            ExchangeUserSelectVo vo = ExchangeUserSelectVo.builder().isTheSameCabinet(ExchangeUserSelectVo.NOT_SAME_CABINET).cabinetName(orderCabinet.getName()).build();
+            ExchangeUserSelectVO vo = ExchangeUserSelectVO.builder().isTheSameCabinet(ExchangeUserSelectVO.NOT_SAME_CABINET).cabinetName(orderCabinet.getName()).build();
             return Pair.of(true, vo);
         } else {
             return Pair.of(false, null);
@@ -1446,7 +1450,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return true;
     }
     
-    private Pair<Boolean, ExchangeUserSelectVo> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+    private Pair<Boolean, ExchangeUserSelectVO> lastExchangeSuccessHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
             UserInfo userInfo) {
         // 上次成功不可能为空
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
@@ -1454,18 +1458,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             throw new CustomBusinessException("上次换电成功，但是用户绑定电池为空");
         }
         
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
-        vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_SUCCESS);
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.ENTER_MORE_EXCHANGE);
+        vo.setLastExchangeIsSuccess(ExchangeUserSelectVO.LAST_EXCHANGE_SUCCESS);
         
         // 自主开仓条件校验
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
-            vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
+            vo.setIsSatisfySelfOpen(ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN);
             log.warn("OrderV3 WARN! lastExchangeSuccessHandler is not satisfySelfOpenCondition, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
-        vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+        vo.setIsSatisfySelfOpen(ExchangeUserSelectVO.IS_SATISFY_SELF_OPEN);
         vo.setCabinetName(cabinet.getName());
         vo.setOrderId(lastOrder.getOrderId());
         // 上一次成功，这次只能返回新仓门
@@ -1479,7 +1483,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 电池在仓，并且电池所在仓门=上个订单的新仓门
         if (Objects.nonNull(cabinetBox) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getNewCellNo())) {
             // 在仓内，分配上一个订单的新仓门
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_IN_CELL);
             // 如果是换电，才要后台自主开仓
             String sessionId = this.backSelfOpen(lastOrder.getNewCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
             vo.setSessionId(sessionId);
@@ -1487,17 +1491,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(true, vo);
         } else {
             // 没有在仓
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
             return Pair.of(true, vo);
         }
     }
     
     
-    private Pair<Boolean, ExchangeUserSelectVo> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
+    private Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
             UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.ENTER_MORE_EXCHANGE);
-        vo.setLastExchangeIsSuccess(ExchangeUserSelectVo.LAST_EXCHANGE_FAIL);
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.ENTER_MORE_EXCHANGE);
+        vo.setLastExchangeIsSuccess(ExchangeUserSelectVO.LAST_EXCHANGE_FAIL);
         
         String orderStatus = lastOrder.getOrderStatus();
         if (StrUtil.isEmpty(orderStatus)) {
@@ -1519,16 +1523,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Pair.of(false, null);
     }
     
-    private Pair<Boolean, ExchangeUserSelectVo> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo,
+    private Pair<Boolean, ExchangeUserSelectVO> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVO vo,
             ElectricityCabinet cabinet, UserInfo userInfo) {
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getNewCellNo(), ElectricityCabinetOrder.NEW_CELL)) {
             // 新仓门不满足开仓条件
-            vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
+            vo.setIsSatisfySelfOpen(ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN);
             log.warn("OrderV3 WARN!newCellOpenFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
-        vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+        vo.setIsSatisfySelfOpen(ExchangeUserSelectVO.IS_SATISFY_SELF_OPEN);
         vo.setCell(lastOrder.getNewCellNo());
         vo.setOrderId(lastOrder.getOrderId());
         
@@ -1536,7 +1540,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("OrderV3 WARN!newCellOpenFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 没有在仓，需要返回前端仓门号
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
             return Pair.of(true, vo);
         }
         
@@ -1552,8 +1556,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         // 用户绑定的电池状态是否为租借状态 && 用户绑定的电池在仓 & 电池所在的仓门=上个订单的旧仓门；开新仓门
         if (Objects.nonNull(cabinetBox) && Objects.nonNull(battery) && Objects.equals(battery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && StrUtil.isNotBlank(
                 cabinetBox.getCellNo()) && Objects.equals(Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_IN_CELL);
+            vo.setIsEnterTakeBattery(ExchangeUserSelectVO.ENTER_TAKE_BATTERY);
             vo.setCellType(CellTypeEnum.NEW_CELL.getCode());
             // 新仓门取电
             vo.setSessionId(this.openFullBatteryCellHandler(lastOrder, cabinet, lastOrder.getNewCellNo(), userBindingBatterySn, cabinetBox.getCellNo()));
@@ -1561,29 +1565,29 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(true, vo);
         } else {
             // 没有在仓，需要返回前端仓门号
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
             return Pair.of(true, vo);
         }
     }
     
-    private Pair<Boolean, ExchangeUserSelectVo> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVo vo,
+    private Pair<Boolean, ExchangeUserSelectVO> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVO vo,
             ElectricityCabinet cabinet, UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
         
         if (!this.isSatisfySelfOpenCondition(lastOrder, lastOrder.getOldCellNo(), ElectricityCabinetOrder.OLD_CELL)) {
             // 旧仓门不满足开仓条件
-            vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN);
+            vo.setIsSatisfySelfOpen(ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN);
             log.warn("OrderV3 WARN! oldCellCheckFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
         }
         
         vo.setOrderId(lastOrder.getOrderId());
-        vo.setIsSatisfySelfOpen(ExchangeUserSelectVo.IS_SATISFY_SELF_OPEN);
+        vo.setIsSatisfySelfOpen(ExchangeUserSelectVO.IS_SATISFY_SELF_OPEN);
         
         // 用户绑定电池为空，返回自主开仓
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("OrderV3 WARN!oldCellCheckFail.userBindingBatterySn  is null, uid is {}", lastOrder.getUid());
             // 不在仓，前端会自主开仓
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getOldCellNo());
             return Pair.of(true, vo);
         }
@@ -1604,8 +1608,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
             
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
-            vo.setIsEnterTakeBattery(ExchangeUserSelectVo.ENTER_TAKE_BATTERY);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_IN_CELL);
+            vo.setIsEnterTakeBattery(ExchangeUserSelectVO.ENTER_TAKE_BATTERY);
             vo.setCellType(CellTypeEnum.OLD_CELL.getCode());
             
             // 传递secondFlexibleRenewal时为第二次调用V3多次扫码，直接换电不作处理；校验灵活续费flexibleRenewalEnumCode 的值为 NORMAL 直接换电
@@ -1613,7 +1617,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 // 灵活续费为先退后租时自主开仓
                 if (Objects.equals(flexibleRenewalEnumCode, FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode())) {
                     backSelfOpen(lastOrder.getOldCellNo(), electricityBattery.getSn(), lastOrder, cabinet, "后台自助开仓");
-                    vo.setBeginSelfOpen(ExchangeUserSelectVo.BEGIN_SELF_OPEN);
+                    vo.setBeginSelfOpen(ExchangeUserSelectVO.BEGIN_SELF_OPEN);
                     vo.setCell(lastOrder.getOldCellNo());
                 } else {
                     checkFlexibleRenewal(vo, electricityBattery, userInfo);
@@ -1635,7 +1639,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Pair.of(true, vo);
         } else {
             // 不在仓，前端会自主开仓
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
             vo.setCell(lastOrder.getOldCellNo());
             return Pair.of(true, vo);
         }
@@ -1899,10 +1903,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("SelectExchangeTakeBattery WARN ! electricityBattery  is null, uid is {}", cabinetOrder.getUid());
-            vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
             return Triple.of(true, null, vo);
         }
         
@@ -1910,7 +1914,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String userBindingBatterySn = electricityBattery.getSn();
         String sessionId = this.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
                 cabinetOrder.getOldCellNo().toString());
-        vo.setIsBatteryInCell(ExchangeUserSelectVo.BATTERY_IN_CELL);
+        vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_IN_CELL);
         vo.setSessionId(sessionId);
         
         return Triple.of(true, null, vo);
@@ -2423,7 +2427,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNoV2(userInfo.getUid(), electricityCabinet.getId(),
                 electricityCabinet.getVersion());
         if (Boolean.FALSE.equals(usableEmptyCellNo.getLeft())) {
-            log.warn("ORDER WARN! There is no empty cell.");
+            log.warn("ORDER WARN! There is no empty cell. uid={}", userInfo.getUid());
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
@@ -3201,22 +3205,22 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange())
                         .secondFlexibleRenewal(orderQuery.getSecondFlexibleRenewal()).build();
-                Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
+                Pair<Boolean, ExchangeUserSelectVO> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
                         OrderCheckEnum.ORDER.getCode());
                 
                 // 二次扫码校验通过，非二次扫码时，实例化vo对象用于灵活续费校验，灵活续费校验也通过才能放行去直接换电
-                ExchangeUserSelectVo vo;
+                ExchangeUserSelectVO vo;
                 if (Objects.isNull(pair.getRight())) {
-                    vo = new ExchangeUserSelectVo();
-                    vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+                    vo = new ExchangeUserSelectVO();
+                    vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
                 } else {
                     vo = pair.getRight();
                 }
                 
                 // 二次扫码校验结果为false，需要校验灵活续费
                 // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
-                if (!pair.getLeft() || Objects.equals(vo.getIsSatisfySelfOpen(), ExchangeUserSelectVo.NOT_SATISFY_SELF_OPEN) || Objects.equals(vo.getIsBatteryInCell(),
-                        ExchangeUserSelectVo.BATTERY_NOT_CELL) || Objects.equals(vo.getIsTheSameCabinet(), ExchangeUserSelectVo.NOT_SAME_CABINET)) {
+                if (!pair.getLeft() || Objects.equals(vo.getIsSatisfySelfOpen(), ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN) || Objects.equals(vo.getIsBatteryInCell(),
+                        ExchangeUserSelectVO.BATTERY_NOT_CELL) || Objects.equals(vo.getIsTheSameCabinet(), ExchangeUserSelectVO.NOT_SAME_CABINET)) {
                     checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
                 
@@ -3314,8 +3318,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100218", "下单消息发送失败");
         }
         
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }
@@ -3359,7 +3363,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 
                 LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
-                Pair<Boolean, ExchangeUserSelectVo> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
+                Pair<Boolean, ExchangeUserSelectVO> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
                         OrderCheckEnum.ORDER.getCode());
                 if (pair.getLeft()) {
                     // 返回让前端选择
@@ -3438,8 +3442,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100218", "下单消息发送失败");
         }
         
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVo.NOT_ENTER_MORE_EXCHANGE);
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
+        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }
@@ -3514,8 +3518,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ORDER ERROR!  not found user info,eid={}", orderQuery.getEid());
+            return Triple.of(false, "100001", "未能找到用户");
+        }
         
-        ExchangeUserSelectVo vo = new ExchangeUserSelectVo();
+        ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userBatteryMemberCard)) {
@@ -3531,6 +3539,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
         if (Objects.isNull(electricityBattery)) {
+            log.warn("ORDER WARN! the user do not bind battery. uid={}", user.getUid());
             return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
         }
         
@@ -3625,7 +3634,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
     }
     
-    private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVo vo, ElectricityBattery battery, UserInfo userInfo) {
+    private Triple<Boolean, String, Object> checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo) {
         // 用户没有绑定电池时，需要根据上一次换电订单或者租电订单找到用户最新的电池
         if (Objects.isNull(battery)) {
             battery = findLastTakeBattery(userInfo);
