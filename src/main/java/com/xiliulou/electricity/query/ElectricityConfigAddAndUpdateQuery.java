@@ -202,13 +202,13 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
      */
-    @Range(min = 1, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 0, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer freezeAutoReviewDays;
     
     /**
      * 套餐冻结次数限制，0-不限次，其他为用户端申请冻结最大次数
      */
-    @Range(min = 1, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 0, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer packageFreezeCount;
     
     /**
