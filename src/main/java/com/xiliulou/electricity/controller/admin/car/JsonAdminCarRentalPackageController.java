@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin.car;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.config.car.CarRentalPackageDataTransferConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -77,9 +78,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     private BatteryModelService batteryModelService;
     
     @Resource
-    private CouponService couponService;
-    
-    @Resource
     private CarRentalPackageCarBatteryRelService carRentalPackageCarBatteryRelService;
     
     @Resource
@@ -97,8 +95,8 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     @Resource
     private CarRentalPackageService carRentalPackageService;
     
-    @Autowired
-    private UserInfoGroupService userInfoGroupService;
+    @Resource
+    private CarRentalPackageDataTransferConfig carRentalPackageDataTransferConfig;
     
     
     /**
@@ -447,6 +445,11 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @PostMapping("/modifyById")
     public R<Boolean> modifyById(@RequestBody @Valid CarRentalPackageOptModel optModel) {
+        if (carRentalPackageDataTransferConfig.isEnable()) {
+            log.warn("system Upgrades id={}",optModel.getId());
+            return R.fail("", "系统更新中,请稍后");
+        }
+        
         if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -497,6 +500,11 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @PostMapping("/insert")
     public R<Boolean> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
+        
+        if (carRentalPackageDataTransferConfig.isEnable()) {
+            log.warn("system Upgrades");
+            return R.fail("", "系统更新中,请稍后");
+        }
         
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
