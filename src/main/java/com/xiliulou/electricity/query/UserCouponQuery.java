@@ -23,6 +23,11 @@ public class UserCouponQuery {
      * 优惠券id
      */
     private Integer couponId;
+    
+    /**
+     * 优惠卷id集合
+     */
+    private List<Long> couponIds;
     /**
      * 用户id
      */

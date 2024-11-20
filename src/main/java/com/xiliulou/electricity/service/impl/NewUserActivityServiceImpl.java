@@ -19,8 +19,10 @@ import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NewUserActivityVO;
 import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
+import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,6 +67,10 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Autowired
 	CouponService couponService;
 
+	
+	@Resource
+	private UserCouponService userCouponService;
+	
 	@Autowired
 	UserService userService;
 	
@@ -231,8 +238,10 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 						.ifPresent(newUserActivityVO::setCoupon);
 				//设置所有的优惠券
 				List<Long> couponIds = newUserActivity.getCoupons();
-				List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue())).collect(Collectors.toList());
-				Optional.of(coupons).ifPresent(newUserActivityVO::setCouponArrays);
+//				List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue())).collect(Collectors.toList());
+//				Optional.of(coupons).ifPresent(newUserActivityVO::setCouponArrays);
+				List<UserCouponVO> userCouponVOS = buildUserCouponVO(couponIds, newUserActivity.getTenantId());
+				newUserActivityVO.setCouponArrays(userCouponVOS);
 			}
 
 			newUserActivityVOList.add(newUserActivityVO);
@@ -277,9 +286,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
 			newUserActivityVO.setCoupon(coupon);
 			
-			List<Coupon> coupons = Optional.ofNullable(newUserActivity.getCoupons())
-					.orElse(List.of()).stream().map(couponId -> couponService.queryByIdFromCache(couponId.intValue())).collect(Collectors.toList());
-			newUserActivityVO.setCouponArrays(coupons);
+			
+			List<UserCouponVO> userCouponVOS = buildUserCouponVO(newUserActivity.getCoupons(),newUserActivity.getTenantId());
+			newUserActivityVO.setCouponArrays(userCouponVOS);
 
 			return R.ok(newUserActivityVO);
 
@@ -339,9 +348,8 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
 			newUserActivityVO.setCoupon(coupon);
 			
-			List<Coupon> coupons = Optional.ofNullable(newUserActivity.getCoupons())
-					.orElse(List.of()).stream().map(couponId -> couponService.queryByIdFromCache(couponId.intValue())).collect(Collectors.toList());
-			newUserActivityVO.setCouponArrays(coupons);
+			List<UserCouponVO> userCouponVOS = buildUserCouponVO(newUserActivity.getCoupons(),tenantId);
+			newUserActivityVO.setCouponArrays(userCouponVOS);
 			
 			return R.ok(newUserActivityVO);
 
@@ -396,5 +404,21 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		query.setTenantId(TenantContextHolder.getTenantId());
 		return newUserActivityMapper.listNewUserActivity(query);
 	}
+	
+	
+	private List<UserCouponVO> buildUserCouponVO(List<Long> couponsIds, Integer tenantId) {
+		if (CollectionUtils.isEmpty(couponsIds)) {
+			return null;
+		}
+		UserCouponQuery query = UserCouponQuery.builder().couponIds(couponsIds).tenantId(tenantId).build();
+		R r = userCouponService.queryList(query);
+		if (!r.isSuccess() || Objects.isNull(r.getData())) {
+			return null;
+		}
+		
+		return(List<UserCouponVO>) r.getData();
+		
+	}
+	
 }
 
