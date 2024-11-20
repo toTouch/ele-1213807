@@ -712,40 +712,47 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException {
+    public R<Object> changeFreezeCountForUser(Long uid, Integer type){
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("CHANGE FREEZE COUNT FOR USER WARN! not found userInfo extra, uid={}", uid);
             return R.fail("100247", "用户信息不存在");
         }
         
-        // 实时获取本月最小时间戳，判断记录版本是否过期
+        // 实时获取本月最小时间戳，判断冻结计数版本是否过期
         Long newMinTimeOfMonth = getMinTimeOfMonth();
-        if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
-            
-            // 冻结记录版本过期时，增加和扣减场景下需要重置的次数不一样
-            int count;
-            if (Objects.equals(type, UserInfoExtraConstant.ADD_FREEZE_COUNT)) {
-                count = 1;
-            } else if (Objects.equals(type, UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT)) {
-                count = 0;
-            } else {
-                throw new BizException("操作类型错误");
-            }
-            
-            setPackageFreezeCount(uid, newMinTimeOfMonth, count);
-            return R.ok();
-        }
         
         int count;
+        Long minTimeOfMonthUpdate = null;
         if (Objects.equals(type, UserInfoExtraConstant.ADD_FREEZE_COUNT)) {
-            count = userInfoExtra.getPackageFreezeCount() + 1;
+            // 发起申请增加用户冻结计数
+            
+            if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
+                // 获取到的是下一个月的时间戳，已过期，重置为1，同时重置版本号时间戳
+                count = 1;
+                minTimeOfMonthUpdate = newMinTimeOfMonth;
+            } else {
+                // 获取到本月时间戳，未过期直接 +1
+                count = userInfoExtra.getPackageFreezeCount() + 1;
+            }
         } else if (Objects.equals(type, UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT)) {
-            count = userInfoExtra.getPackageFreezeCount() - 1;
+            // 审核拒绝扣减用户冻结计数
+            
+            if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
+                // 获取到的是下一个月的时间戳，已过期，重置为0，同时重置版本号时间戳
+                count = 0;
+                minTimeOfMonthUpdate = newMinTimeOfMonth;
+            } else {
+                // 获取到本月时间戳，未过期直接 -1
+                count = userInfoExtra.getPackageFreezeCount() - 1;
+            }
         } else {
+            log.error("CHANGE FREEZE COUNT FOR USER ERROR! Operation type error, uid={}", uid);
             throw new BizException("操作类型错误");
         }
-        setPackageFreezeCount(uid, null, count);
+        
+        // 无需重设作为版本号的时间戳，传null即可
+        setPackageFreezeCount(uid, minTimeOfMonthUpdate, count);
         return R.ok();
     }
     
