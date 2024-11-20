@@ -292,6 +292,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateServiceFeeUserInfo.setPauseOrderNo("");
             serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
             
+            // 审核拒绝时扣减用户冻结次数
+            userInfoExtraService.changeFreezeCountForUser(userInfo.getUid(), UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
+            
             sendUserOperateRecord(eleDisableMemberCardRecord, status);
             return R.ok();
         } else {
