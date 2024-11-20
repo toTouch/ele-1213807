@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin.car;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.config.car.CarRentalPackageDataTransferConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -21,14 +20,12 @@ import com.xiliulou.electricity.query.MemberCardAndCarRentalPackageSortParamQuer
 import com.xiliulou.electricity.query.car.CarRentalPackageNameReq;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.ValidList;
@@ -40,7 +37,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -94,9 +90,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     
     @Resource
     private CarRentalPackageService carRentalPackageService;
-    
-    @Resource
-    private CarRentalPackageDataTransferConfig carRentalPackageDataTransferConfig;
     
     
     /**
@@ -445,11 +438,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @PostMapping("/modifyById")
     public R<Boolean> modifyById(@RequestBody @Valid CarRentalPackageOptModel optModel) {
-        if (carRentalPackageDataTransferConfig.isEnable()) {
-            log.warn("system Upgrades id={}",optModel.getId());
-            return R.fail("", "系统更新中,请稍后");
-        }
-        
+    
         if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -500,11 +489,6 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @PostMapping("/insert")
     public R<Boolean> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
-        
-        if (carRentalPackageDataTransferConfig.isEnable()) {
-            log.warn("system Upgrades");
-            return R.fail("", "系统更新中,请稍后");
-        }
         
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
