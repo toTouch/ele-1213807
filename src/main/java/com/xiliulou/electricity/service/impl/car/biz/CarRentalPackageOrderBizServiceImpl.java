@@ -1338,7 +1338,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                         .updateStatusByUidAndTenantId(freezeEntity.getTenantId(), freezeEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
                 
                 //3.扣减冻结累计次数
-                userInfoExtraService.changeFreezeCountForUser(freezeEntity.getUid(),UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
+                userInfoExtraService.changeFreezeCountForUser(freezeEntity.getUid(), UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
             }
         }
         
@@ -1971,8 +1971,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
         }
         try {
-            //站内信，仅小程序 或者 非自动审核
-            if (systemDefinitionEnum.equals(SystemDefinitionEnum.WX_APPLET)||! checkFreezeLimit.getData()) {
+            //站内信，仅小程序 并且 非自动审核
+            if (systemDefinitionEnum.equals(SystemDefinitionEnum.WX_APPLET) && !checkFreezeLimit.getData()) {
                 siteMessagePublish.publish(SiteMessageEvent.builder(this).tenantId(TenantContextHolder.getTenantId().longValue()).code(SiteMessageType.CAR_RENTAL_FREEZE)
                         .notifyTime(System.currentTimeMillis()).addContext("name", userInfo.getName()).addContext("phone", userInfo.getPhone())
                         .addContext("orderNo", freezeEntity.getOrderNo()).build());
