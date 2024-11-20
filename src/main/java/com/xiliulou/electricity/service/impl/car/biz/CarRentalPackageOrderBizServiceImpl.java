@@ -15,6 +15,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderRefundParamConverterModel;
@@ -105,6 +106,7 @@ import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
@@ -335,6 +337,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     private FreeDepositOrderService freeDepositOrderService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     
     public static final Integer ELE = 0;
@@ -1331,6 +1336,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 2. 更新会员期限信息
                 carRentalPackageMemberTermService
                         .updateStatusByUidAndTenantId(freezeEntity.getTenantId(), freezeEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
+                
+                //3.扣减冻结累计次数
+                userInfoExtraService.changeFreezeCountForUser(freezeEntity.getUid(),UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
             }
         }
         
@@ -2001,6 +2009,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderFreezeService.insert(freezeEntity);
         // 更新会员状态
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.APPLY_FREEZE.getCode(), uid);
+        // 累计冻结次数
+        userInfoExtraService.changeFreezeCountForUser(uid, UserInfoExtraConstant.ADD_FREEZE_COUNT);
         
         // 后台提交 或者 自动审核
         if (SystemDefinitionEnum.BACKGROUND.getCode().equals(systemDefinitionEnum.getCode()) || autoReview) {
