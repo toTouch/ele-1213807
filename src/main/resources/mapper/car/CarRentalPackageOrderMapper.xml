@@ -167,7 +167,7 @@
             <if test=" deposit != null ">#{deposit},</if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' ">#{depositPayOrderNo},</if>
             <if test=" lateFee != null ">#{lateFee},</if>
-            <if test=" freezeLateFee != null ">`freezeLateFee`,</if>
+            <if test=" freezeLateFee != null ">#{freezeLateFee},</if>
             <if test=" payType != null ">#{payType},</if>
             <if test=" couponId != null ">#{couponId},</if>
             <if test=" couponArrays != null and couponArrays != '' ">#{couponArrays},</if>
