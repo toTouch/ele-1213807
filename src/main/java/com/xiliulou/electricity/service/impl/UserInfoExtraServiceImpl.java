@@ -686,11 +686,6 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return R.fail("301031", "未找到租户配置信息");
         }
         
-        boolean getLock = redisService.setNx(String.format(CacheConstant.CACHE_PACKAGE_FREEZE_COUNT_LOCK, uid), "1", 3 * 1000L, false);
-        if (!getLock) {
-            return R.fail("ELECTRICITY.0034", "操作频繁");
-        }
-        
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("CHECK FREEZE COUNT WARN! not found userInfo extra, uid={}", uid);

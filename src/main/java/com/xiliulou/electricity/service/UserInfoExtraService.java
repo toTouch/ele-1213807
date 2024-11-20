@@ -45,7 +45,7 @@ public interface UserInfoExtraService {
     R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds);
     
     /**
-     * 校验用户端申请冻结时，申请冻结次数是否符合配置，方法内会利用申请冻结的用户uid加锁3秒，防止并发导致超出限制
+     * 校验用户端申请冻结时，申请冻结次数是否符合配置
      *
      * @param tenantId 租户id
      * @param uid      申请冻结用户uid

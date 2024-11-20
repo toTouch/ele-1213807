@@ -30,11 +30,12 @@
     </select>
     
     <!--新增所有列-->
+    <!--新增SQL中不应增加 min_time_of_month、package_freeze_count 这两个字段，有大量场景未给这两个字段设置值，使用默认值即可-->
     <insert id="insert" keyProperty="uid" useGeneratedKeys="true">
         insert into t_user_info_extra(uid, merchant_id, channel_employee_uid, place_uid, place_id, del_flag, tenant_id, create_time, update_time,
-                                      activity_source, inviter_uid, latest_activity_source, ele_limit, min_time_of_month, package_freeze_count)
+                                      activity_source, inviter_uid, latest_activity_source, ele_limit)
         values (#{uid}, #{merchantId}, #{channelEmployeeUid}, #{placeUid}, #{placeId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime},
-                #{activitySource}, #{inviterUid}, #{latestActivitySource}, #{eleLimit}, #{minTimeOfMonth}, #{packageFreezeCount})
+                #{activitySource}, #{inviterUid}, #{latestActivitySource}, #{eleLimit})
     </insert>
     
     <!--通过主键修改数据-->
