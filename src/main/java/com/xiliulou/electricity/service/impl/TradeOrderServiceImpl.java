@@ -1759,7 +1759,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(memberCard.getId());
         
-        // 用户绑定的型号为空，要么单型号，要么初次购买，加盟商隔离无法从单型号续费多型号
+        // 单型号已过滤，用户绑定的型号为空为初次购买，加盟商隔离无法从单型号续费多型号
         if (CollectionUtils.isEmpty(userBatteryTypes)) {
             log.info("BATTERY DEPOSIT INFO! first time to buy. uid={}", userInfo.getUid());
             return Boolean.TRUE;
