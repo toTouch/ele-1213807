@@ -1682,6 +1682,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("未找到该电池").build());
             });
             DeleteBatteryListVo vo = DeleteBatteryListVo.builder().successCount(0).failCount(batterySnFailList.size()).failedSnList(batterySnFailList).build();
+            
+            Map<Object, Object> map = MapUtil.builder().put("count", 0).build();
+            operateRecordUtil.record(null, map);
             return R.ok(vo);
         }
         
