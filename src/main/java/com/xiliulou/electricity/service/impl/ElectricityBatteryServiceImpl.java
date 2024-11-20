@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
@@ -1678,7 +1679,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (CollUtil.isEmpty(dbBatteryList)) {
             // 找不到，直接返回
             batterySnDistinctList.forEach(e->{
-                batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("找不到电池").build());
+                batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("未找到该电池").build());
             });
             DeleteBatteryListVo vo = DeleteBatteryListVo.builder().successCount(0).failCount(batterySnFailList.size()).failedSnList(batterySnFailList).build();
             return R.ok(vo);
@@ -1693,7 +1694,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             List<String> batterySnDiffList = batterySnDistinctList.stream().filter(batterySn -> !dbBatterySnList.contains(batterySn)).collect(Collectors.toList());
             // 非自己的电池，属于失败电池
             batterySnDiffList.forEach(e->{
-                batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("非自己的电池").build());
+                batterySnFailList.add(DeleteBatteryListVo.DeleteBatteryFailVo.builder().batteryName(e).reason("未找到该电池").build());
             });
         }
         
@@ -1729,6 +1730,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         DeleteBatteryListVo vo = DeleteBatteryListVo.builder().successCount(batteryWaitSnList.size()).failCount(batterySnFailList.size()).failedSnList(batterySnFailList)
                 .build();
+        
+        Map<Object, Object> map = MapUtil.builder().put("count", batteryWaitSnList.size()).build();
+        operateRecordUtil.record(null, map);
         return R.ok(vo);
     }
 }
