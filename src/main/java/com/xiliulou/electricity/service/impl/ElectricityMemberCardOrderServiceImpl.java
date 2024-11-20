@@ -22,6 +22,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.constant.UserOperateRecordConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.dto.ActivityProcessDTO;
@@ -61,6 +62,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -744,9 +746,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁,请稍后再试!");
+        }
+        
+        // 申请冻结次数校验
+        R<Object> checkR = userInfoExtraService.checkFreezeCount(user.getTenantId(), user.getUid());
+        if (!checkR.isSuccess()) {
+            return checkR;
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
@@ -768,12 +776,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
-        }
-        
-        // 校验申请冻结次数与申请天数是否符合租户配置
-        R<Object> checkR = userInfoExtraService.checkFreezeCount(userInfo.getTenantId(), userInfo.getUid());
-        if (!checkR.isSuccess()) {
-            return checkR;
         }
         
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
@@ -853,6 +855,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.100000", "存在电池服务费", acquireUserBatteryServiceFeeResult.getRight());
         }
         
+        // 用户申请冻结次数校验及修改次数时需要使用，提前校验
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("DISABLE MEMBER CARD WARN! not found userInfo extra, uid={}", userInfo.getUid());
+            return R.fail("100247", "用户信息不存在");
+        }
+        
         // 判断用户是否存在与企业渠道用户然后站长退出的表中，类型未未处理或者是处理失败
         List<Integer> typeList = new ArrayList<>();
         typeList.add(EnterpriseChannelUserExit.TYPE_INIT);
@@ -866,6 +875,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("120308", "企业用户无法申请冻结套餐", acquireUserBatteryServiceFeeResult.getRight());
         }
         
+        // 校验冻结申请是否可自动审核及申请天数是否合规
         Boolean autoReviewOrNot = electricityConfigService.checkFreezeAutoReviewAndDays(userInfo.getTenantId(), disableCardDays, userInfo.getUid());
         
         String generateOrderId = generateOrderId(user.getUid());
@@ -880,6 +890,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         ServiceFeeUserInfo insertOrUpdateServiceFeeUserInfo = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .uid(user.getUid()).updateTime(System.currentTimeMillis()).build();
         serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
+        
+        // 增加用户套餐冻结次数，自动审核与人工审核通过均走同一处逻辑，handleDisableMemberCard()，次数增加需要置于自动审核之前，若审核拒绝再予以扣减
+        userInfoExtraService.changeFreezeCountForUser(userInfo.getUid(), UserInfoExtraConstant.ADD_FREEZE_COUNT);
         
         // 自动审核后续处理
         if (autoReviewOrNot) {
