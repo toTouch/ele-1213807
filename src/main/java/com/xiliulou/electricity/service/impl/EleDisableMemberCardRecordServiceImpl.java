@@ -222,12 +222,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
         
-        // 校验申请冻结次数与申请天数是否符合租户配置
-        R<Object> checkR = userInfoExtraService.checkFreezeCount(userInfo.getTenantId(), userInfo.getUid());
-        if (!checkR.isSuccess()) {
-            return checkR;
-        }
-        
         // 判断用户是否购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L) || Objects.equals(
