@@ -286,7 +286,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
                 
                 // 开启了灵活续费时，不用根据电压过滤套餐，免押用户没有绑定电池型号，电压设置的是null，可以正确查出所有电压
-                if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+                if (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                     query.setBatteryV(
                             Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
                 }
@@ -306,7 +306,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 }
                 
                 // 开启了灵活续费时，不用根据电压过滤套餐
-                if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+                if (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                     query.setBatteryV(
                             Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
                 }
@@ -330,7 +330,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             
             // 开启了灵活续费时，不用根据电压过滤套餐
-            if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+            if (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                 query.setBatteryV(
                         Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()) : null);
             }
@@ -572,12 +572,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
                 }
-                
-                // 开启了灵活续费时，不用根据电压过滤套餐，免押用户没有绑定电池型号，电压设置的是null，可以正确查出所有电压
-                if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-                    query.setBatteryV(
-                            Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
-                }
             }
         } else if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             // 非新租 购买押金套餐
@@ -591,12 +585,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
-                }
-                
-                // 开启了灵活续费时，不用根据电压过滤套餐
-                if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-                    query.setBatteryV(
-                            Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
                 }
             }
             
@@ -619,7 +607,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
             
             // 开启了灵活续费时，不用根据电压过滤套餐
-            if (Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+            if (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
                 query.setBatteryV(
                         Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
             }
@@ -720,6 +708,16 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+        
+        // 免押或单独购买押金后还未购买套餐
+        if (Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus()) && Objects.isNull(userBatteryMemberCard)) {
+            String bindBatteryType = userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid());
+            if (!StringUtils.isBlank(bindBatteryType)) {
+                return Collections.singletonList(bindBatteryType);
+            }
+        }
+        
+        // 免押及退租用户走此处查询逻辑
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
             List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
             if (CollectionUtils.isEmpty(list)) {
