@@ -100,6 +100,11 @@ public class BatteryMemberCardQuery {
     //    @NotNull(message = "滞纳金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal serviceCharge;
     
+    /**
+     * 套餐冻结服务费
+     */
+    private BigDecimal freezeServiceCharge;
+    
     private String remark;
     
     private List<String> batteryModels;
