@@ -712,7 +712,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public R<Object> changeFreezeCountForUser(Long uid, Integer type){
+    public R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException{
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("CHANGE FREEZE COUNT FOR USER WARN! not found userInfo extra, uid={}", uid);

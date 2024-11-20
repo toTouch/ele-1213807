@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.constant.UserInfoExtraConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -290,6 +291,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateServiceFeeUserInfo.setDisableMemberCardNo("");
             updateServiceFeeUserInfo.setPauseOrderNo("");
             serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
+            
+            // 审核拒绝时扣减用户冻结次数
+            userInfoExtraService.changeFreezeCountForUser(userInfo.getUid(), UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
             
             sendUserOperateRecord(eleDisableMemberCardRecord, status);
             return R.ok();

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.request.userinfo.UserInfoLimitRequest;
@@ -53,11 +54,12 @@ public interface UserInfoExtraService {
     R<Object> checkFreezeCount(Integer tenantId, Long uid);
     
     /**
-     * 增加或减少用户套餐冻结次数，
+     * 增加或减少用户套餐冻结次数，各业务中须提前校验申请冻结用户的扩展信息 UserInfoExtra 是否存在，本方法内的校验只能保证不报空指针
      *
      * @param uid  申请冻结用户uid
      * @param type 操作类型，传递常量UserInfoExtraConstant.ADD_FREEZE_COUNT或UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT
      * @return 执行结果
+     * @throws BizException 若捕获到BizException，为操作类行传递错误，各业务自行斟酌如何处理
      */
-    R<Object> changeFreezeCountForUser(Long uid, Integer type);
+    R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException;
 }
