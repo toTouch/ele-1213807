@@ -46,6 +46,7 @@ import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -1647,11 +1648,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100483", "电池套餐不合法");
         }
         
-        if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
-            log.warn("FREE DEPOSIT WARN! batteryMemberCard not equals free deposit,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
-            return Triple.of(false, "100484", "免押押金与电池套餐押金不一致");
-        }
-        
         if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
                 batteryMemberCard.getFranchiseeId())) {
             log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
@@ -1663,12 +1659,28 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "302003", "运营商配置异常，请联系客服");
         }
         
+        // 与下文灵活续费校验逻辑重复，时间紧张暂时保留，后续优化
+        if (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
+                log.warn("FREE DEPOSIT WARN! batteryMemberCard not equals free deposit,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
+                return Triple.of(false, "100484", "免押押金与电池套餐押金不一致");
+            }
+        }
+        
         // 灵活续费相关电池型号校验
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        boolean checkBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig, userInfo);
-        if (!checkBatteryTypes) {
-            return Objects.isNull(query.getFlexibleRenewal()) ? Triple.of(false, "301029", "请联系管理员升级最新版本小程序")
-                    : Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryMemberCard.getFranchiseeId());
+        boolean checkBatteryTypes;
+        if (Objects.isNull(query.getFlexibleRenewal())) {
+            checkBatteryTypes = memberCardBatteryTypeService.checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCard, userBatteryDeposit, franchisee, userInfo);
+            if (!checkBatteryTypes) {
+                return Triple.of(false, "301029", "请联系管理员升级最新版本小程序");
+            }
+        }else {
+            checkBatteryTypes = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig, userInfo);
+            if (!checkBatteryTypes) {
+                return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+            }
         }
         
         // 判断套餐用户分组和用户的用户分组是否匹配

@@ -107,4 +107,39 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
         
         return true;
     }
+    
+    /**
+     * 校验用户绑定的电池型号和要购买的套餐是否匹配
+     */
+    @Override
+    public Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee, UserInfo userInfo) {
+        // 押金必须相等，新旧型号加盟商都必须校验押金
+        BigDecimal deposit = Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
+        if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || deposit.compareTo(memberCard.getDeposit()) != 0) {
+            log.info("BATTERY DEPOSIT INFO! deposit do not match. uid={}", userInfo.getUid());
+            return Boolean.FALSE;
+        }
+        
+        // 不分型号加盟商不校验灵活续费电池型号
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            log.info("BATTERY DEPOSIT INFO! old model type franchisee. uid={}", userInfo.getUid());
+            return Boolean.TRUE;
+        }
+        
+        List<String> memberCardBatteryTypes = selectBatteryTypeByMid(memberCard.getId());
+        
+        // 单型号已过滤，用户绑定的型号为空为初次购买，加盟商隔离无法从单型号续费多型号
+        if (CollectionUtils.isEmpty(userBatteryTypes)) {
+            log.info("BATTERY DEPOSIT INFO! first time to buy. uid={}", userInfo.getUid());
+            return Boolean.TRUE;
+        } else {
+            
+            if (CollectionUtils.isEmpty(memberCardBatteryTypes)) {
+                log.info("BATTERY DEPOSIT INFO! memberCardBatteryTypes is null. uid={}", userInfo.getUid());
+                return Boolean.FALSE;
+            } else {
+                return CollectionUtils.containsAll(memberCardBatteryTypes, userBatteryTypes);
+            }
+        }
+    }
 }
