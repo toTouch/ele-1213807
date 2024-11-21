@@ -364,8 +364,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         List<BatteryMemberCardVO> result = new ArrayList<>();
         for (BatteryMemberCardAndTypeVO item : list) {
             
-            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
-                    FlexibleRenewalEnum.NORMAL.getCode())) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
+                    FlexibleRenewalEnum.NORMAL.getCode()))) {
                 List<String> number = null;
                 if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
                     // 套餐电池型号串数 number
@@ -641,8 +641,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         List<BatteryMemberCardVO> result = new ArrayList<>();
         for (BatteryMemberCardAndTypeVO item : list) {
             
-            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
-                    FlexibleRenewalEnum.NORMAL.getCode())) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
+                    FlexibleRenewalEnum.NORMAL.getCode()))) {
                 List<String> number = null;
                 if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
                     // 套餐电池型号串数 number
@@ -696,9 +696,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         
-        // 未缴纳押金；灵活续费开启时，也需要查询加盟商下的全部电压
-        if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus()) || Objects.isNull(electricityConfig) || !Objects.equals(
-                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+        // 未缴纳押金；灵活续费开启时，也需要查询加盟商下的全部电压，考虑重启过程中灵活续费null值，不采用关闭状态取反的方式判断
+        if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus()) || Objects.isNull(electricityConfig) || Objects.equals(
+                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode()) || Objects.equals(
+                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
             List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.emptyList();

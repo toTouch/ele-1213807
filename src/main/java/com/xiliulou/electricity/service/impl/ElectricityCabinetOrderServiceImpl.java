@@ -2000,7 +2000,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 开启灵活续费时，获取旧电池型号
         List<String> oldBatteryTypes = null;
-        if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+        if (Objects.nonNull(electricityConfig) && !Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
             oldBatteryTypes = getBatteryTypesForCheck(userInfo, electricityBattery, userBatteryTypeList);
         }
         
@@ -2433,7 +2433,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 开启灵活续费时，获取旧电池型号
         List<String> oldBatteryTypes = null;
-        if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+        if (Objects.nonNull(electricityConfig) && !Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
             oldBatteryTypes = getBatteryTypesForCheck(userInfo, electricityBattery, batteryTypeList);
         }
         
@@ -3245,7 +3245,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 开启灵活续费时，获取旧电池型号
         List<String> oldBatteryTypes = null;
-        if (Objects.nonNull(electricityConfig) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
+        if (Objects.nonNull(electricityConfig) && !Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) && !Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
             oldBatteryTypes = getBatteryTypesForCheck(userInfo, electricityBattery, batteryTypeList);
         }
         
