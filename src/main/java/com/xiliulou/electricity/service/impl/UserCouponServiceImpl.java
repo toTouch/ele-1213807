@@ -332,7 +332,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                     .discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .tenantId(coupon.getTenantId())
                     .couponType(CouponTypeEnum.REGISTER_ACTIVITIES.getCode())
-                    .couponWay(activityId.longValue()).delFlag(UserCoupon.DEL_NORMAL);
+                    .couponWay(activityId.longValue()).delFlag(UserCoupon.DEL_NORMAL)
+                    .verifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER);
             //优惠券过期时间
             
             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
