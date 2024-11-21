@@ -118,12 +118,6 @@
             <if test="query.couponWay != null ">
                 and tuc.coupon_way = #{query.couponWay}
             </if>
-            <if test="query.couponIds!=null and query.couponIds.size()>0">
-                and tuc.coupon_id  in
-                <foreach collection="query.couponIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
         </where>
         ORDER BY tuc.update_time DESC, tuc.id ASC
         <if test="query.offset != null and query.size != null">
