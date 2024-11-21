@@ -165,6 +165,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(uid);
         userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + coupon.getCount() * 24 * 60 * 60 * 1000L);
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + coupon.getCount() * 24 * 60 * 60 * 1000L);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
