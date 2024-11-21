@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizServic
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -89,10 +90,10 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     }
     
     @Override
-    public Pair<Boolean,Long> process(Coupon coupon, Integer tenantId, Long uid) {
+    public Triple<Boolean,Long ,String> process(Coupon coupon, Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (Objects.isNull(memberTermPo)){
-            return Pair.of(false,null);
+            return Triple.of(false,null ,null);
         }
         Integer day = coupon.getCount();
         long millis = TimeUnit.DAYS.toMillis(day);
@@ -109,6 +110,6 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
         update.setUpdateTime(System.currentTimeMillis());
         update.setRemark("使用天数券");
         carRentalPackageMemberTermService.updateById(update);
-        return Pair.of(true,memberTermPo.getRentalPackageId());
+        return Triple.of(true,memberTermPo.getRentalPackageId() , memberTermPo.getRentalPackageOrderNo());
     }
 }
