@@ -1989,7 +1989,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 用户未绑定电池
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 修改按此套餐的次数
@@ -2080,7 +2080,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 用户未绑定电池
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 修改按此套餐的次数
@@ -2272,7 +2272,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 默认是小程序下单
@@ -2416,7 +2416,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 默认是小程序下单
@@ -3196,7 +3196,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 多次扫码处理
@@ -3354,7 +3354,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
         
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(electricityBattery)) {
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 多次换电拦截
@@ -3540,7 +3540,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
         if (Objects.isNull(electricityBattery)) {
             log.warn("ORDER WARN! the user do not bind battery. uid={}", user.getUid());
-            return Triple.of(false, "300870", "系统检测到您未绑定电池，请检查");
+            return Triple.of(false, "300880", "系统检测到您未绑定电池，请检查");
         }
         
         // 判断用户绑定的电池与当前正在使用的套餐，电池型号是否匹配，返回是否需要进行灵活续费后的电池转换
@@ -3658,13 +3658,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (StringUtils.isEmpty(batteryModel) || StringUtils.isBlank(batteryModel)) {
             log.warn("ORDER WARN! The battery model is not set up, batteryId={}", battery.getId());
-            return Triple.of(false, "300872", "电池未绑定电池型号，请联系客服处理");
+            return Triple.of(false, "300882", "电池未绑定电池型号，请联系客服处理");
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig)) {
             log.warn("ORDER WARN! The electricity config is null, tenantId={}", userInfo.getTenantId());
-            return Triple.of(false, "300873", "换电配置错误，请联系客服处理");
+            return Triple.of(false, "300883", "换电配置错误，请联系客服处理");
         }
         
         String cardBatteryType = batteryTypes.get(0);
