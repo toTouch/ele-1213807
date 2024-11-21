@@ -56,7 +56,7 @@ public class ElectricityConfig {
      */
     private Long updateTime;
     
-    //租户id
+    // 租户id
     private Integer tenantId;
     
     /**
@@ -225,8 +225,7 @@ public class ElectricityConfig {
     private Integer packageFreezeCount;
     
     /**
-     * 与套餐冻结次数限制参数 packageFreezeCount 联动
-     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60，packageFreezeCount 为其他数值时根据 packageFreezeDays 限制申请冻结最大天数
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60，packageFreezeCount 为其他数值时根据 packageFreezeDays 限制申请冻结最大天数
      */
     private Integer packageFreezeDays;
     
@@ -240,8 +239,8 @@ public class ElectricityConfig {
     
     public static Integer MOVE_FRANCHISEE_OPEN = 0;
     
-    //人工审核
-    //实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
+    // 人工审核
+    // 实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
     public static Integer MANUAL_REVIEW = 0;
     
     public static Integer AUTO_REVIEW = 1;
@@ -249,10 +248,10 @@ public class ElectricityConfig {
     public static Integer FACE_REVIEW = 2;
     
     
-    //线上提现
+    // 线上提现
     public static Integer WITHDRAW = 0;
     
-    //线下提现
+    // 线下提现
     public static Integer NON_WITHDRAW = 1;
     
     public static Integer OPEN_DOOR_LOCK = 0;
@@ -359,6 +358,7 @@ public class ElectricityConfig {
      * 打开支付宝客服 0-是 1-否
      */
     public static Integer OPEN_ALIPAY_CUSTOMER = 0;
+    
     public static Integer CLOSE_ALIPAY_CUSTOMER = 1;
     
     /**
@@ -395,4 +395,6 @@ public class ElectricityConfig {
      * 租户未设置最大天数时，套餐冻结最大天数限制
      */
     public static Integer FREEZE_DAYS_MAX = 60;
+    
+    public static Integer EXPIRED_PROTECTION_TIME_DEFAULT = 24;
 }

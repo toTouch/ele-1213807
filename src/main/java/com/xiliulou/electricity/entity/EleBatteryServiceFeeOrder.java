@@ -23,88 +23,98 @@ import java.math.BigDecimal;
 @Builder
 @TableName("t_ele_battery_service_fee_order")
 public class EleBatteryServiceFeeOrder {
-
+    
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+    
     /**
      * 支付金额
      */
     private BigDecimal payAmount;
+    
     /**
      * 创建时间
      */
     private Long createTime;
+    
     /**
      * 更新时间
      */
     private Long updateTime;
+    
     /**
      * 用户Id
      */
     private Long uid;
+    
     /**
      * 订单Id
      */
     private String orderId;
+    
     /**
      * 状态（0、未支付,1、支付成功,2、支付失败）
      */
     private Integer status;
+    
     /**
      * 用户名
      */
     private String name;
+    
     /**
      * 手机号
      */
     private String phone;
-
-    //租户id
+    
+    // 租户id
     private Integer tenantId;
+    
     /**
      * 门店Id
      */
     private Long storeId;
+    
     /**
      * 加盟商Id
      */
     private Long franchiseeId;
-
+    
     /**
      * 加盟商类型 1--老（不分型号） 2--新（分型号）
      */
     private Integer modelType;
-
+    
     /**
      * 电池类型
      */
     private String batteryType;
-
+    
     /**
      * 电池sn码
      */
     private String sn;
-
+    
     /**
      * 电池服务费单价
      */
     private BigDecimal batteryServiceFee;
-
+    
     /**
      * 电池服务费产生时间
      */
     private Long batteryServiceFeeGenerateTime;
-
+    
     /**
      * 电池服务费产生截止时间
      */
     private Long batteryServiceFeeEndTime;
-
+    
     /**
      * 服务费来源 0--月卡过期 1--停卡
      */
     private Integer source;
-
+    
     /**
      * 支付时间
      */
@@ -122,17 +132,27 @@ public class EleBatteryServiceFeeOrder {
     
     /**
      * 支付方式
+     *
      * @see ChannelEnum
      */
     private String paymentChannel;
-
+    
+    /**
+     * 套餐过期保护期，单位:小时，0-24表示套餐过期滞纳金起算时间，-1表示套餐冻结滞纳金
+     */
+    private Integer expiredProtectionTime;
+    
     public static final Integer STATUS_INIT = 0;
+    
     public static final Integer STATUS_SUCCESS = 1;
+    
     public static final Integer STATUS_FAIL = 2;
+    
     public static final Integer STATUS_CLEAN = 3;
-
+    
     public static final Integer MEMBER_CARD_OVERDUE = 0;
+    
     public static final Integer DISABLE_MEMBER_CARD = 1;
-
-
+    
+    public static final Integer EXPIRED_PROTECTION_TIME_DISABLE = -1;
 }
