@@ -230,6 +230,11 @@ public class ElectricityConfig {
      */
     private Integer packageFreezeDays;
     
+    /**
+     * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
+     */
+    private Integer expiredProtectionTime;
+    
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     

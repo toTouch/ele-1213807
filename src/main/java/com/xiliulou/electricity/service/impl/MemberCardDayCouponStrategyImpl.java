@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponDayRecordEntity;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;

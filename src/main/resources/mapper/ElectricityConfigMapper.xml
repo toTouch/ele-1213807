@@ -35,6 +35,7 @@
         <result property="freezeAutoReviewDays" column="freeze_auto_review_days" jdbcType="INTEGER"/>
         <result property="packageFreezeCount" column="package_freeze_count" jdbcType="INTEGER"/>
         <result property="packageFreezeDays" column="package_freeze_days" jdbcType="INTEGER"/>
+        <result property="expiredProtectionTime" column="expired_protection_time" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 基础字段 -->
@@ -71,7 +72,8 @@
                ele_limit_count,
                freeze_auto_review_days,
                package_freeze_count,
-               package_freeze_days
+               package_freeze_days,
+               expired_protection_time
         from t_electricity_config
     </sql>
     
@@ -83,7 +85,7 @@
         is_open_car_battery_bind,is_open_car_control,is_zero_deposit_audit_enabled,is_enable_esign,
         allow_rent_ele,allow_return_ele,allow_freeze_with_assets,is_selection_exchange,low_charge_rate,
         full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,alipay_customer,is_comfort_exchange,priority_exchange_norm,
-        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,freeze_auto_review_days,package_freeze_count,package_freeze_days
+        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,freeze_auto_review_days,package_freeze_count,package_freeze_days,expired_protection_time
     </sql>
     <!--通过主键修改数据-->
     <update id="update">
@@ -199,6 +201,9 @@
             </if>
             <if test="packageFreezeDays != null">
                 package_freeze_days = #{packageFreezeDays},
+            </if>
+            <if test="expiredProtectionTime != null">
+                expired_protection_time = #{expiredProtectionTime},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>

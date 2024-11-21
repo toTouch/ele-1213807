@@ -218,6 +218,12 @@ public class ElectricityConfigAddAndUpdateQuery {
     @Range(min = 1, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer packageFreezeDays;
     
+    /**
+     * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
+     */
+    @Range(min = 0, max = 99, message = "套餐过期滞纳金起算时间需要设置为0-24", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer expiredProtectionTime;
+    
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;

@@ -228,6 +228,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setFreezeAutoReviewDays(electricityConfigAddAndUpdateQuery.getFreezeAutoReviewDays());
             electricityConfig.setPackageFreezeCount(electricityConfigAddAndUpdateQuery.getPackageFreezeCount());
             electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
+            electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -271,6 +272,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setFreezeAutoReviewDays(electricityConfigAddAndUpdateQuery.getFreezeAutoReviewDays());
         electricityConfig.setPackageFreezeCount(electricityConfigAddAndUpdateQuery.getPackageFreezeCount());
         electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
+        electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
         
         electricityConfigMapper.update(electricityConfig);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
