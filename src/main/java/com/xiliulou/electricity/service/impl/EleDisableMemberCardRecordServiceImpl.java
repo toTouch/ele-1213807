@@ -56,10 +56,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -370,8 +366,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    public R<Object> handleDisableMemberCard(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, EleDisableMemberCardRecord eleDisableMemberCardRecord, Franchisee franchisee,
-            BatteryMemberCard batteryMemberCard, Boolean sendOperateRecordOrNot) {
+    public R<Object> handleDisableMemberCard(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, EleDisableMemberCardRecord eleDisableMemberCardRecord,
+            Franchisee franchisee, BatteryMemberCard batteryMemberCard, Boolean sendOperateRecordOrNot) {
         // 同意停卡
         UserBatteryMemberCard updateUserBatteryMemberCard = new UserBatteryMemberCard();
         updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
@@ -414,7 +410,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
                     .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                     .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge()).build();
+                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge())
+                    .expiredProtectionTime(EleBatteryServiceFeeOrder.EXPIRED_PROTECTION_TIME_DISABLE).build();
             eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
             
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
