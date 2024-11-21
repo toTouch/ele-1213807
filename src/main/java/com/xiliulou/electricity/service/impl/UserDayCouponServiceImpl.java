@@ -90,24 +90,19 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.failMsg("该优惠券非天数券，请选择其他优惠券");
             }
             
-            //判断套餐相关
-            Long uid = userInfo.getUid();
-            DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(tenantId, uid);
-            if (Objects.isNull(strategy)) {
-                return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
-            }
-            
             Coupon coupon = couponService.queryByIdFromDB(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
                 return R.failMsg("请选择正确的优惠券使用");
             }
-            
-            DayCouponUseScope scope = strategy.getScope(tenantId, uid);
-            if (Objects.isNull(scope)) {
+            DayCouponUseScope useScope = DayCouponUseScope.getByCode(coupon.getUseScope());
+            //判断套餐相关
+            Long uid = userInfo.getUid();
+            DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(useScope,tenantId, uid);
+            if (Objects.isNull(strategy)) {
                 return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
             }
             
-            if (!Objects.equals(scope.getCode(), coupon.getUseScope())) {
+            if (!strategy.isPackageInUse(tenantId, uid)) {
                 return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
             }
             
