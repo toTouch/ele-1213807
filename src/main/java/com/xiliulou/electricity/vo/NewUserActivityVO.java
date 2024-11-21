@@ -73,7 +73,7 @@ public class NewUserActivityVO {
     /**
      * 优惠券数组列
      */
-    private List<UserCouponVO> couponArrays;
+    private List<Coupon> couponArrays;
 
     /**
      * 活动说明
