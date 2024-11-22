@@ -16,18 +16,18 @@ import java.util.List;
  * @since 2022-04-20 10:21:24
  */
 public interface EleBatteryServiceFeeOrderService {
-
+    
     Integer insert(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
-
+    
     void update(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
-
+    
     /**
      * 用户查询电池服务费支付记录
      *
      * @return
      */
     R queryList(BatteryServiceFeeOrderQuery query);
-
+    
     /**
      * 后台查询电池服务费支付记录
      *
@@ -39,12 +39,12 @@ public interface EleBatteryServiceFeeOrderService {
      * @param status
      * @return
      */
-    R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status,Integer tenantId);
-
+    R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status, Integer tenantId);
+    
     R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery);
-
+    
     R queryCount(BatteryServiceFeeQuery batteryServiceFeeQuery);
-
+    
     /**
      * 用户的总消费额
      *
@@ -53,7 +53,7 @@ public interface EleBatteryServiceFeeOrderService {
      * @return
      */
     BigDecimal queryUserTurnOver(Integer tenantId, Long uid);
-
+    
     /**
      * 总消费额
      *
@@ -62,19 +62,28 @@ public interface EleBatteryServiceFeeOrderService {
      * @return
      */
     BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId);
-
+    
     List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
-
+    
     BigDecimal queryAllTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
-
-
+    
+    
     EleBatteryServiceFeeOrder selectByOrderNo(String orderNo);
-
+    
     Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
-
+    
     void membercardExpireGenerateServiceFeeOrder(String s);
     
     R listSuperAdminPage(BatteryServiceFeeQuery batteryServiceFeeQuery);
     
     R countTotalForSuperAdmin(BatteryServiceFeeQuery batteryServiceFeeQuery);
+    
+    /**
+     * 获取租户的滞纳金起算时间，未生成滞纳金订单时 orderId 传null即可
+     *
+     * @param eleBatteryServiceFeeOrder 滞纳金订单
+     * @param tenantId                  租户id
+     * @return 过期滞纳金起算时间
+     */
+    Integer getExpiredProtectionTime(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder, Integer tenantId);
 }

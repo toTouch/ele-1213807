@@ -222,7 +222,10 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                     return;
                 }
                 
-                if (Objects.isNull(item.getMemberCardExpireTime()) || item.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > System.currentTimeMillis()) {
+                // 获取过期滞纳金起算时间
+                Integer expiredProtectionTime = getExpiredProtectionTime(null, userInfo.getTenantId());
+                
+                if (Objects.isNull(item.getMemberCardExpireTime()) || item.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L > System.currentTimeMillis()) {
                     return;
                 }
                 
@@ -239,7 +242,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                     return;
                 }
                 
-                if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+                if (BigDecimal.ZERO.compareTo(batteryMemberCard.getServiceCharge()) >= 0) {
                     log.info("BATTERY SERVICE FEE ORDER INFO! The serviceCharge of batteryMemberCard is zero,uid={},memberCardId={}", item.getUid(), item.getMemberCardId());
                     return;
                 }
@@ -257,7 +260,6 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 
                 // 套餐过期生成滞纳金订单
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
                 
                 // 用户绑定的电池型号
                 List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -268,9 +270,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                         .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
                         .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType()).batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
-                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge()).expiredProtectionTime(
-                                Objects.isNull(electricityConfig) || Objects.isNull(electricityConfig.getExpiredProtectionTime())
-                                        ? ElectricityConfig.EXPIRED_PROTECTION_TIME_DEFAULT : electricityConfig.getExpiredProtectionTime()).build();
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
+                        .expiredProtectionTime(expiredProtectionTime).build();
                 eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
                 
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
@@ -318,5 +319,25 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Slave
     public R countTotalForSuperAdmin(BatteryServiceFeeQuery batteryServiceFeeQuery) {
         return R.ok(eleBatteryServiceFeeOrderMapper.countTotalForSuperAdmin(batteryServiceFeeQuery));
+    }
+    
+    @Override
+    public Integer getExpiredProtectionTime(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder, Integer tenantId) {
+        // 获取滞纳金起算时间的时候，若产生了滞纳金订单，直接取滞纳金订单中的快照记录，若快照记录中没有，又需要从租户配置中实时获取
+        // 没有滞纳金订单时需要直接从租户配置中取，无论何种场景从租户配置中取值，取不到的时候都需要使用默认值24小时
+        Integer expiredProtectionTime = null;
+        if (!Objects.isNull(eleBatteryServiceFeeOrder)) {
+            // 已经生成滞纳金订单的从订单中取起算时间，取不到在使用24小时
+            expiredProtectionTime = eleBatteryServiceFeeOrder.getExpiredProtectionTime();
+        }
+        
+        if (Objects.isNull(expiredProtectionTime)) {
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            expiredProtectionTime =
+                    Objects.isNull(electricityConfig) || Objects.isNull(electricityConfig.getExpiredProtectionTime()) ? ElectricityConfig.EXPIRED_PROTECTION_TIME_DEFAULT
+                            : electricityConfig.getExpiredProtectionTime();
+        }
+        
+        return expiredProtectionTime;
     }
 }
