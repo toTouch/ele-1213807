@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/28
+ * Create date: 2024/6/28
  */
 
 package com.xiliulou.electricity.mq.handler.message.wechat;
