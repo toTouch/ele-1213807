@@ -15,6 +15,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.exception.UserLoginException;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationToken;
 import com.xiliulou.security.bean.SecurityUser;
 import com.xiliulou.security.constant.TokenConstant;
@@ -65,6 +66,8 @@ public class WxProThirdAuthenticationServiceImpl extends AbstractThirdAuthentica
     
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
+        TtlTraceIdSupport.set();
+        
         String code = (String) authMap.get("code");
         String iv = (String) authMap.get("iv");
         String data = (String) authMap.get("data");
@@ -118,6 +121,7 @@ public class WxProThirdAuthenticationServiceImpl extends AbstractThirdAuthentica
             
         } finally {
             redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
+            TtlTraceIdSupport.clear();
         }
     }
     

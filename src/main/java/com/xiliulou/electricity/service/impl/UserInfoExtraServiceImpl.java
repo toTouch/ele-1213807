@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -373,7 +373,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
                 merchantId = merchantInviterVO.getMerchantId();
             }
         } else {
-            inviterName = Optional.ofNullable(userInfoService.queryByUidFromDb(inviterUid)).map(UserInfo::getName).orElse("");
+            inviterName = Optional.ofNullable(userInfoService.queryByUidFromDbIncludeDelUser(inviterUid)).map(UserInfo::getName).orElse("");
         }
         
         return MerchantInviterVO.builder().uid(uid).inviterUid(inviterUid).inviterName(inviterName).inviterSource(activitySource).merchantId(merchantId).build();
@@ -610,12 +610,34 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (Objects.isNull(electricityConfig.getEleLimitCount()) || Objects.equals(electricityConfig.getEleLimitCount(), NumberConstant.ZERO)) {
             return Triple.of(false, null, null);
         }
-        
-        if (packageList.size() >= electricityConfig.getEleLimitCount()) {
+    
+        if (countOnlineOrder(packageList) >= electricityConfig.getEleLimitCount()) {
             return Triple.of(true, "120151", "您已购买了多个尚未使用的换电套餐，为保障您的资金安全，请联系客服后购买");
         }
         
         return Triple.of(false, null, null);
+    }
+    
+    private Integer countOnlineOrder(List<UserBatteryMemberCardPackage> packageList) {
+        Integer count = 0;
+        
+        List<String> orderIdList = packageList.stream().map(UserBatteryMemberCardPackage::getOrderId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(orderIdList)) {
+            return count;
+        }
+    
+        List<ElectricityMemberCardOrder> electricityMemberCardOrders = electricityMemberCardOrderService.queryListByOrderIds(orderIdList);
+        if (CollectionUtils.isEmpty(electricityMemberCardOrders)) {
+            return count;
+        }
+    
+        for (ElectricityMemberCardOrder electricityMemberCardOrder : electricityMemberCardOrders) {
+            if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT)) {
+                count++;
+            }
+        }
+        
+        return count;
     }
     
     @Override

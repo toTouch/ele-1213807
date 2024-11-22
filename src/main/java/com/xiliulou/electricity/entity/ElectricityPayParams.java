@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import lombok.Data;
 
 
@@ -100,6 +101,13 @@ public class ElectricityPayParams {
      * 加盟商id
      */
     private Long franchiseeId;
+    
+    /**
+     * 微信凭证类型
+     *
+     * @see ElectricityPayParamsCertTypeEnum
+     */
+    private Integer certType;
     
     
     private Integer delFlag;

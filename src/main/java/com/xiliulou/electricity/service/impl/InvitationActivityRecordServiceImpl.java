@@ -447,7 +447,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 
                 UserInfo joinUser = userInfoService.queryByUidFromCache(joinUid);
                 if (Objects.isNull(joinUser)) {
-                    joinUser = userInfoService.queryByUidFromDb(joinUid);
+                    joinUser = userInfoService.queryByUidFromDbIncludeDelUser(joinUid);
                 }
                 
                 Optional.ofNullable(joinUser).ifPresent(user -> {
@@ -571,7 +571,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 
                 UserInfo joinUser = userInfoService.queryByUidFromCache(item.getJoinUid());
                 if (Objects.isNull(joinUser)) {
-                    joinUser = userInfoService.queryByUidFromDb(item.getJoinUid());
+                    joinUser = userInfoService.queryByUidFromDbIncludeDelUser(item.getJoinUid());
                 }
                 
                 Optional.ofNullable(joinUser).ifPresent(u -> {

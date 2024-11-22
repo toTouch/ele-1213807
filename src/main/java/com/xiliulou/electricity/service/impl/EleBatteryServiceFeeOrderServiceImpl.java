@@ -17,6 +17,7 @@ import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -229,7 +230,12 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                     log.warn("BATTERY SERVICE FEE ORDER WARN! memberCard is not exit,uid={},memberCardId={}", item.getUid(), item.getMemberCardId());
                     return;
                 }
-
+                
+                if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+                    log.info("BATTERY SERVICE FEE ORDER INFO! The serviceCharge of batteryMemberCard is zero,uid={},memberCardId={}", item.getUid(), item.getMemberCardId());
+                    return;
+                }
+                
                 ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(serviceFeeUserInfo)) {
                     log.warn("BATTERY SERVICE FEE ORDER WARN! not found serviceFeeUserInfo,uid={}", item.getUid());

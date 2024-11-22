@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -116,7 +115,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -1895,7 +1893,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();
             BeanUtils.copyProperties(eleCabinetUsedRecord, eleCabinetUsedRecordVO);
             
-            UserInfo userInfo = userInfoService.queryByUidFromDb(eleCabinetUsedRecord.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(eleCabinetUsedRecord.getUid());
             if (Objects.nonNull(userInfo)) {
                 eleCabinetUsedRecordVO.setUserName(userInfo.getName());
                 eleCabinetUsedRecordVO.setPhone(userInfo.getPhone());

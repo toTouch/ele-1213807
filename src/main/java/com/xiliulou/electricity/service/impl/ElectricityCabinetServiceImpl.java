@@ -4798,7 +4798,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 // 新增柜机扩展参数
                 ElectricityCabinetExtra electricityCabinetExtra = ElectricityCabinetExtra.builder().eid(electricityCabinet.getId().longValue())
-                        .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
+                        .batteryCountType(EleCabinetConstant.BATTERY_COUNT_TYPE_NORMAL).rentTabType(RentReturnNormEnum.ALL_RENT.getCode())
+                        .returnTabType(RentReturnNormEnum.MIN_RETURN.getCode()).tenantId(electricityCabinet.getTenantId()).delFlag(electricityCabinet.getDelFlag())
                         .createTime(electricityCabinet.getCreateTime()).updateTime(electricityCabinet.getUpdateTime()).build();
                 electricityCabinetExtraService.insertOne(electricityCabinetExtra);
             });

@@ -5,6 +5,7 @@
 package com.xiliulou.electricity.request.payparams;
 
 import com.xiliulou.electricity.enums.ElectricityPayParamsConfigEnum;
+import com.xiliulou.electricity.enums.payparams.ElectricityPayParamsCertTypeEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -83,15 +84,22 @@ public class ElectricityPayParamsRequest {
      */
     private String paternerKey;
     
+    /**
+     * 凭证类型
+     *
+     * @see ElectricityPayParamsCertTypeEnum
+     */
+    @NotNull(groups = {CreateGroup.class}, message = "凭证类型不能为空")
+    private Integer certType;
     
-//    /**
-//     * 商家版小程序 appid
-//     */
-//    private String merchantAppletId;
-//
-//    /**
-//     * 商家版小程序 appSecret
-//     */
-//    private String merchantAppletSecret;
-
+    //    /**
+    //     * 商家版小程序 appid
+    //     */
+    //    private String merchantAppletId;
+    //
+    //    /**
+    //     * 商家版小程序 appSecret
+    //     */
+    //    private String merchantAppletSecret;
+    
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -62,6 +63,9 @@ public class DataScreenServiceImpl implements DataScreenService {
     UserCouponService userCouponService;
     @Autowired
     private ApplicationContext applicationContext;
+    
+    @Resource
+    private ElectricityCabinetOrderHistoryService electricityCabinetOrderHistoryService;
 
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
@@ -77,7 +81,8 @@ public class DataScreenServiceImpl implements DataScreenService {
         CompletableFuture<Void> electricityOrderCount = CompletableFuture.runAsync(() -> {
             ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().tenantId(tenantId).build();
             Integer count = electricityCabinetOrderService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
-            orderStatisticsVo.setElectricityOrderCount(count);
+            Integer historyCount = electricityCabinetOrderHistoryService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
+            orderStatisticsVo.setElectricityOrderCount(count + historyCount);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
             return null;
@@ -166,7 +171,9 @@ public class DataScreenServiceImpl implements DataScreenService {
         //换电订单统计
         CompletableFuture<Integer> electricityOrderCount = CompletableFuture.supplyAsync(() -> {
             ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().tenantId(tenantId).build();
-            return electricityCabinetOrderService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
+            Integer count = electricityCabinetOrderService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
+            Integer historyCount = electricityCabinetOrderHistoryService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
+            return count + historyCount;
         }, threadPool).exceptionally(e -> {
             log.error("DATA SUMMARY BROWSING ERROR! query electricityOrderTurnOver error!", e);
             return null;

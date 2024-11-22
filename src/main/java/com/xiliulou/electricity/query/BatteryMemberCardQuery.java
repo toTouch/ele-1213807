@@ -169,4 +169,14 @@ public class BatteryMemberCardQuery {
      * 分期套餐首期费用
      */
     private BigDecimal downPayment;
+    
+    /**
+     * 是否限制提前续费，0:不限制,1:限制
+     */
+    private Integer advanceRenewal;
+    
+    /**
+     * 提前续费天数
+     */
+    private Integer advanceRenewalDay;
 }

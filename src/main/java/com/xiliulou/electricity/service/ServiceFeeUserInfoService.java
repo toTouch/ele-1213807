@@ -26,7 +26,11 @@ public interface ServiceFeeUserInfoService {
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
     
     BigDecimal queryUserBatteryServiceFee(UserInfo userInfo);
-
+    
+    /**
+     * !!!注意!!!
+     * ——调用本方法时，传递的套餐对象 batteryMemberCard 应当为 <用户当前绑定的套餐>，不可传递 <用户新购买或新续费的套餐>
+     */
     Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo);
 
     Integer deleteByUid(Long uid);
