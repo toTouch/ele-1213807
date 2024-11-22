@@ -2061,7 +2061,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
     
     /**
-     * 生成逾期订单
+     * 生成冻结订单
      *
      * @return
      */

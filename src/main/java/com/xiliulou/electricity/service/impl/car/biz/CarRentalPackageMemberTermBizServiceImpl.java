@@ -908,7 +908,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             return null;
         }
         
-        if (ObjectUtils.isEmpty(slippageFreezeEntity.getLateFeeEndTime())) {
+        if (ObjectUtils.isNotEmpty(slippageFreezeEntity.getLateFeeEndTime())) {
+            // 有结束时间
             return null;
         }
         
