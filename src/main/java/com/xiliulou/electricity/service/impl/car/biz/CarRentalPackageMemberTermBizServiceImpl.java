@@ -905,11 +905,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         
         CarRentalPackageOrderSlippagePo slippageFreezeEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(orderNo, SlippageTypeEnum.FREEZE.getCode());
         if (ObjectUtils.isEmpty(slippageFreezeEntity)) {
-            return slippageFreezeEntity;
+            return null;
         }
         
-        if (ObjectUtils.isEmpty(slippageFreezeEntity.getLateFeeEndTime())) {
-            return slippageFreezeEntity;
+        if (ObjectUtils.isNotEmpty(slippageFreezeEntity.getLateFeeEndTime())) {
+            // 有结束时间
+            return null;
         }
         
         slippageFreezeEntity.setUpdateTime(nowTime);
