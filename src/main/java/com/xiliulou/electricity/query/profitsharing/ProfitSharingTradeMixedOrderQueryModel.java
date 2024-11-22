@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/8/26
+ * Create date: 2024/8/26
  */
 
 package com.xiliulou.electricity.query.profitsharing;
