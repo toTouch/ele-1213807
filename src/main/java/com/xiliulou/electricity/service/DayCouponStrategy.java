@@ -4,6 +4,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.enums.DayCouponUseScope;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * <p>
@@ -114,13 +115,14 @@ public interface DayCouponStrategy {
      * <p>调用此接口时，前置校验已全部完成，仅实现增加天数逻辑即可</p>
      * <p>优惠券天数字段为 coupon.getCount() </p>
      * <p>left --  业务是否成功 </p>
-     * <p>right -- 套餐id(成功必须返回) </p>
+     * <p>middle -- 套餐id(成功必须返回) </p>
+     * <p>right -- 订单编号(成功必须返回) </p>
      * @param coupon coupon
      * @param uid uid
      * @return boolean
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    Pair<Boolean,Long> process(Coupon coupon, Integer tenantId, Long uid);
+    Triple<Boolean,Long ,String> process(Coupon coupon, Integer tenantId, Long uid);
     
 }

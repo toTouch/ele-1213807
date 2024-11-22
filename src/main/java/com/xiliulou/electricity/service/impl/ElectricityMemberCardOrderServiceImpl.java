@@ -74,8 +74,8 @@ import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
-import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
@@ -153,9 +153,9 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
-import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.task.BatteryMemberCardExpireReminderTask;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -880,8 +880,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         
         String generateOrderId = generateOrderId(user.getUid());
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId)
-                .memberCardName(batteryMemberCard.getName()).phone(userInfo.getPhone()).userName(userInfo.getName()).status(autoReviewOrNot ? EleDisableMemberCardRecord.MEMBER_CARD_DISABLE : EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW)
-                .uid(userInfo.getUid()).tenantId(userInfo.getTenantId()).uid(user.getUid()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
+                .memberCardName(batteryMemberCard.getName()).phone(userInfo.getPhone()).userName(userInfo.getName())
+                .status(autoReviewOrNot ? EleDisableMemberCardRecord.MEMBER_CARD_DISABLE : EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW).uid(userInfo.getUid())
+                .tenantId(userInfo.getTenantId()).uid(user.getUid()).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                 .batteryMemberCardId(userBatteryMemberCard.getMemberCardId()).chooseDays(disableCardDays)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME).chargeRate(batteryMemberCard.getFreezeServiceCharge()).applyReason(applyReason)
@@ -1355,7 +1356,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         .updateTime(System.currentTimeMillis()).batteryServiceFeeGenerateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
                         .storeId(userInfo.getStoreId()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).modelType(franchisee.getModelType())
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge()).build();
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge())
+                        .expiredProtectionTime(EleBatteryServiceFeeOrder.EXPIRED_PROTECTION_TIME_DISABLE).build();
                 eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
                 serviceFeeUserInfoUpdate.setPauseOrderNo(eleBatteryServiceFeeOrder.getOrderId());
@@ -1369,7 +1371,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .name(user.getUsername()).memberCardDisableStatus(UserBatteryMemberCard.MEMBER_CARD_DISABLE).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
-
+        
         try {
             Map<String, Object> map = new HashMap<>();
             map.put("username", eleDisableMemberCardRecord.getUserName());
@@ -1683,6 +1685,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
             
             // 计算得到的服务费大于0再保存记录
             if (expireBatteryServiceFee.compareTo(BigDecimal.ZERO) > 0) {
@@ -1706,6 +1709,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 expireMembercardServiceFeeOrderInsert.setPayTime(System.currentTimeMillis());
                 expireMembercardServiceFeeOrderInsert.setCreateTime(System.currentTimeMillis());
                 expireMembercardServiceFeeOrderInsert.setUpdateTime(System.currentTimeMillis());
+                expireMembercardServiceFeeOrderInsert.setExpiredProtectionTime(
+                        Objects.isNull(electricityConfig) || Objects.isNull(electricityConfig.getExpiredProtectionTime()) ? ElectricityConfig.EXPIRED_PROTECTION_TIME_DEFAULT
+                                : electricityConfig.getExpiredProtectionTime());
                 batteryServiceFeeOrderService.insert(expireMembercardServiceFeeOrderInsert);
             }
         }
@@ -2881,8 +2887,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 检查用户与套餐的用户分组是否匹配
-        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCardToBuy.getFranchiseeId(), batteryMemberCardToBuy,
-                CHECK_USERINFO_GROUP_ADMIN);
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCardToBuy.getFranchiseeId(),
+                batteryMemberCardToBuy, CHECK_USERINFO_GROUP_ADMIN);
         
         if (Boolean.FALSE.equals(checkTriple.getLeft())) {
             return checkTriple;

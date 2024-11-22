@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponDayRecordEntity;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
@@ -21,6 +20,7 @@ import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -128,26 +128,33 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     public boolean isPackageInUse(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
+            log.info("DAY COUPON INFO! There is no userBatteryMemberCard. uid={}", uid);
             return false;
         }
         
         Long memberCardId = userBatteryMemberCard.getMemberCardId();
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(memberCardId);
         if (Objects.isNull(memberCardId) || Objects.equals(memberCardId, 0L) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            log.info("DAY COUPON INFO! There is no batteryMemberCard or the batteryMemberCard is expired. uid={}", uid);
             return false;
         }
         
-        return !(Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0);
+        if ((Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+            log.info("DAY COUPON INFO! The number of limited batteryMemberCard has been used up. uid={}", uid);
+            return false;
+        }
+        
+        return true;
     }
     
     @Override
-    public Pair<Boolean, Long> process(Coupon coupon, Integer tenantId, Long uid) {
+    public Triple<Boolean,Long ,String> process(Coupon coupon, Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
         if (Objects.isNull(memberCardOrder)) {
             log.warn("DAY COUPON WARN! day coupon order does not exist");
-            return Pair.of(Boolean.FALSE, null);
+            return Triple.of(Boolean.FALSE, null, null);
         }
         
         ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -158,6 +165,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(uid);
         userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + coupon.getCount() * 24 * 60 * 60 * 1000L);
+        userBatteryMemberCardUpdate.setOrderExpireTime(userBatteryMemberCard.getOrderExpireTime() + coupon.getCount() * 24 * 60 * 60 * 1000L);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
@@ -169,6 +177,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
-        return null;
+        
+        return Triple.of(Boolean.TRUE, userBatteryMemberCard.getMemberCardId(), memberCardOrder.getOrderId());
     }
 }

@@ -20,6 +20,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -89,12 +90,22 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.failMsg("该优惠券非天数券，请选择其他优惠券");
             }
             
+            Coupon coupon = couponService.queryByIdFromDB(userCoupon.getCouponId());
+            if (Objects.isNull(coupon)) {
+                return R.failMsg("请选择正确的优惠券使用");
+            }
+            DayCouponUseScope useScope = DayCouponUseScope.getByCode(coupon.getUseScope());
             //判断套餐相关
             Long uid = userInfo.getUid();
-            DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(tenantId, uid);
+            DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(useScope,tenantId, uid);
             if (Objects.isNull(strategy)) {
                 return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
             }
+            
+            if (!strategy.isPackageInUse(tenantId, uid)) {
+                return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
+            }
+            
             if (strategy.isLateFee(tenantId, uid)) {
                 return R.failMsg("您有未缴纳的滞纳金，暂无法使用，请缴纳后使用");
             }
@@ -114,27 +125,15 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.failMsg("您已退押，暂无法使用，请缴纳押金后使用");
             }
             
-            Coupon coupon = couponService.queryByIdFromDB(userCoupon.getCouponId());
-            if (Objects.isNull(coupon)) {
-                return R.failMsg("请选择正确的优惠券使用");
-            }
-            DayCouponUseScope scope = strategy.getScope(tenantId, uid);
-            if (Objects.isNull(scope)) {
-                return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
-            }
+            Triple<Boolean,Long ,String> processed = strategy.process(coupon, tenantId, uid);
             
-            if (Objects.equals(scope.getCode(), coupon.getUseScope())) {
-                return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
-            }
-            
-            Pair<Boolean,Long> processed = strategy.process(coupon, tenantId, uid);
             if (Objects.isNull(processed) || !processed.getLeft()) {
                 return R.failMsg("优惠券使用失败");
             }
             
             //更新优惠券状态
             UserCoupon update = UserCoupon.builder().id(userCoupon.getId()).status(UserCoupon.STATUS_USED).updateTime(System.currentTimeMillis()).tenantId(tenantId)
-                    .orderId(userCoupon.getOrderId()).build();
+                    .orderId(processed.getRight()).build();
             userCouponService.updateStatus(update);
             //保存天数券记录
             CouponDayRecordEntity entity = new CouponDayRecordEntity();
@@ -145,7 +144,7 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             entity.setUseScope(coupon.getUseScope());
             entity.setUid(uid);
             entity.setDelFlag(CouponDayRecordEntity.DEL_NORMAL);
-            entity.setPackageId(processed.getRight());
+            entity.setPackageId(processed.getMiddle());
             couponDayRecordService.save(entity);
             return R.ok();
         }finally {

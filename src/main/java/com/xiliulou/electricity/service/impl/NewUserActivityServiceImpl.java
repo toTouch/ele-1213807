@@ -6,6 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -14,13 +15,17 @@ import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
+import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityPageQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
@@ -29,6 +34,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.NewUserActivityVO;
 import com.xiliulou.electricity.vo.ShareAndUserActivityVO;
+import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,9 +45,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,6 +74,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	
 	@Autowired
 	UserService userService;
+	
+	@Resource
+	private UserCouponMapper userCouponMapper;
 	
 	@Autowired
 	private AssertPermissionService assertPermissionService;
@@ -328,19 +339,38 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			if (Objects.isNull(newUserActivity.getCouponId())) {
 				return R.ok(newUserActivity);
 			}
+			UserCouponQuery build = UserCouponQuery.builder().uid(uid).status(UserCoupon.STATUS_UNUSED).build();
+			List<UserCouponVO> userCouponList = Optional.ofNullable(userCouponMapper.queryList(build)).orElse(List.of());
+			Map<Integer, Long> collect = userCouponList.stream().collect(Collectors.toMap(UserCouponVO::getCouponId, UserCouponVO::getDeadline, (v1, v2) -> v1));
 			
 			Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
 			if (Objects.isNull(coupon)) {
 				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
 				return R.ok(newUserActivity);
 			}
+			LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+			coupon.setDeadline(TimeUtils.convertTimeStamp(now));
+			if (collect.containsKey(coupon.getId())){
+				coupon.setDeadline(collect.get(coupon.getId()));
+			}
 			
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
+			
 			newUserActivityVO.setCoupon(coupon);
 			
 			List<Coupon> coupons = Optional.ofNullable(newUserActivity.getCoupons())
-					.orElse(List.of()).stream().map(couponId -> couponService.queryByIdFromCache(couponId.intValue())).collect(Collectors.toList());
+					.orElse(List.of()).stream().map(couponId -> {
+						Coupon query = couponService.queryByIdFromCache(couponId.intValue());
+						LocalDateTime queryNow = LocalDateTime.now().plusDays(query.getDays());
+						query.setDeadline(TimeUtils.convertTimeStamp(queryNow));
+						if (collect.containsKey(query.getId())){
+							query.setDeadline(collect.get(query.getId()));
+						}
+						return query;
+					}).collect(Collectors.toList());
+			
+			
 			newUserActivityVO.setCouponArrays(coupons);
 			
 			return R.ok(newUserActivityVO);

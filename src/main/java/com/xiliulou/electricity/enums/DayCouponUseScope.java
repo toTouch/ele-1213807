@@ -27,4 +27,16 @@ public enum DayCouponUseScope {
     
     private final Integer code;
     private final String desc;
+    
+    public static DayCouponUseScope getByCode(Integer code) {
+        if (code == null) {
+            return UNKNOWN;
+        }
+        for (DayCouponUseScope value : DayCouponUseScope.values()) {
+            if (value.getCode().equals(code)) {
+                return value;
+            }
+        }
+        return UNKNOWN;
+    }
 }

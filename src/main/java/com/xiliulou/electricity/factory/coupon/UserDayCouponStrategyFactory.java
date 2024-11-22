@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.factory.coupon;
 
 
+import com.xiliulou.electricity.enums.DayCouponUseScope;
 import com.xiliulou.electricity.service.DayCouponStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,8 +50,8 @@ public class UserDayCouponStrategyFactory implements CommandLineRunner {
         }
     }
     
-    public DayCouponStrategy getDayCouponStrategy(final Integer tenantId,final Long uid) {
-        if (Objects.isNull(uid) || Objects.isNull(tenantId)){
+    public DayCouponStrategy getDayCouponStrategy(final DayCouponUseScope useScope,final Integer tenantId,final Long uid) {
+        if (Objects.isNull(uid) || Objects.isNull(tenantId) || Objects.isNull(useScope)){
             log.warn("UserDayCouponStrategyFactory.getDayCouponStrategy FAILED! uid is null!");
             return null;
         }
@@ -61,7 +62,9 @@ public class UserDayCouponStrategyFactory implements CommandLineRunner {
             log.warn("UserDayCouponStrategyFactory.getDayCouponStrategy FAILED! strategyList is empty!");
             return null;
         }
-        return strategyList.stream().filter(strategy -> strategy.isPackageInUse(tenantId,uid))
-                .findFirst().orElse( null);
+        return strategyList.stream().filter(strategy -> {
+                    DayCouponUseScope scope = strategy.getScope(tenantId, uid);
+                    return Objects.equals(scope, useScope);
+                }).findFirst().orElse( null);
     }
 }
