@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper">
+    
+    <select id="selectListByChannelOrderNoList"
+            resultType="com.xiliulou.electricity.entity.ElectricityTradeOrder">
+        SELECT
+            channel_order_no,
+            order_no
+        FROM
+        t_electricity_trade_order
+        <where>
+            channel_order_no in
+            <foreach collection="transactionIdList" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>
+

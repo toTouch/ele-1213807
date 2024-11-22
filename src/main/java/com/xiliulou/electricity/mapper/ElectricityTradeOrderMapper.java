@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 public interface ElectricityTradeOrderMapper extends BaseMapper<ElectricityTradeOrder> {
 
     @Select("SELECT *  FROM t_electricity_trade_order WHERE trade_order_no =#{outTradeNo} ")
@@ -12,4 +14,7 @@ public interface ElectricityTradeOrderMapper extends BaseMapper<ElectricityTrade
 
     @Select("SELECT *  FROM t_electricity_trade_order WHERE order_no =#{orderId} ")
     ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
+    
+    List<ElectricityTradeOrder> selectListByChannelOrderNoList(@Param("transactionIdList") List<String> transactionIdList);
+    
 }

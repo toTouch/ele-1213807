@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.config.WechatConfig;
@@ -629,6 +630,12 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
         return baseMapper.selectOne(
                 new LambdaQueryWrapper<ElectricityTradeOrder>().eq(ElectricityTradeOrder::getOrderNo, orderId).isNotNull(ElectricityTradeOrder::getChannelOrderNo)
                         .orderByDesc(ElectricityTradeOrder::getId).last("limit 1"));
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityTradeOrder> listByChannelOrderNoList(List<String> transactionIdList) {
+        return baseMapper.selectListByChannelOrderNoList(transactionIdList);
     }
     
     @Override
