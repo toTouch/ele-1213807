@@ -886,7 +886,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .batteryMemberCardId(userBatteryMemberCard.getMemberCardId()).chooseDays(disableCardDays)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME).chargeRate(batteryMemberCard.getFreezeServiceCharge()).applyReason(applyReason)
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).source(EleDisableMemberCardRecord.SOURCE_USER).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         
         ServiceFeeUserInfo insertOrUpdateServiceFeeUserInfo = ServiceFeeUserInfo.builder().disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .uid(user.getUid()).updateTime(System.currentTimeMillis()).build();
@@ -1315,8 +1315,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .status(UserBatteryMemberCard.MEMBER_CARD_DISABLE).tenantId(userInfo.getTenantId()).uid(uid).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                 .chargeRate(batteryMemberCard.getFreezeServiceCharge()).chooseDays(days).disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
                 .cardDays(userBatteryMemberCardService.transforRemainingTime(userBatteryMemberCard, batteryMemberCard)).disableMemberCardTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).auditorId(SecurityUtils.getUserInfo().getUid())
-                .source(EleDisableMemberCardRecord.SOURCE_BACKGROUND).build();
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).auditorId(SecurityUtils.getUserInfo().getUid()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         
         // 更新用户套餐状态为暂停
