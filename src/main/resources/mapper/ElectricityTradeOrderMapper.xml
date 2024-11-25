@@ -16,5 +16,20 @@
             </foreach>
         </where>
     </select>
+    
+    <select id="existByTenantIdList" resultType="Integer">
+        SELECT
+            tenant_id
+        FROM
+            t_electricity_trade_order
+        where
+            tenant_id in
+        <foreach collection="tenantIdList" separator="," item="tenantId" close=")" open="(">
+            #{tenantId}
+        </foreach>
+        and create_time  >=#{startTime}
+        and create_time &lt;=#{endTime}
+     group by tenant_id
+    </select>
 </mapper>
 

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.wp.beanposstprocessor.WechatAccessTokenSevice;
+import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.OrderNotShippedDealService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.pay.shipping.entity.ShippingOrder;
 import com.xiliulou.pay.shipping.entity.ShippingQueryOrderRequest;
 import com.xiliulou.pay.shipping.entity.ShippingQueryOrderResult;
@@ -60,6 +62,16 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
         List<Integer> tenantIdList = new ArrayList<>();
         tenantIdList.add(tenantId);
         
+        // 昨天开始
+        long startTime = DateUtils.getTimeAgoStartTime(DateFormatConstant.YESTERDAY);
+        // 昨天结束
+        long endTime = DateUtils.getTimeAgoEndTime(DateFormatConstant.YESTERDAY);
+        
+        List<Integer> existByTenantIdList = electricityTradeOrderService.existByTenantIdList(tenantIdList, startTime, endTime);
+        if (ObjectUtils.isEmpty(existByTenantIdList)) {
+            return;
+        }
+        
         while (tenantFlag) {
             if (Objects.nonNull(tenantId)) {
                 tenantFlag = false;
@@ -76,6 +88,11 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
             tenantIdList.stream().forEach(id -> {
                 ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(id, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
                 if (Objects.isNull(electricityPayParams)) {
+                    return;
+                }
+                
+                // 检测租户昨天是否存在套餐购买订单
+                if (Objects.isNull(tenantId) && !existByTenantIdList.contains(id)) {
                     return;
                 }
                 
