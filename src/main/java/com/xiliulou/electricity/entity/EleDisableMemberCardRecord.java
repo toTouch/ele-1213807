@@ -132,11 +132,6 @@ public class EleDisableMemberCardRecord {
      */
     private Long auditorId;
     
-    /**
-     * 来源，0-后台冻结，1-用户申请
-     */
-    private Integer source;
-
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
