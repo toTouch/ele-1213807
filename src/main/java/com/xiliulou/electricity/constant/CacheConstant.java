@@ -901,7 +901,7 @@ public interface CacheConstant {
     /**
      * 故障告警处理结果缓存
      */
-    String WARN_HANDLE_RESULT = "warn_handle_result:uid:%s:sessionId:%s";
+    String WARN_HANDLE_RESULT = "warn_handle_result:%s:%s";
     
     /**
      * 标记电池缓存
