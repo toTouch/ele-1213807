@@ -351,11 +351,13 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
         }
         
+        EleBatteryServiceFeeOrder expireEleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+        Integer expiredProtectionTime = eleBatteryServiceFeeOrderService.getExpiredProtectionTime(expireEleBatteryServiceFeeOrder, userInfo.getTenantId());
         //是否存在套餐过期电池服务费
         if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (
-                System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0)) {
+                System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L) > 0)) {
             int batteryMemebercardExpireDays = (int) Math.ceil(
-                    (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                    (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
             expireBatteryServiceFee = userBindBatteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
             type = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
             log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
@@ -505,21 +507,24 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             }
         }
         
+        EleBatteryServiceFeeOrder expireEleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
+        Integer expiredProtectionTime = eleBatteryServiceFeeOrderService.getExpiredProtectionTime(expireEleBatteryServiceFeeOrder, userInfo.getTenantId());
+        
         //是否存在套餐过期电池服务费
         if (!Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (
-                System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0)) {
+                System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L) > 0)) {
             int batteryMemebercardExpireDays = (int) Math.ceil(
-                    (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                    (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
             expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
             log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
             
-            EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getExpireOrderNo());
-            if (Objects.nonNull(eleBatteryServiceFeeOrder)) {
+            
+            if (Objects.nonNull(expireEleBatteryServiceFeeOrder)) {
                 UserServiceFeeDetail userServiceFeeDetail = new UserServiceFeeDetail();
                 userServiceFeeDetail.setBatteryMembercardName(batteryMemberCard.getName());
-                userServiceFeeDetail.setSource(eleBatteryServiceFeeOrder.getSource());
+                userServiceFeeDetail.setSource(expireEleBatteryServiceFeeOrder.getSource());
                 userServiceFeeDetail.setBatteryServiceFee(expireBatteryServiceFee);
-                userServiceFeeDetail.setBatteryServiceFeeGenerateTime(eleBatteryServiceFeeOrder.getBatteryServiceFeeGenerateTime());
+                userServiceFeeDetail.setBatteryServiceFeeGenerateTime(expireEleBatteryServiceFeeOrder.getBatteryServiceFeeGenerateTime());
                 list.add(userServiceFeeDetail);
             }
         }
