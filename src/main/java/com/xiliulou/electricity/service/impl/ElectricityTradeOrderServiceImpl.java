@@ -639,6 +639,12 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     }
     
     @Override
+    @Slave
+    public List<Integer> existByTenantIdList(List<Integer> tenantIdList, long startTime, long endTime) {
+        return baseMapper.existByTenantIdList(tenantIdList, startTime, endTime);
+    }
+    
+    @Override
     public void insert(ElectricityTradeOrder electricityTradeOrder) {
         baseMapper.insert(electricityTradeOrder);
     }
