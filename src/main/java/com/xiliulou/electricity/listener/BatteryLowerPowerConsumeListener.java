@@ -21,6 +21,7 @@ import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
 import com.xiliulou.electricity.service.template.TemplateConfigService;
 import com.xiliulou.core.base.enums.ChannelEnum;
+import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -70,7 +71,9 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
     
     @Override
     public void onMessage(String message) {
+        TtlTraceIdSupport.set();
         try {
+            log.info("Battery Lower message:{}", message);
             BatteryPowerNotifyDto batteryPowerNotifyDto = JsonUtil.fromJson(message, BatteryPowerNotifyDto.class);
             if (Objects.isNull(batteryPowerNotifyDto)) {
                 return;
@@ -83,6 +86,8 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
             
         } catch (Exception e) {
             log.error("CONSUMER ERROR! msg={}", message, e);
+        } finally {
+            TtlTraceIdSupport.clear();
         }
     }
     
@@ -97,6 +102,7 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
         if (Objects.isNull(uid)) {
             return;
         }
-        miniTemplateMsgBizService.sendLowBatteryReminder(electricityBattery.getTenantId(), electricityBattery.getUid(), batteryPowerNotifyDto.getSoc() + "%",batteryPowerNotifyDto.getSn());
+        miniTemplateMsgBizService
+                .sendLowBatteryReminder(electricityBattery.getTenantId(), electricityBattery.getUid(), batteryPowerNotifyDto.getSoc() + "%", batteryPowerNotifyDto.getSn());
     }
 }
