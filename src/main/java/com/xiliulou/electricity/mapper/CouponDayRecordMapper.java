@@ -20,8 +20,8 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface CouponDayRecordMapper extends BaseMapper<CouponDayRecordEntity> {
     
-    Integer queryDaysByUidAndPackageId(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("packageId") Long packageId, @Param("scope") Integer scope);
+    Integer queryDaysByUidAndPackageOrderNo(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("orderNo")  String orderNo, @Param("scope") Integer scope);
     
-    void cleanDaysByUidAndPackageId(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("packageId") Long packageId, @Param("scope") Integer scope);
+    void cleanDaysByUidAndPackageOrderNo(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("orderNo") String orderNo, @Param("scope") Integer scope);
     
 }

@@ -26,9 +26,9 @@ import java.util.Objects;
 public class CouponDayRecordServiceImpl extends ServiceImpl<CouponDayRecordMapper, CouponDayRecordEntity> implements CouponDayRecordService {
     
     @Override
-    public Integer queryDaysByUidAndPackageId(Integer tenantId, Long uid, Long packageId, Integer scope) {
+    public Integer queryDaysByUidAndPackageOrderNo(Integer tenantId, Long uid, String orderNo, Integer scope) {
         
-        Integer count = this.baseMapper.queryDaysByUidAndPackageId(tenantId, uid, packageId , scope);
+        Integer count = this.baseMapper.queryDaysByUidAndPackageOrderNo(tenantId, uid, orderNo , scope);
         if (Objects.nonNull(count)){
             return count;
         }
@@ -36,7 +36,7 @@ public class CouponDayRecordServiceImpl extends ServiceImpl<CouponDayRecordMappe
     }
     
     @Override
-    public void cleanDaysByUidAndPackageId(Integer tenantId, Long uid, Long packageId, Integer scope) {
-        this.baseMapper.cleanDaysByUidAndPackageId(tenantId, uid, packageId , scope);
+    public void cleanDaysByUidAndPackageOrderNo(Integer tenantId, Long uid, String orderNo, Integer scope) {
+        this.baseMapper.cleanDaysByUidAndPackageOrderNo(tenantId, uid, orderNo , scope);
     }
 }
