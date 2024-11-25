@@ -901,7 +901,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         userCouponQuery.setStatus(UserCoupon.STATUS_USED);
         List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
         if (CollectionUtils.isEmpty(userCouponList)) {
-            return null;
+            return 0;
         }
         
         int days = 0;
