@@ -407,7 +407,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         }
         
         List<WechatPayParamsDetails> buildWechatPlatformCertificates = certMap.get(ElectricityPayParamsCertTypeEnum.PLATFORM_CERTIFICATE.getType());
-        if (CollectionUtils.isEmpty(buildWechatPlatformCertificates)) {
+        if (CollectionUtils.isNotEmpty(buildWechatPlatformCertificates)) {
             
             //构建平台证书
             this.batchBuildWechatPlatformCertificateMap(buildWechatPlatformCertificates);
