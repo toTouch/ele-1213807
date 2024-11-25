@@ -316,12 +316,14 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
         }
         
         // 租电订单为普通换电订单，退电订单为企业订单
+        // 每个企业套餐对应的开始使用的时间段均为套餐生效时间，不用处理天数券导致的回收芸豆问题
         if (Objects.equals(rentOrderType, PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_NORMAL.getCode()) && Objects.equals(returnOrderType,
                 PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
             return handlerEleRentDetail(enterpriseReturnRecord, userBatteryMemberCard, uid, enterpriseRentRecordDetailList, currentTimeMillis, enterpriseId);
         }
         
         // 租电和换电都为企业订单
+        // 使用时间段的开始时间可能为天数券时间范围，需要判断处理
         if (Objects.equals(rentOrderType, PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode()) && Objects.equals(returnOrderType,
                 PackageOrderTypeEnum.PACKAGE_ORDER_TYPE_ENTERPRISE.getCode())) {
             return handlerEnterpriseRentDetail(enterpriseReturnRecord, userBatteryMemberCard, uid, enterpriseRentRecordDetailList, currentTimeMillis, enterpriseId);
@@ -362,7 +364,10 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
                     .returnDate(DateUtil.format(new Date(endTime), DateFormatConstant.MONTH_DAY_DATE_FORMAT)).createTime(currentTimeMillis).updateTime(currentTimeMillis).enterpriseId(enterpriseId)
                     .orderId(payMemberCardRecord.getOrderId()).uid(uid).tenantId(enterpriseReturnRecord.getTenantId()).build();
             
-            enterpriseRentRecordDetailList.add(detail);
+            // payMemberCardRecord中记录的是每一个套餐记录中不包括天数券增加的天数的时间，若详情数据的开始时间晚于其结束时间，则为在天数券时间范围内的详情，不予保存
+            if (detail.getRentTime() < payMemberCardRecord.getEndTime()) {
+                enterpriseRentRecordDetailList.add(detail);
+            }
         } else {
             // 计算第一个生效的企业套餐id, 及开始时间
             List<AnotherPayMembercardRecord> anotherPayMembercardRecords = anotherPayMembercardRecordService.selectByUid(uid);
@@ -412,7 +417,10 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
                         .returnDate(DateUtil.format(new Date(endTime), DateFormatConstant.MONTH_DAY_DATE_FORMAT)).createTime(currentTimeMillis).updateTime(currentTimeMillis).enterpriseId(enterpriseId)
                         .orderId(payMemberCardRecordFirst.getOrderId()).uid(uid).tenantId(enterpriseReturnRecord.getTenantId()).build();
                 
-                enterpriseRentRecordDetailList.add(detail);
+                // 第一个套餐开始时可能是天数券时间范围内，需要处理，其他的中间的套餐和结尾的套餐开始时间均为套餐生效时间，不需判断处理
+                if (detail.getRentTime() < endTime) {
+                    enterpriseRentRecordDetailList.add(detail);
+                }
             } else {
                 log.error("save enterprise return record error!enterprise first order pay record not find recordId={}, uid={}, orderId={}", enterpriseReturnRecord.getId(), uid,
                         enterpriseReturnRecord.getReturnMembercardOrderId());
