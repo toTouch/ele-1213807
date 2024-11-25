@@ -67,11 +67,6 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
         // 昨天结束
         long endTime = DateUtils.getTimeAgoEndTime(DateFormatConstant.YESTERDAY);
         
-        List<Integer> existByTenantIdList = electricityTradeOrderService.existByTenantIdList(tenantIdList, startTime, endTime);
-        if (ObjectUtils.isEmpty(existByTenantIdList)) {
-            return;
-        }
-        
         while (tenantFlag) {
             if (Objects.nonNull(tenantId)) {
                 tenantFlag = false;
@@ -84,6 +79,11 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
             }
             
             startId = tenantIdList.get(tenantIdList.size() - 1);
+    
+            List<Integer> existByTenantIdList = electricityTradeOrderService.existByTenantIdList(tenantIdList, startTime, endTime);
+            if (Objects.isNull(tenantId) && ObjectUtils.isEmpty(existByTenantIdList)) {
+                return;
+            }
             
             tenantIdList.stream().forEach(id -> {
                 ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(id, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);
