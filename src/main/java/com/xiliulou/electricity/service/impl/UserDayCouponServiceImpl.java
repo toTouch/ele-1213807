@@ -99,11 +99,11 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             Long uid = userInfo.getUid();
             DayCouponStrategy strategy = userDayCouponStrategyFactory.getDayCouponStrategy(useScope,tenantId, uid);
             if (Objects.isNull(strategy)) {
-                return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
+                return R.failMsg(String.format("请先购买%s套餐后使用", useScope.getDesc()));
             }
             
             if (!strategy.isPackageInUse(tenantId, uid)) {
-                return R.failMsg("请先购买换电/租车/车电一体套餐后使用");
+                return R.failMsg(String.format("请先购买%s套餐后使用", useScope.getDesc()));
             }
             
             if (strategy.isLateFee(tenantId, uid)) {
@@ -119,7 +119,7 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 }
             }
             if (strategy.isOverdue(tenantId, uid)) {
-                return R.failMsg("您当前套餐已过期，请先购买换电/租车/车电一体套餐后使用");
+                return R.failMsg(String.format("您当前套餐已过期，请先购买%s套餐后使用", useScope.getDesc()));
             }
             if (strategy.isReturnTheDeposit(tenantId, uid)) {
                 return R.failMsg("您已退押，暂无法使用，请缴纳押金后使用");
