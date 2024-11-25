@@ -163,4 +163,9 @@ public interface MqProducerConstant {
      * 第三方商城主题
      */
     String THIRD_PARTY_MALL_TOPIC = "third_party_mall_topic";
+    
+    /**
+     * 标记电池topic
+     */
+    String BATTERY_MARK_TOPIC = "battery_mark_topic";
 }

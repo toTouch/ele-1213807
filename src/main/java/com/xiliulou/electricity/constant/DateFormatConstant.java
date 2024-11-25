@@ -20,6 +20,11 @@ public interface DateFormatConstant {
     String MONTH_DAY_FORMAT = "yyMMdd";
     
     /**
+     * 年月
+     */
+    String YEAR_TIME_FORMAT = "yyyyMMddHHmmss";
+    
+    /**
      * 年月日 时分秒
      */
     String MONTH_DAY_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";

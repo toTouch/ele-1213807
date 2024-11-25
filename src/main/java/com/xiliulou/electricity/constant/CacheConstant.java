@@ -892,5 +892,20 @@ public interface CacheConstant {
      * 客服电话缓存LOCK
      */
     String SERVICE_PHONE_LOCK_KEY = "service_phone_lock:";
+    
+    /**
+     * 故障告警处理LOCK
+     */
+    String WARN_HANDLE_LOCK_KEY = "warn_handle_lock_key:";
+    
+    /**
+     * 故障告警处理结果缓存
+     */
+    String WARN_HANDLE_RESULT = "warn_handle_result:uid:%s:sessionId:%s";
+    
+    /**
+     * 标记电池缓存
+     */
+    String BATTERY_MARK_KEY= "battery_mark:%s:%s";
 }
 

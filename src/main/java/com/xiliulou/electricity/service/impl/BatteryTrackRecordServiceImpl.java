@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.mapper.BatteryTrackRecordMapper;
 import com.xiliulou.electricity.queue.BatteryTrackRecordBatchSaveQueueService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.EleBatteryMarkRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,9 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
 
     @Autowired
     BatteryTrackRecordBatchSaveQueueService batteryTrackRecordBatchSaveQueueService;
-
+    
+    @Resource
+    private EleBatteryMarkRecordService eleBatteryMarkRecordService;
 
     /**
      * 电池记录存放到队列
@@ -49,6 +52,10 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     @Override
     public BatteryTrackRecord putBatteryTrackQueue(BatteryTrackRecord batteryTrackRecord) {
         batteryTrackRecordBatchSaveQueueService.putQueue(batteryTrackRecord);
+    
+        // 检测标记电池
+        eleBatteryMarkRecordService.checkBatteryMark(batteryTrackRecord);
+        
         return batteryTrackRecord;
     }
     
