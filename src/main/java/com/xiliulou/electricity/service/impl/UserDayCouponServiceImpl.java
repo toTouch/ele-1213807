@@ -144,6 +144,7 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             entity.setUseScope(coupon.getUseScope());
             entity.setUid(uid);
             entity.setDelFlag(CouponDayRecordEntity.DEL_NORMAL);
+            entity.setPackageOrder(processed.getRight());
             entity.setPackageId(processed.getMiddle());
             couponDayRecordService.save(entity);
             return R.ok();
