@@ -1189,7 +1189,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
             
-            
+            // 计算减掉天数券增加的时间之后的套餐剩余时间
             long remainingTime = userBatteryMemberCard.getOrderExpireTime() - daysFromDayCoupon * 24 * 60 * 60 * 1000L - System.currentTimeMillis();
             refundOrderDetailVO.setRemainingTime(
                     Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000);
@@ -1214,9 +1214,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         // 使用中
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
+            
+            // 获取使用天数券增加的套餐时间
+            int daysFromDayCoupon = userCouponService.getDaysForMemberCardOrderFromUseDayCoupon(electricityMemberCardOrder.getOrderId());
+            // 计算减掉天数券增加的时间之后的套餐剩余时间
+            long remainingTime = userBatteryMemberCard.getOrderExpireTime() - daysFromDayCoupon * 24 * 60 * 60 * 1000L - System.currentTimeMillis();
             batteryMembercardRefundOrder.setRemainingTime(
-                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis())
-                            / 24 / 60 / 60 / 1000 : (userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis()) / 60 / 1000);
+                    Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000);
         }
     }
     
