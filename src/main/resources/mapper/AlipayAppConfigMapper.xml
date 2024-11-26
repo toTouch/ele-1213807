@@ -22,7 +22,8 @@
     
     <sql id="base_column">
         id
-        , app_id,receivable_accounts, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time
+        , app_id,receivable_accounts, app_secret, public_key, private_key, app_public_key, app_private_key, login_decryption_key, tenant_id,config_type,franchisee_id, del_flag,create_time,update_time,
+            app_auth_token
     </sql>
     <update id="logicalDelete">
         update
