@@ -527,28 +527,34 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         exceptionHandlerService.saveExchangeExceptionCell(openFullCellRsp.getOrderStatus(), cabinetOrder.getElectricityCabinetId(), openFullCellRsp.getPlaceCellNo(),
                 openFullCellRsp.getTakeCellNo(), openFullCellRsp.getSessionId());
         
-        // 设备正在使用中，不更新； 开满电仓失败/电池前置检测失败更新状态
-        if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
-            // 修改取电的状态
+        // 设备正在使用中
+        if (Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
+            // 如果订单是快捷换电，结束异常订单，并且放在admin租户下
+            if (Objects.equals(cabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+                ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+                newElectricityCabinetOrder.setId(cabinetOrder.getId());
+                newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+                newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
+                newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+                newElectricityCabinetOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
+                newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
+                cabinetOrderService.update(newElectricityCabinetOrder);
+            }
+        } else {
+            // 开满电仓失败/电池前置检测失败更新状态
             ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
             newElectricityCabinetOrder.setId(cabinetOrder.getId());
             newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
+            // 快捷换电需要补充电池信息
+            if (Objects.equals(cabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+                newElectricityCabinetOrder.setOldElectricityBatterySn(openFullCellRsp.getPlaceBatteryName());
+                newElectricityCabinetOrder.setNewElectricityBatterySn(openFullCellRsp.getTakeBatteryName());
+            }
             cabinetOrderService.update(newElectricityCabinetOrder);
         }
         
-        // 如果订单是快捷换电 & 设备正在使用中，结束异常订单，并且放在admin租户下
-        if (Objects.equals(cabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode()) && ElectricityCabinetOrder.INIT_DEVICE_USING.equals(
-                openFullCellRsp.getOrderStatus())) {
-            ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
-            newElectricityCabinetOrder.setId(cabinetOrder.getId());
-            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-            newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
-            newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
-            newElectricityCabinetOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
-            newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
-            cabinetOrderService.update(newElectricityCabinetOrder);
-        }
+       
     }
     
     
