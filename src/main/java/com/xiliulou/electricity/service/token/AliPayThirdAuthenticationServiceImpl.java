@@ -247,6 +247,7 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
     private String decryptAliPayAuthCodeDataForThirdParty(String code, String appId, AlipayAppConfigBizDetails alipayAppConfig) {
         // 第三方登录解析
         if (ObjectUtils.isEmpty(alipayAppConfig.getAppAuthToken())) {
+            log.warn("ALIPAY TOKEN WARN FOR THIRD PARTY!app auth token is null,appid={}", appId);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
         }
         
@@ -265,13 +266,13 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
     
             AlipaySystemOauthTokenResponse response = alipayClient.execute(request, null, alipayAppConfig.getAppAuthToken());
             if (!response.isSuccess()) {
-                log.error("ALIPAY TOKEN ERROR!acquire openId failed,msg={}", response);
+                log.error("ALIPAY TOKEN WARN FOR THIRD PARTY!acquire openId failed,msg={}", response);
                 throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
             }
             
             openId = response.getOpenId();
         } catch (AlipayApiException e) {
-            log.error("ALIPAY TOKEN ERROR!acquire openId failed", e);
+            log.error("ALIPAY TOKEN WARN FOR THIRD PARTY!acquire openId failed", e);
             throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
         }
         
