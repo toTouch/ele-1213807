@@ -2,6 +2,7 @@ package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.service.token.AliPayThirdAuthenticationServiceImpl;
+import com.xiliulou.electricity.service.token.AliPayThirdForThirdPartyAuthenticationServiceImpl;
 import com.xiliulou.electricity.service.token.LoginSuccessPostProcessor;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
@@ -36,6 +37,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 
 /**
@@ -55,6 +57,9 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private AliPayThirdAuthenticationServiceImpl aliPayThirdAuthenticationService;
+	
+	@Resource
+	private AliPayThirdForThirdPartyAuthenticationServiceImpl aliPayThirdForThirdPartyAuthenticationService;
 	
 	@Autowired
 	RedisService redisService;
@@ -97,6 +102,8 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 		//增加第三方授权的service
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_WX_PRO, wxProThirdAuthenticationService);
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_ALI_PAY, aliPayThirdAuthenticationService);
+		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_ALI_PAY_THIRD_PARTY, aliPayThirdForThirdPartyAuthenticationService);
+		
 	}
 
 	@Override
