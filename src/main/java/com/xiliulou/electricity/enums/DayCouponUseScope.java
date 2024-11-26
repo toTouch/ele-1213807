@@ -23,7 +23,7 @@ import java.util.Objects;
 public enum DayCouponUseScope {
     
     CAR(0, "租车"),
-    BATTERY(1, "租电"),
+    BATTERY(1, "换电"),
     BOTH(2, "车电一体"),
     UNKNOWN(-1, "全部/未知");
     

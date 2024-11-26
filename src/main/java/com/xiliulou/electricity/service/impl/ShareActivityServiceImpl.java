@@ -245,9 +245,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             return R.fail("ELECTRICITY.10301", "请添加活动规则");
         }
         
-        List<ShareActivityRuleQuery> queries = ruleQueryList.stream().filter(item -> CollectionUtil.isEmpty(item.getCouponArrays()) || item.getCouponArrays().size() > NumberConstant.NUMBER_10)
-                .collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(queries)){
+        List<ShareActivityRuleQuery> queries = ruleQueryList.stream()
+                .filter(item -> CollectionUtil.isEmpty(item.getCouponArrays()) || item.getCouponArrays().size() > NumberConstant.NUMBER_10).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(queries)) {
             return R.fail("ELECTRICITY.10302", "单个奖励条件最多10张");
         }
         
@@ -290,13 +290,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                 List<CarCouponNamePO> couponNamePOS = couponService.queryListByIdsFromCache(shareActivityRuleQuery.getCouponArrays());
                 
                 //适配单个优惠券的情况,如果有减免券,获取金额最大的减免券为单个优惠券
-                Optional.ofNullable(couponNamePOS)
-                        .flatMap(carCouponNamePOS -> carCouponNamePOS.stream().filter(f-> Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(CarCouponNamePO::getAmount)))
-                        .ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
+                Optional.ofNullable(couponNamePOS).flatMap(carCouponNamePOS -> carCouponNamePOS.stream().filter(f -> Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION))
+                        .max(Comparator.comparing(CarCouponNamePO::getAmount))).ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
                 //适配单个优惠券的情况,如果没有减免券,获取天数最大的天数券为单个优惠券
-                Optional.ofNullable(shareActivityRule.getCouponId())
-                        .flatMap(id -> Optional.ofNullable(couponNamePOS))
-                        .flatMap(carCouponNamePOS -> carCouponNamePOS.stream().filter(f-> Objects.equals(f.getDiscountType(), Coupon.DAY_VOUCHER)).max(Comparator.comparing(CarCouponNamePO::getCount)))
+                Optional.ofNullable(shareActivityRule.getCouponId()).flatMap(id -> Optional.ofNullable(couponNamePOS)).flatMap(
+                                carCouponNamePOS -> carCouponNamePOS.stream().filter(f -> Objects.equals(f.getDiscountType(), Coupon.DAY_VOUCHER))
+                                        .max(Comparator.comparing(CarCouponNamePO::getCount)))
                         .ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
                 
                 shareActivityRule.setCoupons(shareActivityRuleQuery.getCouponArrays(), shareActivityRuleQuery.getCouponId());
@@ -324,7 +323,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         ShareActivityPackageVO shareActivityPackageVO = new ShareActivityPackageVO();
         shareActivityPackageVO.setPackages(activityPackageVOS);
         shareActivityOperateRecordService.insert(buildActivityOperateRecord(shareActivity, shareActivityPackageVO));
-        
         
         if (insert > 0) {
             return R.ok(shareActivity.getId());
@@ -575,13 +573,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             
             //兼容单个优惠券的情况，先查看单个优惠券
             Integer couponId = shareActivityRule.getCouponId();
-            Optional.ofNullable(couponId).flatMap(id-> Optional.ofNullable(couponService.queryByIdFromCache(id)))
-                    .ifPresent(couponVO::setCoupon);
+            Optional.ofNullable(couponId).flatMap(id -> Optional.ofNullable(couponService.queryByIdFromCache(id))).ifPresent(couponVO::setCoupon);
             //设置所有的优惠券
             List<Long> couponIds = shareActivityRule.getCoupons();
-            List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue())).collect(Collectors.toList());
+            List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue()))
+                    .collect(Collectors.toList());
             Optional.of(coupons).ifPresent(couponVO::setCouponArrays);
-   
+            
             couponVOList.add(couponVO);
         }
         
@@ -621,25 +619,36 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             
             //兼容单个优惠券的情况，先查看单个优惠券
             Integer couponId = shareActivityRule.getCouponId();
-            Optional.ofNullable(couponId).flatMap(id-> Optional.ofNullable(couponService.queryByIdFromCache(id)))
-                    .ifPresent(couponVO::setCoupon);
+            Optional.ofNullable(couponId).flatMap(id -> Optional.ofNullable(couponService.queryByIdFromCache(id))).ifPresent(couponVO::setCoupon);
             //设置所有的优惠券
             List<Long> couponIds = shareActivityRule.getCoupons();
-            List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue())).collect(Collectors.toList());
+            List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue()))
+                    .collect(Collectors.toList());
             Optional.of(coupons).ifPresent(couponVO::setCouponArrays);
             
             //优惠券名称
-//            Coupon coupon = couponService.queryByIdFromCache(couponId);
+            //            Coupon coupon = couponService.queryByIdFromCache(couponId);
             if (CollectionUtils.isNotEmpty(couponVO.getCouponArrays())) {
                 List<Coupon> couponArrays = couponVO.getCouponArrays();
                 for (Coupon coupon : couponArrays) {
+                    //是否可以领取优惠券
+                    if (shareActivityRule.getTriggerCount() <= availableCount) {
+                        couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
+                        coupon.setIsGet(CouponVO.IS_NOT_RECEIVE);
+                    } else {
+                        couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+                        coupon.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+                    }
                     //是否领取该活动该优惠券
                     UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), user.getUid());
                     if (Objects.nonNull(userCoupon)) {
                         couponVO.setIsGet(CouponVO.IS_RECEIVED);
                         couponCount = couponCount + 1;
+                        coupon.setIsGet(CouponVO.IS_RECEIVED);
                     }
-                    getCouponPackage(coupon, couponVO);
+                    if (Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)) {
+                        getCouponPackage(coupon, couponVO);
+                    }
                 }
             }
             
@@ -758,18 +767,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         
         shareActivityVO.setCount(count);
         shareActivityVO.setAvailableCount(availableCount);
-        
+        Coupon coupon = null;
         List<Coupon> coupons = couponService.queryListByIdsFromDB(shareActivityRule.getCoupons());
-        if (CollectionUtils.isNotEmpty(coupons)){
-            for (Coupon coupon : coupons) {
-                List<UserCoupon> userCoupons = userCouponService.selectListByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), uid);
+        if (CollectionUtils.isNotEmpty(coupons)) {
+            for (Coupon cou : coupons) {
+                List<UserCoupon> userCoupons = userCouponService.selectListByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), cou.getId(), uid);
                 if (Objects.nonNull(userCoupons)) {
                     couponCount = userCoupons.size();
                 }
             }
+            coupon = coupons.stream().filter(f -> Coupon.FULL_REDUCTION.equals(f.getDiscountType())).max(Comparator.comparing(Coupon::getAmount)).orElse(null);
         }
-        
-        Coupon coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
+        if (Objects.isNull(coupon)) {
+            coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
+        }
         
         List<CouponVO> couponVOList = new ArrayList<>();
         
@@ -783,8 +794,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             couponVO.setCoupon(coupon);
             couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
             couponVO.setCouponArrays(coupons);
-            Optional.ofNullable(coupons)
-                    .ifPresent(couponList -> couponList.forEach(f->getCouponPackage(f, couponVO)));
+            Optional.ofNullable(coupons).ifPresent(couponList -> couponList.forEach(f -> {
+                f.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+                if (Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION)) {
+                    getCouponPackage(f, couponVO);
+                }
+            }));
             
             couponVOList.add(couponVO);
             
@@ -800,8 +815,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
         //            getCouponPackage(coupon, couponVO);
         couponVO.setCouponArrays(coupons);
-        Optional.ofNullable(coupons)
-                .ifPresent(couponList -> couponList.forEach(f->getCouponPackage(f, couponVO)));
+        Optional.ofNullable(coupons).ifPresent(couponList -> couponList.forEach(f -> {
+            f.setIsGet(CouponVO.IS_NOT_RECEIVE);
+            if (Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION)) {
+                getCouponPackage(f, couponVO);
+            }
+        }));
         couponVOList.add(couponVO);
         // couponVOList
         
@@ -832,7 +851,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             batteryPackageIds.forEach(t -> {
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(t);
                 if (Objects.nonNull(batteryMemberCard)) {
-                    batteryCouponCards.add(new CouponMemberCardVO(batteryMemberCard.getId(), batteryMemberCard.getName()));
+                    batteryCouponCards.add(new CouponMemberCardVO(batteryMemberCard.getId(), batteryMemberCard.getName(), couponId));
                 }
             });
         }, couponMemberExecutorService).exceptionally(e -> {
@@ -848,7 +867,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             carPackageIds.forEach(t -> {
                 CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(t);
                 if (Objects.nonNull(carRentalPackagePO)) {
-                    carRentalCouponCards.add(new CouponMemberCardVO(carRentalPackagePO.getId(), carRentalPackagePO.getName()));
+                    carRentalCouponCards.add(new CouponMemberCardVO(carRentalPackagePO.getId(), carRentalPackagePO.getName() , couponId));
                 }
             });
         }, couponMemberExecutorService).exceptionally(e -> {
@@ -863,7 +882,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             carWithBatteryPackageIds.forEach(t -> {
                 CarRentalPackagePo carRentalPackagePO = carRentalPackageService.selectById(t);
                 if (Objects.nonNull(carRentalPackagePO)) {
-                    carWithBatteryCouponCards.add(new CouponMemberCardVO(carRentalPackagePO.getId(), carRentalPackagePO.getName()));
+                    carWithBatteryCouponCards.add(new CouponMemberCardVO(carRentalPackagePO.getId(), carRentalPackagePO.getName() , couponId));
                 }
             });
         }, couponMemberExecutorService).exceptionally(e -> {
@@ -877,22 +896,21 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             log.warn("getCouponPackage is error", e);
         }
         List<CouponMemberCardVO> couponCarCards = couponVO.getBatteryCouponCards();
-        if (CollectionUtils.isEmpty(couponCarCards)){
+        if (CollectionUtils.isEmpty(couponCarCards)) {
             couponCarCards = new ArrayList<>();
         }
         couponCarCards.addAll(batteryCouponCards);
         couponVO.setBatteryCouponCards(couponCarCards);
         
         List<CouponMemberCardVO> couponBatteryCards = couponVO.getCarRentalCouponCards();
-        if (CollectionUtils.isEmpty(couponBatteryCards)){
+        if (CollectionUtils.isEmpty(couponBatteryCards)) {
             couponBatteryCards = new ArrayList<>();
         }
         couponBatteryCards.addAll(batteryCouponCards);
         couponVO.setCarRentalCouponCards(couponBatteryCards);
         
-        
         List<CouponMemberCardVO> couponBatteryCarCards = couponVO.getCarWithBatteryCouponCards();
-        if (CollectionUtils.isEmpty(couponBatteryCarCards)){
+        if (CollectionUtils.isEmpty(couponBatteryCarCards)) {
             couponBatteryCarCards = new ArrayList<>();
         }
         couponBatteryCarCards.addAll(batteryCouponCards);
@@ -954,20 +972,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         List<ShareActivityRuleVO> shareActivityRuleVOList = Lists.newArrayList();
         for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
             ShareActivityRuleVO shareActivityRuleVO = new ShareActivityRuleVO();
-            BeanUtil.copyProperties(shareActivityRule, shareActivityRuleVO,IGNORE_ATTRIBUTES);
+            BeanUtil.copyProperties(shareActivityRule, shareActivityRuleVO, IGNORE_ATTRIBUTES);
             //兼容单个优惠券的情况，先查看单个优惠券
             Integer couponId = shareActivityRule.getCouponId();
-            Optional.ofNullable(couponId).flatMap(id-> Optional.ofNullable(couponService.queryByIdFromCache(id)))
-                    .ifPresent(c-> {
-                        shareActivityRuleVO.setCouponId(c.getId());
-                        shareActivityRuleVO.setCouponName(c.getName());
-                    });
+            Optional.ofNullable(couponId).flatMap(id -> Optional.ofNullable(couponService.queryByIdFromCache(id))).ifPresent(c -> {
+                shareActivityRuleVO.setCouponId(c.getId());
+                shareActivityRuleVO.setCouponName(c.getName());
+            });
             //设置所有的优惠券
             List<Long> couponIds = shareActivityRule.getCoupons();
-            List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue())).collect(Collectors.toList());
-            Optional.of(coupons).ifPresent(c->{
+            List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue()))
+                    .collect(Collectors.toList());
+            Optional.of(coupons).ifPresent(c -> {
                 shareActivityRuleVO.setCouponArrays(c.stream().map(Coupon::getId).collect(Collectors.toList()));
-                shareActivityRuleVO.setCouponNames(c.stream().map(n->{
+                shareActivityRuleVO.setCouponNames(c.stream().map(n -> {
                     CouponNameVO couponNameVO = new CouponNameVO();
                     couponNameVO.setId(n.getId());
                     couponNameVO.setName(n.getName());
@@ -1247,7 +1265,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
     public List<ShareAndUserActivityVO> listShareActivity(ShareActivityPageQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
         Pair<Boolean, List<Long>> pair = assertPermissionService.assertPermissionByPair(SecurityUtils.getUserInfo());
-        if (!pair.getLeft()){
+        if (!pair.getLeft()) {
             return new ArrayList<>();
         }
         query.setFranchiseeIds(pair.getRight());
