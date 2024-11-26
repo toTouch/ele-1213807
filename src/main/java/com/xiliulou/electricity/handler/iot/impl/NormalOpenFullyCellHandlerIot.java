@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.thirdPartyMallConstant.MeiTuanRiderMallConstant;
 import com.xiliulou.electricity.constant.OrderForBatteryConstants;
+import com.xiliulou.electricity.dto.QuickExchangeResultDTO;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -20,7 +21,9 @@ import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
 import com.xiliulou.electricity.entity.ExchangeBatterySoc;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.thirdParthMall.ThirdPartyMallEnum;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -143,26 +146,10 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             lockExceptionDoor(electricityCabinet, cabinetOrder, openFullCellRsp);
         }
         
+        // 上报异常处理
         if (openFullCellRsp.getIsException()) {
-            log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", receiverMessage.getSessionId());
-            //错误信息保存到缓存里，方便前端显示
-            redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
-            
-            // 保存异常格挡号
-            exceptionHandlerService.saveExchangeExceptionCell(openFullCellRsp.getOrderStatus(), cabinetOrder.getElectricityCabinetId(), openFullCellRsp.getPlaceCellNo(),
-                    openFullCellRsp.getTakeCellNo(), openFullCellRsp.getSessionId());
-            
-            
-            // 设备正在使用中，不更新； 开满电仓失败/电池前置检测失败更新状态
-            if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
-                // 修改取电的状态
-                ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
-                newElectricityCabinetOrder.setId(cabinetOrder.getId());
-                newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-                newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
-                cabinetOrderService.update(newElectricityCabinetOrder);
-                return;
-            }
+            handleExceptionOrder(openFullCellRsp, cabinetOrder);
+            return;
         }
         
         if (!Objects.equals(openFullCellRsp.getOrderSeq(), ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS)) {
@@ -195,6 +182,11 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         
         //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
         handleExpireMemberCard(openFullCellRsp, cabinetOrder);
+        
+        // 快捷换电成功标记
+        QuickExchangeResultDTO quickExchangeResultDTO = QuickExchangeResultDTO.builder().success(true).build();
+        redisService.set(CacheConstant.QUICK_EXCHANGE_RESULT_KEY + openFullCellRsp.getSessionId(), JsonUtil.toJson(quickExchangeResultDTO), 2L, TimeUnit.MINUTES);
+        
         
         // 如果旧电池检测失败会在这个表里面，导致在订单记录中存在自主开仓，所以移除旧版本的自主开仓记录
         ElectricityExceptionOrderStatusRecord statusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(cabinetOrder.getOrderId());
@@ -518,6 +510,45 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             return;
         }
         userBatteryMemberCardService.handleExpireMemberCard(openFullCellRsp.getSessionId(), electricityCabinetOrder);
+    }
+    
+    
+    
+    private void handleExceptionOrder(EleOpenFullCellRsp openFullCellRsp, ElectricityCabinetOrder cabinetOrder) {
+        log.warn("normalOpenFullyCellHandlerIot WARN! openFullCellRsp exception,sessionId={}", openFullCellRsp.getSessionId());
+        //错误信息保存到缓存里，方便前端显示
+        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + openFullCellRsp.getOrderId(), openFullCellRsp.getMsg(), 5L, TimeUnit.MINUTES);
+        
+        // 快捷换电错误信息标记
+        QuickExchangeResultDTO quickExchangeResultDTO = QuickExchangeResultDTO.builder().success(false).msg(openFullCellRsp.getMsg()).build();
+        redisService.set(CacheConstant.QUICK_EXCHANGE_RESULT_KEY + openFullCellRsp.getSessionId(), JsonUtil.toJson(quickExchangeResultDTO), 2L, TimeUnit.MINUTES);
+        
+        // 保存异常格挡号(异常标记仓门换电分配优化)
+        exceptionHandlerService.saveExchangeExceptionCell(openFullCellRsp.getOrderStatus(), cabinetOrder.getElectricityCabinetId(), openFullCellRsp.getPlaceCellNo(),
+                openFullCellRsp.getTakeCellNo(), openFullCellRsp.getSessionId());
+        
+        // 设备正在使用中，不更新； 开满电仓失败/电池前置检测失败更新状态
+        if (!Objects.equals(openFullCellRsp.getOrderStatus(), ElectricityCabinetOrder.INIT_DEVICE_USING)) {
+            // 修改取电的状态
+            ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+            newElectricityCabinetOrder.setId(cabinetOrder.getId());
+            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
+            cabinetOrderService.update(newElectricityCabinetOrder);
+        }
+        
+        // 如果订单是快捷换电 & 设备正在使用中，结束异常订单，并且放在admin租户下
+        if (Objects.equals(cabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode()) && ElectricityCabinetOrder.INIT_DEVICE_USING.equals(
+                openFullCellRsp.getOrderStatus())) {
+            ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+            newElectricityCabinetOrder.setId(cabinetOrder.getId());
+            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
+            newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+            newElectricityCabinetOrder.setTenantId(Tenant.SUPER_ADMIN_TENANT_ID);
+            newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
+            cabinetOrderService.update(newElectricityCabinetOrder);
+        }
     }
     
     

@@ -472,7 +472,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .phone(user.getPhone()).electricityCabinetId(electricityCabinet.getId()).oldCellNo(oldCellNo).newCellNo(newCellNo)
                 .newElectricityBatterySn(offlineOrderMessage.getNewElectricityBatterySn()).oldElectricityBatterySn(offlineOrderMessage.getOldElectricityBatterySn()).orderSeq(null)
                 .status(orderStatus).source(Objects.isNull(offlineOrderMessage.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE : offlineOrderMessage.getOfflineOrderStatus())
-                .paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY).createTime(offlineOrderMessage.getStartTime()).updateTime(offlineOrderMessage.getEndTime())
+                .paymentMethod(BatteryMemberCard.BUSINESS_TYPE_BATTERY).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .franchiseeId(electricityCabinet.getFranchiseeId()).storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
     }
     

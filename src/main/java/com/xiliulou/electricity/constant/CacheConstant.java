@@ -892,5 +892,10 @@ public interface CacheConstant {
      * 客服电话缓存LOCK
      */
     String SERVICE_PHONE_LOCK_KEY = "service_phone_lock:";
+    
+    /**
+     * 快捷换电命令下发结果缓存key
+     */
+    String QUICK_EXCHANGE_RESULT_KEY = "quick_exchange_result:";
 }
 

@@ -1338,7 +1338,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("导出报表失败！", e);
         }
     }
-    @Slave
+ 
     @Override
     public R queryNewStatus(String orderId) {
         Map<String, Object> map = new HashMap<>();
