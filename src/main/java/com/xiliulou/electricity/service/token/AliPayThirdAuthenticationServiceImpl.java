@@ -34,6 +34,7 @@ import com.xiliulou.security.bean.SecurityUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.CharEncoding;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -101,6 +102,7 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
             code = get(hashMap, "code");
             String iv = get(hashMap, "iv");
             String data = get(hashMap, "data");
+            String appid = get(hashMap, "appid");
             
             if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
                 throw new AuthenticationServiceException("操作频繁！请稍后再试！");
@@ -112,8 +114,16 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
             
             //解析手机号
             String loginPhone = decryptAliPayResponseData(data, iv, alipayAppConfig);
+    
+            String loginOpenId = null;
+    
             //解析openId
-            String loginOpenId = decryptAliPayAuthCodeData(code, alipayAppConfig.getAppId(), alipayAppConfig);
+            if (ObjectUtils.isNotEmpty(appid)) {
+                // 第三方应用登录
+                loginOpenId = decryptAliPayAuthCodeDataForThirdParty(code, appid, alipayAppConfig);
+            } else {
+                loginOpenId = decryptAliPayAuthCodeData(code, alipayAppConfig.getAppId(), alipayAppConfig);
+            }
             
             log.info("ALIPAY LOGIN INFO!user login info,loginPhone={},loginOpenId={}", loginPhone, loginOpenId);
             
@@ -227,6 +237,46 @@ public class AliPayThirdAuthenticationServiceImpl extends AbstractThirdAuthentic
         return openId;
     }
     
+    /**
+     * 第三方应用登录解析
+     * @param code
+     * @param appId
+     * @param alipayAppConfig
+     * @return
+     */
+    private String decryptAliPayAuthCodeDataForThirdParty(String code, String appId, AlipayAppConfigBizDetails alipayAppConfig) {
+        // 第三方登录解析
+        if (ObjectUtils.isEmpty(alipayAppConfig.getAppAuthToken())) {
+            throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+        }
+        
+        String openId = null;
+        try {
+            AlipayClient alipayClient = new DefaultAlipayClient(buildAlipayConfig(appId, alipayAppConfig));
+            // 构造请求参数以调用接口
+            AlipaySystemOauthTokenRequest request = new AlipaySystemOauthTokenRequest();
+            
+            // 设置刷新令牌
+            //request.setRefreshToken("201208134b203fe6c11548bcabd8da5bb087a83b");
+            // 设置授权码
+            request.setCode(code);
+            // 设置授权方式
+            request.setGrantType(GRANT_TYPE);
+    
+            AlipaySystemOauthTokenResponse response = alipayClient.execute(request, null, alipayAppConfig.getAppAuthToken());
+            if (!response.isSuccess()) {
+                log.error("ALIPAY TOKEN ERROR!acquire openId failed,msg={}", response);
+                throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+            }
+            
+            openId = response.getOpenId();
+        } catch (AlipayApiException e) {
+            log.error("ALIPAY TOKEN ERROR!acquire openId failed", e);
+            throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
+        }
+        
+        return openId;
+    }
     
     private AlipayConfig buildAlipayConfig(String appId, AlipayAppConfigBizDetails alipayAppConfig) {
         String privateKey = alipayAppConfig.getAppPrivateKey();
