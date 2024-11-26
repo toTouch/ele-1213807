@@ -43,7 +43,7 @@ public class ExchangeCabinetCellAssertProcess extends AbstractExchangeCommonHand
         
         if (Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.OPEN_DOOR)) {
             log.warn("CabinetCellAssert Warn! boxCell is not close, eid is {} , cell is {}", processModel.getEid(), processModel.getCellNo());
-            breakChain(context, "100568", processModel.getCellNo() + "号仓门未关闭");
+            breakChain(context, "100568", processModel.getCellNo() + "号仓门未关闭, 请先关闭仓门");
             return;
         }
         
