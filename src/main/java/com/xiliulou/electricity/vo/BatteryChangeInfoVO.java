@@ -32,8 +32,4 @@ public class BatteryChangeInfoVO {
     
     private String userName;
     
-    /**
-     * 订单类型：1-换电订单 2-租/退电订单
-     */
-    private Integer orderType;
 }

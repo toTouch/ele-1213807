@@ -27,7 +27,6 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
@@ -37,7 +36,6 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
-import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -1741,47 +1739,48 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-        
+    
         Set<String> orderIdSet = list.stream().map(BatteryChangeInfo::getOrderId).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-        Map<String, BatteryChangeInfoVO> exchangeOrderMap = new HashMap<>();
-        Map<String, BatteryChangeInfoVO> rentOrReturnOrderMap = new HashMap<>();
-        
+        Set<String> exchangeOrderSet = new HashSet<>();
+        Set<String> rentOrReturnOrderSet = new HashSet<>();
+    
         for (String orderId : orderIdSet) {
-            BatteryChangeInfoVO batteryChangeInfoVO = new BatteryChangeInfoVO();
             if (orderId.startsWith(BusinessType.EXCHANGE_BATTERY.getBusiness().toString())) {
-                batteryChangeInfoVO.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
-                exchangeOrderMap.put(orderId, batteryChangeInfoVO);
+                exchangeOrderSet.add(orderId);
             } else if (orderId.startsWith(BusinessType.RENT_BATTERY.getBusiness().toString()) || orderId.startsWith(BusinessType.RETURN_BATTERY.getBusiness().toString())) {
-                batteryChangeInfoVO.setOrderType(OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER);
-                rentOrReturnOrderMap.put(orderId, batteryChangeInfoVO);
+                rentOrReturnOrderSet.add(orderId);
             }
         }
-        
-        handleExchangeOrderMap(exchangeOrderMap);
-        handleRentOrReturnOrderMap(rentOrReturnOrderMap);
-        
+    
+        Map<String, Long> exchangeOrderMap = handleExchangeOrder(exchangeOrderSet);
+        Map<String, Long> rentOrReturnOrderMap = handleRentOrReturnOrder(rentOrReturnOrderSet);
+    
         return list.stream().map(item -> {
             BatteryChangeInfoVO vo = new BatteryChangeInfoVO();
             BeanUtils.copyProperties(item, vo);
-            
+        
             String orderId = item.getOrderId();
             BatteryChangeInfoVO batteryChangeInfoVO = null;
+            Long uid = null;
+        
             if (StringUtil.isNotBlank(orderId)) {
                 if (MapUtil.isNotEmpty(exchangeOrderMap) && exchangeOrderMap.containsKey(orderId)) {
-                    batteryChangeInfoVO = exchangeOrderMap.get(orderId);
+                    uid = exchangeOrderMap.get(orderId);
                 }
-                
+            
                 if (MapUtil.isNotEmpty(rentOrReturnOrderMap) && rentOrReturnOrderMap.containsKey(orderId)) {
-                    batteryChangeInfoVO = rentOrReturnOrderMap.get(orderId);
+                    uid = rentOrReturnOrderMap.get(orderId);
                 }
             }
-            
-            if (Objects.nonNull(batteryChangeInfoVO)) {
-                vo.setOrderType(batteryChangeInfoVO.getOrderType());
+        
+            if (Objects.nonNull(uid)) {
                 vo.setUid(batteryChangeInfoVO.getUid());
-                vo.setUserName(batteryChangeInfoVO.getUserName());
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    vo.setUserName(userInfo.getName());
+                }
             }
-            
+        
             return vo;
         }).collect(Collectors.toList());
     }
@@ -1792,57 +1791,47 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.existsByBatteryType(batteryType, tenantId);
     }
     
-    private void handleExchangeOrderMap(Map<String, BatteryChangeInfoVO> exchangeOrderMap) {
-        if (MapUtil.isEmpty(exchangeOrderMap)) {
-            return;
+    private Map<String, Long> handleExchangeOrder(Set<String> exchangeOrderSet) {
+        if (CollectionUtils.isEmpty(exchangeOrderSet)) {
+            return null;
         }
         
-        List<ElectricityCabinetOrder> orderList = electricityCabinetOrderService.listByOrderIdList(exchangeOrderMap.keySet());
+        List<ElectricityCabinetOrder> orderList = electricityCabinetOrderService.listByOrderIdList(exchangeOrderSet);
         if (CollectionUtils.isEmpty(orderList)) {
-            return;
+            return null;
         }
         
+        Map<String, Long> map = new HashMap<>();
         for (ElectricityCabinetOrder item : orderList) {
             String orderId = item.getOrderId();
-            if (StringUtil.isBlank(orderId) || !exchangeOrderMap.containsKey(orderId)) {
+            if (StringUtil.isBlank(orderId) || !exchangeOrderSet.contains(orderId)) {
                 continue;
             }
-            exchangeOrderMap.put(orderId, handleOrderList(exchangeOrderMap, orderId, item.getUid()));
+            map.put(orderId, item.getUid());
         }
+        
+        return map;
     }
     
-    private void handleRentOrReturnOrderMap(Map<String, BatteryChangeInfoVO> rentOrReturnOrderMap) {
-        if (MapUtil.isEmpty(rentOrReturnOrderMap)) {
-            return;
+    private Map<String, Long> handleRentOrReturnOrder(Set<String> rentOrReturnOrderSet) {
+        if (CollectionUtils.isEmpty(rentOrReturnOrderSet)) {
+            return null;
         }
         
-        List<RentBatteryOrder> orderList = rentBatteryOrderService.listByOrderIdList(rentOrReturnOrderMap.keySet());
+        List<RentBatteryOrder> orderList = rentBatteryOrderService.listByOrderIdList(rentOrReturnOrderSet);
         if (CollectionUtils.isEmpty(orderList)) {
-            return;
+            return null;
         }
         
+        Map<String, Long> map = new HashMap<>();
         for (RentBatteryOrder item : orderList) {
             String orderId = item.getOrderId();
-            if (StringUtil.isBlank(orderId) || !rentOrReturnOrderMap.containsKey(orderId)) {
+            if (StringUtil.isBlank(orderId) || !rentOrReturnOrderSet.contains(orderId)) {
                 continue;
             }
-            rentOrReturnOrderMap.put(orderId, handleOrderList(rentOrReturnOrderMap, orderId, item.getUid()));
-        }
-    }
-    
-    private BatteryChangeInfoVO handleOrderList(Map<String, BatteryChangeInfoVO> orderMap, String orderId, Long uid) {
-        String userName = "";
-        if (Objects.nonNull(uid)) {
-            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-            if (Objects.nonNull(userInfo)) {
-                userName = userInfo.getName();
-            }
+            map.put(orderId, item.getUid());
         }
         
-        BatteryChangeInfoVO batteryChangeInfoVO = orderMap.get(orderId);
-        batteryChangeInfoVO.setUid(uid);
-        batteryChangeInfoVO.setUserName(userName);
-        
-        return batteryChangeInfoVO;
+        return map;
     }
 }
