@@ -892,5 +892,10 @@ public interface CacheConstant {
      * 客服电话缓存LOCK
      */
     String SERVICE_PHONE_LOCK_KEY = "service_phone_lock:";
+    
+    /**
+     * 租户下加盟互通配置缓存key
+     */
+    String MUTUAL_EXCHANGE_CONFIG_KEY = "mutual_exchange_config:";
 }
 

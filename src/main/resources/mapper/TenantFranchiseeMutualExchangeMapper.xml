@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.TenantFranchiseeMutualExchangeMapper">
+    
+    
+    <sql id="column">
+        id
+        ,combined_name,combined_franchisee,tenant_id,status,del_flag,create_time,update_time
+    </sql>
+    
+    
+    <select id="selectMutualExchangeConfigListFromDB" resultType="com.xiliulou.electricity.entity.TenantFranchiseeMutualExchange">
+        select
+        <include refid="column"/>
+        from t_tenant_franchisee_mutual_exchange where tenant_id = #{tenantId}
+        and del_flag=0
+    </select>
+</mapper>
