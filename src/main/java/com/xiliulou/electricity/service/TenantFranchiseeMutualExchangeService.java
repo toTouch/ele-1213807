@@ -107,5 +107,5 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param franchiseeId franchiseeId
      * @return Pair
      */
-    Pair<Boolean, Set<Long>> isSatisfyFranchiseeIdMutualExchange(Integer tenantId, Long franchiseeId);
+    Pair<Boolean, Set<Long>> isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId);
 }

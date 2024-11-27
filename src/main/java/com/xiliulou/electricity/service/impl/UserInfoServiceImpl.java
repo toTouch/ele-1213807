@@ -1220,15 +1220,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             
             // 判断加盟商互通
-            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeIdMutualExchange(oldUserInfo.getTenantId(), oldUserInfo.getFranchiseeId());
-            if (mutualExchangePair.getLeft()) {
-                // 存在互通
-                if (!mutualExchangePair.getRight().contains(oldElectricityBattery.getFranchiseeId())) {
-                    log.warn("WEBBIND ERROR WARN! MutualExchangeFranchisee not contain batteryFranchiseeId,userFranchiseeId={},batteryFranchiseeId={}",
-                            oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId());
-                    return R.fail("100371", "电池加盟商与用户加盟商不一致");
-                }
-            } else {
+            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(oldUserInfo.getTenantId(), oldUserInfo.getFranchiseeId());
+            if (!mutualExchangePair.getLeft()) {
                 if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
                     log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
                             oldElectricityBattery.getFranchiseeId());
