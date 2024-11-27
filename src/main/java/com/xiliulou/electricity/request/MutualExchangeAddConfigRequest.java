@@ -24,7 +24,7 @@ public class MutualExchangeAddConfigRequest {
     /**
      * 组合加盟商
      */
-    private List<String> combinedFranchisee;
+    private List<Long> combinedFranchisee;
     
     
     private Integer status;

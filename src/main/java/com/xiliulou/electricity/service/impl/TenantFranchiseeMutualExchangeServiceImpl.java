@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,7 +45,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Override
     public R addOrEditConfig(MutualExchangeAddConfigRequest request) {
-        List<String> combinedFranchisee = request.getCombinedFranchisee();
+        List<Long> combinedFranchisee = request.getCombinedFranchisee();
         if (CollUtil.isEmpty(combinedFranchisee)) {
             return R.fail("302000", "互换配置不能为空");
         }
@@ -156,10 +157,39 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         return R.ok();
     }
     
-    private Boolean isExistMutualExchangeConfig(List<String> franchiseeList, List<TenantFranchiseeMutualExchange> list) {
-        Set<String> franchiseeSet = new HashSet<>(franchiseeList);
+    
+    @Override
+    public Pair<Boolean, Object> isSatisfyFranchiseeIdMutualExchange(Integer tenantId, Long franchiseeId) {
+        if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId)) {
+            return Pair.of(false, null);
+        }
+        List<TenantFranchiseeMutualExchange> mutualExchangeList = getMutualExchangeConfigListFromCache(tenantId);
+        if (CollUtil.isEmpty(mutualExchangeList)) {
+            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant MutualExchangeConfig is null, tenantId is {}", tenantId);
+            return Pair.of(false, null);
+        }
+        Set<Long> franchiseeIdSet = new HashSet<>();
+        mutualExchangeList.forEach(e -> {
+            List<Long> combinedFranchisee = JsonUtil.fromJsonArray(e.getCombinedFranchisee(), Long.class);
+            if (combinedFranchisee.contains(franchiseeId)) {
+                franchiseeIdSet.addAll(combinedFranchisee);
+            }
+        });
+        
+        return Pair.of(true, franchiseeIdSet);
+    }
+    
+    /**
+     * 是否存在互换配置
+     *
+     * @param franchiseeList franchiseeList
+     * @param list           list
+     * @return Boolean
+     */
+    private Boolean isExistMutualExchangeConfig(List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> list) {
+        Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
         for (TenantFranchiseeMutualExchange mutualExchange : list) {
-            Set<String> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(mutualExchange.getCombinedFranchisee(), String.class));
+            Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(mutualExchange.getCombinedFranchisee(), Long.class));
             if (combinedFranchisee.containsAll(franchiseeSet)) {
                 return true;
             }
