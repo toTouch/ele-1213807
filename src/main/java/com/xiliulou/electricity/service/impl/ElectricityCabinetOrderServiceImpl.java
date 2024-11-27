@@ -2893,7 +2893,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         if (Objects.equals(electricityCabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
             log.warn("QuickExchange Warn! Exist QuickOrder, orderId is {}", orderId);
-            return Triple.of(false, "300902", "已存在系统快捷换电订单，请等待系统分配仓门");
+            return Triple.of(false, "300902", "客户人员操作快捷换电中，请稍后扫码再试");
         }
         
         String status = electricityCabinetOrder.getStatus();

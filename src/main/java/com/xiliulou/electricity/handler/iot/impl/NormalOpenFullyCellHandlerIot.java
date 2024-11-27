@@ -552,7 +552,6 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
                 newElectricityCabinetOrder.setNewElectricityBatterySn(openFullCellRsp.getTakeBatteryName());
                 newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
                 newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
-                newElectricityCabinetOrder.setOrderStatus(openFullCellRsp.getOrderStatus());
             }
             cabinetOrderService.update(newElectricityCabinetOrder);
         }
