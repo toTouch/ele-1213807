@@ -35,6 +35,11 @@ public class ExchangeOrderMsgShowVO {
     private Integer checkTimeOut = 0;
     
     /**
+     * 订单类型
+     */
+    private Integer source;
+    
+    /**
      * 1--放电池过程图片 2--取电池过程图片 3--异常图片
      */
     public static final Integer PLACE_BATTERY_IMG = 1;

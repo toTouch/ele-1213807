@@ -2894,6 +2894,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String status = electricityCabinetOrder.getStatus();
         ExchangeOrderMsgShowVO showVo = new ExchangeOrderMsgShowVO();
         showVo.setType(ExchangeOrderMsgShowVO.TYPE_SUCCESS);
+        showVo.setSource(electricityCabinetOrder.getSource());
         
         if (isOpenPlaceCellStatus(status)) {
             showVo.setStatus(electricityCabinetOrder.getOldCellNo() + "号仓门开门中");
