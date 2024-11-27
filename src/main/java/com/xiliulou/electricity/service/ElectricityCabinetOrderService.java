@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -113,4 +114,6 @@ public interface ElectricityCabinetOrderService {
     List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList);
     
     List<String> getBatteryTypesForCheck(UserInfo userInfo, ElectricityBattery battery, List<String> userBatteryTypes);
+    
+    void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo);
 }

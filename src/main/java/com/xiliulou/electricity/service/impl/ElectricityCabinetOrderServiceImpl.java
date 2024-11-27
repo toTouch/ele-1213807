@@ -3628,7 +3628,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
     }
     
-    private void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo) {
+    @Override
+    public void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo) {
         // 用户没有绑定电池时，需要根据上一次换电订单或者租电订单找到用户最新的电池
         if (Objects.isNull(battery)) {
             battery = findLastTakeBattery(userInfo);
