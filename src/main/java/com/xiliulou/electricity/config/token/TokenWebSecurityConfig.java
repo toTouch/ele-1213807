@@ -19,6 +19,7 @@ import com.xiliulou.security.authentication.TokenLogoutHandler;
 import com.xiliulou.security.authentication.thirdauth.CustomThirdAuthAuthenticationFilter;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationServiceFactory;
 import com.xiliulou.security.authentication.thirdauth.alipay.ThirdAliPayAuthenticationProvider;
+import com.xiliulou.security.authentication.thirdauth.alipay.ThirdAliPayForThirdPartyAuthenticationProvider;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationProvider;
 import com.xiliulou.security.config.TokenConfig;
 import com.xiliulou.security.constant.TokenConstant;
@@ -113,6 +114,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider()).authenticationProvider(new ThirdAliPayAuthenticationProvider());
+		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider()).authenticationProvider(new ThirdAliPayAuthenticationProvider())
+				.authenticationProvider(new ThirdAliPayForThirdPartyAuthenticationProvider());
 	}
 }
