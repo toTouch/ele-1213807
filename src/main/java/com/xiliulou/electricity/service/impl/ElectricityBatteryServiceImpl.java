@@ -32,7 +32,6 @@ import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -1742,39 +1741,38 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
         Set<String> orderIdSet = list.stream().map(BatteryChangeInfo::getOrderId).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
         Set<String> exchangeOrderSet = new HashSet<>();
-        Set<String> rentOrReturnOrderSet = new HashSet<>();
+        Set<String> rentReturnOrderSet = new HashSet<>();
     
         for (String orderId : orderIdSet) {
-            if (orderId.startsWith(BusinessType.EXCHANGE_BATTERY.getBusiness().toString())) {
+            Boolean rendReturnOrder = rentBatteryOrderService.isRendReturnOrder(orderId);
+            if (rendReturnOrder) {
+                rentReturnOrderSet.add(orderId);
+            } else {
                 exchangeOrderSet.add(orderId);
-            } else if (orderId.startsWith(BusinessType.RENT_BATTERY.getBusiness().toString()) || orderId.startsWith(BusinessType.RETURN_BATTERY.getBusiness().toString())) {
-                rentOrReturnOrderSet.add(orderId);
             }
         }
     
         Map<String, Long> exchangeOrderMap = handleExchangeOrder(exchangeOrderSet);
-        Map<String, Long> rentOrReturnOrderMap = handleRentOrReturnOrder(rentOrReturnOrderSet);
+        Map<String, Long> rentReturnOrderMap = handleRentReturnOrder(rentReturnOrderSet);
     
         return list.stream().map(item -> {
             BatteryChangeInfoVO vo = new BatteryChangeInfoVO();
             BeanUtils.copyProperties(item, vo);
         
             String orderId = item.getOrderId();
-            BatteryChangeInfoVO batteryChangeInfoVO = null;
             Long uid = null;
-        
             if (StringUtil.isNotBlank(orderId)) {
                 if (MapUtil.isNotEmpty(exchangeOrderMap) && exchangeOrderMap.containsKey(orderId)) {
                     uid = exchangeOrderMap.get(orderId);
                 }
             
-                if (MapUtil.isNotEmpty(rentOrReturnOrderMap) && rentOrReturnOrderMap.containsKey(orderId)) {
-                    uid = rentOrReturnOrderMap.get(orderId);
+                if (MapUtil.isNotEmpty(rentReturnOrderMap) && rentReturnOrderMap.containsKey(orderId)) {
+                    uid = rentReturnOrderMap.get(orderId);
                 }
             }
         
             if (Objects.nonNull(uid)) {
-                vo.setUid(batteryChangeInfoVO.getUid());
+                vo.setUid(uid);
                 UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
                 if (Objects.nonNull(userInfo)) {
                     vo.setUserName(userInfo.getName());
@@ -1813,12 +1811,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return map;
     }
     
-    private Map<String, Long> handleRentOrReturnOrder(Set<String> rentOrReturnOrderSet) {
-        if (CollectionUtils.isEmpty(rentOrReturnOrderSet)) {
+    private Map<String, Long> handleRentReturnOrder(Set<String> rentReturnOrderSet) {
+        if (CollectionUtils.isEmpty(rentReturnOrderSet)) {
             return null;
         }
         
-        List<RentBatteryOrder> orderList = rentBatteryOrderService.listByOrderIdList(rentOrReturnOrderSet);
+        List<RentBatteryOrder> orderList = rentBatteryOrderService.listByOrderIdList(rentReturnOrderSet);
         if (CollectionUtils.isEmpty(orderList)) {
             return null;
         }
@@ -1826,7 +1824,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Map<String, Long> map = new HashMap<>();
         for (RentBatteryOrder item : orderList) {
             String orderId = item.getOrderId();
-            if (StringUtil.isBlank(orderId) || !rentOrReturnOrderSet.contains(orderId)) {
+            if (StringUtil.isBlank(orderId) || !rentReturnOrderSet.contains(orderId)) {
                 continue;
             }
             map.put(orderId, item.getUid());

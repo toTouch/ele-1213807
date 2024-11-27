@@ -10,6 +10,7 @@ import com.xiliulou.electricity.mapper.BatteryTrackRecordMapper;
 import com.xiliulou.electricity.queue.BatteryTrackRecordBatchSaveQueueService;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.BatteryTrackRecordVO;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,8 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     @Autowired
     BatteryTrackRecordBatchSaveQueueService batteryTrackRecordBatchSaveQueueService;
 
+    @Resource
+    private RentBatteryOrderService rentBatteryOrderService;
 
     /**
      * 电池记录存放到队列
@@ -74,10 +77,11 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
             BeanUtils.copyProperties(item, vo);
         
             String orderId = item.getOrderId();
-            if (orderId.startsWith(BusinessType.EXCHANGE_BATTERY.getBusiness().toString())) {
-                vo.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
-            } else if (orderId.startsWith(BusinessType.RENT_BATTERY.getBusiness().toString()) || orderId.startsWith(BusinessType.RETURN_BATTERY.getBusiness().toString())) {
+            Boolean rendReturnOrder = rentBatteryOrderService.isRendReturnOrder(orderId);
+            if (rendReturnOrder) {
                 vo.setOrderType(OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER);
+            } else {
+                vo.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
             }
         
             return vo;
