@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -3538,9 +3539,31 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         List<ElectricityCabinetBox> exchangeableList = electricityCabinetBoxList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
         
         if (CollectionUtils.isEmpty(exchangeableList)) {
-            log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
+            log.warn("Get Full Battery Warn ! not found electricityCabinetBoxList,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
+        
+        List<Long> batteryIds = exchangeableList.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
+        
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
+        if (CollUtil.isEmpty(electricityBatteries)) {
+            return Triple.of(false, "100225", "电池不存在");
+        }
+        
+        // 把本柜机加盟商的绑定电池信息拿出来
+        electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
+        if (!DataUtil.collectionIsUsable(electricityBatteries)) {
+            log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}", electricityCabinet.getId());
+            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+        }
+        
+        // 获取全部可用电池id
+        List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+        
+        // 把加盟商绑定的电池过滤出来
+        exchangeableList = exchangeableList.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
+        
+        
         
         String fullBatteryCell = null;
         
