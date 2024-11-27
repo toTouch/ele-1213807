@@ -75,7 +75,13 @@ public interface BatteryMemberCardService {
     
     List<BatteryMemberCardVO> selectByPageForUserV2(BatteryMemberCardQuery query);
     
+    /**
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
+     */
+    @Deprecated
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
+    
+    List<String> selectMemberCardBatteryVoltageV2(BatteryMemberCardQuery query);
     
     List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query);
     

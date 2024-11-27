@@ -57,12 +57,25 @@ public class JsonUserBatteryMemberCardController extends BaseController {
     
     /**
      * 用户端获取加盟商套餐电池电压
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
      */
+    @Deprecated
     @GetMapping("/user/battery/memberCard/batteryV")
     public R selectMembercardBatteryV(@RequestParam(value = "franchiseeId") Long franchiseeId) {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).status(BatteryMemberCard.STATUS_UP)
                 .delFlag(BatteryMemberCard.DEL_NORMAL).build();
         
         return R.ok(batteryMemberCardService.selectMembercardBatteryV(query));
+    }
+    
+    /**
+     * 用户端获取加盟商套餐电池电压
+     */
+    @GetMapping("/user/battery/memberCard/batteryV/v2")
+    public R selectMemberCardBatteryVoltageV2(@RequestParam(value = "franchiseeId") Long franchiseeId) {
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId).status(BatteryMemberCard.STATUS_UP)
+                .delFlag(BatteryMemberCard.DEL_NORMAL).build();
+        
+        return R.ok(batteryMemberCardService.selectMemberCardBatteryVoltageV2(query));
     }
 }

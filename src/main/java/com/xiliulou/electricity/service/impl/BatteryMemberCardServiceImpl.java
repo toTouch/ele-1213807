@@ -824,8 +824,45 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return result;
     }
     
+    @Deprecated
     @Override
     public List<String> selectMembercardBatteryV(BatteryMemberCardQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR!not found userInfo,uid={}", SecurityUtils.getUid());
+            return Collections.emptyList();
+        }
+        
+        // 未缴纳押金
+        if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())) {
+            List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
+            if (CollectionUtils.isEmpty(list)) {
+                return Collections.emptyList();
+            }
+            
+            return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
+            List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
+            if (CollectionUtils.isEmpty(list)) {
+                return Collections.emptyList();
+            }
+            
+            return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
+        }
+        
+        String batteryType = userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid());
+        if (StringUtils.isBlank(batteryType)) {
+            return Collections.emptyList();
+        }
+        
+        return Collections.singletonList(batteryType);
+    }
+    
+    @Override
+    public List<String> selectMemberCardBatteryVoltageV2(BatteryMemberCardQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR!not found userInfo,uid={}", SecurityUtils.getUid());
