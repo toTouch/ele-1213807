@@ -1671,9 +1671,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             for (CarRentalPackageOrderFreezePo freezeEntity : pageEntityList) {
                 try {
                     Integer applyTerm = freezeEntity.getApplyTerm();
-                    Long createTime = freezeEntity.getCreateTime();
+//                    Long createTime = freezeEntity.getCreateTime();
+                    Long auditTime = freezeEntity.getAuditTime();
                     // 到期时间
-                    long expireTime = createTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
+                    long expireTime = auditTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
                     
                     if (nowTime < expireTime) {
                         continue;
