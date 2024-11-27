@@ -552,6 +552,8 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
                 newElectricityCabinetOrder.setNewElectricityBatterySn(openFullCellRsp.getTakeBatteryName());
                 newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
                 newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+                // 快捷换电需要修改为初始化，不让走二次扫码
+                newElectricityCabinetOrder.setOrderStatus(ElectricityCabinetOrder.INIT);
             }
             cabinetOrderService.update(newElectricityCabinetOrder);
         }
