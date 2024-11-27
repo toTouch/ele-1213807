@@ -682,7 +682,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
             boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, franchisee, userInfo);
             if (!matchOrNot) {
-                return Triple.of(false, "301031", "该套餐暂不支持购买，请重新选择");
+                return Triple.of(false, "301040", "该套餐暂不支持购买，请重新选择");
             }
             
             BatteryMemberCard userBindBatteryMemberCard = Objects.isNull(userBatteryMemberCard) ? null : batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
