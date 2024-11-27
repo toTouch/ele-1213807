@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.EleCabinetConstant;
 import com.xiliulou.electricity.entity.AppParamSettingTemplate;
 import com.xiliulou.electricity.mapper.AppParamSettingTemplateMapper;
 import com.xiliulou.electricity.query.AppParamSettingTemplateQuery;
@@ -129,10 +130,10 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
     
     @Override
     public R saveOne(AppParamSettingTemplateQuery query) {
-        if (this.queryCount() >= 5) {
+        if (this.queryCount() >= EleCabinetConstant.CABINET_APP_PARAM_SETTING_TEMPLATE_LIMIT) {
             log.error("APP PARAM SETTING TEMPLATE ERROR! too many templates! tenantId={}",
                     TenantContextHolder.getTenantId());
-            return R.fail("100431", "您的模板过多，最多可设置五个模板");
+            return R.fail("100431", "您的模板过多，最多可设置10个模板");
         }
       
         AppParamSettingTemplate appParamSettingTemplate = new AppParamSettingTemplate();
