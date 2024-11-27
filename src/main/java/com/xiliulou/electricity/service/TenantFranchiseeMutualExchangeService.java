@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: TenantFranchiseeMutualExchangeService
@@ -106,5 +107,5 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param franchiseeId franchiseeId
      * @return Pair
      */
-    Pair<Boolean, Object> isSatisfyFranchiseeIdMutualExchange(Integer tenantId, Long franchiseeId);
+    Pair<Boolean, Set<Long>> isSatisfyFranchiseeIdMutualExchange(Integer tenantId, Long franchiseeId);
 }

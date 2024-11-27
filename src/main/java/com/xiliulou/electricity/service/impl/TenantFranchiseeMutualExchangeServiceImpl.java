@@ -159,8 +159,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     
     @Override
-    public Pair<Boolean, Object> isSatisfyFranchiseeIdMutualExchange(Integer tenantId, Long franchiseeId) {
+    public Pair<Boolean, Set<Long>> isSatisfyFranchiseeIdMutualExchange(Integer tenantId, Long franchiseeId) {
         if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId)) {
+            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! tenantId or franchiseeId is null");
             return Pair.of(false, null);
         }
         List<TenantFranchiseeMutualExchange> mutualExchangeList = getMutualExchangeConfigListFromCache(tenantId);
@@ -168,6 +169,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant MutualExchangeConfig is null, tenantId is {}", tenantId);
             return Pair.of(false, null);
         }
+        
         Set<Long> franchiseeIdSet = new HashSet<>();
         mutualExchangeList.forEach(e -> {
             List<Long> combinedFranchisee = JsonUtil.fromJsonArray(e.getCombinedFranchisee(), Long.class);
@@ -175,7 +177,12 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 franchiseeIdSet.addAll(combinedFranchisee);
             }
         });
+        // 有互通，但是当前加盟商并没有在互通中
+        if (CollUtil.isEmpty(franchiseeIdSet)) {
+            return Pair.of(false, null);
+        }
         
+        log.info("IsSatisfyFranchiseeIdMutualExchange Info! franchiseeIdSet is {}", JsonUtil.toJson(franchiseeIdSet));
         return Pair.of(true, franchiseeIdSet);
     }
     
