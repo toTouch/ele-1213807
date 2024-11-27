@@ -29,22 +29,22 @@ public class OtaFileCheckSumVo {
     /**
      * 旧六合一版本号
      */
-    private String sixVersionCloud;
+    private String sixSubVersionCloud;
     
     /**
      * 旧六合一sha256
      */
-    private String sixSha256HexCloud;
+    private String sixSubSha256HexCloud;
     
     /**
      * 新六合一版本号
      */
-    private String newSixVersionCloud;
+    private String newSixSubVersionCloud;
     
     /**
      * 新六合一sha256
      */
-    private String newSixSha256HexCloud;
+    private String newSixSubSha256HexCloud;
     
     private String coreNameEle;
     

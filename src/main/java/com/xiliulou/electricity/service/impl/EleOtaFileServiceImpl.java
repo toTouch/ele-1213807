@@ -154,12 +154,12 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
                             otaFileCheckSumVo.setOldSubVersionCloud(otaFileConfig.getVersion());
                             break;
                         case OtaFileConfig.TYPE_SIX_SUB_BOARD:
-                            otaFileCheckSumVo.setSixSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setSixVersionCloud(otaFileConfig.getVersion());
+                            otaFileCheckSumVo.setSixSubSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setSixSubVersionCloud(otaFileConfig.getVersion());
                             break;
                         case OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD:
-                            otaFileCheckSumVo.setNewSixSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setNewSixVersionCloud(otaFileConfig.getVersion());
+                            otaFileCheckSumVo.setNewSixSubSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setNewSixSubVersionCloud(otaFileConfig.getVersion());
                             break;
                         default:
                             break;
