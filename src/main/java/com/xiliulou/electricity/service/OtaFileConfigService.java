@@ -74,4 +74,6 @@ public interface OtaFileConfigService {
     R otaFileConfigDelete(Long id);
     
     R otaFileConfigQueryList();
+    
+    List<OtaFileConfig> listByTypes(List<Integer> types);
 }

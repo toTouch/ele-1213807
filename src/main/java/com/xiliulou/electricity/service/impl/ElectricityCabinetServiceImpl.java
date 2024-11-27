@@ -4007,40 +4007,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     public R otaCommand(Integer eid, Integer operateType, Integer versionType, List<Integer> cellNos) {
-        
         Long uid = SecurityUtils.getUid();
         User user = userService.queryByUidFromCache(uid);
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        
+        Triple<Boolean, String, Object> checkResult = this.preCheck(eid, user, operateType, versionType);
+        if (!checkResult.getLeft()) {
+            return R.fail(checkResult.getMiddle(), checkResult.getRight().toString());
         }
         
-        ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
-        if (Objects.isNull(electricityCabinet)) {
-            return R.fail("ELECTRICITY.0005", "未找到换电柜");
-        }
-        
-        if (OtaConstant.OTA_TYPE_DOWNLOAD > operateType || OtaConstant.OTA_SIX_IN_ONE_TYPE_UPGRADE < operateType) {
-            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}", electricityCabinet, operateType);
-            return R.fail("100302", "ota操作类型不合法");
-        }
-        
-        Set<Integer> versionTypeSet = Set.of(NumberConstant.ZERO, NumberConstant.ONE, NumberConstant.TWO, NumberConstant.THREE);
-        if (!versionTypeSet.contains(versionType)) {
-            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},versionType={}", electricityCabinet, versionType);
-            return R.fail("100302", "ota操作类型不合法");
-        }
-        
+        ElectricityCabinet electricityCabinet = (ElectricityCabinet) checkResult.getRight();
         // 查询柜机当前版本
-        Integer versionPrefix = getVersionPrefix(eid);
-        if (Objects.isNull(versionPrefix)) {
-            log.error("ELECTRICITY  ERROR!  electricityCabinet is not version ！eid={}", eid);
+        String cabinetCoreOrSubVersion = this.getCabinetCoreOrSubVersion(eid);
+        if (StringUtils.isBlank(cabinetCoreOrSubVersion)) {
+            log.warn("otaCommand warn! electricityCabinet is not version! eid={}", eid);
             return R.fail("100312", "柜机暂无版本号，无法ota升级");
         }
         
-        // 版本号前缀：旧版（大于等于50）、新版（小于10）、六合一版（大于等于10且小于20）
-        String sessionPrefix = getSessionPrefix(versionType, versionPrefix, eid);
-        String sessionId = sessionPrefix + UUID.randomUUID().toString().replaceAll("-", "");
-        
+        // sessionId
+        String sessionId = getSessionId(versionType, eid);
         Map<String, Object> data = Maps.newHashMap();
         data.put(OtaConstant.OTA_OPERATE_TYPE, operateType);
         data.put(OtaConstant.OTA_USERID, user.getUid());
@@ -4063,13 +4047,41 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(sessionId);
     }
     
-    private String getSessionPrefix(Integer versionType, Integer versionPrefix, Integer eid) {
-        String sessionPrefix = null;
-        // 下载时 versionType:1--旧的（版本号>=50.0） 2--新的（版本号<10） 3--六合一（10.0<=版本<20.0）
+    private Triple<Boolean, String, Object> preCheck(Integer eid, User user, Integer operateType, Integer versionType) {
+        if (Objects.isNull(user)) {
+            log.warn("otaCommand warn! user is null");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet)) {
+            log.warn("otaCommand warn! electricityCabinet is null, eid={}", eid);
+            return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        List<Integer> operateTypeList = List.of(OtaConstant.OTA_TYPE_DOWNLOAD, OtaConstant.OTA_TYPE_SYNC, OtaConstant.OTA_TYPE_UPGRADE);
+        if (!operateTypeList.contains(operateType)) {
+            log.warn("otaCommand warn! ota operate type illegal! electricityCabinet={}, operateType={}", electricityCabinet, operateType);
+            return Triple.of(false, "100302", "ota操作类型不合法");
+        }
+        
+        List<Integer> versionTypeList = List.of(OtaConstant.OTA_VERSION_TYPE_OLD, OtaConstant.OTA_VERSION_TYPE_NEW, OtaConstant.OTA_VERSION_TYPE_SIX,
+                OtaConstant.OTA_VERSION_TYPE_NEW_SIX);
+        if (!versionTypeList.contains(versionType)) {
+            log.error("otaCommand warn! versionType illegal! electricityCabinet={}, operateType={}, versionType={}", electricityCabinet, operateType, versionType);
+            return Triple.of(false, "100302", "ota操作类型不合法");
+        }
+        
+        return Triple.of(true, null, electricityCabinet);
+    }
+    
+    private String getSessionId(Integer versionType, Integer eid) {
+        String sessionPrefix = "";
+        // 下载时 versionType:1--旧的 2--新的 3--旧六合一 4--新六合一
         // 同步和升级时 versionType=0
         
         // 如果是同步和升级 操作，需要从数据库查询versionType
-        if (Objects.equals(versionType, NumberConstant.ZERO)) {
+        if (Objects.isNull(versionType) || Objects.equals(versionType, NumberConstant.ZERO)) {
             EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
             if (Objects.nonNull(eleOtaFile)) {
                 versionType = eleOtaFile.getFileType();
@@ -4078,85 +4090,122 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         // 通过versionType解析sessionPrefix
         if (Objects.nonNull(versionType)) {
-            // 如果数据库查询的versionType=0，则 认为是新版本
-            versionType = Objects.equals(versionType, NumberConstant.ZERO) ? OtaConstant.OTA_VERSIONTYPE_NEW : versionType;
-            
             switch (versionType) {
-                case OtaConstant.OTA_VERSIONTYPE_OLD:
+                case OtaConstant.OTA_VERSION_TYPE_OLD:
                     sessionPrefix = OtaConstant.SESSION_PREFIX_OLD;
                     break;
-                case OtaConstant.OTA_VERSIONTYPE_NEW:
+                case OtaConstant.OTA_VERSION_TYPE_NEW:
                     sessionPrefix = OtaConstant.SESSION_PREFIX_NEW;
                     break;
-                case OtaConstant.OTA_VERSIONTYPE_SIX_IN_ONE:
-                    sessionPrefix = OtaConstant.SESSION_PREFIX_SIX_IN_ONE;
+                case OtaConstant.OTA_VERSION_TYPE_SIX:
+                    sessionPrefix = OtaConstant.SESSION_PREFIX_SIX;
+                    break;
+                case OtaConstant.OTA_VERSION_TYPE_NEW_SIX:
+                    sessionPrefix = OtaConstant.SESSION_PREFIX_NEW_SIX;
                     break;
                 default:
                     sessionPrefix = "";
                     break;
             }
-        } else {
-            // 通过versionPrefix解析sessionPrefix
-            if (OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION > versionPrefix) {
-                sessionPrefix = OtaConstant.SESSION_PREFIX_NEW;
-            } else if (OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION <= versionPrefix && versionPrefix < OtaFileConfig.MAX_SIX_IN_ONE_BOARD_VERSION) {
-                sessionPrefix = OtaConstant.SESSION_PREFIX_SIX_IN_ONE;
-            } else if (OtaFileConfig.MIN_OLD_BOARD_VERSION <= versionPrefix) {
-                sessionPrefix = OtaConstant.SESSION_PREFIX_OLD;
-            }
         }
-        
-        return sessionPrefix;
+        return sessionPrefix + UUID.randomUUID().toString().replaceAll("-", "");
     }
     
-    private Triple<Boolean, String, Object> assembleContent(Integer eid, Integer operateType, List<Integer> cellNos, Integer fileType, String sessionId) {
+    private Triple<Boolean, String, Object> assembleContent(Integer eid, Integer operateType, List<Integer> cellNos, Integer versionType, String sessionId) {
         Map<String, Object> content = new HashMap<>();
         
-        if (OtaConstant.OTA_TYPE_DOWNLOAD.equals(operateType) || OtaConstant.OTA_SIX_IN_ONE_TYPE_DOWNLOAD.equals(operateType)) {
+        if (OtaConstant.OTA_TYPE_DOWNLOAD.equals(operateType)) {
             OtaFileConfig coreBoardOtaFileConfig = null;
             OtaFileConfig subBoardOtaFileConfig = null;
-            // ota文件是否存在
-            if (Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE)) {
-                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
-                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
-            } else if (Objects.equals(fileType, EleOtaFile.TYPE_NEW_FILE)) {
-                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
-                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
-            } else if (Objects.equals(fileType, EleOtaFile.TYPE_SIX_IN_ONE_FILE)) {
-                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD);
-                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD);
+            
+            switch (versionType) {
+                case EleOtaFile.TYPE_OLD_FILE:
+                    List<OtaFileConfig> otaFileConfigs1 = otaFileConfigService.listByTypes(List.of(OtaFileConfig.TYPE_OLD_CORE_BOARD, OtaFileConfig.TYPE_OLD_SUB_BOARD));
+                    if (!CollectionUtils.isEmpty(otaFileConfigs1)) {
+                        for (OtaFileConfig config : otaFileConfigs1) {
+                            if (Objects.equals(config.getType(), OtaFileConfig.TYPE_OLD_CORE_BOARD)) {
+                                coreBoardOtaFileConfig = config;
+                            }
+                            if (Objects.equals(config.getType(), OtaFileConfig.TYPE_OLD_SUB_BOARD)) {
+                                subBoardOtaFileConfig = config;
+                            }
+                        }
+                    }
+                    break;
+                case EleOtaFile.TYPE_NEW_FILE:
+                    List<OtaFileConfig> otaFileConfigs2 = otaFileConfigService.listByTypes(List.of(OtaFileConfig.TYPE_CORE_BOARD, OtaFileConfig.TYPE_SUB_BOARD));
+                    if (!CollectionUtils.isEmpty(otaFileConfigs2)) {
+                        for (OtaFileConfig config : otaFileConfigs2) {
+                            if (Objects.equals(config.getType(), OtaFileConfig.TYPE_CORE_BOARD)) {
+                                coreBoardOtaFileConfig = config;
+                            }
+                            if (Objects.equals(config.getType(), OtaFileConfig.TYPE_SUB_BOARD)) {
+                                subBoardOtaFileConfig = config;
+                            }
+                        }
+                    }
+                    break;
+                case EleOtaFile.TYPE_SIX_FILE:
+                    subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_SUB_BOARD);
+                    break;
+                case EleOtaFile.TYPE_NEW_SIX_FILE:
+                    subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD);
+                    break;
+                default:
+                    break;
             }
             
-            if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
+            if (Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}", coreBoardOtaFileConfig, subBoardOtaFileConfig);
                 return Triple.of(Boolean.FALSE, "100301", "ota升级文件不完整，请联系客服处理");
             }
             
-            createOrUpdateEleOtaFile(eid, fileType, coreBoardOtaFileConfig, subBoardOtaFileConfig);
-            
-            content.put(OtaConstant.OTA_CORE_FILE_URL, coreBoardOtaFileConfig.getDownloadLink());
-            content.put(OtaConstant.OTA_CORE_FILE_SHA256HEX, coreBoardOtaFileConfig.getSha256Value());
+            // 六合一没有核心板文件
+            if (!isSixVersion(versionType) && Objects.isNull(coreBoardOtaFileConfig)) {
+                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}", coreBoardOtaFileConfig, subBoardOtaFileConfig);
+                return Triple.of(Boolean.FALSE, "100301", "ota升级文件不完整，请联系客服处理");
+            }
+    
+            createOrUpdateEleOtaFile(eid, versionType, coreBoardOtaFileConfig, subBoardOtaFileConfig);
+    
             content.put(OtaConstant.OTA_SUB_FILE_URL, subBoardOtaFileConfig.getDownloadLink());
             content.put(OtaConstant.OTA_SUB_FILE_SHA256HEX, subBoardOtaFileConfig.getSha256Value());
-        } else if (OtaConstant.OTA_TYPE_UPGRADE.equals(operateType) || OtaConstant.OTA_SIX_IN_ONE_TYPE_UPGRADE.equals(operateType)) {
+            if (!isSixVersion(versionType)) {
+                content.put(OtaConstant.OTA_CORE_FILE_URL, coreBoardOtaFileConfig.getDownloadLink());
+                content.put(OtaConstant.OTA_CORE_FILE_SHA256HEX, coreBoardOtaFileConfig.getSha256Value());
+            }
+        } else if (OtaConstant.OTA_TYPE_UPGRADE.equals(operateType)) {
             if (!DataUtil.collectionIsUsable(cellNos)) {
                 return Triple.of(Boolean.FALSE, "100303", "升级内容为空，请选择您要升级的板子");
             }
             eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
-            content.put(OtaConstant.OTA_CONTENT_CELLNOS, cellNos);
+            content.put(OtaConstant.OTA_CONTENT_CELL_NOS, cellNos);
         }
         
         return Triple.of(Boolean.TRUE, null, content);
     }
     
-    private void createOrUpdateEleOtaFile(Integer eid, Integer fileType, OtaFileConfig coreBoardOtaFileConfig, OtaFileConfig subBoardOtaFileConfig) {
+    private Boolean isSixVersion(Integer versionType) {
+        return Objects.equals(versionType, EleOtaFile.TYPE_SIX_FILE) || Objects.equals(versionType, EleOtaFile.TYPE_NEW_SIX_FILE);
+    }
+    
+    private void createOrUpdateEleOtaFile(Integer eid, Integer versionType, OtaFileConfig coreBoardOtaFileConfig, OtaFileConfig subBoardOtaFileConfig) {
         EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
+        String coreSha256Value = coreBoardOtaFileConfig.getSha256Value();
+        String coreName = coreBoardOtaFileConfig.getName();
+        if (isSixVersion(versionType)) {
+            coreSha256Value = "";
+            coreName = "";
+        }
+        
         if (Objects.nonNull(eleOtaFile)) {
             EleOtaFile update = new EleOtaFile();
             update.setId(eleOtaFile.getId());
-            update.setCoreSha256Value(coreBoardOtaFileConfig.getSha256Value());
+            update.setCoreSha256Value(coreSha256Value);
+            update.setCoreName(coreName);
             update.setSubSha256Value(subBoardOtaFileConfig.getSha256Value());
-            update.setFileType(fileType);
+            update.setSubName(subBoardOtaFileConfig.getName());
+            update.setFileType(versionType);
             update.setUpdateTime(System.currentTimeMillis());
             eleOtaFileService.update(update);
             return;
@@ -4164,25 +4213,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         EleOtaFile create = new EleOtaFile();
         create.setElectricityCabinetId(eid);
-        create.setCoreSha256Value(coreBoardOtaFileConfig.getSha256Value());
+        create.setCoreSha256Value(coreSha256Value);
+        create.setCoreName(coreName);
         create.setSubSha256Value(subBoardOtaFileConfig.getSha256Value());
-        create.setCoreName(coreBoardOtaFileConfig.getName());
         create.setSubName(subBoardOtaFileConfig.getName());
-        create.setFileType(fileType);
+        create.setFileType(versionType);
         create.setUpdateTime(System.currentTimeMillis());
         create.setCreateTime(System.currentTimeMillis());
         eleOtaFileService.insert(create);
     }
     
-    private Integer getVersionPrefix(Integer eid) {
-        EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
+    private String getCabinetCoreOrSubVersion(Integer eid) {
+        EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEid(eid);
         if (Objects.nonNull(eleCabinetCoreData) && StringUtils.isNotEmpty(eleCabinetCoreData.getCoreVersion())) {
-            String version = eleCabinetCoreData.getCoreVersion();
-            if (!NumberUtil.equals(NumberConstant.MINUS_ONE, version.indexOf("."))) {
-                return Integer.parseInt(version.substring(0, version.indexOf(".")));
-            } else {
-                return Integer.parseInt(version);
-            }
+            return eleCabinetCoreData.getCoreVersion();
         }
         
         List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(eid);
@@ -4195,12 +4239,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         }
         
-        String version = collect.get(0).getVersion();
-        if (!NumberUtil.equals(NumberConstant.MINUS_ONE, version.indexOf("."))) {
-            return Integer.parseInt(version.substring(0, version.indexOf(".")));
-        } else {
-            return Integer.parseInt(version);
-        }
+        return collect.get(0).getVersion();
     }
     
     @Override

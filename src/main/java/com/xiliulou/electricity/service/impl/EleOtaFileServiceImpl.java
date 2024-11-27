@@ -1,41 +1,26 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.StrUtil;
-import com.google.api.client.util.Lists;
-import com.google.api.client.util.Maps;
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleOtaFile;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.mapper.EleOtaFileMapper;
-import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.EleOtaFileService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.vo.OtaFileCheckSumVo;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
- *
  * @author zgw
  * @since 2022-10-12 17:31:10
  */
@@ -45,11 +30,11 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
     
     @Resource
     private EleOtaFileMapper eleOtaFileMapper;
-
+    
     
     @Autowired
     private OtaFileConfigService otaFileConfigService;
-
+    
     
     /**
      * 通过ID查询单条数据从DB
@@ -130,7 +115,7 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
     @Override
     public R queryInfo(Integer eid) {
         OtaFileCheckSumVo otaFileCheckSumVo = new OtaFileCheckSumVo();
-    
+        
         EleOtaFile eleOtaFile = this.queryByEid(eid);
         if (Objects.nonNull(eleOtaFile)) {
             otaFileCheckSumVo.setSubSha256HexEle(eleOtaFile.getSubSha256Value());
@@ -139,43 +124,50 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
             otaFileCheckSumVo.setSubNameEle(eleOtaFile.getSubName());
             otaFileCheckSumVo.setFileType(eleOtaFile.getFileType());
         }
-    
-        OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
-        if (Objects.nonNull(coreBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setCoreSha256HexCloud(coreBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setCoreVersionCloud(coreBoardOtaFileConfig.getVersion());
+        
+        List<OtaFileConfig> otaFileConfigList = otaFileConfigService.listByTypes(
+                List.of(OtaFileConfig.TYPE_CORE_BOARD, OtaFileConfig.TYPE_SUB_BOARD, OtaFileConfig.TYPE_OLD_CORE_BOARD, OtaFileConfig.TYPE_OLD_SUB_BOARD,
+                        OtaFileConfig.TYPE_SIX_SUB_BOARD, OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD));
+        
+        if (CollectionUtils.isNotEmpty(otaFileConfigList)) {
+            Map<Integer, OtaFileConfig> typeMap = otaFileConfigList.stream().collect(Collectors.toMap(OtaFileConfig::getType, otaFileConfig -> otaFileConfig));
+            if (MapUtils.isNotEmpty(typeMap)) {
+                for (Map.Entry<Integer, OtaFileConfig> entry : typeMap.entrySet()) {
+                    Integer type = entry.getKey();
+                    OtaFileConfig otaFileConfig = entry.getValue();
+                    
+                    switch (type) {
+                        case OtaFileConfig.TYPE_CORE_BOARD:
+                            otaFileCheckSumVo.setCoreSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setCoreVersionCloud(otaFileConfig.getVersion());
+                            break;
+                        case OtaFileConfig.TYPE_SUB_BOARD:
+                            otaFileCheckSumVo.setSubSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setSubVersionCloud(otaFileConfig.getVersion());
+                            break;
+                        case OtaFileConfig.TYPE_OLD_CORE_BOARD:
+                            otaFileCheckSumVo.setOldCoreSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setOldCoreVersionCloud(otaFileConfig.getVersion());
+                            break;
+                        case OtaFileConfig.TYPE_OLD_SUB_BOARD:
+                            otaFileCheckSumVo.setOldSubSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setOldSubVersionCloud(otaFileConfig.getVersion());
+                            break;
+                        case OtaFileConfig.TYPE_SIX_SUB_BOARD:
+                            otaFileCheckSumVo.setSixSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setSixVersionCloud(otaFileConfig.getVersion());
+                            break;
+                        case OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD:
+                            otaFileCheckSumVo.setNewSixSha256HexCloud(otaFileConfig.getSha256Value());
+                            otaFileCheckSumVo.setNewSixVersionCloud(otaFileConfig.getVersion());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
         }
-    
-        OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
-        if (Objects.nonNull(subBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setSubSha256HexCloud(subBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setSubVersionCloud(subBoardOtaFileConfig.getVersion());
-        }
-    
-        OtaFileConfig oldCoreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
-        if (Objects.nonNull(oldCoreBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setOldCoreSha256HexCloud(oldCoreBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setOldCoreVersionCloud(oldCoreBoardOtaFileConfig.getVersion());
-        }
-    
-        OtaFileConfig oldSubBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
-        if (Objects.nonNull(oldSubBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setOldSubSha256HexCloud(oldSubBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setOldSubVersionCloud(oldSubBoardOtaFileConfig.getVersion());
-        }
-    
-        OtaFileConfig sixInOneCoreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD);
-        if (Objects.nonNull(sixInOneCoreBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setSixInOneCoreSha256HexCloud(sixInOneCoreBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setSixInOneCoreVersionCloud(sixInOneCoreBoardOtaFileConfig.getVersion());
-        }
-    
-        OtaFileConfig sixInOneSubBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD);
-        if (Objects.nonNull(sixInOneSubBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setSixInOneSubSha256HexCloud(sixInOneSubBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setSixInOneSubVersionCloud(sixInOneSubBoardOtaFileConfig.getVersion());
-        }
-    
+        
         return R.ok(otaFileCheckSumVo);
     }
     

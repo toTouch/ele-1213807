@@ -1,10 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
-import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
@@ -18,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 /**
  * (OtaFileConfig)表服务实现类
@@ -153,44 +147,25 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        if (type < OtaFileConfig.TYPE_CORE_BOARD || type > OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD) {
-            log.error("OTA UPLOAD ERROR! ota file type error! name={}, version={}, type={}", name, version, type);
+        if (!checkOtaFileType(type)) {
+            log.warn("OTA UPLOAD WARN! ota file type error! name={}, version={}, type={}", name, version, type);
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
     
         if (StringUtils.isBlank(version)) {
-            log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
+            log.warn("OTA UPLOAD WARN! ota file version error! name={}, version={}, type={}", name, version, type);
             return R.fail("100313", "ota文件版本号不合法");
         }
     
         Pair<Boolean, Integer> result = resolutionVersion(version);
         if (!result.getLeft()) {
-            log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
+            log.warn("OTA UPLOAD WARN! ota file version error! name={}, version={}, type={}", name, version, type);
             return R.fail("100313", "ota文件版本号不合法");
         }
     
-        //旧版 大于等于50.
-        Integer versionNum = result.getRight();
-        if (Objects.equals(type, OtaFileConfig.TYPE_OLD_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_OLD_SUB_BOARD)) {
-            if (Objects.isNull(versionNum) || OtaFileConfig.MIN_OLD_BOARD_VERSION > versionNum) {
-                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
-                return R.fail("100313", "ota文件版本号不合法");
-            }
-        }
-        // 新版 小于10.
-        if (Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD)) {
-            if (Objects.isNull(versionNum) || OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION <= versionNum) {
-                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
-                return R.fail("100313", "ota文件版本号不合法");
-            }
-        }
-    
-        // 六合一版 大于等于10. 且小于20.
-        if (Objects.equals(type, OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD)) {
-            if (Objects.isNull(versionNum) || OtaFileConfig.MIX_SIX_IN_ONE_BOARD_VERSION > versionNum || OtaFileConfig.MAX_SIX_IN_ONE_BOARD_VERSION <= versionNum) {
-                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
-                return R.fail("100313", "ota文件版本号不合法");
-            }
+        if (!checkOtaFileVersion(result.getRight(), type)) {
+            log.warn("OTA UPLOAD WARN! ota file version error! name={}, version={}, type={}", name, version, type);
+            return R.fail("100313", "ota文件版本号不合法");
         }
     
         InputStream ossInputStream = null;
@@ -248,6 +223,38 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         return R.ok();
     }
     
+    private Boolean checkOtaFileType(Integer type) {
+        List<Integer> typeList = List.of(OtaFileConfig.TYPE_CORE_BOARD, OtaFileConfig.TYPE_SUB_BOARD, OtaFileConfig.TYPE_OLD_CORE_BOARD, OtaFileConfig.TYPE_OLD_SUB_BOARD,
+                OtaFileConfig.TYPE_SIX_SUB_BOARD, OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD);
+    
+        return typeList.contains(type);
+    }
+    
+    private Boolean checkOtaFileVersion(Integer versionNum, Integer type) {
+        switch (type) {
+            // 50≤旧版＜60
+            case OtaFileConfig.TYPE_OLD_CORE_BOARD:
+            case OtaFileConfig.TYPE_OLD_SUB_BOARD:
+                return checkVersion(versionNum, OtaFileConfig.VERSION_50, OtaFileConfig.VERSION_60);
+            // 0≤新版＜10
+            case OtaFileConfig.TYPE_CORE_BOARD:
+            case OtaFileConfig.TYPE_SUB_BOARD:
+                return checkVersion(versionNum, OtaFileConfig.VERSION_0, OtaFileConfig.VERSION_10);
+            // 10≤六合一＜20
+            case OtaFileConfig.TYPE_SIX_SUB_BOARD:
+                return checkVersion(versionNum, OtaFileConfig.VERSION_10, OtaFileConfig.VERSION_20);
+            // 30≤新版六合一＜50
+            case OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD:
+                return checkVersion(versionNum, OtaFileConfig.VERSION_30, OtaFileConfig.VERSION_50);
+            default:
+                return false;
+        }
+    }
+    
+    private boolean checkVersion(int versionNum, int minVersion, int maxVersion) {
+        return versionNum >= minVersion && versionNum < maxVersion;
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R otaFileConfigDelete(Long id) {
@@ -257,7 +264,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         
         OtaFileConfig otaFileConfig = this.queryByIdFromDB(id);
         if (Objects.isNull(otaFileConfig)) {
-            log.error("OTA_FILE_CONFIG_DELETE ERROR! otaFileConfig is null! id={}", id);
+            log.warn("OTA_FILE_CONFIG_DELETE WARN! otaFileConfig is null! id={}", id);
             return R.fail("oat文件不存在");
         }
         return R.ok();
@@ -272,6 +279,11 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         return R.ok(queryAll());
     }
     
+    @Slave
+    @Override
+    public List<OtaFileConfig> listByTypes(List<Integer> types) {
+        return otaFileConfigMapper.selectListByTypes(types);
+    }
     
     /**
      * 解析版本号开头
