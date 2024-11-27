@@ -2,18 +2,15 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
@@ -21,7 +18,6 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
-import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
@@ -30,13 +26,14 @@ import com.xiliulou.electricity.constant.AssetConstant;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.OrderForBatteryConstants;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.BatteryExcelV3DTO;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.asset.AssetTypeEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
 import com.xiliulou.electricity.enums.asset.WarehouseOperateTypeEnum;
@@ -1737,5 +1734,109 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Map<Object, Object> map = MapUtil.builder().put("count", batteryWaitSnList.size()).build();
         operateRecordUtil.record(null, map);
         return R.ok(vo);
+    }
+    
+    @Override
+    public List<BatteryChangeInfoVO> getBatteryChangeOtherInfo(List<BatteryChangeInfo> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        
+        Set<String> orderIdSet = list.stream().map(BatteryChangeInfo::getOrderId).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+        Map<String, BatteryChangeInfoVO> exchangeOrderMap = new HashMap<>();
+        Map<String, BatteryChangeInfoVO> rentOrReturnOrderMap = new HashMap<>();
+        
+        for (String orderId : orderIdSet) {
+            BatteryChangeInfoVO batteryChangeInfoVO = new BatteryChangeInfoVO();
+            if (orderId.startsWith(BusinessType.EXCHANGE_BATTERY.getBusiness().toString())) {
+                batteryChangeInfoVO.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
+                exchangeOrderMap.put(orderId, batteryChangeInfoVO);
+            } else if (orderId.startsWith(BusinessType.RENT_BATTERY.getBusiness().toString()) || orderId.startsWith(BusinessType.RETURN_BATTERY.getBusiness().toString())) {
+                batteryChangeInfoVO.setOrderType(OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER);
+                rentOrReturnOrderMap.put(orderId, batteryChangeInfoVO);
+            }
+        }
+        
+        handleExchangeOrderMap(exchangeOrderMap);
+        handleRentOrReturnOrderMap(rentOrReturnOrderMap);
+        
+        return list.stream().map(item -> {
+            BatteryChangeInfoVO vo = new BatteryChangeInfoVO();
+            BeanUtils.copyProperties(item, vo);
+            
+            String orderId = item.getOrderId();
+            BatteryChangeInfoVO batteryChangeInfoVO = null;
+            if (StringUtil.isNotBlank(orderId)) {
+                if (MapUtil.isNotEmpty(exchangeOrderMap) && exchangeOrderMap.containsKey(orderId)) {
+                    batteryChangeInfoVO = exchangeOrderMap.get(orderId);
+                }
+                
+                if (MapUtil.isNotEmpty(rentOrReturnOrderMap) && rentOrReturnOrderMap.containsKey(orderId)) {
+                    batteryChangeInfoVO = rentOrReturnOrderMap.get(orderId);
+                }
+            }
+            
+            if (Objects.nonNull(batteryChangeInfoVO)) {
+                vo.setOrderType(batteryChangeInfoVO.getOrderType());
+                vo.setUid(batteryChangeInfoVO.getUid());
+                vo.setUserName(batteryChangeInfoVO.getUserName());
+            }
+            
+            return vo;
+        }).collect(Collectors.toList());
+    }
+    
+    private void handleExchangeOrderMap(Map<String, BatteryChangeInfoVO> exchangeOrderMap) {
+        if (MapUtil.isEmpty(exchangeOrderMap)) {
+            return;
+        }
+        
+        List<ElectricityCabinetOrder> orderList = electricityCabinetOrderService.listByOrderIdList(exchangeOrderMap.keySet());
+        if (CollectionUtils.isEmpty(orderList)) {
+            return;
+        }
+        
+        for (ElectricityCabinetOrder item : orderList) {
+            String orderId = item.getOrderId();
+            if (StringUtil.isBlank(orderId) || !exchangeOrderMap.containsKey(orderId)) {
+                continue;
+            }
+            exchangeOrderMap.put(orderId, handleOrderList(exchangeOrderMap, orderId, item.getUid()));
+        }
+    }
+    
+    private void handleRentOrReturnOrderMap(Map<String, BatteryChangeInfoVO> rentOrReturnOrderMap) {
+        if (MapUtil.isEmpty(rentOrReturnOrderMap)) {
+            return;
+        }
+        
+        List<RentBatteryOrder> orderList = rentBatteryOrderService.listByOrderIdList(rentOrReturnOrderMap.keySet());
+        if (CollectionUtils.isEmpty(orderList)) {
+            return;
+        }
+        
+        for (RentBatteryOrder item : orderList) {
+            String orderId = item.getOrderId();
+            if (StringUtil.isBlank(orderId) || !rentOrReturnOrderMap.containsKey(orderId)) {
+                continue;
+            }
+            rentOrReturnOrderMap.put(orderId, handleOrderList(rentOrReturnOrderMap, orderId, item.getUid()));
+        }
+    }
+    
+    private BatteryChangeInfoVO handleOrderList(Map<String, BatteryChangeInfoVO> orderMap, String orderId, Long uid) {
+        String userName = "";
+        if (Objects.nonNull(uid)) {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(userInfo)) {
+                userName = userInfo.getName();
+            }
+        }
+        
+        BatteryChangeInfoVO batteryChangeInfoVO = orderMap.get(orderId);
+        batteryChangeInfoVO.setUid(uid);
+        batteryChangeInfoVO.setUserName(userName);
+        
+        return batteryChangeInfoVO;
     }
 }
