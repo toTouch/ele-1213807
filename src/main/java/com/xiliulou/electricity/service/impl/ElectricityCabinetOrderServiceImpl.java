@@ -2891,10 +2891,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100221", "未能查找到订单");
         }
         
+        if (Objects.equals(electricityCabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+            log.warn("QuickExchange Warn! Exist QuickOrder, orderId is {}", orderId);
+            return Triple.of(false, "300902", "已存在系统快捷换电订单，请等待系统分配仓门");
+        }
+        
         String status = electricityCabinetOrder.getStatus();
         ExchangeOrderMsgShowVO showVo = new ExchangeOrderMsgShowVO();
         showVo.setType(ExchangeOrderMsgShowVO.TYPE_SUCCESS);
-        showVo.setSource(electricityCabinetOrder.getSource());
         
         if (isOpenPlaceCellStatus(status)) {
             showVo.setStatus(electricityCabinetOrder.getOldCellNo() + "号仓门开门中");
