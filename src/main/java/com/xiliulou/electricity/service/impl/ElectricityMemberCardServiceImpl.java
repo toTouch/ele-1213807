@@ -474,7 +474,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             query.setBatteryV(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
         }
 
-        List<BatteryMemberCardAndTypeVO> batteryMemberCardVOS = batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> batteryMemberCardVOS = batteryMemberCardMapper.selectByPageForUserV2(query);
         if (CollectionUtils.isEmpty(batteryMemberCardVOS)) {
             return R.ok();
         }

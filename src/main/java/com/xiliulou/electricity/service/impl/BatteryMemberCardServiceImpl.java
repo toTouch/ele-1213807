@@ -350,7 +350,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(null);
         }
         
-        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUserV2(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
@@ -541,8 +541,141 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
     }
     
+    /**
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
+     */
+    @Deprecated
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.warn("USER BATTERY MEMBER CARD WARN!not found franchisee,uid={},franchiseeId={}", SecurityUtils.getUid(), query.getFranchiseeId());
+            return Collections.emptyList();
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        
+        // 处理新租套餐重复购买的问题，如果先购买了租车套餐，则用户属于老用户，则只能购买租赁类型为不限或者续租的套餐
+        if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
+            // 新租
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
+                    userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
+            
+            // 为了兼容免押后购买套餐
+            if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)
+                    && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                    query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
+                } else {
+                    query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+                }
+            }
+        } else if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+            // 非新租 购买押金套餐
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
+                    userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
+            
+            // 增加判断用户退押后，无法选择其他伏数套餐的问题。如果押金已缴纳，则需要根据押金金额过滤套餐
+            if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                    query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
+                } else {
+                    query.setDeposit(userBatteryDeposit.getBatteryDeposit());
+                }
+            }
+            
+        } else {
+            // 续费
+            BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+            if (Objects.isNull(batteryMemberCard)) {
+                log.error("USER BATTERY MEMBERCARD ERROR!not found batteryMemberCard,uid={},mid={}", SecurityUtils.getUid(), userBatteryMemberCard.getMemberCardId());
+                return Collections.emptyList();
+            }
+            
+            query.setDeposit(batteryMemberCard.getDeposit());
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
+            query.setBatteryV(
+                    Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? userBatteryTypeService.selectUserSimpleBatteryType(SecurityUtils.getUid()) : null);
+            query.setFreeDeposite(Objects.nonNull(userBatteryDeposit) && Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && Objects.equals(
+                    userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
+        }
+        
+        // 用户绑定了用户分组
+        List<UserInfoGroupNamesBO> userInfoGroupNamesBos = userInfoGroupDetailService.listGroupByUid(
+                UserInfoGroupDetailQuery.builder().uid(SecurityUtils.getUid()).franchiseeId(query.getFranchiseeId()).build());
+        if (CollectionUtils.isNotEmpty(userInfoGroupNamesBos)) {
+            query.setRentTypes(null);
+            query.setUserInfoGroupIdsForSearch(
+                    userInfoGroupNamesBos.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
+        }
+        
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        
+        // 用户绑定的电池型号串数
+        List<String> userBindBatteryType = null;
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            userBindBatteryType = userBatteryTypeService.selectByUid(SecurityUtils.getUid());
+            if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                userBindBatteryType = userBindBatteryType.stream().map(item -> item.substring(item.lastIndexOf("_") + 1)).collect(Collectors.toList());
+            }
+        }
+        
+        List<BatteryMemberCardVO> result = new ArrayList<>();
+        for (BatteryMemberCardAndTypeVO item : list) {
+            
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                List<String> number = null;
+                if (CollectionUtils.isNotEmpty(item.getBatteryType())) {
+                    // 套餐电池型号串数 number
+                    number = item.getBatteryType().stream().filter(i -> StringUtils.isNotBlank(i.getBatteryType()))
+                            .map(e -> e.getBatteryType().substring(e.getBatteryType().lastIndexOf("_") + 1)).collect(Collectors.toList());
+                }
+                
+                if (CollectionUtils.isNotEmpty(userBindBatteryType)) {
+                    if (!(CollectionUtils.isNotEmpty(number) && CollectionUtils.containsAll(number, userBindBatteryType))) {
+                        continue;
+                    }
+                }
+            }
+            
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            
+            // 设置优惠券
+            if (Objects.nonNull(item.getCouponId()) || StringUtils.isNotBlank(item.getCouponIds())) {
+                dealCouponSearchVo(item.getCouponId(), item.getCouponIds(), batteryMemberCardVO);
+            }
+            
+            // 设置分期套餐期数、剩余每期费用
+            if (!Objects.equals(batteryMemberCardVO.getBusinessType(), BUSINESS_TYPE_INSTALLMENT_BATTERY)) {
+                result.add(batteryMemberCardVO);
+                continue;
+            }
+            
+            int installmentNo = batteryMemberCardVO.getValidDays() / 30;
+            batteryMemberCardVO.setInstallmentNo(installmentNo);
+            if (installmentNo > 1) {
+                BigDecimal rentPrice = batteryMemberCardVO.getRentPrice();
+                BigDecimal downPayment = batteryMemberCardVO.getDownPayment();
+                batteryMemberCardVO.setRemainingCost(rentPrice.subtract(downPayment).divide(new BigDecimal(String.valueOf(installmentNo - 1)), 2, RoundingMode.DOWN));
+            } else {
+                batteryMemberCardVO.setRemainingCost(new BigDecimal("0"));
+            }
+            result.add(batteryMemberCardVO);
+        }
+        
+        return result;
+    }
+    
+    @Override
+    public List<BatteryMemberCardVO> selectByPageForUserV2(BatteryMemberCardQuery query) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("USER BATTERY MEMBER CARD WARN!not found franchisee,uid={},franchiseeId={}", SecurityUtils.getUid(), query.getFranchiseeId());
@@ -629,7 +762,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     userInfoGroupNamesBos.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
         }
         
-        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUserV2(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }

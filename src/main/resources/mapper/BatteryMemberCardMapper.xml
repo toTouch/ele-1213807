@@ -357,6 +357,86 @@
                 and mcbt.battery_v = #{batteryV}
             </if>
             <if test="deposit != null">
+                and bmc.deposit = #{deposit}
+            </if>
+            <if test="franchiseeId != null">
+                and bmc.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and bmc.status = #{status}
+            </if>
+            <if test="limitCount != null">
+                and bmc.limit_count = #{limitCount}
+            </if>
+            <if test="freeDeposite != null">
+                and bmc.free_deposite = #{freeDeposite}
+            </if>
+            <if test="name != null and name != ''">
+                and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="tenantId != null">
+                and bmc.tenant_id = #{tenantId}
+            </if>
+            <if test="userInfoGroupIdsForSearch != null">
+                and
+                <foreach collection="userInfoGroupIdsForSearch" item="userInfoGroupId" index="index" open="(" separator="or" close=")">
+                    JSON_CONTAINS(bmc.user_info_group_ids, #{userInfoGroupId})
+                </foreach>
+            </if>
+            <if test="userInfoGroupIdsForSearch != null">
+                and bmc.group_type = 1
+            </if>
+            <if test="rentTypes != null">
+                and bmc.group_type = 0
+            </if>
+            <if test="rentTypes != null">
+                and bmc.rent_type in
+                <foreach collection="rentTypes" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by bmc.sort_param desc
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectByPageForUserV2" resultMap="BatteryMemberCardTypePageMap">
+        select distinct
+        bmc.id,
+        bmc.name,
+        bmc.deposit,
+        bmc.rent_price,
+        bmc.rent_price_unit,
+        bmc.valid_days,
+        bmc.remark,
+        bmc.business_type,
+        bmc.rent_unit,
+        bmc.franchisee_id,
+        bmc.rent_type,
+        bmc.send_coupon,
+        bmc.status,
+        bmc.limit_count,
+        bmc.use_count,
+        bmc.coupon_id,
+        bmc.is_refund,
+        bmc.refund_limit,
+        bmc.free_deposite,
+        bmc.service_charge,
+        bmc.create_time,
+        bmc.sort_param,
+        bmc.coupon_ids,
+        bmc.user_info_group_ids,
+        bmc.group_type,
+        bmc.installment_service_fee,
+        bmc.down_payment
+        from t_battery_member_card bmc
+        left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
+        <where>
+            bmc.business_type in (0, 4) and bmc.status=0 and bmc.del_flag=0
+            <if test="batteryV != null and batteryV != ''">
+                and mcbt.battery_v = #{batteryV}
+            </if>
+            <if test="deposit != null">
                 and (
                     case
                         when #{isEnableFlexibleRenewal} = 0 then bmc.deposit = #{deposit}

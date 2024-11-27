@@ -27,7 +27,9 @@ public class JsonUserBatteryMemberCardController extends BaseController {
     
     /**
      * 用户端获取套餐列表
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
      */
+    @Deprecated
     @GetMapping("/user/battery/memberCard/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
             @RequestParam(value = "batteryV", required = false) String batteryV, @RequestParam(value = "status", required = false) Integer status,
@@ -37,6 +39,20 @@ public class JsonUserBatteryMemberCardController extends BaseController {
                 .batteryV(batteryV).status(BatteryMemberCard.STATUS_UP).name(name).delFlag(BatteryMemberCard.DEL_NORMAL).build();
         
         return R.ok(batteryMemberCardService.selectByPageForUser(query));
+    }
+    
+    /**
+     * 用户端获取套餐列表
+     */
+    @GetMapping("/user/battery/memberCard/page/v2")
+    public R pageV2(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam(value = "franchiseeId") Long franchiseeId,
+            @RequestParam(value = "batteryV", required = false) String batteryV, @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "rentType", required = false) Integer rentType, @RequestParam(value = "name", required = false) String name) {
+        
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().size(size).offset(offset).tenantId(TenantContextHolder.getTenantId()).franchiseeId(franchiseeId)
+                .batteryV(batteryV).status(BatteryMemberCard.STATUS_UP).name(name).delFlag(BatteryMemberCard.DEL_NORMAL).build();
+        
+        return R.ok(batteryMemberCardService.selectByPageForUserV2(query));
     }
     
     /**

@@ -67,7 +67,13 @@ public interface BatteryMemberCardService {
     
     Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, Long validDays);
     
+    /**
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
+     */
+    @Deprecated
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
+    
+    List<BatteryMemberCardVO> selectByPageForUserV2(BatteryMemberCardQuery query);
     
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
     
