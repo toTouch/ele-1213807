@@ -10,6 +10,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQ
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderRentRefundQryReq;
 import com.xiliulou.electricity.query.car.CarRentalPackageRefundReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
+import com.xiliulou.electricity.service.CouponDayRecordService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -222,6 +223,17 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         // 调用服务
         return R.ok(carRentalPackageOrderRentRefundService.count(qryModel));
     }
+    
+    //退租审核提交详情查下
+    @GetMapping("/dayCouponCount")
+    public R<?> dayCouponCount(String orderNo) {
+        if (Objects.isNull(orderNo)) {
+            return R.ok();
+        }
+        Integer count = carRentalPackageOrderBizService.dayCouponCount(orderNo);
+        return R.ok(Map.of("daysFromDayCoupon",count));
+    }
+    
     
     /**
      * 查询租金退款页面显示信息

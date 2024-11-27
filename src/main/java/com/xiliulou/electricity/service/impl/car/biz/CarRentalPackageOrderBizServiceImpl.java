@@ -57,6 +57,7 @@ import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.CallBackEnums;
 import com.xiliulou.electricity.enums.CouponTypeEnum;
+import com.xiliulou.electricity.enums.DayCouponUseScope;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
 import com.xiliulou.electricity.enums.DivisionAccountEnum;
@@ -89,6 +90,7 @@ import com.xiliulou.electricity.query.userinfo.userInfoGroup.UserInfoGroupDetail
 import com.xiliulou.electricity.service.ActivityService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.service.CouponDayRecordService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.service.EleUserOperateRecordService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -106,6 +108,7 @@ import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserDayCouponService;
 import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
@@ -141,6 +144,7 @@ import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentRefundVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVo;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVo;
 import com.xiliulou.electricity.vo.car.CarVo;
 import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
@@ -341,6 +345,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     @Resource
     private UserInfoExtraService userInfoExtraService;
     
+    @Resource
+    private CouponDayRecordService couponDayRecordService;
+    
     
     public static final Integer ELE = 0;
     
@@ -521,6 +528,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 计算实际应退金额及余量
         Triple<BigDecimal, Long, Long> refundAmountPair = calculateRefundAmount(packageOrderEntity, tenantId, packageOrderEntity.getUid());
         
+        DayCouponUseScope scope = DayCouponUseScope.getCarByCode(packageOrderEntity.getRentalPackageType());
+        
+        Integer days = couponDayRecordService.queryDaysByUidAndPackageOrderNo(tenantId, packageOrderEntity.getUid(), orderNo, scope.getCode());
+        
         rentalPackageRefundVO.setOrderNo(orderNo);
         rentalPackageRefundVO.setRentPayment(packageOrderEntity.getRentPayment());
         rentalPackageRefundVO.setEstimatedRefundAmount(refundAmountPair.getLeft());
@@ -529,6 +540,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageRefundVO.setConfine(packageOrderEntity.getConfine());
         rentalPackageRefundVO.setTenancyUnit(packageOrderEntity.getTenancyUnit());
         rentalPackageRefundVO.setCompelOffLine(YesNoEnum.NO.getCode());
+        rentalPackageRefundVO.setDaysFromDayCoupon(days);
         
         // 判定是否需要强制线下退款
         if (PayTypeEnum.ON_LINE.getCode().equals(packageOrderEntity.getPayType())) {
@@ -688,6 +700,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         //        }
         
         carRentalPackageOrderRentRefundService.updateByOrderNo(updateRentRefundEntity);
+        //清除使用天数券
+        DayCouponUseScope scope = DayCouponUseScope.getCarByCode(packageOrderEntity.getRentalPackageType());
+        couponDayRecordService.cleanDaysByUidAndPackageOrderNo(packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),orderNo, scope.getCode());
         log.info("save approve refund order flow end, order No = {}, approve uid = {}", carRentRefundVo.getOrderNo(), carRentRefundVo.getUid());
         
     }
@@ -1624,6 +1639,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
+            //清除使用天数券
+            DayCouponUseScope scope = DayCouponUseScope.getCarByCode(packageOrderEntity.getRentalPackageType());
+            couponDayRecordService.cleanDaysByUidAndPackageOrderNo(packageOrderEntity.getTenantId(), packageOrderEntity.getUid(),orderNo, scope.getCode());
         } else {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
@@ -2149,6 +2167,18 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             return checkUserHasAssets(uid, tenantId, CarRentalPackageOrderBizServiceImpl.CAR) || checkUserHasAssets(uid, tenantId, CarRentalPackageOrderBizServiceImpl.ELE);
         }
         return false;
+    }
+    
+    @Override
+    public Integer dayCouponCount(String orderNo) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        // 查询套餐购买订单
+        CarRentalPackageOrderPo packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
+        if (ObjectUtils.isEmpty(packageOrderEntity) || ObjectUtils.notEqual(tenantId, packageOrderEntity.getTenantId())) {
+            throw new BizException("300008", "未找到租车套餐购买订单");
+        }
+        DayCouponUseScope scope = DayCouponUseScope.getCarByCode(packageOrderEntity.getRentalPackageType());
+        return couponDayRecordService.queryDaysByUidAndPackageOrderNo(tenantId, packageOrderEntity.getUid(), orderNo, scope.getCode());
     }
     
     /**

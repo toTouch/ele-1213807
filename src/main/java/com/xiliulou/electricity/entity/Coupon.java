@@ -123,6 +123,13 @@ public class Coupon {
     private Long deadline;
     
     /**
+     * 适配邀请返券活动，优惠券是否领取
+     * @see com.xiliulou.electricity.vo.CouponVO#isGet
+     */
+    @TableField(exist = false)
+    private Integer isGet;
+    
+    /**
      * -1 -- 不限制,0 -- 租车，1 -- 租电，2 -- 车电一体
      */
     private Integer useScope;

@@ -37,6 +37,10 @@ public class CouponDayRecordEntity implements Serializable {
      * 套餐id
      **/
     private Long packageId;
+    /**
+     * <p>用户购买套餐订单号 </p>
+    */
+    private String packageOrder;
     
     /**
      * 优惠券id

@@ -97,5 +97,9 @@ public class BatteryMembercardRefundOrderVO {
      * @see com.xiliulou.core.base.enums.ChannelEnum
      */
     private String paymentChannel;
-
+    
+    /**
+     * 使用天数券增加的套餐天数
+     */
+    private Integer daysFromDayCoupon;
 }

@@ -55,7 +55,7 @@ public interface UserCouponService {
     
     R batchRelease(Integer id, Long[] uids, Long newActiveId);
     
-    boolean batchSendCouponByNewActive(Integer activityId, Long uid,List<Long> couponIds);
+    boolean batchSendCouponByNewActive(Integer activityId, Long uid, List<Long> couponIds);
     
     R adminBatchRelease(Integer id, Long[] uids);
     
@@ -107,4 +107,11 @@ public interface UserCouponService {
     
     R checkSendFinish(String sessionId);
     
+    /**
+     * 获取换电套餐使用天数券增加的时间毫秒值
+     *
+     * @param orderId 换电套餐id
+     * @return 天数券增加的天数。返回非null整数表示使用的天数券的天数；返回0或null表示未使用天数券
+     */
+    Integer getDaysForMemberCardOrderFromUseDayCoupon(String orderId);
 }

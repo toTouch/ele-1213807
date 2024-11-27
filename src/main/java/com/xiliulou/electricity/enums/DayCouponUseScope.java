@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 /**
  * <p>
  * Description: This enum is DayCouponUseScope!
@@ -21,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public enum DayCouponUseScope {
     
     CAR(0, "租车"),
-    BATTERY(1, "租电"),
+    BATTERY(1, "换电"),
     BOTH(2, "车电一体"),
     UNKNOWN(-1, "全部/未知");
     
@@ -35,6 +37,20 @@ public enum DayCouponUseScope {
         for (DayCouponUseScope value : DayCouponUseScope.values()) {
             if (value.getCode().equals(code)) {
                 return value;
+            }
+        }
+        return UNKNOWN;
+    }
+    
+    public static DayCouponUseScope getCarByCode(Integer code) {
+        if (code == null) {
+            return UNKNOWN;
+        }
+        for (DayCouponUseScope value : DayCouponUseScope.values()) {
+            if (Objects.equals(1 , code)) {
+                return CAR;
+            }else if (Objects.equals(2 , code)){
+                return BOTH;
             }
         }
         return UNKNOWN;

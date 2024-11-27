@@ -893,6 +893,27 @@ public class UserCouponServiceImpl implements UserCouponService {
         return R.ok();
     }
     
+    @Override
+    public Integer getDaysForMemberCardOrderFromUseDayCoupon(String orderId) {
+        UserCouponQuery userCouponQuery = new UserCouponQuery();
+        userCouponQuery.setOrderId(orderId);
+        userCouponQuery.setDiscountType(UserCoupon.DAYS);
+        userCouponQuery.setStatus(UserCoupon.STATUS_USED);
+        List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
+        if (CollectionUtils.isEmpty(userCouponList)) {
+            return 0;
+        }
+        
+        int days = 0;
+        for (UserCouponVO userCouponVO : userCouponList) {
+            if (Objects.isNull(userCouponVO) || Objects.isNull(userCouponVO.getCount())) {
+                continue;
+            }
+            days += userCouponVO.getCount();
+        }
+        return days;
+    }
+    
     private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name, Long operateUid) {
         Iterator<User> iterator = existsPhone.iterator();
         List<UserCoupon> userCouponList = new ArrayList<>();
