@@ -1422,6 +1422,10 @@
         </foreach>
     </select>
     
+    <select id="existsByBatteryType" resultType="java.lang.Integer">
+        select 1 from t_electricity_battery where del_flag = 0 and tenant_id = #{tenantId} and model = #{batteryType} limit 1;
+    </select>
+    
     <update id="batchExitWarehouse">
         update t_electricity_battery
         <set>

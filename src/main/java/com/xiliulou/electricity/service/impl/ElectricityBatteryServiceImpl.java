@@ -1786,6 +1786,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }).collect(Collectors.toList());
     }
     
+    @Slave
+    @Override
+    public Integer existsByBatteryType(String batteryType, Integer tenantId) {
+        return electricitybatterymapper.existsByBatteryType(batteryType, tenantId);
+    }
+    
     private void handleExchangeOrderMap(Map<String, BatteryChangeInfoVO> exchangeOrderMap) {
         if (MapUtil.isEmpty(exchangeOrderMap)) {
             return;

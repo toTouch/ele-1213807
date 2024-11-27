@@ -168,4 +168,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<BatteryChangeInfoVO> getBatteryChangeOtherInfo(List<BatteryChangeInfo> list);
     
+    Integer existsByBatteryType(String batteryType, Integer tenantId);
 }

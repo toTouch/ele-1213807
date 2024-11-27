@@ -4191,11 +4191,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private void createOrUpdateEleOtaFile(Integer eid, Integer versionType, OtaFileConfig coreBoardOtaFileConfig, OtaFileConfig subBoardOtaFileConfig) {
         EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
-        String coreSha256Value = coreBoardOtaFileConfig.getSha256Value();
-        String coreName = coreBoardOtaFileConfig.getName();
-        if (isSixVersion(versionType)) {
-            coreSha256Value = "";
-            coreName = "";
+        String coreSha256Value = "";
+        String coreName = "";
+        if (Objects.nonNull(coreBoardOtaFileConfig)) {
+            coreSha256Value = coreBoardOtaFileConfig.getSha256Value();
+            coreName = coreBoardOtaFileConfig.getName();
         }
         
         if (Objects.nonNull(eleOtaFile)) {
