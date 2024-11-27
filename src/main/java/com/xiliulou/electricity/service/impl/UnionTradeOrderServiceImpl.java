@@ -120,6 +120,7 @@ import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.FreezeTimeUtils;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
@@ -1551,10 +1552,16 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 memberTermUpdateEntity.setStatus(MemberTermStatusEnum.NORMAL.getCode());
                 memberTermUpdateEntity.setId(memberTermEntity.getId());
                 memberTermUpdateEntity.setUpdateTime(now);
-                // 提前启用、计算差额
-                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
-                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
-                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTime);
+                
+//                long diffTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND) - (now - freezeEntity.getApplyTime());
+//                memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTime);
+//                memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTime);
+                Pair<Boolean, Long> diffTimePair = FreezeTimeUtils.calculateRemainingFrozenDays(freezeEntity.getApplyTerm(), freezeEntity.getAuditTime(), now);
+                // 如果当前滞纳金缴纳时间已经超过了冻结启用时间，则非提前启用，无需减去剩余未使用的冻结天数
+                if (diffTimePair.getLeft()) {
+                    memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() - diffTimePair.getRight());
+                    memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() - diffTimePair.getRight());
+                }
                 
                 carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
                 
