@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.BatteryTrackRecordVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,11 +78,13 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
             BeanUtils.copyProperties(item, vo);
         
             String orderId = item.getOrderId();
-            Boolean rendReturnOrder = rentBatteryOrderService.isRendReturnOrder(orderId);
-            if (rendReturnOrder) {
-                vo.setOrderType(OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER);
-            } else {
-                vo.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
+            if (StringUtils.isNotBlank(orderId)) {
+                Boolean rendReturnOrder = rentBatteryOrderService.isRendReturnOrder(orderId);
+                if (rendReturnOrder) {
+                    vo.setOrderType(OrderForBatteryConstants.TYPE_RENT_BATTERY_ORDER);
+                } else {
+                    vo.setOrderType(OrderForBatteryConstants.TYPE_ELECTRICITY_CABINET_ORDER);
+                }
             }
         
             return vo;

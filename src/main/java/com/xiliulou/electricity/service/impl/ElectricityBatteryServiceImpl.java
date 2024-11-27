@@ -1773,7 +1773,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
             if (Objects.nonNull(uid)) {
                 vo.setUid(uid);
-                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
                 if (Objects.nonNull(userInfo)) {
                     vo.setUserName(userInfo.getName());
                 }
