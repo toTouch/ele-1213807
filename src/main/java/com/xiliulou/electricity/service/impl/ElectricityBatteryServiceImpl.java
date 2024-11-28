@@ -1775,7 +1775,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 vo.setUid(uid);
                 UserInfo userInfo = userInfoService.queryByUidFromDbIncludeDelUser(uid);
                 if (Objects.nonNull(userInfo)) {
-                    vo.setUserName(userInfo.getName());
+                    String name = userInfo.getName();
+                    String phone = userInfo.getPhone();
+                    StringJoiner stringJoiner = new StringJoiner("/");
+                    if (StringUtil.isNotBlank(name)) {
+                        stringJoiner.add(name);
+                    }
+                    if (StringUtil.isNotBlank(phone)) {
+                        stringJoiner.add(phone);
+                    }
+                    vo.setUserName(stringJoiner.toString());
                 }
             }
         
