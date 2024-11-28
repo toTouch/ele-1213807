@@ -171,31 +171,36 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Override
     public Pair<Boolean, Set<Long>> satisfyMutualExchangeFranchisee(Integer tenantId, Long franchiseeId) {
-        if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId)) {
-            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! tenantId or franchiseeId is null");
-            return Pair.of(false, null);
-        }
-        List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
-        if (CollUtil.isEmpty(mutualFranchiseeList)) {
-            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
-            return Pair.of(false, null);
-        }
-        
-        Set<Long> mutualFranchiseeSet = new HashSet<>();
-        mutualFranchiseeList.forEach(e -> {
-            List<Long> combinedFranchisee = JsonUtil.fromJsonArray(e, Long.class);
-            if (combinedFranchisee.contains(franchiseeId)) {
-                mutualFranchiseeSet.addAll(combinedFranchisee);
+        try {
+            if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId)) {
+                log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! tenantId or franchiseeId is null");
+                return Pair.of(false, null);
             }
-        });
-        // 有互通配置，但是当前加盟商并没有在互通中
-        if (CollUtil.isEmpty(mutualFranchiseeSet)) {
-            return Pair.of(false, null);
+            List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
+            if (CollUtil.isEmpty(mutualFranchiseeList)) {
+                log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
+                return Pair.of(false, null);
+            }
+            
+            Set<Long> mutualFranchiseeSet = new HashSet<>();
+            mutualFranchiseeList.forEach(e -> {
+                List<Long> combinedFranchisee = JsonUtil.fromJsonArray(e, Long.class);
+                if (combinedFranchisee.contains(franchiseeId)) {
+                    mutualFranchiseeSet.addAll(combinedFranchisee);
+                }
+            });
+            // 有互通配置，但是当前加盟商并没有在互通中
+            if (CollUtil.isEmpty(mutualFranchiseeSet)) {
+                return Pair.of(false, null);
+            }
+            log.info("IsSatisfyFranchiseeIdMutualExchange Info! Current Franchisee SatisfyMutualExchange,franchiseeId is {}, MutualFranchiseeSet is {}", franchiseeId,
+                    JsonUtil.toJson(mutualFranchiseeSet));
+            return Pair.of(true, mutualFranchiseeSet);
+            
+        } catch (Exception e) {
+            log.error("IsSatisfyFranchiseeIdMutualExchange Error!", e);
         }
-        
-        log.info("IsSatisfyFranchiseeIdMutualExchange Info! Current Franchisee SatisfyMutualExchange,franchiseeId is {}, MutualFranchiseeSet is {}", franchiseeId,
-                JsonUtil.toJson(mutualFranchiseeSet));
-        return Pair.of(true, mutualFranchiseeSet);
+        return Pair.of(false, null);
     }
     
     

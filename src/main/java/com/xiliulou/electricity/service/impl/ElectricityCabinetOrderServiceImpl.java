@@ -3568,9 +3568,39 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         List<ElectricityCabinetBox> exchangeableList = electricityCabinetBoxList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
         
         if (CollectionUtils.isEmpty(exchangeableList)) {
-            log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
+            log.info("Take Full BATTERY INFO !not found electricityCabinetBoxList,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
+        
+        List<Long> batteryIds = exchangeableList.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
+        
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
+        if (CollUtil.isEmpty(electricityBatteries)) {
+            return Triple.of(false, "100225", "电池不存在");
+        }
+        
+        // 加盟互通,获取加盟商
+        Set<Long> franchiseeIdList = CollUtil.newHashSet();
+        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(userInfo.getTenantId(), userInfo.getFranchiseeId());
+        if (mutualExchangePair.getLeft()) {
+            franchiseeIdList = mutualExchangePair.getRight();
+        } else {
+            franchiseeIdList.add(franchisee.getId());
+        }
+        
+        Set<Long> finalFranchiseeIdList = franchiseeIdList;
+        electricityBatteries = electricityBatteries.stream().filter(e -> finalFranchiseeIdList.contains(e.getFranchiseeId())).collect(Collectors.toList());
+        if (!DataUtil.collectionIsUsable(electricityBatteries)) {
+            log.warn("Take Full BATTERY WARN!battery not bind franchisee,eid={}, franchiseeIdList is {}", electricityCabinet.getId(),
+                    CollUtil.isEmpty(franchiseeIdList) ? "null" : JsonUtil.toJson(franchiseeIdList));
+            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+        }
+        
+        // 获取全部可用电池id
+        List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+        
+        // 把加盟商绑定的电池过滤出来
+        exchangeableList = exchangeableList.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
         
         String fullBatteryCell = null;
         

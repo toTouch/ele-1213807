@@ -2832,7 +2832,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             // 把本柜机加盟商的绑定电池信息拿出来
             electricityBatteries = electricityBatteries.stream().filter(e -> mutualFranchiseeSet.contains(e.getFranchiseeId())).collect(Collectors.toList());
             if (!DataUtil.collectionIsUsable(electricityBatteries)) {
-                log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}，mutualFranchiseeSet is {}", eid, JsonUtil.toJson(mutualFranchiseeSet));
+                log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}，mutualFranchiseeSet is {}", eid,
+                        CollUtil.isEmpty(mutualFranchiseeSet) ? "null" : JsonUtil.toJson(mutualFranchiseeSet));
                 return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
             }
             
