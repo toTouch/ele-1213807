@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.request.MutualExchangeAddConfigRequest;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +50,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     @Resource
     private FranchiseeService franchiseeService;
     
+    @Resource
+    private OperateRecordUtil operateRecordUtil;
+    
     
     public static final Integer MAX_MUTUAL_EXCHANGE_CONFIG_COUNT = 5;
     
@@ -66,19 +72,39 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
                 .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .build();
+        
+        Map<Object, Object> newMap = MapUtil.builder().put("name", request.getCombinedName()).put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(combinedFranchisee))
+                .put("status", request.getStatus()).build();
         if (Objects.isNull(request.getId())) {
             if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
                 return R.fail("302002", "最多添加5个配置");
             }
+            // 新增
             saveMutualExchange(mutualExchange);
+            operateRecordUtil.record(null, newMap);
         } else {
+            // 编辑
+            TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
+            if (Objects.isNull(oldMutualExchange)) {
+                return R.fail("302003", "不存在的互换配置");
+            }
             mutualExchange.setId(request.getId());
             updateMutualExchange(mutualExchange);
+            
+            Map<Object, Object> oldMap = MapUtil.builder().put("name", oldMutualExchange.getCombinedName())
+                    .put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(JsonUtil.fromJsonArray(oldMutualExchange.getCombinedFranchisee(), Long.class)))
+                    .put("status", oldMutualExchange.getStatus()).build();
+            operateRecordUtil.record(oldMap, newMap);
         }
-        
-        // todo 操作记录
-        
         return R.ok();
+    }
+    
+    
+    private List<String> buildFranchiseeNameByIdList(List<Long> combinedFranchisee) {
+        return combinedFranchisee.stream().map(e -> {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(e);
+            return Objects.nonNull(franchisee) ? franchisee.getName() : null;
+        }).collect(Collectors.toList());
     }
     
     @Override
@@ -172,6 +198,11 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
         this.updateMutualExchange(
                 TenantFranchiseeMutualExchange.builder().id(id).tenantId(TenantContextHolder.getTenantId()).updateTime(System.currentTimeMillis()).delFlag(1).build());
+        
+        Map<Object, Object> oldMap = MapUtil.builder().put("name", mutualExchange.getCombinedName())
+                .put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(JsonUtil.fromJsonArray(mutualExchange.getCombinedFranchisee(), Long.class)))
+                .put("status", mutualExchange.getStatus()).build();
+        operateRecordUtil.record(null, oldMap);
         return R.ok();
     }
     
