@@ -2767,8 +2767,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100003", "柜机不存在");
         }
         
-        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.warn("BLUETOOTH EXCHANGE WARN! user franchiseeId not equals store franchiseeId,uid={},storeId={}", userInfo.getFranchiseeId(), store.getId());
+        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId())) {
+            log.warn("BLUETOOTH EXCHANGE WARN! user franchiseeId not equals store franchiseeId,userF is {}, eidF is {} ,uid is {}", userInfo.getFranchiseeId(),
+                    electricityCabinet.getFranchiseeId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致");
         }
         
