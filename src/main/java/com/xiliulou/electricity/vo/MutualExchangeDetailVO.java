@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @ClassName: MutualExchangeDetailVO
  * @description:
@@ -21,7 +23,7 @@ public class MutualExchangeDetailVO {
     /**
      * 组合名称
      */
-    private String combinedFranchisee;
+    private List<Item> combinedFranchiseeList;
     
     /**
      * 状态 0:禁用,1:启用
@@ -31,10 +33,17 @@ public class MutualExchangeDetailVO {
     
     private Integer tenantId;
     
-    
     /**
      * 更新时间
      */
     private Long updateTime;
     
+    
+    @Data
+    public static class Item {
+        
+        private Long franchiseeId;
+        
+        private String franchiseeName;
+    }
 }

@@ -6,11 +6,13 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.TenantFranchiseeMutualExchange;
 import com.xiliulou.electricity.mapper.TenantFranchiseeMutualExchangeMapper;
 import com.xiliulou.electricity.query.MutualExchangePageQuery;
 import com.xiliulou.electricity.query.MutualExchangeUpdateQuery;
 import com.xiliulou.electricity.request.MutualExchangeAddConfigRequest;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
@@ -41,6 +43,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Resource
     RedisService redisService;
+    
+    @Resource
+    private FranchiseeService franchiseeService;
     
     
     public static final Integer MAX_MUTUAL_EXCHANGE_CONFIG_COUNT = 5;
@@ -78,8 +83,17 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Override
     public MutualExchangeDetailVO getMutualExchangeDetailById(Long id) {
-        return BeanUtil.copyProperties(mutualExchangeMapper.selectOneById(id), MutualExchangeDetailVO.class);
+        TenantFranchiseeMutualExchange mutualExchange = mutualExchangeMapper.selectOneById(id);
+        if (Objects.isNull(mutualExchange)) {
+            return null;
+        }
+        MutualExchangeDetailVO vo = BeanUtil.copyProperties(mutualExchange, MutualExchangeDetailVO.class);
+        
+        // 加盟商转换
+        vo.setCombinedFranchiseeList(buildMutualExchangeDetailItemList(mutualExchange.getCombinedFranchisee()));
+        return vo;
     }
+    
     
     @Override
     public List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromDB(Integer tenantId) {
@@ -135,7 +149,12 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         if (CollUtil.isEmpty(mutualExchangeList)) {
             return CollUtil.newArrayList();
         }
-        return BeanUtil.copyToList(mutualExchangeList, MutualExchangeDetailVO.class);
+        
+        return mutualExchangeList.stream().map(e -> {
+            MutualExchangeDetailVO vo = BeanUtil.copyProperties(e, MutualExchangeDetailVO.class);
+            vo.setCombinedFranchiseeList(buildMutualExchangeDetailItemList(e.getCombinedFranchisee()));
+            return vo;
+        }).collect(Collectors.toList());
     }
     
     @Override
@@ -257,5 +276,17 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             }
         }
         return false;
+    }
+    
+    private List<MutualExchangeDetailVO.Item> buildMutualExchangeDetailItemList(String combinedFranchisee) {
+        List<Long> combinedFranchiseeIdList = JsonUtil.fromJsonArray(combinedFranchisee, Long.class);
+        List<MutualExchangeDetailVO.Item> itemList = combinedFranchiseeIdList.stream().map(e -> {
+            MutualExchangeDetailVO.Item item = new MutualExchangeDetailVO.Item();
+            item.setFranchiseeId(e);
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(e);
+            item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
+            return item;
+        }).collect(Collectors.toList());
+        return itemList;
     }
 }

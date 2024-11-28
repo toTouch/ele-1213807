@@ -89,7 +89,7 @@ public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicCont
     
     
     /**
-     * 分页count
+     * 更新状态
      *
      * @param query query
      * @return R
