@@ -187,7 +187,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 mutualFranchiseeSet.addAll(combinedFranchisee);
             }
         });
-        // 有互通，但是当前加盟商并没有在互通中
+        // 有互通配置，但是当前加盟商并没有在互通中
         if (CollUtil.isEmpty(mutualFranchiseeSet)) {
             return Pair.of(false, null);
         }

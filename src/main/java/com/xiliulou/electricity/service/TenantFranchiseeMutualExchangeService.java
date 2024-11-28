@@ -103,8 +103,8 @@ public interface TenantFranchiseeMutualExchangeService {
     /**
      * 当前加盟商是否满足加盟商换电互通
      *
-     * @param tenantId     tenantId
-     * @param franchiseeId franchiseeId
+     * @param tenantId     用户的租户
+     * @param franchiseeId 电池的加盟商
      * @return Pair
      */
     Pair<Boolean, Set<Long>> isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId);

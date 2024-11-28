@@ -1220,7 +1220,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
             
             // 判断加盟商互通
-            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(oldUserInfo.getTenantId(), oldUserInfo.getFranchiseeId());
+            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(oldUserInfo.getTenantId(), oldElectricityBattery.getFranchiseeId());
             if (!mutualExchangePair.getLeft()) {
                 if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
                     log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
@@ -2985,10 +2985,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("100019", "该电池为租借状态，不支持绑定");
             }
             
-            if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-                log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
-                        oldElectricityBattery.getFranchiseeId());
-                return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
+            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), oldElectricityBattery.getFranchiseeId());
+            if (!mutualExchangePair.getLeft()) {
+                if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
+                }
             }
             
             // 多型号  绑定电池需要判断电池是否和用户型号一致
