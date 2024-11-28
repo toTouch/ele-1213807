@@ -36,7 +36,7 @@ public class TenantFranchiseeMutualExchange {
     private String combinedName;
     
     /**
-     * 组合名称
+     * 组合加盟商
      */
     private String combinedFranchisee;
     

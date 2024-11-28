@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: TenantFranchiseeMutualExchangeServiceImpl
@@ -51,25 +52,24 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        List<TenantFranchiseeMutualExchange> mutualExchangeList = getMutualExchangeConfigListFromCache(tenantId);
+        List<String> mutualExchangeList = getMutualFranchiseeExchangeCache(tenantId);
         if (isExistMutualExchangeConfig(combinedFranchisee, mutualExchangeList)) {
             return R.fail("302001", "该互换配置已存在");
         }
         
-        TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName())
-                .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).updateTime(System.currentTimeMillis()).build();
+        TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
+                .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .build();
         if (Objects.isNull(request.getId())) {
             if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
                 return R.fail("302002", "最多添加5个配置");
             }
-            mutualExchange.setTenantId(tenantId).setCreateTime(System.currentTimeMillis());
             saveMutualExchange(mutualExchange);
         } else {
             mutualExchange.setId(request.getId());
             updateMutualExchange(mutualExchange);
-            //  删除缓存
-            redisService.delete(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantId);
         }
+        
         // todo 操作记录
         
         return R.ok();
@@ -85,13 +85,19 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         return mutualExchangeMapper.selectMutualExchangeConfigListFromDB(tenantId);
     }
     
+    
+    /**
+     * 为避免redis的大key，这里只是将组合加盟商字段放在缓存中
+     *
+     * @param tenantId tenantId tenantId
+     * @return List<String>
+     */
     @Override
-    public List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromCache(Integer tenantId) {
+    public List<String> getMutualFranchiseeExchangeCache(Integer tenantId) {
         if (Objects.isNull(tenantId)) {
             return CollUtil.newArrayList();
         }
-        List<TenantFranchiseeMutualExchange> mutualExchangesFromCache = redisService.getWithList(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantId,
-                TenantFranchiseeMutualExchange.class);
+        List<String> mutualExchangesFromCache = redisService.getWithList(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantId, String.class);
         if (CollUtil.isNotEmpty(mutualExchangesFromCache)) {
             return mutualExchangesFromCache;
         }
@@ -101,19 +107,23 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             return CollUtil.newArrayList();
         }
         
-        redisService.saveWithList(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantId, mutualExchangeList);
-        return mutualExchangeList;
+        List<String> combinedFranchiseeList = mutualExchangeList.stream().map(TenantFranchiseeMutualExchange::getCombinedFranchisee).collect(Collectors.toList());
+        
+        redisService.saveWithList(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantId, combinedFranchiseeList);
+        return combinedFranchiseeList;
     }
     
     @Override
     public void saveMutualExchange(TenantFranchiseeMutualExchange tenantFranchiseeMutualExchange) {
         mutualExchangeMapper.insert(tenantFranchiseeMutualExchange);
+        redisService.delete(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantFranchiseeMutualExchange.getTenantId());
     }
     
     
     @Override
     public void updateMutualExchange(TenantFranchiseeMutualExchange tenantFranchiseeMutualExchange) {
         mutualExchangeMapper.updateMutualExchangeById(tenantFranchiseeMutualExchange);
+        redisService.delete(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantFranchiseeMutualExchange.getTenantId());
     }
     
     
@@ -140,8 +150,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         if (Objects.isNull(mutualExchange)) {
             return R.fail("302003", "不存在的互换配置");
         }
-        this.updateMutualExchange(TenantFranchiseeMutualExchange.builder().id(id).updateTime(System.currentTimeMillis()).delFlag(1).build());
-        redisService.delete(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + TenantContextHolder.getTenantId());
+        this.updateMutualExchange(
+                TenantFranchiseeMutualExchange.builder().id(id).tenantId(TenantContextHolder.getTenantId()).updateTime(System.currentTimeMillis()).delFlag(1).build());
         return R.ok();
     }
     
@@ -152,8 +162,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         if (Objects.isNull(mutualExchange)) {
             return R.fail("302003", "不存在的互换配置");
         }
-        this.updateMutualExchange(TenantFranchiseeMutualExchange.builder().id(query.getId()).updateTime(System.currentTimeMillis()).status(query.getStatus()).build());
-        redisService.delete(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + TenantContextHolder.getTenantId());
+        this.updateMutualExchange(TenantFranchiseeMutualExchange.builder().id(query.getId()).tenantId(TenantContextHolder.getTenantId()).updateTime(System.currentTimeMillis())
+                .status(query.getStatus()).build());
         return R.ok();
     }
     
@@ -164,15 +174,15 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! tenantId or franchiseeId is null");
             return Pair.of(false, null);
         }
-        List<TenantFranchiseeMutualExchange> mutualExchangeList = getMutualExchangeConfigListFromCache(tenantId);
-        if (CollUtil.isEmpty(mutualExchangeList)) {
-            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant MutualExchangeConfig is null, tenantId is {}", tenantId);
+        List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
+        if (CollUtil.isEmpty(mutualFranchiseeList)) {
+            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
             return Pair.of(false, null);
         }
         
         Set<Long> mutualFranchiseeSet = new HashSet<>();
-        mutualExchangeList.forEach(e -> {
-            List<Long> combinedFranchisee = JsonUtil.fromJsonArray(e.getCombinedFranchisee(), Long.class);
+        mutualFranchiseeList.forEach(e -> {
+            List<Long> combinedFranchisee = JsonUtil.fromJsonArray(e, Long.class);
             if (combinedFranchisee.contains(franchiseeId)) {
                 mutualFranchiseeSet.addAll(combinedFranchisee);
             }
@@ -194,15 +204,14 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * @param list           list
      * @return Boolean
      */
-    private Boolean isExistMutualExchangeConfig(List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> list) {
+    private Boolean isExistMutualExchangeConfig(List<Long> franchiseeList, List<String> list) {
         Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
-        for (TenantFranchiseeMutualExchange mutualExchange : list) {
-            Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(mutualExchange.getCombinedFranchisee(), Long.class));
+        for (String franchisee : list) {
+            Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(franchisee, Long.class));
             if (combinedFranchisee.containsAll(franchiseeSet)) {
                 return true;
             }
         }
-        
         return false;
     }
 }

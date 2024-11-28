@@ -65,7 +65,7 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param tenantId tenantId
      * @return List
      */
-    List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromCache(Integer tenantId);
+    List<String> getMutualFranchiseeExchangeCache(Integer tenantId);
     
     /**
      * 分页查询
