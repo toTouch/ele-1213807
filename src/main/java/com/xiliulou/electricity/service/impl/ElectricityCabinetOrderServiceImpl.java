@@ -1198,6 +1198,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             }
             
+            //柜机加盟商与用户加盟商不一致
+            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId())) {
+                log.warn("ORDER WARN! user fId  is not equal franchiseeId, uidF is {}, eidF is {}", userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId());
+                return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
+            }
+            
+            
             //查询用户绑定的电池列表
             List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
             
@@ -1301,6 +1308,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.isNull(eleUserEsignRecord)) {
                     return Triple.of(false, "100329", "请先完成电子签名");
                 }
+            }
+            
+            //柜机加盟商与用户加盟商不一致
+            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId())) {
+                log.warn("OrderV3 WARN! user fId  is not equal franchiseeId, uidF is {}, eidF is {}", userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId());
+                return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
             }
             
             
@@ -2597,11 +2610,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(userInfo.getFranchiseeId())) {
             log.warn("ORDER WARN! not found franchiseeUser! uid={}", user.getUid());
             return Triple.of(false, "100207", "用户加盟商信息未找到");
-        }
-        
-        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.warn("ORDER WARN! storeId  is not equal franchieseeId uid={} , store's fid={} ,fid={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
-            return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
         }
         
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
