@@ -634,6 +634,24 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         return R.ok(electricityBatteryService.listBatteriesBySn(offset, size, user.getTenantId(), franchiseeId, sn));
     }
     
+    @GetMapping("/admin/battery/getIdAndSn/V2")
+    public R listBatteriesBySn(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size, @RequestParam("uid") Long uid) {
+        
+        if (offset < 0) {
+            offset = 0;
+        }
+        if (size < 0 || size > 100) {
+            size = 10;
+        }
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("用户不存在");
+        }
+        
+        return R.ok(electricityBatteryService.listBatteriesBySnV2(offset, size,  uid));
+    }
+    
     
     /**
      * 批量删除电池

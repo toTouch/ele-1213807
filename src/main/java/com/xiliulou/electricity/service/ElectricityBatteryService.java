@@ -142,6 +142,10 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn);
     
+    List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid);
+    
+    List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList);
+    
     /**
      * <p>
      *    Description: queryIdsBySnArray

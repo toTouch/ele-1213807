@@ -197,5 +197,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     List<ElectricityBatteryVO> selectListBatteriesBySn(@Param("offset") Integer offset, @Param("size") Integer size, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("sn") String sn);
     
+    List<ElectricityBatteryVO> selectListBatteriesByFranchisee(@Param("offset") Integer offset, @Param("size") Integer size, @Param("tenantId") Integer tenantId,
+            @Param("franchiseeIds") List<Long> franchiseeIds);
+    
     List<ElectricityBattery> selectListByEid(@Param("eIdList") List<Integer> electricityCabinetIdList);
 }

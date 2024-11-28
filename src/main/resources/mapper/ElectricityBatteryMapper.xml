@@ -1409,6 +1409,24 @@
         limit #{offset}, #{size}
     </select>
     
+    
+    
+    <select id="selectListBatteriesByFranchisee" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
+        SELECT
+        id,
+        sn
+        FROM
+        t_electricity_battery
+        where
+        del_flag = 0
+        and tenant_id = #{tenantId}
+        and franchisee_id in
+        <foreach collection="franchiseeIds" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+        limit #{offset}, #{size}
+    </select>
+    
     <select id="selectListByEid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         SELECT
         id,sn,charge_status,electricity_cabinet_id

@@ -189,6 +189,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Resource
     private AssertPermissionService assertPermissionService;
     
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
+    
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
     /**
@@ -1628,6 +1631,30 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn) {
         
         return electricitybatterymapper.selectListBatteriesBySn(offset, size, tenantId, franchiseeId, sn);
+    }
+    
+    @Override
+    public List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("Current UserInfo is null, uid is {}", uid);
+            return Collections.emptyList();
+        }
+        
+        List<Long> franchiseeIdList = null;
+        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId());
+        if (mutualExchangePair.getLeft()) {
+            franchiseeIdList = new ArrayList<>(mutualExchangePair.getRight());
+        } else {
+            franchiseeIdList.add(userInfo.getFranchiseeId());
+        }
+        return getListBatteriesByFranchisee(offset, size, userInfo.getTenantId(), franchiseeIdList);
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList) {
+        return electricitybatterymapper.selectListBatteriesByFranchisee(offset, size, tenantId, franchiseeIdList);
     }
     
     @Slave
