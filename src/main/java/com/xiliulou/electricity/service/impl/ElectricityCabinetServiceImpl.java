@@ -2746,7 +2746,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * 换电柜3.0
      */
     @Override
-    public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid) {
+    public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid,
+            Set<Long> mutualFranchiseeSet) {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         // 有锂换电大部分走选仓换电，少部分正常换电这里特殊处理
@@ -2829,9 +2830,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             
             // 把本柜机加盟商的绑定电池信息拿出来
-            electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchisee.getId())).collect(Collectors.toList());
+            electricityBatteries = electricityBatteries.stream().filter(e -> mutualFranchiseeSet.contains(e.getFranchiseeId())).collect(Collectors.toList());
             if (!DataUtil.collectionIsUsable(electricityBatteries)) {
-                log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}", eid);
+                log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}，mutualFranchiseeSet is {}", eid, JsonUtil.toJson(mutualFranchiseeSet));
                 return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
             }
             

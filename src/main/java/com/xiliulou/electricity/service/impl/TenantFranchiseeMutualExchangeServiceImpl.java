@@ -16,6 +16,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -211,6 +212,29 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         // 不符合互通配置,需要判断两个加盟商是否相等
         return Objects.equals(franchiseeId, otherFranchiseeId);
     }
+    
+    
+    @Override
+    public Triple<Boolean, String, Object> orderExchangeMutualFranchiseeCheck(Integer tenantId, Long franchiseeId, Long otherFranchiseeId) {
+        Pair<Boolean, Set<Long>> mutualExchangeFranchiseePair = satisfyMutualExchangeFranchisee(tenantId, franchiseeId);
+        if (mutualExchangeFranchiseePair.getLeft()) {
+            if (mutualExchangeFranchiseePair.getRight().contains(otherFranchiseeId)) {
+                // 存在互通加盟商
+                return Triple.of(true, null, mutualExchangeFranchiseePair.getRight());
+            } else {
+                log.warn("ORDER WARN! user fId  is not equal franchiseeId, uidF is {}, eidF is {}", franchiseeId, otherFranchiseeId);
+                return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
+            }
+        } else {
+            if (Objects.nonNull(otherFranchiseeId) && Objects.equals(franchiseeId, otherFranchiseeId)) {
+                return Triple.of(true, null, CollUtil.newHashSet().add(franchiseeId));
+            } else {
+                log.warn("ORDER WARN! user fId  is not equal franchiseeId, uidF is {}, eidF is {}", franchiseeId, otherFranchiseeId);
+                return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
+            }
+        }
+    }
+    
     
     /**
      * 是否存在互换配置

@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.MutualExchangeUpdateQuery;
 import com.xiliulou.electricity.request.MutualExchangeAddConfigRequest;
 import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 import java.util.Set;
@@ -118,4 +119,15 @@ public interface TenantFranchiseeMutualExchangeService {
      * @return Boolean
      */
     Boolean isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId);
+    
+    
+    /**
+     * 换电满电仓分配检测是否互通，返回提示
+     *
+     * @param tenantId          tenantId
+     * @param franchiseeId      franchiseeId
+     * @param otherFranchiseeId otherFranchiseeId
+     * @return Triple
+     */
+    Triple<Boolean, String, Object> orderExchangeMutualFranchiseeCheck(Integer tenantId, Long franchiseeId, Long otherFranchiseeId);
 }
