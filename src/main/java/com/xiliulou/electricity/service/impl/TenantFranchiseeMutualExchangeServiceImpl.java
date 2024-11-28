@@ -205,7 +205,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             // 判断加盟商互通是否包含另一加盟商
             return pair.getRight().contains(otherFranchiseeId);
         }
-        
+        if (Objects.isNull(otherFranchiseeId)) {
+            return false;
+        }
         // 不符合互通配置,需要判断两个加盟商是否相等
         return Objects.equals(franchiseeId, otherFranchiseeId);
     }
