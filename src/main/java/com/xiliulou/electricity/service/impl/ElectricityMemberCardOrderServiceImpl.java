@@ -1348,7 +1348,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
             
             // 套餐的套餐冻结服务费大于0，在保存套餐冻结滞纳金订单
-            if (!Objects.isNull(batteryMemberCard.getFreezeServiceCharge()) && batteryMemberCard.getFreezeServiceCharge().compareTo(BigDecimal.ZERO) > 0) {
+            if (Objects.nonNull(batteryMemberCard.getFreezeServiceCharge()) && batteryMemberCard.getFreezeServiceCharge().compareTo(BigDecimal.ZERO) > 0) {
                 EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                         .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                         .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis())

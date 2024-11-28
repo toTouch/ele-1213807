@@ -700,14 +700,15 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             return R.ok();
         }
         
-        if (!Objects.equals(electricityConfig.getPackageFreezeCount(), 0) && userInfoExtra.getPackageFreezeCount() >= electricityConfig.getPackageFreezeCount()) {
+        if (!Objects.equals(electricityConfig.getPackageFreezeCount(), ElectricityConfig.FREEZE_COUNT_NOT_LIMIT)
+                && userInfoExtra.getPackageFreezeCount() >= electricityConfig.getPackageFreezeCount()) {
             return R.fail("301032", "冻结次数已用完，请稍后再试");
         }
         return R.ok();
     }
     
     @Override
-    public R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException{
+    public R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException {
         UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
         if (Objects.isNull(userInfoExtra)) {
             log.warn("CHANGE FREEZE COUNT FOR USER WARN! not found userInfo extra, uid={}", uid);
@@ -749,6 +750,32 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         // 无需重设作为版本号的时间戳，传null即可
         setPackageFreezeCount(uid, minTimeOfMonthUpdate, count);
         return R.ok();
+    }
+    
+    @Override
+    public Integer getUnUsedFreezeCount(Integer tenantId, Long uid) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig)) {
+            log.error("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", uid);
+            throw new BizException("301031", "未找到租户配置信息");
+        }
+        
+        // 配置为null及关闭的时候，返回不限制
+        Integer tenantPackageFreezeCount = electricityConfig.getPackageFreezeCount();
+        if (Objects.isNull(tenantPackageFreezeCount) || Objects.equals(tenantPackageFreezeCount, ElectricityConfig.FREEZE_COUNT_NOT_LIMIT)) {
+            return -1;
+        }
+        
+        UserInfoExtra userInfoExtra = queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.error("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", uid);
+            throw new BizException("100247", "用户信息不存在");
+        }
+        
+        Long newMinTimeOfMonth = getMinTimeOfMonth();
+        
+        Integer unusedCount = tenantPackageFreezeCount - userInfoExtra.getPackageFreezeCount();
+        return 0;
     }
     
     private Long getMinTimeOfMonth() {

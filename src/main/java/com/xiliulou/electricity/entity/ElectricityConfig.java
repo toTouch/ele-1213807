@@ -397,4 +397,6 @@ public class ElectricityConfig {
     public static Integer FREEZE_DAYS_MAX = 60;
     
     public static Integer EXPIRED_PROTECTION_TIME_DEFAULT = 24;
+    
+    public static Integer FREEZE_COUNT_NOT_LIMIT = 0;
 }

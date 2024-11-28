@@ -62,4 +62,6 @@ public interface UserInfoExtraService {
      * @throws BizException 若捕获到BizException，为操作类行传递错误，各业务自行斟酌如何处理
      */
     R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException;
+    
+    Integer getUnUsedFreezeCount(Integer tenantId, Long uid);
 }
