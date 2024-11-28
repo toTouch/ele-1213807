@@ -3325,6 +3325,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setStoreId(userInfo.getStoreId());
         userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
         
+        try {
+            userBatteryMemberCardInfoVO.setUnusedFreezeCount(userInfoExtraService.getUnusedFreezeCount(userInfo.getTenantId(), userInfo.getUid()));
+        } catch (BizException e) {
+            return Triple.of(false, e.getErrCode(), e.getErrMsg());
+        }
+        
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || StringUtils.isBlank(userBatteryDeposit.getOrderId())) {
             log.warn("ELE WARN! not found userBatteryDeposit,uid={}", userInfo.getUid());

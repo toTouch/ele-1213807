@@ -753,7 +753,7 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
     }
     
     @Override
-    public Integer getUnUsedFreezeCount(Integer tenantId, Long uid) {
+    public Integer getUnusedFreezeCount(Integer tenantId, Long uid) throws BizException {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig)) {
             log.error("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", uid);
@@ -773,9 +773,12 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         }
         
         Long newMinTimeOfMonth = getMinTimeOfMonth();
+        if (Objects.isNull(userInfoExtra.getMinTimeOfMonth()) || newMinTimeOfMonth > userInfoExtra.getMinTimeOfMonth()) {
+            // 此处在用户冻结次数过期的情况下不要做初始化，避免因为和申请冻结接口的并发修改问题导致数据错误
+            return electricityConfig.getPackageFreezeCount();
+        }
         
-        Integer unusedCount = tenantPackageFreezeCount - userInfoExtra.getPackageFreezeCount();
-        return 0;
+        return Math.max(tenantPackageFreezeCount - userInfoExtra.getPackageFreezeCount(), 0);
     }
     
     private Long getMinTimeOfMonth() {

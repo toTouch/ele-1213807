@@ -63,5 +63,5 @@ public interface UserInfoExtraService {
      */
     R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException;
     
-    Integer getUnUsedFreezeCount(Integer tenantId, Long uid);
+    Integer getUnusedFreezeCount(Integer tenantId, Long uid) throws BizException;
 }

@@ -2644,6 +2644,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentalPackageVO.setRejectReasonForReturnVehicle(rejectReasonForReturnVehicle);
         rentalPackageVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         
+        // 设置用户剩余冻结次数
+        try {
+            rentalPackageVO.setUnusedFreezeCount(userInfoExtraService.getUnusedFreezeCount(tenantId, uid));
+        } catch (BizException e) {
+            return R.fail(e.getErrCode(), e.getErrMsg());
+        }
+        
         return R.ok(rentalPackageVO);
     }
     
