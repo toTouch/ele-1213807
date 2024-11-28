@@ -4147,33 +4147,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     break;
                 case EleOtaFile.TYPE_SIX_FILE:
                     subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SIX_SUB_BOARD);
+                    coreBoardOtaFileConfig = subBoardOtaFileConfig;
                     break;
                 case EleOtaFile.TYPE_NEW_SIX_FILE:
                     subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD);
+                    coreBoardOtaFileConfig = subBoardOtaFileConfig;
                     break;
                 default:
                     break;
             }
-            
-            if (Objects.isNull(subBoardOtaFileConfig)) {
-                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}", coreBoardOtaFileConfig, subBoardOtaFileConfig);
-                return Triple.of(Boolean.FALSE, "100301", "ota升级文件不完整，请联系客服处理");
-            }
-            
-            // 六合一没有核心板文件
-            if (!isSixVersion(versionType) && Objects.isNull(coreBoardOtaFileConfig)) {
-                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}", coreBoardOtaFileConfig, subBoardOtaFileConfig);
-                return Triple.of(Boolean.FALSE, "100301", "ota升级文件不完整，请联系客服处理");
-            }
     
+            if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
+                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}", coreBoardOtaFileConfig, subBoardOtaFileConfig);
+                return Triple.of(Boolean.FALSE, "100301", "ota升级文件不完整，请联系客服处理");
+            }
+            
             createOrUpdateEleOtaFile(eid, versionType, coreBoardOtaFileConfig, subBoardOtaFileConfig);
-    
+            
             content.put(OtaConstant.OTA_SUB_FILE_URL, subBoardOtaFileConfig.getDownloadLink());
             content.put(OtaConstant.OTA_SUB_FILE_SHA256HEX, subBoardOtaFileConfig.getSha256Value());
-            if (!isSixVersion(versionType)) {
-                content.put(OtaConstant.OTA_CORE_FILE_URL, coreBoardOtaFileConfig.getDownloadLink());
-                content.put(OtaConstant.OTA_CORE_FILE_SHA256HEX, coreBoardOtaFileConfig.getSha256Value());
-            }
+            content.put(OtaConstant.OTA_CORE_FILE_URL, coreBoardOtaFileConfig.getDownloadLink());
+            content.put(OtaConstant.OTA_CORE_FILE_SHA256HEX, coreBoardOtaFileConfig.getSha256Value());
         } else if (OtaConstant.OTA_TYPE_UPGRADE.equals(operateType)) {
             if (!DataUtil.collectionIsUsable(cellNos)) {
                 return Triple.of(Boolean.FALSE, "100303", "升级内容为空，请选择您要升级的板子");
@@ -4185,17 +4179,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Triple.of(Boolean.TRUE, null, content);
     }
     
-    private Boolean isSixVersion(Integer versionType) {
-        return Objects.equals(versionType, EleOtaFile.TYPE_SIX_FILE) || Objects.equals(versionType, EleOtaFile.TYPE_NEW_SIX_FILE);
-    }
-    
     private void createOrUpdateEleOtaFile(Integer eid, Integer versionType, OtaFileConfig coreBoardOtaFileConfig, OtaFileConfig subBoardOtaFileConfig) {
         EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
         String coreSha256Value = "";
         String coreName = "";
+        String subSha256Value = "";
+        String subName = "";
+        
         if (Objects.nonNull(coreBoardOtaFileConfig)) {
             coreSha256Value = coreBoardOtaFileConfig.getSha256Value();
             coreName = coreBoardOtaFileConfig.getName();
+        }
+        
+        if (Objects.nonNull(subBoardOtaFileConfig)) {
+            subSha256Value = subBoardOtaFileConfig.getSha256Value();
+            subName = subBoardOtaFileConfig.getName();
         }
         
         if (Objects.nonNull(eleOtaFile)) {
@@ -4203,8 +4201,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             update.setId(eleOtaFile.getId());
             update.setCoreSha256Value(coreSha256Value);
             update.setCoreName(coreName);
-            update.setSubSha256Value(subBoardOtaFileConfig.getSha256Value());
-            update.setSubName(subBoardOtaFileConfig.getName());
+            update.setSubSha256Value(subSha256Value);
+            update.setSubName(subName);
             update.setFileType(versionType);
             update.setUpdateTime(System.currentTimeMillis());
             eleOtaFileService.update(update);
@@ -4215,8 +4213,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         create.setElectricityCabinetId(eid);
         create.setCoreSha256Value(coreSha256Value);
         create.setCoreName(coreName);
-        create.setSubSha256Value(subBoardOtaFileConfig.getSha256Value());
-        create.setSubName(subBoardOtaFileConfig.getName());
+        create.setSubSha256Value(subSha256Value);
+        create.setSubName(subName);
         create.setFileType(versionType);
         create.setUpdateTime(System.currentTimeMillis());
         create.setCreateTime(System.currentTimeMillis());
