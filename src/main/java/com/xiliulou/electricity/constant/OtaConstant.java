@@ -22,6 +22,7 @@ public class OtaConstant {
      */
     public static final Integer OTA_TYPE_UPGRADE = 3;
     
+    public static final int OTA_VERSION_TYPE_FOR_SYNC_UPGRADE = 0;
     public static final int OTA_VERSION_TYPE_OLD = 1;
     
     public static final int OTA_VERSION_TYPE_NEW = 2;

@@ -4064,9 +4064,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.warn("otaCommand warn! ota operate type illegal! electricityCabinet={}, operateType={}", electricityCabinet, operateType);
             return Triple.of(false, "100302", "ota操作类型不合法");
         }
-        
+    
         List<Integer> versionTypeList = List.of(OtaConstant.OTA_VERSION_TYPE_OLD, OtaConstant.OTA_VERSION_TYPE_NEW, OtaConstant.OTA_VERSION_TYPE_SIX,
-                OtaConstant.OTA_VERSION_TYPE_NEW_SIX);
+                OtaConstant.OTA_VERSION_TYPE_NEW_SIX, OtaConstant.OTA_VERSION_TYPE_FOR_SYNC_UPGRADE);
         if (!versionTypeList.contains(versionType)) {
             log.error("otaCommand warn! versionType illegal! electricityCabinet={}, operateType={}, versionType={}", electricityCabinet, operateType, versionType);
             return Triple.of(false, "100302", "ota操作类型不合法");
