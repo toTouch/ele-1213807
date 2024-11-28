@@ -78,10 +78,10 @@
             <if test="electricityCabinetId != null">
                 electricity_cabinet_id = #{electricityCabinetId},
             </if>
-            <if test="coreSha256Value != null and coreSha256Value != ''">
+            <if test="coreSha256Value != null">
                 core_sha256_value = #{coreSha256Value},
             </if>
-            <if test="subSha256Value != null and subSha256Value != ''">
+            <if test="subSha256Value != null">
                 sub_sha256_value = #{subSha256Value},
             </if>
             <if test="createTime != null">
