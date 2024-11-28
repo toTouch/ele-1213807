@@ -169,7 +169,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     
     @Override
-    public Pair<Boolean, Set<Long>> isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId) {
+    public Pair<Boolean, Set<Long>> satisfyMutualExchangeFranchisee(Integer tenantId, Long franchiseeId) {
         if (Objects.isNull(tenantId) || Objects.isNull(franchiseeId)) {
             log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! tenantId or franchiseeId is null");
             return Pair.of(false, null);
@@ -195,6 +195,19 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         log.info("IsSatisfyFranchiseeIdMutualExchange Info! Current Franchisee SatisfyMutualExchange,franchiseeId is {}, MutualFranchiseeSet is {}", franchiseeId,
                 JsonUtil.toJson(mutualFranchiseeSet));
         return Pair.of(true, mutualFranchiseeSet);
+    }
+    
+    
+    @Override
+    public Boolean isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId) {
+        Pair<Boolean, Set<Long>> pair = satisfyMutualExchangeFranchisee(tenantId, franchiseeId);
+        if (pair.getLeft()) {
+            // 判断加盟商互通是否包含另一加盟商
+            return pair.getRight().contains(otherFranchiseeId);
+        }
+        
+        // 不符合互通配置,需要判断两个加盟商是否相等
+        return Objects.equals(franchiseeId, otherFranchiseeId);
     }
     
     /**

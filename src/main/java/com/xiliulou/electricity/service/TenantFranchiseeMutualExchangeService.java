@@ -101,11 +101,21 @@ public interface TenantFranchiseeMutualExchangeService {
     
     
     /**
-     * 当前加盟商是否满足加盟商换电互通
+     * 加盟商是否满足加盟商换电互通,并且返回互通加盟商
      *
      * @param tenantId     用户的租户
-     * @param franchiseeId 电池的加盟商
+     * @param franchiseeId 用户的加盟商
      * @return Pair
      */
-    Pair<Boolean, Set<Long>> isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId);
+    Pair<Boolean, Set<Long>> satisfyMutualExchangeFranchisee(Integer tenantId, Long franchiseeId);
+    
+    /**
+     * 当前加盟商是否满足加盟商换电互通
+     *
+     * @param tenantId          tenantId
+     * @param franchiseeId      franchiseeId
+     * @param otherFranchiseeId otherFranchiseeId
+     * @return Boolean
+     */
+    Boolean isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId);
 }

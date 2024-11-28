@@ -1643,7 +1643,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         List<Long> franchiseeIdList = null;
         // 获取当前用户加盟商的互通加盟商
-        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId());
+        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(userInfo.getTenantId(), userInfo.getFranchiseeId());
         if (mutualExchangePair.getLeft()) {
             franchiseeIdList = new ArrayList<>(mutualExchangePair.getRight());
         } else {

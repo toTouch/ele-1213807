@@ -139,6 +139,7 @@ import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
@@ -476,6 +477,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private CabinetConfig cabinetConfig;
+    
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
     
     
     /**
@@ -3757,8 +3761,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
         
-        // 柜机加盟商与用户加盟商不一致
-        if (!Objects.equals(franchisee.getId(), electricityCabinet.getFranchiseeId())) {
+        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId())) {
             log.warn("QUERY SELECTION EXCHANGE WARN! user franchiseeId  is not equal franchiseeId uid={} ,fid={}", userInfo.getUid(), userInfo.getFranchiseeId());
             return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
         }

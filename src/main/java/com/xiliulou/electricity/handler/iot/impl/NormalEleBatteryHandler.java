@@ -457,16 +457,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      */
     private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery, ElectricityCabinetBox updateElectricityCabinetBox,
             String sessionId) {
-        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.isSatisfyFranchiseeMutualExchange(electricityCabinet.getTenantId(),
-                electricityBattery.getFranchiseeId());
-        // 如果不互通，并且柜机加盟商和电池加盟商不一致
-        if (!mutualExchangePair.getLeft()) {
-            // 查换电柜所属加盟商
-            if (!Objects.equals(electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
-                log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}", electricityCabinet.getFranchiseeId(),
-                        electricityBattery.getFranchiseeId(), sessionId);
-                updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
-            }
+        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(electricityCabinet.getTenantId(), electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
+            log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}", electricityCabinet.getFranchiseeId(),
+                    electricityBattery.getFranchiseeId(), sessionId);
+            updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
         }
     }
 
