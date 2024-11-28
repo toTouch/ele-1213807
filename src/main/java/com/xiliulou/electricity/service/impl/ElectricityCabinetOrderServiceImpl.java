@@ -1199,6 +1199,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             }
             
+            // 判断互通加盟商，并且获取加盟商集合
+            Set<Long> mutualFranchiseeSet = null;
+            try {
+                Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
+                        electricityCabinet.getFranchiseeId());
+                if (!isSameFranchiseeTriple.getLeft()) {
+                    return isSameFranchiseeTriple;
+                }
+                mutualFranchiseeSet = (Set<Long>) isSameFranchiseeTriple.getRight();
+            } catch (Exception e) {
+                log.error("ORDER Error! orderExchangeMutualFranchiseeCheck is error", e);
+                mutualFranchiseeSet = CollUtil.newHashSet(userInfo.getFranchiseeId());
+            }
             
             //查询用户绑定的电池列表
             List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
@@ -1206,13 +1219,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             Triple<Boolean, String, Object> rentBatteryResult = null;
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //处理单电
-                rentBatteryResult = handlerSingleExchangeBattery(userInfo, store, electricityCabinet, orderQuery, batteryTypeList);
+                rentBatteryResult = handlerSingleExchangeBattery(userInfo, store, electricityCabinet, orderQuery, batteryTypeList, mutualFranchiseeSet);
                 if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
                     return rentBatteryResult;
                 }
             } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
                 //处理车电一体
-                rentBatteryResult = handlerExchangeBatteryCar(userInfo, store, electricityCabinet, orderQuery, batteryTypeList);
+                rentBatteryResult = handlerExchangeBatteryCar(userInfo, store, electricityCabinet, orderQuery, batteryTypeList, mutualFranchiseeSet);
                 if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
                     return rentBatteryResult;
                 }
@@ -1305,10 +1318,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             }
             
-            //柜机加盟商与用户加盟商不一致
-            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId())) {
-                log.warn("OrderV3 WARN! user fId  is not equal franchiseeId, uidF is {}, eidF is {}", userInfo.getFranchiseeId(), electricityCabinet.getFranchiseeId());
-                return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
+            // 判断互通加盟商，并且获取加盟商集合
+            Set<Long> mutualFranchiseeSet = null;
+            try {
+                Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
+                        electricityCabinet.getFranchiseeId());
+                if (!isSameFranchiseeTriple.getLeft()) {
+                    return isSameFranchiseeTriple;
+                }
+                mutualFranchiseeSet = (Set<Long>) isSameFranchiseeTriple.getRight();
+            } catch (Exception e) {
+                log.error("ORDER Error! orderExchangeMutualFranchiseeCheck is error", e);
+                mutualFranchiseeSet = CollUtil.newHashSet(userInfo.getFranchiseeId());
             }
             
             
@@ -1318,13 +1339,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             Triple<Boolean, String, Object> rentBatteryResult = null;
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //处理单电
-                rentBatteryResult = handlerSingleExchangeBatteryV3(userInfo, store, electricityCabinet, orderQuery, batteryTypeList);
+                rentBatteryResult = handlerSingleExchangeBatteryV3(userInfo, store, electricityCabinet, orderQuery, batteryTypeList, mutualFranchiseeSet);
                 if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
                     return rentBatteryResult;
                 }
             } else if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
                 //处理车电一体
-                rentBatteryResult = handlerExchangeBatteryCarV3(userInfo, store, electricityCabinet, orderQuery, batteryTypeList);
+                rentBatteryResult = handlerExchangeBatteryCarV3(userInfo, store, electricityCabinet, orderQuery, batteryTypeList, mutualFranchiseeSet);
                 if (Boolean.FALSE.equals(rentBatteryResult.getLeft())) {
                     return rentBatteryResult;
                 }
@@ -2256,10 +2277,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, null);
     }
     
-   
     
     private Triple<Boolean, String, Object> handlerExchangeBatteryCar(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV2 orderQuery,
-            List<String> batteryTypeList) {
+            List<String> batteryTypeList, Set<Long> mutualFranchiseeSet) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("EXCHANGE WARN! not found franchisee,uid={}", userInfo.getUid());
@@ -2271,14 +2291,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("EXCHANGE WARN! user memberCard disable,uid={}", userInfo.getUid());
             return Triple.of(false, "100210", "用户套餐不可用");
         }
-        
-        // 判断互通加盟商，并且获取加盟商集合
-        Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
-                electricityCabinet.getFranchiseeId());
-        if (!isSameFranchiseeTriple.getLeft()) {
-            return isSameFranchiseeTriple;
-        }
-        Set<Long> mutualFranchiseeSet = (Set<Long>) isSameFranchiseeTriple.getRight();
         
         //        //判断用户押金
         //        Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, userInfo);
@@ -2352,8 +2364,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(orderQuery.getSource()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId()).tenantId(TenantContextHolder.getTenantId())
                 .build();
-    
-        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())||ExchangeTypeEnum.SELECTION_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource())){
+        
+        if (ExchangeTypeEnum.NORMAL_EXCHANGE.getCode().equals(electricityCabinetOrder.getSource()) || ExchangeTypeEnum.SELECTION_EXCHANGE.getCode()
+                .equals(electricityCabinetOrder.getSource())) {
             electricityCabinetOrder.setChannel(ChannelSourceContextHolder.get());
         }
         
@@ -2373,7 +2386,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         commandData.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
-        
         
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.nonNull(electricityBattery)) {
@@ -2398,20 +2410,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     private Triple<Boolean, String, Object> handlerSingleExchangeBattery(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV2 orderQuery,
-            List<String> batteryTypeList) {
+            List<String> batteryTypeList, Set<Long> mutualFranchiseeSet) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("ORDER WARN! not found franchisee,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
         
-        // 判断互通加盟商，并且获取加盟商集合
-        Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
-                electricityCabinet.getFranchiseeId());
-        if (!isSameFranchiseeTriple.getLeft()) {
-            return isSameFranchiseeTriple;
-        }
-        Set<Long> mutualFranchiseeSet = (Set<Long>) isSameFranchiseeTriple.getRight();
         
         
         //判断用户押金
@@ -3185,9 +3190,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
     
     
-    
     private Triple<Boolean, String, Object> handlerSingleExchangeBatteryV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV3 orderQuery,
-            List<String> batteryTypeList) {
+            List<String> batteryTypeList, Set<Long> mutualFranchiseeSet) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("ORDER WARN! not found franchisee,uid={}", userInfo.getUid());
@@ -3284,7 +3288,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 分配满电仓门
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
+                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), mutualFranchiseeSet);
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
         }
@@ -3352,7 +3356,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     
     private Triple<Boolean, String, Object> handlerExchangeBatteryCarV3(UserInfo userInfo, Store store, ElectricityCabinet electricityCabinet, OrderQueryV3 orderQuery,
-            List<String> batteryTypeList) {
+            List<String> batteryTypeList, Set<Long> mutualFranchiseeSet) {
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.warn("EXCHANGE WARN! not found franchisee,uid={}", userInfo.getUid());
@@ -3364,7 +3368,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.warn("EXCHANGE WARN! user memberCard disable,uid={}", userInfo.getUid());
             return Triple.of(false, "100210", "用户套餐不可用");
         }
-       
         //判断用户电池服务费
         if (Boolean.TRUE.equals(carRenalPackageSlippageBizService.isExitUnpaid(userInfo.getTenantId(), userInfo.getUid()))) {
             log.warn("ORDER WARN! user exist battery service fee,uid={}", userInfo.getUid());
@@ -3408,9 +3411,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
         }
         
-       
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid());
+                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), mutualFranchiseeSet);
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
         }
