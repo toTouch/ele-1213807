@@ -616,20 +616,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
         
-        //回退单电套餐次数
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+        // 快捷换电结束异常订单不能回退次数
+        if (!Objects.equals(electricityCabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+            //回退单电套餐次数
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(userBatteryMemberCard)) {
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+                    }
                 }
             }
-        }
-        
-        //回退车电一体套餐次数
-        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+            
+            //回退车电一体套餐次数
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+            }
         }
         
         //删除开门失败缓存
