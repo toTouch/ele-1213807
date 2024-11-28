@@ -935,7 +935,7 @@
     </update>
     
     <select id="selectListByTenantIdAndUidList" resultType="com.xiliulou.electricity.entity.ElectricityCar">
-        select  <include refid="selectElectricityCar"/>
+        <include refid="selectElectricityCar"/>
         where
         tenant_id = #{tenantId}
         and uid in
