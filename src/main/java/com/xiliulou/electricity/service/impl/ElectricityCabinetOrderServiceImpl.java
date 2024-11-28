@@ -3639,25 +3639,35 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(battery)) {
             log.warn("FLEXIBLE RENEWAL WARN! can not find battery finally, uid={}", userInfo.getUid());
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return;
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return;
         }
         
         List<String> batteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         if (CollectionUtils.isEmpty(batteryTypes) || batteryTypes.contains(battery.getModel())) {
             // 标准型号套餐，不存在电池型号转换，正常换电
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return;
         }
         
         String batteryModel = battery.getModel();
         
         if (StringUtils.isEmpty(batteryModel) || StringUtils.isBlank(batteryModel)) {
-            log.warn("ORDER WARN! The battery model is not set up, batteryId={}", battery.getId());
+            log.warn("FLEXIBLE RENEWAL WARN! The battery model is not set up, batteryId={}", battery.getId());
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return;
         }
         
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
         if (Objects.isNull(electricityConfig)) {
-            log.warn("ORDER WARN! The electricity config is null, tenantId={}", userInfo.getTenantId());
+            log.warn("FLEXIBLE RENEWAL WARN! The electricity config is null, tenantId={}", userInfo.getTenantId());
             vo.setFlexibleRenewal(FlexibleRenewalEnum.NORMAL.getCode());
+            return;
         }
         
         String cardBatteryType = batteryTypes.get(0);
