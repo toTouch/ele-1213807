@@ -382,7 +382,7 @@ public class EnterpriseRentRecordServiceImpl implements EnterpriseRentRecordServ
             
             if (optional.isPresent()) {
                 lastPayMemberCardRecord = optional.get();
-                // 计算最后一个套餐的详情
+                // 计算最后一个套餐的详情，租退套餐不同时，最后一个套餐一定不是租开始的时间，不用处理天数券的问题
                 Long endTime = Objects.nonNull(lastPayMemberCardRecord) && Objects.nonNull(lastPayMemberCardRecord.getEndTime()) && Objects.nonNull(
                         enterpriseReturnRecord.getReturnTime()) && enterpriseReturnRecord.getReturnTime() > lastPayMemberCardRecord.getEndTime()
                         ? lastPayMemberCardRecord.getEndTime() : enterpriseReturnRecord.getReturnTime();
