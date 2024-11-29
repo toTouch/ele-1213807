@@ -149,7 +149,7 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                             
                             try {
                                 // 调用发货接口
-//                                shippingUploadService.shippingUploadInfoByToken(shippingOrder.getOpenid(), shippingOrder.getTransaction_id(), token);
+                                shippingUploadService.shippingUploadInfoByToken(shippingOrder.getOpenid(), shippingOrder.getTransaction_id(), token);
                                 TimeUnit.MILLISECONDS.sleep(200);
                                 log.info("SHIPPING INFO SUCCESS! shipping upload success,tenantId={},orderNo={}", id, shippingOrder.getTransaction_id());
                             } catch (InterruptedException ex) {
