@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/6/27
+ * Create date: 2024/6/27
  */
 
 package com.xiliulou.electricity.mq.handler.message.wechat;

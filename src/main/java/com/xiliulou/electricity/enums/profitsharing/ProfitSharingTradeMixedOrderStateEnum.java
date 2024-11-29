@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/8/27
+ * Create date: 2024/8/27
  */
 
 package com.xiliulou.electricity.enums.profitsharing;

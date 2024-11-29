@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/6/12
+ * Create date: 2024/6/12
  */
 
 package com.xiliulou.electricity.enums;

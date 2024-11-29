@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/8/29
+ * Create date: 2024/8/29
  */
 
 package com.xiliulou.electricity.task.profitsharing;
@@ -81,7 +81,7 @@ public abstract class AbstractProfitSharingOrderQueryTask<T extends BasePayConfi
      * @date 2024/8/26 16:44
      */
     @Override
-    protected void executeByTenantId(Integer tenantId) {
+    protected void executeByTenantId(Integer tenantId,TaskParam taskParam) {
         
         ProfitSharingOrderQueryModel profitSharingOrderQueryModel = new ProfitSharingOrderQueryModel();
         profitSharingOrderQueryModel.setStartId(0L);

@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/8/29
+ * Create date: 2024/8/29
  */
 
 package com.xiliulou.electricity.task.profitsharing.base;
@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.xiliulou.electricity.constant.CacheConstant.PROFIT_SHARING_STATISTICS_LOCK_KEY;
 
@@ -62,10 +60,11 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
             } else {
                 TtlTraceIdSupport.set();
             }
-            
+    
+            TaskParam finalTaskParam = taskParam;
             if (CollectionUtils.isNotEmpty(taskParam.getTenantIds())) {
                 // 指定租户
-                taskParam.getTenantIds().forEach(tid -> this.executeByTenantId(tid));
+                taskParam.getTenantIds().forEach(tid -> this.executeByTenantId(tid, finalTaskParam));
                 
                 return ReturnT.SUCCESS;
             }
@@ -84,7 +83,7 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
                 startTenantId = tenantIds.get(tenantIds.size() - 1);
                 
                 // 根据租户处理
-                tenantIds.forEach(tid -> this.catchExecuteByTenantId(tid));
+                tenantIds.forEach(tid -> this.catchExecuteByTenantId(tid,finalTaskParam));
             }
             
             return ReturnT.SUCCESS;
@@ -104,11 +103,11 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
      * @author caobotao.cbt
      * @date 2024/9/5 14:00
      */
-    protected void catchExecuteByTenantId(Integer tid) {
+    protected void catchExecuteByTenantId(Integer tid,TaskParam taskParam) {
         try {
             log.info("tenantId:{} start", tid);
             
-            this.executeByTenantId(tid);
+            this.executeByTenantId(tid,taskParam);
             
             log.info("tenantId:{} end", tid);
             
@@ -172,7 +171,7 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
      * @author caobotao.cbt
      * @date 2024/8/29 17:10
      */
-    protected abstract void executeByTenantId(Integer tenantId);
+    protected abstract void executeByTenantId(Integer tenantId,TaskParam taskParam);
     
     /**
      * 获取渠道
@@ -195,6 +194,9 @@ public abstract class AbstractProfitSharingTask<T extends BasePayConfig> extends
         
         
         private String traceId;
+        
+        
+        private Long endTime;
         
     }
     

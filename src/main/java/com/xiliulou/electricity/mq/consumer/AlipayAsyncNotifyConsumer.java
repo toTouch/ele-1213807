@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/7/31
+ * Create date: 2024/7/31
  */
 
 package com.xiliulou.electricity.mq.consumer;

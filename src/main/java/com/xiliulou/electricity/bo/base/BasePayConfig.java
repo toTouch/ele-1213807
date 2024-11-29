@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/7/17
+ * Create date: 2024/7/17
  */
 
 package com.xiliulou.electricity.bo.base;

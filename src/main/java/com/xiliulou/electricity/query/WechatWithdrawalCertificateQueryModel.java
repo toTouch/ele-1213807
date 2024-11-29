@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/6/13
+ * Create date: 2024/6/13
  */
 
 package com.xiliulou.electricity.query;

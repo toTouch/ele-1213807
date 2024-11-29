@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/4/3
+ * Create date: 2024/4/3
  */
 
 package com.xiliulou.electricity.vo;

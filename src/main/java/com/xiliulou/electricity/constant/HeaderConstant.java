@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/7/30
+ * Create date: 2024/7/30
  */
 
 package com.xiliulou.electricity.constant;

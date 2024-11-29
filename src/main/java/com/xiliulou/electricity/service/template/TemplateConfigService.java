@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/7/23
+ * Create date: 2024/7/23
  */
 
 package com.xiliulou.electricity.service.template;

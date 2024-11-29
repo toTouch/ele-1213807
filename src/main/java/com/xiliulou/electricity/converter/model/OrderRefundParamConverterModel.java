@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/7/18
+ * Create date: 2024/7/18
  */
 
 package com.xiliulou.electricity.converter.model;

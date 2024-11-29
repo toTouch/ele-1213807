@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/8/28
+ * Create date: 2024/8/28
  */
 
 package com.xiliulou.electricity.task.profitsharing;
@@ -116,7 +116,7 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
      * @date 2024/8/26 16:44
      */
     @Override
-    protected void executeByTenantId(Integer tenantId) {
+    protected void executeByTenantId(Integer tenantId, TaskParam taskParam) {
         
         // 查询参数
         ProfitSharingTradeMixedOrderQueryModel queryModel = new ProfitSharingTradeMixedOrderQueryModel();
@@ -126,7 +126,13 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
         queryModel.setStartId(0L);
         queryModel.setChannel(this.getChannel());
         queryModel.setNotNullThirdOrderNo(YesNoEnum.YES.getCode());
-        queryModel.setEndTime(DateUtils.getTodayStartTimeStamp());
+        
+        Long endTime = taskParam.getEndTime();
+        if (endTime == null) {
+            queryModel.setEndTime(DateUtils.getTodayStartTimeStamp());
+        } else {
+            queryModel.setEndTime(endTime);
+        }
         
         // 租户+加盟商 -> 支付配置
         Map<String, T> tenantFranchiseePayParamMap = new HashMap<>();
@@ -555,7 +561,8 @@ public abstract class AbstractProfitSharingTradeOrderTask<T extends BasePayConfi
             
             for (ProfitSharingReceiverConfig receiverConfig : receiverConfigs) {
                 // 向下取正 保留两位小数
-                BigDecimal profitSharingAmount = amount.multiply(receiverConfig.getScale()).setScale(2, RoundingMode.DOWN);;
+                BigDecimal profitSharingAmount = amount.multiply(receiverConfig.getScale()).setScale(2, RoundingMode.DOWN);
+                ;
                 profitSharingAmountMap.put(receiverConfig.getId(), profitSharingAmount);
                 
                 //当前累计分账总额

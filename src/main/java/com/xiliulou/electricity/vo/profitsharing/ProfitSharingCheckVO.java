@@ -1,5 +1,5 @@
 /**
- *  Create date: 2024/9/2
+ * Create date: 2024/9/2
  */
 
 package com.xiliulou.electricity.vo.profitsharing;
