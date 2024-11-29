@@ -277,7 +277,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
             // 免押及单独缴纳押金后购买套餐
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
@@ -297,7 +298,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                     userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE) ? BatteryMemberCard.YES : null);
             
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
@@ -323,7 +325,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.isNull(userBatteryDeposit)) {
                 query.setDeposit(batteryMemberCard.getDeposit());
             } else {
-                query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                query.setDeposit((Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(
+                        userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit()
                         : userBatteryDeposit.getBatteryDeposit());
             }
             
@@ -564,7 +567,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             // 为了兼容免押后购买套餐
             if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)
                     && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
@@ -578,7 +582,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 增加判断用户退押后，无法选择其他伏数套餐的问题。如果押金已缴纳，则需要根据押金金额过滤套餐
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
@@ -698,7 +703,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 免押及单独交纳押金后购买套餐
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
@@ -712,7 +718,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             
             // 增加判断用户退押后，无法选择其他伏数套餐的问题。如果押金已缴纳，则需要根据押金金额过滤套餐
             if (Objects.nonNull(userBatteryDeposit) && UserInfo.BATTERY_DEPOSIT_STATUS_YES.equals(userInfo.getBatteryDepositStatus())) {
-                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES)) {
+                if (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) {
                     query.setDeposit(userBatteryDeposit.getBeforeModifyDeposit());
                 } else {
                     query.setDeposit(userBatteryDeposit.getBatteryDeposit());
@@ -732,7 +739,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.isNull(userBatteryDeposit)) {
                 query.setDeposit(batteryMemberCard.getDeposit());
             } else {
-                query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                query.setDeposit((Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(
+                        userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit()
                         : userBatteryDeposit.getBatteryDeposit());
             }
             
@@ -867,8 +875,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         
         // 未缴纳押金；灵活续费开启时，也需要查询加盟商下的全部电压，考虑重启过程中灵活续费null值，不采用关闭状态取反的方式判断
         if (!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus()) || Objects.isNull(electricityConfig) || Objects.equals(
-                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode()) || Objects.equals(
-                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
+                electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
+                FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
             List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.emptyList();
@@ -1033,7 +1041,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setFreeDeposite(query.getFreeDeposite());
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
         batteryMemberCardUpdate.setRemark(query.getRemark());
-        batteryMemberCardUpdate.setAdvanceRenewal( query.getAdvanceRenewal());
+        batteryMemberCardUpdate.setAdvanceRenewal(query.getAdvanceRenewal());
         batteryMemberCardUpdate.setAdvanceRenewalDay(query.getAdvanceRenewalDay());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardUpdate.setUserInfoGroupIds(Objects.isNull(query.getUserInfoGroupIdsTransfer()) ? null : JsonUtil.toJson(query.getUserInfoGroupIdsTransfer()));
@@ -1348,7 +1356,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Boolean.TRUE;
         }
         
-        //判断套餐剩余天数是否小于限制天数
+        // 判断套餐剩余天数是否小于限制天数
         if (userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis() < batteryMemberCard.getAdvanceRenewalDay() * 24 * 60 * 60 * 1000L) {
             return Boolean.TRUE;
         }

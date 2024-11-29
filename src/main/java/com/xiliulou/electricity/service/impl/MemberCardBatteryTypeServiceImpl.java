@@ -60,8 +60,9 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
             ElectricityConfig electricityConfig, UserInfo userInfo) {
         // 灵活续费押金校验
         Integer isEnableFlexibleRenewal = electricityConfig.getIsEnableFlexibleRenewal();
-        BigDecimal deposit = Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
-                : userBatteryDeposit.getBatteryDeposit();
+        BigDecimal deposit =
+                (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
         
         if (Objects.equals(isEnableFlexibleRenewal, FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode()) || Objects.equals(isEnableFlexibleRenewal,
                 FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode())) {
@@ -112,9 +113,12 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
      * 校验用户绑定的电池型号和要购买的套餐是否匹配
      */
     @Override
-    public Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee, UserInfo userInfo) {
+    public Boolean checkBatteryTypesForRenew(List<String> userBatteryTypes, BatteryMemberCard memberCard, UserBatteryDeposit userBatteryDeposit, Franchisee franchisee,
+            UserInfo userInfo) {
         // 押金必须相等，新旧型号加盟商都必须校验押金
-        BigDecimal deposit = Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
+        BigDecimal deposit =
+                (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
         if (Objects.isNull(userBatteryDeposit.getBatteryDeposit()) || Objects.isNull(memberCard.getDeposit()) || deposit.compareTo(memberCard.getDeposit()) != 0) {
             log.info("BATTERY DEPOSIT INFO! deposit do not match. uid={}", userInfo.getUid());
             return Boolean.FALSE;

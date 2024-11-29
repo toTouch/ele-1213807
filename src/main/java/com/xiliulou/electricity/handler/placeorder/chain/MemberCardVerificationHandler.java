@@ -118,8 +118,9 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
                 throw new BizException("100018", "套餐租金退款审核中");
             }
             
-            BigDecimal deposit = Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
-                    : userBatteryDeposit.getBatteryDeposit();
+            BigDecimal deposit =
+                    (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                            UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
             if (batteryMemberCard.getDeposit().compareTo(deposit) > 0) {
                 throw new BizException("100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
             }
@@ -136,7 +137,8 @@ public class MemberCardVerificationHandler extends AbstractPlaceOrderHandler {
             
             // 灵活续费押金及电池型号校验
             List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig, userInfo);
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCard, userBatteryDeposit, electricityConfig,
+                    userInfo);
             if (!matchOrNot) {
                 log.warn("PLACE ORDER WARN! deposit or batteryTypes not match,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
                 throw new BizException("302004", "灵活续费已禁用，请刷新后重新购买");
