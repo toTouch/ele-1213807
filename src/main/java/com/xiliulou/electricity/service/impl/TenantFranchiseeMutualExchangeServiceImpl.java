@@ -216,10 +216,10 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         this.updateMutualExchange(
                 TenantFranchiseeMutualExchange.builder().id(id).tenantId(TenantContextHolder.getTenantId()).updateTime(System.currentTimeMillis()).delFlag(1).build());
         
-        Map<Object, Object> oldMap = MapUtil.builder().put("name", mutualExchange.getCombinedName())
+        Map<Object, Object> newMap = MapUtil.builder().put("name", mutualExchange.getCombinedName())
                 .put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(JsonUtil.fromJsonArray(mutualExchange.getCombinedFranchisee(), Long.class)))
                 .put("status", mutualExchange.getStatus()).build();
-        operateRecordUtil.record(null, oldMap);
+        operateRecordUtil.record(null, newMap);
         return R.ok();
     }
     

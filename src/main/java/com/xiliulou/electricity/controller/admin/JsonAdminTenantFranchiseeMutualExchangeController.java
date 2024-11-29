@@ -32,13 +32,24 @@ public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicCont
     private TenantFranchiseeMutualExchangeService tenantFranchiseeMutualExchangeService;
     
     /**
-     * 新增/编辑
+     * 新增
      *
      * @param request request
      * @return R
      */
-    @PostMapping("addOrEditConfig")
-    public R addOrEditConfig(@RequestBody @Validated MutualExchangeAddConfigRequest request) {
+    @PostMapping("addConfig")
+    public R addConfig(@RequestBody @Validated MutualExchangeAddConfigRequest request) {
+        return tenantFranchiseeMutualExchangeService.addOrEditConfig(request);
+    }
+    
+    /**
+     * 编辑
+     *
+     * @param request request
+     * @return R
+     */
+    @PostMapping("editConfig")
+    public R editConfig(@RequestBody @Validated MutualExchangeAddConfigRequest request) {
         return tenantFranchiseeMutualExchangeService.addOrEditConfig(request);
     }
     
