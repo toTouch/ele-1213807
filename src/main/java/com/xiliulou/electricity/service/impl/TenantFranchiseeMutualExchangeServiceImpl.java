@@ -23,7 +23,6 @@ import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
-import com.xiliulou.electricity.vo.ElectricityBatteryExcelVO;
 import com.xiliulou.electricity.vo.ExportMutualBatteryVO;
 import com.xiliulou.electricity.vo.MutualElectricityBatteryExcelVO;
 import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
@@ -37,6 +36,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 
 /**
  * @ClassName: TenantFranchiseeMutualExchangeServiceImpl
- * @description:
+ * @description: 互通servie
  * @author: renhang
  * @create: 2024-11-27 15:25
  */
@@ -139,6 +139,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     
     @Override
+    @SuppressWarnings("all")
     public List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromDB(Integer tenantId) {
         return mutualExchangeMapper.selectMutualExchangeConfigListFromDB(tenantId);
     }
@@ -315,7 +316,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             throw new BizException("302010", "电池数据不存在");
         }
         
-        List<ExportMutualBatteryVO> excelVOS = CollUtil.newArrayList();
+        List<ExportMutualBatteryVO> exportMutualBatteryVOList = CollUtil.newArrayList();
         
         for (ExportMutualBatteryBO bo : mutualBatteryBOList) {
             ExportMutualBatteryVO excelVO = new ExportMutualBatteryVO();
@@ -329,16 +330,15 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             } else {
                 excelVO.setMutualFranchiseeName(bo.getFranchiseeName());
             }
-            excelVOS.add(excelVO);
+            exportMutualBatteryVOList.add(excelVO);
         }
         
         String fileName = "互通电池列表.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             response.setHeader("content-Type", "application/vnd.ms-excel");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, MutualElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOS);
-            return;
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            EasyExcel.write(outputStream, MutualElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(exportMutualBatteryVOList);
         } catch (IOException e) {
             log.error("导出互通电池列表！", e);
         }
@@ -364,13 +364,12 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     private List<MutualExchangeDetailVO.Item> buildMutualExchangeDetailItemList(String combinedFranchisee) {
         List<Long> combinedFranchiseeIdList = JsonUtil.fromJsonArray(combinedFranchisee, Long.class);
-        List<MutualExchangeDetailVO.Item> itemList = combinedFranchiseeIdList.stream().map(e -> {
+        return combinedFranchiseeIdList.stream().map(e -> {
             MutualExchangeDetailVO.Item item = new MutualExchangeDetailVO.Item();
             item.setFranchiseeId(e);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(e);
             item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             return item;
         }).collect(Collectors.toList());
-        return itemList;
     }
 }
