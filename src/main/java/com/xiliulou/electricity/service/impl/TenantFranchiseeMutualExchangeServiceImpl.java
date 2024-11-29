@@ -394,13 +394,14 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * 是否存在互换配置
      *
      * @param franchiseeList franchiseeList
-     * @param list           list
+     * @param listFromDB     list
      * @return Boolean
      */
-    private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> list) {
-        // 这里要排除掉自己id
+    private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> listFromDB) {
+        // 将所有的配置加盟商遍历，判断当前添加的加盟商是否存在配置
         Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
-        for (TenantFranchiseeMutualExchange exchange : list) {
+        for (TenantFranchiseeMutualExchange exchange : listFromDB) {
+            // 这里要排除掉自己id
             if (Objects.equals(id, exchange.getId())) {
                 continue;
             }
