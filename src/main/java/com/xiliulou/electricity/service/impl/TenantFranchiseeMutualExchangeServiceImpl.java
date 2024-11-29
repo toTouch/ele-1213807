@@ -76,14 +76,6 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     public static final Integer MAX_MUTUAL_NAME_LENGTH = 20;
     
-    private void assertMutualName(String combinedName) {
-        if (Objects.isNull(combinedName)) {
-            throw new BizException("302000", "组合名称不能为空");
-        }
-        if (combinedName.length() > MAX_MUTUAL_NAME_LENGTH) {
-            throw new BizException("302000", "组合名称不能超过20字");
-        }
-    }
     
     @Override
     public R addConfig(MutualExchangeAddConfigRequest request) {
@@ -94,10 +86,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        List<String> mutualExchangeList = getMutualFranchiseeExchangeCache(tenantId);
-        if (isExistMutualExchangeConfig(combinedFranchisee, mutualExchangeList)) {
-            return R.fail("302001", "该互换配置已存在");
-        }
+        List<String> mutualExchangeList = assertMutualExchangeConfig(tenantId, combinedFranchisee);
         
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
                 .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
@@ -128,10 +117,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         // 判断是否配置存在
         List<Long> combinedFranchisee = request.getCombinedFranchisee();
         if (CollUtil.isNotEmpty(combinedFranchisee)) {
-            List<String> mutualExchangeList = getMutualFranchiseeExchangeCache(tenantId);
-            if (isExistMutualExchangeConfig(combinedFranchisee, mutualExchangeList)) {
-                return R.fail("302001", "该互换配置已存在");
-            }
+            assertMutualExchangeConfig(tenantId, combinedFranchisee);
         }
         
         // 编辑
@@ -155,6 +141,22 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         return R.ok();
     }
     
+    private void assertMutualName(String combinedName) {
+        if (Objects.isNull(combinedName)) {
+            throw new BizException("302000", "组合名称不能为空");
+        }
+        if (combinedName.length() > MAX_MUTUAL_NAME_LENGTH) {
+            throw new BizException("302000", "组合名称不能超过20字");
+        }
+    }
+    
+    private List<String> assertMutualExchangeConfig(Integer tenantId, List<Long> combinedFranchisee) {
+        List<String> mutualExchangeList = getMutualFranchiseeExchangeCache(tenantId);
+        if (isExistMutualExchangeConfig(combinedFranchisee, mutualExchangeList)) {
+            throw new BizException("302001", "该互换配置已存在");
+        }
+        return mutualExchangeList;
+    }
     
     private List<String> buildFranchiseeNameByIdList(List<Long> combinedFranchisee) {
         return combinedFranchisee.stream().map(e -> {
