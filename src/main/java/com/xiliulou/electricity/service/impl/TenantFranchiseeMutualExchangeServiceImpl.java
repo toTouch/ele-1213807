@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -73,8 +74,20 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     public static final Integer MAX_MUTUAL_EXCHANGE_CONFIG_COUNT = 5;
     
+    public static final Integer MAX_MUTUAL_NAME_LENGTH = 20;
+    
+    private void assertMutualName(String combinedName) {
+        if (Objects.isNull(combinedName)) {
+            throw new BizException("302000", "组合名称不能为空");
+        }
+        if (combinedName.length() > MAX_MUTUAL_NAME_LENGTH) {
+            throw new BizException("302000", "组合名称不能超过20字");
+        }
+    }
+    
     @Override
-    public R addOrEditConfig(MutualExchangeAddConfigRequest request) {
+    public R addConfig(MutualExchangeAddConfigRequest request) {
+        assertMutualName(request.getCombinedName());
         List<Long> combinedFranchisee = request.getCombinedFranchisee();
         if (CollUtil.isEmpty(combinedFranchisee)) {
             return R.fail("302000", "互换配置不能为空");
@@ -92,27 +105,53 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         
         Map<Object, Object> newMap = MapUtil.builder().put("name", request.getCombinedName()).put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(combinedFranchisee))
                 .put("status", request.getStatus()).build();
-        if (Objects.isNull(request.getId())) {
-            if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
-                return R.fail("302002", "最多添加5个配置");
-            }
-            // 新增
-            saveMutualExchange(mutualExchange);
-            operateRecordUtil.record(null, newMap);
-        } else {
-            // 编辑
-            TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
-            if (Objects.isNull(oldMutualExchange)) {
-                return R.fail("302003", "不存在的互换配置");
-            }
-            mutualExchange.setId(request.getId());
-            updateMutualExchange(mutualExchange);
-            
-            Map<Object, Object> oldMap = MapUtil.builder().put("name", oldMutualExchange.getCombinedName())
-                    .put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(JsonUtil.fromJsonArray(oldMutualExchange.getCombinedFranchisee(), Long.class)))
-                    .put("status", oldMutualExchange.getStatus()).build();
-            operateRecordUtil.record(oldMap, newMap);
+        
+        if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
+            return R.fail("302002", "最多添加5个配置");
         }
+        // 新增
+        saveMutualExchange(mutualExchange);
+        operateRecordUtil.record(null, newMap);
+        
+        return R.ok();
+    }
+    
+    
+    @Override
+    public R editConfig(MutualExchangeAddConfigRequest request) {
+        
+        if (StrUtil.isNotBlank(request.getCombinedName())) {
+            assertMutualName(request.getCombinedName());
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        // 判断是否配置存在
+        List<Long> combinedFranchisee = request.getCombinedFranchisee();
+        if (CollUtil.isNotEmpty(combinedFranchisee)) {
+            List<String> mutualExchangeList = getMutualFranchiseeExchangeCache(tenantId);
+            if (isExistMutualExchangeConfig(combinedFranchisee, mutualExchangeList)) {
+                return R.fail("302001", "该互换配置已存在");
+            }
+        }
+        
+        // 编辑
+        TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
+        if (Objects.isNull(oldMutualExchange)) {
+            return R.fail("302003", "不存在的互换配置");
+        }
+        TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
+                .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).updateTime(System.currentTimeMillis()).build();
+        mutualExchange.setId(request.getId());
+        updateMutualExchange(mutualExchange);
+        
+        Map<Object, Object> oldMap = MapUtil.builder().put("name", oldMutualExchange.getCombinedName())
+                .put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(JsonUtil.fromJsonArray(oldMutualExchange.getCombinedFranchisee(), Long.class)))
+                .put("status", oldMutualExchange.getStatus()).build();
+        
+        Map<Object, Object> newMap = MapUtil.builder().put("name", request.getCombinedName()).put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(combinedFranchisee))
+                .put("status", request.getStatus()).build();
+        operateRecordUtil.record(oldMap, newMap);
+        
         return R.ok();
     }
     
@@ -338,7 +377,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             ServletOutputStream outputStream = response.getOutputStream();
             response.setHeader("content-Type", "application/vnd.ms-excel");
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            EasyExcel.write(outputStream, MutualElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(exportMutualBatteryVOList);
+            EasyExcel.write(outputStream, MutualElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy())
+                    .doWrite(exportMutualBatteryVOList);
         } catch (IOException e) {
             log.error("导出互通电池列表！", e);
         }

@@ -26,7 +26,10 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param request request
      * @return R
      */
-    R addOrEditConfig(MutualExchangeAddConfigRequest request);
+    R addConfig(MutualExchangeAddConfigRequest request);
+    
+    
+    R editConfig(MutualExchangeAddConfigRequest request);
     
     /**
      * 获取配置互通详情

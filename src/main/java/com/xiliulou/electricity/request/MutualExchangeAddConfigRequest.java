@@ -17,8 +17,6 @@ public class MutualExchangeAddConfigRequest {
     
     private Long id;
     
-    @NotBlank(message = "组合名称不能为空!")
-    @Length(min = 1, max = 20, message = "组合名称不能超过20字")
     private String combinedName;
     
     /**

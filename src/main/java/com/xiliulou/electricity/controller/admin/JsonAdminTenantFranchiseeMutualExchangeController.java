@@ -6,7 +6,6 @@ import com.xiliulou.electricity.query.MutualExchangePageQuery;
 import com.xiliulou.electricity.query.MutualExchangeUpdateQuery;
 import com.xiliulou.electricity.request.MutualExchangeAddConfigRequest;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,8 +37,8 @@ public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicCont
      * @return R
      */
     @PostMapping("addConfig")
-    public R addConfig(@RequestBody @Validated MutualExchangeAddConfigRequest request) {
-        return tenantFranchiseeMutualExchangeService.addOrEditConfig(request);
+    public R addConfig(@RequestBody MutualExchangeAddConfigRequest request) {
+        return tenantFranchiseeMutualExchangeService.addConfig(request);
     }
     
     /**
@@ -49,8 +48,8 @@ public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicCont
      * @return R
      */
     @PostMapping("editConfig")
-    public R editConfig(@RequestBody @Validated MutualExchangeAddConfigRequest request) {
-        return tenantFranchiseeMutualExchangeService.addOrEditConfig(request);
+    public R editConfig(@RequestBody MutualExchangeAddConfigRequest request) {
+        return tenantFranchiseeMutualExchangeService.editConfig(request);
     }
     
     /**
