@@ -86,7 +86,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        List<String> mutualExchangeList = assertMutualExchangeConfig(tenantId, combinedFranchisee);
+        List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
                 .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
@@ -117,8 +117,10 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         // 判断是否配置存在
         List<Long> combinedFranchisee = request.getCombinedFranchisee();
         if (CollUtil.isNotEmpty(combinedFranchisee)) {
-            assertMutualExchangeConfig(tenantId, combinedFranchisee);
+            assertMutualExchangeConfig(request.getId(), tenantId, combinedFranchisee);
         }
+        
+        log.info("editConfig is {}", JsonUtil.toJson(getMutualFranchiseeExchangeCache(tenantId)));
         
         // 编辑
         TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
@@ -150,12 +152,12 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
     }
     
-    private List<String> assertMutualExchangeConfig(Integer tenantId, List<Long> combinedFranchisee) {
-        List<String> mutualExchangeList = getMutualFranchiseeExchangeCache(tenantId);
-        if (isExistMutualExchangeConfig(combinedFranchisee, mutualExchangeList)) {
+    private List<TenantFranchiseeMutualExchange> assertMutualExchangeConfig(Long id, Integer tenantId, List<Long> combinedFranchisee) {
+        List<TenantFranchiseeMutualExchange> listFromDB = getMutualExchangeConfigListFromDB(tenantId);
+        if (isExistMutualExchangeConfig(id, combinedFranchisee, listFromDB)) {
             throw new BizException("302001", "该互换配置已存在");
         }
-        return mutualExchangeList;
+        return listFromDB;
     }
     
     private List<String> buildFranchiseeNameByIdList(List<Long> combinedFranchisee) {
@@ -204,6 +206,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
         
         List<TenantFranchiseeMutualExchange> mutualExchangeList = getMutualExchangeConfigListFromDB(tenantId);
+        log.info("getMutualFranchiseeExchangeFrom Db");
         if (CollUtil.isEmpty(mutualExchangeList)) {
             return CollUtil.newArrayList();
         }
@@ -395,13 +398,17 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * @param list           list
      * @return Boolean
      */
-    private Boolean isExistMutualExchangeConfig(List<Long> franchiseeList, List<String> list) {
+    private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> list) {
         if (Objects.equals(list.size(), 1)) {
             return false;
         }
+        // 这里要排除掉自己id
         Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
-        for (String franchisee : list) {
-            Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(franchisee, Long.class));
+        for (TenantFranchiseeMutualExchange exchange : list) {
+            if (Objects.equals(id, exchange.getId())) {
+                continue;
+            }
+            Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(exchange.getCombinedFranchisee(), Long.class));
             if (combinedFranchisee.containsAll(franchiseeSet)) {
                 return true;
             }
