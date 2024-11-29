@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 租户下加盟商互通换电controller
@@ -100,4 +101,13 @@ public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicCont
     }
     
     
+    /**
+     * 互通电池导出
+     *
+     * @param response response
+     */
+    @GetMapping("mutualBattery/export")
+    public void mutualBatteryExport(HttpServletResponse response) {
+        tenantFranchiseeMutualExchangeService.mutualBatteryExport(response);
+    }
 }

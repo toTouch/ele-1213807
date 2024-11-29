@@ -1458,4 +1458,18 @@
     <update id="updateFranchiseeId">
         update t_electricity_battery set franchisee_id = #{targetFranchiseeId}, update_time = #{updateTime} where id = #{id} and franchisee_id = #{sourceFranchiseeId}
     </update>
+    
+    
+    <select id="selectMutualBattery" resultType="com.xiliulou.electricity.bo.ExportMutualBatteryBO">
+        select teb.sn as sn, teb.franchisee_id as franchiseeId, tf.name as franchiseeName,   teb.physics_status, teb.electricity_cabinet_name as electricityCabinetName
+             , tecb.cell_no as cellNo
+             , tui.name     as userName
+             , tui.phone
+        from t_electricity_battery teb
+                 left join t_franchisee tf on teb.franchisee_id = tf.id
+                 left join t_electricity_cabinet_box tecb on teb.sn = tecb.sn
+                 left join t_user_info tui on teb.uid = tui.uid
+        where teb.del_flag = 0
+          and teb.tenant_id = #{tenantId}
+    </select>
 </mapper>

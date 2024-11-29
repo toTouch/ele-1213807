@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Set;
 
@@ -130,4 +131,11 @@ public interface TenantFranchiseeMutualExchangeService {
      * @return Triple
      */
     Triple<Boolean, String, Object> orderExchangeMutualFranchiseeCheck(Integer tenantId, Long franchiseeId, Long otherFranchiseeId);
+    
+    /**
+     * 互通电池导出
+     *
+     * @param response response
+     */
+    void mutualBatteryExport(HttpServletResponse response);
 }

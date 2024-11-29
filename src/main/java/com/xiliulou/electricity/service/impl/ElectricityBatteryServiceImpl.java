@@ -24,6 +24,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
@@ -1765,5 +1766,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Map<Object, Object> map = MapUtil.builder().put("count", batteryWaitSnList.size()).build();
         operateRecordUtil.record(null, map);
         return R.ok(vo);
+    }
+    
+    
+    @Override
+    public List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId) {
+        return electricitybatterymapper.selectMutualBattery(tenantId);
     }
 }

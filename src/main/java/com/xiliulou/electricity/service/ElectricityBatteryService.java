@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -168,4 +169,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     R deleteBatteryByExcel(DelBatteryReq delBatteryReq);
     
+    
+    List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId);
 }

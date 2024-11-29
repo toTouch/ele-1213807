@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -201,4 +202,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
             @Param("franchiseeIds") List<Long> franchiseeIds);
     
     List<ElectricityBattery> selectListByEid(@Param("eIdList") List<Integer> electricityCabinetIdList);
+    
+    List<ExportMutualBatteryBO> selectMutualBattery(@Param("tenantId") Integer tenantId);
 }
