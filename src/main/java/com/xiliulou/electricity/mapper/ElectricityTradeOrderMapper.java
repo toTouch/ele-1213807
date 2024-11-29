@@ -15,7 +15,7 @@ public interface ElectricityTradeOrderMapper extends BaseMapper<ElectricityTrade
     @Select("SELECT *  FROM t_electricity_trade_order WHERE order_no =#{orderId} ")
     ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
     
-    List<ElectricityTradeOrder> selectListByChannelOrderNoList(@Param("transactionIdList") List<String> transactionIdList);
+    List<ElectricityTradeOrder> selectListByChannelOrderNoList(@Param("transactionIdList") List<String> transactionIdList, @Param("status") Integer status,@Param("endTime") Long endTime);
     
-    List<Integer> existByTenantIdList(@Param("tenantIdList") List<Integer> tenantIdList,@Param("startTime") long startTime,@Param("endTime") long endTime);
+    List<Integer> existByTenantIdList(@Param("tenantIdList") List<Integer> tenantIdList,@Param("startTime") long startTime, @Param("endTime") long endTime);
 }
