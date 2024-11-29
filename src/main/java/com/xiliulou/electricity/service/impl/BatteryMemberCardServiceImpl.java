@@ -318,16 +318,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 return Collections.emptyList();
             }
             
-            if (Objects.isNull(isEnableFlexibleRenewal) || Objects.equals(isEnableFlexibleRenewal, FlexibleRenewalEnum.NORMAL.getCode())) {
+            // 灵活续费开启场景下优先取用户缴纳的押金金额用于查询，灵活续费功能下若续费了押金金额更小的套餐，使用用户当前套餐的押金金额查询套餐会导致可购买套餐越来越少
+            // 此处还有一个特殊场景，一批老用的实缴押金与当前套餐押金金额不一致，灵活续费上线时将其处理成了修改过押金的类型，需要特别注意这一批数据
+            if (Objects.isNull(userBatteryDeposit)) {
                 query.setDeposit(batteryMemberCard.getDeposit());
             } else {
-                // 灵活续费开启场景下优先取用户缴纳的押金金额用于查询
-                if (Objects.isNull(userBatteryDeposit)) {
-                    query.setDeposit(batteryMemberCard.getDeposit());
-                } else {
-                    query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
-                            : userBatteryDeposit.getBatteryDeposit());
-                }
+                query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                        : userBatteryDeposit.getBatteryDeposit());
             }
             
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
@@ -730,16 +727,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 return Collections.emptyList();
             }
             
-            if (Objects.isNull(isEnableFlexibleRenewal) || Objects.equals(isEnableFlexibleRenewal, FlexibleRenewalEnum.NORMAL.getCode())) {
+            // 灵活续费开启场景下优先取用户缴纳的押金金额用于查询，灵活续费功能下若续费了押金金额更小的套餐，使用用户当前套餐的押金金额查询套餐会导致可购买套餐越来越少
+            // 此处还有一个特殊场景，一批老用的实缴押金与当前套餐押金金额不一致，灵活续费上线时将其处理成了修改过押金的类型，需要特别注意这一批数据
+            if (Objects.isNull(userBatteryDeposit)) {
                 query.setDeposit(batteryMemberCard.getDeposit());
             } else {
-                // 灵活续费开启场景下优先取用户缴纳的押金金额用于查询
-                if (Objects.isNull(userBatteryDeposit)) {
-                    query.setDeposit(batteryMemberCard.getDeposit());
-                } else {
-                    query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
-                            : userBatteryDeposit.getBatteryDeposit());
-                }
+                query.setDeposit(Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) ? userBatteryDeposit.getBeforeModifyDeposit()
+                        : userBatteryDeposit.getBatteryDeposit());
             }
             
             query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_OLD, BatteryMemberCard.RENT_TYPE_UNLIMIT));
