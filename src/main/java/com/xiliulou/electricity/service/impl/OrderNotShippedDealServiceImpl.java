@@ -98,18 +98,7 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                 
                 String merchantMinProAppId = electricityPayParams.getMerchantMinProAppId();
                 String merchantMinProAppSecert = electricityPayParams.getMerchantMinProAppSecert();
-                if (ObjectUtils.isEmpty(merchantMinProAppId)) {
-                    return;
-                }
-                
-                Pair<Boolean, Object> accessToken = wechatAccessTokenSevice.getAccessToken(merchantMinProAppId, merchantMinProAppSecert);
-                if (!accessToken.getLeft() || ObjectUtils.isEmpty(accessToken.getRight())) {
-                    return;
-                }
-                
-                String token = (String) accessToken.getRight();
-                
-                if (StringUtils.isBlank(token)) {
+                if (ObjectUtils.isEmpty(merchantMinProAppId) || ObjectUtils.isEmpty(merchantMinProAppSecert)) {
                     return;
                 }
                 
@@ -121,6 +110,17 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                 // 查询未发货的订单
                 while (flag) {
                     try {
+                        Pair<Boolean, Object> accessToken = wechatAccessTokenSevice.getAccessToken(merchantMinProAppId, merchantMinProAppSecert);
+                        if (!accessToken.getLeft() || ObjectUtils.isEmpty(accessToken.getRight())) {
+                            return;
+                        }
+    
+                        String token = (String) accessToken.getRight();
+    
+                        if (StringUtils.isBlank(token)) {
+                            return;
+                        }
+                        
                         ShippingQueryOrderResult shippingQueryOrderResult = shippingUploadService.listOrder(token, orderState, lastIndex, pageSize);
                         if (Objects.isNull(shippingQueryOrderResult) || !shippingQueryOrderResult.isSuccess() || ObjectUtils.isEmpty(shippingQueryOrderResult.getOrder_list())) {
                             break;
