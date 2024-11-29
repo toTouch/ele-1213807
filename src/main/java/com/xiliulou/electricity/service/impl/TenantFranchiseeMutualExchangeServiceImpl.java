@@ -398,9 +398,6 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * @return Boolean
      */
     private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> list) {
-        if (Objects.equals(list.size(), 1)) {
-            return false;
-        }
         // 这里要排除掉自己id
         Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
         for (TenantFranchiseeMutualExchange exchange : list) {
