@@ -198,6 +198,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             return CollUtil.newArrayList();
         }
         List<String> mutualExchangesFromCache = redisService.getWithList(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantId, String.class);
+        log.info("getMutualFranchiseeExchangeCache redis : {}", JsonUtil.toJson(mutualExchangesFromCache));
         if (CollUtil.isNotEmpty(mutualExchangesFromCache)) {
             return mutualExchangesFromCache;
         }
@@ -206,6 +207,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         if (CollUtil.isEmpty(mutualExchangeList)) {
             return CollUtil.newArrayList();
         }
+        log.info("getMutualFranchiseeExchangeCache DB : {}", JsonUtil.toJson(mutualExchangeList));
         // 只需要加盟的互通
         List<String> combinedFranchiseeList = mutualExchangeList.stream().map(TenantFranchiseeMutualExchange::getCombinedFranchisee).collect(Collectors.toList());
         
@@ -394,6 +396,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * @return Boolean
      */
     private Boolean isExistMutualExchangeConfig(List<Long> franchiseeList, List<String> list) {
+        if (Objects.equals(list.size(), 1)) {
+            return false;
+        }
         Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
         for (String franchisee : list) {
             Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(franchisee, Long.class));
