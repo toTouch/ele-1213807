@@ -187,6 +187,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         QuickExchangeResultDTO quickExchangeResultDTO = QuickExchangeResultDTO.builder().success(true).build();
         redisService.set(CacheConstant.QUICK_EXCHANGE_RESULT_KEY + openFullCellRsp.getSessionId(), JsonUtil.toJson(quickExchangeResultDTO), 2L, TimeUnit.MINUTES);
         
+        quickExchangeSaveSelfOpenTime(cabinetOrder);
         
         // 如果旧电池检测失败会在这个表里面，导致在订单记录中存在自主开仓，所以移除旧版本的自主开仓记录
         ElectricityExceptionOrderStatusRecord statusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(cabinetOrder.getOrderId());
@@ -201,6 +202,14 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
         electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
         
+    }
+    
+    private void quickExchangeSaveSelfOpenTime(ElectricityCabinetOrder electricityCabinetOrder) {
+        if (Objects.equals(electricityCabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+            String value = String.valueOf(System.currentTimeMillis());
+            log.info("quickExchangeSaveSelfOpenTime Info! orderId is {}, currentTime is {}", electricityCabinetOrder.getOrderId(), value);
+            redisService.set(CacheConstant.ALLOW_SELF_OPEN_CELL_START_TIME + electricityCabinetOrder.getOrderId(), value, 5L, TimeUnit.MINUTES);
+        }
     }
     
     private void deductionPackageNumberHandler(ElectricityCabinetOrder cabinetOrder, EleOpenFullCellRsp eleOpenFullCellRsp) {
@@ -558,7 +567,7 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
             cabinetOrderService.update(newElectricityCabinetOrder);
         }
         
-       
+        quickExchangeSaveSelfOpenTime(cabinetOrder);
     }
     
     
