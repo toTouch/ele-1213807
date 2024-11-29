@@ -644,10 +644,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             size = 10;
         }
         
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            throw new CustomBusinessException("用户不存在");
-        }
+      
         
         return R.ok(electricityBatteryService.listBatteriesBySnV2(offset, size,  uid));
     }

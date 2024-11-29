@@ -1636,20 +1636,30 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("用户不存在");
+        }
+        
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.warn("Current UserInfo is null, uid is {}", uid);
             return Collections.emptyList();
         }
-        
         List<Long> franchiseeIdList = null;
-        // 获取当前用户加盟商的互通加盟商
-        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(userInfo.getTenantId(), userInfo.getFranchiseeId());
-        if (mutualExchangePair.getLeft()) {
-            franchiseeIdList = new ArrayList<>(mutualExchangePair.getRight());
+        // 只有运营商有互通
+        if (SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            // 获取当前用户加盟商的互通加盟商
+            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(userInfo.getTenantId(), userInfo.getFranchiseeId());
+            if (mutualExchangePair.getLeft()) {
+                franchiseeIdList = new ArrayList<>(mutualExchangePair.getRight());
+            } else {
+                franchiseeIdList.add(userInfo.getFranchiseeId());
+            }
         } else {
             franchiseeIdList.add(userInfo.getFranchiseeId());
         }
+        
         return getListBatteriesByFranchisee(offset, size, userInfo.getTenantId(), franchiseeIdList);
     }
     

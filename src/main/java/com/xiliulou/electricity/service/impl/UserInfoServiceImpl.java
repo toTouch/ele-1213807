@@ -1219,13 +1219,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("100019", "该电池已经绑定用户");
             }
             
-            // 判断加盟商互通
-            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(oldUserInfo.getTenantId(), oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-                log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
-                        oldElectricityBattery.getFranchiseeId());
-                return R.fail("100371", "电池加盟商与用户加盟商不一致");
+            // 运营商绑定电池判断互通
+            if (SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+                if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(oldUserInfo.getTenantId(), oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100371", "电池加盟商与用户加盟商不一致");
+                }
+            } else {
+                if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100371", "电池加盟商与用户加盟商不一致");
+                }
             }
-            
             
             // 多型号  绑定电池需要判断电池是否和用户型号一致
             Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, oldUserInfo);
@@ -2982,10 +2989,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("100019", "该电池为租借状态，不支持绑定");
             }
             
-            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-                log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
-                        oldElectricityBattery.getFranchiseeId());
-                return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
+            
+            // 运营商绑定电池判断互通
+            if (SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+                if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
+                }
+            } else {
+                if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100371", "电池加盟商与用户加盟商不一致");
+                }
             }
             
             // 多型号  绑定电池需要判断电池是否和用户型号一致
