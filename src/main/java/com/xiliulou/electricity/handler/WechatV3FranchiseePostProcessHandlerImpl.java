@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/13
+ * Create date: 2024/6/13
  */
 
 package com.xiliulou.electricity.handler;
@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.Objects;
 
 /**
@@ -126,6 +127,17 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
     public void postProcessBeforeWechatRefund(WechatV3RefundRequest request) {
     
     }
+    
+    public static void main(String[] args) throws GeneralSecurityException {
+        String str="{\"id\":\"19559b5a-a63b-5ff2-a8d1-8a3ad4b0552b\",\"create_time\":\"2024-11-14T10:00:08+08:00\",\"resource_type\":\"encrypt-resource\",\"event_type\":\"REFUND.SUCCESS\",\"summary\":\"退款成功\",\"resource\":{\"original_type\":\"refund\",\"algorithm\":\"AEAD_AES_256_GCM\",\"ciphertext\":\"xFoTKS6jKzpYonlRCuYQRTezITwC1bRHxwgD9C3+11P2NhfR0x+mDAI6RY8adklbFtqH9EjmeeG4cbKqAVfnM1rg5XYTP4c2z/abV57laJAChat+9JeKxirOScAx1FpxZwIpC+R+X7ziVczkwnwTaXQIKAffQHneYrWCJ6Xw/4Y493ebeHEYQayZ/3t2K7p00nNYS155BRM94Pyg7IT4d0lHlMNaD8QvJPCPp3OUUHcc9uHfjuVl/sA0+ur0F7QY0mMxfCZV9nJOFd5p8+8unfk6zNkEoBGmEi0x6+Q6pSzGG747tMckXhwaFC5N5KCKhdjyN5PdpZ47eP+Est9xVfbvr9+ujG0C0bPt6XEeceWgFPpIwQE+0gSp73lGf+F4ewJ3kM8CjGbTTlPd9so9Z9nILNRRj7JzgFPIRDFMHJ2xuBbwtONIXBugVfx6QgxgCog4AjQNZh3YTLxn/ds29k5fr8onmyonVUDCuc83nfq9frog8bHAYT1OIjFVr2VOPSFFCrDNyg7+M8IiebBeR9/bknXceBKr+w==\",\"associated_data\":\"refund\",\"nonce\":\"9sdCQRqxoLY5\"}} ";
+        WechatV3RefundOrderCallBackRequest request = JsonUtil.fromJson(str, WechatV3RefundOrderCallBackRequest.class);
+        WechatCallBackResouceData resource = request.getResource();
+        String s = AesUtil
+                .decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8), resource.getNonce().getBytes(StandardCharsets.UTF_8), resource.getCiphertext(),
+                        "Jziyou37130219820910431119821620".getBytes(StandardCharsets.UTF_8));
+        System.out.println();
+    }
+    
     
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)

@@ -610,8 +610,8 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         if (CollectionUtils.isEmpty(packageList)) {
             return Triple.of(false, null, null);
         }
-        
-        if (Objects.isNull(electricityConfig.getEleLimitCount())) {
+    
+        if (Objects.isNull(electricityConfig.getEleLimitCount()) || Objects.equals(electricityConfig.getEleLimitCount(), NumberConstant.ZERO)) {
             return Triple.of(false, null, null);
         }
         
