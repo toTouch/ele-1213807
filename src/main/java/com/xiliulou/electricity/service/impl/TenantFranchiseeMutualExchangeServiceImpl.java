@@ -88,6 +88,10 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         Integer tenantId = TenantContextHolder.getTenantId();
         List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         
+        if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
+            return R.fail("302002", "最多添加5个配置");
+        }
+        
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
                 .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .build();
@@ -95,20 +99,15 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         Map<Object, Object> newMap = MapUtil.builder().put("name", request.getCombinedName()).put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(combinedFranchisee))
                 .put("status", request.getStatus()).build();
         
-        if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
-            return R.fail("302002", "最多添加5个配置");
-        }
         // 新增
         saveMutualExchange(mutualExchange);
         operateRecordUtil.record(null, newMap);
-        
         return R.ok();
     }
     
     
     @Override
     public R editConfig(MutualExchangeAddConfigRequest request) {
-        
         if (StrUtil.isNotBlank(request.getCombinedName())) {
             assertMutualName(request.getCombinedName());
         }
@@ -127,6 +126,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         if (Objects.isNull(oldMutualExchange)) {
             return R.fail("302003", "不存在的互换配置");
         }
+        
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
                 .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).updateTime(System.currentTimeMillis()).build();
         mutualExchange.setId(request.getId());
