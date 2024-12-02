@@ -88,7 +88,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         Integer tenantId = TenantContextHolder.getTenantId();
         List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         
-        if (Objects.equals(mutualExchangeList.size(), MAX_MUTUAL_EXCHANGE_CONFIG_COUNT)) {
+        if (mutualExchangeList.size() > MAX_MUTUAL_EXCHANGE_CONFIG_COUNT) {
             return R.fail("302002", "最多添加5个配置");
         }
         
@@ -406,6 +406,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 continue;
             }
             Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(exchange.getCombinedFranchisee(), Long.class));
+            log.info("isExistMutualExchangeConfig combinedFranchisee is {},franchiseeSet is {}, result is {}", JsonUtil.toJson(combinedFranchisee), JsonUtil.toJson(franchiseeSet),
+                    combinedFranchisee.containsAll(franchiseeSet));
             if (combinedFranchisee.containsAll(franchiseeSet)) {
                 return true;
             }
