@@ -23,6 +23,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DataUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ExportMutualBatteryVO;
 import com.xiliulou.electricity.vo.MutualElectricityBatteryExcelVO;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -153,11 +155,11 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     }
     
     private List<TenantFranchiseeMutualExchange> assertMutualExchangeConfig(Long id, Integer tenantId, List<Long> combinedFranchisee) {
-        List<TenantFranchiseeMutualExchange> listFromDB = getMutualExchangeConfigListFromDB(tenantId);
-        if (isExistMutualExchangeConfig(id, combinedFranchisee, listFromDB)) {
+        List<TenantFranchiseeMutualExchange> swapExchangeList = mutualExchangeMapper.selectSwapExchangeList(tenantId);
+        if (isExistMutualExchangeConfig(id, combinedFranchisee, swapExchangeList)) {
             throw new BizException("302001", "该互换配置已存在");
         }
-        return listFromDB;
+        return swapExchangeList;
     }
     
     private List<String> buildFranchiseeNameByIdList(List<Long> combinedFranchisee) {
@@ -399,19 +401,20 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      */
     private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> listFromDB) {
         // 将所有的配置加盟商遍历，判断当前添加的加盟商是否存在配置
-        Set<Long> franchiseeSet = new HashSet<>(franchiseeList);
+        Map<String, Set<Long>> oldFranchiseeMap = new HashMap<>(20);
         for (TenantFranchiseeMutualExchange exchange : listFromDB) {
             // 这里要排除掉自己id
             if (Objects.equals(id, exchange.getId())) {
                 continue;
             }
             Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(exchange.getCombinedFranchisee(), Long.class));
-            combinedFranchisee.retainAll(franchiseeList);
-            if (!combinedFranchisee.isEmpty()) {
-                log.warn("isExistMutualExchangeConfig combinedFranchisee is {},franchiseeSet is {}, result is {}", JsonUtil.toJson(combinedFranchisee),
-                        JsonUtil.toJson(franchiseeSet), combinedFranchisee);
-                return true;
-            }
+            // 存储所有已存在的数据集合
+            DataUtil.getCombinations(combinedFranchisee);
+        }
+        
+        // 尝试添加集合2的组合
+        if (!DataUtil.canAddCombination(new HashSet<>(franchiseeList), oldFranchiseeMap)) {
+            return true;
         }
         return false;
     }

@@ -76,4 +76,10 @@
             and combined_name like concat('%',#{combinedName},'%')
         </if>
     </select>
+    <select id="selectSwapExchangeList" resultType="com.xiliulou.electricity.entity.TenantFranchiseeMutualExchange">
+        select
+        <include refid="column"/>
+        from t_tenant_franchisee_mutual_exchange where tenant_id = #{tenantId}
+        and del_flag = 0
+    </select>
 </mapper>

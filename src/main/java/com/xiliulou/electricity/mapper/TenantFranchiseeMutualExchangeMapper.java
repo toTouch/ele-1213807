@@ -19,4 +19,6 @@ public interface TenantFranchiseeMutualExchangeMapper extends BaseMapper<TenantF
     
     Integer updateMutualExchangeById(TenantFranchiseeMutualExchange tenantFranchiseeMutualExchange);
     
+    
+    List<TenantFranchiseeMutualExchange> selectSwapExchangeList(Integer tenantId);
 }
