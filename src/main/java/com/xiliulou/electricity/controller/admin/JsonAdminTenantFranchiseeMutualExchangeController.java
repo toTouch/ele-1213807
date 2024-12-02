@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since 2024-11-27 14:59:37
  */
 @RestController
-@RequestMapping("/admin/tenant/mutualExchange")
+@RequestMapping("/admin/swapExchange")
 public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicController {
     
     
