@@ -31,4 +31,9 @@ public class CouponSearchVo {
      * 优惠类型，1--减免券，2--打折券，3-天数劵
      */
     private Integer discountType;
+    
+    /**
+     * 天数劵天数
+     */
+    private Integer count;
 }
