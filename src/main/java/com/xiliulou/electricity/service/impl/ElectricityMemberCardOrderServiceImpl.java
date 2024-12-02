@@ -1165,6 +1165,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        
+        // 撤销申请时，扣减用户冻结次数
+        userInfoExtraService.changeFreezeCountForUser(userInfo.getUid(), UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
+        
         return R.ok();
     }
     
