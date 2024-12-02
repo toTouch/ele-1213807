@@ -121,8 +121,6 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             assertMutualExchangeConfig(request.getId(), tenantId, combinedFranchisee);
         }
         
-        log.info("editConfig is {}", JsonUtil.toJson(getMutualFranchiseeExchangeCache(tenantId)));
-        
         // 编辑
         TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
         if (Objects.isNull(oldMutualExchange)) {

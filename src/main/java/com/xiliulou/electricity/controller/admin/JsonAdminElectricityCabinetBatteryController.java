@@ -644,8 +644,6 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             size = 10;
         }
         
-      
-        
         return R.ok(electricityBatteryService.listBatteriesBySnV2(offset, size,  uid));
     }
     
