@@ -16,10 +16,6 @@ public class ExportMutualBatteryVO {
      */
     private String sn;
     
-    /**
-     * 所属加盟商
-     */
-    private Long franchiseeId;
     
     private String franchiseeName;
     
