@@ -34,5 +34,5 @@ public class QuickExchangeQuery {
     
     
     
-    public static final String QUICK_EXCHANGE_VERSION = "2.3.7";
+    public static final String QUICK_EXCHANGE_VERSION = "2.3.8";
 }
