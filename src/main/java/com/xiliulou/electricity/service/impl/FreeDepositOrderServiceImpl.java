@@ -1661,7 +1661,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         
         // 与下文灵活续费校验逻辑重复，时间紧张暂时保留，后续优化
         if (Objects.isNull(electricityConfig.getIsEnableFlexibleRenewal()) || Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.NORMAL.getCode())) {
-            if (Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && batteryMemberCard.getDeposit().compareTo(userBatteryDeposit.getBatteryDeposit()) != 0) {
+            // 兼容老用户缴纳押金金额与套餐金额不一致被处理过的情况
+            BigDecimal batteryDeposit =
+                    Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL) ? userBatteryDeposit.getBeforeModifyDeposit()
+                            : userBatteryDeposit.getBatteryDeposit();
+            if (Objects.nonNull(batteryDeposit) && batteryMemberCard.getDeposit().compareTo(batteryDeposit) != 0) {
                 log.warn("FREE DEPOSIT WARN! batteryMemberCard not equals free deposit,uid={},mid={}", userInfo.getUid(), query.getMemberCardId());
                 return Triple.of(false, "100484", "免押押金与电池套餐押金不一致");
             }
