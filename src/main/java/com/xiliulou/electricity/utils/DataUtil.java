@@ -23,8 +23,7 @@ public class DataUtil {
      * @param set 输入集合
      * @return 集合中的所有二元组合
      */
-    public static Map<String, Set<Long>> getCombinations(Set<Long> set) {
-        Map<String, Set<Long>> combinations = new HashMap<>();
+    public static void getCombinations(Set<Long> set, Map<String, Set<Long>> combinations) {
         Long[] elements = set.toArray(new Long[0]);
         
         for (int i = 0; i < elements.length; i++) {
@@ -39,7 +38,6 @@ public class DataUtil {
                 combinations.put(key, pair);
             }
         }
-        return combinations;
     }
     
     /**

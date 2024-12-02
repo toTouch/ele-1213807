@@ -90,7 +90,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         Integer tenantId = TenantContextHolder.getTenantId();
         List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         
-        if (mutualExchangeList.size() > MAX_MUTUAL_EXCHANGE_CONFIG_COUNT) {
+        if (mutualExchangeList.size() >= MAX_MUTUAL_EXCHANGE_CONFIG_COUNT) {
             return R.fail("302002", "最多添加5个配置");
         }
         
@@ -409,7 +409,11 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             }
             Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(exchange.getCombinedFranchisee(), Long.class));
             // 存储所有已存在的数据集合
-            DataUtil.getCombinations(combinedFranchisee);
+            DataUtil.getCombinations(combinedFranchisee, oldFranchiseeMap);
+        }
+        
+        if (CollUtil.isEmpty(oldFranchiseeMap)) {
+            return false;
         }
         
         // 尝试添加集合2的组合
