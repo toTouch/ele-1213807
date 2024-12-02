@@ -635,7 +635,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     }
     
     @GetMapping("/admin/battery/getIdAndSn/V2")
-    public R listBatteriesBySn(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size, @RequestParam("uid") Long uid) {
+    public R listBatteriesBySnV2(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size, @RequestParam("uid") Long uid,
+            @RequestParam(value = "sn", required = false) String sn) {
         
         if (offset < 0) {
             offset = 0;
@@ -644,7 +645,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             size = 10;
         }
         
-        return R.ok(electricityBatteryService.listBatteriesBySnV2(offset, size,  uid));
+        return R.ok(electricityBatteryService.listBatteriesBySnV2(offset, size, uid, sn));
     }
     
     

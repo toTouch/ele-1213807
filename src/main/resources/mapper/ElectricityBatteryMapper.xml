@@ -1424,6 +1424,9 @@
         <foreach collection="franchiseeIds" separator="," open="(" close=")" item="item">
             #{item}
         </foreach>
+        <if test="sn != null and sn !=''">
+            and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
         limit #{offset}, #{size}
     </select>
     

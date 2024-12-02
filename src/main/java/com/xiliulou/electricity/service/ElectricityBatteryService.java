@@ -143,9 +143,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn);
     
-    List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid);
+    List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid, String sn);
     
-    List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList);
+    List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList, String sn);
     
     /**
      * <p>

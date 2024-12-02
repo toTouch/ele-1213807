@@ -1635,7 +1635,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid) {
+    public List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid, String sn) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             throw new CustomBusinessException("用户不存在");
@@ -1660,13 +1660,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             franchiseeIdList.add(userInfo.getFranchiseeId());
         }
         
-        return getListBatteriesByFranchisee(offset, size, userInfo.getTenantId(), franchiseeIdList);
+        return getListBatteriesByFranchisee(offset, size, userInfo.getTenantId(), franchiseeIdList, sn);
     }
     
     @Override
     @Slave
-    public List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList) {
-        return electricitybatterymapper.selectListBatteriesByFranchisee(offset, size, tenantId, franchiseeIdList);
+    public List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList, String sn) {
+        return electricitybatterymapper.selectListBatteriesByFranchisee(offset, size, tenantId, franchiseeIdList, sn);
     }
     
     @Slave
