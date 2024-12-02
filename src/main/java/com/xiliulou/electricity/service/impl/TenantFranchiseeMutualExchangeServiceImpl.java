@@ -417,7 +417,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         List<Long> combinedFranchiseeIdList = JsonUtil.fromJsonArray(combinedFranchisee, Long.class);
         return combinedFranchiseeIdList.stream().map(e -> {
             MutualExchangeDetailVO.Item item = new MutualExchangeDetailVO.Item();
-            item.setFranchiseeId(e);
+            item.setId(e);
             Franchisee franchisee = franchiseeService.queryByIdFromCache(e);
             item.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             return item;

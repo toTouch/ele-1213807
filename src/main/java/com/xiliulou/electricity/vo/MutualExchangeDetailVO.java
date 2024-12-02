@@ -42,7 +42,7 @@ public class MutualExchangeDetailVO {
     @Data
     public static class Item {
         
-        private Long franchiseeId;
+        private Long id;
         
         private String franchiseeName;
     }
