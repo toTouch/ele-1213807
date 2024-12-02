@@ -66,4 +66,8 @@ public interface ElectricityTradeOrderService {
     Integer updateElectricityTradeOrderById(ElectricityTradeOrder electricityTradeOrder);
     
     ElectricityTradeOrder selectTradeOrderByOrderIdV2(String orderId);
+    
+    List<ElectricityTradeOrder> listByChannelOrderNoList(List<String> transactionIdList);
+    
+    List<Integer> existByTenantIdList(List<Integer> tenantIdList, long startTime, long endTime);
 }

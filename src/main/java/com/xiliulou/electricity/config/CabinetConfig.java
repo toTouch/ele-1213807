@@ -1,8 +1,4 @@
-/**
- * Create date: 2024/9/13
- */
-
-package com.xiliulou.electricity.config.jt808;
+package com.xiliulou.electricity.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,17 +6,16 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * description:
- *
- * @author caobotao.cbt
- * @date 2024/9/13 11:25
+ * @author HeYafeng
+ * @description 柜机相关配置
+ * @date 2024/10/28 21:17:46
  */
+
 @Configuration
-@ConfigurationProperties(prefix = "jt808")
+@ConfigurationProperties(prefix = "cabinet-config")
 @Data
 @RefreshScope
-public class Jt808Configuration {
+public class CabinetConfig {
     
-    private Boolean close = false;
-    
+    private String initPassword;
 }

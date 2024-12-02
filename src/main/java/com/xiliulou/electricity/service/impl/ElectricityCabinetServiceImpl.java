@@ -28,6 +28,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.asset.ElectricityCabinetBO;
 import com.xiliulou.electricity.bo.cabinet.ElectricityCabinetMapBO;
 import com.xiliulou.electricity.bo.merchant.AreaCabinetNumBO;
+import com.xiliulou.electricity.config.CabinetConfig;
 import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -161,6 +162,8 @@ import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
+import com.xiliulou.electricity.vo.BatchImportCabinetFailVO;
+import com.xiliulou.electricity.vo.BatchImportCabinetVo;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
@@ -191,8 +194,10 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
+import io.undertow.server.session.SessionIdGenerator;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -228,6 +233,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -467,6 +473,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     private RegisterDeviceService registerDeviceService;
+    
+    @Resource
+    private CabinetConfig cabinetConfig;
     
     
     /**
@@ -800,7 +809,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet) {
         int delete = electricityCabinetMapper.deleteById(electricityCabinet.getId());
         DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
@@ -4762,12 +4770,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
         
-        Triple<Boolean, String, Object> verifyBatchImportResult = verifyBatchImportParams(list);
-        if (Boolean.FALSE.equals(verifyBatchImportResult.getLeft())) {
-            return verifyBatchImportResult;
+        if (CollUtil.isEmpty(list)) {
+            return Triple.of(false, "ELECTRICITY.0007", "导入数据不能为空");
         }
         
-        for (ElectricityCabinetImportQuery query : list) {
+        List<BatchImportCabinetFailVO> cabinetFailList = CollUtil.newArrayList();
+        List<ElectricityCabinetImportQuery> cabinetSuccessList = CollUtil.newArrayList();
+        verifyBatchImportParams(list, cabinetFailList, cabinetSuccessList);
+        
+        for (ElectricityCabinetImportQuery query : cabinetSuccessList) {
             ElectricityCabinet electricityCabinet = new ElectricityCabinet();
             BeanUtils.copyProperties(query, electricityCabinet);
             electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
@@ -4800,7 +4811,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
         
-        return Triple.of(true, null, null);
+        return Triple.of(true, null, BatchImportCabinetVo.builder().successCount(cabinetSuccessList.size()).failCount(cabinetFailList.size()).failVOS(cabinetFailList).build());
     }
     
     @Override
@@ -4864,9 +4875,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query) {
-        
         Store store = storeService.queryByIdFromCache(query.getStoreId());
         if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE ERROR!not found store,storeId={}", query.getStoreId());
@@ -4954,6 +4963,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetExtraService.insertOne(electricityCabinetExtra);
         });
         
+        // 下发重启命令
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("password", cabinetConfig.getInitPassword());
+        dataMap.put("uid", SecurityUtils.getUid());
+        dataMap.put("username", SecurityUtils.getUserInfo().getUsername());
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
+                .productKey(electricityCabinetInsert.getProductKey()).deviceName(electricityCabinetInsert.getDeviceName())
+                .command(ElectricityIotConstant.ELE_COMMAND_CUPBOARD_RESTART).build();
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinetInsert);
+        
         // 生成迁移记录
         cabinetMoveHistoryService.insert(buildCabinetMoveHistory(testFactoryCabinet, electricityCabinetInsert));
         
@@ -4990,30 +5009,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return cabinetModelInsert;
     }
     
-    private Triple<Boolean, String, Object> verifyBatchImportParams(List<ElectricityCabinetImportQuery> list) {
-        Set<String> deviceNameSet = list.stream().map(ElectricityCabinetImportQuery::getDeviceName).collect(Collectors.toSet());
-        if (deviceNameSet.size() != list.size()) {
-            return Triple.of(false, "", "三元组重复");
+    private void verifyBatchImportParams(List<ElectricityCabinetImportQuery> list, List<BatchImportCabinetFailVO> cabinetFailVOS,
+            List<ElectricityCabinetImportQuery> cabinetSuccessList) {
+        
+        // 去重
+        List<ElectricityCabinetImportQuery> distinctList = list.stream().filter(e -> {
+            Set<ElectricityCabinetImportQuery> seen = new HashSet<>();
+            return seen.add(e);
+        }).collect(Collectors.toList());
+        
+        if (distinctList.size() != list.size()) {
+            // 差集
+            List<ElectricityCabinetImportQuery> difference = new ArrayList<>(list);
+            difference.removeAll(distinctList);
+            difference.stream().forEach(e -> {
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(e.getDeviceName()).reason("三元组重复").build());
+            });
         }
         
-        for (ElectricityCabinetImportQuery cabinetImportQuery : list) {
+        for (ElectricityCabinetImportQuery cabinetImportQuery : distinctList) {
             ElectricityCabinet electricityCabinet = this.queryByProductAndDeviceName(cabinetImportQuery.getProductKey(), cabinetImportQuery.getDeviceName());
             if (Objects.nonNull(electricityCabinet)) {
-                return Triple.of(false, "", "三元组已存在");
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(cabinetImportQuery.getDeviceName()).reason("三元组已存在").build());
+                continue;
             }
             
             Store store = storeService.queryByIdFromCache(cabinetImportQuery.getStoreId());
             if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
-                return Triple.of(false, "", "门店不存在");
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(cabinetImportQuery.getDeviceName()).reason("门店不存在").build());
+                continue;
             }
             
             ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(cabinetImportQuery.getModelId());
             if (Objects.isNull(cabinetModel) || !Objects.equals(cabinetModel.getTenantId(), TenantContextHolder.getTenantId())) {
-                return Triple.of(false, "", "柜机型号不存在");
+                cabinetFailVOS.add(BatchImportCabinetFailVO.builder().deviceName(cabinetImportQuery.getDeviceName()).reason("柜机型号不存在").build());
+                continue;
             }
+            cabinetSuccessList.add(cabinetImportQuery);
         }
         
-        return Triple.of(true, null, null);
     }
     
     @Slave
