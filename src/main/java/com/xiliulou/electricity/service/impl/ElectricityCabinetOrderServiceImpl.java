@@ -3580,13 +3580,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100225", "电池不存在");
         }
         
-        // 加盟互通,获取加盟商
-        Set<Long> franchiseeIdList = CollUtil.newHashSet();
-        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(userInfo.getTenantId(), userInfo.getFranchiseeId());
-        if (mutualExchangePair.getLeft()) {
-            franchiseeIdList = mutualExchangePair.getRight();
-        } else {
-            franchiseeIdList.add(franchisee.getId());
+        // 判断互通加盟商，并且获取加盟商集合
+        Set<Long> franchiseeIdList = null;
+        try {
+            Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
+                    electricityCabinet.getFranchiseeId());
+            if (!isSameFranchiseeTriple.getLeft()) {
+                return isSameFranchiseeTriple;
+            }
+            franchiseeIdList = (Set<Long>) isSameFranchiseeTriple.getRight();
+        } catch (Exception e) {
+            log.error("ORDER Error! orderExchangeMutualFranchiseeCheck is error", e);
+            franchiseeIdList = CollUtil.newHashSet(userInfo.getFranchiseeId());
         }
         
         Set<Long> finalFranchiseeIdList = franchiseeIdList;

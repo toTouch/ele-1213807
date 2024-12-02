@@ -2647,7 +2647,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.warn("checkBattery warn! tenantId is not equal,tenantId1={},tenantId2={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
             return R.failMsg("电池与换电柜租户不匹配");
         }
-        
+      
         // 查电池所属加盟商
         if (Objects.isNull(electricityBattery.getFranchiseeId())) {
             log.warn("checkBattery warn! battery not bind franchisee,electricityBatteryId={}", electricityBattery.getId());
@@ -2660,12 +2660,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.failMsg("找不到换电柜门店");
         }
         
-        if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
-            log.warn("checkBattery warn! franchisee is not equal,franchiseeId1={},franchiseeId2={}", store.getFranchiseeId(), electricityBattery.getFranchiseeId());
+        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(electricityCabinet.getTenantId(), store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
+            log.warn("checkBattery warn! franchisee is not equal, eid is {}, franchiseeId1 is {}, franchiseeId2 is {}", electricityCabinet.getId(), store.getFranchiseeId(),
+                    electricityBattery.getFranchiseeId());
             return R.failMsg("电池加盟商与电柜加盟商不匹配");
         }
-        
-        // 检查电池和用户是否匹配
         
         return R.ok();
     }
