@@ -2,28 +2,28 @@ package com.xiliulou.electricity.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * @ClassName: DataUtil
+ * @ClassName: BaseDataUtil
  * @description:
  * @author: renhang
  * @create: 2024-12-02 15:53
  */
-public class DataUtil {
+@SuppressWarnings("all")
+public class BaseDataUtil {
     
     
     /**
-     * 获取集合中的所有二元组合
+     * 组装集合中的所有二元组合
      *
      * @param set 输入集合
      * @return 集合中的所有二元组合
      */
-    public static void getCombinations(Set<Long> set, Map<String, Set<Long>> combinations) {
+    public static void buildCombinations(Set<Long> set, Map<String, Set<Long>> combinations) {
         Long[] elements = set.toArray(new Long[0]);
         
         for (int i = 0; i < elements.length; i++) {
@@ -49,7 +49,6 @@ public class DataUtil {
      */
     public static boolean canAddCombination(Set<Long> set2, Map<String, Set<Long>> existingCombinations) {
         Long[] elements = set2.toArray(new Long[0]);
-        
         // 检查集合2中的所有二元组合是否与集合1中已有的组合冲突
         for (int i = 0; i < elements.length; i++) {
             for (int j = i + 1; j < elements.length; j++) {

@@ -23,7 +23,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DataUtil;
+import com.xiliulou.electricity.utils.BaseDataUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.vo.ExportMutualBatteryVO;
 import com.xiliulou.electricity.vo.MutualElectricityBatteryExcelVO;
@@ -409,7 +409,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             }
             Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(exchange.getCombinedFranchisee(), Long.class));
             // 存储所有已存在的数据集合
-            DataUtil.getCombinations(combinedFranchisee, oldFranchiseeMap);
+            BaseDataUtil.buildCombinations(combinedFranchisee, oldFranchiseeMap);
         }
         
         if (CollUtil.isEmpty(oldFranchiseeMap)) {
@@ -417,7 +417,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }
         
         // 尝试添加集合2的组合
-        if (!DataUtil.canAddCombination(new HashSet<>(franchiseeList), oldFranchiseeMap)) {
+        if (!BaseDataUtil.canAddCombination(new HashSet<>(franchiseeList), oldFranchiseeMap)) {
             return true;
         }
         return false;
