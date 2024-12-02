@@ -406,9 +406,10 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 continue;
             }
             Set<Long> combinedFranchisee = new HashSet<>(JsonUtil.fromJsonArray(exchange.getCombinedFranchisee(), Long.class));
-            log.info("isExistMutualExchangeConfig combinedFranchisee is {},franchiseeSet is {}, result is {}", JsonUtil.toJson(combinedFranchisee), JsonUtil.toJson(franchiseeSet),
-                    combinedFranchisee.containsAll(franchiseeSet));
-            if (combinedFranchisee.containsAll(franchiseeSet)) {
+            combinedFranchisee.retainAll(franchiseeList);
+            if (!combinedFranchisee.isEmpty()) {
+                log.warn("isExistMutualExchangeConfig combinedFranchisee is {},franchiseeSet is {}, result is {}", JsonUtil.toJson(combinedFranchisee),
+                        JsonUtil.toJson(franchiseeSet), combinedFranchisee);
                 return true;
             }
         }
