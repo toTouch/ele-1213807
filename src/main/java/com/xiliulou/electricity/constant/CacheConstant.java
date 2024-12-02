@@ -892,5 +892,10 @@ public interface CacheConstant {
      * 客服电话缓存LOCK
      */
     String SERVICE_PHONE_LOCK_KEY = "service_phone_lock:";
+    
+    /**
+     * 用户端及后台下单接口锁
+     */
+    String ELE_CACHE_PLACE_ORDER_LOCK_KEY = "ele_cache_place_order_lock_key:";
 }
 

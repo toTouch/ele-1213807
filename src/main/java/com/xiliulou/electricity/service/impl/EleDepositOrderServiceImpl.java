@@ -665,7 +665,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
-            log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", user.getUid());
+            log.info("ELE DEPOSIT INFO! not found userBatteryDeposit,uid={}", user.getUid());
             return R.fail("100247", "用户信息不存在");
         }
         

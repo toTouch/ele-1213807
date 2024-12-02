@@ -75,6 +75,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
@@ -2742,7 +2743,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * 换电柜3.0
      */
     @Override
-    public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid) {
+    public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid, Integer flexibleRenewalType) {
         
         Integer tenantId = TenantContextHolder.getTenantId();
         // 有锂换电大部分走选仓换电，少部分正常换电这里特殊处理
@@ -2839,7 +2840,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             // 多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
             if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                if (Objects.nonNull(electricityBattery)) {
+                if (Objects.nonNull(electricityBattery) && !Objects.equals(flexibleRenewalType, FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
+                    // 灵活续费类型不为换电时，使用原逻辑获取满电仓
                     // 用户当前绑定电池的型号
                     String userCurrentBatteryType = electricityBattery.getModel();
                     List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream()
@@ -2859,6 +2861,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         usableBatteryCellNos = userCurrentBatteryUsableBatteryCellNos;
                     }
                 } else {
+                    // 灵活续费类型为换电时，获取用户绑定的型号，根据用户当前电池取新仓门的时候，会导致电池无法转换
+                    log.info("FIND USABLE BATTERY CELL NO! flexibleRenewalType={}, uid={}.", flexibleRenewalType, uid);
+                    
                     // 获取用户绑定的型号
                     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
                     if (CollectionUtils.isEmpty(userBatteryTypes)) {

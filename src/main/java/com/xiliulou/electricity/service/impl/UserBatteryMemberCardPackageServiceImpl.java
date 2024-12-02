@@ -62,16 +62,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Resource
     private MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
     
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public UserBatteryMemberCardPackage queryByIdFromDB(Long id) {
-        return this.userBatteryMemberCardPackageMapper.queryById(id);
-    }
     
     @Override
     public List<UserBatteryMemberCardPackage> selectByUid(Long uid) {
@@ -87,17 +77,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Override
     public Integer insert(UserBatteryMemberCardPackage userBatteryMemberCardPackage) {
         return userBatteryMemberCardPackageMapper.insert(userBatteryMemberCardPackage);
-    }
-    
-    /**
-     * 修改数据
-     *
-     * @param userBatteryMemberCardPackage 实例对象
-     * @return 实例对象
-     */
-    @Override
-    public Integer update(UserBatteryMemberCardPackage userBatteryMemberCardPackage) {
-        return this.userBatteryMemberCardPackageMapper.update(userBatteryMemberCardPackage);
     }
     
     /**
@@ -244,6 +223,19 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     
     private void updateUserBatteryMembercardInfo(UserBatteryMemberCard userBatteryMemberCard, UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest,
             boolean isOrderRemainingNumberZero) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={}", userBatteryMemberCard.getUid());
+            return;
+        }
+        
+        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={},orderId={}", userBatteryMemberCard.getUid(),
+                    userBatteryMemberCardPackageLatest.getOrderId());
+            return;
+        }
+        
         //更新当前用户绑定的套餐数据
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
@@ -266,6 +258,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         if (Objects.nonNull(orderRemainingNumber) && orderRemainingNumber > 0) {
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() - orderRemainingNumber);
         }
+        
+        //更新用户电池型号，提到修改userBatteryMemberCardService之前，避免校验到套餐发生了转换，取电池型号的时候，电池型号还未完成切换
+        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
         
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         
@@ -300,22 +295,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         currentMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         currentMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateStatusByOrderNo(currentMemberCardOrder);
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(userBatteryMemberCard.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={}", userBatteryMemberCard.getUid());
-            return;
-        }
-        
-        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
-        if (Objects.isNull(electricityMemberCardOrder)) {
-            log.error("TRANSFER BATTERY MEMBERCARD PACKAGE ERROR!not found userInfo,uid={},orderId={}", userBatteryMemberCard.getUid(),
-                    userBatteryMemberCardPackageLatest.getOrderId());
-            return;
-        }
-        
-        //更新用户电池型号
-        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
     }
     
     @Override

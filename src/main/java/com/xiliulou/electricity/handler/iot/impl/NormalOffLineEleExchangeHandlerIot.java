@@ -504,6 +504,16 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
+        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("TRANSFER BATTERY MEMBER CARD PACKAGE WARN!not found user member card order Info,uid={},orderId={}", userBatteryMemberCard.getUid(),
+                    userBatteryMemberCardPackageLatest.getOrderId());
+            return;
+        }
+        
+        //更新用户电池型号，提到修改userBatteryMemberCardService之前，避免校验到套餐发生了转换，取电池型号的时候，电池型号还未完成切换
+        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
+        
         //更新当前用户绑定的套餐数据
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
@@ -532,16 +542,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         currentMemberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
         currentMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         batteryMemberCardOrderService.updateStatusByOrderNo(currentMemberCardOrder);
-        
-        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(userBatteryMemberCardPackageLatest.getOrderId());
-        if (Objects.isNull(electricityMemberCardOrder)) {
-            log.warn("TRANSFER BATTERY MEMBER CARD PACKAGE WARN!not found user member card order Info,uid={},orderId={}", userBatteryMemberCard.getUid(),
-                    userBatteryMemberCardPackageLatest.getOrderId());
-            return;
-        }
-        
-        //更新用户电池型号
-        userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
     }
     
     private void orderConfirm(ElectricityCabinet electricityCabinet, OfflineOrderMessage offlineOrderMessage, User user) {

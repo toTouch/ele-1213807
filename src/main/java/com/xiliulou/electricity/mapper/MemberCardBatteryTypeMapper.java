@@ -15,30 +15,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface MemberCardBatteryTypeMapper extends BaseMapper<MemberCardBatteryType> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    MemberCardBatteryType queryById(Long id);
-
-    /**
-     * 修改数据
-     *
-     * @param memberCardBatteryType 实例对象
-     * @return 影响行数
-     */
-    int update(MemberCardBatteryType memberCardBatteryType);
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
-
     Integer batchInsert(List<MemberCardBatteryType> memberCardBatteryTypeList);
 
     List<String> selectBatteryTypeByMid(@Param("mid") Long mid);

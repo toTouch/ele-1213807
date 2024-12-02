@@ -34,6 +34,16 @@ public class OrderQueryV3 {
      */
     private Integer isReScanExchange;
     
+    /**
+     * 旧电池检测失败，灵活续费发生套餐转换，灵活续费为换电时，会拦截不分配电池，传1-开始换电
+     */
+    private Integer secondFlexibleRenewal;
+    
+    /**
+     * 旧电池检测失败，灵活续费发生套餐转换，灵活续费为换电时，会拦截不分配电池，传1-开始换电
+     */
+    private Integer flexibleRenewalType;
+    
     //微信公众号来源
     public static final Integer SOURCE_WX_MP = 1;
     
@@ -45,4 +55,5 @@ public class OrderQueryV3 {
     
     public static final Integer RESCAN_EXCHANGE = 1;
     
+    public static final Integer SECOND_FLEXIBLE_RENEWAL = 1;
 }
