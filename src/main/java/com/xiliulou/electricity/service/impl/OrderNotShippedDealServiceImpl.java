@@ -98,18 +98,7 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                 
                 String merchantMinProAppId = electricityPayParams.getMerchantMinProAppId();
                 String merchantMinProAppSecert = electricityPayParams.getMerchantMinProAppSecert();
-                if (ObjectUtils.isEmpty(merchantMinProAppId)) {
-                    return;
-                }
-                
-                Pair<Boolean, Object> accessToken = wechatAccessTokenSevice.getAccessToken(merchantMinProAppId, merchantMinProAppSecert);
-                if (!accessToken.getLeft() || ObjectUtils.isEmpty(accessToken.getRight())) {
-                    return;
-                }
-                
-                String token = (String) accessToken.getRight();
-                
-                if (StringUtils.isBlank(token)) {
+                if (ObjectUtils.isEmpty(merchantMinProAppId) || ObjectUtils.isEmpty(merchantMinProAppSecert)) {
                     return;
                 }
                 
@@ -121,6 +110,17 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                 // 查询未发货的订单
                 while (flag) {
                     try {
+                        Pair<Boolean, Object> accessToken = wechatAccessTokenSevice.getAccessToken(merchantMinProAppId, merchantMinProAppSecert);
+                        if (!accessToken.getLeft() || ObjectUtils.isEmpty(accessToken.getRight())) {
+                            return;
+                        }
+    
+                        String token = (String) accessToken.getRight();
+    
+                        if (StringUtils.isBlank(token)) {
+                            return;
+                        }
+                        
                         ShippingQueryOrderResult shippingQueryOrderResult = shippingUploadService.listOrder(token, orderState, lastIndex, pageSize);
                         if (Objects.isNull(shippingQueryOrderResult) || !shippingQueryOrderResult.isSuccess() || ObjectUtils.isEmpty(shippingQueryOrderResult.getOrder_list())) {
                             break;
@@ -135,7 +135,7 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                         List<ShippingOrder> list = shippingQueryOrderResult.getOrder_list();
                         // 判断订单是否存在
                         List<String> transactionIdList = list.stream().map(ShippingOrder::getTransaction_id).collect(Collectors.toList());
-                        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.listByChannelOrderNoList(transactionIdList);
+                        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.listByChannelOrderNoList(transactionIdList, ElectricityTradeOrder.STATUS_SUCCESS, endTime);
                         // 不存在则进行下一步循环操作
                         if (ObjectUtils.isEmpty(electricityTradeOrderList)) {
                             continue;
@@ -151,17 +151,17 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                                 // 调用发货接口
                                 shippingUploadService.shippingUploadInfoByToken(shippingOrder.getOpenid(), shippingOrder.getTransaction_id(), token);
                                 TimeUnit.MILLISECONDS.sleep(200);
-                                log.info("SHIPPING INFO SUCCESS! shipping upload success,tenantId={},orderNo={}", tenantId, shippingOrder.getTransaction_id());
+                                log.info("SHIPPING INFO SUCCESS! shipping upload success,tenantId={},orderNo={}", id, shippingOrder.getTransaction_id());
                             } catch (InterruptedException ex) {
                                 log.error("SHIPPING INFO ERROR! shipping upload fail,orderNo={}", shippingOrder.getTransaction_id(), ex);
                                 Thread.currentThread().interrupt();
                             } catch (ShippingException e) {
-                                log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}, orderNo={}", tenantId,shippingOrder.getTransaction_id(), e);
+                                log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}, orderNo={}", id,shippingOrder.getTransaction_id(), e);
                             }
                         });
                         
                     } catch (ShippingException e) {
-                        log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}", tenantId, e);
+                        log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}", id, e);
                         break;
                     }
                 }
