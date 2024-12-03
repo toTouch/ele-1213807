@@ -185,6 +185,9 @@
             <if test="eleLimitCount != null">
                 ele_limit_count = #{eleLimitCount},
             </if>
+            <if test="isSwapExchange != null">
+                is_swap_exchange = #{isSwapExchange},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}
