@@ -21,7 +21,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Builder
 @TableName("t_tenant_franchisee_mutual_exchange")
-@Accessors(chain =true)
+@Accessors(chain = true)
 public class TenantFranchiseeMutualExchange {
     
     /**
@@ -64,4 +64,10 @@ public class TenantFranchiseeMutualExchange {
     private Long updateTime;
     
     
+    /**
+     * 状态启用
+     */
+    public static Integer STATUS_ENABLE = 1;
+    
+    public static Integer STATUS_DIS_ENABLE = 0;
 }
