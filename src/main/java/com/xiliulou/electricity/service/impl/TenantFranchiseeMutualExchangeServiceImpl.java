@@ -244,7 +244,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         
         Map<Object, Object> newMap = MapUtil.builder().put("name", mutualExchange.getCombinedName())
                 .put("combinedFranchiseeNameList", buildFranchiseeNameByIdList(JsonUtil.fromJsonArray(mutualExchange.getCombinedFranchisee(), Long.class)))
-                .put("status", mutualExchange.getStatus()).build();
+                .put("status", getStatusDesc(mutualExchange.getStatus())).build();
         operateRecordUtil.record(null, newMap);
         return R.ok();
     }
@@ -395,8 +395,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     /**
      * 是否存在互换配置
      *
-     * @param franchiseeList franchiseeList
-     * @param oldFranchiseeList     list
+     * @param franchiseeList    franchiseeList
+     * @param oldFranchiseeList list
      * @return Boolean
      */
     private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> oldFranchiseeList) {
