@@ -457,7 +457,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      */
     private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery, ElectricityCabinetBox updateElectricityCabinetBox,
             String sessionId) {
-        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(electricityCabinet.getTenantId(), electricityCabinet.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
+        if (!mutualExchangeService.batteryReportIsSatisfyFranchiseeMutualExchange(electricityCabinet.getTenantId(), electricityCabinet.getFranchiseeId(),
+                electricityBattery.getFranchiseeId(), sessionId)) {
             log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}", electricityCabinet.getFranchiseeId(),
                     electricityBattery.getFranchiseeId(), sessionId);
             updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());

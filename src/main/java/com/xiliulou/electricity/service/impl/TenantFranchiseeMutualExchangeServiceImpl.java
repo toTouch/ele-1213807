@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@SuppressWarnings("all")
 public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchiseeMutualExchangeService {
     
     @Resource
@@ -182,7 +183,6 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     
     @Override
-    @SuppressWarnings("all")
     public List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromDB(Integer tenantId) {
         return mutualExchangeMapper.selectMutualExchangeConfigListFromDB(tenantId);
     }
@@ -331,6 +331,20 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         return Objects.equals(franchiseeId, otherFranchiseeId);
     }
     
+    @Override
+    public Boolean batteryReportIsSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId, String sessionId) {
+        log.info("batteryReportIsSatisfyFranchiseeMutualExchange Info! sessionId is {}", sessionId);
+        Pair<Boolean, Set<Long>> pair = satisfyMutualExchangeFranchisee(tenantId, franchiseeId);
+        if (pair.getLeft()) {
+            // 判断加盟商互通是否包含另一加盟商
+            return pair.getRight().contains(otherFranchiseeId);
+        }
+        if (Objects.isNull(otherFranchiseeId)) {
+            return false;
+        }
+        // 不符合互通配置,需要判断两个加盟商是否相等
+        return Objects.equals(franchiseeId, otherFranchiseeId);
+    }
     
     @Override
     public Triple<Boolean, String, Object> orderExchangeMutualFranchiseeCheck(Integer tenantId, Long franchiseeId, Long otherFranchiseeId) {

@@ -126,6 +126,18 @@ public interface TenantFranchiseeMutualExchangeService {
     
     
     /**
+     * 电池上报当前加盟商是否满足加盟商换电互通
+     *
+     * @param tenantId          tenantId
+     * @param franchiseeId      franchiseeId
+     * @param otherFranchiseeId otherFranchiseeId
+     * @return Boolean
+     */
+    Boolean batteryReportIsSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId,String sessionId);
+    
+    
+    
+    /**
      * 换电满电仓分配检测是否互通，返回提示
      *
      * @param tenantId          tenantId
