@@ -214,6 +214,11 @@ public class ElectricityConfig {
      */
     private Integer eleLimitCount;
     
+    /**
+     * 是否互通换电,默认是1关闭,0开启
+     */
+    private Integer isSwapExchange;
+    
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
@@ -369,4 +374,9 @@ public class ElectricityConfig {
      * 关闭对换电套餐购买次数的限制
      */
     public static Integer ELE_LIMIT_CLOSE = 1;
+    
+    /**
+     * 互通换电开启
+     */
+    public static Integer SWAP_EXCHANGE_CLOSE = 1;
 }

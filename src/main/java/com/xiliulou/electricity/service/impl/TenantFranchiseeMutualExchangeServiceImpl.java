@@ -11,6 +11,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.TenantFranchiseeMutualExchange;
 import com.xiliulou.electricity.exception.BizException;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.query.MutualExchangePageQuery;
 import com.xiliulou.electricity.query.MutualExchangeUpdateQuery;
 import com.xiliulou.electricity.request.MutualExchangeAddConfigRequest;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -73,6 +75,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Resource
     private ElectricityBatteryService electricityBatteryService;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
     
     
     public static final Integer MAX_MUTUAL_EXCHANGE_CONFIG_COUNT = 5;
@@ -264,6 +269,16 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! tenantId or franchiseeId is null");
                 return Pair.of(false, null);
             }
+            
+            // 查询互通配置开关
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsSwapExchange(), ElectricityConfig.SWAP_EXCHANGE_CLOSE)) {
+                log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! electricityConfig is null or SwapExchange is close, tenantId is {}， electricityConfig is {}", tenantId,
+                        Objects.isNull(electricityConfig) ? "null" : JsonUtil.toJson(electricityConfig));
+                return Pair.of(false, null);
+            }
+            
+            // 查询互通配置列表
             List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
             if (CollUtil.isEmpty(mutualFranchiseeList)) {
                 log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
@@ -353,18 +368,16 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         List<ExportMutualBatteryVO> exportMutualBatteryVOList = CollUtil.newArrayList();
         
         for (ExportMutualBatteryBO bo : mutualBatteryBOList) {
-            ExportMutualBatteryVO excelVO = new ExportMutualBatteryVO();
-            BeanUtil.copyProperties(bo, excelVO);
-            excelVO.setPhysicsStatus(Objects.equals(bo.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) ? "在仓" : "不在仓");
-            
+            // 只导出互通加盟商的电池
             Pair<Boolean, Set<Long>> pair = satisfyMutualExchangeFranchisee(TenantContextHolder.getTenantId(), bo.getFranchiseeId());
             if (pair.getLeft()) {
+                ExportMutualBatteryVO excelVO = new ExportMutualBatteryVO();
+                BeanUtil.copyProperties(bo, excelVO);
+                excelVO.setPhysicsStatus(Objects.equals(bo.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) ? "在仓" : "不在仓");
                 List<String> franchiseeNameList = buildFranchiseeNameByIdList(new ArrayList<>(pair.getRight()));
                 excelVO.setMutualFranchiseeName(String.join(",", franchiseeNameList));
-            } else {
-                excelVO.setMutualFranchiseeName(bo.getFranchiseeName());
+                exportMutualBatteryVOList.add(excelVO);
             }
-            exportMutualBatteryVOList.add(excelVO);
         }
         
         String fileName = "互通电池列表.xlsx";
@@ -383,13 +396,13 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * 是否存在互换配置
      *
      * @param franchiseeList franchiseeList
-     * @param listFromDB     list
+     * @param oldFranchiseeList     list
      * @return Boolean
      */
-    private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> listFromDB) {
+    private Boolean isExistMutualExchangeConfig(Long id, List<Long> franchiseeList, List<TenantFranchiseeMutualExchange> oldFranchiseeList) {
         // 将所有的配置加盟商遍历，判断当前添加的加盟商是否存在配置
         Map<String, Set<Long>> oldFranchiseeMap = new HashMap<>(20);
-        for (TenantFranchiseeMutualExchange exchange : listFromDB) {
+        for (TenantFranchiseeMutualExchange exchange : oldFranchiseeList) {
             // 这里要排除掉自己id
             if (Objects.equals(id, exchange.getId())) {
                 continue;

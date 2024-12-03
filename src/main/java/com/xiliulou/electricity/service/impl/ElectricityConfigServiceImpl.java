@@ -221,6 +221,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
             electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
             electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
+            electricityConfig.setIsSwapExchange(electricityConfigAddAndUpdateQuery.getIsSwapExchange());
             
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
@@ -261,6 +262,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
         electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
+        electricityConfig.setIsSwapExchange(electricityConfigAddAndUpdateQuery.getIsSwapExchange());
         
         electricityConfigMapper.update(electricityConfig);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
