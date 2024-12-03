@@ -85,14 +85,14 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         assertMutualName(request.getCombinedName(), request.getStatus());
         List<Long> combinedFranchisee = request.getCombinedFranchisee();
         if (CollUtil.isEmpty(combinedFranchisee)) {
-            return R.fail("302000", "互换配置不能为空");
+            return R.fail("402000", "互换配置不能为空");
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
         List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         
         if (mutualExchangeList.size() >= MAX_MUTUAL_EXCHANGE_CONFIG_COUNT) {
-            return R.fail("302002", "最多添加5个配置");
+            return R.fail("402002", "最多添加5个配置");
         }
         
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
@@ -125,7 +125,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         // 编辑
         TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
         if (Objects.isNull(oldMutualExchange)) {
-            return R.fail("302003", "不存在的互换配置");
+            return R.fail("402003", "不存在的互换配置");
         }
         
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
@@ -232,7 +232,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     public R deleteById(Long id) {
         TenantFranchiseeMutualExchange mutualExchange = mutualExchangeMapper.selectOneById(id);
         if (Objects.isNull(mutualExchange)) {
-            return R.fail("302003", "不存在的互换配置");
+            return R.fail("402003", "不存在的互换配置");
         }
         this.updateMutualExchange(
                 TenantFranchiseeMutualExchange.builder().id(id).tenantId(TenantContextHolder.getTenantId()).updateTime(System.currentTimeMillis()).delFlag(1).build());
@@ -249,7 +249,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     public R updateStatus(MutualExchangeUpdateQuery query) {
         TenantFranchiseeMutualExchange mutualExchange = mutualExchangeMapper.selectOneById(query.getId());
         if (Objects.isNull(mutualExchange)) {
-            return R.fail("302003", "不存在的互换配置");
+            return R.fail("402003", "不存在的互换配置");
         }
         this.updateMutualExchange(TenantFranchiseeMutualExchange.builder().id(query.getId()).tenantId(TenantContextHolder.getTenantId()).updateTime(System.currentTimeMillis())
                 .status(query.getStatus()).build());
@@ -347,7 +347,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         
         List<ExportMutualBatteryBO> mutualBatteryBOList = electricityBatteryService.queryMutualBattery(TenantContextHolder.getTenantId());
         if (Objects.isNull(mutualBatteryBOList)) {
-            throw new BizException("302010", "电池数据不存在");
+            throw new BizException("402010", "电池数据不存在");
         }
         
         List<ExportMutualBatteryVO> exportMutualBatteryVOList = CollUtil.newArrayList();
@@ -424,13 +424,13 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     private void assertMutualName(String combinedName, Integer status) {
         if (Objects.isNull(combinedName)) {
-            throw new BizException("302000", "组合名称不能为空");
+            throw new BizException("402000", "组合名称不能为空");
         }
         if (combinedName.length() > MAX_MUTUAL_NAME_LENGTH) {
-            throw new BizException("302000", "组合名称不能超过20字");
+            throw new BizException("402000", "组合名称不能超过20字");
         }
         if (Objects.isNull(status)) {
-            throw new BizException("302000", "配置状态不能为空");
+            throw new BizException("402000", "配置状态不能为空");
         }
     }
     
@@ -441,7 +441,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     private List<TenantFranchiseeMutualExchange> assertMutualExchangeConfig(Long id, Integer tenantId, List<Long> combinedFranchisee) {
         List<TenantFranchiseeMutualExchange> swapExchangeList = mutualExchangeMapper.selectSwapExchangeList(tenantId);
         if (isExistMutualExchangeConfig(id, combinedFranchisee, swapExchangeList)) {
-            throw new BizException("302001", "该互换配置已存在");
+            throw new BizException("402001", "该互换配置已存在");
         }
         return swapExchangeList;
     }
