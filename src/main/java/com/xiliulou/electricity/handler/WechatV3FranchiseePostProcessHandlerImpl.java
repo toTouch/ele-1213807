@@ -117,6 +117,8 @@ public class WechatV3FranchiseePostProcessHandlerImpl implements WechatV3PostPro
             electricityTradeOrderService.notifyCloudBeanRechargeOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INSTALLMENT)) {
             unionTradeOrderService.notifyInstallmentPayment(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_PLACE_ORDER)) {
+            unionTradeOrderService.notifyPlaceOrder(callBackResource);
         }else {
             log.error("WX PAY CALL BACK FAIL!not found attach typeo,rderId={}", orderNo);
         }

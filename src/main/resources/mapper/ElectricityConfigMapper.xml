@@ -32,6 +32,8 @@
         <result property="isEnableMeiTuanRiderMall" column="is_enable_mei_tuan_rider_mall" jdbcType="INTEGER"/>
         <result property="eleLimit" column="ele_limit" jdbcType="INTEGER"/>
         <result property="eleLimitCount" column="ele_limit_count" jdbcType="INTEGER"/>
+        <result property="isEnableFlexibleRenewal" column="is_enable_flexible_renewal" jdbcType="INTEGER"/>
+        <result property="isEnableSeparateDeposit" column="is_enable_separate_deposit" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 基础字段 -->
@@ -65,7 +67,9 @@
                alipay_customer,
                is_enable_mei_tuan_rider_mall,
                ele_limit,
-               ele_limit_count
+               ele_limit_count,
+               is_enable_flexible_renewal,
+               is_enable_separate_deposit
         from t_electricity_config
     </sql>
     
@@ -77,7 +81,7 @@
         is_open_car_battery_bind,is_open_car_control,is_zero_deposit_audit_enabled,is_enable_esign,
         allow_rent_ele,allow_return_ele,allow_freeze_with_assets,is_selection_exchange,low_charge_rate,
         full_charge_rate,channel_time_limit,wx_customer,charge_rate_type,alipay_customer,is_comfort_exchange,priority_exchange_norm,
-        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count
+        is_enable_mei_tuan_rider_mall,ele_limit,ele_limit_count,is_enable_flexible_renewal,is_enable_separate_deposit
     </sql>
     <!--通过主键修改数据-->
     <update id="update">
@@ -184,6 +188,12 @@
             </if>
             <if test="eleLimitCount != null">
                 ele_limit_count = #{eleLimitCount},
+            </if>
+            <if test="isEnableFlexibleRenewal != null">
+                is_enable_flexible_renewal = #{isEnableFlexibleRenewal},
+            </if>
+            <if test="isEnableSeparateDeposit != null">
+                is_enable_separate_deposit = #{isEnableSeparateDeposit},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>

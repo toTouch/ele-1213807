@@ -17,22 +17,6 @@ import java.util.List;
 public interface UserBatteryMemberCardPackageService {
 
     /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserBatteryMemberCardPackage queryByIdFromDB(Long id);
-
-    /**
-     * 修改数据
-     *
-     * @param userBatteryMemberCardPackage 实例对象
-     * @return 实例对象
-     */
-    Integer update(UserBatteryMemberCardPackage userBatteryMemberCardPackage);
-
-    /**
      * 通过主键删除数据
      *
      * @param id 主键

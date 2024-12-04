@@ -37,14 +37,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      */
     int update(BatteryMemberCard batteryMemberCard);
     
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
-    
     List<BatteryMemberCardAndTypeVO> selectByPage(BatteryMemberCardQuery query);
     
     Integer selectByPageCount(BatteryMemberCardQuery query);
@@ -54,6 +46,8 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     Integer checkMembercardExist(@Param("name") String name, @Param("tenantId") Integer tenantId);
     
     List<BatteryMemberCardAndTypeVO> selectByPageForUser(BatteryMemberCardQuery query);
+    
+    List<BatteryMemberCardAndTypeVO> selectByPageForUserV2(BatteryMemberCardQuery query);
     
     List<BatteryMemberCardVO> selectMembercardBatteryV(BatteryMemberCardQuery query);
     

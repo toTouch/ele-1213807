@@ -17,22 +17,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface UserBatteryMemberCardPackageMapper extends BaseMapper<UserBatteryMemberCardPackage> {
 
     /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserBatteryMemberCardPackage queryById(Long id);
-
-    /**
-     * 修改数据
-     *
-     * @param userBatteryMemberCardPackage 实例对象
-     * @return 影响行数
-     */
-    int update(UserBatteryMemberCardPackage userBatteryMemberCardPackage);
-
-    /**
      * 通过主键删除数据
      *
      * @param id 主键
