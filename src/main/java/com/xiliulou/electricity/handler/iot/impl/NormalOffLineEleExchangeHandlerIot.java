@@ -167,6 +167,10 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             log.warn("OFFLINE EXCHANGE WARN! orderId is lock,orderId={},uid={}", offlineOrderMessage.getOrderId(), user.getUid());
             return;
         }
+        if (redisService.hasKey(String.format(CacheConstant.EXCHANGE_PLACE_BATTERY_MUTUAL_LOCK, offlineOrderMessage.getOldElectricityBatterySn()))) {
+            log.warn("OFFLINE EXCHANGE WARN! battery is locked, sn is {}", offlineOrderMessage.getOldElectricityBatterySn());
+            return;
+        }
         
         orderConfirm(electricityCabinet, offlineOrderMessage, user);
         
