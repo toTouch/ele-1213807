@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.wp.beanposstprocessor.WechatAccessTokenSevice;
 import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -64,8 +65,8 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
         
         // 昨天开始
         long startTime = DateUtils.getTimeAgoStartTime(DateFormatConstant.YESTERDAY);
-        // 昨天结束
-        long endTime = DateUtils.getTimeAgoEndTime(DateFormatConstant.YESTERDAY);
+        // 一小时之前的时间戳
+        long endTime = System.currentTimeMillis() - TimeConstant.HOURS_MILLISECOND;
         
         while (tenantFlag) {
             if (Objects.nonNull(tenantId)) {
