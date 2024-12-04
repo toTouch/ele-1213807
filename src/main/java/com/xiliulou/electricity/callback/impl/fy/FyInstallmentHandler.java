@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.AllArgsConstructor;
@@ -28,7 +29,6 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -65,7 +65,7 @@ public class FyInstallmentHandler {
     
     private RedisTemplate<String, String> redisTemplate;
     
-
+    
     public String signNotify(String bizContent, Long uid) {
         try {
             String decrypt = FyAesUtil.decrypt(bizContent, fengYunConfig.getAesKey());
@@ -75,6 +75,7 @@ public class FyInstallmentHandler {
             
             R<String> stringR;
             if (NOTIFY_STATUS_SIGN.equals(Integer.valueOf(signNotifyQuery.getStatus()))) {
+                // 处理签约成功回调
                 stringR = installmentBizService.handleSign(installmentRecord, signNotifyQuery.getAgreementNo());
             } else {
                 // 处理解约成功回调
@@ -110,25 +111,42 @@ public class FyInstallmentHandler {
         List<String> externalAgreementNos = installmentDeductionPlanService.listExternalAgreementNoForDeduct(System.currentTimeMillis());
         
         externalAgreementNos.parallelStream().forEach(externalAgreementNo -> {
-            InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryPlanForDeductByAgreementNo(externalAgreementNo);
-            
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
-            
-            InstallmentDeductionRecordQuery query = new InstallmentDeductionRecordQuery();
-            query.setExternalAgreementNo(deductionPlan.getExternalAgreementNo());
-            query.setUid(installmentRecord.getUid());
-            query.setStatus(DEDUCTION_RECORD_STATUS_INIT);
-            List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(query);
-            if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+            if (Objects.isNull(installmentRecord)) {
+                log.warn("DEDUCT TASK WARN! FyConfig is null, externalAgreementNo={}", externalAgreementNo);
                 return;
             }
             
-            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(deductionPlan.getTenantId());
-            if (Objects.isNull(fyConfig)) {
-                log.error("DEDUCT TASK ERROR! FyConfig is null, tenantId={}", deductionPlan.getTenantId());
+            Integer issue = installmentRecord.getPaidInstallment() + 1;
+            
+            InstallmentDeductionRecordQuery query = new InstallmentDeductionRecordQuery();
+            query.setExternalAgreementNo(externalAgreementNo);
+            query.setUid(installmentRecord.getUid());
+            query.setIssue(issue);
+            query.setStatus(DEDUCTION_RECORD_STATUS_INIT);
+            List<InstallmentDeductionRecord> installmentDeductionRecords = installmentDeductionRecordService.listDeductionRecord(query);
+            if (!CollectionUtils.isEmpty(installmentDeductionRecords)) {
+                log.warn("DEDUCT TASK WARN! Deduction is running, externalAgreementNo={}", externalAgreementNo);
+                return;
             }
             
-            Triple<Boolean, String, Object> triple = installmentBizService.initiatingDeduct(deductionPlan, installmentRecord, fyConfig);
+            List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanService.listByExternalAgreementNoAndIssue(installmentRecord.getTenantId(),
+                    externalAgreementNo, issue);
+            if (CollectionUtils.isEmpty(deductionPlanList)) {
+                log.warn("DEDUCT TASK WARN! deductionPlanList is null, externalAgreementNo={}", externalAgreementNo);
+                return;
+            }
+            
+            FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
+            if (Objects.isNull(fyConfig)) {
+                log.error("DEDUCT TASK ERROR! FyConfig is null, tenantId={}", installmentRecord.getTenantId());
+                return;
+            }
+            
+            // 生成payNo
+            InstallmentUtil.generatePayNo(installmentRecord.getUid(), deductionPlanList);
+            
+            Triple<Boolean, String, Object> triple = installmentBizService.initiatingDeduct(deductionPlanList, installmentRecord, fyConfig);
             if (!triple.getLeft()) {
                 log.warn("DEDUCT TASK WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());
             }
@@ -160,12 +178,9 @@ public class FyInstallmentHandler {
     
     private Map<String, Double> getAndDelete(double min, double now) {
         // 定义 Lua 脚本
-        String luaScript = "local key = KEYS[1]\n" +
-                "local minScore = ARGV[1]\n" +
-                "local maxScore = ARGV[2]\n" +
-                "local results = redis.call('ZRANGEBYSCORE', key, minScore, maxScore, 'WITHSCORES')\n" +
-                "redis.call('ZREMRANGEBYSCORE', key, minScore, maxScore)\n" +
-                "return results";
+        String luaScript = "local key = KEYS[1]\n" + "local minScore = ARGV[1]\n" + "local maxScore = ARGV[2]\n"
+                + "local results = redis.call('ZRANGEBYSCORE', key, minScore, maxScore, 'WITHSCORES')\n" + "redis.call('ZREMRANGEBYSCORE', key, minScore, maxScore)\n"
+                + "return results";
         
         // 创建 DefaultRedisScript 并设置脚本语言为 Lua
         RedisScript<List> script = new DefaultRedisScript<>(luaScript, List.class);

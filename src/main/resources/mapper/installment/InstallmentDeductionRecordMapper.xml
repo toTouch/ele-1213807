@@ -105,6 +105,9 @@
             <if test="externalAgreementNo != null and externalAgreementNo != ''">
                 and external_agreement_no = #{externalAgreementNo}
             </if>
+            <if test="issue != null">
+                and issue = #{issue}
+            </if>
             <if test="status != null">
                 and `status` = #{status}
             </if>

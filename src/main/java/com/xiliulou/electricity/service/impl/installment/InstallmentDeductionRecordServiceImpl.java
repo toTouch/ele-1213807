@@ -62,12 +62,13 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         return R.ok(installmentDeductionRecordMapper.count(installmentDeductionRecordQuery));
     }
     
-    
+    @Slave
     @Override
     public InstallmentDeductionRecord queryByPayNo(String payNo) {
         return installmentDeductionRecordMapper.selectRecordByPayNo(payNo);
     }
     
+    @Slave
     @Override
     public List<InstallmentDeductionRecord> listDeductionRecord(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {
         return installmentDeductionRecordMapper.selectListDeductionRecord(installmentDeductionRecordQuery);

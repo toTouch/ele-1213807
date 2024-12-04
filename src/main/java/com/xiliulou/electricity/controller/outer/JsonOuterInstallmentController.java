@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.electricity.callback.impl.fy.FyInstallmentHandler;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +36,9 @@ public class JsonOuterInstallmentController {
         return fyInstallmentHandler.signNotify((String) params.get(OUTER_PARAM_BIZ_CONTENT), uid);
     }
     
+    /**
+     * 代扣回调
+     */
     @PostMapping("/outer/installment/agreementPay/notify/{uid}")
     public String agreementPayNotify(@PathVariable Long uid, @RequestBody Map<String, Object> params) {
         if (!params.containsKey(OUTER_PARAM_BIZ_CONTENT) || StringUtils.isEmpty((String) params.get(OUTER_PARAM_BIZ_CONTENT))) {

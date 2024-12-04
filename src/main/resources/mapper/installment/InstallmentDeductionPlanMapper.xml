@@ -123,22 +123,12 @@
         group by external_agreement_no
     </select>
     
-    <select id="selectPlanForDeductByAgreementNo"
-            resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
-        select id, <include refid="columnsWithoutId"/>
-        from t_installment_deduction_plan
-        where external_agreement_no = #{externalAgreementNo}
-            and `status` in (0,2)
-        order by issue
-        limit 1
-    </select>
     
-    <select id="selectByAgreementNoAndIssue"
-            resultMap="installmentDeductionPlanMap">
+    
+    <select id="selectListByExternalAgreementNoAndIssue" resultMap="installmentDeductionPlanMap">
         select id, <include refid="columnsWithoutId"/>
         from t_installment_deduction_plan
-        where external_agreement_no = #{agreementNo}
-            and issue = #{issue}
+        where tenant_id = #{tenantId} and external_agreement_no = #{externalAgreementNo} and issue = #{issue}
     </select>
     
     <select id="selectById" resultType="com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan">
@@ -147,8 +137,24 @@
         where id = #{id}
     </select>
     
+    <select id="queryByPayNo" resultMap="installmentDeductionPlanMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_plan
+        where tenant_id = #{tenantId} and external_agreement_no = #{externalAgreementNo} and pay_no = #{payNo}
+    </select>
+    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_deduction_plan(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
+    </insert>
+    
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_installment_deduction_plan (<include refid="columnsWithoutId"/>)
+        values
+        <foreach collection="installmentDeductionPlans" item="item" index="index" separator=",">
+            (#{item.externalAgreementNo}, #{item.payNo}, #{item.tradeNo}, #{item.issue}, #{item.amount}, #{item.packageId}, #{item.packageType},
+             #{item.rentTime}, #{item.deductTime}, #{item.paymentTime}, #{item.status},#{item.tenantId}, #{item.franchiseeId}, #{item.createTime},
+             #{item.updateTime})
+        </foreach>
     </insert>
     
     <update id="update">

@@ -155,6 +155,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
         return Triple.of(true, null, installmentRecord);
     }
     
+    @Slave
     @Override
     public InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> statuses) {
         return installmentRecordMapper.selectRecordWithStatusForUser(uid, statuses);

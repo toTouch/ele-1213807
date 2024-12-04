@@ -106,6 +106,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return R.ok(installmentTerminatingRecordMapper.count(query));
     }
     
+    @Slave
     @Override
     public List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForRecordWithStatus(query);
@@ -145,17 +146,19 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecord;
     }
     
-    
+    @Slave
     @Override
     public InstallmentTerminatingRecord queryById(Long id) {
         return installmentTerminatingRecordMapper.selectById(id);
     }
     
+    @Slave
     @Override
     public InstallmentTerminatingRecord queryLatestByExternalAgreementNo(String externalAgreementNo) {
         return installmentTerminatingRecordMapper.selectLatestByExternalAgreementNo(externalAgreementNo);
     }
     
+    @Slave
     @Override
     public List<InstallmentTerminatingRecord> listForUserWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForUserWithStatus(query);

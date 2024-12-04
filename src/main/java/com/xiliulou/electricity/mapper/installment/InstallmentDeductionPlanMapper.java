@@ -2,7 +2,6 @@ package com.xiliulou.electricity.mapper.installment;
 
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
-import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,15 +17,17 @@ public interface InstallmentDeductionPlanMapper {
     
     Integer insert(InstallmentDeductionPlan installmentDeductionPlan);
     
+    Integer batchInsert(@Param("installmentDeductionPlans") List<InstallmentDeductionPlan> installmentDeductionPlans);
+    
     Integer update(InstallmentDeductionPlan installmentDeductionPlan);
     
     List<InstallmentDeductionPlan> selectListDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query);
     
     List<String> selectListExternalAgreementNoForDeduct(@Param("time") Long time);
     
-    InstallmentDeductionPlan selectPlanForDeductByAgreementNo(@Param("externalAgreementNo") String externalAgreementNo);
-    
-    InstallmentDeductionPlan selectByAgreementNoAndIssue(@Param("agreementNo") String agreementNo, @Param("issue") Integer issue);
+    List<InstallmentDeductionPlan> selectListByExternalAgreementNoAndIssue(@Param("tenantId") Integer tenantId, @Param("externalAgreementNo") String externalAgreementNo, @Param("issue") Integer issue);
     
     InstallmentDeductionPlan selectById(@Param("id") Long id);
+    
+    InstallmentDeductionPlan queryByPayNo(@Param("tenantId") Integer tenantId, @Param("externalAgreementNo") String externalAgreementNo, @Param("payNo") String payNo);
 }
