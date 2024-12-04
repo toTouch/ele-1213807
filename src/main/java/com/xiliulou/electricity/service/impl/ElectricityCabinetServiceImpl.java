@@ -2768,7 +2768,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!DataUtil.collectionIsUsable(electricityBatteries)) {
                 log.warn("SpecialTenantId EXCHANGE WARN!battery not bind franchisee,eid={}，mutualFranchiseeSet is {}", eid,
                         CollUtil.isEmpty(mutualFranchiseeSet) ? "null" : JsonUtil.toJson(mutualFranchiseeSet));
-                return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+                return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
             }
             
             // 获取全部可用电池id
@@ -2835,7 +2835,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!DataUtil.collectionIsUsable(electricityBatteries)) {
                 log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}，mutualFranchiseeSet is {}", eid,
                         CollUtil.isEmpty(mutualFranchiseeSet) ? "null" : JsonUtil.toJson(mutualFranchiseeSet));
-                return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+                return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
             }
             
             // 获取全部可用电池id
@@ -2923,62 +2923,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Triple.of(true, null, usableCabinetBox);
     }
     
-    /**
-     * 换电柜2.0
-     */
-    @Override
-    public Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged, Long franchiseeId) {
-        // 这里查所有电池
-        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, null, fullyCharged);
-        if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
-            return Triple.of(false, "100216", "换电柜暂无满电电池");
-        }
-        
-        if (StrUtil.isNotEmpty(batteryType)) {
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), batteryType)).collect(Collectors.toList());
-            if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
-                return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
-            }
-        } else {
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), batteryType)).collect(Collectors.toList());
-            if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
-                return Triple.of(false, "100223", "换电柜没有标准型号电池");
-            }
-        }
-        
-        List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
-        
-        List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
-        if (CollectionUtils.isEmpty(electricityBatteries)) {
-            return Triple.of(false, "100225", "电池不存在");
-        }
-        
-        // 把本柜机加盟商的绑定电池信息拿出来
-        electricityBatteries = electricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchiseeId)).collect(Collectors.toList());
-        if (!DataUtil.collectionIsUsable(electricityBatteries)) {
-            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
-        }
-        
-        // 获取全部可用电池id
-        List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-        // 把加盟商绑定的电池过滤出来
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
-        
-        // 查最大电量是否有多个格挡，如果有取最大充电器电压
-        final Double MAX_POWER = usableBatteryCellNos.get(0).getPower();
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), MAX_POWER)).collect(Collectors.toList());
-        
-        int maxChargeVIndex = 0;
-        for (int i = 0; i < usableBatteryCellNos.size(); i++) {
-            Double maxChargeV = Optional.ofNullable(usableBatteryCellNos.get(maxChargeVIndex).getChargeV()).orElse(0.0);
-            Double chargeV = Optional.ofNullable(usableBatteryCellNos.get(i).getChargeV()).orElse(0.0);
-            
-            if (maxChargeV.compareTo(chargeV) < 0) {
-                maxChargeVIndex = i;
-            }
-        }
-        return Triple.of(true, null, usableBatteryCellNos.get(maxChargeVIndex));
-    }
     
     @Override
     public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version) {

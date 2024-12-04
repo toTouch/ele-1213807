@@ -3599,7 +3599,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!DataUtil.collectionIsUsable(electricityBatteries)) {
             log.warn("Take Full BATTERY WARN!battery not bind franchisee,eid={}, franchiseeIdList is {}", electricityCabinet.getId(),
                     CollUtil.isEmpty(franchiseeIdList) ? "null" : JsonUtil.toJson(franchiseeIdList));
-            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+            return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
         }
         
         // 获取全部可用电池id

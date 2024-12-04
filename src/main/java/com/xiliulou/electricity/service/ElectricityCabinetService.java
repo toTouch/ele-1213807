@@ -132,8 +132,7 @@ public interface ElectricityCabinetService {
     
     R queryCabinetBelongFranchisee(Integer id);
     
-    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-    
+
     Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid,
             Set<Long> mutualFranchiseeSet);
     
