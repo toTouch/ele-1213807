@@ -25,7 +25,28 @@ public class AliPayConfig implements BasePayCallBackConfig{
      * 支付回调,后缀必须有"/"
      */
     private String payCallBackUrl;
-//    /**
+    
+    /**
+     * 第三方appId
+     */
+    public String thirdAppId;
+    
+    /**
+     * 第三方支付宝公钥
+     */
+    public String thirdPublicKey;
+    
+    /**
+     * 第三方应用公钥
+     */
+    private String thirdAppPublicKey;
+    
+    /**
+     * 第三方应用私钥
+     */
+    private String thirdAppPrivateKey;
+    
+    //    /**
 //     * 退款回调,后缀必须有"/"
 //     */
 //    private String refundCallBackUrl;

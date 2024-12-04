@@ -88,8 +88,7 @@ public class AliPayThirdForThirdPartyAuthenticationServiceImpl extends AbstractT
         String data = obtainData(request);
         String iv = obtainIv(request);
         String appType = obtainAppType(request);
-        String appId = obtainAppId(request);
-        return new ThirdAliPayForThirdPartyAuthenticationToken(code, iv, TokenConstant.THIRD_AUTH_ALI_PAY_THIRD_PARTY, data, appType, appId);
+        return new ThirdAliPayForThirdPartyAuthenticationToken(code, iv, TokenConstant.THIRD_AUTH_ALI_PAY_THIRD_PARTY, data, appType);
     }
     
     @Override
@@ -101,7 +100,6 @@ public class AliPayThirdForThirdPartyAuthenticationServiceImpl extends AbstractT
             code = get(hashMap, "code");
             String iv = get(hashMap, "iv");
             String data = get(hashMap, "data");
-            String appId = get(hashMap, "appId");
             
             if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
                 throw new AuthenticationServiceException("操作频繁！请稍后再试！");
@@ -117,7 +115,7 @@ public class AliPayThirdForThirdPartyAuthenticationServiceImpl extends AbstractT
             String loginOpenId = null;
     
             // 第三方应用登录
-            loginOpenId = decryptAliPayAuthCodeDataForThirdParty(code, appId, alipayAppConfig);
+            loginOpenId = decryptAliPayAuthCodeDataForThirdParty(code, aliPayConfig.getThirdAppId(), alipayAppConfig);
             
             log.info("ALIPAY LOGIN FOR THIRD PARTY INFO!user login info,loginPhone={},loginOpenId={}", loginPhone, loginOpenId);
             
@@ -165,7 +163,7 @@ public class AliPayThirdForThirdPartyAuthenticationServiceImpl extends AbstractT
         //2. 验签
         String signContent = content;
         //支付宝公钥
-        String signVeriKey = alipayAppConfig.getPublicKey();
+        String signVeriKey = aliPayConfig.getThirdPublicKey();
         //支付宝小程序对应的加解密密钥
         String decryptKey = alipayAppConfig.getLoginDecryptionKey();
         if (isDataEncrypted) {
@@ -209,11 +207,6 @@ public class AliPayThirdForThirdPartyAuthenticationServiceImpl extends AbstractT
      * @return
      */
     private String decryptAliPayAuthCodeDataForThirdParty(String code, String appId, AlipayAppConfigBizDetails alipayAppConfig) {
-        // 第三方登录解析
-        if (ObjectUtils.isEmpty(alipayAppConfig.getAppAuthToken())) {
-            log.warn("ALIPAY TOKEN WARN FOR THIRD PARTY!app auth token is null,appid={}", appId);
-            throw new AuthenticationServiceException("登录信息异常，请联系客服处理");
-        }
         
         String openId = null;
         try {
@@ -244,8 +237,8 @@ public class AliPayThirdForThirdPartyAuthenticationServiceImpl extends AbstractT
     }
     
     private AlipayConfig buildAlipayConfig(String appId, AlipayAppConfigBizDetails alipayAppConfig) {
-        String privateKey = alipayAppConfig.getAppPrivateKey();
-        String alipayPublicKey = alipayAppConfig.getPublicKey();
+        String privateKey = aliPayConfig.getThirdAppPrivateKey();
+        String alipayPublicKey = aliPayConfig.getThirdPublicKey();
         AlipayConfig alipayConfig = new AlipayConfig();
         alipayConfig.setServerUrl(aliPayConfig.getServerUrl());
         alipayConfig.setAppId(appId);
