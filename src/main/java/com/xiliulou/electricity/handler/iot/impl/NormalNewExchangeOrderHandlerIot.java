@@ -296,6 +296,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         
         //更新放入电池的状态
         ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(exchangeOrderRsp.getPlaceBatteryName());
+        
+        // 添加换电电池互斥锁
+        redisService.setNx(String.format(CacheConstant.EXCHANGE_PLACE_BATTERY_MUTUAL_LOCK, exchangeOrderRsp.getPlaceBatteryName()), "1", 3 * 1000L, false);
+        
         if (Objects.nonNull(oldElectricityBattery)) {
             //如果放入的电池与用户绑定的电池不一致
             if (!Objects.equals(oldElectricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {

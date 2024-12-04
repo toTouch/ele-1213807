@@ -18,17 +18,14 @@ import com.xiliulou.electricity.converter.PayConfigConverter;
 import com.xiliulou.electricity.converter.model.OrderCreateParamConverterModel;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.enterprise.CloudBeanUseRecord;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseCloudBeanOrder;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
-import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
@@ -75,22 +72,15 @@ import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
-import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
-import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
-import com.xiliulou.electricity.service.enterprise.AnotherPayMembercardRecordService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
-import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseCloudBeanOrderService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.base.PayServiceDispatcher;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
 import com.xiliulou.pay.base.request.BasePayRequest;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.v2.query.WechatV3OrderRequest;
@@ -634,8 +624,8 @@ public class ElectricityTradeOrderServiceImpl extends ServiceImpl<ElectricityTra
     
     @Override
     @Slave
-    public List<ElectricityTradeOrder> listByChannelOrderNoList(List<String> transactionIdList) {
-        return baseMapper.selectListByChannelOrderNoList(transactionIdList);
+    public List<ElectricityTradeOrder> listByChannelOrderNoList(List<String> transactionIdList, Integer status, Long endTime) {
+        return baseMapper.selectListByChannelOrderNoList(transactionIdList, status, endTime);
     }
     
     @Override
