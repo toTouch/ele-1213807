@@ -61,6 +61,11 @@ public class AlipayAppConfigVO {
     private Integer configType;
     
     /**
+     * 商户授权token
+     */
+    private String appAuthToken;
+    
+    /**
      * 加盟商id
      */
     private Long franchiseeId;

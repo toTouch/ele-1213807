@@ -61,4 +61,9 @@ public class AlipayAppConfigQuery {
      */
     private Long franchiseeId;
     
+    /**
+     * 商户授权token
+     */
+    private String appAuthToken;
+    
 }
