@@ -344,14 +344,14 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 // 存在互通加盟商
                 return Triple.of(true, null, mutualExchangeFranchiseePair.getRight());
             } else {
-                log.warn("ORDER WARN! user fId  is not equal franchiseeId,tenantId is {}, uidF is {}, eidF is {}", tenantId, franchiseeId, otherFranchiseeId);
+                log.warn("ORDER WARN! Mutual Check, user fId is not equal franchiseeId,tenantId is {}, uidF is {}, eidF is {}", tenantId, franchiseeId, otherFranchiseeId);
                 return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
             }
         } else {
             if (Objects.nonNull(otherFranchiseeId) && Objects.equals(franchiseeId, otherFranchiseeId)) {
                 return Triple.of(true, null, CollUtil.newHashSet().add(franchiseeId));
             } else {
-                log.warn("ORDER WARN! user fId  is not equal franchiseeId,tenantId is {}, uidF is {}, eidF is {}", tenantId, franchiseeId, otherFranchiseeId);
+                log.warn("ORDER WARN! Normal Check ,user fId is not equal franchiseeId,tenantId is {}, uidF is {}, eidF is {}", tenantId, franchiseeId, otherFranchiseeId);
                 return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
             }
         }
@@ -359,14 +359,12 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Override
     public void mutualBatteryExport(HttpServletResponse response) {
-        
         List<ExportMutualBatteryBO> mutualBatteryBOList = electricityBatteryService.queryMutualBattery(TenantContextHolder.getTenantId());
         if (Objects.isNull(mutualBatteryBOList)) {
             throw new BizException("402010", "电池数据不存在");
         }
         
         List<ExportMutualBatteryVO> exportMutualBatteryVOList = CollUtil.newArrayList();
-        
         for (ExportMutualBatteryBO bo : mutualBatteryBOList) {
             // 只导出互通加盟商的电池
             Pair<Boolean, Set<Long>> pair = satisfyMutualExchangeFranchisee(TenantContextHolder.getTenantId(), bo.getFranchiseeId());
