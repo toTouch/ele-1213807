@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.wp.beanposstprocessor.WechatAccessTokenSevice;
 import com.xiliulou.electricity.constant.DateFormatConstant;
 import com.xiliulou.electricity.constant.MultiFranchiseeConstant;
+import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -64,8 +65,8 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
         
         // 昨天开始
         long startTime = DateUtils.getTimeAgoStartTime(DateFormatConstant.YESTERDAY);
-        // 昨天结束
-        long endTime = DateUtils.getTimeAgoEndTime(DateFormatConstant.YESTERDAY);
+        // 一小时之前的时间戳
+        long endTime = System.currentTimeMillis() - TimeConstant.HOURS_MILLISECOND;
         
         while (tenantFlag) {
             if (Objects.nonNull(tenantId)) {
@@ -98,18 +99,7 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                 
                 String merchantMinProAppId = electricityPayParams.getMerchantMinProAppId();
                 String merchantMinProAppSecert = electricityPayParams.getMerchantMinProAppSecert();
-                if (ObjectUtils.isEmpty(merchantMinProAppId)) {
-                    return;
-                }
-                
-                Pair<Boolean, Object> accessToken = wechatAccessTokenSevice.getAccessToken(merchantMinProAppId, merchantMinProAppSecert);
-                if (!accessToken.getLeft() || ObjectUtils.isEmpty(accessToken.getRight())) {
-                    return;
-                }
-                
-                String token = (String) accessToken.getRight();
-                
-                if (StringUtils.isBlank(token)) {
+                if (ObjectUtils.isEmpty(merchantMinProAppId) || ObjectUtils.isEmpty(merchantMinProAppSecert)) {
                     return;
                 }
                 
@@ -121,6 +111,17 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                 // 查询未发货的订单
                 while (flag) {
                     try {
+                        Pair<Boolean, Object> accessToken = wechatAccessTokenSevice.getAccessToken(merchantMinProAppId, merchantMinProAppSecert);
+                        if (!accessToken.getLeft() || ObjectUtils.isEmpty(accessToken.getRight())) {
+                            return;
+                        }
+    
+                        String token = (String) accessToken.getRight();
+    
+                        if (StringUtils.isBlank(token)) {
+                            return;
+                        }
+                        
                         ShippingQueryOrderResult shippingQueryOrderResult = shippingUploadService.listOrder(token, orderState, lastIndex, pageSize);
                         if (Objects.isNull(shippingQueryOrderResult) || !shippingQueryOrderResult.isSuccess() || ObjectUtils.isEmpty(shippingQueryOrderResult.getOrder_list())) {
                             break;
@@ -135,7 +136,7 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                         List<ShippingOrder> list = shippingQueryOrderResult.getOrder_list();
                         // 判断订单是否存在
                         List<String> transactionIdList = list.stream().map(ShippingOrder::getTransaction_id).collect(Collectors.toList());
-                        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.listByChannelOrderNoList(transactionIdList);
+                        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.listByChannelOrderNoList(transactionIdList, ElectricityTradeOrder.STATUS_SUCCESS, endTime);
                         // 不存在则进行下一步循环操作
                         if (ObjectUtils.isEmpty(electricityTradeOrderList)) {
                             continue;
@@ -151,17 +152,17 @@ public class OrderNotShippedDealServiceImpl implements OrderNotShippedDealServic
                                 // 调用发货接口
                                 shippingUploadService.shippingUploadInfoByToken(shippingOrder.getOpenid(), shippingOrder.getTransaction_id(), token);
                                 TimeUnit.MILLISECONDS.sleep(200);
-                                log.info("SHIPPING INFO SUCCESS! shipping upload success,tenantId={},orderNo={}", tenantId, shippingOrder.getTransaction_id());
+                                log.info("SHIPPING INFO SUCCESS! shipping upload success,tenantId={},orderNo={}", id, shippingOrder.getTransaction_id());
                             } catch (InterruptedException ex) {
                                 log.error("SHIPPING INFO ERROR! shipping upload fail,orderNo={}", shippingOrder.getTransaction_id(), ex);
                                 Thread.currentThread().interrupt();
                             } catch (ShippingException e) {
-                                log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}, orderNo={}", tenantId,shippingOrder.getTransaction_id(), e);
+                                log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}, orderNo={}", id,shippingOrder.getTransaction_id(), e);
                             }
                         });
                         
                     } catch (ShippingException e) {
-                        log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}", tenantId, e);
+                        log.error("SHIPPING INFO ERROR! shipping upload fail,tenantId={}", id, e);
                         break;
                     }
                 }
