@@ -4431,6 +4431,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Slave
     @Override
     public List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery) {
+        // 判断加盟商互通
+        Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(electricityCabinetQuery.getTenantId(),
+                electricityCabinetQuery.getFranchiseeId());
+        if (mutualExchangePair.getLeft()) {
+            electricityCabinetQuery.setFranchiseeIdList(new ArrayList<>(mutualExchangePair.getRight()));
+        } else {
+            electricityCabinetQuery.setFranchiseeIdList(CollUtil.newArrayList(electricityCabinetQuery.getFranchiseeId()));
+        }
+        
         List<ElectricityCabinetVO> electricityCabinets = electricityCabinetMapper.selectElectricityCabinetByAddress(electricityCabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return Collections.EMPTY_LIST;
