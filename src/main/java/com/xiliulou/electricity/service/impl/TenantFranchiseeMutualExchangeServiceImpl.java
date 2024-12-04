@@ -294,12 +294,13 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             });
             // 有互通配置，但是当前加盟商并没有在互通中
             if (CollUtil.isEmpty(mutualFranchiseeSet)) {
+                log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! ExistMutualConfig, but notContainConfig, tenantId is {}, franchiseeId is {}", tenantId, franchiseeId);
                 return Pair.of(false, null);
             }
-            log.info("IsSatisfyFranchiseeIdMutualExchange Info! Current Franchisee SatisfyMutualExchange, tenantId is {} franchiseeId is {}, MutualFranchiseeSet is {}", tenantId,
+            
+            log.info("IsSatisfyFranchiseeIdMutualExchange Info! Current Franchisee SatisfyMutualExchange, tenantId is {}, franchiseeId is {}, MutualFranchiseeSet is {}", tenantId,
                     franchiseeId, JsonUtil.toJson(mutualFranchiseeSet));
             return Pair.of(true, mutualFranchiseeSet);
-            
         } catch (Exception e) {
             log.error("IsSatisfyFranchiseeIdMutualExchange Error!", e);
         }
