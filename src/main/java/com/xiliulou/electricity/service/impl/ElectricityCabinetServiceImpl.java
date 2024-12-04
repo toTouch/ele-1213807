@@ -2841,6 +2841,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             // 多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
             if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 if (Objects.nonNull(electricityBattery) && !Objects.equals(flexibleRenewalType, FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
+                    log.info("FIND USABLE BATTERY CELL NO! use old logic, flexibleRenewalType={}, uid={}.", flexibleRenewalType, uid);
                     // 灵活续费类型不为换电时，使用原逻辑获取满电仓
                     // 用户当前绑定电池的型号
                     String userCurrentBatteryType = electricityBattery.getModel();

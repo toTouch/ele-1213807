@@ -40,7 +40,7 @@ public class OrderQueryV3 {
     private Integer secondFlexibleRenewal;
     
     /**
-     * 旧电池检测失败，灵活续费发生套餐转换，灵活续费为换电时，会拦截不分配电池，传1-开始换电
+     * 灵活续费操作类型，用于控制分配满电仓的逻辑
      */
     private Integer flexibleRenewalType;
     

@@ -3248,7 +3248,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 分配满电仓门
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), orderQuery.getExchangeBatteryType());
+                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), orderQuery.getFlexibleRenewalType());
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
         }
