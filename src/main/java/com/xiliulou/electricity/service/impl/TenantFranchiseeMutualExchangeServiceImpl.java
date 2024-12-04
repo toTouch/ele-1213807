@@ -97,7 +97,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         
         if (mutualExchangeList.size() >= MAX_MUTUAL_EXCHANGE_CONFIG_COUNT) {
-            return R.fail("402002", "最多添加5个配置");
+            return R.fail("402002", "互换加盟商配置最大支持添加5条，请调整配置");
         }
         
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
