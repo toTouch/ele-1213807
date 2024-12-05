@@ -87,15 +87,13 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Override
     public R addConfig(MutualExchangeAddConfigRequest request) {
-        assertMutualName(request.getCombinedName(), request.getStatus());
-        List<Long> combinedFranchisee = request.getCombinedFranchisee();
-        if (CollUtil.isEmpty(combinedFranchisee)) {
-            return R.fail("402000", "互换配置不能为空");
-        }
-        
         Integer tenantId = TenantContextHolder.getTenantId();
-        List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
+        // 校验
+        assertMutualRequest(request, tenantId);
         
+        // 校验配置重复
+        List<Long> combinedFranchisee = request.getCombinedFranchisee();
+        List<TenantFranchiseeMutualExchange> mutualExchangeList = assertMutualExchangeConfig(null, tenantId, combinedFranchisee);
         if (mutualExchangeList.size() >= MAX_MUTUAL_EXCHANGE_CONFIG_COUNT) {
             return R.fail("402002", "互换加盟商配置最大支持添加5条，请调整配置");
         }
@@ -116,22 +114,19 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     @Override
     public R editConfig(MutualExchangeAddConfigRequest request) {
-        if (StrUtil.isNotBlank(request.getCombinedName())) {
-            assertMutualName(request.getCombinedName(), request.getStatus());
-        }
-        
-        Integer tenantId = TenantContextHolder.getTenantId();
-        // 判断是否配置存在
-        List<Long> combinedFranchisee = request.getCombinedFranchisee();
-        if (CollUtil.isNotEmpty(combinedFranchisee)) {
-            assertMutualExchangeConfig(request.getId(), tenantId, combinedFranchisee);
-        }
-        
         // 编辑
         TenantFranchiseeMutualExchange oldMutualExchange = mutualExchangeMapper.selectOneById(request.getId());
         if (Objects.isNull(oldMutualExchange)) {
             return R.fail("402003", "不存在的互换配置");
         }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        // 校验
+        assertMutualRequest(request, tenantId);
+        
+        List<Long> combinedFranchisee = request.getCombinedFranchisee();
+        // 判断是否配置存在
+        assertMutualExchangeConfig(request.getId(), tenantId, combinedFranchisee);
         
         TenantFranchiseeMutualExchange mutualExchange = TenantFranchiseeMutualExchange.builder().combinedName(request.getCombinedName()).tenantId(tenantId)
                 .combinedFranchisee(JsonUtil.toJson(combinedFranchisee)).status(request.getStatus()).updateTime(System.currentTimeMillis()).build();
@@ -434,16 +429,28 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     }
     
     
-    private void assertMutualName(String combinedName, Integer status) {
-        if (Objects.isNull(combinedName)) {
+    private void assertMutualRequest(MutualExchangeAddConfigRequest request, Integer tenantId) {
+        if (Objects.isNull(request.getCombinedName())) {
             throw new BizException("402000", "组合名称不能为空");
         }
-        if (combinedName.length() > MAX_MUTUAL_NAME_LENGTH) {
+        if (request.getCombinedName().length() > MAX_MUTUAL_NAME_LENGTH) {
             throw new BizException("402000", "组合名称不能超过20字");
         }
-        if (Objects.isNull(status)) {
+        if (Objects.isNull(request.getStatus())) {
             throw new BizException("402000", "配置状态不能为空");
         }
+        
+        List<Long> combinedFranchisee = request.getCombinedFranchisee();
+        if (CollUtil.isEmpty(combinedFranchisee)) {
+            throw new BizException("402000", "互换配置不能为空");
+        }
+        
+        // 不同类型加盟商校验
+        Triple<Boolean, String, String> triple = assertFranchiseeModelType(combinedFranchisee);
+        if (!triple.getLeft()) {
+            throw new BizException(triple.getMiddle(), triple.getRight());
+        }
+        
     }
     
     private String getStatusDesc(Integer status) {
@@ -465,4 +472,28 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         }).collect(Collectors.toList());
     }
     
+    
+    private Triple<Boolean, String, String> assertFranchiseeModelType(List<Long> combinedFranchisee) {
+        Set<String> oldFranchiseeSet = new HashSet<>();
+        Set<String> newFranchiseeSet = new HashSet<>();
+        combinedFranchisee.forEach(e -> {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(e);
+            if (Objects.isNull(franchisee)) {
+                log.warn("AssertFranchiseeModelType Warn! franchisee is null, franchiseeId is {}", e);
+                throw new BizException("402005", "选择中部分加盟商不存在，请检查");
+            }
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                newFranchiseeSet.add(franchisee.getName());
+            } else {
+                oldFranchiseeSet.add(franchisee.getName());
+            }
+        });
+        
+        if (CollUtil.isNotEmpty(oldFranchiseeSet) && CollUtil.isNotEmpty(newFranchiseeSet)) {
+            String msg = " %s为标准型号加盟商，%s为多型号加盟商，系统仅支持型号类型相同的加盟商互换，请检查";
+            return Triple.of(false, "402004", String.format(msg, String.join(",", oldFranchiseeSet), String.join(",", newFranchiseeSet)));
+        }
+        
+        return Triple.of(true, null, null);
+    }
 }
