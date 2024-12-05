@@ -136,6 +136,9 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             return Collections.emptyList();
         }
         
+        // 一次性生成全部的payNo，以供后续使用
+        InstallmentUtil.generatePayNo(installmentRecord.getUid(), planList);
+        
         return planList;
     }
     

@@ -106,16 +106,16 @@ public class InstallmentUtil {
         String uidStr = String.format("%08d", uid);
         String payNo;
         if (uidStr.length() == 8) {
-            payNo = uidStr + String.valueOf(System.currentTimeMillis()).substring(0, 11);
+            payNo = uidStr + String.valueOf(System.currentTimeMillis()).substring(0, 10);
         } else {
-            payNo = uidStr.substring(0, 8) + String.valueOf(System.currentTimeMillis()).substring(0, 11);
+            payNo = uidStr.substring(0, 8) + String.valueOf(System.currentTimeMillis()).substring(0, 10);
         }
         
         // payNo要求20位字符串
-        // 采用规则：uid不够8位，以0凑足8位，超过的取前8位，拼上时间戳的前11位，再按每一期代扣计划的数量拼上的0、1、2...的偏移量
+        // 采用规则：uid不够8位，以0凑足8位，超过的取前8位，拼上时间戳的前10位，代扣计划序号0、1、2...组成的2位字符串
         // 在uid未超过1亿时可以完全避免重复
-        for (int i = 0; i < deductionPlans.size(); i++) {
-            deductionPlans.get(i).setPayNo(payNo + i);
+        for (int i = 1; i <= deductionPlans.size(); i++) {
+            deductionPlans.get(i).setPayNo(payNo + String.format("%02d", i));
         }
     }
 }

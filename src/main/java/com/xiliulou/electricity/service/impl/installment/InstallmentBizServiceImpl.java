@@ -372,9 +372,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301003", "签约代扣功能未配置相关信息！请联系客服处理");
             }
             
-            // 生成payNo
-            InstallmentUtil.generatePayNo(uid, deductionPlans);
-            
             // 发起代扣
             Triple<Boolean, String, Object> initiatingDeductTriple = initiatingDeduct(deductionPlans, installmentRecord, fyConfig);
             

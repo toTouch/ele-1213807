@@ -143,9 +143,6 @@ public class FyInstallmentHandler {
                 return;
             }
             
-            // 生成payNo
-            InstallmentUtil.generatePayNo(installmentRecord.getUid(), deductionPlanList);
-            
             Triple<Boolean, String, Object> triple = installmentBizService.initiatingDeduct(deductionPlanList, installmentRecord, fyConfig);
             if (!triple.getLeft()) {
                 log.warn("DEDUCT TASK WARN! DeductT fail, uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo());

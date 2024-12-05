@@ -87,9 +87,6 @@ public class InstallmentDeductConsumer implements RocketMQListener<String> {
                 return;
             }
             
-            // 生成payNo
-            InstallmentUtil.generatePayNo(installmentRecord.getUid(), deductionPlanList);
-            
             installmentBizService.initiatingDeduct(deductionPlanList, installmentRecord, fyConfig);
         } finally {
             MDC.clear();
