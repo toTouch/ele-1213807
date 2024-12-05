@@ -82,11 +82,10 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             BeanUtils.copyProperties(deductionPlan, eachVO);
             
             InstallmentDeductionPlanAssemblyVO planAssemblyVO = assemblyVOMap.get(deductionPlan.getIssue());
-            List<InstallmentDeductionPlanEachVO> deductionPlanEachVOs = planAssemblyVO.getInstallmentDeductionPlanEachVOs();
-            if (Objects.isNull(deductionPlanEachVOs)) {
-                deductionPlanEachVOs = new ArrayList<>();
+            if (Objects.isNull(planAssemblyVO.getInstallmentDeductionPlanEachVOs())) {
+                planAssemblyVO.setInstallmentDeductionPlanEachVOs(new ArrayList<>());
             }
-            deductionPlanEachVOs.add(eachVO);
+            planAssemblyVO.getInstallmentDeductionPlanEachVOs().add(eachVO);
         }
         
         return R.ok(new ArrayList<>(assemblyVOMap.values()));
