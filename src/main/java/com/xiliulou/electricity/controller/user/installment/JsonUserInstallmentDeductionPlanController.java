@@ -26,7 +26,7 @@ public class JsonUserInstallmentDeductionPlanController {
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     @GetMapping("/listDeductionPlanForRecord")
-    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
+    public R<List<InstallmentDeductionPlan>> listDeductionPlanForRecordUser(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
         InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
         query.setExternalAgreementNo(externalAgreementNo);
         

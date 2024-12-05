@@ -10,6 +10,8 @@ import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.utils.InstallmentUtil;
+import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
+import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanEachVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +22,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
@@ -56,6 +60,31 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     @Override
     public Integer update(InstallmentDeductionPlan installmentDeductionPlan) {
         return installmentDeductionPlanMapper.update(installmentDeductionPlan);
+    }
+    
+    @Override
+    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordAdmin(InstallmentDeductionPlanQuery query) {
+        List<InstallmentDeductionPlan> deductionPlans = listDeductionPlanByAgreementNo(query).getData();
+        
+        Map<Integer, InstallmentDeductionPlanAssemblyVO> assemblyVOMap = new HashMap<>();
+        
+        for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+            if (Objects.isNull(assemblyVOMap.get(deductionPlan.getIssue()))) {
+                InstallmentDeductionPlanAssemblyVO assemblyVO = new InstallmentDeductionPlanAssemblyVO();
+                BeanUtils.copyProperties(deductionPlan, assemblyVO);
+                
+                assemblyVOMap.put(deductionPlan.getIssue(), assemblyVO);
+            }
+        }
+        
+        for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+            InstallmentDeductionPlanEachVO eachVO = new InstallmentDeductionPlanEachVO();
+            BeanUtils.copyProperties(deductionPlan, eachVO);
+            
+            assemblyVOMap.get(deductionPlan.getIssue()).getInstallmentDeductionPlanEachVOs().add(eachVO);
+        }
+        
+        return R.ok((List<InstallmentDeductionPlanAssemblyVO>) assemblyVOMap.values());
     }
     
     @Slave

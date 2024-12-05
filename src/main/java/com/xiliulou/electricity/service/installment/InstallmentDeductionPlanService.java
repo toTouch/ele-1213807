@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
+import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
 
 import java.util.List;
 
@@ -37,6 +38,13 @@ public interface InstallmentDeductionPlanService {
      * @return 更新操作影响的数据行数
      */
     Integer update(InstallmentDeductionPlan installmentDeductionPlan);
+    
+    /**
+     * 后台根据签约记录查询代扣计划
+     *
+     * @param query 查询请求对象
+     */
+    R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordAdmin(InstallmentDeductionPlanQuery query);
     
     /**
      * 根据分期套餐签约记录查询代扣计划

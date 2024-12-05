@@ -10,6 +10,7 @@ import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -42,7 +43,7 @@ public class JsonAdminInstallmentDeductionPlanController {
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     @GetMapping("/listDeductionPlanForRecord")
-    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
+    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordAdmin(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
@@ -73,6 +74,6 @@ public class JsonAdminInstallmentDeductionPlanController {
         installmentRecordQuery.setExternalAgreementNo(externalAgreementNo);
         installmentRecordQuery.setTenantId(tenantId);
         
-        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(installmentRecordQuery);
+        return installmentDeductionPlanService.listDeductionPlanForRecordAdmin(installmentRecordQuery);
     }
 }
