@@ -92,6 +92,11 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
                 BigDecimal paidAmount = planAssemblyVO.getPaidAmount();
                 planAssemblyVO.setPaidAmount(Objects.isNull(paidAmount) ? deductionPlan.getAmount() : paidAmount.add(deductionPlan.getAmount()));
+                
+                // 将每一期的还款时间设置为最晚还款的代扣计划的还款时间
+                if (deductionPlan.getPaymentTime() > planAssemblyVO.getPaymentTime()) {
+                    planAssemblyVO.setPaymentTime(deductionPlan.getPaymentTime());
+                }
             } else {
                 BigDecimal unPaidAmount = planAssemblyVO.getUnPaidAmount();
                 planAssemblyVO.setCompletionStatus(PLAN_ASSEMBLY_STATUS_NOT_COMPLETE);
