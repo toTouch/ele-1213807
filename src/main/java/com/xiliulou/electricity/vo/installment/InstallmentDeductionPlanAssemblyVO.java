@@ -37,6 +37,11 @@ public class InstallmentDeductionPlanAssemblyVO {
      */
     private Integer packageType;
     
+    /**
+     * 租期，单位天
+     */
+    private Integer rentTime;
+    
     private Integer tenantId;
     
     private Long franchiseeId;
