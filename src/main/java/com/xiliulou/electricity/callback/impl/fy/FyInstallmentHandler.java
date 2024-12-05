@@ -70,6 +70,7 @@ public class FyInstallmentHandler {
         try {
             String decrypt = FyAesUtil.decrypt(bizContent, fengYunConfig.getAesKey());
             InstallmentSignNotifyQuery signNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentSignNotifyQuery.class);
+            log.info("SIGN NOTIFY. InstallmentSignNotifyQuery={}", signNotifyQuery);
             
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(signNotifyQuery.getExternalAgreementNo());
             
@@ -95,6 +96,8 @@ public class FyInstallmentHandler {
         try {
             String decrypt = FyAesUtil.decrypt(bizContent, fengYunConfig.getAesKey());
             InstallmentDeductNotifyQuery deductNotifyQuery = JsonUtil.fromJson(decrypt, InstallmentDeductNotifyQuery.class);
+            log.info("AGREEMENT PAY NOTIFY. InstallmentDeductNotifyQuery={}", deductNotifyQuery);
+            
             InstallmentDeductionRecord deductionRecord = installmentDeductionRecordService.queryByPayNo(deductNotifyQuery.getPayNo());
             
             // 处理代扣成功的场景
