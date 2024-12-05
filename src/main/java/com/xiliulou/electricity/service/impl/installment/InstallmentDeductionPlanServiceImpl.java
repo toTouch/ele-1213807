@@ -72,42 +72,6 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     }
     
     @Override
-    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanByAgreementNoUser(InstallmentDeductionPlanQuery query) {
-        List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query);
-        if (CollectionUtils.isEmpty(deductionPlanList)) {
-            return R.ok(Collections.emptyList());
-        }
-        
-        Map<Integer, InstallmentDeductionPlanAssemblyVO> assemblyVOMap = new HashMap<>();
-        for (InstallmentDeductionPlan deductionPlan : deductionPlanList) {
-            if (Objects.isNull(assemblyVOMap.get(deductionPlan.getIssue()))) {
-                InstallmentDeductionPlanAssemblyVO assemblyVO = new InstallmentDeductionPlanAssemblyVO();
-                BeanUtils.copyProperties(deductionPlan, assemblyVO);
-                assemblyVO.setStatus(PLAN_ASSEMBLY_STATUS_COMPLETED);
-                
-                assemblyVOMap.put(deductionPlan.getIssue(), assemblyVO);
-            }
-            
-            InstallmentDeductionPlanAssemblyVO planAssemblyVO = assemblyVOMap.get(deductionPlan.getIssue());
-            if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
-                BigDecimal paidAmount = planAssemblyVO.getPaidAmount();
-                planAssemblyVO.setPaidAmount(Objects.isNull(paidAmount) ? deductionPlan.getAmount() : paidAmount.add(deductionPlan.getAmount()));
-                
-                // 将每一期的还款时间设置为最晚还款的代扣计划的还款时间
-                if (deductionPlan.getPaymentTime() > planAssemblyVO.getPaymentTime()) {
-                    planAssemblyVO.setPaymentTime(deductionPlan.getPaymentTime());
-                }
-            } else {
-                BigDecimal unPaidAmount = planAssemblyVO.getUnPaidAmount();
-                planAssemblyVO.setCompletionStatus(PLAN_ASSEMBLY_STATUS_NOT_COMPLETE);
-                planAssemblyVO.setUnPaidAmount(Objects.isNull(unPaidAmount) ? deductionPlan.getAmount() : unPaidAmount.add(deductionPlan.getAmount()));
-            }
-        }
-        
-        return R.ok(new ArrayList<>(assemblyVOMap.values()));
-    }
-    
-    @Override
     public List<InstallmentDeductionPlan> generateDeductionPlan(InstallmentRecord installmentRecord) {
         // 生成一个签约记录下所有代扣计划的相同数据
         InstallmentDeductionPlan basicDeductionPlan = new InstallmentDeductionPlan();

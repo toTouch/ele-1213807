@@ -115,7 +115,7 @@ public class InstallmentUtil {
         // 采用规则：uid不够8位，以0凑足8位，超过的取前8位，拼上时间戳的前10位，代扣计划序号0、1、2...组成的2位字符串
         // 在uid未超过1亿时可以完全避免重复
         for (int i = 1; i <= deductionPlans.size(); i++) {
-            deductionPlans.get(i).setPayNo(payNo + String.format("%02d", i));
+            deductionPlans.get(i - 1).setPayNo(payNo + String.format("%02d", i));
         }
     }
 }
