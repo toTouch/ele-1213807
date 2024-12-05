@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
-import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
 
 import java.util.List;
 

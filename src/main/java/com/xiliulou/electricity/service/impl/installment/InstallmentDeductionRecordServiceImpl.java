@@ -8,7 +8,6 @@ import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuer
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;

@@ -1,13 +1,9 @@
 package com.xiliulou.electricity.service.installment;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.FyConfig;
-import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
-import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -50,7 +46,6 @@ public interface InstallmentDeductionRecordService {
      */
     R<Integer> count(InstallmentDeductionRecordQuery installmentDeductionRecordQuery);
     
-
     
     /**
      * 根据资金处理订单号查询代扣记录
@@ -62,6 +57,7 @@ public interface InstallmentDeductionRecordService {
     
     /**
      * 根据请求签约号及其他参数查询代扣记录
+     *
      * @param installmentDeductionRecordQuery 查询参数
      * @return 代扣记录
      */
