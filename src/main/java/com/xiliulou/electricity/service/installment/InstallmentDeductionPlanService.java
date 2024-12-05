@@ -40,13 +40,6 @@ public interface InstallmentDeductionPlanService {
     Integer update(InstallmentDeductionPlan installmentDeductionPlan);
     
     /**
-     * 后台根据签约记录查询代扣计划
-     *
-     * @param query 查询请求对象
-     */
-    R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordAdmin(InstallmentDeductionPlanQuery query);
-    
-    /**
      * 根据分期套餐签约记录查询代扣计划
      *
      * @param query 请求签约号

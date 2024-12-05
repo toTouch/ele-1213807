@@ -43,7 +43,7 @@ public class JsonAdminInstallmentDeductionPlanController {
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     @GetMapping("/listDeductionPlanForRecord")
-    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordAdmin(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
+    public R<List<InstallmentDeductionPlan>> listDeductionPlanForRecordAdmin(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
@@ -74,6 +74,6 @@ public class JsonAdminInstallmentDeductionPlanController {
         installmentRecordQuery.setExternalAgreementNo(externalAgreementNo);
         installmentRecordQuery.setTenantId(tenantId);
         
-        return installmentDeductionPlanService.listDeductionPlanForRecordAdmin(installmentRecordQuery);
+        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(installmentRecordQuery);
     }
 }

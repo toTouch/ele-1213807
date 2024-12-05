@@ -62,35 +62,6 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         return installmentDeductionPlanMapper.update(installmentDeductionPlan);
     }
     
-    @Override
-    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordAdmin(InstallmentDeductionPlanQuery query) {
-        List<InstallmentDeductionPlan> deductionPlans = listDeductionPlanByAgreementNo(query).getData();
-        
-        Map<Integer, InstallmentDeductionPlanAssemblyVO> assemblyVOMap = new HashMap<>();
-        
-        for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
-            if (Objects.isNull(assemblyVOMap.get(deductionPlan.getIssue()))) {
-                InstallmentDeductionPlanAssemblyVO assemblyVO = new InstallmentDeductionPlanAssemblyVO();
-                BeanUtils.copyProperties(deductionPlan, assemblyVO);
-                
-                assemblyVOMap.put(deductionPlan.getIssue(), assemblyVO);
-            }
-        }
-        
-        for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
-            InstallmentDeductionPlanEachVO eachVO = new InstallmentDeductionPlanEachVO();
-            BeanUtils.copyProperties(deductionPlan, eachVO);
-            
-            InstallmentDeductionPlanAssemblyVO planAssemblyVO = assemblyVOMap.get(deductionPlan.getIssue());
-            if (Objects.isNull(planAssemblyVO.getInstallmentDeductionPlanEachVOs())) {
-                planAssemblyVO.setInstallmentDeductionPlanEachVOs(new ArrayList<>());
-            }
-            planAssemblyVO.getInstallmentDeductionPlanEachVOs().add(eachVO);
-        }
-        
-        return R.ok(new ArrayList<>(assemblyVOMap.values()));
-    }
-    
     @Slave
     @Override
     public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query) {
@@ -155,8 +126,8 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
                     for (int i1 = 0; i1 < suborderNumber.intValue(); i1++) {
                         InstallmentDeductionPlan suborderDeductionPlan = new InstallmentDeductionPlan();
                         BeanUtils.copyProperties(deductionPlan, suborderDeductionPlan);
-                        deductionPlan.setAmount(deductionMaxAmount);
-                        planList.add(deductionPlan);
+                        suborderDeductionPlan.setAmount(deductionMaxAmount);
+                        planList.add(suborderDeductionPlan);
                     }
                 }
             }

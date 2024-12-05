@@ -54,7 +54,6 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
-import com.xiliulou.pay.deposit.fengyun.exception.FyFreeDepositException;
 import com.xiliulou.pay.deposit.fengyun.pojo.query.FyCommonQuery;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyAgreementPayRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQueryAgreementPayRequest;
@@ -81,11 +80,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
@@ -101,8 +98,6 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_SUCCESS;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_CHANNEL_CODE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_INSUFFICIENT_BALANCE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.FY_RESULT_CODE_SUCCESS;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCELLED;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_CANCEL_PAY;
@@ -656,8 +651,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         }
         
         try {
-            List<CompletableFuture<Triple<Boolean, String, Object>>> results = new ArrayList<>();
-            
             for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
                 String repaymentPlanNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN_AGREEMENT_PAY, installmentRecord.getUid());
                 
@@ -691,55 +684,21 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 FyCommonQuery<FyAgreementPayRequest> fyCommonQuery = generateAgreementPayQuery(deductionPlan, installmentRecord, fyConfig, repaymentPlanNo);
                 
                 inheritableThreadLocal.set(MDC.get(CommonConstant.TRACE_ID));
-                // 异步发起代扣，处理返回结果
-                CompletableFuture<Triple<Boolean, String, Object>> agreementPayResult = CompletableFuture.supplyAsync(() -> {
+                // 异步发起代扣
+                initiatingDeductThreadPool.execute(() -> {
+                    MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
                     FyResult<FyAgreementPayRsp> fyAgreementPayRspFyResult = null;
                     try {
-                        MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
                         fyAgreementPayRspFyResult = fyAgreementService.agreementPay(fyCommonQuery);
-                        
-                        // 判断，返回成功的结果
-                        if (Objects.nonNull(fyAgreementPayRspFyResult) && Objects.equals(FY_RESULT_CODE_SUCCESS, fyAgreementPayRspFyResult.getCode())) {
-                            return Triple.of(true, null, null);
-                        }
-                        
-                        // 修改代扣计划与代扣记录的状态为失败
-                        handleDeductFail(deductionPlan, deductionRecord);
-                        
-                        // 判断结果，返回特定失败结果
-                        if (Objects.nonNull(fyAgreementPayRspFyResult) && Objects.equals(FY_RESULT_CODE_CHANNEL_CODE, fyAgreementPayRspFyResult.getCode())) {
-                            return Triple.of(false, "301027", "请联系管理员检查分期签约配置");
-                        } else if (Objects.nonNull(fyAgreementPayRspFyResult) && Objects.equals(FY_RESULT_CODE_INSUFFICIENT_BALANCE, fyAgreementPayRspFyResult.getCode())) {
-                            return Triple.of(false, "301028", "支付宝余额不足，代扣失败");
-                        }
-                    } catch (FyFreeDepositException e) {
-                        log.warn("DEDUCT FAIL! uid={}, externalAgreementNo={}, FyResult={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(),
-                                fyAgreementPayRspFyResult);
-                        
-                        // 修改代扣计划与代扣记录的状态为失败
-                        handleDeductFail(deductionPlan, deductionRecord);
-                    } finally {
-                        MDC.clear();
+                    } catch (Exception e) {
+                        log.error("DEDUCT FAIL! uid={}, externalAgreementNo={}, FyResult={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(),
+                                fyAgreementPayRspFyResult, e);
                     }
                     
-                    return Triple.of(false, "301006", "代扣失败");
-                }, initiatingDeductThreadPool);
-                
-                results.add(agreementPayResult);
+                });
             }
             
-            // 等待每一笔代扣调用接口执行完毕，拿到返回结果
-            CompletableFuture<Void> allOf = CompletableFuture.allOf(results.toArray(new CompletableFuture[0]));
-            allOf.join();
-            
-            // 根据每一笔代扣的结果返回整体的执行结果
-            for (CompletableFuture<Triple<Boolean, String, Object>> result : results) {
-                Triple<Boolean, String, Object> triple = result.get();
-                if (Objects.equals(Boolean.FALSE, triple.getLeft())) {
-                    return triple;
-                }
-            }
-            return Triple.of(true, null, null);
+            return Triple.of(true, "301052", "已发起代扣，请稍后查看代扣结果");
         } catch (Exception e) {
             log.error("INSTALLMENT DEDUCT ERROR! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(), e);
         } finally {

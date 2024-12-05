@@ -68,21 +68,21 @@ public class InstallmentDeductConsumer implements RocketMQListener<String> {
         try {
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(commonDTO.getExternalAgreementNo());
             if (Objects.isNull(installmentRecord)) {
-                log.warn("INSTALLMENT CONSUMER. installmentRecord is null, externalAgreementNo={}", commonDTO.getExternalAgreementNo());
+                log.warn("INSTALLMENT DEDUCT CONSUMER. installmentRecord is null, externalAgreementNo={}", commonDTO.getExternalAgreementNo());
                 retry(commonDTO);
                 return;
             }
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
             if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
-                log.error("INSTALLMENT CONSUMER. FyConfig is wrong, externalAgreementNo={}", commonDTO.getExternalAgreementNo());
+                log.error("INSTALLMENT DEDUCT CONSUMER. FyConfig is wrong, externalAgreementNo={}", commonDTO.getExternalAgreementNo());
                 return;
             }
             
             List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanService.listByExternalAgreementNoAndIssue(installmentRecord.getTenantId(),
-                    installmentRecord.getAgreementNo(), 1);
+                    installmentRecord.getExternalAgreementNo(), 1);
             if (CollectionUtils.isEmpty(deductionPlanList)) {
-                log.warn("INSTALLMENT CONSUMER. deductionPlanList is null, externalAgreementNo={}", commonDTO.getExternalAgreementNo());
+                log.warn("INSTALLMENT DEDUCT CONSUMER. deductionPlanList is null, externalAgreementNo={}", commonDTO.getExternalAgreementNo());
                 retry(commonDTO);
                 return;
             }

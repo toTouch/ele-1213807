@@ -142,7 +142,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                 if (Objects.equals(installmentRecord.getInstallmentNo(), issue)) {
                     FyConfig config = fyConfigService.queryByTenantIdFromCache(installmentRecord.getTenantId());
                     if (Objects.isNull(config)) {
-                        log.error("AUTO TERMINATING INSTALLMENT RECORD ERROR! no fyConfig, tenantId={}", installmentRecord.getTenantId());
+                        log.error("INSTALLMENT RENEW CONSUMER. no fyConfig, tenantId={}", installmentRecord.getTenantId());
                     }
                     
                     InstallmentTerminatingRecord installmentTerminatingRecord = installmentTerminatingRecordService.generateTerminatingRecord(installmentRecord, "分期套餐代扣完毕",
