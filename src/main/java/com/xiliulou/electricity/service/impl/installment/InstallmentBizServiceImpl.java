@@ -641,7 +641,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         commonDTO.setIssue(deductionPlan.getIssue());
         commonDTO.setAmount(deductionRecord.getAmount());
         commonDTO.setTraceId(MDC.get(CommonConstant.TRACE_ID));
-        rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_TAG);
+        rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_NOTIFY_TAG);
     }
     
     @Override
