@@ -11,7 +11,6 @@ import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
-import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanEachVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
