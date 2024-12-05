@@ -46,6 +46,7 @@ import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.InstallmentUtil;
@@ -162,6 +163,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     private final FreeDepositDataService freeDepositDataService;
     
     private final RocketMqService rocketMqService;
+    
+    private final InstallmentSearchApiService installmentSearchApiService;
     
     private XllThreadPoolExecutorService initiatingDeductThreadPool;
     
@@ -398,7 +401,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301019", "当前套餐正在签约或取消，请稍候再试");
             }
             
-            InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+            InstallmentRecord installmentRecord = installmentSearchApiService.queryRecordWithStatusForUser(uid,
                     Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN));
             if (Objects.isNull(installmentRecord)) {
                 return R.fail("301004", "请购买分期套餐成功后，再签约");

@@ -64,6 +64,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -199,7 +200,7 @@ public class UserServiceImpl implements UserService {
     private ServicePhoneService servicePhoneService;
     
     @Resource
-    private InstallmentRecordService installmentRecordService;
+    private InstallmentSearchApiService installmentSearchApiService;
     
     
     /**
@@ -1023,7 +1024,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "100253", "用户已租车辆，请先退还后再删除");
         }
         
-        InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+        InstallmentRecord installmentRecord = installmentSearchApiService.queryRecordWithStatusForUser(uid,
                 Arrays.asList(INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
         if (Objects.nonNull(installmentRecord)) {
             return Triple.of(false, "301051", "存在分期套餐，请取消签约或解约后再试");

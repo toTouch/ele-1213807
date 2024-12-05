@@ -85,6 +85,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
@@ -266,6 +267,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Autowired
     private InstallmentRecordService installmentRecordService;
+    
+    @Resource
+    private InstallmentSearchApiService installmentSearchApiService;
     
     @Autowired
     private ApplicationContext applicationContext;
@@ -1039,7 +1043,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
             
-            InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+            InstallmentRecord installmentRecord = installmentSearchApiService.queryRecordWithStatusForUser(uid,
                     Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
             if (Objects.nonNull(installmentRecord)) {
                 return R.fail("301008", "当前有进行中的分期签约，完成或取消当前分期签约后方可续签分期套餐");

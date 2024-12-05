@@ -19,6 +19,7 @@ import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanServ
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -41,20 +42,20 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class InstallmentTerminatingRecordServiceImpl implements InstallmentTerminatingRecordService {
     
-    private InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
+    private final InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
     
-    private FranchiseeService franchiseeService;
+    private final FranchiseeService franchiseeService;
     
-    private BatteryMemberCardService batteryMemberCardService;
+    private final BatteryMemberCardService batteryMemberCardService;
     
-    private CarRentalPackageService carRentalPackageService;
+    private final CarRentalPackageService carRentalPackageService;
     
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
     
-    private UserService userService;
+    private final UserService userService;
     
     
     @Override

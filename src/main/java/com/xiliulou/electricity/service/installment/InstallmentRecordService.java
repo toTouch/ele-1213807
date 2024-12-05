@@ -21,6 +21,7 @@ public interface InstallmentRecordService {
     
     /**
      * 新增单条数据
+     *
      * @param installmentRecord 数据库表实体类对象
      * @return 保存的数据条数
      */
@@ -28,6 +29,7 @@ public interface InstallmentRecordService {
     
     /**
      * 更新单条数据
+     *
      * @param installmentRecord 数据库表实体类对象
      * @return 更新操作影响的数据行数
      */
@@ -35,6 +37,7 @@ public interface InstallmentRecordService {
     
     /**
      * 分页查询数据
+     *
      * @param installmentRecordQuery 分页查询请求参数
      * @return 分页数据VO结果
      */
@@ -42,6 +45,7 @@ public interface InstallmentRecordService {
     
     /**
      * 查询分页总数
+     *
      * @param installmentRecordQuery 分页查询请求参数
      * @return 分页总数
      */
@@ -49,22 +53,17 @@ public interface InstallmentRecordService {
     
     /**
      * 生成签约记录，
-     * @param query 购买请求对象
+     *
+     * @param query    购买请求对象
      * @param userInfo 用户信息
      * @return 生成分期签约记录的结果
      */
-    Triple<Boolean, String, InstallmentRecord> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo, UserInfo userInfo);
-    
-    /**
-     * 根据状态查询用户的最近一条签约记录
-     * @param uid 用户
-     * @param status 签约记录状态
-     * @return 签约记录
-     */
-    InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> status);
+    Triple<Boolean, String, InstallmentRecord> generateInstallmentRecord(InstallmentPayQuery query, BatteryMemberCard batteryMemberCard, CarRentalPackagePo carRentalPackagePo,
+            UserInfo userInfo);
     
     /**
      * 根据请求签约号查询签约记录
+     *
      * @param externalAgreementNo 请求签约号
      * @return 返回签约记录
      */
@@ -72,6 +71,7 @@ public interface InstallmentRecordService {
     
     /**
      * 根据请求签约号查询签约记录不包含初始化状态的记录
+     *
      * @param externalAgreementNo 请求签约号
      * @return 返回签约记录
      */
@@ -79,6 +79,7 @@ public interface InstallmentRecordService {
     
     /**
      * 查询小程序登录用户的签约记录信息
+     *
      * @param externalAgreementNo 请求签约号
      * @return 返回详细信息
      */
@@ -86,6 +87,7 @@ public interface InstallmentRecordService {
     
     /**
      * 取消签约
+     *
      * @param externalAgreementNo 请求签约号
      * @return 处理结果
      */
@@ -93,6 +95,7 @@ public interface InstallmentRecordService {
     
     /**
      * 查询用户最新一条签约记录
+     *
      * @param uid uid
      * @return 签约记录
      */

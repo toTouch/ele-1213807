@@ -9,6 +9,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,12 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class InstallmentDeductionRecordServiceImpl implements InstallmentDeductionRecordService {
     
-    private InstallmentDeductionRecordMapper installmentDeductionRecordMapper;
+    private final InstallmentDeductionRecordMapper installmentDeductionRecordMapper;
     
-    private FranchiseeService franchiseeService;
+    private final FranchiseeService franchiseeService;
     
     
     @Override

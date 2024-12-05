@@ -6,7 +6,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
@@ -20,7 +19,6 @@ import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.query.installment.InstallmentRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
@@ -31,8 +29,8 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.installment.InstallmentRecordVO;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -61,25 +59,24 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  * @Date: 2024/8/26 10:51
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class InstallmentRecordServiceImpl implements InstallmentRecordService {
     
-    private InstallmentRecordMapper installmentRecordMapper;
+    private final InstallmentRecordMapper installmentRecordMapper;
     
-    private FranchiseeService franchiseeService;
+    private final FranchiseeService franchiseeService;
     
-    private BatteryMemberCardService batteryMemberCardService;
+    private final BatteryMemberCardService batteryMemberCardService;
     
-    private CarRentalPackageService carRentalPackageService;
+    private final CarRentalPackageService carRentalPackageService;
     
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
     
-    private InstallmentTerminatingRecordService installmentTerminatingRecordService;
+    private final InstallmentTerminatingRecordService installmentTerminatingRecordService;
     
-    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    private final RedisService redisService;
     
-    private RedisService redisService;
     
     @Override
     public Integer insert(InstallmentRecord installmentRecord) {
@@ -153,12 +150,6 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             installmentRecord.setPackageId(batteryMemberCard.getId());
         }
         return Triple.of(true, null, installmentRecord);
-    }
-    
-    @Slave
-    @Override
-    public InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> statuses) {
-        return installmentRecordMapper.selectRecordWithStatusForUser(uid, statuses);
     }
     
     @Slave
@@ -237,7 +228,7 @@ public class InstallmentRecordServiceImpl implements InstallmentRecordService {
             return R.fail("301005", "签约记录不存在");
         }
         
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, installmentRecord.getUid()), "1", 3*1000L, false)) {
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_SIGN_CANCEL_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             return R.fail("301019", "当前套餐正在签约或取消，请稍候再试");
         }
         
