@@ -2233,6 +2233,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     selectBox.getCellNo());
             return Triple.of(false, "100025", "该仓门已被禁用");
         }
+        
+        ElectricityBattery battery = electricityBatteryService.queryByBindSn(selectBox.getSn());
+        if (Objects.isNull(battery)) {
+            log.warn("SELECTION EXCHANGE ORDER WARN! battery is null, electricityCabinetId={},cell={}, sn is {}", electricityCabinet.getId(), selectBox.getCellNo(),
+                    selectBox.getSn());
+            return Triple.of(false, "100225", "该仓门的电池不存在");
+        }
+        
+        //柜机加盟商与用户加盟商不一致
+        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), battery.getFranchiseeId())) {
+            log.warn("SELECTION EXCHANGE ORDER WARN! UfId is not equal BatteryFid, uidF is {}, BatteryF is {}", userInfo.getFranchiseeId(), battery.getFranchiseeId());
+            return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
+        }
+        
+        
         return Triple.of(true, null, null);
     }
     
