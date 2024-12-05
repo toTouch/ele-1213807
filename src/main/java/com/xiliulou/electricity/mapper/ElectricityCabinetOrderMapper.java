@@ -41,9 +41,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     
     Integer homeOneSuccess(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
     
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,
-            @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
-    
     ElectricityCabinetOrder selectLatestByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
     List<ElectricityCabinetOrder> selectTodayExchangeOrder(@Param("eid") Integer eid, @Param("todayStartTimeStamp") long todayStartTimeStamp,
@@ -55,8 +52,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     ElectricityCabinetOrder selectLatestByUidV2(Long uid);
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
-    
-    Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
     
     List<ElectricityCabinetOrderVO> selectListSuperAdminPage(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     

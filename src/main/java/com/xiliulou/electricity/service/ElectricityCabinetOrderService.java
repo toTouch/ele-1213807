@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import com.xiliulou.electricity.vo.ExchangeUserSelectVO;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -58,17 +60,11 @@ public interface ElectricityCabinetOrderService {
 
     BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId);
 
-    List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId);
-
     Integer homeMonth(Long uid, Long firstMonth, Long now);
 
     Integer homeTotal(Long uid);
 
     ElectricityCabinetOrder queryByUid(Long uid);
-
-    ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId, Integer cellNo);
-
-    String findUsableCellNo(Integer id);
 
     @Deprecated
     R queryNewStatus(String orderId);
@@ -76,6 +72,8 @@ public interface ElectricityCabinetOrderService {
     R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
     R checkOpenSessionId(String sessionId);
+    
+    Triple<Boolean, String, Object> exchangeOrderCheck(OrderQueryCheck queryCheck);
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
     
@@ -104,16 +102,6 @@ public interface ElectricityCabinetOrderService {
     
     ElectricityCabinetOrderVO selectLatestOrderAndCabinetInfo(Long uid);
     
-    /**
-     * 根据更换手机号
-     *
-     * @param tenantId 租户ID
-     * @param uid      用户ID
-     * @param newPhone 新号码
-     * @return 影响行数
-     */
-    Integer updatePhoneByUid(Integer tenantId, Long uid, String newPhone);
-    
     R listSuperAdminPage(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
     
     R queryListv2(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
@@ -126,6 +114,10 @@ public interface ElectricityCabinetOrderService {
     R openFullCell(OpenFullCellQuery query);
     
     List<ElectricityCabinetOrder> listByOrderIdList(Set<String> exchangeOrderIdList);
+    
+    List<String> getBatteryTypesForCheck(UserInfo userInfo, ElectricityBattery battery, List<String> userBatteryTypes);
+    
+    void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo);
     
      Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -15,16 +16,6 @@ import java.util.List;
  */
 public interface UserBatteryTypeService {
 
-    UserBatteryType queryByIdFromDB(Long id);
-
-    UserBatteryType queryByIdFromCache(Long id);
-
-    Integer insert(UserBatteryType userBatteryType);
-
-    Integer update(UserBatteryType userBatteryType);
-
-    Boolean deleteById(Long id);
-
     Integer batchInsert(List<UserBatteryType> buildUserBatteryType);
 
     List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo);
@@ -32,8 +23,6 @@ public interface UserBatteryTypeService {
     Integer deleteByUid(Long uid);
 
     List<String> selectByUid(Long uid);
-
-    String selectUserMaxBatteryType(Long uid);
 
     String selectUserSimpleBatteryType(Long uid);
 
@@ -48,8 +37,6 @@ public interface UserBatteryTypeService {
     Triple<Boolean, String, Object> modifyUserBatteryType(UserBatteryType userBatteryType);
     
     List<UserBatteryType> listByUid(Long uid);
-    
-    Integer batchDeleteByIds(List<Long> ids);
     
     Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes);
 }

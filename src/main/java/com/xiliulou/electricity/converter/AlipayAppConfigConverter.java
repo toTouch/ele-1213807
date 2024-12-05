@@ -42,6 +42,7 @@ public class AlipayAppConfigConverter {
         alipayAppConfigBizDetails.setTenantId(alipayAppConfig.getTenantId());
         alipayAppConfigBizDetails.setConfigType(alipayAppConfig.getConfigType());
         alipayAppConfigBizDetails.setFranchiseeId(alipayAppConfig.getFranchiseeId());
+        alipayAppConfigBizDetails.setAppAuthToken(alipayAppConfig.getAppAuthToken());
         return alipayAppConfigBizDetails;
         
     }

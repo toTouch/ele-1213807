@@ -62,6 +62,8 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
      */
     private String appPrivateKey;
     
+    private String appAuthToken;
+    
     /**
      * 解密密钥
      */

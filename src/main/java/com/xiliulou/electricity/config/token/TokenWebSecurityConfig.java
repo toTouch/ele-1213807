@@ -2,6 +2,7 @@ package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.service.token.AliPayThirdAuthenticationServiceImpl;
+import com.xiliulou.electricity.service.token.AliPayThirdForThirdPartyAuthenticationServiceImpl;
 import com.xiliulou.electricity.service.token.LoginSuccessPostProcessor;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
@@ -18,6 +19,7 @@ import com.xiliulou.security.authentication.TokenLogoutHandler;
 import com.xiliulou.security.authentication.thirdauth.CustomThirdAuthAuthenticationFilter;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationServiceFactory;
 import com.xiliulou.security.authentication.thirdauth.alipay.ThirdAliPayAuthenticationProvider;
+import com.xiliulou.security.authentication.thirdauth.alipay.ThirdAliPayForThirdPartyAuthenticationProvider;
 import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationProvider;
 import com.xiliulou.security.config.TokenConfig;
 import com.xiliulou.security.constant.TokenConstant;
@@ -36,6 +38,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 
 /**
@@ -55,6 +58,9 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private AliPayThirdAuthenticationServiceImpl aliPayThirdAuthenticationService;
+	
+	@Resource
+	private AliPayThirdForThirdPartyAuthenticationServiceImpl aliPayThirdForThirdPartyAuthenticationService;
 	
 	@Autowired
 	RedisService redisService;
@@ -97,6 +103,8 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 		//增加第三方授权的service
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_WX_PRO, wxProThirdAuthenticationService);
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_ALI_PAY, aliPayThirdAuthenticationService);
+		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_ALI_PAY_THIRD_PARTY, aliPayThirdForThirdPartyAuthenticationService);
+		
 	}
 
 	@Override
@@ -106,6 +114,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider()).authenticationProvider(new ThirdAliPayAuthenticationProvider());
+		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider()).authenticationProvider(new ThirdAliPayAuthenticationProvider())
+				.authenticationProvider(new ThirdAliPayForThirdPartyAuthenticationProvider());
 	}
 }

@@ -40,6 +40,8 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
 
     @Override
     public void uploadShippingInfo(Long uid, String phone, String orderNo, Integer tenantId) {
+        log.info("SHIPPING INFO! Start the small program delivery, uid={}, orderNo={}", uid, orderNo);
+        
         //支付相关
         // 只使用 merchantMinProAppId、merchantMinProAppSecert 参数，可以调用此方法，加盟商ID传入默认 0
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryPreciseCacheByTenantIdAndFranchiseeId(tenantId, MultiFranchiseeConstant.DEFAULT_FRANCHISEE);

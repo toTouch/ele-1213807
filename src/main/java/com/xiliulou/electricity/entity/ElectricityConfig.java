@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -214,6 +215,17 @@ public class ElectricityConfig {
      */
     private Integer eleLimitCount;
     
+    /**
+     * 灵活续费开关
+     * @see FlexibleRenewalEnum
+     */
+    private Integer isEnableFlexibleRenewal;
+    
+    /**
+     * 单独缴纳押金开关：0--开启 1--关闭
+     */
+    private Integer isEnableSeparateDeposit;
+    
     
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
     
@@ -369,4 +381,10 @@ public class ElectricityConfig {
      * 关闭对换电套餐购买次数的限制
      */
     public static Integer ELE_LIMIT_CLOSE = 1;
+    
+    /**
+     * 单独缴纳押金开关：0--开启 1--关闭
+     */
+    public static Integer SEPARATE_DEPOSIT_OPEN = 0;
+    public static Integer SEPARATE_DEPOSIT_CLOSE = 1;
 }

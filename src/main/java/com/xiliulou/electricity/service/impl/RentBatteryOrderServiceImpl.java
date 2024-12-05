@@ -78,6 +78,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
@@ -265,6 +266,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Resource
     private TenantService tenantService;
+    
+    @Autowired
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
     
     /**
      * 新增数据
@@ -818,6 +822,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
             
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+            
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //判断电池滞纳金
                 
@@ -861,12 +867,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("300001", "存在滞纳金，请先缴纳");
                 }
-                
-                //判断车电一体套餐状态
-                //                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
-                //                    log.warn("RETURNBATTERY WARN! user memberCard disable,uid={}", userInfo.getUid());
-                //                    return R.fail( "100210", "用户套餐不可用");
-                //                }
             }
             
             
@@ -885,8 +885,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
-            
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
             
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
@@ -919,6 +917,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
+            List<String> oldBatteryTypes = null;
             List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
             
             if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
@@ -934,6 +933,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     //获取用户绑定的电池型号
                     dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(batteryTypeList));
                 }
+            }
+            
+            // 需要根据电池与用户绑定的电池型号确认是否需要取缓存内的电池型号用于还电池校验
+            oldBatteryTypes = electricityCabinetOrderService.getBatteryTypesForCheck(userInfo, electricityBattery, batteryTypeList);
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
             }
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -1876,8 +1881,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
-    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId) {
-        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId);
+    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId, String status) {
+        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId, status);
     }
     
     @Slave
