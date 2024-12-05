@@ -84,6 +84,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_DEDUCT_LOCK;
@@ -369,6 +370,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             
             FyConfig fyConfig = fyConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
             if (Objects.isNull(fyConfig) || StrUtil.isBlank(fyConfig.getMerchantCode()) || StrUtil.isEmpty(fyConfig.getStoreCode()) || StrUtil.isEmpty(fyConfig.getChannelCode())) {
+                log.warn("INSTALLMENT DEDUCT WARN! fyConfig is wrong. uid={}", uid);
                 return R.fail("301003", "签约代扣功能未配置相关信息！请联系客服处理");
             }
             
@@ -645,6 +647,15 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     public Triple<Boolean, String, Object> initiatingDeduct(List<InstallmentDeductionPlan> deductionPlans, InstallmentRecord installmentRecord, FyConfig fyConfig) {
         if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 30 * 1000L, false)) {
             return Triple.of(false, "301023", "操作频繁，请3秒后再试");
+        }
+        
+        // 可能会有代扣了一半的重新发起，要把已经代扣了的过滤掉
+        List<InstallmentDeductionPlan> deductionPlansWaitDeduct = deductionPlans.stream()
+                .filter(item -> Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(deductionPlansWaitDeduct)) {
+            log.warn("INSTALLMENT DEDUCT WARN! deductionPlansWaitDeduct is null. uid={}", installmentRecord.getUid());
+            return Triple.of(false, "301053", "该期无可代扣的计划");
         }
         
         try {

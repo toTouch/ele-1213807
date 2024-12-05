@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.vo.installment;
 
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * @Description ...
@@ -13,38 +15,21 @@ import java.util.List;
  * @Date: 2024/12/5 10:27
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class InstallmentDeductionPlanAssemblyVO {
-    /**
-     * 请求签约号，唯一
-     */
-    private String externalAgreementNo;
+@EqualsAndHashCode(callSuper = true)
+public class InstallmentDeductionPlanAssemblyVO extends InstallmentDeductionPlan {
     
     /**
-     * 分期期次
+     * 已支付金额
      */
-    private Integer issue;
+    private BigDecimal paidAmount;
     
     /**
-     * 分期套餐id
+     * 未支付金额
      */
-    private Long packageId;
+    private BigDecimal unPaidAmount;
     
     /**
-     * 分期套餐类型，0-换电，1-租车，2-车电一体
+     * 该期是否已全部代扣完成，0-未全部代扣完成，1-全部代扣完成
      */
-    private Integer packageType;
-    
-    /**
-     * 租期，单位天
-     */
-    private Integer rentTime;
-    
-    private Integer tenantId;
-    
-    private Long franchiseeId;
-    
-    private List<InstallmentDeductionPlanEachVO> installmentDeductionPlanEachVOs;
+    private Integer completionStatus;
 }

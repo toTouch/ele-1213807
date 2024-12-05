@@ -15,6 +15,7 @@ import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanEachVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PLAN_ASSEMBLY_STATUS_COMPLETED;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PLAN_ASSEMBLY_STATUS_NOT_COMPLETE;
 
 /**
  * @Description ...
@@ -66,6 +70,37 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     @Override
     public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query) {
         return R.ok(installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query));
+    }
+    
+    @Override
+    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanByAgreementNoUser(InstallmentDeductionPlanQuery query) {
+        List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query);
+        if (CollectionUtils.isEmpty(deductionPlanList)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        Map<Integer, InstallmentDeductionPlanAssemblyVO> assemblyVOMap = new HashMap<>();
+        for (InstallmentDeductionPlan deductionPlan : deductionPlanList) {
+            if (Objects.isNull(assemblyVOMap.get(deductionPlan.getIssue()))) {
+                InstallmentDeductionPlanAssemblyVO assemblyVO = new InstallmentDeductionPlanAssemblyVO();
+                BeanUtils.copyProperties(deductionPlan, assemblyVO);
+                assemblyVO.setStatus(PLAN_ASSEMBLY_STATUS_COMPLETED);
+                
+                assemblyVOMap.put(deductionPlan.getIssue(), assemblyVO);
+            }
+            
+            InstallmentDeductionPlanAssemblyVO planAssemblyVO = assemblyVOMap.get(deductionPlan.getIssue());
+            if (Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_PAID)) {
+                BigDecimal paidAmount = planAssemblyVO.getPaidAmount();
+                planAssemblyVO.setPaidAmount(Objects.isNull(paidAmount) ? deductionPlan.getAmount() : paidAmount.add(deductionPlan.getAmount()));
+            } else {
+                BigDecimal unPaidAmount = planAssemblyVO.getUnPaidAmount();
+                planAssemblyVO.setCompletionStatus(PLAN_ASSEMBLY_STATUS_NOT_COMPLETE);
+                planAssemblyVO.setUnPaidAmount(Objects.isNull(unPaidAmount) ? deductionPlan.getAmount() : unPaidAmount.add(deductionPlan.getAmount()));
+            }
+        }
+        
+        return R.ok(new ArrayList<>(assemblyVOMap.values()));
     }
     
     @Override

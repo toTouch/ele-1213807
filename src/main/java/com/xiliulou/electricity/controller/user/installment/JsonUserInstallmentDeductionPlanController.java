@@ -5,6 +5,7 @@ import com.xiliulou.electricity.annotation.ProcessParameter;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
+import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,11 +27,11 @@ public class JsonUserInstallmentDeductionPlanController {
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
     @GetMapping("/listDeductionPlanForRecord")
-    public R<List<InstallmentDeductionPlan>> listDeductionPlanForRecordUser(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
+    public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordUser(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
         InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
         query.setExternalAgreementNo(externalAgreementNo);
         
-        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(query);
+        return installmentDeductionPlanService.listDeductionPlanByAgreementNoUser(query);
     }
     
 

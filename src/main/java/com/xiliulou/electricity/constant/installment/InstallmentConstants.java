@@ -188,4 +188,14 @@ public interface InstallmentConstants {
      * 分期套餐最大天数
      */
     Integer INSTALLMENT_MAX_VALID_DAYS = 749;
+    
+    /**
+     * 用户端查询代扣计划每期组合数据，未全部代扣完成
+     */
+    Integer PLAN_ASSEMBLY_STATUS_NOT_COMPLETE = 0;
+    
+    /**
+     * 用户端查询代扣计划每期组合数据，已全部代扣完成
+     */
+    Integer PLAN_ASSEMBLY_STATUS_COMPLETED = 1;
 }
