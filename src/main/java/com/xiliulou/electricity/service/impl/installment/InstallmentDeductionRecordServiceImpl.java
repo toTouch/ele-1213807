@@ -41,6 +41,11 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         return installmentDeductionRecordMapper.update(installmentDeductionRecord);
     }
     
+    @Override
+    public InstallmentDeductionRecord queryById(Long id) {
+        return installmentDeductionRecordMapper.queryById(id);
+    }
+    
     @Slave
     @Override
     public R<List<InstallmentDeductionRecordVO>> listForPage(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {

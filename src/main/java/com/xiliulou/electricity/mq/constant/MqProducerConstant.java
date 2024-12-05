@@ -175,6 +175,11 @@ public interface MqProducerConstant {
     String INSTALLMENT_DEDUCT_TAG = "installment_deduct_tag";
     
     /**
+     * 分期代扣处理成失败状态相关tag
+     */
+    String INSTALLMENT_DEDUCT_FAIL_TAG = "installment_deduct_fail_tag";
+    
+    /**
      * 分期代扣续费套餐tag
      */
     String INSTALLMENT_DEDUCT_NOTIFY_TAG = "installment_deduct_notify_tag";

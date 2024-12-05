@@ -32,6 +32,16 @@ public class InstallmentMqCommonDTO {
     private BigDecimal amount;
     
     /**
+     * 代扣计划id
+     */
+    private Long deductionPlanId;
+    
+    /**
+     * 代扣记录id
+     */
+    private Long deductionRecordId;
+    
+    /**
      * 签约操作的traceId，用于追踪异步代扣
      */
     private String traceId;

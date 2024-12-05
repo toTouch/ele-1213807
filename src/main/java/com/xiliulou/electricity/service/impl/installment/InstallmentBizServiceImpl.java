@@ -49,6 +49,7 @@ import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.mq.service.RocketMqService;
@@ -60,7 +61,6 @@ import com.xiliulou.pay.deposit.fengyun.pojo.request.FyQuerySignAgreementRequest
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FyReleaseAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.FySignAgreementRequest;
 import com.xiliulou.pay.deposit.fengyun.pojo.request.Vars;
-import com.xiliulou.pay.deposit.fengyun.pojo.response.FyAgreementPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQueryAgreementPayRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyQuerySignAgreementRsp;
 import com.xiliulou.pay.deposit.fengyun.pojo.response.FyReleaseAgreementRsp;
@@ -612,7 +612,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         String externalAgreementNo = deductionRecord.getExternalAgreementNo();
         String payNo = deductionRecord.getPayNo();
         
-        InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryByPayNo(deductionRecord.getTenantId(), externalAgreementNo, payNo);
+        InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryById(deductionRecord.getPlanId());
         if (Objects.isNull(deductionPlan)) {
             log.warn("HANDLE AGREEMENT PAY SUCCESS. deductionPlan is null, externalAgreementNo={}, payNo={}", externalAgreementNo, payNo);
             return;
@@ -621,6 +621,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 每一个代扣计划的回调都将自己对应的代扣计划、代扣记录修改为代扣成功，并发送消息续套餐
         InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
         deductionPlanUpdate.setId(deductionPlan.getId());
+        deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
         deductionPlanUpdate.setTradeNo(tradeNo);
         deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
         deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
@@ -657,8 +658,11 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return Triple.of(false, "301053", "该期无可代扣的计划");
         }
         
+        // 每次代扣都生成新的payNo，避免因为payNo一样导致问题
+        InstallmentUtil.generatePayNo(installmentRecord.getUid(), deductionPlansWaitDeduct);
+        
         try {
-            for (InstallmentDeductionPlan deductionPlan : deductionPlans) {
+            for (InstallmentDeductionPlan deductionPlan : deductionPlansWaitDeduct) {
                 String repaymentPlanNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN_AGREEMENT_PAY, installmentRecord.getUid());
                 
                 BigDecimal zeroAmount = new BigDecimal("0.00");
@@ -674,6 +678,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 deductionRecord.setAmount(deductionPlan.getAmount());
                 deductionRecord.setStatus(Objects.equals(deductionPlan.getAmount(), zeroAmount) ? DEDUCTION_RECORD_STATUS_SUCCESS : DEDUCTION_RECORD_STATUS_INIT);
                 deductionRecord.setIssue(deductionPlan.getIssue());
+                deductionRecord.setPlanId(deductionPlan.getId());
                 deductionRecord.setSubject(null);
                 deductionRecord.setTenantId(deductionPlan.getTenantId());
                 deductionRecord.setFranchiseeId(deductionPlan.getFranchiseeId());
@@ -690,19 +695,26 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 // 生成请求对象
                 FyCommonQuery<FyAgreementPayRequest> fyCommonQuery = generateAgreementPayQuery(deductionPlan, installmentRecord, fyConfig, repaymentPlanNo);
                 
-                inheritableThreadLocal.set(MDC.get(CommonConstant.TRACE_ID));
+                String traceId = MDC.get(CommonConstant.TRACE_ID);
+                inheritableThreadLocal.set(traceId);
                 // 异步发起代扣
                 initiatingDeductThreadPool.execute(() -> {
                     MDC.put(CommonConstant.TRACE_ID, inheritableThreadLocal.get());
-                    FyResult<FyAgreementPayRsp> fyAgreementPayRspFyResult = null;
                     try {
-                        fyAgreementPayRspFyResult = fyAgreementService.agreementPay(fyCommonQuery);
+                        fyAgreementService.agreementPay(fyCommonQuery);
                     } catch (Exception e) {
-                        log.error("DEDUCT FAIL! uid={}, externalAgreementNo={}, FyResult={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(),
-                                fyAgreementPayRspFyResult, e);
+                        log.error("DEDUCT FAIL! uid={}, externalAgreementNo={}", installmentRecord.getUid(), installmentRecord.getExternalAgreementNo(), e);
+                    } finally {
+                        MDC.clear();
                     }
-                    
                 });
+                
+                // 发送延迟消息，1分钟后将代扣计划、代扣记录处理成失败状态
+                InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
+                commonDTO.setDeductionPlanId(deductionPlan.getId());
+                commonDTO.setDeductionRecordId(deductionRecord.getId());
+                commonDTO.setTraceId(traceId);
+                rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_FAIL_TAG, null, 5);
             }
             
             return Triple.of(true, "301052", "已发起代扣，请稍后查看代扣结果");
@@ -959,18 +971,5 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         return R.fail("查询失败");
     }
     
-    private void handleDeductFail(InstallmentDeductionPlan deductionPlan, InstallmentDeductionRecord deductionRecord) {
-        InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
-        deductionPlanUpdate.setId(deductionPlan.getId());
-        deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
-        deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_FAIL);
-        installmentDeductionPlanService.update(deductionPlanUpdate);
-        
-        // 报错或调用失败则保存代扣失败的记录
-        InstallmentDeductionRecord deductionRecordUpdate = new InstallmentDeductionRecord();
-        deductionRecordUpdate.setId(deductionRecord.getId());
-        deductionRecordUpdate.setStatus(DEDUCTION_RECORD_STATUS_FAIL);
-        deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
-        installmentDeductionRecordService.update(deductionRecordUpdate);
-    }
+
 }

@@ -30,6 +30,8 @@ public interface InstallmentDeductionRecordService {
      */
     Integer update(InstallmentDeductionRecord installmentDeductionRecord);
     
+    InstallmentDeductionRecord queryById(Long id);
+    
     /**
      * 分页查询数据
      *
