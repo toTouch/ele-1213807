@@ -84,7 +84,7 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
             assemblyVOMap.get(deductionPlan.getIssue()).getInstallmentDeductionPlanEachVOs().add(eachVO);
         }
         
-        return R.ok((List<InstallmentDeductionPlanAssemblyVO>) assemblyVOMap.values());
+        return R.ok(new ArrayList<>(assemblyVOMap.values()));
     }
     
     @Slave
