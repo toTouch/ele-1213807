@@ -33,6 +33,7 @@ import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUser;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.enterprise.CloudBeanStatusEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserMapper;
@@ -62,6 +63,7 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -93,6 +95,7 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +105,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.StringConstant.SPACE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 
 /**
  * (User)表服务实现类
@@ -190,6 +197,10 @@ public class UserServiceImpl implements UserService {
     
     @Resource
     private ServicePhoneService servicePhoneService;
+    
+    @Resource
+    private InstallmentRecordService installmentRecordService;
+    
     
     /**
      * 启用锁定用户
@@ -1010,6 +1021,12 @@ public class UserServiceImpl implements UserService {
         
         if (Objects.equals(userRentInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             return Triple.of(false, "100253", "用户已租车辆，请先退还后再删除");
+        }
+        
+        InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+                Arrays.asList(INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
+        if (Objects.nonNull(installmentRecord)) {
+            return Triple.of(false, "301051", "存在分期套餐，请取消签约或解约后再试");
         }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
