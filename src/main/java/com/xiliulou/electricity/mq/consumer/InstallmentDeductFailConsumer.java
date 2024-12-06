@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Objects;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_DEDUCTING;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_RECORD_STATUS_FAIL;
@@ -70,7 +71,12 @@ public class InstallmentDeductFailConsumer implements RocketMQListener<String> {
     }
     
     private void handleDeductPlanFail(InstallmentDeductionPlan deductionPlan) {
-        if (Objects.isNull(deductionPlan) || !Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_INIT)) {
+        if (Objects.isNull(deductionPlan)) {
+            return;
+        }
+        
+        // 未支付、代扣中状态的才可以更新为失败状态
+        if (!Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_INIT) && !Objects.equals(deductionPlan.getStatus(), DEDUCTION_PLAN_STATUS_DEDUCTING)) {
             return;
         }
         
