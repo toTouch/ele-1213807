@@ -62,6 +62,14 @@ public interface InstallmentRecordService {
             UserInfo userInfo);
     
     /**
+     * 根据状态查询用户的最近一条签约记录
+     * @param uid 用户
+     * @param status 签约记录状态
+     * @return 签约记录
+     */
+    InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> status);
+    
+    /**
      * 根据请求签约号查询签约记录
      *
      * @param externalAgreementNo 请求签约号

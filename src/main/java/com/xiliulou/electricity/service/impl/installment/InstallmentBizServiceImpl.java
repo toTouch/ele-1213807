@@ -394,7 +394,8 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301019", "当前套餐正在签约或取消，请稍候再试");
             }
             
-            InstallmentRecord installmentRecord = installmentSearchApiService.queryUsingRecordForUser(uid);
+            InstallmentRecord installmentRecord = installmentRecordService.queryRecordWithStatusForUser(uid,
+                    Arrays.asList(INSTALLMENT_RECORD_STATUS_INIT, INSTALLMENT_RECORD_STATUS_UN_SIGN));
             if (Objects.isNull(installmentRecord)) {
                 return R.fail("301004", "请购买分期套餐成功后，再签约");
             }
