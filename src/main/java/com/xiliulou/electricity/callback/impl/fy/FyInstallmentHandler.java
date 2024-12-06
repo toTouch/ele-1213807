@@ -5,6 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.FyConfig;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.query.installment.InstallmentDeductNotifyQuery;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignNotifyQuery;
 import com.xiliulou.electricity.service.FyConfigService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
@@ -20,6 +22,7 @@ import com.xiliulou.electricity.utils.InstallmentUtil;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import com.xiliulou.pay.deposit.fengyun.utils.FyAesUtil;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.MDC;
@@ -46,24 +49,26 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  * @Author: SongJP
  * @Date: 2024/9/7 22:09
  */
-@Component
-@AllArgsConstructor
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class FyInstallmentHandler {
     
-    private FengYunConfig fengYunConfig;
+    private final UserInfoService userInfoService;
     
-    private InstallmentRecordService installmentRecordService;
+    private final FengYunConfig fengYunConfig;
     
-    private InstallmentBizService installmentBizService;
+    private final InstallmentRecordService installmentRecordService;
     
-    private InstallmentDeductionRecordService installmentDeductionRecordService;
+    private final InstallmentBizService installmentBizService;
     
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    private final InstallmentDeductionRecordService installmentDeductionRecordService;
     
-    private FyConfigService fyConfigService;
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
     
-    private RedisTemplate<String, String> redisTemplate;
+    private final FyConfigService fyConfigService;
+    
+    private final RedisTemplate<String, String> redisTemplate;
     
     
     public String signNotify(String bizContent, Long uid) {
@@ -117,6 +122,12 @@ public class FyInstallmentHandler {
             InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNoWithoutUnpaid(externalAgreementNo);
             if (Objects.isNull(installmentRecord)) {
                 log.warn("DEDUCT TASK WARN! FyConfig is null, externalAgreementNo={}", externalAgreementNo);
+                return;
+            }
+            
+            UserInfo userInfo = userInfoService.queryByUidFromCache(installmentRecord.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("DEDUCT TASK WARN! userInfo is null, externalAgreementNo={}", externalAgreementNo);
                 return;
             }
             
