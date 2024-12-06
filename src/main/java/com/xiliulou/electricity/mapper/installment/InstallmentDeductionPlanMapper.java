@@ -28,6 +28,4 @@ public interface InstallmentDeductionPlanMapper {
     List<InstallmentDeductionPlan> selectListByExternalAgreementNoAndIssue(@Param("tenantId") Integer tenantId, @Param("externalAgreementNo") String externalAgreementNo, @Param("issue") Integer issue);
     
     InstallmentDeductionPlan selectById(@Param("id") Long id);
-    
-    InstallmentDeductionPlan queryByPayNo(@Param("tenantId") Integer tenantId, @Param("externalAgreementNo") String externalAgreementNo, @Param("payNo") String payNo);
 }

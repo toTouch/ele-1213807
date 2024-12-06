@@ -180,16 +180,9 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         return installmentDeductionPlanMapper.selectListByExternalAgreementNoAndIssue(tenantId, externalAgreementNo, issue);
     }
     
-    
     @Slave
     @Override
     public InstallmentDeductionPlan queryById(Long id) {
         return installmentDeductionPlanMapper.selectById(id);
-    }
-    
-    @Slave
-    @Override
-    public InstallmentDeductionPlan queryByPayNo(Integer tenantId, String externalAgreementNo, String payNo) {
-        return installmentDeductionPlanMapper.queryByPayNo(tenantId, externalAgreementNo, payNo);
     }
 }

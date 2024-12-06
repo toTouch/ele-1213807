@@ -137,12 +137,6 @@
         where id = #{id}
     </select>
     
-    <select id="queryByPayNo" resultMap="installmentDeductionPlanMap">
-        select id, <include refid="columnsWithoutId"/>
-        from t_installment_deduction_plan
-        where tenant_id = #{tenantId} and external_agreement_no = #{externalAgreementNo} and pay_no = #{payNo}
-    </select>
-    
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
         insert into t_installment_deduction_plan(<include refid="columnsWithoutId"/>) values (<include refid="fieldsWithoutId"/>)
     </insert>

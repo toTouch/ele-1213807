@@ -46,7 +46,6 @@ import com.xiliulou.electricity.service.installment.InstallmentBizService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.InstallmentUtil;
@@ -158,8 +157,6 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
     private final FreeDepositDataService freeDepositDataService;
     
     private final RocketMqService rocketMqService;
-    
-    private final InstallmentSearchApiService installmentSearchApiService;
     
     private XllThreadPoolExecutorService initiatingDeductThreadPool;
     
@@ -993,5 +990,5 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         return R.fail("查询失败");
     }
     
-
+    
 }

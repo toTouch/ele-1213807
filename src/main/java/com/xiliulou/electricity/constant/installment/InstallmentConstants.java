@@ -173,17 +173,17 @@ public interface InstallmentConstants {
      * 客户端来源(miniapp)
      */
     String CHANNEL_FROM_MINIAPP = "miniapp";
-
+    
     /**
      * 签约记录查询结果-签约成功
      */
     Integer SIGN_QUERY_STATUS_SIGN = 2;
-
+    
     /**
      * 签约记录查询结果-解约成功
      */
     Integer SIGN_QUERY_STATUS_CANCEL = 3;
-
+    
     /**
      * 代扣记录查询结果-扣款成功
      */

@@ -87,14 +87,4 @@ public interface InstallmentDeductionPlanService {
      * @return 代扣计划
      */
     InstallmentDeductionPlan queryById(Long id);
-    
-    /**
-     * 根据payNo查找代扣计划
-     *
-     * @param tenantId            租户id
-     * @param externalAgreementNo 请求签约号
-     * @param payNo               扣款订单号
-     * @return 代扣计划
-     */
-    InstallmentDeductionPlan queryByPayNo(Integer tenantId, String externalAgreementNo, String payNo);
 }
