@@ -15,6 +15,7 @@ import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanEachVO;
 import com.xiliulou.pay.deposit.fengyun.config.FengYunConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_DEDUCTING;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
 
@@ -66,6 +70,24 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     @Override
     public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query) {
         return R.ok(installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query));
+    }
+    
+    @Slave
+    @Override
+    @Deprecated
+    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNoOld(InstallmentDeductionPlanQuery query) {
+        List<InstallmentDeductionPlan> deductionPlanList = installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query);
+        if (CollectionUtils.isEmpty(deductionPlanList)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        List<InstallmentDeductionPlan> deductionPlans = deductionPlanList.stream().peek(item -> {
+            if (Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_DEDUCTING)) {
+                item.setStatus(DEDUCTION_PLAN_STATUS_INIT);
+            }
+        }).sorted(Comparator.comparingInt(InstallmentDeductionPlan::getIssue)).collect(Collectors.toList());
+        
+        return R.ok(deductionPlans);
     }
     
     @Override

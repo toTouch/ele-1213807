@@ -48,6 +48,15 @@ public interface InstallmentDeductionPlanService {
     R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(InstallmentDeductionPlanQuery query);
     
     /**
+     * 旧小程序根据分期套餐签约记录查询代扣计划
+     *
+     * @param query 请求签约号
+     * @return 代扣计划集合
+     */
+    @Deprecated
+    R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNoOld(InstallmentDeductionPlanQuery query);
+    
+    /**
      * 后台根据签约记录查询代扣计划
      *
      * @param query 查询请求对象
