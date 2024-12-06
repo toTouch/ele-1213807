@@ -92,6 +92,7 @@ import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_SIGN_NOTIFY_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.AGREEMENT_PAY_QUERY_STATUS_SUCCESS;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_CANCEL;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_DEDUCTING;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_FAIL;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.DEDUCTION_PLAN_STATUS_PAID;
@@ -706,6 +707,13 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                     handleDeductZero(installmentRecord, deductionPlan, deductionRecord);
                     return Triple.of(true, null, null);
                 }
+                
+                // 将代扣计划的状态修改为代扣中，0元代扣不需要做这一步处理
+                InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
+                deductionPlanUpdate.setId(deductionPlan.getId());
+                deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_DEDUCTING);
+                deductionPlanUpdate.setUpdateTime(System.currentTimeMillis());
+                installmentDeductionPlanService.update(deductionPlanUpdate);
                 
                 // 生成请求对象
                 FyCommonQuery<FyAgreementPayRequest> fyCommonQuery = generateAgreementPayQuery(deductionPlan, installmentRecord, fyConfig, repaymentPlanNo);
