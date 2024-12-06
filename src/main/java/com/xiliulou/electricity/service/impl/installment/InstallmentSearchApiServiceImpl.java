@@ -8,7 +8,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
+import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 
 /**
  * @Description ...
@@ -24,7 +29,8 @@ public class InstallmentSearchApiServiceImpl implements InstallmentSearchApiServ
     
     @Slave
     @Override
-    public InstallmentRecord queryRecordWithStatusForUser(Long uid, List<Integer> statuses) {
-        return installmentRecordMapper.selectRecordWithStatusForUser(uid, statuses);
+    public InstallmentRecord queryUsingRecordForUser(Long uid) {
+        return installmentRecordMapper.selectRecordWithStatusForUser(uid,
+                Arrays.asList(INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
     }
 }

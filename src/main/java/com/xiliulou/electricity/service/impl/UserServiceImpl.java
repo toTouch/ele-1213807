@@ -63,7 +63,6 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseInfoService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -106,7 +105,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.xiliulou.electricity.constant.StringConstant.SPACE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
@@ -1024,10 +1022,9 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "100253", "用户已租车辆，请先退还后再删除");
         }
         
-        InstallmentRecord installmentRecord = installmentSearchApiService.queryRecordWithStatusForUser(uid,
-                Arrays.asList(INSTALLMENT_RECORD_STATUS_UN_SIGN, INSTALLMENT_RECORD_STATUS_SIGN, INSTALLMENT_RECORD_STATUS_TERMINATE));
+        InstallmentRecord installmentRecord = installmentSearchApiService.queryUsingRecordForUser(uid);
         if (Objects.nonNull(installmentRecord)) {
-            return Triple.of(false, "301051", "存在分期套餐，请取消签约或解约后再试");
+            return Triple.of(false, "301051", "存在分期签约，请取消签约或解约后再试");
         }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
