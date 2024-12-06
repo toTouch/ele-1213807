@@ -34,11 +34,6 @@ public class InstallmentDeductionPlanEachVO {
     private BigDecimal amount;
     
     /**
-     * 应还款时间
-     */
-    private Long deductTime;
-    
-    /**
      * 实际还款时间
      */
     private Long paymentTime;
