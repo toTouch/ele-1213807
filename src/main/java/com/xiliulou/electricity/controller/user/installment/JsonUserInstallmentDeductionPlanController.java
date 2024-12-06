@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user.installment;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.query.installment.InstallmentDeductionPlanQuery;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionPlanAssemblyVO;
@@ -24,13 +25,20 @@ public class JsonUserInstallmentDeductionPlanController {
     
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
+    @Deprecated
     @GetMapping("/listDeductionPlanForRecord")
+    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
+        InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
+        query.setExternalAgreementNo(externalAgreementNo);
+        
+        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(query);
+    }
+    
+    @GetMapping("/listDeductionPlanForRecordUser")
     public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordUser(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
         InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
         query.setExternalAgreementNo(externalAgreementNo);
         
         return installmentDeductionPlanService.listDeductionPlanForRecordUser(query);
     }
-    
-    
 }
