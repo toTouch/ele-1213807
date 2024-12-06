@@ -618,6 +618,12 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
             return;
         }
         
+        InstallmentRecord installmentRecord = installmentRecordService.queryByExternalAgreementNo(externalAgreementNo);
+        if (Objects.isNull(installmentRecord)) {
+            log.warn("HANDLE AGREEMENT PAY SUCCESS. installmentRecord is null, externalAgreementNo={}, payNo={}", externalAgreementNo, payNo);
+            return;
+        }
+        
         // 每一个代扣计划的回调都将自己对应的代扣计划、代扣记录修改为代扣成功，并发送消息续套餐
         InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
         deductionPlanUpdate.setId(deductionPlan.getId());
@@ -634,11 +640,20 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         deductionRecordUpdate.setUpdateTime(System.currentTimeMillis());
         installmentDeductionRecordService.update(deductionRecordUpdate);
         
+        BigDecimal amount = deductionRecord.getAmount();
+        
+        // 根据每一笔回调来修改签约记录的已支付金额
+        InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
+        installmentRecordUpdate.setId(installmentRecord.getId());
+        installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(amount));
+        installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        installmentRecordService.update(installmentRecordUpdate);
+        
         // 发送消息续费套餐
         InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
         commonDTO.setExternalAgreementNo(externalAgreementNo);
         commonDTO.setIssue(deductionPlan.getIssue());
-        commonDTO.setAmount(deductionRecord.getAmount());
+        commonDTO.setAmount(amount);
         commonDTO.setTraceId(MDC.get(CommonConstant.TRACE_ID));
         rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_NOTIFY_TAG);
     }

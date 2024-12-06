@@ -142,7 +142,6 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                 }
                 installmentRecordUpdate.setUpdateTime(System.currentTimeMillis());
                 installmentRecordUpdate.setPaidInstallment(installmentRecord.getPaidInstallment() + 1);
-                installmentRecordUpdate.setPaidAmount(installmentRecord.getPaidAmount().add(amount));
                 installmentRecordService.update(installmentRecordUpdate);
                 
                 if (Objects.equals(installmentRecord.getInstallmentNo(), issue)) {
