@@ -360,19 +360,36 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             throw new BizException("402010", "电池数据不存在");
         }
         
-        List<ExportMutualBatteryVO> exportMutualBatteryVOList = CollUtil.newArrayList();
-        for (ExportMutualBatteryBO bo : mutualBatteryBOList) {
-            // 只导出互通加盟商的电池
-            Pair<Boolean, Set<Long>> pair = satisfyMutualExchangeFranchisee(TenantContextHolder.getTenantId(), bo.getFranchiseeId());
-            if (pair.getLeft()) {
-                ExportMutualBatteryVO excelVO = new ExportMutualBatteryVO();
-                BeanUtil.copyProperties(bo, excelVO);
-                excelVO.setPhysicsStatus(Objects.equals(bo.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) ? "在仓" : "不在仓");
-                List<String> franchiseeNameList = buildFranchiseeNameByIdList(new ArrayList<>(pair.getRight()));
-                excelVO.setMutualFranchiseeName(String.join(",", franchiseeNameList));
-                exportMutualBatteryVOList.add(excelVO);
-            }
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        // 查询互通配置列表
+        List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
+        if (CollUtil.isEmpty(mutualFranchiseeList)) {
+            log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
+            throw new BizException("402007", "不存在互换加盟商配置");
         }
+        
+        List<ExportMutualBatteryVO> exportMutualBatteryVOList = mutualBatteryBOList.parallelStream().map(e -> {
+            // 只导出互通加盟商的电池
+            Set<Long> mutualFranchiseeSet = new HashSet<>();
+            mutualFranchiseeList.stream().forEach(t -> {
+                List<Long> combinedFranchisee = JsonUtil.fromJsonArray(t, Long.class);
+                if (combinedFranchisee.contains(e.getFranchiseeId())) {
+                    mutualFranchiseeSet.addAll(combinedFranchisee);
+                }
+            });
+            
+            if (CollUtil.isNotEmpty(mutualFranchiseeSet)) {
+                ExportMutualBatteryVO excelVO = new ExportMutualBatteryVO();
+                BeanUtil.copyProperties(e, excelVO);
+                excelVO.setPhysicsStatus(Objects.equals(e.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) ? "在仓" : "不在仓");
+                List<String> franchiseeNameList = buildFranchiseeNameByIdList(new ArrayList<>(mutualFranchiseeSet));
+                excelVO.setMutualFranchiseeName(String.join(",", franchiseeNameList));
+                return excelVO;
+            }
+            return null;
+        }).collect(Collectors.toList());
+        
         
         String fileName = "互通电池列表.xlsx";
         try {
