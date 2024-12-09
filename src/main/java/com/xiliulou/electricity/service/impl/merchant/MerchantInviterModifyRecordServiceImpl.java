@@ -93,8 +93,6 @@ public class MerchantInviterModifyRecordServiceImpl implements MerchantInviterMo
                 
                 recordVO.setOldInviterName(inviterName);
             }
-            
-            recordVO.setOperator(Optional.ofNullable(userService.queryByUidFromCache(item.getOperator())).orElse(new User()).getName());
     
             // 流失用户操作人为系统
             if (Objects.equals(item.getOperator(), NumberConstant.ZERO_L)) {

@@ -432,9 +432,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Resource
     private CouponActivityPackageService couponActivityPackageService;
     
-    @Resource
-    private UserInfoExtraService userInfoExtraService;
-    
     @Autowired
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     

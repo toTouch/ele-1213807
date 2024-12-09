@@ -258,9 +258,6 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     private EnterpriseChannelUserExitMapper channelUserExitMapper;
     
     @Resource
-    private UserInfoExtraService userInfoExtraService;
-    
-    @Resource
     private LostUserActivityDealPublish lostUserActivityDealPublish;
     
     @Resource

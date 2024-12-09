@@ -528,6 +528,13 @@
         </where>
     </select>
     
+    <select id="selectNotSuccessByJoinUid"
+        resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
+        select
+        <include refid="basic_field"/>
+        from t_merchant_join_record where del_flag = 0 and join_uid = #{joinUid} and status = 1 order by id desc limit 1
+    </select>
+    
     <select id="selectListSuccessJoinNumByCondition"
         resultType="com.xiliulou.electricity.vo.merchant.MerchantStatisticsUserVO">
         select month_date, count(distinct(join_uid)) as 'scanCodeCount' from t_merchant_join_record
@@ -653,13 +660,6 @@
     
         </where>
         group by month_date
-    </select>
-    
-    <select id="selectNotSuccessByJoinUid"
-        resultType="com.xiliulou.electricity.entity.merchant.MerchantJoinRecord">
-        select
-        <include refid="basic_field"/>
-        from t_merchant_join_record where del_flag = 0 and join_uid = #{joinUid} and status = 1 order by id desc limit 1
     </select>
 </mapper>
 
