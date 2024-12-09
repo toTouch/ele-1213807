@@ -31,7 +31,7 @@ public class JsonUserInstallmentDeductionPlanController {
         InstallmentDeductionPlanQuery query = new InstallmentDeductionPlanQuery();
         query.setExternalAgreementNo(externalAgreementNo);
         
-        return installmentDeductionPlanService.listDeductionPlanByAgreementNo(query);
+        return installmentDeductionPlanService.listDeductionPlanByAgreementNoOld(query);
     }
     
     @GetMapping("/listDeductionPlanForRecordUser")
