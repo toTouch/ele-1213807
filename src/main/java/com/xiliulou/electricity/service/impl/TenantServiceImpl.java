@@ -258,7 +258,7 @@ public class TenantServiceImpl implements TenantService {
         
         //新增租户给租户添加的默认系统配置
         ElectricityConfig electricityConfig = ElectricityConfig.builder().name("").createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(tenant.getId()).isManualReview(ElectricityConfig.MANUAL_REVIEW).isWithdraw(ElectricityConfig.WITHDRAW)
+                .tenantId(tenant.getId()).isManualReview(ElectricityConfig.MANUAL_REVIEW).isWithdraw(ElectricityConfig.NON_WITHDRAW)
                 .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK).disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD).isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW)
                 .lowChargeRate(NumberConstant.TWENTY_FIVE_DB).fullChargeRate(NumberConstant.SEVENTY_FIVE_DB).chargeRateType(ElectricityConfig.CHARGE_RATE_TYPE_UNIFY).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);

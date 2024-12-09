@@ -35,7 +35,14 @@
           and tenant_id = #{tenantId}
           and uid = #{uid}
     </select>
-
+    
+    <select id="existsModifyRecordByUid" resultType="java.lang.Integer">
+        select 1
+        from t_merchant_inviter_modify_record
+        where del_flag = 0
+          and uid = #{uid}
+            limit 1
+    </select>
 </mapper>
 
 

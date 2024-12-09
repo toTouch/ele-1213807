@@ -411,4 +411,8 @@
           and use_state = 1
           and pay_state = 2
     </select>
+    
+    <select id="existNotFinishOrderByUid" resultType="java.lang.Integer">
+        select 1 from t_car_rental_package_order where uid = #{uid} and pay_state = 2 and use_state in (1, 2) limit 1
+    </select>
 </mapper>

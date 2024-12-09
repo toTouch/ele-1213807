@@ -224,4 +224,5 @@ public interface CarRentalPackageOrderService {
      */
     Long sumConfineNumByUid(Long uid);
     
+    boolean existNotFinishOrderByUid(Long uid);
 }

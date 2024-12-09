@@ -131,6 +131,7 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseRentRecordService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.merchant.MerchantInviterModifyRecordService;
 import com.xiliulou.electricity.service.merchant.MerchantService;
 import com.xiliulou.electricity.service.thirdPartyMall.MeiTuanRiderMallOrderService;
 import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
@@ -381,6 +382,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     private OverdueUserRemarkPublish overdueUserRemarkPublish;
+    
+    @Resource
+    private MerchantInviterModifyRecordService merchantInviterModifyRecordService;
     
     @Resource
     ElectricityCabinetOrderService electricityCabinetOrderService;
@@ -2154,6 +2158,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         // 邀请人是否可被修改
         Integer inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_USER_FOR_VO.getCode();
+        Integer modifyInviterRecordIsView = NumberConstant.ONE;
         MerchantInviterVO merchantInviterVO = userInfoExtraService.querySuccessInviter(uid);
         if (Objects.isNull(merchantInviterVO)) {
             vo.setCanModifyInviter(MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_NOT_MODIFY.getCode());
@@ -2163,7 +2168,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 inviterSource = MerchantInviterSourceEnum.MERCHANT_INVITER_SOURCE_MERCHANT_FOR_VO.getCode();
             }
         }
-        
+    
+        if (Objects.equals(vo.getCanModifyInviter(), MerchantInviterCanModifyEnum.MERCHANT_INVITER_CAN_MODIFY.getCode()) || existsModifyRecordByUid(uid)) {
+            modifyInviterRecordIsView = NumberConstant.ZERO;
+        }
+    
+        // 邀请记录是否显示
+        vo.setModifyInviterRecordIsView(modifyInviterRecordIsView);
         // 邀请人名称
         vo.setInviterName(queryFinalInviterUserName(uid));
         // 邀请人来源
@@ -2173,6 +2184,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setEleLimit(Objects.isNull(userInfoExtra) ? UserInfoExtraConstant.ELE_LIMIT_NO : userInfoExtra.getEleLimit());
         
         return R.ok(vo);
+    }
+    
+    private boolean existsModifyRecordByUid(Long uid) {
+        return merchantInviterModifyRecordService.existsModifyRecordByUid(uid);
     }
     
     /**

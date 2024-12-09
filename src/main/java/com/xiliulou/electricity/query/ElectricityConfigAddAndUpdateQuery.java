@@ -8,6 +8,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -173,6 +174,23 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 柜机少电多电配置标准:0-统一配置 1-单个柜机配置
      */
     private Integer chargeRateType;
+    
+    /**
+     * 流失用户拉新 0 - 开启, 1 - 关闭
+     */
+    private Integer lostUserFirst;
+    
+    /**
+     * 流失用户转化条件
+     */
+    @Range(min = 30, max = 360, message = "流失用户转化条件: 最小30，最大365", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "流失用户转化条件不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer lostUserDays;
+    
+    /**
+     * 允许原邀请人重新邀请：0-允许, 1 - 不允许
+     */
+    private Integer allowOriginalInviter;
     
     /**
      * 是否开启舒适换电；默认是1是关闭，0是开启

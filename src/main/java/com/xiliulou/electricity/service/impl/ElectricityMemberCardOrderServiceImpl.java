@@ -62,6 +62,7 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.enterprise.EnterpriseChannelUserExit;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -142,6 +143,7 @@ import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
@@ -429,6 +431,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Resource
     private CouponActivityPackageService couponActivityPackageService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     @Autowired
     private InstallmentDeductionPlanService installmentDeductionPlanService;
@@ -4426,6 +4431,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Slave
     public List<ElectricityMemberCardOrder> queryListByCreateTime(Long buyStartTime, Long buyEndTime) {
         return baseMapper.selectListByCreateTime(buyStartTime, buyEndTime);
+    }
+    
+    /**
+     * 检测用户是否存在使用中，未使用的套餐
+     * @param uid
+     * @return
+     */
+    @Override
+    @Slave
+    public boolean existNotFinishOrderByUid(Long uid) {
+        Integer count = baseMapper.existNotFinishOrderByUid(uid);
+        if (Objects.nonNull(count)) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Override

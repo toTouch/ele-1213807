@@ -79,4 +79,19 @@ public class UserInfoExtra {
      *
      */
     private Integer eleLimit;
+    
+    /**
+     * '是否为流失用户 0 - 是, 1 - 否
+     */
+    private Integer lostUserStatus;
+    
+    /**
+     * 流失时间
+     */
+    private Long lostUserTime;
+    
+    /**
+     * 流失用户首次拉新返利时间
+     */
+    private Long lostUserFirstRebateTime;
 }

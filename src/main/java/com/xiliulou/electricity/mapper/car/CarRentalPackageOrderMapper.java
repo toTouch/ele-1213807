@@ -205,4 +205,6 @@ public interface CarRentalPackageOrderMapper {
      * @return 用户购买的套餐订单
      */
     Long sumConfineNumByUid(@Param("uid") Long uid);
+    
+    Integer existNotFinishOrderByUid(@Param("uid") Long uid);
 }

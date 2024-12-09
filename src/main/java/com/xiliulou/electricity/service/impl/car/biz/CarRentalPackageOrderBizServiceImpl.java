@@ -40,6 +40,7 @@ import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
@@ -105,6 +106,7 @@ import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.WechatPayParamsBizService;
@@ -326,6 +328,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     
     @Autowired
     private UserInfoGroupDetailService userInfoGroupDetailService;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
     
     @Resource
     private PayConfigConverter payConfigConverter;
@@ -860,6 +865,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (Objects.isNull(userInfo)) {
                 throw new BizException("ELECTRICITY.0001", "未找到用户");
             }
+    
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                throw new BizException( "120125", "未找到用户");
+            }
             
             // 1.1 用户可用状态
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -939,12 +949,21 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 如果是系统分组
             if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
-                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                    log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                    throw new BizException("300005", "套餐不匹配");
+                if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                    // 流失用户不允许购买续租类型的套餐
+                    if (Objects.equals(buyPackageEntity.getApplicableType(), ApplicableTypeEnum.OLD.getCode())) {
+                        log.warn("bindingPackage failed. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", uid, buyRentalPackageId);
+                        throw new BizException( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                    }
+                } else {
+                    // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                    Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                    if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                        log.warn("bindingPackage failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                        throw new BizException("300005", "套餐不匹配");
+                    }
                 }
+              
             }
             
             // 6.3.1 判断用户分组是否包含在购买的套餐中存在
@@ -2832,6 +2851,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (Objects.isNull(userInfo)) {
                 throw new BizException("ELECTRICITY.0001", "未找到用户");
             }
+    
+            UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userInfoExtra)) {
+                throw new BizException("120125", "未找到用户");
+            }
             
             // 1.1 用户可用状态
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -2925,11 +2949,19 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 判断套餐是否为系统分组
             if (Objects.equals(buyPackageEntity.getIsUserGroup(), YesNoEnum.YES.getCode())) {
-                // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
-                Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-                if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
-                    log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                    return R.fail("300005", "套餐不匹配");
+                if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                    // 流失用户不允许购买续租类型的套餐
+                    if (Objects.equals(buyPackageEntity.getApplicableType(), ApplicableTypeEnum.OLD.getCode())) {
+                        log.warn("buyRentalPackageOrder failed. Package type mismatch. lost user, package is old, uid = {}, buyRentalPackageId = {}", uid, buyRentalPackageId);
+                        return R.fail( "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                    }
+                } else {
+                    // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
+                    Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                    if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
+                        log.warn("buyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
+                        return R.fail("300005", "套餐不匹配");
+                    }
                 }
             }
             

@@ -120,6 +120,12 @@ public class DetailsUserInfoVo {
     private Integer canModifyInviter;
     
     /**
+     * 邀请记录按钮是否显示 0：是 1：否
+     */
+    private Integer modifyInviterRecordIsView;
+    
+    
+    /**
      * 邀请人名称
      */
     private String inviterName;

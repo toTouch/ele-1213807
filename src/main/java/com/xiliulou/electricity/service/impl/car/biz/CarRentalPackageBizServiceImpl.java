@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.FyConfig;
 import com.xiliulou.electricity.entity.PxzConfig;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPo;
@@ -37,6 +38,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FyConfigService;
 import com.xiliulou.electricity.service.PxzConfigService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
@@ -129,6 +131,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     private UserInfoGroupDetailService userInfoGroupDetailService;
     
     @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
     private PxzConfigService pxzConfigService;
     
     @Resource
@@ -160,6 +165,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         
         // 0. 获取用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
@@ -269,7 +275,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         } else {
             //反之则为系统用户
             qryModel.setIsUserGroup(YesNoEnum.YES.getCode());
-            qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
+            if (Objects.nonNull(userInfoExtra) && Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户查询新租和全部
+                qryModel.setApplicableTypeList(ApplicableTypeEnum.newUserApplicable());
+            } else {
+                qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
+            }
         }
         
         List<CarRentalPackagePo> packageEntityList = carRentalPackageService.page(qryModel);

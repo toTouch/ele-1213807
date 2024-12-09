@@ -222,7 +222,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
             electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
             electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
-            
+            electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
+            electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
+            electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -264,6 +266,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
         electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
         electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
+        electricityConfig.setAllowOriginalInviter(electricityConfigAddAndUpdateQuery.getAllowOriginalInviter());
+        electricityConfig.setLostUserDays(electricityConfigAddAndUpdateQuery.getLostUserDays());
+        electricityConfig.setLostUserFirst(electricityConfigAddAndUpdateQuery.getLostUserFirst());
         
         electricityConfigMapper.update(electricityConfig);
         

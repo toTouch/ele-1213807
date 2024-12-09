@@ -24,11 +24,13 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.entity.car.CarCouponNamePO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.userinfo.userInfoGroup.UserInfoGroup;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryCarMemberListQuery;
@@ -50,6 +52,7 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.asset.AssertPermissionService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -163,6 +166,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Resource
     private StoreService storeService;
     
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
     @Autowired
     private InstallmentDeductionPlanService installmentDeductionPlanService;
     
@@ -250,6 +256,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return Collections.emptyList();
         }
@@ -348,6 +355,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setUserInfoGroupIdsForSearch(
                     userInfoGroupNamesBos.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
             query.setRentTypes(null);
+        } else if (Objects.nonNull(userInfoExtra) && Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
         }
         
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUserV2(query);
@@ -556,7 +565,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-        
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(SecurityUtils.getUid());
+    
         // 处理新租套餐重复购买的问题，如果先购买了租车套餐，则用户属于老用户，则只能购买租赁类型为不限或者续租的套餐
         if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
             // 新租
@@ -613,8 +623,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(null);
             query.setUserInfoGroupIdsForSearch(
                     userInfoGroupNamesBos.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
+        } else if (Objects.nonNull(userInfoExtra) && Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+            // 流失用户查询新租和不限
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
         }
-        
+    
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUser(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
@@ -693,7 +706,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-        
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(SecurityUtils.getUid());
+    
         // 处理新租套餐重复购买的问题，如果先购买了租车套餐，则用户属于老用户，则只能购买租赁类型为不限或者续租的套餐
         if (Objects.isNull(userBatteryMemberCard) && userInfo.getPayCount() <= 0) {
             // 新租
@@ -762,6 +776,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             query.setRentTypes(null);
             query.setUserInfoGroupIdsForSearch(
                     userInfoGroupNamesBos.stream().map(userInfoGroupNamesBO -> userInfoGroupNamesBO.getGroupId().toString()).collect(Collectors.toList()));
+        } else if (Objects.nonNull(userInfoExtra) && Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+            // 流失用户查询新租和不限
+            query.setRentTypes(Arrays.asList(BatteryMemberCard.RENT_TYPE_NEW, BatteryMemberCard.RENT_TYPE_UNLIMIT));
         }
         
         List<BatteryMemberCardAndTypeVO> list = this.batteryMemberCardMapper.selectByPageForUserV2(query);
@@ -1313,6 +1330,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         Triple<Boolean, String, Object> triple =
                 BatteryMemberCardConstants.CHECK_USERINFO_GROUP_USER.equals(source) ? Triple.of(false, "100318", "您浏览的套餐已下架，请看看其他的吧")
                         : Triple.of(false, "100319", "用户与套餐关联的用户分组不一致，请刷新重试");
+    
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            return Triple.of(false, "120125", "未找到用户");
+        }
         
         if (CollectionUtils.isNotEmpty(userInfoGroupNamesBos)) {
             if (Objects.equals(memberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_SYSTEM)) {
@@ -1328,11 +1350,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             if (Objects.equals(memberCard.getGroupType(), BatteryMemberCard.GROUP_TYPE_USER)) {
                 return triple;
             }
-            
-            // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
-            if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(memberCard.getRentType())) {
-                log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), memberCard.getId());
-                return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+    
+            if (Objects.equals(userInfoExtra.getLostUserStatus(), YesNoEnum.YES.getCode())) {
+                // 流失用户不允许购买续租类型的套餐
+                if (Objects.equals(memberCard.getRentType(), BatteryMemberCard.RENT_TYPE_OLD)) {
+                    // 流失用户
+                    log.warn("The rent type of current package is a old rental package for renewal user battery member card, uid={}, mid={}", userInfo.getUid(), memberCard.getId());
+                    return Triple.of(false, "100379", "该套餐已下架，无法购买，请刷新页面购买其他套餐");
+                }
+            } else {
+                // 判断套餐租赁状态，用户为老用户，套餐类型为新租，则不支持购买
+                if (userInfo.getPayCount() > 0 && BatteryMemberCard.RENT_TYPE_NEW.equals(memberCard.getRentType())) {
+                    log.warn("The rent type of current package is a new rental package for add user deposit and member card, uid={}, mid={}", userInfo.getUid(), memberCard.getId());
+                    return Triple.of(false, "100376", "已是平台老用户，无法购买新租类型套餐，请刷新页面重试");
+                }
             }
         }
         

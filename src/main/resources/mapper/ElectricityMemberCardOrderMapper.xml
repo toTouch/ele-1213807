@@ -728,6 +728,10 @@
         and create_time &lt;=#{endTime}
     </select>
     
+    <select id="existNotFinishOrderByUid" resultType="java.lang.Integer">
+        select 1 from t_electricity_member_card_order where uid = #{uid} and use_status in (1, 2) and status = 1 limit 1
+    </select>
+    
     <select id="selectOrderByAgreementNoAndIssue"
             resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select

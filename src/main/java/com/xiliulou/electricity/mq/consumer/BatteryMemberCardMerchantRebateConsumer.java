@@ -12,12 +12,16 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoExtra;
+import com.xiliulou.electricity.entity.lostuser.LostUserFirstOrderRecord;
 import com.xiliulou.electricity.entity.merchant.Merchant;
 import com.xiliulou.electricity.entity.merchant.MerchantAttr;
 import com.xiliulou.electricity.entity.merchant.MerchantLevel;
 import com.xiliulou.electricity.entity.merchant.RebateConfig;
 import com.xiliulou.electricity.entity.merchant.RebateRecord;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.lostuser.PackageTypeEnum;
+import com.xiliulou.electricity.mapper.lostuser.LostUserFirstOrderRecordMapper;
 import com.xiliulou.electricity.mq.constant.MqConsumerConstant;
 import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.mq.model.BatteryMemberCardMerchantRebate;
@@ -48,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -102,6 +107,10 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
     
     @Autowired
     private MerchantAttrService merchantAttrService;
+    
+    @Resource
+    private LostUserFirstOrderRecordMapper lostUserFirstOrderRecordMapper;
+    
     @Override
     public void onMessage(String message) {
         MDC.put(CommonConstant.TRACE_ID, IdUtil.fastSimpleUUID());
@@ -118,8 +127,12 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             
             if (Objects.equals(MerchantConstant.TYPE_PURCHASE, batteryMemberCardMerchantRebate.getType())) {
                 //返利
-                handleRebate(batteryMemberCardMerchantRebate);
-                
+                if (Objects.equals(batteryMemberCardMerchantRebate.getLostUserType(), YesNoEnum.YES.getCode())) {
+                    // 流失用户返利
+                    handleRebateForLostUser(batteryMemberCardMerchantRebate);
+                } else {
+                    handleRebate(batteryMemberCardMerchantRebate);
+                }
                 //续费成功  发送商户升级MQ
                 MerchantUpgrade merchantUpgrade = new MerchantUpgrade();
                 merchantUpgrade.setUid(batteryMemberCardMerchantRebate.getUid());
@@ -135,6 +148,158 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
         }
     }
     
+    private void handleRebateForLostUser(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found electricityMemberCardOrder,orderId={}", batteryMemberCardMerchantRebate.getOrderId());
+            return;
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(batteryMemberCardMerchantRebate.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found userInfo,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
+        
+        UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(batteryMemberCardMerchantRebate.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found userInfoExtra,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
+        
+        if (Objects.isNull(userInfoExtra.getMerchantId())) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found merchantId,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
+        
+        Merchant merchant = merchantService.queryByIdFromCache(userInfoExtra.getMerchantId());
+        if (Objects.isNull(merchant)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found merchant,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
+        
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeIdFromCache(electricityMemberCardOrder.getFranchiseeId());
+        if (Objects.isNull(merchantAttr)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found merchantAttr by tenant,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
+        
+        // 默认开启按照新逻辑
+        Long channelEmployeeUid = userInfoExtra.getChannelEmployeeUid();
+        if (Objects.equals(merchantAttr.getStatus(), MerchantAttr.CLOSE_STATUS)) {
+            // 关闭按照之前逻辑，取商户表的渠道员
+            channelEmployeeUid = merchant.getChannelEmployeeUid();
+        }
+        
+        //渠道员
+        User channel = userService.queryByUidFromCache(channelEmployeeUid);
+        
+        //若商户及渠道员均禁用，不返利
+        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus()) && Objects.nonNull(channel) && Objects.equals(channel.getLockFlag(), User.USER_LOCK)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!merchant disable,channel disable,uid={},merchantId={}", batteryMemberCardMerchantRebate.getUid(), userInfoExtra.getMerchantId());
+            return;
+        }
+        
+        //获取商户等级
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
+        if (Objects.isNull(merchantLevel)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found merchantLevel,uid={},merchantId={}", batteryMemberCardMerchantRebate.getUid(), userInfoExtra.getMerchantId());
+            return;
+        }
+        
+        //获取返利配置
+        RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(electricityMemberCardOrder.getMemberCardId(), merchantLevel.getLevel());
+        if (Objects.isNull(rebateConfig)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!not found rebateConfig,uid={},mid={}", batteryMemberCardMerchantRebate.getUid(), electricityMemberCardOrder.getMemberCardId());
+            return;
+        }
+        
+        if (Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
+            log.warn("REBATE CONSUMER LOST USER WARN!rebateConfig is disable,uid={},mid={}", batteryMemberCardMerchantRebate.getUid(), electricityMemberCardOrder.getMemberCardId());
+            return;
+        }
+        
+        //商户返现金额
+        BigDecimal merchantRebate = null;
+        
+        //渠道员返现金额
+        BigDecimal channelerRebate = null;
+        
+        //返现类型
+        Integer type = null;
+        
+        //返现类型
+        Integer orderType = null;
+        
+        Integer refundType = null;
+        
+        type = MerchantConstant.MERCHANT_REBATE_TYPE_INVITATION;
+        //拉新返现
+        merchantRebate = rebateConfig.getMerchantInvitation();
+        channelerRebate = rebateConfig.getChannelerInvitation();
+        
+        orderType = MerchantConstant.MERCHANT_REBATE_ORDER_TYPE_NEW;
+        
+        RebateRecord rebateRecord = new RebateRecord();
+        rebateRecord.setUid(batteryMemberCardMerchantRebate.getUid());
+        rebateRecord.setName(electricityMemberCardOrder.getUserName());
+        rebateRecord.setPhone(userInfo.getPhone());
+        rebateRecord.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REBATE, userInfo.getUid()));
+        rebateRecord.setOriginalOrderId(electricityMemberCardOrder.getOrderId());
+        rebateRecord.setMemberCardId(electricityMemberCardOrder.getMemberCardId());
+        rebateRecord.setMemberCardName(electricityMemberCardOrder.getCardName());
+        rebateRecord.setType(type);
+        rebateRecord.setOrderType(orderType);
+        rebateRecord.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+        rebateRecord.setLevel(merchantLevel.getLevel());
+        rebateRecord.setMerchantId(merchant.getId());
+        rebateRecord.setMerchantUid(merchant.getUid());
+        rebateRecord.setStatus(MerchantConstant.MERCHANT_REBATE_STATUS_NOT_SETTLE);
+        rebateRecord.setChanneler(channelEmployeeUid);
+        rebateRecord.setChannelerRebate(channelerRebate);
+        rebateRecord.setMerchantRebate(merchantRebate);
+        rebateRecord.setRefundFlag(refundType);
+        rebateRecord.setPlaceId(userInfoExtra.getPlaceId());
+        rebateRecord.setPlaceUid(userInfoExtra.getPlaceUid());
+        rebateRecord.setRebateTime(System.currentTimeMillis());
+        rebateRecord.setTenantId(electricityMemberCardOrder.getTenantId());
+        rebateRecord.setCreateTime(System.currentTimeMillis());
+        rebateRecord.setUpdateTime(System.currentTimeMillis());
+        rebateRecord.setMonthDate(DateUtil.format(new Date(), DateFormatConstant.MONTH_DAY_DATE_FORMAT));
+        
+        //商户禁用后，不给商户返利；渠道员禁用，不返利
+        if (Objects.equals(MerchantConstant.DISABLE, merchant.getStatus())) {
+            rebateRecord.setMerchantRebate(BigDecimal.ZERO);
+        }
+        
+        if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK) || Objects.equals(channel.getDelFlag(), User.DEL_DEL)) {
+            rebateRecord.setChannelerRebate(BigDecimal.ZERO);
+        }
+        
+        rebateRecordService.insert(rebateRecord);
+        
+        // 修改流失用的首次拉新返利时间
+        UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
+        userInfoExtraUpdate.setUid(batteryMemberCardMerchantRebate.getUid());
+        userInfoExtraUpdate.setLostUserFirstRebateTime(System.currentTimeMillis());
+        userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoExtraService.updateByUid(userInfoExtraUpdate);
+        
+        // 保存流失用户首次拉新订单记录
+        LostUserFirstOrderRecord lostUserFirstOrderRecord = LostUserFirstOrderRecord.builder()
+                .uid(batteryMemberCardMerchantRebate.getUid())
+                .orderId(electricityMemberCardOrder.getOrderId())
+                .merchantId(merchant.getId())
+                .orderSourceId(electricityMemberCardOrder.getId())
+                .packageType(PackageTypeEnum.ELECTRICITY.getCode())
+                .tenantId(electricityMemberCardOrder.getTenantId())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .build();
+        lostUserFirstOrderRecordMapper.insert(lostUserFirstOrderRecord);
+    }
+    
+    
     private void handleRebate(BatteryMemberCardMerchantRebate batteryMemberCardMerchantRebate) {
         
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(batteryMemberCardMerchantRebate.getOrderId());
@@ -143,21 +308,21 @@ public class BatteryMemberCardMerchantRebateConsumer implements RocketMQListener
             return;
         }
         
-        //若用户退过押金，再次缴纳押金后，不返利
-        if (Objects.nonNull(eleRefundOrderService.existsRefundOrderByUid(batteryMemberCardMerchantRebate.getUid()))) {
-            log.warn("REBATE CONSUMER WARN!user exists refund order,uid={}", batteryMemberCardMerchantRebate.getUid());
-            return;
-        }
-        
         UserInfo userInfo = userInfoService.queryByUidFromCache(batteryMemberCardMerchantRebate.getUid());
         if (Objects.isNull(userInfo)) {
             log.warn("REBATE CONSUMER WARN!not found userInfo,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
         }
-        
+    
         UserInfoExtra userInfoExtra = userInfoExtraService.queryByUidFromCache(batteryMemberCardMerchantRebate.getUid());
         if (Objects.isNull(userInfoExtra)) {
             log.warn("REBATE CONSUMER WARN!not found userInfoExtra,uid={}", batteryMemberCardMerchantRebate.getUid());
+            return;
+        }
+    
+        //若用户退过押金，再次缴纳押金后，不返利
+        if (Objects.nonNull(eleRefundOrderService.existsRefundOrderByUid(batteryMemberCardMerchantRebate.getUid(), userInfoExtra.getLostUserFirstRebateTime()))) {
+            log.warn("REBATE CONSUMER WARN!user exists refund order,uid={}", batteryMemberCardMerchantRebate.getUid());
             return;
         }
         

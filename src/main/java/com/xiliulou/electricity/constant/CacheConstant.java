@@ -737,6 +737,8 @@ public interface CacheConstant {
     
     String CACHE_USER_BIND_BATTERY_LOCK = "cache_user_bind_battery_lock:";
     
+    String CACHE_LOST_USER_CHECK_LOCK = "cache_lost_user_check_lock:";
+    
     String FREE_DEPOSIT_PAY_LOCK = "free_deposit_pay_lock:";
     
     String CACHE_FY_CONFIG = "cache_fy_config:";

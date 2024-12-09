@@ -77,6 +77,8 @@ public interface MerchantJoinRecordMapper extends BaseMapper<MerchantJoinRecord>
     
     Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest request);
     
+    MerchantJoinRecord selectNotSuccessByJoinUid(@Param("joinUid") Long uid);
+    
     MerchantJoinRecord selectRemoveSuccessRecord(@Param("joinUid") Long joinUid, @Param("inviterUid") Long inviterUid, @Param("tenantId") Integer tenantId);
     
     List<MerchantStatisticsUserVO> selectListSuccessJoinNumByCondition(MerchantPromotionScanCodeQueryModel scanCodeQueryModel);

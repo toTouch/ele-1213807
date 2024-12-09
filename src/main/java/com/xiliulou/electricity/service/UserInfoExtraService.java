@@ -42,4 +42,8 @@ public interface UserInfoExtraService {
     Triple<Boolean, String, String> isLimitPurchase(Long uid, Integer tenantId);
     
     R updateEleLimit(UserInfoLimitRequest request, List<Long> franchiseeIds);
+    
+    Triple<Boolean, String, Object> bindMerchantForLostUser(UserInfo userInfo, String orderId, Long memberCardId);
+    
+    Integer updateUserNotActivityByUid(Long uid);
 }

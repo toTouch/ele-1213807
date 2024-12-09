@@ -38,10 +38,12 @@ import com.xiliulou.electricity.entity.enterprise.EnterpriseInfo;
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.enterprise.EnterprisePaymentStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.PackageOrderTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
+import com.xiliulou.electricity.event.publish.LostUserActivityDealPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.mapper.enterprise.EnterpriseBatteryPackageMapper;
@@ -77,6 +79,7 @@ import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import com.xiliulou.electricity.service.UserInfoExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.enterprise.CloudBeanUseRecordService;
@@ -253,6 +256,12 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
     
     @Resource
     private EnterpriseChannelUserExitMapper channelUserExitMapper;
+    
+    @Resource
+    private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private LostUserActivityDealPublish lostUserActivityDealPublish;
     
     @Resource
     private FreeDepositService freeDepositService;
@@ -1393,9 +1402,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             // 查询用户保险信息
             InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
-            
+    
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
         } catch (BizException e) {
-            log.error("renewal package by enterprise user error, uid = {}, ex = {}", uid, e);
+            log.error("renewal package by enterprise user error, uid = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_ENTERPRISE_USER_PURCHASE_PACKAGE_LOCK_KEY + uid);
@@ -1689,8 +1700,10 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
             InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(userInfo.getUid(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY);
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
             
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
         } catch (BizException e) {
-            log.error("purchase package with deposit by enterprise user error, uid = {},ex = {}", uid, e);
+            log.error("purchase package with deposit by enterprise user error, uid = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
             
         } finally {
@@ -1986,9 +1999,11 @@ public class EnterpriseBatteryPackageServiceImpl implements EnterpriseBatteryPac
                 BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
             }*/
             enterpriseUserPackageDetailsVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
-            
+    
+            // 流失用户活动处理
+            lostUserActivityDealPublish.publish(uid, YesNoEnum.YES.getCode(), tenantId, electricityMemberCardOrder.getOrderId());
         } catch (BizException e) {
-            log.error("purchase package without deposit by enterprise user error, uid = {}, ex = {}", uid, e);
+            log.error("purchase package without deposit by enterprise user error, uid = {}", uid, e);
             throw new BizException(e.getErrCode(), e.getMessage());
             
         } finally {

@@ -479,7 +479,11 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
             UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
             if (Objects.nonNull(userInfoExtra)) {
                 userInfoExtra.setMerchantId(merchantId);
-                userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
+                if (Objects.nonNull(merchant.getChannelEmployeeUid())) {
+                    userInfoExtra.setChannelEmployeeUid(merchant.getChannelEmployeeUid());
+                } else {
+                    userInfoExtra.setChannelEmployeeUid(NumberConstant.ZERO_L);
+                }
                 userInfoExtra.setPlaceId(NumberConstant.ZERO_L);
                 userInfoExtra.setPlaceUid(NumberConstant.ZERO_L);
                 userInfoExtra.setUpdateTime(System.currentTimeMillis());
@@ -514,6 +518,129 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         } finally {
             redisService.delete(CacheConstant.CACHE_MERCHANT_MODIFY_INVITER_LOCK + uid);
         }
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> bindMerchantForLostUser(UserInfo userInfo, String orderId, Long memberCardId) {
+        Long uid = userInfo.getUid();
+        
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!electricityMemberCardOrder is null,uid={},orderId={}", uid, orderId);
+            return Triple.of(false, "", null);
+        }
+        
+        UserInfoExtra userInfoExtra = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!userInfoExtra is null,uid={},orderId={}", uid, orderId);
+            return Triple.of(false, "", null);
+        }
+        
+        // 查询用户已参与的扫码记录
+        MerchantJoinRecord merchantJoinRecord = merchantJoinRecordService.queryNotSuccessByJoinUid(uid);
+        if (Objects.isNull(merchantJoinRecord)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!merchantJoinRecord is null,uid={},orderId={}", uid, orderId);
+            return Triple.of(false, "", null);
+        }
+        
+        Merchant merchant = merchantService.queryByIdFromCache(merchantJoinRecord.getMerchantId());
+        if (Objects.isNull(merchant)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!merchant is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return Triple.of(false, "", null);
+        }
+        
+        MerchantAttr merchantAttr = merchantAttrService.queryByFranchiseeId(merchant.getFranchiseeId());
+        if (Objects.isNull(merchantAttr)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!merchantAttr is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return Triple.of(false, "", null);
+        }
+        
+        MerchantLevel merchantLevel = merchantLevelService.queryById(merchant.getMerchantGradeId());
+        if (Objects.isNull(merchantLevel)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!merchantLevel is null,merchantId={},uid={}", merchantJoinRecord.getMerchantId(), uid);
+            return Triple.of(false, "", null);
+        }
+        
+        //根据商户等级&套餐id获取返利套餐
+        RebateConfig rebateConfig = rebateConfigService.queryByMidAndMerchantLevel(memberCardId, merchantLevel.getLevel());
+        if (Objects.isNull(rebateConfig)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!rebateConfig is null,merchantId={},uid={},level={}", merchantJoinRecord.getMerchantId(), uid, merchantLevel.getLevel());
+            return Triple.of(false, "", null);
+        }
+        
+        if (Objects.isNull(rebateConfig.getStatus()) || Objects.equals(rebateConfig.getStatus(), MerchantConstant.REBATE_DISABLE)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN!rebateConfig status illegal,id={},uid={}", rebateConfig.getId(), uid);
+            return Triple.of(false, "", null);
+        }
+        
+        // 加盟商一致校验
+        if (!Objects.equals(userInfo.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN! userInfo franchisee not equal order franchisee, uid ={} , order.franchiseeId={}", uid, electricityMemberCardOrder.getFranchiseeId());
+            return Triple.of(false, "", null);
+        }
+        
+        if (!Objects.equals(merchant.getFranchiseeId(), electricityMemberCardOrder.getFranchiseeId())) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN! merchant franchisee not equal order franchisee,merchant.id = {} , order.franchiseeId={}", merchant.getId(),
+                    electricityMemberCardOrder.getFranchiseeId());
+            return Triple.of(false, "", null);
+        }
+        
+        List<RebateConfig> rebateConfigs = rebateConfigService.listRebateConfigByMid(electricityMemberCardOrder.getMemberCardId());
+        if (CollUtil.isEmpty(rebateConfigs)) {
+            log.warn("BIND MERCHANT FOR LOST USER WARN! current member not in rebateConfig, memberId={}", electricityMemberCardOrder.getMemberCardId());
+            return Triple.of(false, "", null);
+        }
+        
+        //邀请有效期内
+        if (merchantAttrService.checkInvitationTime(merchantAttr, merchantJoinRecord.getStartTime())) {
+            UserInfoExtra userInfoExtraUpdate = new UserInfoExtra();
+            userInfoExtraUpdate.setUid(uid);
+            userInfoExtraUpdate.setMerchantId(merchantJoinRecord.getMerchantId());
+            if (Objects.nonNull(merchantJoinRecord.getChannelEmployeeUid())) {
+                userInfoExtraUpdate.setChannelEmployeeUid(merchantJoinRecord.getChannelEmployeeUid());
+            } else {
+                userInfoExtraUpdate.setChannelEmployeeUid(NumberConstant.ZERO_L);
+            }
+            userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
+            if (Objects.equals(MerchantJoinRecordConstant.INVITER_TYPE_MERCHANT_PLACE_EMPLOYEE, merchantJoinRecord.getInviterType())) {
+                userInfoExtraUpdate.setPlaceUid(merchantJoinRecord.getInviterUid());
+                userInfoExtraUpdate.setPlaceId(merchantJoinRecord.getPlaceId());
+            } else {
+                userInfoExtraUpdate.setPlaceUid(NumberConstant.ZERO_L);
+                userInfoExtraUpdate.setPlaceId(NumberConstant.ZERO_L);
+            }
+            userInfoExtraUpdate.setActivitySource(UserInfoActivitySourceEnum.SUCCESS_MERCHANT_ACTIVITY.getCode());
+            userInfoExtraUpdate.setInviterUid(merchantJoinRecord.getInviterUid());
+            
+            this.updateByUid(userInfoExtraUpdate);
+            
+            MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
+            merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
+            merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_SUCCESS);
+            merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+            merchantJoinRecordUpdate.setPackageId(electricityMemberCardOrder.getMemberCardId());
+            merchantJoinRecordUpdate.setPackageType(PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+            // 加盟商
+            merchantJoinRecordUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+            merchantJoinRecordUpdate.setSuccessTime(System.currentTimeMillis());
+            merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
+        } else {
+            MerchantJoinRecord merchantJoinRecordUpdate = new MerchantJoinRecord();
+            merchantJoinRecordUpdate.setId(merchantJoinRecord.getId());
+            merchantJoinRecordUpdate.setStatus(MerchantJoinRecordConstant.STATUS_EXPIRED);
+            merchantJoinRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            merchantJoinRecordService.updateById(merchantJoinRecordUpdate);
+            
+            return Triple.of(false, "", null);
+        }
+        
+        return Triple.of(true, "", merchant);
+    }
+    
+    @Override
+    public Integer updateUserNotActivityByUid(Long uid) {
+        return userInfoExtraMapper.updateUserNotActivityByUid(uid, System.currentTimeMillis());
     }
     
     @Override

@@ -135,5 +135,8 @@ public interface MerchantJoinRecordService {
     
     Integer countScanCodeRecord(MerchantScanCodeRecordPageRequest merchantScanCodeRecordPageRequest);
     
+    MerchantJoinRecord queryNotSuccessByJoinUid(Long uid);
+    
+    
     MerchantJoinRecord queryRemoveSuccessRecord(Long joinUid, Long inviterUid, Integer tenantId);
 }
