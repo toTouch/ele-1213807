@@ -388,7 +388,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 return excelVO;
             }
             return null;
-        }).collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         
         
         String fileName = "互通电池列表.xlsx";
