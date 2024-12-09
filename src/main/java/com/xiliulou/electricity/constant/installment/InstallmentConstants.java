@@ -90,6 +90,11 @@ public interface InstallmentConstants {
     Integer DEDUCTION_PLAN_STATUS_CANCEL = 3;
     
     /**
+     * 代扣计划状态-代扣中
+     */
+    Integer DEDUCTION_PLAN_STATUS_DEDUCTING = 4;
+    
+    /**
      * 代扣记录状态-代扣中
      */
     Integer DEDUCTION_RECORD_STATUS_INIT = 0;
@@ -168,17 +173,17 @@ public interface InstallmentConstants {
      * 客户端来源(miniapp)
      */
     String CHANNEL_FROM_MINIAPP = "miniapp";
-
+    
     /**
      * 签约记录查询结果-签约成功
      */
     Integer SIGN_QUERY_STATUS_SIGN = 2;
-
+    
     /**
      * 签约记录查询结果-解约成功
      */
     Integer SIGN_QUERY_STATUS_CANCEL = 3;
-
+    
     /**
      * 代扣记录查询结果-扣款成功
      */
@@ -188,4 +193,14 @@ public interface InstallmentConstants {
      * 分期套餐最大天数
      */
     Integer INSTALLMENT_MAX_VALID_DAYS = 749;
+    
+    /**
+     * 用户端查询代扣计划每期组合数据，未全部代扣完成
+     */
+    Integer PLAN_ASSEMBLY_STATUS_NOT_COMPLETE = 0;
+    
+    /**
+     * 用户端查询代扣计划每期组合数据，已全部代扣完成
+     */
+    Integer PLAN_ASSEMBLY_STATUS_COMPLETED = 1;
 }

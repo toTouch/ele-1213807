@@ -11,9 +11,9 @@ import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanServ
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,22 +27,21 @@ import java.util.Objects;
  * @Author: SongJP
  * @Date: 2024/8/27 16:49
  */
-@RestController
 @Slf4j
+@RestController
+@RequiredArgsConstructor
 @RequestMapping("/admin/installment/deductionPlan")
 public class JsonAdminInstallmentDeductionPlanController {
     
-    @Autowired
-    private TenantService tenantService;
+    private final TenantService tenantService;
     
-    @Autowired
-    private UserDataScopeService userDataScopeService;
+    private final UserDataScopeService userDataScopeService;
     
-    @Autowired
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
+    
     
     @GetMapping("/listDeductionPlanForRecord")
-    public R<List<InstallmentDeductionPlan>> listDeductionPlanByAgreementNo(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
+    public R<List<InstallmentDeductionPlan>> listDeductionPlanForRecordAdmin(@RequestParam(value = "externalAgreementNo") String externalAgreementNo) {
         Integer tenantId = TenantContextHolder.getTenantId();
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {

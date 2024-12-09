@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.controller.user.installment;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.annotation.ProcessParameter;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.query.installment.CreateTerminatingRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentSignQuery;
 import com.xiliulou.electricity.service.installment.InstallmentBizService;
-import lombok.AllArgsConstructor;
+import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_H5;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.CHANNEL_FROM_MINIAPP;
@@ -25,10 +28,13 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  * @Date: 2024/9/7 22:33
  */
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JsonUserInstallmentBizController {
     
-    private InstallmentBizService installmentBizService;
+    private final InstallmentBizService installmentBizService;
+    
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
+    
     
     /**
      * 签约接口
@@ -70,9 +76,27 @@ public class JsonUserInstallmentBizController {
     /**
      * 用户端代扣
      */
+    @Deprecated
     @GetMapping("/user/installment/deductionPlan/deduct")
-    public R deduct(@RequestParam Long id) {
-        return installmentBizService.deduct(id);
+    public R<String> deduct(@RequestParam Long id) {
+        // TODO 兼容旧小程序
+        InstallmentDeductionPlan deductionPlan = installmentDeductionPlanService.queryById(id);
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listByExternalAgreementNoAndIssue(TenantContextHolder.getTenantId(),
+                deductionPlan.getExternalAgreementNo(), deductionPlan.getIssue());
+        
+        return installmentBizService.deduct(deductionPlans);
+    }
+    
+    /**
+     * 用户端代扣
+     */
+    @GetMapping("/user/installment/deductionPlan/userDeduct")
+    public R<String> userDeduct(@RequestParam String externalAgreementNo, @RequestParam Integer issue) {
+        // TODO 兼容旧小程序，暂时在controller层查询数据，待旧接口不再使用，删除旧接口后调整结构
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanService.listByExternalAgreementNoAndIssue(TenantContextHolder.getTenantId(), externalAgreementNo,
+                issue);
+        
+        return installmentBizService.deduct(deductionPlans);
     }
     
     /**

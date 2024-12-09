@@ -18,7 +18,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentTerminatingRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -41,20 +41,20 @@ import static com.xiliulou.electricity.constant.installment.InstallmentConstants
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class InstallmentTerminatingRecordServiceImpl implements InstallmentTerminatingRecordService {
     
-    private InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
+    private final InstallmentTerminatingRecordMapper installmentTerminatingRecordMapper;
     
-    private FranchiseeService franchiseeService;
+    private final FranchiseeService franchiseeService;
     
-    private BatteryMemberCardService batteryMemberCardService;
+    private final BatteryMemberCardService batteryMemberCardService;
     
-    private CarRentalPackageService carRentalPackageService;
+    private final CarRentalPackageService carRentalPackageService;
     
-    private InstallmentDeductionPlanService installmentDeductionPlanService;
+    private final InstallmentDeductionPlanService installmentDeductionPlanService;
     
-    private UserService userService;
+    private final UserService userService;
     
     
     @Override
@@ -106,6 +106,7 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return R.ok(installmentTerminatingRecordMapper.count(query));
     }
     
+    @Slave
     @Override
     public List<InstallmentTerminatingRecord> listForRecordWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForRecordWithStatus(query);
@@ -145,17 +146,19 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
         return installmentTerminatingRecord;
     }
     
-    
+    @Slave
     @Override
     public InstallmentTerminatingRecord queryById(Long id) {
         return installmentTerminatingRecordMapper.selectById(id);
     }
     
+    @Slave
     @Override
     public InstallmentTerminatingRecord queryLatestByExternalAgreementNo(String externalAgreementNo) {
         return installmentTerminatingRecordMapper.selectLatestByExternalAgreementNo(externalAgreementNo);
     }
     
+    @Slave
     @Override
     public List<InstallmentTerminatingRecord> listForUserWithStatus(InstallmentTerminatingRecordQuery query) {
         return installmentTerminatingRecordMapper.selectListForUserWithStatus(query);

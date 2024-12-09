@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.installment;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.installment.InstallmentTerminatingRecord;
-import com.xiliulou.electricity.query.installment.HandleTerminatingRecordQuery;
 import com.xiliulou.electricity.query.installment.InstallmentTerminatingRecordQuery;
 import com.xiliulou.electricity.vo.installment.InstallmentTerminatingRecordVO;
 
@@ -50,6 +49,7 @@ public interface InstallmentTerminatingRecordService {
     
     /**
      * 根据状态查询签约记录对应的解约申请
+     *
      * @param query 参数
      * @return 返回解约申请
      */
@@ -57,16 +57,17 @@ public interface InstallmentTerminatingRecordService {
     
     /**
      * 生成解约记录
+     *
      * @param installmentRecord 签约记录
-     * @param reason 原因
+     * @param reason            原因
      * @return 返回解约记录
      */
     InstallmentTerminatingRecord generateTerminatingRecord(InstallmentRecord installmentRecord, String reason, Boolean completedOrNot);
     
-
     
     /**
      * 根据id查询解约申请记录
+     *
      * @param id 解约记录id
      * @return 解约记录
      */
@@ -74,6 +75,7 @@ public interface InstallmentTerminatingRecordService {
     
     /**
      * 根据请求签约号查询最新解约记录
+     *
      * @param externalAgreementNo 请求签约号
      * @return 解约记录
      */
@@ -81,6 +83,7 @@ public interface InstallmentTerminatingRecordService {
     
     /**
      * 根据状态查询用户的解约申请
+     *
      * @param query 参数
      * @return 返回解约申请
      */
