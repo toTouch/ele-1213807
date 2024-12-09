@@ -75,6 +75,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
 import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
@@ -480,8 +481,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Resource
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
-    
-    
+
+
     /**
      * 根据主键ID集获取柜机基本信息
      *
@@ -2647,7 +2648,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.warn("checkBattery warn! tenantId is not equal,tenantId1={},tenantId2={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
             return R.failMsg("电池与换电柜租户不匹配");
         }
-      
+
         // 查电池所属加盟商
         if (Objects.isNull(electricityBattery.getFranchiseeId())) {
             log.warn("checkBattery warn! battery not bind franchisee,electricityBatteryId={}", electricityBattery.getId());
@@ -2665,7 +2666,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityBattery.getFranchiseeId());
             return R.failMsg("电池加盟商与电柜加盟商不匹配");
         }
-        
+
         return R.ok();
     }
     
@@ -2746,8 +2747,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      */
     @Override
     public Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid,
-            Set<Long> mutualFranchiseeSet) {
-        
+                                                                     Integer flexibleRenewalType, Set<Long> mutualFranchiseeSet) {
+
         Integer tenantId = TenantContextHolder.getTenantId();
         // 有锂换电大部分走选仓换电，少部分正常换电这里特殊处理
         if (Objects.nonNull(tenantId) && Objects.nonNull(eleCommonConfig.getSpecialTenantId()) && Objects.equals(eleCommonConfig.getSpecialTenantId(), tenantId)) {
@@ -2846,7 +2847,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             // 多型号满电电池分配规则：优先分配当前用户绑定电池型号的电池，没有则分配电量最大的   若存在多个电量最大的，则分配用户绑定电池型号串数最大的电池
             if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                if (Objects.nonNull(electricityBattery)) {
+                if (Objects.nonNull(electricityBattery) && !Objects.equals(flexibleRenewalType, FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode())) {
+                    log.info("FIND USABLE BATTERY CELL NO! use old logic, flexibleRenewalType={}, uid={}.", flexibleRenewalType, uid);
+                    // 灵活续费类型不为换电时，使用原逻辑获取满电仓
                     // 用户当前绑定电池的型号
                     String userCurrentBatteryType = electricityBattery.getModel();
                     List<ElectricityCabinetBox> userCurrentBatteryUsableBatteryCellNos = usableBatteryCellNos.stream()
@@ -2866,6 +2869,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         usableBatteryCellNos = userCurrentBatteryUsableBatteryCellNos;
                     }
                 } else {
+                    // 灵活续费类型为换电时，获取用户绑定的型号，根据用户当前电池取新仓门的时候，会导致电池无法转换
+                    log.info("FIND USABLE BATTERY CELL NO! flexibleRenewalType={}, uid={}.", flexibleRenewalType, uid);
+
                     // 获取用户绑定的型号
                     List<String> userBatteryTypes = userBatteryTypeService.selectByUid(uid);
                     if (CollectionUtils.isEmpty(userBatteryTypes)) {
@@ -2922,7 +2928,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return Triple.of(true, null, usableCabinetBox);
     }
-    
+
     
     @Override
     public Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version) {
@@ -4439,7 +4445,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } else {
             electricityCabinetQuery.setFranchiseeIdList(CollUtil.newArrayList(electricityCabinetQuery.getFranchiseeId()));
         }
-        
+
         List<ElectricityCabinetVO> electricityCabinets = electricityCabinetMapper.selectElectricityCabinetByAddress(electricityCabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return Collections.EMPTY_LIST;

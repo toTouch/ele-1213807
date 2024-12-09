@@ -73,8 +73,8 @@ import com.xiliulou.electricity.enums.OverdueType;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
 import com.xiliulou.electricity.enums.enterprise.RenewalStatusEnum;
 import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
-import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.enums.message.SiteMessageType;
+import com.xiliulou.electricity.enums.notify.SendMessageTypeEnum;
 import com.xiliulou.electricity.event.SiteMessageEvent;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.event.publish.SiteMessagePublish;
@@ -85,8 +85,6 @@ import com.xiliulou.electricity.mapper.enterprise.EnterpriseChannelUserExitMappe
 import com.xiliulou.electricity.mq.producer.ActivityProducer;
 import com.xiliulou.electricity.mq.producer.DivisionAccountProducer;
 import com.xiliulou.electricity.mq.producer.MessageSendProducer;
-import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -153,10 +151,6 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseUserCostRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.impl.car.biz.CarRentalPackageOrderBizServiceImpl;
-import com.xiliulou.electricity.service.notify.NotifyUserInfoService;
-import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
-import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionPlanService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.template.MiniTemplateMsgBizService;
@@ -3087,6 +3081,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
         }
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
@@ -3231,8 +3230,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         // 检查用户与套餐的用户分组是否匹配
-        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCardToBuy.getFranchiseeId(), batteryMemberCardToBuy,
-                CHECK_USERINFO_GROUP_ADMIN);
+        Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCardToBuy.getFranchiseeId(),
+                batteryMemberCardToBuy, CHECK_USERINFO_GROUP_ADMIN);
         
         if (Boolean.FALSE.equals(checkTriple.getLeft())) {
             return checkTriple;
@@ -3293,6 +3292,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, electricityConfig,
+                userInfo);
+        if (!matchOrNot) {
+            return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
+        BigDecimal deposit =
+                (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
+        if (batteryMemberCardToBuy.getDeposit().compareTo(deposit) > 0) {
+            return Triple.of(false, "100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCardToBuy, userBatteryMemberCard, userBindbatteryMemberCard,

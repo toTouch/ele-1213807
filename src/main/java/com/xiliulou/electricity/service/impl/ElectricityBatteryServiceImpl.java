@@ -1436,7 +1436,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             batteryType = BatteryConstant.parseBatteryModelByBatteryName(batterySn);
         } else {
             //查询当前用户最新的租电订单
-            RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.selectLatestByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.selectLatestByUid(SecurityUtils.getUid(), TenantContextHolder.getTenantId(), null);
             String batterySn = rentBatteryOrder.getElectricityBatterySn();
             batteryType = BatteryConstant.parseBatteryModelByBatteryName(batterySn);
         }

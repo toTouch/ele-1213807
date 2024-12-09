@@ -134,8 +134,8 @@ public interface ElectricityCabinetService {
     
 
     Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid,
-            Set<Long> mutualFranchiseeSet);
-    
+                                                              Integer flexibleRenewalType, Set<Long> mutualFranchiseeSet);
+
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
     
     Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version);

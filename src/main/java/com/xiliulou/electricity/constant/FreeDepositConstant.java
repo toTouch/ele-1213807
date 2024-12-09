@@ -38,4 +38,9 @@ public class FreeDepositConstant {
     public static final Integer FY_AUTH_STATUS_SUCCESS =1;
     
     public static final Integer FY_AUTH_STATUS_FAIL = 2;
+    
+    /**
+     * 免押混合支付传递了改参数并且值为1，才能灵活续费
+     */
+    public static final Integer FLEXIBLE_RENEWAL = 1;
 }

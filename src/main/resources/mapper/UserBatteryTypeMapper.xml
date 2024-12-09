@@ -12,19 +12,6 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
     </resultMap>
     
-    <!--查询单个-->
-    <select id="queryById" resultMap="UserBatteryTypeMap">
-        select id,
-               uid,
-               battery_type,
-               del_flag,
-               create_time,
-               update_time,
-               tenant_id
-        from t_user_battery_type
-        where id = #{id}
-    </select>
-    
     <select id="selectByUid" resultType="string">
         select battery_type
         from t_user_battery_type
@@ -57,45 +44,12 @@
         </foreach>
     </insert>
     
-    <!--通过主键修改数据-->
-    <update id="update">
-        update t_user_battery_type
-        <set>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="batteryType != null and batteryType != ''">
-                battery_type = #{batteryType},
-            </if>
-            <if test="delFlag != null">
-                del_flag = #{delFlag},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
-    
     <update id="updateByUid">
         update t_user_battery_type
         set battery_type = #{batteryType},
             update_time  = #{updateTime}
         where uid = #{uid}
     </update>
-    
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete
-        from t_user_battery_type
-        where id = #{id}
-    </delete>
     
     <delete id="deleteByUid">
         delete

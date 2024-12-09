@@ -14,30 +14,6 @@ import java.util.List;
  */
 public interface UserBatteryTypeMapper extends BaseMapper<UserBatteryType> {
     
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserBatteryType queryById(Long id);
-    
-    /**
-     * 修改数据
-     *
-     * @param userBatteryType 实例对象
-     * @return 影响行数
-     */
-    int update(UserBatteryType userBatteryType);
-    
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
-    
     Integer batchInsert(List<UserBatteryType> userBatteryType);
     
     Integer deleteByUid(Long uid);

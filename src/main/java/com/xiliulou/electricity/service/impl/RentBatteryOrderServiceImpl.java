@@ -79,6 +79,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
@@ -270,7 +271,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Resource
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
-    
+
+    @Autowired
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
+
     /**
      * 新增数据
      *
@@ -471,7 +475,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("RENT Error! orderExchangeMutualFranchiseeCheck is error", e);
             mutualFranchiseeSet = CollUtil.newHashSet(userInfo.getFranchiseeId());
         }
-        
+
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -591,7 +595,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return Triple.of(false, "100282", "租金退款审核中，请等待审核确认后操作");
         }
         
-     
+
         // 判断互通加盟商，并且获取加盟商集合
         Set<Long> mutualFranchiseeSet = null;
         try {
@@ -624,7 +628,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Boolean.FALSE.equals(acquireFullBatteryResult.getLeft())) {
             return acquireFullBatteryResult;
         }
-        
+
         
         String cellNo = (String) acquireFullBatteryResult.getRight();
         
@@ -793,7 +797,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
             
-            
+
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
                 log.warn("RETURN BATTERY WARN! not pay deposit,uid={}", user.getUid());
@@ -808,6 +812,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             Integer orderType = RentBatteryOrderTypeEnum.RENT_ORDER_TYPE_NORMAL.getCode();
             
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+
             if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 //判断电池滞纳金
                 
@@ -851,12 +857,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     log.warn("RETURN BATTERY WARN! user exist battery service fee,uid={}", userInfo.getUid());
                     return R.fail("300001", "存在滞纳金，请先缴纳");
                 }
-                
-                //判断车电一体套餐状态
-                //                if(carRentalPackageMemberTermBizService.isExpirePackageOrder(userInfo.getTenantId(), userInfo.getUid())){
-                //                    log.warn("RETURNBATTERY WARN! user memberCard disable,uid={}", userInfo.getUid());
-                //                    return R.fail( "100210", "用户套餐不可用");
-                //                }
             }
             
             
@@ -875,9 +875,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
-            
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-            
+
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
                     .phone(userInfo.getPhone()).name(userInfo.getName())
@@ -909,6 +907,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
+            List<String> oldBatteryTypes = null;
             List<String> batteryTypeList = userBatteryTypeService.selectByUid(userInfo.getUid());
             
             if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
@@ -926,6 +925,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
+            // 需要根据电池与用户绑定的电池型号确认是否需要取缓存内的电池型号用于还电池校验
+            oldBatteryTypes = electricityCabinetOrderService.getBatteryTypesForCheck(userInfo, electricityBattery, batteryTypeList);
+            if (CollectionUtils.isNotEmpty(oldBatteryTypes)) {
+                dataMap.put("multiBatteryModelNameList", JsonUtil.toJson(oldBatteryTypes));
+            }
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId()).data(dataMap)
                     .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR)
@@ -1449,31 +1454,31 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (!rentBatteryLimitHandlerTriple.getLeft()) {
             return rentBatteryLimitHandlerTriple;
         }
-        
-       
+
+
         List<Long> batteryIds = exchangeableList.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
         if (CollUtil.isEmpty(electricityBatteries)) {
             return Triple.of(false, "100225", "电池不存在");
         }
-        
-        
+
+
         // 把本柜机加盟商的绑定电池信息拿出来
         electricityBatteries = electricityBatteries.stream().filter(e -> mutualFranchiseeSet.contains(e.getFranchiseeId())).collect(Collectors.toList());
         if (!DataUtil.collectionIsUsable(electricityBatteries)) {
             log.warn("EXCHANGE WARN!battery not bind franchisee,eid={}", electricityCabinet.getId());
             return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
         }
-        
+
         // 获取全部可用电池id
         List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-        
+
         // 把加盟商绑定的电池过滤出来
         exchangeableList = exchangeableList.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
-        
-        
+
+
         String fullBatteryCell = null;
-        
+
         for (int i = 0; i < exchangeableList.size(); i++) {
             // 20240614修改：过滤掉电池不符合标准的电池
             fullBatteryCell = acquireFullBatteryBox(exchangeableList, userInfo, franchisee, electricityCabinet.getFullyCharged());
@@ -1481,15 +1486,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
             }
-            
+
             if (redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + fullBatteryCell, "1", 4 * 1000L, false)) {
                 return Triple.of(true, null, fullBatteryCell);
             }
         }
-        
+
         return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
     }
-    
+
     private Triple<Boolean, String, Object> rentBatteryLimitHandler(ElectricityCabinet electricityCabinet) {
         ElectricityCabinetExtra cabinetExtra = electricityCabinetExtraService.queryByEidFromCache(Long.valueOf(electricityCabinet.getId()));
         if (Objects.isNull(cabinetExtra)) {
@@ -1724,11 +1729,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery);
     }
     
-   
+
     
     @Override
-    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId) {
-        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId);
+    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId, String status) {
+        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId, status);
     }
     
     @Slave
