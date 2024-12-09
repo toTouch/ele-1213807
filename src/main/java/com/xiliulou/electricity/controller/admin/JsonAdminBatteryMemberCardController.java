@@ -284,7 +284,9 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     
     
     /**
-     * 获取可续费套餐列表 （押金、电池型号相同）
+     * 获取可续费套餐列表
+     * 灵活续费开启，查询押金金额小于等于用户已缴纳押金的套餐
+     * 灵活续费关闭，查询押金相同，电池型号能覆盖住用户绑定的电池型号的套餐
      */
     @GetMapping("/admin/battery/memberCardByUid")
     public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset, @RequestParam("uid") long uid,

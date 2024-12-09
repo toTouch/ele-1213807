@@ -132,7 +132,13 @@
     </select>
     
     <select id="selectLatestByUid" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
-        select id,uid,electricity_battery_sn from t_rent_battery_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
+        select id,uid,electricity_battery_sn,create_time from t_rent_battery_order
+        where uid=#{uid} and tenant_id=#{tenantId}
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        order by create_time desc
+        limit 1
     </select>
     
     <resultMap type="com.xiliulou.electricity.entity.EleCabinetUsedRecord" id="EleCabinetUsedRecordMap">

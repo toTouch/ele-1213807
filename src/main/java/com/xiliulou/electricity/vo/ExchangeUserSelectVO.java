@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExchangeUserSelectVo {
+public class ExchangeUserSelectVO {
     
     /**
      * 是否进入多次换电，1是，0否，前端根据这个字段判断是否弹窗
@@ -70,12 +71,26 @@ public class ExchangeUserSelectVo {
      */
     private Integer cellType;
     
+    /**
+     * 是否进行灵活续费套餐切换后的电池转换
+     * @see FlexibleRenewalEnum 取值含义与该功能开关一致
+     */
+    private Integer flexibleRenewal;
     
+    /**
+     * 旧套餐电压
+     */
+    private String oldVoltage;
     
+    /**
+     * 新套餐电压
+     */
+    private String newVoltage;
     
-    
-    
-    
+    /**
+     * 开始展示自主开仓页面，1-开始自主开仓，其他-不展示自主开仓画面
+     */
+    private Integer beginSelfOpen;
     
     
     
@@ -119,5 +134,8 @@ public class ExchangeUserSelectVo {
     public static final Integer ENTER_TAKE_BATTERY = 1;
     
     
-    
+    /**
+     * 展示自主开仓页面
+     */
+    public static final Integer BEGIN_SELF_OPEN = 1;
 }

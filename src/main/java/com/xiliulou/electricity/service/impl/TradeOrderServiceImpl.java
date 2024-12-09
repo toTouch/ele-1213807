@@ -5,12 +5,13 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.base.enums.ChannelEnum;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.base.BasePayConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
+import com.xiliulou.electricity.constant.PlaceOrderConstant;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
+import com.xiliulou.electricity.constant.profitsharing.ProfitSharingTradeOrderConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
@@ -31,10 +33,10 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
+import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingConfig;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeMixedOrder;
 import com.xiliulou.electricity.entity.profitsharing.ProfitSharingTradeOrder;
-import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.ServiceFeeEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingBusinessTypeEnum;
@@ -42,6 +44,7 @@ import com.xiliulou.electricity.enums.profitsharing.ProfitSharingConfigOrderType
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingQueryDetailsEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeMixedOrderStateEnum;
 import com.xiliulou.electricity.enums.profitsharing.ProfitSharingTradeOderProcessStateEnum;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.electricity.query.BatteryMemberCardAndInsuranceQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
@@ -55,6 +58,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -65,6 +69,7 @@ import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
@@ -83,12 +88,11 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
+import com.xiliulou.electricity.service.installment.InstallmentRecordService;
+import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
-import com.xiliulou.electricity.service.pay.PayConfigBizService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -112,8 +116,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -249,10 +253,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     EnterpriseChannelUserService enterpriseChannelUserService;
     
     @Autowired
-    private UserInfoGroupDetailService userInfoGroupDetailService;
-    
-    
-    @Autowired
     private PayConfigBizService payConfigBizService;
     
     @Resource
@@ -272,6 +272,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Resource
     private UserInfoExtraService userInfoExtraService;
+    
+    @Resource
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
+    
+    @Resource
+    private ElectricityConfigService electricityConfigService;
+    
     
     @Override
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -343,8 +350,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100308", "未找到用户的第三方授权信息!");
             }
             
-            if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects
-                    .equals(userInfo.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
+            if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L) && !Objects.equals(userInfo.getFranchiseeId(),
+                    batteryMemberCard.getFranchiseeId())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals,uid={},mid={}", user.getUid(), integratedPaymentAdd.getMemberCardId());
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
@@ -352,7 +359,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 判断套餐用户分组和用户的用户分组是否匹配
             Triple<Boolean, String, Object> checkTriple = batteryMemberCardService.checkUserInfoGroupWithMemberCard(userInfo, batteryMemberCard.getFranchiseeId(),
                     batteryMemberCard, CHECK_USERINFO_GROUP_USER);
-            
             if (Boolean.FALSE.equals(checkTriple.getLeft())) {
                 return checkTriple;
             }
@@ -363,11 +369,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(integratedPaymentAdd.getProductKey(), integratedPaymentAdd.getDeviceName());
             }
             
-            if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects
-                    .nonNull(electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
+            if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
+                    electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
                 log.warn("BATTERY DEPOSIT WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(),
                         integratedPaymentAdd.getMemberCardId());
                 return Triple.of(false, "100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
+            }
+            
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.isNull(electricityConfig)) {
+                return Triple.of(false, "302003", "运营商配置异常，请联系客服");
             }
             
             // 押金订单
@@ -441,16 +452,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 处理0元问题
             if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 
-                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
+                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     return result;
                 }
                 
                 return Triple.of(true, "", null);
             }
-            
-            //            // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
-            //            WechatPayParamsDetails wechatPayParamsDetails = wechatPayParamsBizService.getDetailsByIdTenantIdAndFranchiseeId(tenantId, integratedPaymentAdd.getFranchiseeId());
             
             // 调起支付
             UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
@@ -466,8 +474,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
-        } finally {
-            //            redisService.delete(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid());
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
@@ -476,7 +482,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     private void dealProfitSharingTradeOrder(Triple<Boolean, String, Object> generateMemberCardOrderResult, Triple<Boolean, String, Object> generateInsuranceOrderResult,
             BasePayConfig payParamConfig, BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {
         // 判断分账配置是否存在
-    
+        
         ProfitSharingConfig enableProfitSharingConfig = payParamConfig.getEnableProfitSharingConfig();
         if (Objects.isNull(enableProfitSharingConfig)) {
             log.info("pay battery memberCard profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), payParamConfig.getTenantId(),
@@ -487,8 +493,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
         
         // 处理换电套餐
-        boolean batteryPackageOrderPermission =
-                (enableProfitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
+        boolean batteryPackageOrderPermission = (enableProfitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode())
+                == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
         if (!batteryPackageOrderPermission) {
             log.info("pay battery memberCard profit sharing config battery package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
                     enableProfitSharingConfig.getTenantId(), enableProfitSharingConfig.getFranchiseeId());
@@ -501,9 +507,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(enableProfitSharingConfig.getTenantId())
                         .franchiseeId(enableProfitSharingConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId())
                         .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode())
-                        .amount(electricityMemberCardOrder.getPayAmount()).processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(payParamConfig.getPaymentChannel())
-                        .supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime()).createTime(System.currentTimeMillis())
-                        .updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(batteryMemberCard.getRefundLimit()).build();
+                        .amount(electricityMemberCardOrder.getPayAmount()).processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode())
+                        .channel(payParamConfig.getPaymentChannel()).supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime())
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(batteryMemberCard.getRefundLimit())
+                        .build();
                 
                 profitSharingTradeOrderList.add(profitSharingTradeOrder);
             }
@@ -665,6 +672,23 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "100349", "用户加盟商与套餐加盟商不一致");
             }
             
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.isNull(electricityConfig)) {
+                return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+            }
+            
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+            }
+            
+            // 灵活续费电池型号及押金校验
+            List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+            boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypesForRenew(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, franchisee, userInfo);
+            if (!matchOrNot) {
+                return Triple.of(false, "301040", "该套餐暂不支持购买，请重新选择");
+            }
+            
             BatteryMemberCard userBindBatteryMemberCard = Objects.isNull(userBatteryMemberCard) ? null : batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
             
             // 获取扫码柜机
@@ -703,11 +727,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 if (CollectionUtils.isNotEmpty(query.getUserCouponIds())) {
                     // 保存订单所使用的优惠券
-                    memberCardOrderCouponService
-                            .batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), query.getUserCouponIds()));
+                    memberCardOrderCouponService.batchInsert(
+                            electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), query.getUserCouponIds()));
                     // 修改优惠券状态为核销中
-                    userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService
-                            .buildUserCouponList(query.getUserCouponIds(), UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
+                    userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(query.getUserCouponIds(), UserCoupon.STATUS_IS_BEING_VERIFICATION,
+                            electricityMemberCardOrder.getOrderId()));
                 }
             }
             
@@ -725,7 +749,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 处理0元问题
             if (integratedPaAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 
-                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null);
+                Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, null, null);
                 if (Boolean.FALSE.equals(result.getLeft())) {
                     return result;
                 }
@@ -747,8 +771,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", userInfo.getUid(), e);
-        } finally {
-            //            redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + SecurityUtils.getUid());
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
@@ -760,7 +782,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, InstallmentRecord installmentRecord) {
+    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, InstallmentRecord installmentRecord,
+            PlaceOrderContext context) {
         if (Objects.nonNull(installmentRecord)) {
             InstallmentRecord installmentRecordUpdate = new InstallmentRecord();
             installmentRecordUpdate.setId(installmentRecord.getId());
@@ -787,7 +810,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 String depositOrderId = orderList.get(index);
                 
-                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS, userInfo);
+                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS, userInfo, context);
             }
             
             // 电池套餐
@@ -852,8 +875,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
             
-            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), tenantId, userInfo.getFranchiseeId(),Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
-            
+            BasePayConfig payParamConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), tenantId, userInfo.getFranchiseeId(),
+                    Collections.singleton(ProfitSharingQueryDetailsEnum.PROFIT_SHARING_CONFIG));
             
             if (Objects.isNull(payParamConfig)) {
                 log.warn("SERVICE FEE WARN!not found pay params,uid={}", user.getUid());
@@ -905,16 +928,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 友好提示，对用户端不展示错误信息
         } catch (Exception e) {
             log.error("CREATE UNION SERVICE FEE ERROR! wechat v3 order error! uid={}", user.getUid(), e);
-        } finally {
-            /// 因缓存锁删除过快，导致重复发起支付。因此注释掉该功能
-            // redisService.delete(CacheConstant.ELE_CACHE_SERVICE_FEE_LOCK_KEY + user.getUid());
         }
         
         return Triple.of(false, "PAY_TRANSFER.0019", "支付未成功，请联系客服处理");
     }
     
-    private void dealServiceFeeProfitSharingTradeOrder(List<String> orderList, List<Integer> orderTypeList,BasePayConfig payParamConfig,
-            UnionPayOrder unionPayOrder, UserInfo userInfo) {
+    private void dealServiceFeeProfitSharingTradeOrder(List<String> orderList, List<Integer> orderTypeList, BasePayConfig payParamConfig, UnionPayOrder unionPayOrder,
+            UserInfo userInfo) {
         // 服务费订单为空
         if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
             return;
@@ -928,11 +948,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return;
         }
         
-    
-        
-        boolean batteryServiceFeePermission =
-                (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode()) == ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE
-                        .getCode();
+        boolean batteryServiceFeePermission = (profitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode())
+                == ProfitSharingConfigOrderTypeEnum.BATTERY_SERVICE_FEE.getCode();
         if (!batteryServiceFeePermission) {
             log.info("pay service free profit sharing config battery service fee permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
                     payParamConfig.getTenantId(), payParamConfig.getFranchiseeId());
@@ -946,8 +963,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 电池套餐过期服务费 或 电池套餐冻结服务费
-            if (batteryServiceFeePermission && (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode()) || Objects
-                    .equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_PAUSE.getCode()))) {
+            if (batteryServiceFeePermission && (Objects.equals(orderTypeList.get(i), ServiceFeeEnum.BATTERY_EXPIRE.getCode()) || Objects.equals(orderTypeList.get(i),
+                    ServiceFeeEnum.BATTERY_PAUSE.getCode()))) {
                 // 电池套餐服务费订单号
                 String orderId = orderList.get(i);
                 EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(orderId);
@@ -978,9 +995,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             // 保存分账主表
             ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(payParamConfig.getTenantId())
                     .franchiseeId(payParamConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId()).amount(unionPayOrder.getPayAmount())
-                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO).channel(ChannelEnum.WECHAT.getCode())
-                    .createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
-    
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .channel(ChannelEnum.WECHAT.getCode()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+            
             if (profitSharingTradeOrderList.size() > 1) {
                 // 支付订单数量大于1 设置为混合支付
                 profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
@@ -990,10 +1007,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             
             List<Long> notPayTradeOrderIds = new ArrayList<>();
             List<Long> notPayMixedTradeOrderIds = new ArrayList<>();
-    
+            
             profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> {
                 profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId());
-    
+                
                 // 检测业务单号下是否已经存在了未分账的交易单号
                 List<ProfitSharingTradeOrder> profitSharingTradeOrders = profitSharingTradeOrderService.listNotPaySuccessByOrderNo(profitSharingTradeOrder.getOrderNo());
                 if (ObjectUtils.isEmpty(profitSharingTradeOrders)) {
@@ -1005,7 +1022,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     notPayMixedTradeOrderIds.add(item.getProfitSharingMixedOrderId());
                 });
             });
-    
+            
             // 删除未支付的分账交易主表
             if (ObjectUtils.isNotEmpty(notPayTradeOrderIds)) {
                 profitSharingTradeOrderService.batchRemoveByIdList(notPayTradeOrderIds);
@@ -1060,14 +1077,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 log.warn("INSTALLMENT PAY WARN! user renewal status is false, uid={}, mid={}", uid, query.getPackageId());
                 return R.fail("000088", "您已是渠道用户，请联系对应站点购买套餐");
             }
-    
+            
             BasePayConfig basePayConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), tenantId, query.getFranchiseeId(), null);
             if (Objects.isNull(basePayConfig)) {
                 log.warn("INSTALLMENT PAY WARN! not found pay params,uid={}", uid);
                 return R.fail("100307", "未配置支付参数!");
             }
             
-            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId,ChannelSourceContextHolder.get());
+            UserOauthBind userOauthBind = userOauthBindService.queryByUidAndTenantAndChannel(uid, tenantId, ChannelSourceContextHolder.get());
             if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
                 log.warn("INSTALLMENT PAY WARN! not found user oauth bind or third id is null,uid={}", uid);
                 return R.fail("100308", "未找到用户的第三方授权信息!");
@@ -1244,7 +1261,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 处理0元问题
         if (totalAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, installmentRecord);
+            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList, installmentRecord, null);
             if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }
@@ -1253,14 +1270,97 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 非0元查询详情用于调起支付，查询详情会因为证书问题报错，置于0元处理前会干扰其逻辑
         BasePayConfig basePayConfig = payConfigBizService.queryPayParams(ChannelSourceContextHolder.get(), userInfo.getTenantId(), batteryMemberCard.getFranchiseeId(), null);
-    
+        
         // 调起支付
         UnionPayOrder unionPayOrder = UnionPayOrder.builder().jsonOrderId(JsonUtil.toJson(orderList)).jsonOrderType(JsonUtil.toJson(orderTypeList))
                 .jsonSingleFee(JsonUtil.toJson(payAmountList)).payAmount(totalAmount).tenantId(userInfo.getTenantId()).attach(UnionTradeOrder.ATTACH_INSTALLMENT)
                 .description("购买分期套餐").uid(userInfo.getUid()).build();
-        BasePayOrderCreateDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, basePayConfig, userOauthBind.getThirdId(),
-                request, installmentRecord.getExternalAgreementNo());
+        BasePayOrderCreateDTO resultDTO = unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, basePayConfig, userOauthBind.getThirdId(), request,
+                installmentRecord.getExternalAgreementNo());
         return Triple.of(true, null, resultDTO);
+    }
+    
+    @Override
+    public void dealProfitSharingTradeOrderV2(ElectricityMemberCardOrder electricityMemberCardOrder, InsuranceOrder insuranceOrder, BasePayConfig payParamConfig,
+            BatteryMemberCard batteryMemberCard, UnionPayOrder unionPayOrder, UserInfo userInfo, List<String> orderList) {
+        // 判断分账配置是否存在
+        
+        ProfitSharingConfig enableProfitSharingConfig = payParamConfig.getEnableProfitSharingConfig();
+        if (Objects.isNull(enableProfitSharingConfig)) {
+            log.info("pay battery memberCard profit sharing config is null, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(), payParamConfig.getTenantId(),
+                    payParamConfig.getFranchiseeId());
+            return;
+        }
+        
+        List<ProfitSharingTradeOrder> profitSharingTradeOrderList = new ArrayList<>();
+        
+        // 处理换电套餐
+        boolean batteryPackageOrderPermission = (enableProfitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode())
+                == ProfitSharingConfigOrderTypeEnum.BATTERY_PACKAGE.getCode();
+        if (!batteryPackageOrderPermission) {
+            log.info("pay battery memberCard profit sharing config battery package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    enableProfitSharingConfig.getTenantId(), enableProfitSharingConfig.getFranchiseeId());
+        }
+        
+        if (batteryPackageOrderPermission && Objects.nonNull(electricityMemberCardOrder)) {
+            if (electricityMemberCardOrder.getPayAmount().compareTo(PlaceOrderConstant.AMOUNT_MIN) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(enableProfitSharingConfig.getTenantId())
+                        .franchiseeId(enableProfitSharingConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId())
+                        .orderNo(electricityMemberCardOrder.getOrderId()).orderType(ProfitSharingBusinessTypeEnum.BATTERY_PACKAGE.getCode())
+                        .amount(electricityMemberCardOrder.getPayAmount()).processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode())
+                        .channel(payParamConfig.getPaymentChannel()).supportRefund(batteryMemberCard.getIsRefund()).payTime(electricityMemberCardOrder.getCreateTime())
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(batteryMemberCard.getRefundLimit())
+                        .build();
+                
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+        
+        // 处理保险
+        boolean insuranceOrderPermission =
+                (enableProfitSharingConfig.getOrderType() & ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode()) == ProfitSharingConfigOrderTypeEnum.INSURANCE.getCode();
+        if (!insuranceOrderPermission) {
+            log.info("pay battery memberCard profit sharing config insurance package order permission is close, uid = {}, tenantId = {}, franchiseeId = {}", userInfo.getUid(),
+                    payParamConfig.getTenantId(), payParamConfig.getFranchiseeId());
+        }
+        
+        if (insuranceOrderPermission && Objects.nonNull(insuranceOrder)) {
+            if (insuranceOrder.getPayAmount().compareTo(PlaceOrderConstant.AMOUNT_MIN) >= 0) {
+                // 支付金额大于0元，需要分账
+                ProfitSharingTradeOrder profitSharingTradeOrder = ProfitSharingTradeOrder.builder().tenantId(payParamConfig.getTenantId())
+                        .franchiseeId(payParamConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId()).orderNo(insuranceOrder.getOrderId())
+                        .orderType(ProfitSharingBusinessTypeEnum.INSURANCE.getCode()).amount(insuranceOrder.getPayAmount())
+                        .processState(ProfitSharingTradeOderProcessStateEnum.INIT.getCode()).channel(payParamConfig.getPaymentChannel())
+                        .supportRefund(ProfitSharingTradeOrderConstant.IS_REFUND_NO).payTime(insuranceOrder.getCreateTime()).createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis()).uid(userInfo.getUid()).refundLimit(NumberConstant.ZERO).build();
+                
+                profitSharingTradeOrderList.add(profitSharingTradeOrder);
+            }
+        }
+        
+        // 如果存在符合条件的分账订单，则设置分账标识
+        if (CollectionUtils.isNotEmpty(profitSharingTradeOrderList)) {
+            // 设置分账标识  开启分账
+            unionPayOrder.setProfitSharing(true);
+            
+            ProfitSharingTradeMixedOrder profitSharingTradeMixedOrder = ProfitSharingTradeMixedOrder.builder().tenantId(payParamConfig.getTenantId())
+                    .franchiseeId(payParamConfig.getFranchiseeId()).thirdMerchantId(payParamConfig.getThirdPartyMerchantId()).amount(unionPayOrder.getPayAmount())
+                    .state(ProfitSharingTradeMixedOrderStateEnum.INIT.getCode()).whetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_NO)
+                    .channel(payParamConfig.getPaymentChannel()).createTime(System.currentTimeMillis()).uid(userInfo.getUid()).updateTime(System.currentTimeMillis()).build();
+            
+            if (profitSharingTradeOrderList.size() > 1) {
+                // 支付订单数量大于1 设置为混合支付
+                profitSharingTradeMixedOrder.setWhetherMixedPay(ProfitSharingTradeOrderConstant.WHETHER_MIXED_PAY_YES);
+            }
+            
+            // 保存分账主表
+            profitSharingTradeMixedOrderService.insert(profitSharingTradeMixedOrder);
+            
+            profitSharingTradeOrderList.stream().forEach(profitSharingTradeOrder -> profitSharingTradeOrder.setProfitSharingMixedOrderId(profitSharingTradeMixedOrder.getId()));
+            
+            profitSharingTradeOrderService.batchInsert(profitSharingTradeOrderList);
+        }
     }
     
     /**
@@ -1303,8 +1403,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     private Triple<Boolean, String, Object> handleBatteryServiceFee(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList, List<BigDecimal> allPayAmount,
             BasePayConfig payParamConfig) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects
-                .isNull(userBatteryMemberCard.getRemainingNumber())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(
+                userBatteryMemberCard.getRemainingNumber())) {
             log.warn("SERVICE FEE WARN! user haven't memberCard uid={}", userInfo.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
@@ -1329,8 +1429,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         // 套餐过期电池服务费
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && (
-                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects
-                        .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))
+                Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) || Objects.equals(
+                        userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE))
                 && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L < System.currentTimeMillis()) {
             // 1.获取滞纳金订单
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
@@ -1352,7 +1452,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
                         .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
-//                        .paymentChannel(ChannelSourceContextHolder.get())
+                        //                        .paymentChannel(ChannelSourceContextHolder.get())
                         .build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
@@ -1374,8 +1474,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
             // 是否存在套餐过期电池服务费
             if (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L) > 0) {
-                int batteryMemebercardExpireDays = (int) Math
-                        .ceil((System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+                int batteryMemebercardExpireDays = (int) Math.ceil(
+                        (System.currentTimeMillis() - (userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
                 expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
             }
@@ -1387,7 +1487,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(payParamConfig.getFranchiseeId());
             eleBatteryServiceFeeOrderUpdate.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-//            eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
+            //            eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
             batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             
             orderList.add(eleBatteryServiceFeeOrder.getOrderId());
@@ -1405,8 +1505,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             BigDecimal pauseBatteryServiceFee = BigDecimal.ZERO;
             
             // 1旧版小程序  停卡，不存在滞纳金订单
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils
-                    .isBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isBlank(
+                    serviceFeeUserInfo.getPauseOrderNo())) {
                 // 计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
                 pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
@@ -1428,7 +1528,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
                         .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
-//                        .paymentChannel(ChannelSourceContextHolder.get())
+                        //                        .paymentChannel(ChannelSourceContextHolder.get())
                         .build();
                 batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
@@ -1441,8 +1541,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             }
             
             // 2 新版小程序  停卡，存在滞纳金订单
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils
-                    .isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) && StringUtils.isNotBlank(
+                    serviceFeeUserInfo.getPauseOrderNo())) {
                 // 计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
                 pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
@@ -1460,13 +1560,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
                 eleBatteryServiceFeeOrderUpdate.setParamFranchiseeId(payParamConfig.getFranchiseeId());
                 eleBatteryServiceFeeOrderUpdate.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-//                eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
+                //                eleBatteryServiceFeeOrderUpdate.setPaymentChannel(ChannelSourceContextHolder.get());
                 batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
             }
             
             // 3 新版小程序 套餐已启用  存在滞纳金订单
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && StringUtils
-                    .isNotBlank(serviceFeeUserInfo.getPauseOrderNo())) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE) && StringUtils.isNotBlank(
+                    serviceFeeUserInfo.getPauseOrderNo())) {
                 // 获取滞纳金订单
                 eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());
                 if (Objects.isNull(eleBatteryServiceFeeOrder)) {
@@ -1478,7 +1578,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 
                 eleBatteryServiceFeeOrder.setParamFranchiseeId(payParamConfig.getFranchiseeId());
                 eleBatteryServiceFeeOrder.setWechatMerchantId(payParamConfig.getThirdPartyMerchantId());
-//                eleBatteryServiceFeeOrder.setPaymentChannel(ChannelSourceContextHolder.get());
+                //                eleBatteryServiceFeeOrder.setPaymentChannel(ChannelSourceContextHolder.get());
                 batteryServiceFeeOrderService.update(eleBatteryServiceFeeOrder);
                 log.info("BATTERY SERVICE FEE INFO!user exist pauseBatteryServiceFee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             }
@@ -1642,5 +1742,4 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         
         return Triple.of(true, null, insuranceOrder);
     }
-    
 }
