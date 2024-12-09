@@ -29,7 +29,6 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -94,9 +93,9 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
         
         try {
             Integer issue = commonDTO.getIssue();
-            BigDecimal amount = commonDTO.getAmount();
-            if (Objects.isNull(issue) || Objects.isNull(amount)) {
-                log.warn("INSTALLMENT RENEW CONSUMER. param is null, externalAgreementNo={}, issue={}, amount={}", externalAgreementNo, issue, amount);
+            
+            if (Objects.isNull(issue)) {
+                log.warn("INSTALLMENT RENEW CONSUMER. param is null, externalAgreementNo={}", externalAgreementNo);
                 return;
             }
             
@@ -115,7 +114,7 @@ public class InstallmentDeductNotifyConsumer implements RocketMQListener<String>
                 }
             }
             
-            // 已成功续费套餐，不需再执行后续逻辑-
+            // 已成功续费套餐，不需再执行后续逻辑
             if (Objects.equals(installmentRecord.getPaidInstallment(), issue)) {
                 return;
             }

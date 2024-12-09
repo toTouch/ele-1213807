@@ -140,14 +140,14 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
         
         if (Objects.equals(installmentRecord.getPackageType(), PACKAGE_TYPE_BATTERY)) {
             batteryMemberCard = batteryMemberCardService.queryByIdFromCache(installmentRecord.getPackageId());
-            
             if (Objects.isNull(batteryMemberCard)) {
                 log.warn("GENERATE DEDUCTION PLAN WARN! batteryMemberCard is null. externalAgreementNo={}", installmentRecord.getExternalAgreementNo());
                 return null;
             }
             
-            planList = new ArrayList<>(installmentRecord.getInstallmentNo());
+            planList = new ArrayList<>();
             for (int i = 1; i <= installmentRecord.getInstallmentNo(); i++) {
+                // 计算每一期需要代扣的金额
                 BigDecimal suborderAmount = InstallmentUtil.calculateSuborderAmount(i, installmentRecord, batteryMemberCard);
                 
                 // 生成每一期内所有代扣计划的相同数据
@@ -175,10 +175,10 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
                     
                     // 生成金额为单笔最大金额的代扣计划
                     for (int i1 = 0; i1 < suborderNumber.intValue(); i1++) {
-                        InstallmentDeductionPlan suborderDeductionPlan = new InstallmentDeductionPlan();
-                        BeanUtils.copyProperties(deductionPlan, suborderDeductionPlan);
-                        suborderDeductionPlan.setAmount(deductionMaxAmount);
-                        planList.add(suborderDeductionPlan);
+                        InstallmentDeductionPlan maxAmountDeductionPlan = new InstallmentDeductionPlan();
+                        BeanUtils.copyProperties(deductionPlan, maxAmountDeductionPlan);
+                        maxAmountDeductionPlan.setAmount(deductionMaxAmount);
+                        planList.add(maxAmountDeductionPlan);
                     }
                 }
             }

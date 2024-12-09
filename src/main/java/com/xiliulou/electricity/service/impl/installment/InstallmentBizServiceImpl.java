@@ -408,6 +408,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
                 return R.fail("301003", "签约功能未配置相关信息！请联系客服处理");
             }
             
+            // 已生成签约二维码未使用的，从缓存中获取旧二维码使用
             if (Objects.equals(installmentRecord.getStatus(), INSTALLMENT_RECORD_STATUS_UN_SIGN)) {
                 return R.ok(redisService.get(String.format(CACHE_INSTALLMENT_FORM_BODY, uid)));
             }
@@ -624,7 +625,7 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         // 每一个代扣计划的回调都将自己对应的代扣计划、代扣记录修改为代扣成功，并发送消息续套餐
         InstallmentDeductionPlan deductionPlanUpdate = new InstallmentDeductionPlan();
         deductionPlanUpdate.setId(deductionPlan.getId());
-        deductionPlanUpdate.setPayNo(deductionRecord.getPayNo());
+        deductionPlanUpdate.setPayNo(payNo);
         deductionPlanUpdate.setTradeNo(tradeNo);
         deductionPlanUpdate.setStatus(DEDUCTION_PLAN_STATUS_PAID);
         deductionPlanUpdate.setPaymentTime(System.currentTimeMillis());
@@ -650,30 +651,29 @@ public class InstallmentBizServiceImpl implements InstallmentBizService {
         InstallmentMqCommonDTO commonDTO = new InstallmentMqCommonDTO();
         commonDTO.setExternalAgreementNo(externalAgreementNo);
         commonDTO.setIssue(deductionPlan.getIssue());
-        commonDTO.setAmount(amount);
         commonDTO.setTraceId(MDC.get(CommonConstant.TRACE_ID));
         rocketMqService.sendAsyncMsg(MqProducerConstant.INSTALLMENT_BUSINESS_TOPIC, JsonUtil.toJson(commonDTO), MqProducerConstant.INSTALLMENT_DEDUCT_NOTIFY_TAG);
     }
     
     @Override
     public Triple<Boolean, String, Object> initiatingDeduct(List<InstallmentDeductionPlan> deductionPlans, InstallmentRecord installmentRecord, FyConfig fyConfig) {
-        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 30 * 1000L, false)) {
+        if (!redisService.setNx(String.format(CACHE_INSTALLMENT_DEDUCT_LOCK, installmentRecord.getUid()), "1", 3 * 1000L, false)) {
             return Triple.of(false, "301023", "操作频繁，请3秒后再试");
         }
         
-        // 可能会有代扣了一半的重新发起，要把已经代扣了的过滤掉
-        List<InstallmentDeductionPlan> deductionPlansWaitDeduct = deductionPlans.stream()
-                .filter(item -> Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
-                .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(deductionPlansWaitDeduct)) {
-            log.warn("INSTALLMENT DEDUCT WARN! deductionPlansWaitDeduct is null. uid={}", installmentRecord.getUid());
-            return Triple.of(false, "301053", "该期无可代扣的计划");
-        }
-        
-        // 每次代扣都生成新的payNo，避免因为payNo一样导致问题
-        InstallmentUtil.generatePayNo(installmentRecord.getUid(), deductionPlansWaitDeduct);
-        
         try {
+            // 可能会有代扣了一半的重新发起，要把已经代扣了的过滤掉
+            List<InstallmentDeductionPlan> deductionPlansWaitDeduct = deductionPlans.stream()
+                    .filter(item -> Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_INIT) || Objects.equals(item.getStatus(), DEDUCTION_PLAN_STATUS_FAIL))
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(deductionPlansWaitDeduct)) {
+                log.warn("INSTALLMENT DEDUCT WARN! deductionPlansWaitDeduct is null. uid={}", installmentRecord.getUid());
+                return Triple.of(false, "301053", "该期无可代扣的计划");
+            }
+            
+            // 每次代扣都生成新的payNo，避免因为payNo一样导致问题
+            InstallmentUtil.generatePayNo(installmentRecord.getUid(), deductionPlansWaitDeduct);
+            
             for (InstallmentDeductionPlan deductionPlan : deductionPlansWaitDeduct) {
                 String repaymentPlanNo = OrderIdUtil.generateBusinessOrderId(BusinessType.INSTALLMENT_SIGN_AGREEMENT_PAY, installmentRecord.getUid());
                 

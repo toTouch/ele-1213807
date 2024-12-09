@@ -27,11 +27,6 @@ public class InstallmentMqCommonDTO {
     private Integer issue;
     
     /**
-     * 每一个代扣计划代扣的金额
-     */
-    private BigDecimal amount;
-    
-    /**
      * 代扣计划id
      */
     private Long deductionPlanId;
