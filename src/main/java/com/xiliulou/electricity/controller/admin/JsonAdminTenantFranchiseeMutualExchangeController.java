@@ -60,7 +60,7 @@ public class JsonAdminTenantFranchiseeMutualExchangeController extends BasicCont
      */
     @GetMapping("getMutualExchangeDetailById")
     public R getMutualExchangeDetailById(@RequestParam("id") Long id) {
-        return R.ok(tenantFranchiseeMutualExchangeService.getMutualExchangeDetailById(id));
+        return R.ok(tenantFranchiseeMutualExchangeService.queryMutualExchangeDetailById(id));
     }
     
     

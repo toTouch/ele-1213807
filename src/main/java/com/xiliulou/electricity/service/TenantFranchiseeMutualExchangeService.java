@@ -37,7 +37,7 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param id id
      * @return MutualExchangeDetailVO
      */
-    MutualExchangeDetailVO getMutualExchangeDetailById(Long id);
+    MutualExchangeDetailVO queryMutualExchangeDetailById(Long id);
     
     
     /**
@@ -61,7 +61,7 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param tenantId tenantId
      * @return List
      */
-    List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromDB(Integer tenantId);
+    List<TenantFranchiseeMutualExchange> listMutualExchangeConfigListFromDB(Integer tenantId);
     
     
     /**
@@ -70,7 +70,7 @@ public interface TenantFranchiseeMutualExchangeService {
      * @param tenantId tenantId
      * @return List
      */
-    List<String> getMutualFranchiseeExchangeCache(Integer tenantId);
+    List<String> queryMutualFranchiseeExchangeCache(Integer tenantId);
     
     /**
      * 分页查询

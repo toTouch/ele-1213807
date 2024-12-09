@@ -1780,6 +1780,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     
     @Override
+    @Slave
     public List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId) {
         return electricitybatterymapper.selectMutualBattery(tenantId);
     }

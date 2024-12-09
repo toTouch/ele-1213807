@@ -8,6 +8,7 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -146,7 +147,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     
     @Override
-    public MutualExchangeDetailVO getMutualExchangeDetailById(Long id) {
+    @Slave
+    public MutualExchangeDetailVO queryMutualExchangeDetailById(Long id) {
         TenantFranchiseeMutualExchange mutualExchange = mutualExchangeMapper.selectOneById(id);
         if (Objects.isNull(mutualExchange)) {
             return null;
@@ -160,7 +162,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
     
     
     @Override
-    public List<TenantFranchiseeMutualExchange> getMutualExchangeConfigListFromDB(Integer tenantId) {
+    public List<TenantFranchiseeMutualExchange> listMutualExchangeConfigListFromDB(Integer tenantId) {
         return mutualExchangeMapper.selectMutualExchangeConfigListFromDB(tenantId);
     }
     
@@ -172,7 +174,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
      * @return List<String>
      */
     @Override
-    public List<String> getMutualFranchiseeExchangeCache(Integer tenantId) {
+    public List<String> queryMutualFranchiseeExchangeCache(Integer tenantId) {
         if (Objects.isNull(tenantId)) {
             return CollUtil.newArrayList();
         }
@@ -181,7 +183,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             return JsonUtil.fromJsonArray(mutualExchangesFromCache, String.class);
         }
         
-        List<TenantFranchiseeMutualExchange> mutualExchangeList = getMutualExchangeConfigListFromDB(tenantId);
+        List<TenantFranchiseeMutualExchange> mutualExchangeList = listMutualExchangeConfigListFromDB(tenantId);
         if (CollUtil.isEmpty(mutualExchangeList)) {
             return CollUtil.newArrayList();
         }
@@ -205,7 +207,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         redisService.delete(CacheConstant.MUTUAL_EXCHANGE_CONFIG_KEY + tenantFranchiseeMutualExchange.getTenantId());
     }
     
-    
+
+    @Slave
     @Override
     public List<MutualExchangeDetailVO> pageList(MutualExchangePageQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
@@ -220,7 +223,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             return vo;
         }).collect(Collectors.toList());
     }
-    
+
+    @Slave
     @Override
     public Long pageCount(MutualExchangePageQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
@@ -274,7 +278,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             }
             
             // 查询互通配置列表
-            List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
+            List<String> mutualFranchiseeList = queryMutualFranchiseeExchangeCache(tenantId);
             if (CollUtil.isEmpty(mutualFranchiseeList)) {
                 log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
                 return Pair.of(false, null);
@@ -363,7 +367,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         Integer tenantId = TenantContextHolder.getTenantId();
         
         // 查询互通配置列表
-        List<String> mutualFranchiseeList = getMutualFranchiseeExchangeCache(tenantId);
+        List<String> mutualFranchiseeList = queryMutualFranchiseeExchangeCache(tenantId);
         if (CollUtil.isEmpty(mutualFranchiseeList)) {
             log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! Current Tenant mutualFranchiseeList is null, tenantId is {}", tenantId);
             throw new BizException("402007", "不存在互换加盟商配置");
