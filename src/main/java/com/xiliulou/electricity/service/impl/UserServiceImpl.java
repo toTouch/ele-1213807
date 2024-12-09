@@ -1024,7 +1024,7 @@ public class UserServiceImpl implements UserService {
         
         InstallmentRecord installmentRecord = installmentSearchApiService.queryUsingRecordForUser(uid);
         if (Objects.nonNull(installmentRecord)) {
-            return Triple.of(false, "301051", "存在分期签约，请取消签约或解约后再试");
+            return Triple.of(false, "301051", "该用户存在未完成的分期签约记录");
         }
         
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
