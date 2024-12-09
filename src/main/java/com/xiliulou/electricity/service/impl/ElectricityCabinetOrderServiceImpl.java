@@ -13,6 +13,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
@@ -2338,7 +2339,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-//                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), mutualFranchiseeSet);
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), orderQuery.getFlexibleRenewalType(),mutualFranchiseeSet);
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
@@ -2492,7 +2492,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-//                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), mutualFranchiseeSet);
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), orderQuery.getFlexibleRenewalType(),mutualFranchiseeSet);
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
@@ -3302,7 +3301,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         // 分配满电仓门
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-//                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), mutualFranchiseeSet);
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), orderQuery.getFlexibleRenewalType(),mutualFranchiseeSet);
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
@@ -3435,7 +3433,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV3(electricityCabinet.getId(), franchisee,
-//                electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), mutualFranchiseeSet);
                 electricityCabinet.getFullyCharged(), electricityBattery, userInfo.getUid(), orderQuery.getFlexibleRenewalType(),mutualFranchiseeSet);
         if (Boolean.FALSE.equals(usableBatteryCellNoResult.getLeft())) {
             return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
