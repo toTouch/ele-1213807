@@ -471,7 +471,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                     excelVO.setMutualFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
                 } else {
                     // 自己用户拿走的不展示
-                    if (Objects.equals(e.getFranchiseeId(), e.getUserFranchiseeId())) {
+                    if (Objects.equals(e.getFranchiseeId(), e.getUserFranchiseeId()) || (Objects.equals(e.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_RETURN))) {
                         return null;
                     }
                     excelVO.setPhysicsStatus("不在仓");

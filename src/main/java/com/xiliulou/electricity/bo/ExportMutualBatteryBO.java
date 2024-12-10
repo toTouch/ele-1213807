@@ -22,6 +22,9 @@ public class ExportMutualBatteryBO {
     private Long franchiseeId;
     
     private String franchiseeName;
+
+
+    private Integer businessStatus;
     
     /**
      * 电池在仓状态
