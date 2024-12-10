@@ -202,6 +202,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
             @Param("franchiseeIds") List<Long> franchiseeIds, @Param("sn") String sn);
     
     List<ElectricityBattery> selectListByEid(@Param("eIdList") List<Integer> electricityCabinetIdList);
-    
-    List<ExportMutualBatteryBO> selectMutualBattery(@Param("tenantId") Integer tenantId);
+
+    List<ExportMutualBatteryBO> selectMutualBattery(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
 }

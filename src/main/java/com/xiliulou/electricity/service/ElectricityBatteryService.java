@@ -168,7 +168,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList);
     
     R deleteBatteryByExcel(DelBatteryReq delBatteryReq);
-    
-    
-    List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId);
+
+
+    List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId, List<Long> franchiseeIds);
 }

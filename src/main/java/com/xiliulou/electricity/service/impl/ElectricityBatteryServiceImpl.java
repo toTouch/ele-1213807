@@ -1777,11 +1777,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         operateRecordUtil.record(null, map);
         return R.ok(vo);
     }
-    
-    
+
+
     @Override
     @Slave
-    public List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId) {
-        return electricitybatterymapper.selectMutualBattery(tenantId);
+    public List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId, List<Long> franchiseeIds) {
+        return electricitybatterymapper.selectMutualBattery(tenantId, franchiseeIds);
     }
 }
