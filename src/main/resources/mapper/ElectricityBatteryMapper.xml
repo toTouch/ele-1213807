@@ -1476,7 +1476,7 @@
         left join t_electricity_cabinet tec on tec.id =teb.electricity_cabinet_id and tec.del_flag =0
         left join t_electricity_cabinet_box tecb on teb.sn = tecb.sn and tec.id=tecb.electricity_cabinet_id
         left join t_user_info tui on teb.uid = tui.uid
-        where teb.del_flag = 0
+        where teb.del_flag = 0 and teb.business_status in(1,2,3)
         and teb.tenant_id = #{tenantId}
         <if test="franchiseeIds != null">
             and teb.franchisee_id in
