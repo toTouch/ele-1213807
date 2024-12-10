@@ -1464,7 +1464,7 @@
 
 
     <select id="selectMutualBattery" resultType="com.xiliulou.electricity.bo.ExportMutualBatteryBO">
-        select teb.sn as sn, teb.franchisee_id as franchiseeId,teb.business_status , tf.name as franchiseeName,
+        select teb.sn as sn, teb.franchisee_id as franchiseeId,teb.business_status as businessStatus, tf.name as franchiseeName,
         teb.physics_status,
         tec.franchisee_id as eFranchiseeId,
         tec.name as electricityCabinetName
