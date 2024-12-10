@@ -462,10 +462,18 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 ExportMutualBatteryVO excelVO = new ExportMutualBatteryVO();
                 BeanUtil.copyProperties(e, excelVO);
                 if (Objects.equals(e.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
+                    // 在自己柜机内的不展示
+                    if (Objects.equals(e.getFranchiseeId(), e.getEFranchiseeId())) {
+                        return null;
+                    }
                     excelVO.setPhysicsStatus("在仓");
                     Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getEFranchiseeId());
                     excelVO.setMutualFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
                 } else {
+                    // 自己用户拿走的不展示
+                    if (Objects.equals(e.getFranchiseeId(), e.getUserFranchiseeId())) {
+                        return null;
+                    }
                     excelVO.setPhysicsStatus("不在仓");
                     // 用户加盟商
                     Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getUserFranchiseeId());
