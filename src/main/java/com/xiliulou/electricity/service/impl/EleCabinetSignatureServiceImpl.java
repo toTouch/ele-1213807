@@ -333,7 +333,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             signFlowId = getSignFlowId(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
             
         } catch (Exception e) {
-            log.error("get sign flow link error! get sign flow link error,uid={},ex={}", userInfo.getUid(), e);
+            log.warn("get sign flow link warn! get sign flow link warn,uid={}", SecurityUtils.getUid(), e);
             
             if (e.getMessage().contains(EleEsignConstant.NAME_NOT_MATCH_PHONE_MSG)) {
                 return Triple.of(false, "000109", "实名认证信息与当前签署人信息不符");
