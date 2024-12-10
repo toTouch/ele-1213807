@@ -1465,9 +1465,10 @@
 
     <select id="selectMutualBattery" resultType="com.xiliulou.electricity.bo.ExportMutualBatteryBO">
         select teb.sn as sn, teb.franchisee_id as franchiseeId, tf.name as franchiseeName, teb.physics_status,
-        teb.electricity_cabinet_name as electricityCabinetName
+        tec.franchisee_id as eFranchiseeId,
+        tec.name as electricityCabinetName
         , tecb.cell_no as cellNo
-             ,tui.franchisee_id as userFranchiseeId
+        ,tui.franchisee_id as userFranchiseeId
         , tui.name as userName
         , tui.phone
         from t_electricity_battery teb

@@ -39,6 +39,11 @@ public class ExportMutualBatteryBO {
     private Integer cellNo;
 
     /**
+     * 柜机加盟商
+     */
+    private Long eFranchiseeId;
+
+    /**
      * 用户加盟商
      */
     private Long userFranchiseeId;

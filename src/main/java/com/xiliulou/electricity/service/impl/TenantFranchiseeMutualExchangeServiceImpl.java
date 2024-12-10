@@ -463,7 +463,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
                 BeanUtil.copyProperties(e, excelVO);
                 if (Objects.equals(e.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
                     excelVO.setPhysicsStatus("在仓");
-                    Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                    Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getEFranchiseeId());
                     excelVO.setMutualFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : null);
                 } else {
                     excelVO.setPhysicsStatus("不在仓");
