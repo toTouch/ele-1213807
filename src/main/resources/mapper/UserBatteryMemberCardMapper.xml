@@ -426,6 +426,7 @@
                 and emco.pay_count > 1
                 AND emco.STATUS = 1
                 AND (bmro.status is null or bmro.status != 4)
+                AND emco.id > uie.lost_user_recently_first_order_id
               GROUP BY uie.uid) a
     </select>
     
