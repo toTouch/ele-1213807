@@ -252,12 +252,6 @@ public class MerchantModifyConsumer implements RocketMQListener<String> {
                     if (Objects.isNull(channel) || Objects.equals(channel.getLockFlag(), User.USER_LOCK) || Objects.equals(channel.getDelFlag(), User.DEL_DEL)) {
                         rebateRecord.setChannelerRebate(BigDecimal.ZERO);
                     }
-    
-                    //若渠道员与商户的返利差额都为0  则不生成返利差额记录
-                    if (BigDecimal.ZERO.compareTo(rebateRecord.getChannelerRebate()) == 0 && BigDecimal.ZERO.compareTo(rebateRecord.getMerchantRebate()) == 0) {
-                        log.info("MERCHANT MODIFY CONSUMER INFO!balance is zero,uid={}", item.getUid());
-                        return;
-                    }
                     
                     rebateRecordService.insert(rebateRecord);
                 });
