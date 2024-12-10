@@ -43,7 +43,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -267,6 +266,8 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
         if ((SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return mutualExchangeMapper.countTotal(query);
         } else {
+            query.setOffset(0L);
+            query.setSize(1000L);
             // 运营商单独处理
             List<TenantFranchiseeMutualExchange> mutualExchangeList = mutualExchangeMapper.selectPageList(query);
             if (CollUtil.isEmpty(mutualExchangeList)) {

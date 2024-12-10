@@ -1472,7 +1472,8 @@
         , tui.phone
         from t_electricity_battery teb
         left join t_franchisee tf on teb.franchisee_id = tf.id
-        left join t_electricity_cabinet_box tecb on teb.sn = tecb.sn
+        left join t_electricity_cabinet tec on tec.id =teb.electricity_cabinet_id and tec.del_flag =0
+        left join t_electricity_cabinet_box tecb on teb.sn = tecb.sn and tec.id=tecb.electricity_cabinet_id
         left join t_user_info tui on teb.uid = tui.uid
         where teb.del_flag = 0
         and teb.tenant_id = #{tenantId}
