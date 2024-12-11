@@ -1,0 +1,156 @@
+package com.xiliulou.electricity.service;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.TenantFranchiseeMutualExchange;
+import com.xiliulou.electricity.query.MutualExchangePageQuery;
+import com.xiliulou.electricity.query.MutualExchangeUpdateQuery;
+import com.xiliulou.electricity.request.MutualExchangeAddConfigRequest;
+import com.xiliulou.electricity.vo.MutualExchangeDetailVO;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * @Description: TenantFranchiseeMutualExchangeService
+ * @Author: renhang
+ * @Date 2024/11/27 19:17
+ */
+public interface TenantFranchiseeMutualExchangeService {
+    
+    /**
+     * 新增或者编辑
+     *
+     * @param request request
+     * @return R
+     */
+    R addConfig(MutualExchangeAddConfigRequest request);
+    
+    
+    R editConfig(MutualExchangeAddConfigRequest request);
+    
+    /**
+     * 获取配置互通详情
+     *
+     * @param id id
+     * @return MutualExchangeDetailVO
+     */
+    MutualExchangeDetailVO queryMutualExchangeDetailById(Long id);
+    
+    
+    /**
+     * 保存
+     *
+     * @param tenantFranchiseeMutualExchange tenantFranchiseeMutualExchange
+     */
+    void saveMutualExchange(TenantFranchiseeMutualExchange tenantFranchiseeMutualExchange);
+    
+    /**
+     * 更新
+     *
+     * @param tenantFranchiseeMutualExchange tenantFranchiseeMutualExchange
+     */
+    void updateMutualExchange(TenantFranchiseeMutualExchange tenantFranchiseeMutualExchange);
+    
+    
+    /**
+     * 获取from
+     *
+     * @param tenantId tenantId
+     * @return List
+     */
+    List<TenantFranchiseeMutualExchange> listMutualExchangeConfigListFromDB(Integer tenantId);
+    
+    
+    /**
+     * 缓存获取
+     *
+     * @param tenantId tenantId
+     * @return List
+     */
+    List<String> queryMutualFranchiseeExchangeCache(Integer tenantId);
+    
+    /**
+     * 分页查询
+     *
+     * @param query query
+     * @return List
+     */
+    List<MutualExchangeDetailVO> pageList(MutualExchangePageQuery query);
+    
+    /**
+     * 分页count
+     *
+     * @param query query
+     * @return long
+     */
+    Long pageCount(MutualExchangePageQuery query);
+    
+    /**
+     * 逻辑删除
+     *
+     * @param id id
+     * @return R
+     */
+    R deleteById(Long id);
+    
+    /**
+     * 更新状态
+     *
+     * @param query query
+     * @return R
+     */
+    R updateStatus(MutualExchangeUpdateQuery query);
+    
+    
+    /**
+     * 加盟商是否满足加盟商换电互通,并且返回互通加盟商
+     *
+     * @param tenantId     用户的租户
+     * @param franchiseeId 用户的加盟商
+     * @return Pair
+     */
+    Pair<Boolean, Set<Long>> satisfyMutualExchangeFranchisee(Integer tenantId, Long franchiseeId);
+    
+    /**
+     * 当前加盟商是否满足加盟商换电互通
+     *
+     * @param tenantId          tenantId
+     * @param franchiseeId      franchiseeId
+     * @param otherFranchiseeId otherFranchiseeId
+     * @return Boolean
+     */
+    Boolean isSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId);
+    
+    
+    /**
+     * 电池上报当前加盟商是否满足加盟商换电互通
+     *
+     * @param tenantId          tenantId
+     * @param franchiseeId      franchiseeId
+     * @param otherFranchiseeId otherFranchiseeId
+     * @return Boolean
+     */
+    Boolean batteryReportIsSatisfyFranchiseeMutualExchange(Integer tenantId, Long franchiseeId, Long otherFranchiseeId,String sessionId);
+    
+    
+    
+    /**
+     * 换电满电仓分配检测是否互通，返回提示
+     *
+     * @param tenantId          tenantId
+     * @param franchiseeId      franchiseeId
+     * @param otherFranchiseeId otherFranchiseeId
+     * @return Triple
+     */
+    Triple<Boolean, String, Object> orderExchangeMutualFranchiseeCheck(Integer tenantId, Long franchiseeId, Long otherFranchiseeId);
+    
+    /**
+     * 互通电池导出
+     *
+     * @param response response
+     */
+    void mutualBatteryExport(HttpServletResponse response);
+}

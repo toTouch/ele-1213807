@@ -70,6 +70,7 @@ import com.xiliulou.electricity.enums.enterprise.UserCostTypeEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterCanModifyEnum;
 import com.xiliulou.electricity.enums.merchant.MerchantInviterSourceEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
+import com.xiliulou.electricity.mapper.TenantFranchiseeMutualExchangeMapper;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -109,6 +110,7 @@ import com.xiliulou.electricity.service.OffLineElectricityCabinetService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.UserAuthMessageService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
@@ -170,6 +172,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,6 +194,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -390,6 +394,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Resource
     MeiTuanRiderMallOrderService meiTuanRiderMallOrderService;
+    
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
     
     /**
      * 分页查询
@@ -1212,10 +1219,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("100019", "该电池已经绑定用户");
             }
             
-            if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
-                log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
-                        oldElectricityBattery.getFranchiseeId());
-                return R.fail("100371", "电池加盟商与用户加盟商不一致");
+            // 运营商绑定电池判断互通
+            if (SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+                if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(oldUserInfo.getTenantId(), oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100371", "电池加盟商与用户加盟商不一致");
+                }
+            } else {
+                if (!Objects.equals(oldUserInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+                    log.warn("WEBBIND ERROR WARN! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", oldUserInfo.getFranchiseeId(),
+                            oldElectricityBattery.getFranchiseeId());
+                    return R.fail("100371", "电池加盟商与用户加盟商不一致");
+                }
             }
             
             // 多型号  绑定电池需要判断电池是否和用户型号一致
@@ -2973,11 +2989,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("100019", "该电池为租借状态，不支持绑定");
             }
             
-            if (!Objects.equals(userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
+            // 运营商绑定电池判断互通
+            if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), oldElectricityBattery.getFranchiseeId())) {
                 log.warn("user bind battery warn! franchiseeId not equals,userFranchiseeId={},batteryFranchiseeId={}", userInfo.getFranchiseeId(),
                         oldElectricityBattery.getFranchiseeId());
                 return R.fail("100326", "电池与用户加盟商不一致，不支持绑定");
             }
+           
             
             // 多型号  绑定电池需要判断电池是否和用户型号一致
             Triple<Boolean, String, Object> verifyUserBatteryTypeResult = verifyUserBatteryType(oldElectricityBattery, userInfo);
