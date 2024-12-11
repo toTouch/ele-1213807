@@ -1894,7 +1894,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     public void revokeFreezeRentOrderTx(Integer tenantId, Long uid, String freeOrderNo) {
         // 1. 撤销冻结申请
         carRentalPackageOrderFreezeService.revokeByOrderNo(freeOrderNo, uid);
-        // 2. 更改会员期限表数据
+        
+        // 2. 扣减累计次数
+        userInfoExtraService.changeFreezeCountForUser(uid,UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
+        
+        // 3. 更改会员期限表数据
         carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), uid);
     }
     
