@@ -211,6 +211,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         // 查询租户配置
         ElectricityConfig electricityConfig = this.getTenantElectricityConfig(tenantId, electricityConfigCache);
         
+        // 循环执行
         processingLateFeeList.forEach(packageMemberTermPo -> {
             ElectricityCar electricityCar = uidCarMap.get(packageMemberTermPo.getUid());
             UserInfo userInfo = uidUserMap.get(packageMemberTermPo.getUid());
@@ -250,7 +251,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             CarRentalPackageOrderSlippagePo insertOrderExpiredSlippagePo = this.buildInsertExpiredFreezeOrderSlippagePo(
                     nowTime, electricityConfig, packageMemberTermPo, carRentalPackageOrderPo, electricityCar);
             
-            if (insertOrderExpiredSlippagePo != null) {
+            if (Objects.nonNull(insertOrderExpiredSlippagePo)) {
                 carRentalPackageOrderSlippageService.insert(insertOrderExpiredSlippagePo);
             }
             
@@ -262,7 +263,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
                     UseStateEnum.EXPIRED.getCode(), null, null);
             
         } catch (Exception e) {
-            log.info("Exception in late fee processing:", e);
+            log.warn("Exception in late fee processing:", e);
         }
     }
     
