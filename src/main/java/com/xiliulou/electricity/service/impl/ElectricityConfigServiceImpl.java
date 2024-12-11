@@ -222,7 +222,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
             electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
             electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
-            
+            electricityConfig.setIsSwapExchange(electricityConfigAddAndUpdateQuery.getIsSwapExchange());
+
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -264,12 +265,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
         electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
         electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
-        
+        electricityConfig.setIsSwapExchange(electricityConfigAddAndUpdateQuery.getIsSwapExchange());
+
         electricityConfigMapper.update(electricityConfig);
-        
+
         // 清理缓存
         redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
-        
+
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }

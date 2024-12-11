@@ -61,6 +61,12 @@ public class JsonUserRentBatteryOrderController {
         return rentBatteryOrderService.queryNewStatus(orderId);
     }
     
+    /**
+     * 小程序端绑定电池
+     *
+     * @param bindBatteryRequest request
+     * @return R
+     */
     @PostMapping("/user/bindBattery")
     public R bindBattery(@RequestBody BindBatteryRequest bindBatteryRequest) {
         return userInfoService.bindBattery(bindBatteryRequest);
