@@ -157,11 +157,6 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
             return Triple.of(Boolean.FALSE, null, null);
         }
         
-        ElectricityMemberCardOrder memberCardOrderUpdate = new ElectricityMemberCardOrder();
-        memberCardOrderUpdate.setMemberCardId(memberCardOrder.getId());
-        memberCardOrderUpdate.setValidDays(memberCardOrder.getValidDays() + coupon.getCount());
-        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(uid);
         userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + coupon.getCount() * 24 * 60 * 60 * 1000L);
@@ -173,8 +168,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         serviceFeeUserInfoUpdate.setTenantId(tenantId);
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
         serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        
-        electricityMemberCardOrderService.updateByID(memberCardOrderUpdate);
+
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         
