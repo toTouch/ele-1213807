@@ -3,12 +3,12 @@
 <mapper namespace="com.xiliulou.electricity.mapper.installment.InstallmentDeductionRecordMapper">
     
     <sql id="columnsWithoutId">
-        uid, external_agreement_no, pay_no, repayment_plan_no, user_name, mobile, amount, `status`, issue, `subject`,
+        uid, external_agreement_no, pay_no, repayment_plan_no, user_name, mobile, amount, `status`, issue, plan_id, `subject`,
         tenant_id, franchisee_id, create_time, update_time
     </sql>
     
     <sql id="fieldsWithoutId">
-        #{uid}, #{externalAgreementNo}, #{payNo}, #{repaymentPlanNo}, #{userName}, #{mobile}, #{amount}, #{status}, #{issue}, #{subject},
+        #{uid}, #{externalAgreementNo}, #{payNo}, #{repaymentPlanNo}, #{userName}, #{mobile}, #{amount}, #{status}, #{issue}, #{planId}, #{subject},
         #{tenantId}, #{franchiseeId}, #{createTime}, #{updateTime}
     </sql>
     
@@ -40,6 +40,9 @@
         <if test="issue != null">
             and issue = #{issue}
         </if>
+        <if test="planId != null">
+            and plan_id = #{planId}
+        </if>
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
@@ -68,6 +71,7 @@
         <result property="amount" column="amount" jdbcType="DECIMAL"/>
         <result property="status" column="status" jdbcType="TINYINT"/>
         <result property="issue" column="issue" jdbcType="TINYINT"/>
+        <result property="planId" column="plan_id" jdbcType="BIGINT"/>
         <result property="subject" column="subject" jdbcType="VARCHAR"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="franchiseeId" column="franchisee_id" jdbcType="BIGINT"/>
@@ -105,9 +109,18 @@
             <if test="externalAgreementNo != null and externalAgreementNo != ''">
                 and external_agreement_no = #{externalAgreementNo}
             </if>
+            <if test="issue != null">
+                and issue = #{issue}
+            </if>
             <if test="status != null">
                 and `status` = #{status}
             </if>
+    </select>
+    
+    <select id="queryById" resultMap="installmentDeductionRecordMap">
+        select id, <include refid="columnsWithoutId"/>
+        from t_installment_deduction_record
+        where id = #{id}
     </select>
     
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
@@ -143,6 +156,9 @@
             </if>
             <if test="issue != null">
                 issue = #{issue},
+            </if>
+            <if test="planId != null">
+                plan_id = #{planId},
             </if>
             <if test="subject != null and subject != ''">
                 `subject` = #{subject},

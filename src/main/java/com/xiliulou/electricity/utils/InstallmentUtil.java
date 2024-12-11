@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.utils;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
 
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Objects;
 
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.PACKAGE_TYPE_BATTERY;
@@ -93,5 +95,27 @@ public class InstallmentUtil {
         // 结合时间
         LocalDateTime repaymentDateTime = LocalDateTime.of(nextRepaymentDate, currentTime);
         return repaymentDateTime.atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli();
+    }
+    
+    /**
+     * 根据用户uid生成基础的代扣计划payNo
+     *
+     * @param uid 用户uid
+     */
+    public static void generatePayNo(Long uid, List<InstallmentDeductionPlan> deductionPlans) {
+        String uidStr = String.format("%08d", uid);
+        String payNo;
+        if (uidStr.length() == 8) {
+            payNo = uidStr + String.valueOf(System.currentTimeMillis()).substring(0, 10);
+        } else {
+            payNo = uidStr.substring(0, 8) + String.valueOf(System.currentTimeMillis()).substring(0, 10);
+        }
+        
+        // payNo要求20位字符串
+        // 采用规则：uid不够8位，以0凑足8位，超过的取前8位，拼上时间戳的前10位，代扣计划序号0、1、2...组成的2位字符串
+        // 在uid未超过1亿时可以完全避免重复
+        for (int i = 1; i <= deductionPlans.size(); i++) {
+            deductionPlans.get(i - 1).setPayNo(payNo + String.format("%02d", i));
+        }
     }
 }
