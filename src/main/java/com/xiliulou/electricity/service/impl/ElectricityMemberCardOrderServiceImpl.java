@@ -4296,6 +4296,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
             return R.ok(Collections.EMPTY_LIST);
         }
+
+        Set<Long> uidSet = new HashSet<>();
+        for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
+            uidSet.add(electricityMemberCardOrderVO.getUid());
+        }
+
+        List<UserInfo> userInfos = userInfoService.listByUidList(new ArrayList<>(uidSet));
+        Map<Long, UserInfo> userInfoMap = new HashMap<>(userInfos.size());
+        for (UserInfo userInfo : userInfos) {
+            userInfoMap.put(userInfo.getUid(), userInfo);
+        }
         
         List<ElectricityMemberCardOrderVO> ElectricityMemberCardOrderVOs = new ArrayList<>();
         for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
@@ -4369,7 +4380,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 });
             }
             electricityMemberCardOrderVO.setCoupons(coupons);
-            
+
+            // 设置用户信息
+            UserInfo userInfo = userInfoMap.get(electricityMemberCardOrderVO.getUid());
+            if (Objects.nonNull(userInfo)) {
+                electricityMemberCardOrderVO.setUserName(userInfo.getName());
+                electricityMemberCardOrderVO.setPhone(userInfo.getPhone());
+            }
+
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
         
