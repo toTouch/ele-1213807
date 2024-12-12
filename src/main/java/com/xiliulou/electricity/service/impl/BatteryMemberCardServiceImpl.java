@@ -5,6 +5,7 @@ import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.meituan.BatteryDepositBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.BatteryMemberCardConstants;
@@ -1362,6 +1363,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         return Boolean.FALSE;
+    }
+    
+    @Slave
+    @Override
+    public BatteryDepositBO queryMaxPackageDeposit(List<Long> packageIds, Integer tenantId) {
+        return batteryMemberCardMapper.selectMaxPackageDeposit(packageIds, tenantId);
     }
     
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

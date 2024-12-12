@@ -989,5 +989,14 @@
         limit #{offset}
         , #{size}
     </select>
+    
+    <select id="selectMaxPackageDeposit" resultType="com.xiliulou.electricity.bo.meituan.BatteryDepositBO">
+        select id as packageId, deposit as deposit, free_deposite as freeDeposit, franchisee_id as franchiseeId
+        from t_battery_member_card where tenant_id = #{tenantId} and id in
+        <foreach collection="packageIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by deposit desc limit 1
+    </select>
 
 </mapper>

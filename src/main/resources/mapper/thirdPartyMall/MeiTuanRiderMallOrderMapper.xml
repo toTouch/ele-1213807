@@ -80,8 +80,15 @@
         <if test="orderId != null and orderId != ''">
             and order_id = #{orderId}
         </if>
+        <if test="orderUseStatus != null">
+            and order_use_status = #{orderUseStatus}
+        </if>
         order by order_use_status asc, mei_tuan_order_time desc
         limit #{offset}, #{size}
+    </select>
+    
+    <select id="selectAllNoUsePackageId" resultType="java.lang.Long">
+        select distinct(package_id) from t_mei_tuan_rider_mall_order where tenant_id = #{tenantId} and mei_tuan_account = #{phone} and order_use_status = 0
     </select>
 
 </mapper>

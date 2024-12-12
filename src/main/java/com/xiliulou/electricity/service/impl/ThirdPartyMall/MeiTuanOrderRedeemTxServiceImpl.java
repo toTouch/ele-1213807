@@ -491,7 +491,7 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
     @Override
     public Pair<ElectricityMemberCardOrder, MeiTuanOrderRedeemRollBackBO> saveRenewalUserBatteryMemberCardOrder(UserInfo userInfo, BatteryMemberCard batteryMemberCard,
             UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard userBindBatteryMemberCard, MeiTuanRiderMallOrder meiTuanRiderMallOrder,
-            List<String> userBindBatteryTypes, List<String> memberCardBatteryTypes) {
+            List<String> userBindBatteryTypes) {
         ElectricityMemberCardOrder memberCardOrder = null;
         UserBatteryMemberCard rollBackUserBatteryMemberCard = new UserBatteryMemberCard();
         ElectricityMemberCardOrder rollBackElectricityMemberCardOrder = null;
@@ -610,6 +610,8 @@ public class MeiTuanOrderRedeemTxServiceImpl implements MeiTuanOrderRedeemTxServ
                 if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
                     totalBatteryTypes.addAll(userBindBatteryTypes);
                 }
+    
+                List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
                 if (CollectionUtils.isNotEmpty(memberCardBatteryTypes)) {
                     totalBatteryTypes.addAll(memberCardBatteryTypes);
                 }
