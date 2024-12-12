@@ -333,7 +333,7 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
 
             // 查询互通配置开关
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-            if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsSwapExchange(), ElectricityConfig.SWAP_EXCHANGE_CLOSE)) {
+            if (Objects.isNull(electricityConfig) || Objects.isNull(electricityConfig.getIsSwapExchange()) || Objects.equals(electricityConfig.getIsSwapExchange(), ElectricityConfig.SWAP_EXCHANGE_CLOSE)) {
                 log.warn("IsSatisfyFranchiseeIdMutualExchange Warn! electricityConfig is null or SwapExchange is close, tenantId is {}， electricityConfig is {}", tenantId,
                         Objects.isNull(electricityConfig) ? "null" : JsonUtil.toJson(electricityConfig));
                 return Pair.of(false, null);
@@ -411,7 +411,9 @@ public class TenantFranchiseeMutualExchangeServiceImpl implements TenantFranchis
             }
         } else {
             if (Objects.nonNull(otherFranchiseeId) && Objects.equals(franchiseeId, otherFranchiseeId)) {
-                return Triple.of(true, null, CollUtil.newHashSet().add(franchiseeId));
+                Set<Long> set = CollUtil.newHashSet();
+                set.add(franchiseeId);
+                return Triple.of(true, null, set);
             } else {
                 log.warn("ORDER WARN! Normal Check ,user fId is not equal franchiseeId,tenantId is {}, uidF is {}, eidF is {}", tenantId, franchiseeId, otherFranchiseeId);
                 return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
