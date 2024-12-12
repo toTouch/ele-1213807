@@ -116,4 +116,8 @@ public interface ElectricityCabinetOrderService {
     List<String> getBatteryTypesForCheck(UserInfo userInfo, ElectricityBattery battery, List<String> userBatteryTypes);
     
     void checkFlexibleRenewal(ExchangeUserSelectVO vo, ElectricityBattery battery, UserInfo userInfo);
+
+    ElectricityCabinetOrder selectLatelyExchangeOrder(Long uid, Long startTime, Long currentTime);
+
+    List<ElectricityCabinetOrder> existExchangeOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid);
 }
