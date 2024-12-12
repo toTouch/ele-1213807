@@ -281,7 +281,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 BigDecimal memberCardDeposit = batteryMemberCard.getDeposit();
                 if (memberCardDeposit.compareTo(BigDecimal.ZERO) > 0) {
                     log.warn("MeiTuan order redeem fail! memberCardDeposit is greater than zero, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
-                    return Triple.of(false, "120145", "该换电卡兑换套餐需缴纳押金${" + memberCardDeposit + "}元，无法直接兑换");
+                    return Triple.of(false, "120145", "该换电卡兑换套餐需缴纳押金" + memberCardDeposit + "元，无法直接兑换");
                 }
                 
                 pair = meiTuanOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
@@ -461,7 +461,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         BigDecimal memberCardDeposit = batteryMemberCard.getDeposit();
         if (memberCardDeposit.compareTo(deposit) > 0) {
             log.warn("MeiTuan order redeem fail! memberCardDeposit is greater than deposit, uid={}, memberCardDeposit={}, deposit={}", uid, memberCardDeposit, deposit);
-            return Triple.of(false, "120152", "该换电卡兑换套餐需缴纳押金${" + memberCardDeposit + "}元，已缴纳押金不足，请先退押，重新缴纳押金后兑换");
+            return Triple.of(false, "120152", "该换电卡兑换套餐需缴纳押金" + memberCardDeposit + "元，已缴纳押金不足，请先退押，重新缴纳押金后兑换");
         }
         
         return Triple.of(true, null, userBatteryDeposit);
