@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.pipeline.ProcessContext;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,9 @@ public class ExchangeCabinetAssertProcess extends AbstractExchangeCommonHandler 
     
     @Resource
     private StoreService storeService;
+
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
     
     @Override
     public void process(ProcessContext<ExchangeAssertProcessDTO> context) {
@@ -65,12 +69,14 @@ public class ExchangeCabinetAssertProcess extends AbstractExchangeCommonHandler 
             breakChain(context, "100204", "未找到门店");
             return;
         }
-        
-        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.warn("ORDER WARN! storeId  is not equal franchiseeId uid={} , store's fid={} ,fid={}", userInfo.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
+
+        // 换电互通: 用户和柜机加盟商是否一致
+        if (!mutualExchangeService.isSatisfyFranchiseeMutualExchange(userInfo.getTenantId(), userInfo.getFranchiseeId(), store.getFranchiseeId())) {
+            log.warn("ORDER WARN! storeId  is not equal franchiseeId， uTenantId={} , uFid={} , eFid={}", userInfo.getTenantId(), userInfo.getFranchiseeId(), store.getFranchiseeId());
             breakChain(context, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
             return;
         }
+
         context.getProcessModel().getChainObject().setElectricityCabinet(electricityCabinet);
     }
     
