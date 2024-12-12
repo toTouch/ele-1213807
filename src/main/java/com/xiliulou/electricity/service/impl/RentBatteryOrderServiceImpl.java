@@ -822,6 +822,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     return R.fail("300001", "存在滞纳金，请先缴纳");
                 }
             }
+
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW) && Objects.isNull(
+                    electricityBattery)) {
+                return R.fail("300870", "系统检测到您未绑定电池，请检查");
+            }
             
             
             //分配开门格挡
@@ -860,6 +865,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
             dataMap.put("orderId", orderId);
+            dataMap.put("newUserBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
             
             //是否开启电池检测
             if (Objects.nonNull(electricityConfig)) {
