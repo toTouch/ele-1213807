@@ -240,7 +240,10 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-            
+
+            // 扣减冻结次数
+            userInfoExtraService.changeFreezeCountForUser(userInfo.getUid(), UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
+
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
         

@@ -103,7 +103,8 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         if (Objects.isNull(batteryMemberCard)) {
             return true;
         }
-        
+
+        // TODO SJP 是否限制限次套餐不可使用需要确认
         return Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0;
     }
 
