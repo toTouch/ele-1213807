@@ -1317,6 +1317,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             // 2. 更新会员期限信息
             carRentalPackageMemberTermService.updateStatusByUidAndTenantId(freezeEntity.getTenantId(), freezeEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
+            
+            // 3.扣减次数
+            userInfoExtraService.changeFreezeCountForUser(freezeEntity.getUid(), UserInfoExtraConstant.SUBTRACT_FREEZE_COUNT);
+            
         } else {
             if (approveFlag) {
                 // 1. 更新冻结申请单状态
