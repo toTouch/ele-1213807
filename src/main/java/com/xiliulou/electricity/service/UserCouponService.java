@@ -108,7 +108,7 @@ public interface UserCouponService {
     R checkSendFinish(String sessionId);
     
     /**
-     * 获取换电套餐使用天数券增加的时间毫秒值
+     * 获取换电套餐使用天数券增加的天数
      *
      * @param orderId 换电套餐id
      * @return 天数券增加的天数。返回非null整数表示使用的天数券的天数；返回0或null表示未使用天数券
