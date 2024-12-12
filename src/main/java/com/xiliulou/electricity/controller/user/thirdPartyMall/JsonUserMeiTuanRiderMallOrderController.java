@@ -73,15 +73,15 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
             MtOrderVO vo = new MtOrderVO();
             BeanUtils.copyProperties(order, vo);
             
-            BigDecimal packageDeposit = BigDecimal.ZERO;
             Long packageId = order.getPackageId();
             if (Objects.nonNull(packageId)) {
                 BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
                 if (Objects.nonNull(batteryMemberCard)) {
-                    packageDeposit = batteryMemberCard.getDeposit();
+                    vo.setPackageDeposit(batteryMemberCard.getDeposit());
+                    vo.setFreeDeposit(batteryMemberCard.getFreeDeposite());
                 }
             }
-            vo.setPackageDeposit(packageDeposit);
+            
             return vo;
         }).collect(Collectors.toList());
         

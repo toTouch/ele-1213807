@@ -48,4 +48,9 @@ public class MtOrderVO {
      * 套餐押金
      */
     private BigDecimal packageDeposit;
+    
+    /**
+     *  套餐是否支持免押:0--是 1--否
+     */
+    private Integer freeDeposit;
 }
