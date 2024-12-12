@@ -104,7 +104,7 @@ public class AbstractLessTimeExchangeCommon {
         ElectricityCabinet cabinet = dto.getCabinet();
         if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(dto.getOrderId())
-                    .tenantId(dto.getTenantId()).msg(dto.getMsg()).seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                    .tenantId(dto.getTenantId()).msg("后台自主开仓").seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
 
             electricityCabinetOrderOperHistoryService.insert(history);

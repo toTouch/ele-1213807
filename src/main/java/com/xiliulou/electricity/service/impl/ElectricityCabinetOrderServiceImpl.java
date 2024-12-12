@@ -19,6 +19,7 @@ import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.ExchangeRemarkConstant;
 import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -2724,7 +2725,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
             electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            electricityCabinetOrderUpdate.setRemark("用户自助开仓");
+            electricityCabinetOrderUpdate.setRemark(ExchangeRemarkConstant.USER_SELF_OPEN_CELL);
             update(electricityCabinetOrderUpdate);
             
             // 发送自助开仓命令
