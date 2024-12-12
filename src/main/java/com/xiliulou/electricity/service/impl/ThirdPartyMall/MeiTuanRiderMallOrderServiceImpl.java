@@ -236,6 +236,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 UserBatteryDeposit userBatteryDeposit = (UserBatteryDeposit) checkDepositAndRefund.getRight();
                 ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
                 if (Objects.isNull(electricityConfig)) {
+                    log.warn("MeiTuan order redeem fail! electricityConfig is null");
                     return Triple.of(false, "302003", "运营商配置异常，请联系客服");
                 }
                 
@@ -272,15 +273,15 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                             meiTuanRiderMallOrder, userBatteryTypes);
                 }
             } else {
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(userBatteryMemberCard) && StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
+                    return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
+                }
+                
                 BigDecimal memberCardDeposit = batteryMemberCard.getDeposit();
                 if (memberCardDeposit.compareTo(BigDecimal.ZERO) > 0) {
                     log.warn("MeiTuan order redeem fail! memberCardDeposit is greater than zero, uid={}, mid={}, meiTuanOrderId={}", uid, memberCardId, meiTuanOrderId);
                     return Triple.of(false, "120145", "该换电卡兑换套餐需缴纳押金${" + memberCardDeposit + "}元，无法直接兑换");
-                }
-                
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-                if (Objects.nonNull(userBatteryMemberCard) && StringUtils.isNotBlank(userBatteryMemberCard.getOrderId())) {
-                    return Triple.of(false, "ELECTRICITY.00121", "用户已绑定电池套餐");
                 }
                 
                 pair = meiTuanOrderRedeemTxService.saveUserInfoAndOrder(userInfo, batteryMemberCard, userBatteryMemberCard, meiTuanRiderMallOrder);
@@ -295,7 +296,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             rollBackBO = pair.getRight();
             
             // 通知美团发货
-            Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            // TODO(heyafeng) 2024/12/12 16:02
+            //Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            Boolean deliverResult = assertDeliverSuccess(meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
             // 发货失败，执行回滚
             if (!deliverResult) {
                 meiTuanOrderRedeemTxService.rollback(rollBackBO);
@@ -561,6 +564,32 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         return Boolean.TRUE;
     }
     
+    /**
+     * 为了测试，假设发货成功，临时使用
+     */
+    private Boolean assertDeliverSuccess(MeiTuanRiderMallOrder meiTuanRiderMallOrder, ElectricityMemberCardOrder electricityMemberCardOrder, Long uid) {
+        // 更新订单
+        MeiTuanRiderMallOrder meiTuanRiderMallOrderUpdate = new MeiTuanRiderMallOrder();
+        meiTuanRiderMallOrderUpdate.setId(meiTuanRiderMallOrder.getId());
+        if (Objects.isNull(meiTuanRiderMallOrder.getUid()) || Objects.equals(meiTuanRiderMallOrder.getUid(), NumberConstant.ZERO_L)) {
+            meiTuanRiderMallOrderUpdate.setUid(uid);
+        }
+    
+        // 关联套餐订单
+        meiTuanRiderMallOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+        // 修改订单状态为“已发货”
+        meiTuanRiderMallOrderUpdate.setMeiTuanOrderStatus(MeiTuanRiderMallEnum.ORDER_STATUS_DELIVERED.getCode());
+        // 修改同步对账状态为“已处理”
+        meiTuanRiderMallOrderUpdate.setOrderSyncStatus(MeiTuanRiderMallEnum.ORDER_HANDLE_REASON_STATUS_HANDLE.getCode());
+        // 修改订单状态为“已使用”
+        meiTuanRiderMallOrderUpdate.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_USED.getCode());
+        meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
+    
+        meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
+    
+        return Boolean.TRUE;
+    }
+    
     @Override
     public List<MeiTuanRiderMallOrder> listOrders(OrderQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
@@ -713,6 +742,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(eleDepositOrder)) {
                 vo.setBatteryDepositPayType(eleDepositOrder.getPayType());
+                vo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             }
         } else {
             // 未缴纳押金：押金金额取自未兑换订单的套餐中最大的押金金额
