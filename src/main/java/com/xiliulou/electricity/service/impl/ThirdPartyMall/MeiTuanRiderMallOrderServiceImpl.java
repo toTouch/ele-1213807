@@ -296,9 +296,8 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             rollBackBO = pair.getRight();
             
             // 通知美团发货
-            // TODO(heyafeng) 2024/12/12 16:02
-            //Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
-            Boolean deliverResult = assertDeliverSuccess(meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            Boolean deliverResult = notifyMeiTuanDeliver(meiTuanRiderMallConfig, meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
+            //Boolean deliverResult = assertDeliverSuccess(meiTuanRiderMallOrder, electricityMemberCardOrder, uid);
             // 发货失败，执行回滚
             if (!deliverResult) {
                 meiTuanOrderRedeemTxService.rollback(rollBackBO);
