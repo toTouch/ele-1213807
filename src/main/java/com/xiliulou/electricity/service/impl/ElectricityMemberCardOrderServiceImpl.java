@@ -563,7 +563,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
+
+        Set<Long> uidSet = new HashSet<>();
+        for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
+            uidSet.add(electricityMemberCardOrderVO.getUid());
+        }
+
+        List<UserInfo> userInfos = userInfoService.listByUidList(new ArrayList<>(uidSet));
+        Map<Long, UserInfo> userInfoMap = new HashMap<>(userInfos.size());
+        for (UserInfo userInfo : userInfos) {
+            userInfoMap.put(userInfo.getUid(), userInfo);
+        }
+
         List<ElectricityMemberCardOrderVO> ElectricityMemberCardOrderVOs = new ArrayList<>();
         for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
             
@@ -636,75 +647,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 });
             }
             electricityMemberCardOrderVO.setCoupons(coupons);
-            
+
+            // 设置用户信息
+            UserInfo userInfo = userInfoMap.get(electricityMemberCardOrderVO.getUid());
+            if (Objects.nonNull(userInfo)) {
+                electricityMemberCardOrderVO.setUserName(userInfo.getName());
+                electricityMemberCardOrderVO.setPhone(userInfo.getPhone());
+            }
+
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
         
         return R.ok(ElectricityMemberCardOrderVOs);
-    }
-    
-    @Slave
-    @Override
-    public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
-        
-        List<ElectricityMemberCardOrderVO> electricityMemberCardOrders = Lists.newArrayList();
-        Long offset = 0L;
-        while (true) {
-            memberCardOrderQuery.setOffset(offset);
-            memberCardOrderQuery.setSize(EXPORT_LIMIT);
-            List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
-            offset += EXPORT_LIMIT;
-            
-            if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
-                break;
-            }
-            
-            electricityMemberCardOrders.addAll(electricityMemberCardOrderVOList);
-        }
-        
-        if (ObjectUtil.isEmpty(electricityMemberCardOrders)) {
-            throw new CustomBusinessException("订单不存在！");
-        }
-        
-        List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
-        for (int i = 0; i < electricityMemberCardOrders.size(); i++) {
-            ElectricityMemberCardOrderExcelVO excelVo = new ElectricityMemberCardOrderExcelVO();
-            excelVo.setId(i + 1);
-            excelVo.setOrderId(electricityMemberCardOrders.get(i).getOrderId());
-            excelVo.setName(electricityMemberCardOrders.get(i).getUserName());
-            excelVo.setPhone(electricityMemberCardOrders.get(i).getPhone());
-            
-            if (Objects.nonNull(electricityMemberCardOrders.get(i).getFranchiseeId())) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityMemberCardOrders.get(i).getFranchiseeId());
-                excelVo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
-            }
-            
-            excelVo.setMemberCardName(electricityMemberCardOrders.get(i).getCardName());
-            excelVo.setMaxUseCount(
-                    Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(), -1L) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));
-            // TODO            excelVo.setValidDays(electricityMemberCardOrders.get(i).getValidDays());
-            excelVo.setStatus(Objects.equals(electricityMemberCardOrders.get(i).getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS) ? "已支付" : "未支付");
-            excelVo.setPayAmount(electricityMemberCardOrders.get(i).getPayAmount());
-            excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT) ? "线上支付" : "线下支付");
-            excelVo.setBeginningTime(DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
-            excelVo.setPayCount(electricityMemberCardOrders.get(i).getPayCount());
-            
-            electricityMemberCardOrderExcelVOS.add(excelVo);
-        }
-        
-        String fileName = "套餐订单报表.xlsx";
-        try {
-            ServletOutputStream outputStream = response.getOutputStream();
-            // 告诉浏览器用什么软件可以打开此文件
-            response.setHeader("content-Type", "application/vnd.ms-excel");
-            // 下载文件的默认名称
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, ElectricityMemberCardOrderExcelVO.class).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).sheet("sheet")
-                    .doWrite(electricityMemberCardOrderExcelVOS);
-            return;
-        } catch (IOException e) {
-            log.error("导出报表失败！", e);
-        }
     }
     
     @Slave
