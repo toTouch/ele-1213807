@@ -41,6 +41,17 @@ public class JsonUserRentBatteryOrderController {
     public R rentBattery(@RequestBody RentBatteryQuery rentBatteryQuery) {
         return rentBatteryOrderService.rentBattery(rentBatteryQuery);
     }
+
+    /**
+     * 退电二次扫码判断
+     *
+     * @param electricityCabinetId 柜机id
+     * @return R
+     */
+    @PostMapping("/user/returnBattery/check")
+    public R returnBatteryCheck(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        return rentBatteryOrderService.returnBatteryCheck(electricityCabinetId);
+    }
     
     //还电池
     @PostMapping("/user/returnBattery")

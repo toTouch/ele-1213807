@@ -29,11 +29,9 @@ public interface LessTimeExchangeService {
      * @param cabinet            cabinet
      * @param electricityBattery electricityBattery
      * @param exchangeDTO        exchangeDTO
-     * @param code               code
      * @return Pair
      */
-    Pair<Boolean, ExchangeUserSelectVO> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, LessTimeExchangeDTO exchangeDTO,
-                                                                       Integer code);
+    Pair<Boolean, ExchangeUserSelectVO> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, LessTimeExchangeDTO exchangeDTO);
 
     /**
      * 打开满电仓
@@ -57,5 +55,7 @@ public interface LessTimeExchangeService {
      * @return Triple
      */
     Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
+
+
 
 }

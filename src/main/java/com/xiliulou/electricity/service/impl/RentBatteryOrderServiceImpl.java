@@ -58,38 +58,7 @@ import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.EleUserEsignRecordService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
-import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserActiveInfoService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
@@ -250,6 +219,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Resource
     private ExchangeExceptionHandlerService exceptionHandlerService;
+
+    @Resource
+    private LessTimeExchangeService lessTimeExchangeService;
     
     /**
      * 吞电池优化版本
@@ -1957,7 +1929,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     public RentBatteryOrder queryLatelyRentReturnOrder(Long uid, Long startTime, Long currentTime, Integer orderType) {
         return rentBatteryOrderMapper.selectLatelyRentReturnOrder(uid, startTime, currentTime, orderType);
     }
-
 
 
     @Override

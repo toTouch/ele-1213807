@@ -339,4 +339,30 @@
             #{orderId}
         </foreach>
     </select>
+
+
+    <select id="selectLatelyRentReturnOrder" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
+        select id,
+               order_id,
+               uid,
+               name,
+               phone,
+               electricity_battery_sn,
+               battery_deposit,
+               electricity_cabinet_id,
+               cell_no,
+               type,
+               status,
+               create_time,
+               update_time,
+               remark,
+               franchisee_id,
+               tenant_id
+        from t_rent_battery_order
+        where uid = #{uid}
+          and create_time &gt; #{startTime}
+          and create_time &lt; #{currentTime}
+          and type = #{orderType}
+        order by create_time desc limit 1
+    </select>
 </mapper>

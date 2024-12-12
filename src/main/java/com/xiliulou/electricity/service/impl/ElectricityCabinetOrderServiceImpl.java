@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -24,7 +23,6 @@ import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleUserEsignRecord;
-import com.xiliulou.electricity.entity.ElectricityAppConfig;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -42,7 +40,6 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.CellTypeEnum;
 import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.enums.OrderCheckEnum;
@@ -1335,9 +1332,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         // 多次换电拦截
         if (StringUtils.isNotBlank(electricityCabinet.getVersion()) && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).build();
-            Pair<Boolean, ExchangeUserSelectVO> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
-                    OrderCheckEnum.CHECK.getCode());
+            LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(exchangeQuery.getEid()).isReScanExchange(exchangeQuery.getIsReScanExchange()).code(OrderCheckEnum.CHECK.getCode()).build();
+            Pair<Boolean, ExchangeUserSelectVO> pair = lessTimeExchangeService.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO);
             if (pair.getLeft()) {
                 // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
                 ExchangeUserSelectVO returnVo = pair.getRight();
@@ -1357,8 +1353,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, vo);
     }
     
-
-
 
 
     
@@ -2872,9 +2866,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
                 LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange())
-                        .secondFlexibleRenewal(orderQuery.getSecondFlexibleRenewal()).build();
-                Pair<Boolean, ExchangeUserSelectVO> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
-                        OrderCheckEnum.ORDER.getCode());
+                        .secondFlexibleRenewal(orderQuery.getSecondFlexibleRenewal()).code(OrderCheckEnum.ORDER.getCode()).build();
+                Pair<Boolean, ExchangeUserSelectVO> pair = lessTimeExchangeService.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO);
 
                 // 二次扫码校验通过，非二次扫码时，实例化vo对象用于灵活续费校验，灵活续费校验也通过才能放行去直接换电
                 ExchangeUserSelectVO vo;
@@ -3028,10 +3021,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!Objects.equals(orderQuery.getExchangeBatteryType(), OrderQueryV3.NORMAL_EXCHANGE)) {
             if (StringUtils.isNotBlank(electricityCabinet.getVersion())
                     && VersionUtil.compareVersion(electricityCabinet.getVersion(), ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION) >= 0) {
-                
-                LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).build();
-                Pair<Boolean, ExchangeUserSelectVO> pair = this.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO,
-                        OrderCheckEnum.ORDER.getCode());
+
+                LessTimeExchangeDTO exchangeDTO = LessTimeExchangeDTO.builder().eid(orderQuery.getEid()).isReScanExchange(orderQuery.getIsReScanExchange()).code(OrderCheckEnum.ORDER.getCode()).build();
+                Pair<Boolean, ExchangeUserSelectVO> pair = lessTimeExchangeService.lessTimeExchangeTwoCountAssert(userInfo, electricityCabinet, electricityBattery, exchangeDTO);
                 if (pair.getLeft()) {
                     // 返回让前端选择
                     return Triple.of(true, null, pair.getRight());

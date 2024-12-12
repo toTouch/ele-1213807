@@ -94,6 +94,9 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
     @Resource
     private ElectricityConfigService electricityConfigService;
 
+    @Resource
+    private ElectricityCabinetOrderService orderService;
+
     /**
      * 多次扫码退电
      *
@@ -180,12 +183,11 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
      * @param cabinet            cabinet
      * @param electricityBattery electricityBattery
      * @param exchangeDTO        exchangeDTO
-     * @param code               code
      * @return Boolean=false继续走正常换电
      */
     @Override
     public Pair<Boolean, ExchangeUserSelectVO> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery,
-                                                                              LessTimeExchangeDTO exchangeDTO, Integer code) {
+                                                                              LessTimeExchangeDTO exchangeDTO) {
         if (Objects.equals(exchangeDTO.getIsReScanExchange(), OrderQueryV3.RESCAN_EXCHANGE)) {
             log.info("OrderV3 INFO! not same cabinet, normal exchange");
             return Pair.of(false, null);
@@ -231,7 +233,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
             return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, rentBatteryOrder, userInfo, lastOrderType);
         } else {
             // 上一个失败，必然是换电，租电失败也走不到这里
-            return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo, code);
+            return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo, exchangeDTO.getCode(), exchangeDTO.getSecondFlexibleRenewal());
         }
     }
 
@@ -276,7 +278,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
 
 
     public Pair<Boolean, ExchangeUserSelectVO> lastExchangeFailHandler(ElectricityCabinetOrder lastOrder, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, UserInfo userInfo,
-                                                                       Integer code) {
+                                                                       Integer code, Integer secondFlexibleRenewal) {
         ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
         vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE);
         vo.setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_FAIL);
@@ -290,7 +292,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         log.info("OrderV3 INFO! lastExchangeFailHandler.orderStatus is {}", orderStatus);
         //  旧仓门电池检测失败或超时 或者 旧仓门开门失败
         if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL) || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
-            return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo, code);
+            return oldCellCheckFail(lastOrder, electricityBattery, vo, cabinet, userInfo, code, secondFlexibleRenewal);
         }
 
         //  新仓门开门失败
@@ -432,7 +434,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
 
 
     private Pair<Boolean, ExchangeUserSelectVO> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVO vo, ElectricityCabinet cabinet,
-                                                                 UserInfo userInfo, Integer code) {
+                                                                 UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
 
         if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getOldCellNo(),
                 ElectricityCabinetOrder.OLD_CELL)) {
@@ -463,27 +465,34 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         // 判断灵活续费场景下，二次扫码是走去电流程还是自主开仓，true为取电，false为自主开仓
         List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
-        boolean exchangeBatteryOrNot = checkExchangeOrSelfOpen(userBatteryTypes, electricityBattery, electricityConfig);
+        Integer flexibleRenewalEnumCode = checkExchangeOrSelfOpen(userBatteryTypes, electricityBattery, electricityConfig);
 
 
         // 租借在仓（上一个订单旧仓门内），仓门锁状态：关闭
         if (Objects.nonNull(cabinetBox) && Objects.equals(cabinetBox.getIsLock(), ElectricityCabinetBox.CLOSE_DOOR) && StrUtil.isNotBlank(cabinetBox.getCellNo()) && Objects.equals(
                 Integer.valueOf(cabinetBox.getCellNo()), lastOrder.getOldCellNo())) {
 
-            // 灵活续费
-            if (!exchangeBatteryOrNot) {
-                BackSelfOpenCellDTO openCellDTO = BackSelfOpenCellDTO.builder().id(lastOrder.getId()).userBindingBatterySn(electricityBattery.getSn())
-                        .cell(lastOrder.getOldCellNo()).orderId(lastOrder.getOrderId()).cabinet(cabinet).msg(ExchangeRemarkConstant.FLEXIBLE_RENEWAL_SYSTEM_SELF_CELL)
-                        .tenantId(lastOrder.getTenantId()).lastOrderType(LastOrderTypeEnum.LAST_EXCHANGE_ORDER.getCode()).build();
-                backSelfOpen(openCellDTO);
-                vo.setBeginSelfOpen(ExchangeUserSelectVO.BEGIN_SELF_OPEN);
-                vo.setCell(lastOrder.getOldCellNo());
-                return Pair.of(true, vo);
-            }
-
             vo.setIsBatteryInCell(LessScanConstant.BATTERY_IN_CELL);
             vo.setIsEnterTakeBattery(LessScanConstant.ENTER_TAKE_BATTERY);
             vo.setCellType(CellTypeEnum.OLD_CELL.getCode());
+
+            // 传递secondFlexibleRenewal时为第二次调用V3多次扫码，直接换电不作处理；校验灵活续费flexibleRenewalEnumCode 的值为 NORMAL 直接换电
+            if (!Objects.equals(secondFlexibleRenewal, OrderQueryV3.SECOND_FLEXIBLE_RENEWAL) && !Objects.equals(flexibleRenewalEnumCode, FlexibleRenewalEnum.NORMAL.getCode())) {
+                // 灵活续费为先退后租时自主开仓
+                if (Objects.equals(flexibleRenewalEnumCode, FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode())) {
+                    BackSelfOpenCellDTO openCellDTO = BackSelfOpenCellDTO.builder().id(lastOrder.getId()).userBindingBatterySn(electricityBattery.getSn())
+                            .cell(lastOrder.getOldCellNo()).orderId(lastOrder.getOrderId()).cabinet(cabinet).msg(ExchangeRemarkConstant.EXCHANGE_SUCCESS_SYSTEM_SELF_CELL)
+                            .tenantId(lastOrder.getTenantId()).lastOrderType(LastOrderTypeEnum.LAST_EXCHANGE_ORDER.getCode()).build();
+                    backSelfOpen(openCellDTO);
+                    vo.setBeginSelfOpen(ExchangeUserSelectVO.BEGIN_SELF_OPEN);
+                    vo.setCell(lastOrder.getOldCellNo());
+                } else {
+                    orderService.checkFlexibleRenewal(vo, electricityBattery, userInfo);
+                }
+
+                // 灵活续费为换电时，不开仓不分配电池，返回给前端等待第二次调用V3多次扫码
+                return Pair.of(true, vo);
+            }
 
             // 这里为了兼容选仓换电：只有换电，才去获取满电仓，而选仓取电不走这里
             if (Objects.equals(code, OrderCheckEnum.ORDER.getCode())) {
@@ -503,24 +512,15 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         }
     }
 
-    private boolean checkExchangeOrSelfOpen(List<String> userBatteryTypes, ElectricityBattery electricityBattery, ElectricityConfig electricityConfig) {
-        // 不分型号，和灵活续费没关系，走取电流程
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(userBatteryTypes)) {
-            return true;
+    private Integer checkExchangeOrSelfOpen(List<String> userBatteryTypes, ElectricityBattery electricityBattery, ElectricityConfig electricityConfig) {
+        // 不分型号，和灵活续费没关系；电池没有型号无法做灵活续费校验；电池型号匹配；放行，走取电流程
+        if (CollectionUtils.isEmpty(userBatteryTypes) || Objects.isNull(electricityBattery.getModel()) || userBatteryTypes.contains(electricityBattery.getModel())) {
+            return FlexibleRenewalEnum.NORMAL.getCode();
         }
 
-        if (Objects.isNull(electricityBattery.getModel())) {
-            return false;
-        }
-
-        // 用户还进来的电池和当前套餐匹配，和灵活续费没关系
-        if (userBatteryTypes.contains(electricityBattery.getModel())) {
-            return true;
-        }
-
-        // 用户还进来的电池和当前套餐不匹配，当租户的配置是“灵活续费——换电”的时候才能走取电流程
-        return Objects.nonNull(electricityConfig.getIsEnableFlexibleRenewal()) && Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(),
-                FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode());
+        // 到此处后电池与用户的电池型号一定不匹配，灵活续费换电时，才能换电，其他场景均为先退后租
+        return Objects.equals(electricityConfig.getIsEnableFlexibleRenewal(), FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode()) ? FlexibleRenewalEnum.EXCHANGE_BATTERY.getCode()
+                : FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode();
     }
 
 
@@ -619,4 +619,6 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn())
                 && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
     }
+
+
 }
