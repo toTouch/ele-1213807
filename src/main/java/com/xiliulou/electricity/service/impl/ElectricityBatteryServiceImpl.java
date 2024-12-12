@@ -24,6 +24,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.bo.asset.ElectricityBatteryBO;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.AssetConstant;
@@ -188,6 +189,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Resource
     private AssertPermissionService assertPermissionService;
+    
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
     
     protected ExecutorService bmsBatteryInsertThread = XllThreadPoolExecutors.newFixedThreadPool("BMS-BATTERY-INSERT-POOL", 1, "bms-battery-insert-pool-thread");
     
@@ -1630,6 +1634,41 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectListBatteriesBySn(offset, size, tenantId, franchiseeId, sn);
     }
     
+    @Override
+    public List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid, String sn) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("用户不存在");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("Current UserInfo is null, uid is {}", uid);
+            return Collections.emptyList();
+        }
+        List<Long> franchiseeIdList = CollUtil.newArrayList();
+        // 只有运营商有互通
+        if (SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            // 获取当前用户加盟商的互通加盟商
+            Pair<Boolean, Set<Long>> mutualExchangePair = mutualExchangeService.satisfyMutualExchangeFranchisee(userInfo.getTenantId(), userInfo.getFranchiseeId());
+            if (mutualExchangePair.getLeft()) {
+                franchiseeIdList = new ArrayList<>(mutualExchangePair.getRight());
+            } else {
+                franchiseeIdList.add(userInfo.getFranchiseeId());
+            }
+        } else {
+            franchiseeIdList.add(userInfo.getFranchiseeId());
+        }
+        
+        return getListBatteriesByFranchisee(offset, size, userInfo.getTenantId(), franchiseeIdList, sn);
+    }
+    
+    @Override
+    @Slave
+    public List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList, String sn) {
+        return electricitybatterymapper.selectListBatteriesByFranchisee(offset, size, tenantId, franchiseeIdList, sn);
+    }
+    
     @Slave
     @Override
     public List<ElectricityBattery> listBatteryByEid(List<Integer> electricityCabinetIdList) {
@@ -1737,5 +1776,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Map<Object, Object> map = MapUtil.builder().put("count", batteryWaitSnList.size()).build();
         operateRecordUtil.record(null, map);
         return R.ok(vo);
+    }
+
+
+    @Override
+    @Slave
+    public List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId, List<Long> franchiseeIds) {
+        return electricitybatterymapper.selectMutualBattery(tenantId, franchiseeIds);
     }
 }
