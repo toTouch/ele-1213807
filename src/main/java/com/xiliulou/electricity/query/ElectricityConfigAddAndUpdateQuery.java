@@ -214,6 +214,12 @@ public class ElectricityConfigAddAndUpdateQuery {
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;
+    
+    
+    /**
+     * 是否互通换电,默认是1关闭,0开启
+     */
+    private Integer isSwapExchange;
 }
 
 

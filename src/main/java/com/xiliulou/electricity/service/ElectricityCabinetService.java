@@ -133,10 +133,10 @@ public interface ElectricityCabinetService {
     
     R queryCabinetBelongFranchisee(Integer id);
     
-    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-    
-    Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid, Integer flexibleRenewalType);
-    
+
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid,
+                                                              Integer flexibleRenewalType, Set<Long> mutualFranchiseeSet);
+
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
     
     Pair<Boolean, Integer> findUsableEmptyCellNoV2(Long uid, Integer eid, String version);
