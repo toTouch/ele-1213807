@@ -48,8 +48,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     
     private final ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
-    
-    @Slave
+
     @Override
     public DayCouponUseScope getScope(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
@@ -75,8 +74,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
                 return DayCouponUseScope.UNKNOWN;
         }
     }
-    
-    @Slave
+
     @Override
     public boolean isLateFee(Integer tenantId, Long uid) {
         // 计算金额不为0表示有滞纳金
@@ -84,8 +82,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         return !Objects.isNull(eleBatteryServiceFeeVO) && !Objects.isNull(eleBatteryServiceFeeVO.getBatteryServiceFee())
                 && eleBatteryServiceFeeVO.getBatteryServiceFee().compareTo(BigDecimal.ZERO) > 0;
     }
-    
-    @Slave
+
     @Override
     public Pair<Boolean, Boolean> isFreezeOrAudit(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
@@ -93,8 +90,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         Boolean right = Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW) ? Boolean.TRUE : Boolean.FALSE;
         return Pair.of(left, right);
     }
-    
-    @Slave
+
     @Override
     public boolean isOverdue(Integer tenantId, Long uid) {
         // 执行到此处正常来说不会出现 UserBatteryMemberCard 与 BatteryMemberCard 为空的情况，若出现，中断使用天数券的代码逻辑的执行
@@ -110,8 +106,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         
         return Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0;
     }
-    
-    @Slave
+
     @Override
     public boolean isReturnTheDeposit(Integer tenantId, Long uid) {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
