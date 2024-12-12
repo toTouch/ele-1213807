@@ -18,6 +18,7 @@ public class ExchangeRemarkConstant {
      * 灵活续费发生套餐转换后，换电时电池转换，旧电池检测失败，后台自助开仓
      */
     public static final String FLEXIBLE_RENEWAL_SYSTEM_SELF_CELL = "FLEXIBLE_RENEWAL_SYSTEM_SELF_CELL";
+
     
     /**
      * 上次换电失败，满足取电逻辑，取走满电电池
@@ -39,5 +40,18 @@ public class ExchangeRemarkConstant {
      * 自主开仓
      */
     public static final String SELF_OPEN_CELL = "SELF_OPEN_CELL";
-    
+
+
+    //-------租退电
+
+    /**
+     * 租电成功，后台自助开仓
+     */
+    public static final String RENT_SUCCESS_SYSTEM_SELF_CELL = "RENT_SUCCESS_SYSTEM_SELF_CELL";
+
+
+    /**
+     * 二次扫码退电，电池在仓退电完成
+     */
+    public static final String TWO_SCAN_RENT_BATTERY_SUCCESS = "TWO_SCAN_RENT_BATTERY_SUCCESS";
 }

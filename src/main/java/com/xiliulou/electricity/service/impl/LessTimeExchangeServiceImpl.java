@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@SuppressWarnings("all")
 public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon implements LessTimeExchangeService {
 
     @Resource
@@ -149,7 +150,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
             RentBatteryOrder updateRentBattery = new RentBatteryOrder();
             updateRentBattery.setId(lastRentBatteryOrder.getId());
             updateRentBattery.setUpdateTime(System.currentTimeMillis());
-            updateRentBattery.setRemark(RentReturnRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
+            updateRentBattery.setRemark(ExchangeRemarkConstant.TWO_SCAN_RENT_BATTERY_SUCCESS);
             updateRentBattery.setStatus(RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS);
             rentBatteryOrderService.update(updateRentBattery);
 
@@ -339,7 +340,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
                     rentBatteryOrder.getCellNo())) {
                 // 租电成功，后台为用户打开租电成功的仓门
                 BackSelfOpenCellDTO openCellDTO = BackSelfOpenCellDTO.builder().id(rentBatteryOrder.getId()).userBindingBatterySn(electricityBattery.getSn())
-                        .cell(rentBatteryOrder.getCellNo()).orderId(rentBatteryOrder.getOrderId()).cabinet(cabinet).msg(RentReturnRemarkConstant.RENT_SUCCESS_SYSTEM_SELF_CELL)
+                        .cell(rentBatteryOrder.getCellNo()).orderId(rentBatteryOrder.getOrderId()).cabinet(cabinet).msg(ExchangeRemarkConstant.RENT_SUCCESS_SYSTEM_SELF_CELL)
                         .tenantId(rentBatteryOrder.getTenantId()).lastOrderType(LastOrderTypeEnum.LAST_RENT_ORDER.getCode()).build();
                 // 自主开仓
                 vo.setIsBatteryInCell(LessScanConstant.BATTERY_IN_CELL).setSessionId(this.backSelfOpen(openCellDTO));
@@ -481,7 +482,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
                 // 灵活续费为先退后租时自主开仓
                 if (Objects.equals(flexibleRenewalEnumCode, FlexibleRenewalEnum.RETURN_BEFORE_RENT.getCode())) {
                     BackSelfOpenCellDTO openCellDTO = BackSelfOpenCellDTO.builder().id(lastOrder.getId()).userBindingBatterySn(electricityBattery.getSn())
-                            .cell(lastOrder.getOldCellNo()).orderId(lastOrder.getOrderId()).cabinet(cabinet).msg(ExchangeRemarkConstant.EXCHANGE_SUCCESS_SYSTEM_SELF_CELL)
+                            .cell(lastOrder.getOldCellNo()).orderId(lastOrder.getOrderId()).cabinet(cabinet).msg(ExchangeRemarkConstant.FLEXIBLE_RENEWAL_SYSTEM_SELF_CELL)
                             .tenantId(lastOrder.getTenantId()).lastOrderType(LastOrderTypeEnum.LAST_EXCHANGE_ORDER.getCode()).build();
                     backSelfOpen(openCellDTO);
                     vo.setBeginSelfOpen(ExchangeUserSelectVO.BEGIN_SELF_OPEN);
