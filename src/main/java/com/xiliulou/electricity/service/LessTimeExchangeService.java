@@ -23,7 +23,7 @@ public interface LessTimeExchangeService {
     Pair<Boolean, Object> lessTimeReturnBatteryHandler(UserInfo userInfo, ElectricityCabinet cabinet);
 
     /**
-     * 二次扫码换电兼容租电成功电池未取走
+     * 二次扫码换电/选仓换电 兼容租电成功电池未取走
      *
      * @param userInfo           userInfo
      * @param cabinet            cabinet
@@ -34,7 +34,10 @@ public interface LessTimeExchangeService {
     Pair<Boolean, ExchangeUserSelectVO> lessTimeExchangeTwoCountAssert(UserInfo userInfo, ElectricityCabinet cabinet, ElectricityBattery electricityBattery, LessTimeExchangeDTO exchangeDTO);
 
     /**
-     * 打开满电仓
+     * 打开满电仓：
+     *  二次扫码换电上次失败：旧仓门开门失败旧电池在仓，需要分配满电仓以及打开满电仓
+     *  二次扫码换电上次失败：新仓门开门失败旧电池在仓，需要打开上个订单的新仓门
+     *  选仓换电上次开始：同1
      *
      * @param cabinetOrder cabinetOrder
      * @param cabinet      cabinet
@@ -48,6 +51,8 @@ public interface LessTimeExchangeService {
 
     /**
      * 获取满地仓
+     * 1. 上次换电失败旧电池在仓，需要获取新的满电仓
+     * 2. todo 快捷换电
      *
      * @param electricityCabinet electricityCabinet
      * @param userInfo userInfo
@@ -55,7 +60,5 @@ public interface LessTimeExchangeService {
      * @return Triple
      */
     Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
-
-
 
 }

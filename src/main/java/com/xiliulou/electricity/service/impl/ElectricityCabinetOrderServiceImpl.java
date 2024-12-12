@@ -1561,7 +1561,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         
         // 选仓取电流程
         String userBindingBatterySn = electricityBattery.getSn();
-        String sessionId = this.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
+        String sessionId = lessTimeExchangeService.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
                 cabinetOrder.getOldCellNo().toString());
         vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_IN_CELL);
         vo.setSessionId(sessionId);
@@ -3208,117 +3208,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, vo);
     }
 
-    /**
-     * 开满电仓命令下发
-     *
-     * @param cabinetOrder
-     * @param cabinet
-     * @param cellNo
-     * @param batteryName
-     * @return
-     */
-    private String openFullBatteryCellHandler(ElectricityCabinetOrder cabinetOrder, ElectricityCabinet cabinet, Integer cellNo, String batteryName, String oldCell) {
-        
-        if (cabinet.getVersion().isBlank() || VersionUtil.compareVersion(cabinet.getVersion(), ElectricityCabinetOrderOperHistory.THREE_PERIODS_SUCCESS_RATE_VERSION) < 0) {
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder().createTime(System.currentTimeMillis()).orderId(cabinetOrder.getOrderId())
-                    .tenantId(cabinet.getTenantId()).msg("电池检测成功").seq(ElectricityCabinetOrderOperHistory.OPEN_FULL_CELL_BATTERY)
-                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE).result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-            
-            electricityCabinetOrderOperHistoryService.insert(history);
-        }
-        
-        ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
-        electricityCabinetOrderUpdate.setId(cabinetOrder.getId());
-        electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetOrderUpdate.setNewCellNo(cellNo);
-        electricityCabinetOrderUpdate.setRemark("取电流程");
-        update(electricityCabinetOrderUpdate);
-        
-        // 发送命令
-        HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("orderId", cabinetOrder.getOrderId());
-        dataMap.put("placeCellNo", oldCell);
-        dataMap.put("takeCellNo", cellNo);
-        dataMap.put("batteryName", batteryName);
-        
-        String sessionId = CacheConstant.OPEN_FULL_CELL + "_" + cabinetOrder.getOrderId();
-        
-        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
-                .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, cabinet);
-        
-        // 设置状态redis
-        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + cabinetOrder.getOrderId(), "取电中，请稍后", 5L, TimeUnit.MINUTES);
-        
-        return sessionId;
-    }
-    
-
-    private Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee) {
-        // 满电标准的电池
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, null,
-                electricityCabinet.getFullyCharged());
-        
-        // 过滤掉电池名称不符合标准的
-        List<ElectricityCabinetBox> exchangeableList = electricityCabinetBoxList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
-        
-        if (CollectionUtils.isEmpty(exchangeableList)) {
-            log.info("Take Full BATTERY INFO !not found electricityCabinetBoxList,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
-        }
-        
-        List<Long> batteryIds = exchangeableList.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
-
-        List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
-        if (CollUtil.isEmpty(electricityBatteries)) {
-            return Triple.of(false, "100225", "电池不存在");
-        }
-
-        // 判断互通加盟商，并且获取加盟商集合
-        Set<Long> franchiseeIdList = null;
-        try {
-            Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
-                    electricityCabinet.getFranchiseeId());
-            if (!isSameFranchiseeTriple.getLeft()) {
-                return isSameFranchiseeTriple;
-            }
-            franchiseeIdList = (Set<Long>) isSameFranchiseeTriple.getRight();
-        } catch (Exception e) {
-            log.error("ORDER Error! orderExchangeMutualFranchiseeCheck is error", e);
-            franchiseeIdList = CollUtil.newHashSet(userInfo.getFranchiseeId());
-        }
-
-        Set<Long> finalFranchiseeIdList = franchiseeIdList;
-        electricityBatteries = electricityBatteries.stream().filter(e -> finalFranchiseeIdList.contains(e.getFranchiseeId())).collect(Collectors.toList());
-        if (!DataUtil.collectionIsUsable(electricityBatteries)) {
-            log.warn("Take Full BATTERY WARN!battery not bind franchisee,eid={}, franchiseeIdList is {}", electricityCabinet.getId(),
-                    CollUtil.isEmpty(franchiseeIdList) ? "null" : JsonUtil.toJson(franchiseeIdList));
-            return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
-        }
-
-        // 获取全部可用电池id
-        List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
-
-        // 把加盟商绑定的电池过滤出来
-        exchangeableList = exchangeableList.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
-
-        String fullBatteryCell = null;
-        
-        for (int i = 0; i < exchangeableList.size(); i++) {
-            // 20240614修改：过滤掉电池不符合标准的电池
-            fullBatteryCell = rentBatteryOrderService.acquireFullBatteryBox(exchangeableList, userInfo, franchisee, electricityCabinet.getFullyCharged());
-            if (StringUtils.isBlank(fullBatteryCell)) {
-                log.info("RENT BATTERY INFO!not found fullBatteryCell,uid={}", userInfo.getUid());
-                return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
-            }
-            
-            if (redisService.setNx(CacheConstant.CACHE_LAST_ALLOCATE_FULLY_BATTERY_CELL + electricityCabinet.getId() + ":" + fullBatteryCell, "1", 4 * 1000L, false)) {
-                return Triple.of(true, null, fullBatteryCell);
-            }
-        }
-        
-        return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
-    }
 
     private boolean filterNotExchangeable(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getPower()) && StringUtils.isNotBlank(electricityCabinetBox.getSn())

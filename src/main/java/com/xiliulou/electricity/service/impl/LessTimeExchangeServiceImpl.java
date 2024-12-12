@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.config.ExchangeConfig;
 import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.dto.BackSelfOpenCellDTO;
@@ -36,6 +38,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,7 +50,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-@SuppressWarnings("all")
+//@SuppressWarnings("all")
 public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon implements LessTimeExchangeService {
 
     @Resource
@@ -97,6 +100,9 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
 
     @Resource
     private ElectricityCabinetOrderService orderService;
+
+    @Resource
+    private TenantFranchiseeMutualExchangeService mutualExchangeService;
 
     /**
      * 多次扫码退电
@@ -594,9 +600,44 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         List<ElectricityCabinetBox> exchangeableList = electricityCabinetBoxList.stream().filter(item -> filterNotExchangeable(item)).collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(exchangeableList)) {
-            log.info("RENT BATTERY INFO!not found electricityCabinetBoxList,uid={}", userInfo.getUid());
+            log.info("Take Full BATTERY INFO !not found electricityCabinetBoxList,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0026", "换电柜暂无满电电池");
         }
+
+        List<Long> batteryIds = exchangeableList.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
+
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
+        if (CollUtil.isEmpty(electricityBatteries)) {
+            return Triple.of(false, "100225", "电池不存在");
+        }
+
+        // 判断互通加盟商，并且获取加盟商集合
+        Set<Long> franchiseeIdList = null;
+        try {
+            Triple<Boolean, String, Object> isSameFranchiseeTriple = mutualExchangeService.orderExchangeMutualFranchiseeCheck(userInfo.getTenantId(), userInfo.getFranchiseeId(),
+                    electricityCabinet.getFranchiseeId());
+            if (!isSameFranchiseeTriple.getLeft()) {
+                return isSameFranchiseeTriple;
+            }
+            franchiseeIdList = (Set<Long>) isSameFranchiseeTriple.getRight();
+        } catch (Exception e) {
+            log.error("ORDER Error! orderExchangeMutualFranchiseeCheck is error", e);
+            franchiseeIdList = CollUtil.newHashSet(userInfo.getFranchiseeId());
+        }
+
+        Set<Long> finalFranchiseeIdList = franchiseeIdList;
+        electricityBatteries = electricityBatteries.stream().filter(e -> finalFranchiseeIdList.contains(e.getFranchiseeId())).collect(Collectors.toList());
+        if (!DataUtil.collectionIsUsable(electricityBatteries)) {
+            log.warn("Take Full BATTERY WARN!battery not bind franchisee,eid={}, franchiseeIdList is {}", electricityCabinet.getId(),
+                    CollUtil.isEmpty(franchiseeIdList) ? "null" : JsonUtil.toJson(franchiseeIdList));
+            return Triple.of(false, "100219", "您的加盟商与电池加盟商不匹配，请更换柜机或联系客服处理。");
+        }
+
+        // 获取全部可用电池id
+        List<Long> bindingBatteryIds = electricityBatteries.stream().map(ElectricityBattery::getId).collect(Collectors.toList());
+
+        // 把加盟商绑定的电池过滤出来
+        exchangeableList = exchangeableList.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
 
         String fullBatteryCell = null;
 
