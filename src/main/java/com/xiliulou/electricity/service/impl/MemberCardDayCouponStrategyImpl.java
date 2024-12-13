@@ -93,7 +93,6 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
 
     @Override
     public boolean isOverdue(Integer tenantId, Long uid) {
-        // 执行到此处正常来说不会出现 UserBatteryMemberCard 与 BatteryMemberCard 为空的情况，若出现，中断使用天数券的代码逻辑的执行
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             return true;
@@ -104,7 +103,6 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
             return true;
         }
 
-        // TODO SJP 是否限制限次套餐不可使用需要确认
         return Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0;
     }
 
