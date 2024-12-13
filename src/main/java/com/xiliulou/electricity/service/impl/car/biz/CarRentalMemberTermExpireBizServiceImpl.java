@@ -149,6 +149,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         // 处理过期滞纳金的
         List<CarRentalPackageMemberTermPo> processingLateFeeList = new ArrayList<>();
+        List<String> rentalPackageOrderNos = new ArrayList<>();
         
         // 处理套餐替换的
         Map<CarRentalPackageMemberTermPo, CarRentalPackageOrderPo> packageReplacementMap = new HashMap<>();
@@ -164,7 +165,23 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
                 packageReplacementMap.put(expireMemberTermPo, carRentalPackageOrderPo);
             } else {
                 processingLateFeeList.add(expireMemberTermPo);
+                rentalPackageOrderNos.add(expireMemberTermPo.getRentalPackageOrderNo());
             }
+        }
+        
+        if (!CollectionUtils.isEmpty(rentalPackageOrderNos)) {
+            // 过滤掉已生成过逾期滞纳金的订单
+            List<CarRentalPackageOrderSlippagePo> existOrderSlippagePo = carRentalPackageOrderSlippageService.queryListByPackageOrderNoAndType(
+                    rentalPackageOrderNos, SlippageTypeEnum.EXPIRE.getCode());
+            
+            List<String> existRentalPackageOrderNos = Optional.ofNullable(existOrderSlippagePo)
+                    .orElse(Collections.emptyList()).stream()
+                    .map(CarRentalPackageOrderSlippagePo::getRentalPackageOrderNo).distinct()
+                    .collect(Collectors.toList());
+            
+            processingLateFeeList = processingLateFeeList.stream()
+                    .filter(o -> !existRentalPackageOrderNos.contains(o.getRentalPackageOrderNo()))
+                    .collect(Collectors.toList());
         }
         
         // 处理套餐替换的
