@@ -90,5 +90,23 @@
     <select id="selectAllNoUsePackageId" resultType="java.lang.Long">
         select distinct(package_id) from t_mei_tuan_rider_mall_order where tenant_id = #{tenantId} and mei_tuan_account = #{phone} and order_use_status = 0
     </select>
+    
+    <select id="selectBatteryPackageInfo" resultType="com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO">
+        select t1.id,
+               t1.package_id,
+               t1.mei_tuan_order_id,
+               t1.mei_tuan_order_time,
+               t1.mei_tuan_actually_pay_price,
+               t1.uid,
+               t1.order_use_status,
+               t2.deposit as packageDeposit,
+               t2.free_deposite,
+               t2.franchisee_id
+        from t_mei_tuan_rider_mall_order t1
+                 left join t_battery_member_card t2 on t1.package_id = t2.id
+        where t1.tenant_id = #{tenantId}
+          and t1.mei_tuan_account = #{phone}
+          and t1.mei_tuan_order_id = #{orderId}
+    </select>
 
 </mapper>

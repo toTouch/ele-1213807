@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.meituan.BatteryDepositBO;
 import com.xiliulou.electricity.bo.meituan.MeiTuanOrderRedeemRollBackBO;
+import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -593,7 +594,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
     public List<MeiTuanRiderMallOrder> listOrders(OrderQuery query) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.warn("MeiTuanListOrders ERROR! userInfo is null");
+            log.warn("MeiTuanListOrders ERROR! userInfo is null, uid={}", SecurityUtils.getUid());
             return Collections.emptyList();
         }
         
@@ -763,6 +764,21 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         }
         
         return batteryMemberCardService.queryMaxPackageDeposit(packageIds, tenantId);
+    }
+    
+    @Slave
+    @Override
+    public MtBatteryPackageBO queryBatteryPackageInfo(OrderQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("QueryBatteryPackageInfo warn! userInfo is null, uid={}", SecurityUtils.getUid());
+            return null;
+        }
+    
+        // 根据手机号和租户查询订单，因为拉取的订单可能没有uid
+        query.setPhone(userInfo.getPhone());
+        
+        return meiTuanRiderMallOrderMapper.selectBatteryPackageInfo(query);
     }
     
 }

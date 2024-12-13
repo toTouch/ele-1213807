@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.thirdPartyMall;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.meituan.BatteryDepositBO;
+import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
@@ -43,4 +44,6 @@ public interface MeiTuanRiderMallOrderService {
     R queryBatteryDeposit(Long uid);
     
     BatteryDepositBO queryMaxPackageDeposit(String phone, Integer tenantId);
+    
+    MtBatteryPackageBO queryBatteryPackageInfo(OrderQuery query);
 }

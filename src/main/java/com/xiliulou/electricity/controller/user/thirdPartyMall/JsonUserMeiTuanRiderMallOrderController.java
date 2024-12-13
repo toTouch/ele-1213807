@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user.thirdPartyMall;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.meituan.MtBatteryPackageBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.meituan.MeiTuanRiderMallOrder;
 import com.xiliulou.electricity.query.thirdPartyMall.OrderQuery;
@@ -79,6 +80,7 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
                 if (Objects.nonNull(batteryMemberCard)) {
                     vo.setPackageDeposit(batteryMemberCard.getDeposit());
                     vo.setFreeDeposit(batteryMemberCard.getFreeDeposite());
+                    vo.setFranchiseeId(batteryMemberCard.getFranchiseeId());
                 }
             }
             
@@ -86,6 +88,28 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
         }).collect(Collectors.toList());
         
         return R.ok(voList);
+    }
+    
+    /**
+     * 根据美团订单号获取套餐信息
+     */
+    @GetMapping("/user/meiTuanRiderMall/batteryPackageInfo")
+    public R queryBatteryPackageInfo(@RequestParam(value = "orderId") String orderId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+    
+        OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).orderId(orderId).build();
+        MtBatteryPackageBO mtBatteryPackageBO = meiTuanRiderMallOrderService.queryBatteryPackageInfo(query);
+        if (Objects.isNull(mtBatteryPackageBO)) {
+            return R.ok();
+        }
+    
+        MtOrderVO vo = new MtOrderVO();
+        BeanUtils.copyProperties(mtBatteryPackageBO, vo);
+    
+        return R.ok(vo);
     }
     
     /**

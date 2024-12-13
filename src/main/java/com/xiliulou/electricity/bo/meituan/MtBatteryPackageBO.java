@@ -1,16 +1,21 @@
-package com.xiliulou.electricity.vo.thirdPartyMall;
+package com.xiliulou.electricity.bo.meituan;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 /**
  * @author HeYafeng
- * @description 订单
- * @date 2024/8/29 14:26:38
+ * @date 2024/12/13 09:51:01
  */
 @Data
-public class MtOrderVO {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class MtBatteryPackageBO {
     
     private Long id;
     
