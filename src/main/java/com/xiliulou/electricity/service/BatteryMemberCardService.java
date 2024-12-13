@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.bo.meituan.BatteryDepositBO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
