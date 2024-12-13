@@ -100,7 +100,7 @@
                t1.uid,
                t1.order_use_status,
                t2.deposit as packageDeposit,
-               t2.free_deposite,
+               t2.free_deposite as freeDeposit,
                t2.franchisee_id
         from t_mei_tuan_rider_mall_order t1
                  left join t_battery_member_card t2 on t1.package_id = t2.id
