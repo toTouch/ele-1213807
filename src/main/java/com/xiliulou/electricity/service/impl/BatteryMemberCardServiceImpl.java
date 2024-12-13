@@ -1365,12 +1365,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return Boolean.FALSE;
     }
     
-    @Slave
-    @Override
-    public BatteryDepositBO queryMaxPackageDeposit(List<Long> packageIds, Integer tenantId) {
-        return batteryMemberCardMapper.selectMaxPackageDeposit(packageIds, tenantId);
-    }
-    
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {
         
         List<MemberCardBatteryType> memberCardBatteryTypeList = Lists.newArrayList();

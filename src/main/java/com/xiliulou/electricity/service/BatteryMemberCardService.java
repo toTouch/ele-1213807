@@ -146,5 +146,4 @@ public interface BatteryMemberCardService {
      */
     Boolean checkIsAdvanceRenewal(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard);
     
-    BatteryDepositBO queryMaxPackageDeposit(List<Long> packageIds, Integer tenantId);
 }

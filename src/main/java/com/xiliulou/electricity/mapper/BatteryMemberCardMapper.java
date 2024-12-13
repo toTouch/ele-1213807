@@ -88,5 +88,4 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      */
     List<BatteryMemberCard> selectListByIds(@Param("ids") List<Long> ids);
     
-    BatteryDepositBO selectMaxPackageDeposit(@Param("packageIds") List<Long> packageIds, @Param("tenantId") Integer tenantId);
 }

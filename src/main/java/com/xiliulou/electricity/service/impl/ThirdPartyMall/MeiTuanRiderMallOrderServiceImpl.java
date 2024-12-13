@@ -66,6 +66,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -762,8 +763,36 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (CollectionUtils.isEmpty(packageIds)) {
             return null;
         }
+    
+        BatteryDepositBO maxBatteryDepositBO = null;
+        for (Long packageId : packageIds) {
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(packageId);
+            if (Objects.isNull(batteryMemberCard)) {
+                continue;
+            }
         
-        return batteryMemberCardService.queryMaxPackageDeposit(packageIds, tenantId);
+            if (Objects.isNull(maxBatteryDepositBO)) {
+                maxBatteryDepositBO = new BatteryDepositBO();
+            }
+        
+            if (Objects.isNull(maxBatteryDepositBO.getDeposit())) {
+                maxBatteryDepositBO.setPackageId(batteryMemberCard.getId());
+                maxBatteryDepositBO.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+                maxBatteryDepositBO.setDeposit(batteryMemberCard.getDeposit());
+                maxBatteryDepositBO.setFreeDeposit(batteryMemberCard.getFreeDeposite());
+                continue;
+            }
+        
+            if (batteryMemberCard.getDeposit().compareTo(maxBatteryDepositBO.getDeposit()) > 0 || (batteryMemberCard.getDeposit().compareTo(maxBatteryDepositBO.getDeposit()) == 0
+                    && Objects.equals(batteryMemberCard.getFreeDeposite(), BatteryMemberCard.FREE_DEPOSIT))) {
+                maxBatteryDepositBO.setPackageId(packageId);
+                maxBatteryDepositBO.setFranchiseeId(batteryMemberCard.getFranchiseeId());
+                maxBatteryDepositBO.setDeposit(batteryMemberCard.getDeposit());
+                maxBatteryDepositBO.setFreeDeposit(batteryMemberCard.getFreeDeposite());
+            }
+        }
+    
+        return maxBatteryDepositBO;
     }
     
     @Slave
