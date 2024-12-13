@@ -236,7 +236,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 UserBatteryDeposit userBatteryDeposit = (UserBatteryDeposit) checkDepositAndRefund.getRight();
                 ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
                 if (Objects.isNull(electricityConfig)) {
-                    log.warn("MeiTuan order redeem fail! electricityConfig is null");
+                    log.warn("MeiTuan order redeem fail! electricityConfig is null, uid={}", uid);
                     return Triple.of(false, "302003", "运营商配置异常，请联系客服");
                 }
                 
@@ -439,7 +439,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             log.warn("MeiTuan order redeem fail! have refunding order,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0047", "押金退款审核中");
         }
-    
+        
         // 是否有正在进行中的退租
         List<BatteryMembercardRefundOrder> batteryMemberCardRefundOrders = batteryMembercardRefundOrderService.selectRefundingOrderByUid(uid);
         if (CollectionUtils.isNotEmpty(batteryMemberCardRefundOrders)) {
@@ -573,7 +573,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         if (Objects.isNull(meiTuanRiderMallOrder.getUid()) || Objects.equals(meiTuanRiderMallOrder.getUid(), NumberConstant.ZERO_L)) {
             meiTuanRiderMallOrderUpdate.setUid(uid);
         }
-    
+        
         // 关联套餐订单
         meiTuanRiderMallOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
         // 修改订单状态为“已发货”
@@ -583,9 +583,9 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
         // 修改订单状态为“已使用”
         meiTuanRiderMallOrderUpdate.setOrderUseStatus(MeiTuanRiderMallEnum.ORDER_USE_STATUS_USED.getCode());
         meiTuanRiderMallOrderUpdate.setUpdateTime(System.currentTimeMillis());
-    
+        
         meiTuanRiderMallOrderMapper.update(meiTuanRiderMallOrderUpdate);
-    
+        
         return Boolean.TRUE;
     }
     
@@ -713,7 +713,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
             log.warn("QueryBatteryDeposit warn! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+        
         MtBatteryDepositVO vo = new MtBatteryDepositVO();
         vo.setUid(uid);
         
@@ -727,16 +727,13 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 log.warn("QueryBatteryDeposit warn! not found userBatteryDeposit,uid={}", uid);
                 return R.fail("ELECTRICITY.00110", "用户押金信息不存在");
             }
-    
+            
+            vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+            
             Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(refundStatus)) {
                 vo.setRefundStatus(refundStatus);
             }
-            
-            BigDecimal deposit =
-                    (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
-                            UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
-            vo.setBatteryDeposit(deposit);
             
             EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(eleDepositOrder)) {
