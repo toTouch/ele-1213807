@@ -157,7 +157,7 @@ public class ExchangeExceptionHandlerServiceImpl implements ExchangeExceptionHan
             List<ElectricityCabinetBox> filterExchangeFullCellList = fullList.stream().filter(item -> !exceptionFullCellList.contains(Integer.valueOf(item.getCellNo())))
                     .collect(Collectors.toList());
             
-            log.info("FilterFullExceptionCell Info! fullList is {}, exceptionEmptyCellList is {}", JsonUtil.toJson(fullList),
+            log.info("FilterFullExceptionCell Info! fullList is {}, exceptionFullCellList is {}", JsonUtil.toJson(fullList),
                     CollUtil.isEmpty(exceptionFullCellList) ? "null" : JsonUtil.toJson(exceptionFullCellList));
             
             // 如果剩余满电仓为空，则返回随机的异常满电仓

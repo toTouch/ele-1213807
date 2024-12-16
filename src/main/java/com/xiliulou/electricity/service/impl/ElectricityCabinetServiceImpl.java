@@ -43,6 +43,9 @@ import com.xiliulou.electricity.constant.RegularConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.converter.storage.StorageConverter;
+import com.xiliulou.electricity.dto.ExchangeAssertProcessDTO;
+import com.xiliulou.electricity.dto.ExchangeChainDTO;
+import com.xiliulou.electricity.dto.QuickExchangeResultDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.BatteryModel;
@@ -74,8 +77,11 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.merchant.MerchantArea;
 import com.xiliulou.electricity.entity.merchant.MerchantPlaceFeeRecord;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.EleCabinetModelHeatingEnum;
 import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
+import com.xiliulou.electricity.enums.ExchangeAssertChainTypeEnum;
+import com.xiliulou.electricity.enums.ExchangeTypeEnum;
 import com.xiliulou.electricity.enums.RentReturnNormEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.asset.StockStatusEnum;
@@ -103,6 +109,7 @@ import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.LowBatteryExchangeModel;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
@@ -126,6 +133,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigServic
 import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -142,6 +150,7 @@ import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserActiveInfoService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -156,12 +165,16 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizSer
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.merchant.MerchantAreaService;
 import com.xiliulou.electricity.service.merchant.MerchantPlaceFeeRecordService;
+import com.xiliulou.electricity.service.pipeline.ProcessContext;
+import com.xiliulou.electricity.service.pipeline.ProcessController;
 import com.xiliulou.electricity.service.thirdPartyMall.PushDataToThirdService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.TtlTraceIdSupport;
+import com.xiliulou.electricity.utils.AssertUtil;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.DeviceTextUtil;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.electricity.vo.BatchImportCabinetFailVO;
@@ -184,6 +197,7 @@ import com.xiliulou.electricity.vo.HomepageBatteryVo;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import com.xiliulou.electricity.vo.HomepageElectricityExchangeVo;
 import com.xiliulou.electricity.vo.HomepageOverviewDetailVo;
+import com.xiliulou.electricity.vo.QuickExchangeVO;
 import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
@@ -482,6 +496,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Resource
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
 
+
+    @Resource
+    private UserActiveInfoService userActiveInfoService;
+
+    @Resource
+    private ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+
+    @Resource
+    private ProcessController processController;
 
     /**
      * 根据主键ID集获取柜机基本信息
@@ -5590,5 +5613,127 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         cellNo = Integer.parseInt(emptyCellList.get(ThreadLocalRandom.current().nextInt(emptyCellList.size())).getCellNo());
         return Pair.of(true, cellNo);
+    }
+
+
+
+
+    @Override
+    public R quickExchage(QuickExchangeQuery quickExchangeQuery) {
+        // 校验用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(quickExchangeQuery.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("QuickExchange WARN! not found user info,uid={} ", quickExchangeQuery.getUid());
+            return R.fail("100205", "未找到用户信息");
+        }
+
+        if (!redisService.setNx(CacheConstant.ORDER_TIME_UID + SecurityUtils.getUserInfo().getUid(), "1", 5 * 1000L, false)) {
+            return R.fail("100002", "下单过于频繁");
+        }
+        // 这里加柜机的缓存，为了限制不同时分配格挡
+        if (!redisService.setNx(CacheConstant.ORDER_ELE_ID + quickExchangeQuery.getEid(), "1", 5 * 1000L, false)) {
+            return R.fail("100214", "已有其他用户正在使用中，请稍后再试");
+        }
+
+        try {
+
+            // 构造责任链入参
+            ProcessContext<ExchangeAssertProcessDTO> processContext = ProcessContext.builder().code(ExchangeAssertChainTypeEnum.QUICK_EXCHANGE_ASSERT.getCode()).processModel(
+                    ExchangeAssertProcessDTO.builder().eid(quickExchangeQuery.getEid()).cellNo(quickExchangeQuery.getCellNo()).userInfo(userInfo)
+                            .chainObject(new ExchangeChainDTO()).build()).needBreak(false).build();
+            // 校验
+            ProcessContext<ExchangeAssertProcessDTO> process = processController.process(processContext);
+            if (process.getNeedBreak()) {
+                log.warn("QuickExchange Warn! BreakReason is {}", JsonUtil.toJson(process.getResult()));
+                return process.getResult();
+            }
+
+            ElectricityBattery electricityBattery = process.getProcessModel().getChainObject().getElectricityBattery();
+            AssertUtil.assertObjectIsNull(electricityBattery, "300900", "系统检测到当前用户未绑定电池，请检查");
+
+            ElectricityCabinet cabinet = process.getProcessModel().getChainObject().getElectricityCabinet();
+            AssertUtil.assertObjectIsNull(cabinet, "100003", "找不到柜机");
+
+            if (VersionUtil.compareVersion(cabinet.getVersion(), QuickExchangeQuery.QUICK_EXCHANGE_VERSION) < 0) {
+                return R.fail("300901", "当前版本不支持快捷换电");
+            }
+
+            Franchisee franchisee = process.getProcessModel().getChainObject().getFranchisee();
+            AssertUtil.assertObjectIsNull(franchisee, "120203", "加盟商不存在");
+
+            String batteryName = process.getProcessModel().getChainObject().getBatteryName();
+            if (!Objects.equals(batteryName, electricityBattery.getSn())) {
+                log.warn("QuickExchange Warn! boxSn not equal userBingBatterySn ,eid is {}, cell is {} boxSn is {}, userBingBatterySn is {}", quickExchangeQuery.getEid(),
+                        quickExchangeQuery.getCellNo(), batteryName, electricityBattery.getSn());
+                return R.fail("100328", "当前格挡内电池和用户绑定电池不一致");
+            }
+
+
+            // 获取满电仓
+            Triple<Boolean, String, Object> getFullCellBox = electricityCabinetOrderService.allocateFullBatteryBox(cabinet, userInfo, franchisee);
+            if (!getFullCellBox.getLeft()) {
+                return R.fail("100216", "换电柜暂无满电电池");
+            }
+
+            // 注意：不用修改套餐次数，取电iot成功会扣减次数
+            // 生成换电订单
+            ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
+                    .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.EXCHANGE_BATTERY, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
+                    .electricityCabinetId(quickExchangeQuery.getEid()).oldCellNo(quickExchangeQuery.getCellNo()).newCellNo(Integer.valueOf((String) getFullCellBox.getRight()))
+                    .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT).source(ExchangeTypeEnum.QUICK_EXCHANGE.getCode())
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).storeId(cabinet.getStoreId()).franchiseeId(franchisee.getId())
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+            electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
+
+
+            // 换电之后的处理
+            String sessionId = quickExchangeFollowHandler(cabinet, userInfo, electricityCabinetOrder, electricityBattery.getSn());
+
+            return R.ok(QuickExchangeVO.builder().sessionId(sessionId).build());
+        } catch (BizException e) {
+            throw new BizException(e.getErrCode(), e.getErrMsg());
+        } finally {
+            redisService.delete(CacheConstant.ORDER_ELE_ID + quickExchangeQuery.getEid());
+            redisService.delete(CacheConstant.ORDER_TIME_UID + userInfo.getUid());
+        }
+    }
+
+
+    private String quickExchangeFollowHandler(ElectricityCabinet cabinet, UserInfo userInfo, ElectricityCabinetOrder cabinetOrder, String batteryName) {
+        // 发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("orderId", cabinetOrder.getOrderId());
+        dataMap.put("placeCellNo", cabinetOrder.getOldCellNo());
+        dataMap.put("takeCellNo", cabinetOrder.getNewCellNo());
+        dataMap.put("batteryName", batteryName);
+
+        String sessionId = CacheConstant.OPEN_FULL_CELL + "_" + cabinetOrder.getOrderId();
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(cabinet.getProductKey()).deviceName(cabinet.getDeviceName())
+                .command(ElectricityIotConstant.OPEN_FULL_CELL).build();
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, cabinet);
+
+        try {
+            // 初始化操作记录
+            electricityCabinetOrderOperHistoryService.initExchangeOrderOperHistory(cabinetOrder.getOrderId(), cabinetOrder.getTenantId(), cabinetOrder.getOldCellNo());
+
+            // 记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
+        } catch (Exception e) {
+            log.error("QuickExchangeFollowHandler Error! ", e);
+        }
+
+        return sessionId;
+    }
+
+    @Override
+    public R getQuickExchangeResult(String sessionId) {
+        String result = redisService.get(CacheConstant.QUICK_EXCHANGE_RESULT_KEY + sessionId);
+        if (StrUtil.isEmpty(result)) {
+            return R.ok("0001");
+        }
+
+        QuickExchangeResultDTO resultDTO = JsonUtil.fromJson(result, QuickExchangeResultDTO.class);
+        return resultDTO.getSuccess() ? R.ok("0002") : R.ok(resultDTO.getMsg());
     }
 }
