@@ -1313,7 +1313,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("PAUSE BATTERY MEMBER CARD WARN! user exist battery service fee,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.100000", "存在电池服务费");
         }
-        
+
+        R<Object> checkR = userInfoExtraService.checkFreezeCount(TenantContextHolder.getTenantId(), uid);
+        if (!checkR.isSuccess()) {
+            return checkR;
+        }
+
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder().disableMemberCardNo(generateOrderId(uid))
                 .memberCardName(batteryMemberCard.getName()).batteryMemberCardId(userBatteryMemberCard.getMemberCardId()).phone(userInfo.getPhone()).userName(userInfo.getName())
                 .status(UserBatteryMemberCard.MEMBER_CARD_DISABLE).tenantId(userInfo.getTenantId()).uid(uid).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
@@ -1368,6 +1373,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+        // 增加用户冻结次数
+        userInfoExtraService.changeFreezeCountForUser(uid, UserInfoExtraConstant.ADD_FREEZE_COUNT);
         
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
                 .operateContent(EleUserOperateRecord.MEMBER_CARD_DISABLE).operateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY).operateUid(user.getUid()).uid(uid)

@@ -103,7 +103,11 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
             return true;
         }
 
-        return Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0;
+        if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+            return userBatteryMemberCard.getRemainingNumber() <= 0;
+        }
+
+        return true;
     }
 
     @Override
