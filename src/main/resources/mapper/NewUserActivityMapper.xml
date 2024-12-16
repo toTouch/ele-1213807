@@ -61,7 +61,7 @@
 	<select id="selectByCouponId" resultType="com.xiliulou.electricity.entity.NewUserActivity">
         select id, name, type, status
         from t_new_user_activity
-        where del_flg=0 and JSON_CONTAINS(`coupon_arrays`,#{couponId}) order by id limit 1
+		where del_flg=0 and JSON_CONTAINS(`coupon_arrays`,JSON_ARRAY(#{couponId})) order by id limit 1
     </select>
 	<select id="listNewUserActivity" resultType="com.xiliulou.electricity.vo.ShareAndUserActivityVO">
 		SELECT id, name
