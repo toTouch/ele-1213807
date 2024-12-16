@@ -1755,11 +1755,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
         BatteryBatchOperateQuery batteryBatchOperateQuery = new BatteryBatchOperateQuery();
         batteryBatchOperateQuery.setJsonBatterySnList(JsonUtil.toJson(batteryWaitSnList));
-        
-        R result = batteryPlatRetrofitService.batchDelete(headers, batteryBatchOperateQuery);
-        if (!result.isSuccess()) {
-            log.error("delBatteryBySnList failed. batteryPlatRetrofitService.batchDelete failed. msg is {}", result.getErrMsg());
-            return R.fail("100671", "批量删除电池失败");
+
+        try {
+            R result = batteryPlatRetrofitService.batchDelete(headers, batteryBatchOperateQuery);
+            if (!result.isSuccess()) {
+                log.error("delBatteryBySnList failed. batteryPlatRetrofitService.batchDelete failed. msg is {}", result.getErrMsg());
+                return R.fail("100671", "批量删除电池失败");
+            }
+        } catch (Exception e) {
+            log.error("DeleteBattery Error!", e);
+            return R.fail("100671", "批量删除电池失败,请分批删除");
         }
 
         // 2. 使用待删除的数据，删除电池以及电池配置
