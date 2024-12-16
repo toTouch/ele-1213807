@@ -51,9 +51,9 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     public static final String ORDER_LESS_TIME_EXCHANGE_CABINET_VERSION="2.1.19";
 
     /**
-     * 租电自主开仓操作记录中间版本；todo 柜机版本，用来兼容旧版本操作记录
+     * 租电自主开仓操作记录中间版本； 柜机版本，用来兼容旧版本操作记录
      */
-    public static final String RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION = "2.4.0";
+    public static final String RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION = "2.3.11";
 
 
     @Override
@@ -79,7 +79,7 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                         seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_SUCCESS;
                     }
                 } else {
-                    // todo 租退电兼容旧版本
+                    //  租退电兼容旧版本
                     type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK;
                     if (VersionUtil.compareVersion(electricityCabinet.getVersion(), RENT_RETURN_ORDER_SELF_OPEN_CABINET_VERSION) >= 0) {
                         seq = eleOrderOperateVO.getSeq();
