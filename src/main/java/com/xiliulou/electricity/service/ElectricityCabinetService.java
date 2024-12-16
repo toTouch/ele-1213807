@@ -22,6 +22,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
@@ -283,4 +284,8 @@ public interface ElectricityCabinetService {
     R updateCabinetPattern(EleCabinetPatternQuery query);
     
     List<ElectricityCabinetBO> listByIdList(List<Integer> cabinetIdList);
+    
+    R quickExchage(QuickExchangeQuery quickExchangeQuery);
+    
+    R getQuickExchangeResult(String sessionId);
 }

@@ -214,11 +214,11 @@ public class PlaceOrderChainManager {
         if (StringUtils.isNotBlank(placeOrderQuery.getProductKey()) && StringUtils.isNotBlank(placeOrderQuery.getDeviceName())) {
             electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(placeOrderQuery.getProductKey(), placeOrderQuery.getDeviceName());
         }
-        if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
-                electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
-            log.warn("PLACE ORDER WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(), placeOrderQuery.getMemberCardId());
-            return R.fail("100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
-        }
+//        if (Objects.nonNull(electricityCabinet) && !Objects.equals(electricityCabinet.getFranchiseeId(), NumberConstant.ZERO_L) && Objects.nonNull(
+//                electricityCabinet.getFranchiseeId()) && !Objects.equals(electricityCabinet.getFranchiseeId(), batteryMemberCard.getFranchiseeId())) {
+//            log.warn("PLACE ORDER WARN! batteryMemberCard franchiseeId not equals electricityCabinet,eid={},mid={}", electricityCabinet.getId(), placeOrderQuery.getMemberCardId());
+//            return R.fail("100375", "柜机加盟商与套餐加盟商不一致,请删除小程序后重新进入");
+//        }
         context.setElectricityCabinet(electricityCabinet);
         
         context.setOrderList(new ArrayList<>());

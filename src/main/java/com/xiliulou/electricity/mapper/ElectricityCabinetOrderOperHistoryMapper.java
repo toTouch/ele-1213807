@@ -28,4 +28,6 @@ public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<Ele
     Integer updateTenantIdByOrderId(@Param("orderId") String orderId, @Param("superAdminTenantId") Integer superAdminTenantId, @Param("updateTime") Long updateTime);
     
     ElectricityCabinetOrderOperHistory selectOrderHistoryFinallyFail(@Param("orderId") String orderId);
+    
+    void  insertEleExchangeOperateHistory(@Param("list") List<ElectricityCabinetOrderOperHistory> list);
 }
