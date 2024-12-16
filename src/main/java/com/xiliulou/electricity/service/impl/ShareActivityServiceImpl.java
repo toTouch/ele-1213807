@@ -293,10 +293,17 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                 Optional.ofNullable(couponNamePOS).flatMap(carCouponNamePOS -> carCouponNamePOS.stream().filter(f -> Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION))
                         .max(Comparator.comparing(CarCouponNamePO::getAmount))).ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
                 //适配单个优惠券的情况,如果没有减免券,获取天数最大的天数券为单个优惠券
-                Optional.ofNullable(shareActivityRule.getCouponId()).flatMap(id -> Optional.ofNullable(couponNamePOS)).flatMap(
-                                carCouponNamePOS -> carCouponNamePOS.stream().filter(f -> Objects.equals(f.getDiscountType(), Coupon.DAY_VOUCHER))
-                                        .max(Comparator.comparing(CarCouponNamePO::getCount)))
-                        .ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
+//                Optional.ofNullable(shareActivityRule.getCouponId()).flatMap(id -> Optional.ofNullable(couponNamePOS)).flatMap(
+//                                carCouponNamePOS -> carCouponNamePOS.stream().filter(f -> Objects.equals(f.getDiscountType(), Coupon.DAY_VOUCHER))
+//                                        .max(Comparator.comparing(CarCouponNamePO::getCount)))
+//                        .ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
+                if (Objects.isNull(shareActivityRule.getCouponId())){
+                    Optional.ofNullable(couponNamePOS).flatMap(
+                                    carCouponNamePOS -> carCouponNamePOS.stream().filter(f -> Objects.equals(f.getDiscountType(), Coupon.DAY_VOUCHER))
+                                            .max(Comparator.comparing(CarCouponNamePO::getCount)))
+                            .ifPresent(carCouponNamePO -> shareActivityRule.setCouponId(carCouponNamePO.getId().intValue()));
+                }
+               
                 
                 shareActivityRule.setCoupons(shareActivityRuleQuery.getCouponArrays(), shareActivityRuleQuery.getCouponId());
                 shareActivityRuleService.insert(shareActivityRule);
