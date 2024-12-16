@@ -15,6 +15,7 @@ import com.xiliulou.electricity.vo.thirdPartyMall.MtOrderVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -103,7 +104,7 @@ public class JsonUserMeiTuanRiderMallOrderController extends BaseController {
         OrderQuery query = OrderQuery.builder().tenantId(TenantContextHolder.getTenantId()).orderId(orderId).build();
         MtBatteryPackageBO mtBatteryPackageBO = meiTuanRiderMallOrderService.queryBatteryPackageInfo(query);
         if (Objects.isNull(mtBatteryPackageBO)) {
-            return R.ok();
+            return R.fail("120131", "未能查询到该美团订单号码，请稍后再试");
         }
     
         MtOrderVO vo = new MtOrderVO();
