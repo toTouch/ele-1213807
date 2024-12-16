@@ -107,7 +107,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
             return userBatteryMemberCard.getRemainingNumber() <= 0;
         }
 
-        return true;
+        return false;
     }
 
     @Override
