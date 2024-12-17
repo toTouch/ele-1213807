@@ -84,7 +84,8 @@ public class ElectricityCabinetOrder {
     private Integer paymentMethod;
     
     /**
-     * 下单的来源 1--微信公众号 2--小程序
+     * 换电类型
+     * @see com.xiliulou.electricity.enums.ExchangeTypeEnum
      */
     private Integer source;
     

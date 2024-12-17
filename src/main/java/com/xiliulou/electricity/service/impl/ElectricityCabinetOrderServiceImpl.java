@@ -593,20 +593,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
         
-        // 回退单电套餐次数
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(userBatteryMemberCard)) {
-                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-                if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
-                    userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+        // 快捷换电结束异常订单不能回退次数
+        if (!Objects.equals(electricityCabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+            //回退单电套餐次数
+            if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(userBatteryMemberCard)) {
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+                    if (Objects.nonNull(batteryMemberCard) && Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+                        userBatteryMemberCardService.plusCount(userBatteryMemberCard.getUid());
+                    }
                 }
             }
-        }
-        
-        // 回退车电一体套餐次数
-        if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
-            carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+
+            //回退车电一体套餐次数
+            if (Objects.equals(userInfo.getCarBatteryDepositStatus(), YesNoEnum.YES.getCode())) {
+                carRentalPackageMemberTermBizService.addResidue(userInfo.getTenantId(), userInfo.getUid());
+            }
         }
         
         // 删除开门失败缓存
@@ -1353,7 +1356,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
         return Triple.of(true, null, vo);
     }
-    
+
 
 
     
@@ -2021,7 +2024,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
         
-        
+
 
         //判断用户押金
         Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, userInfo);
@@ -2525,6 +2528,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100221", "未能查找到订单");
         }
         
+        if (Objects.equals(electricityCabinetOrder.getSource(), ExchangeTypeEnum.QUICK_EXCHANGE.getCode())) {
+            log.warn("QuickExchange Warn! Exist QuickOrder, orderId is {}", orderId);
+            return Triple.of(false, "300902", "客服人员操作快捷换电中，请稍后扫码再试");
+        }
+
         String status = electricityCabinetOrder.getStatus();
         ExchangeOrderMsgShowVO showVo = new ExchangeOrderMsgShowVO();
         showVo.setType(ExchangeOrderMsgShowVO.TYPE_SUCCESS);
