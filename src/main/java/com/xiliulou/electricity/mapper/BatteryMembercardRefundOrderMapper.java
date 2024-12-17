@@ -55,4 +55,6 @@ public interface BatteryMembercardRefundOrderMapper  extends BaseMapper<BatteryM
     List<BatteryMembercardRefundOrder> selectByPage(BatteryMembercardRefundOrderQuery query);
 
     BigDecimal selectUserTotalRefund(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    
+    List<BatteryMembercardRefundOrder> selectListRefundingOrderByUidAndStatus(@Param("uid") Long uid, @Param("statuses") List<Integer> statuses);
 }

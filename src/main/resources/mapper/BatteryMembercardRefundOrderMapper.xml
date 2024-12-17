@@ -235,5 +235,39 @@
             and uid = #{uid}
         </if>
     </select>
+    
+    <select id="selectListRefundingOrderByUidAndStatus" resultMap="BatteryMembercardRefundOrderMap">
+        select
+            id,
+            uid,
+            phone,
+            mid,
+            refund_order_no,
+            member_card_order_no,
+            pay_amount,
+            refund_amount,
+            remaining_time,
+            remaining_number,
+            status,
+            msg,
+            type,
+            pay_type,
+            create_time,
+            update_time,
+            tenant_id,
+            franchisee_id,
+            store_id,
+            payment_channel
+        from t_battery_membercard_refund_order
+        <where>
+            uid = #{uid}
+            <if test="statuses != null and statuses.size() > 0">
+                and status in
+                    <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                        #{status}
+                    </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>

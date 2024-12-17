@@ -78,19 +78,22 @@ public interface DayCouponStrategy {
      */
     boolean isOverdue(Integer tenantId,Long uid);
     
+    boolean isReturnThePackage(Integer tenantId,Long uid);
+    
     /**
      * <p>Title: isReturnTheDeposit </p>
      * <p>Project: DayCouponCheck</p>
      * <p>Copyright: Copyright (c) 2024</p>
      * <p>Company: www.xiliulou.com</p>
      * <p>Description: 是否已退押,true 已退押</p>
-     *
+     * <p>left -- 是否已退押</p>
+     * <p>right -- 是否退押审核中</p>
      * @param uid uid
      * @return boolean
      * @author <a href="mailto:wxblifeng@163.com">PeakLee</a>
      * @since V1.0 2024/11/13
      */
-    boolean isReturnTheDeposit(Integer tenantId,Long uid);
+    Pair<Boolean, Boolean> isReturnTheDeposit(Integer tenantId,Long uid);
     
     /**
      * <p>Title: isPackageInUse </p>

@@ -102,8 +102,18 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 return R.fail("400008",String.format("请先购买%s套餐后使用", useScope.getDesc()));
             }
             
-            if (strategy.isReturnTheDeposit(tenantId, uid)) {
-                return R.fail("400009","您已退押，暂无法使用，请缴纳押金后使用");
+            if (strategy.isReturnThePackage(tenantId, uid)) {
+                return R.fail("400016","您退租正在审核中，暂无法使用");
+            }
+
+            Pair<Boolean, Boolean> depositPair = strategy.isReturnTheDeposit(tenantId, uid);
+            if (Objects.nonNull(depositPair)) {
+                if (Objects.nonNull(depositPair.getLeft()) && depositPair.getLeft()) {
+                    return R.fail("400009","您已退押，暂无法使用，请缴纳押金后使用");
+                }
+                if (Objects.nonNull(depositPair.getRight()) && depositPair.getRight()) {
+                    return R.fail("400015","您退押正在审核中，暂无法使用");
+                }
             }
             
             if (!strategy.isPackageInUse(tenantId, uid)) {
