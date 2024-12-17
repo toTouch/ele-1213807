@@ -303,8 +303,8 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     
     @Slave
     @Override
-    public List<UserBatteryMemberCard> selectUseableListByTenantIds(int offset, int size, List<Integer> tenantIds) {
-        return userBatteryMemberCardMapper.selectUseableListByTenantIds(offset, size, tenantIds);
+    public List<UserBatteryMemberCard> selectUseableListByTenantIds(Long userBatteryMemberCardId, int size, List<Integer> tenantIds) {
+        return userBatteryMemberCardMapper.selectUseableListByTenantIds(userBatteryMemberCardId, size, tenantIds);
     }
     
     @Slave
