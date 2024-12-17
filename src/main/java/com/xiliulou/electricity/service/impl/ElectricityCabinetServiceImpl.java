@@ -113,52 +113,7 @@ import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.queryModel.EleCabinetExtraQueryModel;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.request.merchant.MerchantAreaRequest;
-import com.xiliulou.electricity.service.BatteryGeoService;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
-import com.xiliulou.electricity.service.CabinetMoveHistoryService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleCabinetCoreDataService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleDeviceCodeService;
-import com.xiliulou.electricity.service.EleOtaFileService;
-import com.xiliulou.electricity.service.EleOtaUpgradeService;
-import com.xiliulou.electricity.service.EleOtherConfigService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetChooseCellConfigService;
-import com.xiliulou.electricity.service.ElectricityCabinetExtraService;
-import com.xiliulou.electricity.service.ElectricityCabinetFileService;
-import com.xiliulou.electricity.service.ElectricityCabinetModelService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetServerService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ExchangeExceptionHandlerService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
-import com.xiliulou.electricity.service.OtaFileConfigService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.TenantFranchiseeMutualExchangeService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserActiveInfoService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserBatteryTypeService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.service.UserTypeFactory;
-import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.asset.AssetWarehouseService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
@@ -505,6 +460,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Resource
     private ProcessController processController;
+
+    @Resource
+    private LessTimeExchangeService lessTimeExchangeService;
 
     /**
      * 根据主键ID集获取柜机基本信息
@@ -5670,7 +5628,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
             // 获取满电仓
-            Triple<Boolean, String, Object> getFullCellBox = electricityCabinetOrderService.allocateFullBatteryBox(cabinet, userInfo, franchisee);
+            Triple<Boolean, String, Object> getFullCellBox = lessTimeExchangeService.allocateFullBatteryBox(cabinet, userInfo, franchisee);
             if (!getFullCellBox.getLeft()) {
                 return R.fail("100216", "换电柜暂无满电电池");
             }
