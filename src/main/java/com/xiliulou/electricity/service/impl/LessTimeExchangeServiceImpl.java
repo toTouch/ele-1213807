@@ -234,14 +234,19 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
             return scanCabinetNotEqualOrderCabinetHandler(userInfo, electricityBattery, electricityCabinetId);
         }
 
-        if (Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) || Objects.equals(rentBatteryOrder.getStatus(),
-                RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
+        if (lastOrderIsSuccess(lastOrderType, lastOrder, rentBatteryOrder)) {
             // 上一个 换电成功或者租电成功
             return lastExchangeSuccessHandler(lastOrder, cabinet, electricityBattery, rentBatteryOrder, userInfo, lastOrderType);
         } else {
             // 上一个失败，必然是换电，租电失败也走不到这里
             return lastExchangeFailHandler(lastOrder, cabinet, electricityBattery, userInfo, exchangeDTO.getCode(), exchangeDTO.getSecondFlexibleRenewal());
         }
+    }
+
+    private Boolean lastOrderIsSuccess(Integer lastOrderType, ElectricityCabinetOrder lastOrder, RentBatteryOrder rentBatteryOrder) {
+        return (Objects.equals(lastOrderType, LastOrderTypeEnum.LAST_EXCHANGE_ORDER.getCode()) && Objects.nonNull(lastOrder) && Objects.equals(lastOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS))
+                || (Objects.equals(lastOrderType, LastOrderTypeEnum.LAST_RENT_ORDER.getCode()) && Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getStatus(),
+                RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS));
     }
 
     private static Integer lastOrderType(ElectricityCabinetOrder lastOrder, RentBatteryOrder rentBatteryOrder) {
