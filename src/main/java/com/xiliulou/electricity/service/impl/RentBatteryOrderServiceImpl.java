@@ -1915,12 +1915,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
     
     @Override
+    @Slave
     public Integer existReturnOrderInSameCabinetAndCell(Long startTime, Long endTime, Integer eid, Integer cell) {
         return rentBatteryOrderMapper.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
     }
     
     
     @Override
+    @Slave
     public Integer existSameCabinetCellSameTimeOpenReturnOrder(Long createTime, Integer electricityCabinetId, Integer oldCellNo) {
         return rentBatteryOrderMapper.existSameCabinetCellSameTimeOpenReturnOrder(createTime, electricityCabinetId, oldCellNo);
     }
