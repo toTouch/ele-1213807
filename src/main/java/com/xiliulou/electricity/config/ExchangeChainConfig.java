@@ -3,11 +3,7 @@ package com.xiliulou.electricity.config;
 import com.xiliulou.electricity.enums.ExchangeAssertChainTypeEnum;
 import com.xiliulou.electricity.service.pipeline.ExchangeProcessChain;
 import com.xiliulou.electricity.service.pipeline.ProcessController;
-import com.xiliulou.electricity.service.process.ExchangeCabinetAssertProcess;
-import com.xiliulou.electricity.service.process.ExchangeCabinetCellAssertProcess;
-import com.xiliulou.electricity.service.process.ExchangeEndOrderAssertProcess;
-import com.xiliulou.electricity.service.process.ExchangeMemberAssertProcess;
-import com.xiliulou.electricity.service.process.ExchangeUserInfoAssertProcess;
+import com.xiliulou.electricity.service.process.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,22 +18,28 @@ import java.util.Arrays;
  */
 @Configuration
 public class ExchangeChainConfig {
-    
+
     @Resource
     private ExchangeCabinetCellAssertProcess exchangeCabinetCellAssertProcess;
-    
+
     @Resource
     private ExchangeUserInfoAssertProcess exchangeUserInfoAssertProcess;
-    
+
     @Resource
     private ExchangeCabinetAssertProcess exchangeCabinetAssertProcess;
-    
+
     @Resource
     private ExchangeEndOrderAssertProcess exchangeEndOrderAssertProcess;
-    
+
     @Resource
     private ExchangeMemberAssertProcess exchangeMemberAssertProcess;
-    
+
+    @Resource
+    private SelfOpenCellAssertProcess selfOpenCellAssertProcess;
+
+    @Resource
+    private ExchangeUnFinishedOrderAssertProcess exchangeUnFinishedOrderAssertProcess;
+
     @Bean("exchangeProcessChain")
     public ExchangeProcessChain exchangeProcessChain() {
         ExchangeProcessChain processChain = new ExchangeProcessChain();
@@ -47,13 +49,27 @@ public class ExchangeChainConfig {
                         exchangeEndOrderAssertProcess));
         return processChain;
     }
-    
+
+    /**
+     * 租电自主仓
+     *
+     * @return ExchangeProcessChain
+     */
+    @Bean("rentBatteryLessSelfOpenProcessChain")
+    public ExchangeProcessChain rentBatteryLessSelfOpenProcessChain() {
+        ExchangeProcessChain processChain = new ExchangeProcessChain();
+        processChain.setProcessList(ExchangeAssertChainTypeEnum.RENT_BATTERY_LESS_OPEN_FULL_ASSERT.getCode(),
+                Arrays.asList(exchangeCabinetAssertProcess, exchangeUserInfoAssertProcess, selfOpenCellAssertProcess, exchangeUnFinishedOrderAssertProcess));
+        return processChain;
+    }
+
     @Bean("processController")
     public ProcessController apiProcessController() {
         ProcessController processController = new ProcessController();
         processController.setProcessChain(exchangeProcessChain());
+        processController.setProcessChain(rentBatteryLessSelfOpenProcessChain());
         return processController;
     }
-    
-    
+
+
 }

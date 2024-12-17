@@ -16,10 +16,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.ExchangeConfig;
-import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.EleEsignConstant;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.ExchangeRemarkConstant;
+import com.xiliulou.electricity.constant.*;
 import com.xiliulou.electricity.dto.LessTimeExchangeDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
@@ -1341,8 +1338,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (pair.getLeft()) {
                 // 不满足自主开仓或者电池不在仓都有可能走到继续换电，需要校验灵活续费
                 ExchangeUserSelectVO returnVo = pair.getRight();
-                if (Objects.equals(returnVo.getIsSatisfySelfOpen(), ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN) || Objects.equals(returnVo.getIsBatteryInCell(),
-                        ExchangeUserSelectVO.BATTERY_NOT_CELL) || Objects.equals(returnVo.getIsTheSameCabinet(), ExchangeUserSelectVO.NOT_SAME_CABINET)) {
+                if (Objects.equals(returnVo.getIsSatisfySelfOpen(), LessScanConstant.NOT_SATISFY_SELF_OPEN) || Objects.equals(returnVo.getIsBatteryInCell(),
+                        LessScanConstant.BATTERY_NOT_CELL) || Objects.equals(returnVo.getIsTheSameCabinet(), LessScanConstant.NOT_SAME_CABINET)) {
                     returnVo.setFlexibleRenewal(vo.getFlexibleRenewal());
                     returnVo.setOldVoltage(vo.getOldVoltage());
                     returnVo.setNewVoltage(vo.getNewVoltage());
@@ -1353,7 +1350,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         // 如果超过5分钟或者返回false，前端不进行弹窗
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
+        vo.setIsEnterMoreExchange(LessScanConstant.NOT_ENTER_MORE_EXCHANGE);
         return Triple.of(true, null, vo);
     }
 
@@ -1559,7 +1556,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
         if (Objects.isNull(electricityBattery) || StrUtil.isEmpty(electricityBattery.getSn())) {
             log.warn("SelectExchangeTakeBattery WARN ! electricityBattery  is null, uid is {}", cabinetOrder.getUid());
-            vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_NOT_CELL);
+            vo.setIsBatteryInCell(LessScanConstant.BATTERY_NOT_CELL);
             return Triple.of(true, null, vo);
         }
         
@@ -1567,7 +1564,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String userBindingBatterySn = electricityBattery.getSn();
         String sessionId = lessTimeExchangeService.openFullBatteryCellHandler(cabinetOrder, electricityCabinet, exchangeQuery.getSelectionCellNo(), userBindingBatterySn,
                 cabinetOrder.getOldCellNo().toString());
-        vo.setIsBatteryInCell(ExchangeUserSelectVO.BATTERY_IN_CELL);
+        vo.setIsBatteryInCell(LessScanConstant.BATTERY_IN_CELL);
         vo.setSessionId(sessionId);
         
         return Triple.of(true, null, vo);
@@ -2882,15 +2879,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 ExchangeUserSelectVO vo;
                 if (Objects.isNull(pair.getRight())) {
                     vo = new ExchangeUserSelectVO();
-                    vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
+                    vo.setIsEnterMoreExchange(LessScanConstant.NOT_ENTER_MORE_EXCHANGE);
                 } else {
                     vo = pair.getRight();
                 }
 
                 // 二次扫码校验结果为false，需要校验灵活续费
                 // 不满足自主开仓、电池不在仓、非相同柜机都有可能走到继续换电，需要校验灵活续费
-                if (!pair.getLeft() || Objects.equals(vo.getIsSatisfySelfOpen(), ExchangeUserSelectVO.NOT_SATISFY_SELF_OPEN) || Objects.equals(vo.getIsBatteryInCell(),
-                        ExchangeUserSelectVO.BATTERY_NOT_CELL) || Objects.equals(vo.getIsTheSameCabinet(), ExchangeUserSelectVO.NOT_SAME_CABINET)) {
+                if (!pair.getLeft() || Objects.equals(vo.getIsSatisfySelfOpen(), LessScanConstant.NOT_SATISFY_SELF_OPEN) || Objects.equals(vo.getIsBatteryInCell(),
+                        LessScanConstant.BATTERY_NOT_CELL) || Objects.equals(vo.getIsTheSameCabinet(), LessScanConstant.NOT_SAME_CABINET)) {
                     checkFlexibleRenewal(vo, electricityBattery, userInfo);
                 }
 
@@ -2989,7 +2986,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
+        vo.setIsEnterMoreExchange(LessScanConstant.NOT_ENTER_MORE_EXCHANGE);
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }
@@ -3111,7 +3108,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         
         ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
-        vo.setIsEnterMoreExchange(ExchangeUserSelectVO.NOT_ENTER_MORE_EXCHANGE);
+        vo.setIsEnterMoreExchange(LessScanConstant.NOT_ENTER_MORE_EXCHANGE);
         vo.setOrderId(electricityCabinetOrder.getOrderId());
         return Triple.of(true, null, vo);
     }

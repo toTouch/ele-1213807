@@ -104,6 +104,9 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
     @Resource
     private TenantFranchiseeMutualExchangeService mutualExchangeService;
 
+    @Resource
+    private ElectricityCabinetPhysicsOperRecordService electricityCabinetPhysicsOperRecordService;
+
     /**
      * 多次扫码退电
      *
@@ -127,7 +130,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         ReturnBatteryLessTimeScanVo vo = new ReturnBatteryLessTimeScanVo();
         vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE);
         if (!isSatisfySelfOpenCondition(lastRentBatteryOrder.getOrderId(), lastRentBatteryOrder.getElectricityCabinetId(), lastRentBatteryOrder.getUpdateTime(),
-                lastRentBatteryOrder.getCellNo(), ElectricityCabinetOrder.NEW_AND_OLD_CELL)) {
+                lastRentBatteryOrder.getCellNo())) {
             // 仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
             log.warn("ReturnBattery Check Warn! cell is not SatisfySelfOpen, orderId is{}", lastRentBatteryOrder.getOrderId());
@@ -323,7 +326,8 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
         }
 
         ExchangeUserSelectVO vo = new ExchangeUserSelectVO();
-        vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE).setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_SUCCESS).setCabinetName(cabinet.getName());
+        vo.setIsEnterMoreExchange(LessScanConstant.ENTER_MORE_EXCHANGE).setLastExchangeIsSuccess(LessScanConstant.LAST_EXCHANGE_SUCCESS).setCabinetName(cabinet.getName())
+                .setLastOrderType(lastOrderType);
 
         ElectricityCabinetBox cabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), cabinet.getId());
 
@@ -335,7 +339,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
             }
 
             if (!isSatisfySelfOpenCondition(rentBatteryOrder.getOrderId(), rentBatteryOrder.getElectricityCabinetId(), rentBatteryOrder.getUpdateTime(),
-                    rentBatteryOrder.getCellNo(), ElectricityCabinetOrder.NEW_AND_OLD_CELL)) {
+                    rentBatteryOrder.getCellNo())) {
                 vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
                 log.warn("OrderV3 WARN! LastExchangeSuccessHandler RentOrderCell is not SatisfySelfOpen, orderId is{}", rentBatteryOrder.getOrderId());
                 return Pair.of(true, vo);
@@ -366,8 +370,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
                 return Pair.of(false, null);
             }
 
-            if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getNewCellNo(),
-                    ElectricityCabinetOrder.NEW_CELL)) {
+            if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getNewCellNo())) {
                 vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
                 log.warn("OrderV3 WARN! LastExchangeSuccessHandler ExchangeOrder is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
                 return Pair.of(true, vo);
@@ -399,8 +402,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
 
 
     private Pair<Boolean, ExchangeUserSelectVO> newCellOpenFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVO vo, ElectricityCabinet cabinet) {
-        if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getNewCellNo(),
-                ElectricityCabinetOrder.NEW_CELL)) {
+        if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getNewCellNo())) {
             // 新仓门不满足开仓条件
             vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
             log.warn("OrderV3 WARN!newCellOpenFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
@@ -448,8 +450,7 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
     private Pair<Boolean, ExchangeUserSelectVO> oldCellCheckFail(ElectricityCabinetOrder lastOrder, ElectricityBattery electricityBattery, ExchangeUserSelectVO vo, ElectricityCabinet cabinet,
                                                                  UserInfo userInfo, Integer code, Integer secondFlexibleRenewal) {
 
-        if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getOldCellNo(),
-                ElectricityCabinetOrder.OLD_CELL)) {
+        if (!isSatisfySelfOpenCondition(lastOrder.getOrderId(), lastOrder.getElectricityCabinetId(), lastOrder.getUpdateTime(), lastOrder.getOldCellNo())) {
             vo.setIsSatisfySelfOpen(LessScanConstant.NOT_SATISFY_SELF_OPEN);
             log.warn("OrderV3 WARN! oldCellCheckFail is not SatisfySelfOpen, orderId is{}", lastOrder.getOrderId());
             return Pair.of(true, vo);
@@ -667,5 +668,45 @@ public class LessTimeExchangeServiceImpl extends AbstractLessTimeExchangeCommon 
                 && !StringUtils.startsWithIgnoreCase(electricityCabinetBox.getSn(), "UNKNOW");
     }
 
+
+
+
+    /**
+     * 是否满足自主开仓
+     *
+     * @param orderId          orderId
+     * @param eid              eid
+     * @param startTime        订单的结束时间
+     * @param cell             cell
+     * @return Boolean
+     */
+    @Override
+    public Boolean isSatisfySelfOpenCondition(String orderId, Integer eid, Long startTime, Integer cell) {
+        if (Objects.isNull(cell)) {
+            log.error("orderV3 Error! isSatisfySelfOpenCondition.params.cell is null");
+            return false;
+        }
+        // 上个订单+5分钟是否存在换电、退电、操作记录
+        Long endTime = startTime + 1000 * 60 * 5;
+        List<ElectricityCabinetOrder> electricityCabinetOrders = electricityCabinetOrderService.existExchangeOrderInSameCabinetAndCell(startTime, endTime, eid);
+        if (CollUtil.isNotEmpty(electricityCabinetOrders)) {
+            if (CollUtil.isNotEmpty(electricityCabinetOrders.stream().filter(e -> Objects.equals(e.getOldCellNo(), cell) || Objects.equals(e.getNewCellNo(), cell))
+                    .collect(Collectors.toList()))) {
+                log.warn("orderV3 warn! isSatisfySelfOpenCondition newAndOldCellNo existExchangeOrder, orderId:{}", orderId);
+                return false;
+            }
+        }
+        Integer existReturnOrder = rentBatteryOrderService.existReturnOrderInSameCabinetAndCell(startTime, endTime, eid, cell);
+        if (Objects.nonNull(existReturnOrder)) {
+            log.warn("orderV3 warn! isSatisfySelfOpenCondition.existReturnOrder, orderId:{}", orderId);
+            return false;
+        }
+        Integer existOpenRecord = electricityCabinetPhysicsOperRecordService.existOpenRecordInSameCabinetAndCell(startTime, endTime, eid, cell);
+        if (Objects.nonNull(existOpenRecord)) {
+            log.warn("orderV3 warn! isSatisfySelfOpenCondition.existOpenRecord, orderId:{}", orderId);
+            return false;
+        }
+        return true;
+    }
 
 }

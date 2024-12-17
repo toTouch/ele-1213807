@@ -913,5 +913,12 @@ public interface CacheConstant {
      * 租户下加盟互通配置缓存key
      */
     String MUTUAL_EXCHANGE_CONFIG_KEY = "mutual_exchange_config:";
+
+
+    /**
+     * 租电允许自主开仓时间
+     */
+    String RENT_ALLOW_SELF_OPEN_CELL_START_TIME = "rent_allow_self_open_cell_start_time:";
+
 }
 

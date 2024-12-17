@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
@@ -82,5 +83,14 @@ public class JsonUserRentBatteryOrderController {
     public R bindBattery(@RequestBody BindBatteryRequest bindBatteryRequest) {
         return userInfoService.bindBattery(bindBatteryRequest);
     }
-    
+
+    /**
+     * 上次租电成功，电池不在仓前端调用自主开仓接口
+     * @param query  query
+     * @return R
+     */
+    @PostMapping("/user/rentBattery/lessRentSelfOpenCell")
+    public R lessExchangeSelfOpenCell(@RequestBody @Validated LessExchangeSelfOpenCellQuery query) {
+        return rentBatteryOrderService.lessRentSelfOpenCell(query);
+    }
 }

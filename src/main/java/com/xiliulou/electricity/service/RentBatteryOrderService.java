@@ -91,4 +91,6 @@ public interface RentBatteryOrderService {
 
 
     R returnBatteryCheck(Integer electricityCabinetId);
+
+    R lessRentSelfOpenCell(LessExchangeSelfOpenCellQuery query);
 }

@@ -35,9 +35,9 @@ public interface LessTimeExchangeService {
 
     /**
      * 打开满电仓：
-     *  二次扫码换电上次失败：旧仓门开门失败旧电池在仓，需要分配满电仓以及打开满电仓
-     *  二次扫码换电上次失败：新仓门开门失败旧电池在仓，需要打开上个订单的新仓门
-     *  选仓换电上次开始：同1
+     * 二次扫码换电上次失败：旧仓门开门失败旧电池在仓，需要分配满电仓以及打开满电仓
+     * 二次扫码换电上次失败：新仓门开门失败旧电池在仓，需要打开上个订单的新仓门
+     * 选仓换电上次开始：同1
      *
      * @param cabinetOrder cabinetOrder
      * @param cabinet      cabinet
@@ -55,10 +55,21 @@ public interface LessTimeExchangeService {
      * 2. todo 快捷换电
      *
      * @param electricityCabinet electricityCabinet
-     * @param userInfo userInfo
-     * @param franchisee franchisee
+     * @param userInfo           userInfo
+     * @param franchisee         franchisee
      * @return Triple
      */
     Triple<Boolean, String, Object> allocateFullBatteryBox(ElectricityCabinet electricityCabinet, UserInfo userInfo, Franchisee franchisee);
 
+
+    /**
+     * 是否满足自主开仓
+     *
+     * @param orderId orderId
+     * @param eid eid
+     * @param startTime startTime
+     * @param cell cell
+     * @return Boolean
+     */
+    Boolean isSatisfySelfOpenCondition(String orderId, Integer eid, Long startTime, Integer cell);
 }

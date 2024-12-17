@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,6 +18,8 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.*;
+import com.xiliulou.electricity.dto.ExchangeAssertProcessDTO;
+import com.xiliulou.electricity.dto.ExchangeChainDTO;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.EleCabinetUsedRecord;
@@ -40,31 +43,23 @@ import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
-import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
-import com.xiliulou.electricity.enums.BusinessType;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.OverdueType;
-import com.xiliulou.electricity.enums.RentReturnNormEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
+import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.enterprise.RentBatteryOrderTypeEnum;
 import com.xiliulou.electricity.event.publish.OverdueUserRemarkPublish;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
-import com.xiliulou.electricity.query.LowBatteryExchangeModel;
-import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryQuery;
-import com.xiliulou.electricity.query.RentOpenDoorQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.service.pipeline.ProcessContext;
+import com.xiliulou.electricity.service.pipeline.ProcessController;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
+import com.xiliulou.electricity.utils.AssertUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
@@ -238,6 +233,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
+    @Autowired
+    private ProcessController processController;
 
     /**
      * 新增数据
@@ -2102,4 +2099,69 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok();
     }
 
+
+    @Override
+    public R lessRentSelfOpenCell(LessExchangeSelfOpenCellQuery query) {
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("LessRentSelfOpenCell  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("LessRentSelfOpenCell WARN! not found user,uid is {}", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        // 构造责任链入参
+        ProcessContext<ExchangeAssertProcessDTO> processContext = ProcessContext.builder().code(ExchangeAssertChainTypeEnum.QUICK_EXCHANGE_ASSERT.getCode()).processModel(
+                ExchangeAssertProcessDTO.builder().eid(query.getEid()).cellNo(query.getCellNo()).userInfo(userInfo).orderId(query.getOrderId()).selfOpenCellKey(CacheConstant.RENT_ALLOW_SELF_OPEN_CELL_START_TIME)
+                        .chainObject(new ExchangeChainDTO()).build()).needBreak(false).build();
+        // 校验
+        ProcessContext<ExchangeAssertProcessDTO> process = processController.process(processContext);
+        if (process.getNeedBreak()) {
+            log.warn("rentBatteryLessExchangeSelfOpenCell Warn! BreakReason is {}", JsonUtil.toJson(process.getResult()));
+            return process.getResult();
+        }
+
+        RentBatteryOrder rentBatteryOrder = process.getProcessModel().getChainObject().getRentBatteryOrder();
+        AssertUtil.assertObjectIsNull(rentBatteryOrder, "ELECTRICITY.0015", "未找到订单");
+
+        ElectricityCabinet electricityCabinet = process.getProcessModel().getChainObject().getElectricityCabinet();
+        AssertUtil.assertObjectIsNull(electricityCabinet, "100003", "找不到柜机");
+
+        try {
+
+            RentBatteryOrder batteryOrder = new RentBatteryOrder();
+            batteryOrder.setId(rentBatteryOrder.getId());
+            batteryOrder.setUpdateTime(System.currentTimeMillis());
+            batteryOrder.setRemark(ExchangeRemarkConstant.USER_SELF_OPEN_CELL);
+            update(batteryOrder);
+
+            // 发送自助开仓命令
+            // 发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("orderId", query.getOrderId());
+            dataMap.put("cellNo", query.getCellNo());
+//            if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS) && Objects.equals(
+//                    electricityCabinetOrder.getNewCellNo(), query.getCellNo())) {
+//                dataMap.put("isTakeCell", true);
+//            }
+            dataMap.put("userSelfOpenCell", true);
+
+
+            String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId();
+
+            HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(dataMap).productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName()).command(ElectricityIotConstant.SELF_OPEN_CELL).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm, electricityCabinet);
+            return R.ok(sessionId);
+        } catch (Exception e) {
+            log.error("order is error" + e);
+            return R.fail("ELECTRICITY.0025", "自助开仓失败");
+        }
+    }
 }
