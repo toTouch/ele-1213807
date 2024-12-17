@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/7/17
+ * Create date: 2024/7/17
  */
 
 package com.xiliulou.electricity.bo.pay;
@@ -61,6 +61,8 @@ public class AlipayAppConfigBizDetails extends BasePayConfig {
      * 应用私钥
      */
     private String appPrivateKey;
+    
+    private String appAuthToken;
     
     /**
      * 解密密钥

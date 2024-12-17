@@ -47,4 +47,8 @@ public interface DateFormatConstant {
      * 上个月
      */
     Integer MONTH_DAYS = 30;
+    /**
+     * 昨天
+     */
+    Integer YESTERDAY  = 1;
 }

@@ -60,4 +60,21 @@
         order by seq asc limit 1
     </select>
     
+    
+    
+    <insert id="insertEleExchangeOperateHistory">
+        insert into t_electricity_cabinet_order_oper_history (order_id,type,msg,create_time,tenant_id,seq,result)
+        values
+        <foreach item="item" index="item" collection="list" separator=",">
+            (
+            #{item.orderId},
+            #{item.type},
+            #{item.msg},
+            #{item.createTime},
+            #{item.tenantId},
+            #{item.seq},
+            #{item.result}
+            )
+        </foreach>
+    </insert>
 </mapper>

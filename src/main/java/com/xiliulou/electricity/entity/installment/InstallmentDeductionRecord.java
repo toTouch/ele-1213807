@@ -68,6 +68,11 @@ public class InstallmentDeductionRecord {
     private Integer issue;
     
     /**
+     * 代扣计划id
+     */
+    private Long planId;
+    
+    /**
      * 订单标题
      */
     private String subject;

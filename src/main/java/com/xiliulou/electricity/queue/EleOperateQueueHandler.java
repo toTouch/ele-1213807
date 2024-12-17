@@ -806,6 +806,9 @@ public class EleOperateQueueHandler {
         //查看当前租借的电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(rentBatteryOrder.getElectricityBatterySn());
         
+        // 添加换电电池互斥锁
+        redisService.setNx(String.format(CacheConstant.EXCHANGE_PLACE_BATTERY_MUTUAL_LOCK, rentBatteryOrder.getElectricityBatterySn()), "1", 3 * 1000L, false);
+        
         if (Objects.nonNull(oldElectricityBattery)) {
             if (Objects.equals(oldElectricityBattery.getSn(), rentBatteryOrder.getElectricityBatterySn())) {
                 return;

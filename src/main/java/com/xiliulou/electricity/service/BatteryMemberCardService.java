@@ -41,19 +41,9 @@ public interface BatteryMemberCardService {
      */
     BatteryMemberCard queryByIdFromCache(Long id);
     
-    Integer insert(BatteryMemberCard batteryMemberCard);
-    
     Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels);
     
     Integer update(BatteryMemberCard batteryMemberCard);
-    
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Integer deleteById(Long id);
     
     List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query);
     
@@ -77,9 +67,21 @@ public interface BatteryMemberCardService {
     
     Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, Long validDays);
     
+    /**
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
+     */
+    @Deprecated
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
     
+    List<BatteryMemberCardVO> selectByPageForUserV2(BatteryMemberCardQuery query);
+    
+    /**
+     * 灵活续费上线，对应版本小程序全部升级完毕后可以删除
+     */
+    @Deprecated
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
+    
+    List<String> selectMemberCardBatteryVoltageV2(BatteryMemberCardQuery query);
     
     List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query);
     

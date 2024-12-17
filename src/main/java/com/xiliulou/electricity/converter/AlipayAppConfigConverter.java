@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/7/17
+ * Create date: 2024/7/17
  */
 
 package com.xiliulou.electricity.converter;
@@ -42,6 +42,7 @@ public class AlipayAppConfigConverter {
         alipayAppConfigBizDetails.setTenantId(alipayAppConfig.getTenantId());
         alipayAppConfigBizDetails.setConfigType(alipayAppConfig.getConfigType());
         alipayAppConfigBizDetails.setFranchiseeId(alipayAppConfig.getFranchiseeId());
+        alipayAppConfigBizDetails.setAppAuthToken(alipayAppConfig.getAppAuthToken());
         return alipayAppConfigBizDetails;
         
     }

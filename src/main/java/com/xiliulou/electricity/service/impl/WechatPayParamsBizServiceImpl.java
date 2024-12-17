@@ -1,5 +1,5 @@
 /**
- * Copyright(c) 2018 Sunyur.com, All Rights Reserved. Author: sunyur Create date: 2024/6/14
+ * Create date: 2024/6/14
  */
 
 package com.xiliulou.electricity.service.impl;
@@ -407,7 +407,7 @@ public class WechatPayParamsBizServiceImpl implements WechatPayParamsBizService 
         }
         
         List<WechatPayParamsDetails> buildWechatPlatformCertificates = certMap.get(ElectricityPayParamsCertTypeEnum.PLATFORM_CERTIFICATE.getType());
-        if (CollectionUtils.isEmpty(buildWechatPlatformCertificates)) {
+        if (CollectionUtils.isNotEmpty(buildWechatPlatformCertificates)) {
             
             //构建平台证书
             this.batchBuildWechatPlatformCertificateMap(buildWechatPlatformCertificates);

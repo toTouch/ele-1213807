@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -15,15 +18,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * (UserBatteryType)表服务实现类
@@ -44,34 +46,12 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Autowired
     private UserInfoService userInfoService;
     
-    @Override
-    public UserBatteryType queryByIdFromDB(Long id) {
-        return this.userBatteryTypeMapper.queryById(id);
-    }
-    
-    @Override
-    public UserBatteryType queryByIdFromCache(Long id) {
-        return null;
-    }
-    
-    @Override
-    public Integer insert(UserBatteryType userBatteryType) {
-        return this.userBatteryTypeMapper.insert(userBatteryType);
-    }
+    @Resource
+    private RedisService redisService;
     
     @Override
     public Integer batchInsert(List<UserBatteryType> userBatteryType) {
         return this.userBatteryTypeMapper.batchInsert(userBatteryType);
-    }
-    
-    @Override
-    public Integer update(UserBatteryType userBatteryType) {
-        return this.userBatteryTypeMapper.update(userBatteryType);
-    }
-    
-    @Override
-    public Boolean deleteById(Long id) {
-        return this.userBatteryTypeMapper.deleteById(id) > 0;
     }
     
     @Override
@@ -88,16 +68,6 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Override
     public String selectOneByUid(Long uid) {
         return this.userBatteryTypeMapper.selectOneByUid(uid);
-    }
-    
-    @Override
-    public String selectUserMaxBatteryType(Long uid) {
-        List<String> batteryTypes = this.selectByUid(uid);
-        if (CollectionUtils.isEmpty(batteryTypes)) {
-            return null;
-        }
-        
-        return batteryTypes.stream().sorted(Comparator.comparing(item -> item.substring(item.length() - 2))).reduce((first, second) -> second).orElse(null);
     }
     
     @Override
@@ -176,11 +146,6 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     }
     
     @Override
-    public Integer batchDeleteByIds(List<Long> ids) {
-        return userBatteryTypeMapper.deleteBatchIds(ids);
-    }
-    
-    @Override
     public Integer deleteByUidAndBatteryTypes(Long uid, List<String> batteryTypes) {
         return userBatteryTypeMapper.deleteByUidAndBatteryTypes(uid, batteryTypes);
     }
@@ -210,14 +175,23 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         
         List<String> userBindBatteryTypes = this.selectByUid(electricityMemberCardOrder.getUid());
         
-        List<String> membercardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(electricityMemberCardOrder.getMemberCardId());
+        List<String> memberCardBatteryTypes = memberCardBatteryTypeService.selectBatteryTypeByMid(electricityMemberCardOrder.getMemberCardId());
         
-        if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
-            totalBatteryTypes.addAll(userBindBatteryTypes);
+        // 不分型号的套餐购买或续费
+        if (CollectionUtils.isEmpty(memberCardBatteryTypes) && CollectionUtils.isEmpty(userBindBatteryTypes)) {
+            return;
         }
         
-        if (CollectionUtils.isNotEmpty(membercardBatteryTypes)) {
-            totalBatteryTypes.addAll(membercardBatteryTypes);
+        // 分型号套餐在续费的时候，是否是灵活续费的区别在于对旧的电池型号的处理
+        if (CollectionUtils.isEmpty(memberCardBatteryTypes) && CollectionUtils.containsAll(memberCardBatteryTypes, userBindBatteryTypes)) {
+            // 非灵活续费购买或续费，新套餐的电池型号包含了旧套餐的电池型号
+            if (CollectionUtils.isNotEmpty(userBindBatteryTypes)) {
+                totalBatteryTypes.addAll(userBindBatteryTypes);
+            }
+        }
+        
+        if (CollectionUtils.isNotEmpty(memberCardBatteryTypes)) {
+            totalBatteryTypes.addAll(memberCardBatteryTypes);
         }
         
         if (CollectionUtils.isEmpty(totalBatteryTypes)) {

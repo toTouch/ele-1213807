@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.LessExchangeSelfOpenCellQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OpenFullCellQuery;
+import com.xiliulou.electricity.query.OrderQueryCheck;
 import com.xiliulou.electricity.query.OrderQueryV2;
 import com.xiliulou.electricity.query.OrderQueryV3;
 import com.xiliulou.electricity.query.OrderSelectionExchangeQuery;
@@ -39,6 +40,17 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
      */
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
+    
+    /**
+     * 换电柜下单，先调用checkOrder接口
+     *
+     * @param queryCheck queryCheck
+     * @return R
+     */
+    @PostMapping("/user/electricityCabinetOrder/order/check")
+    public R exchangeOrderCheck(@RequestBody @Validated OrderQueryCheck queryCheck) {
+        return returnTripleResult(electricityCabinetOrderService.exchangeOrderCheck(queryCheck));
+    }
     
     /**
      * 换电柜下单，用新的命令

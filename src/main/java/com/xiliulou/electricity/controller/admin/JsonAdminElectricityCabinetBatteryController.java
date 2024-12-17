@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.lang.Pair;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.query.BatteryExcelV3Query;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.query.supper.DelBatteryReq;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -18,6 +20,7 @@ import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.BatteryExcelListenerV2;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.vo.supper.DelBatteryVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -629,5 +632,30 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         }
         
         return R.ok(electricityBatteryService.listBatteriesBySn(offset, size, user.getTenantId(), franchiseeId, sn));
+    }
+    
+    @GetMapping("/admin/battery/getIdAndSn/V2")
+    public R listBatteriesBySnV2(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size, @RequestParam("uid") Long uid,
+            @RequestParam(value = "sn", required = false) String sn) {
+        
+        if (offset < 0) {
+            offset = 0;
+        }
+        if (size < 0 || size > 100) {
+            size = 10;
+        }
+        
+        return R.ok(electricityBatteryService.listBatteriesBySnV2(offset, size, uid, sn));
+    }
+    
+    
+    /**
+     * 批量删除电池
+     * @param delBatteryReq delBatteryReq
+     * @return R
+     */
+    @PostMapping("/admin/battery/del")
+    public R deleteBatteryByExcel(@RequestBody DelBatteryReq delBatteryReq) {
+        return electricityBatteryService.deleteBatteryByExcel(delBatteryReq);
     }
 }
