@@ -174,9 +174,14 @@ public class BatteryMemberCardVO {
     private List<MemberCardBatteryType> batteryType;
     
     /**
-     * 套餐绑定的优惠券信息
+     * 套餐绑定的减免券、折扣券信息
      */
     private List<CouponSearchVo> coupons;
+    
+    /**
+     * 套餐绑定的天数券信息
+     */
+    private List<CouponSearchVo> dayCoupons;
     
     /**
      * 套餐绑定的用户分组信息

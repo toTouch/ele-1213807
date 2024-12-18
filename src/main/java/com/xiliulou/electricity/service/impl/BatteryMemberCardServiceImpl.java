@@ -1178,7 +1178,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     
     private void dealCouponSearchVo(Integer couponId, String couponIds, BatteryMemberCardVO batteryMemberCardVO) {
         LinkedHashSet<Integer> couponIdSet = new LinkedHashSet<>();
-        ArrayList<CouponSearchVo> couponSearchVos = new ArrayList<>();
         batteryMemberCardVO.setAmount(BigDecimal.ZERO);
         if (Objects.nonNull(couponId)) {
             couponIdSet.add(couponId);
@@ -1187,6 +1186,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             couponIdSet.addAll(JsonUtil.fromJsonArray(couponIds, Integer.class));
         }
         
+        ArrayList<CouponSearchVo> couponSearchVos = new ArrayList<>();
+        ArrayList<CouponSearchVo> dayCouponSearchVos = new ArrayList<>();
         couponIdSet.forEach(couponIdFromSet -> {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
             Coupon coupon = couponService.queryByIdFromCache(couponIdFromSet);
@@ -1201,9 +1202,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setAmount(couponSearchVo.getAmount());
                 batteryMemberCardVO.setCouponName(couponSearchVo.getName());
             }
-            couponSearchVos.add(couponSearchVo);
+            
+            if (Objects.equals(couponSearchVo.getDiscountType(), Coupon.DAY_VOUCHER)) {
+                dayCouponSearchVos.add(couponSearchVo);
+            } else {
+                couponSearchVos.add(couponSearchVo);
+            }
         });
         
+        batteryMemberCardVO.setDayCoupons(dayCouponSearchVos);
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
     
