@@ -64,6 +64,12 @@ public class ExchangeChainConfig {
         return processChain;
     }
 
+    /**
+     * pipeline流程控制器
+     * 后续扩展则加Code和ProcessController
+     *
+     * @return ProcessController
+     */
     @Bean("processController")
     public ProcessController apiProcessController() {
         ProcessController processController = new ProcessController();
