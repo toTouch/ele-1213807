@@ -3488,6 +3488,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
             
+            if (Objects.equals(coupon.getDiscountType(), UserCoupon.DAYS)) {
+                log.warn("ELE WARN! can not use day coupon,userCouponId={}", userCouponId);
+                return Triple.of(false, "301040", "购买套餐时不可使用天数券");
+            }
+            
             // 多加盟商版本增加：加盟商一致性校验
             if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), franchiseeId)) {
                 log.warn("ELE WARN! coupon is not same franchisee,couponId={},franchiseeId={}", userCouponId, franchiseeId);
