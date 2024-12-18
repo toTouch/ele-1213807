@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
-import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
@@ -297,14 +296,9 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         if (Objects.equals(index, -1)) {
             return Pair.of(false, null);
         }
-        
+    
         String versionPrefix = version.substring(0, index);
         try {
-            // 负数不支持
-            if (versionPrefix.startsWith(StringConstant.NEGATIVE_SIGN)) {
-                return Pair.of(false, null);
-            }
-            
             int i = Integer.parseInt(versionPrefix);
             return Pair.of(true, i);
         } catch (Exception e) {
