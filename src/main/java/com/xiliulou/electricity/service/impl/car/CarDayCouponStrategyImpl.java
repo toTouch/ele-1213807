@@ -2,11 +2,14 @@ package com.xiliulou.electricity.service.impl.car;
 
 
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
 import com.xiliulou.electricity.enums.DayCouponUseScope;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RentalPackageTypeEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.service.DayCouponStrategy;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import lombok.RequiredArgsConstructor;
@@ -39,14 +42,16 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     
     private final CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
     
+    private final UserInfoService userInfoService;
+    
     @Override
     public DayCouponUseScope getScope(Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus())){
-            if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode())){
+        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus())) {
+            if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode())) {
                 return DayCouponUseScope.BOTH;
             }
-            if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR.getCode())){
+            if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR.getCode())) {
                 return DayCouponUseScope.CAR;
             }
         }
@@ -62,7 +67,7 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     @Override
     public Pair<Boolean, Boolean> isFreezeOrAudit(Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (Objects.nonNull(memberTermPo)){
+        if (Objects.nonNull(memberTermPo)) {
             return Pair.of(MemberTermStatusEnum.FREEZE.getCode().equals(memberTermPo.getStatus()), MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermPo.getStatus()));
         }
         return null;
@@ -71,16 +76,29 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     @Override
     public boolean isOverdue(Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus()) && Objects.nonNull(memberTermPo.getDueTimeTotal())){
+        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus()) && Objects.nonNull(memberTermPo.getDueTimeTotal())) {
             return System.currentTimeMillis() >= memberTermPo.getDueTimeTotal();
         }
         return false;
     }
     
     @Override
-    public boolean isReturnTheDeposit(Integer tenantId, Long uid) {
+    public boolean isReturnThePackage(Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        return Objects.nonNull(memberTermPo) && MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode().equals(memberTermPo.getStatus());
+        return Objects.nonNull(memberTermPo) && MemberTermStatusEnum.APPLY_RENT_REFUND.getCode().equals(memberTermPo.getStatus());
+    }
+    
+    @Override
+    public Pair<Boolean, Boolean> isReturnTheDeposit(Integer tenantId, Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        Boolean left =
+                Objects.isNull(userInfo) || (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.equals(userInfo.getCarBatteryDepositStatus(),
+                        YesNoEnum.NO.getCode()));
+        
+        CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        Boolean right = Objects.nonNull(memberTermPo) && MemberTermStatusEnum.APPLY_REFUND_DEPOSIT.getCode().equals(memberTermPo.getStatus());
+        
+        return Pair.of(left, right);
     }
     
     @Override
@@ -90,10 +108,10 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     }
     
     @Override
-    public Triple<Boolean,Long ,String> process(Coupon coupon, Integer tenantId, Long uid) {
+    public Triple<Boolean, Long, String> process(Coupon coupon, Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (Objects.isNull(memberTermPo)){
-            return Triple.of(false,null ,null);
+        if (Objects.isNull(memberTermPo)) {
+            return Triple.of(false, null, null);
         }
         Integer day = coupon.getCount();
         long millis = TimeUnit.DAYS.toMillis(day);
@@ -101,15 +119,15 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
         Long dueTime = memberTermPo.getDueTime();
         CarRentalPackageMemberTermPo update = new CarRentalPackageMemberTermPo();
         update.setId(memberTermPo.getId());
-        if (Objects.nonNull(dueTime)){
-            update.setDueTime(millis+dueTime);
+        if (Objects.nonNull(dueTime)) {
+            update.setDueTime(millis + dueTime);
         }
-        if (Objects.nonNull(dueTimeTotal)){
-            update.setDueTimeTotal(millis+dueTimeTotal);
+        if (Objects.nonNull(dueTimeTotal)) {
+            update.setDueTimeTotal(millis + dueTimeTotal);
         }
         update.setUpdateTime(System.currentTimeMillis());
         update.setRemark("使用天数券");
         carRentalPackageMemberTermService.updateById(update);
-        return Triple.of(true,memberTermPo.getRentalPackageId() , memberTermPo.getRentalPackageOrderNo());
+        return Triple.of(true, memberTermPo.getRentalPackageId(), memberTermPo.getRentalPackageOrderNo());
     }
 }

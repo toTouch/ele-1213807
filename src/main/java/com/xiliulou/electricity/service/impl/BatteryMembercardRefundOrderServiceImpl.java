@@ -994,6 +994,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Slave
     @Override
+    public List<BatteryMembercardRefundOrder> listRefundingOrderByUidAndStatus(Long uid, List<Integer> statuses) {
+        return this.batteryMembercardRefundOrderMapper.selectListRefundingOrderByUidAndStatus(uid, statuses);
+    }
+    
+    @Slave
+    @Override
     public BigDecimal selectUserTotalRefund(Integer tenantId, Long uid) {
         return Optional.ofNullable(batteryMembercardRefundOrderMapper.selectUserTotalRefund(tenantId, uid)).orElse(BigDecimal.ZERO);
     }

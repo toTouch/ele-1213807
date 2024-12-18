@@ -106,6 +106,8 @@ public interface BatteryMembercardRefundOrderService {
     
     List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid);
     
+    List<BatteryMembercardRefundOrder> listRefundingOrderByUidAndStatus(Long uid, List<Integer> statuses);
+    
     BigDecimal selectUserTotalRefund(Integer tenantId, Long uid);
     
     void sendAuditNotify(UserInfo userInfo);

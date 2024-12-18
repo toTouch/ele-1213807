@@ -27,6 +27,11 @@ public class BatteryMembercardRefundOrderQuery {
     private Long mid;
 
     private String refundOrderNo;
+    
+    /**
+     * 套餐订单单号
+     */
+    private String memberCardOrderNo;
 
     private Integer status;
 

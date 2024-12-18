@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.alibaba.excel.util.CollectionUtils;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
@@ -9,13 +12,17 @@ import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.enums.DayCouponUseScope;
+import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
+import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import com.xiliulou.electricity.service.DayCouponStrategy;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.tx.BatteryMembercardRefundOrderTxService;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +31,8 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -48,7 +57,9 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     
     private final ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
-
+    private final BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+    
+    
     @Override
     public DayCouponUseScope getScope(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
@@ -74,15 +85,19 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
                 return DayCouponUseScope.UNKNOWN;
         }
     }
-
+    
     @Override
     public boolean isLateFee(Integer tenantId, Long uid) {
         // 计算金额不为0表示有滞纳金
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(uid);
-        return !Objects.isNull(eleBatteryServiceFeeVO) && !Objects.isNull(eleBatteryServiceFeeVO.getBatteryServiceFee())
-                && eleBatteryServiceFeeVO.getBatteryServiceFee().compareTo(BigDecimal.ZERO) > 0;
+        if (!Objects.isNull(eleBatteryServiceFeeVO) && !Objects.isNull(eleBatteryServiceFeeVO.getBatteryServiceFee())
+                && eleBatteryServiceFeeVO.getBatteryServiceFee().compareTo(BigDecimal.ZERO) > 0) {
+            log.info("DAY COUPON INFO! has service fee. uid={}, eleBatteryServiceFeeVO={}", uid, eleBatteryServiceFeeVO);
+            return true;
+        }
+        return false;
     }
-
+    
     @Override
     public Pair<Boolean, Boolean> isFreezeOrAudit(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
@@ -90,7 +105,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         Boolean right = Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW) ? Boolean.TRUE : Boolean.FALSE;
         return Pair.of(left, right);
     }
-
+    
     @Override
     public boolean isOverdue(Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
@@ -102,24 +117,50 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         if (Objects.isNull(batteryMemberCard)) {
             return true;
         }
-
+        
         if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
             return userBatteryMemberCard.getRemainingNumber() <= 0;
         }
-
-        return true;
+        
+        return false;
     }
-
+    
     @Override
-    public boolean isReturnTheDeposit(Integer tenantId, Long uid) {
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(userBatteryDeposit)) {
+    public boolean isReturnThePackage(Integer tenantId, Long uid) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
             return true;
         }
         
+        // 查询审核中和退款业务没走完的退款订单
+        List<BatteryMembercardRefundOrder> refundOrders = batteryMembercardRefundOrderService.listRefundingOrderByUidAndStatus(uid,
+                List.of(BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUND, BatteryMembercardRefundOrder.STATUS_SUCCESS,
+                        BatteryMembercardRefundOrder.STATUS_AUDIT));
+        if (CollectionUtils.isEmpty(refundOrders)) {
+            return false;
+        }
+        
+        for (BatteryMembercardRefundOrder refundOrder : refundOrders) {
+            if (Objects.equals(refundOrder.getMemberCardOrderNo(), userBatteryMemberCard.getOrderId())) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    @Override
+    public Pair<Boolean, Boolean> isReturnTheDeposit(Integer tenantId, Long uid) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        // 退押之后会删除数据
+        Boolean left = Objects.isNull(userBatteryDeposit);
+        
         // 是否有正在进行中的退押
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
-        return refundCount > 0;
+        EleRefundQuery query = EleRefundQuery.builder().orderId(userBatteryDeposit.getOrderId()).refundOrderType(EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
+                .statuses(List.of(EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_AGREE_REFUND, EleRefundOrder.STATUS_REFUND, EleRefundOrder.STATUS_SUCCESS)).build();
+        R countR = eleRefundOrderService.queryCount(query);
+        Boolean right = Objects.nonNull(countR) && ((Integer) countR.getData()) > 0;
+        return Pair.of(left, right);
     }
     
     @Override
@@ -146,7 +187,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
     }
     
     @Override
-    public Triple<Boolean,Long ,String> process(Coupon coupon, Integer tenantId, Long uid) {
+    public Triple<Boolean, Long, String> process(Coupon coupon, Integer tenantId, Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
         
         ElectricityMemberCardOrder memberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
@@ -166,7 +207,7 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         serviceFeeUserInfoUpdate.setTenantId(tenantId);
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
         serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-
+        
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         

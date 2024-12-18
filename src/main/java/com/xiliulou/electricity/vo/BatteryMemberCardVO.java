@@ -174,9 +174,15 @@ public class BatteryMemberCardVO {
     private List<MemberCardBatteryType> batteryType;
     
     /**
-     * 套餐绑定的优惠券信息
+     * 套餐绑定的减免券、折扣券信息
+     * TODO 这个属性在天数券需求对应的小程序全部升级完毕后可以删除
      */
     private List<CouponSearchVo> coupons;
+    
+    /**
+     * 套餐绑定的全部天数券信息
+     */
+    private List<CouponSearchVo> newCoupons;
     
     /**
      * 套餐绑定的用户分组信息
