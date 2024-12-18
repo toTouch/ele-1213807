@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @ClassName: ExchangeChainConfig
@@ -44,9 +46,8 @@ public class ExchangeChainConfig {
     public ExchangeProcessChain exchangeProcessChain() {
         ExchangeProcessChain processChain = new ExchangeProcessChain();
         // 如要扩展，添加枚举值以及自定义责任链顺序
-        processChain.setProcessList(ExchangeAssertChainTypeEnum.QUICK_EXCHANGE_ASSERT.getCode(),
-                Arrays.asList(exchangeCabinetAssertProcess, exchangeCabinetCellAssertProcess, exchangeUserInfoAssertProcess, exchangeMemberAssertProcess,
-                        exchangeEndOrderAssertProcess));
+        processChain.setProcessList(Arrays.asList(exchangeCabinetAssertProcess, exchangeCabinetCellAssertProcess, exchangeUserInfoAssertProcess, exchangeMemberAssertProcess,
+                exchangeEndOrderAssertProcess));
         return processChain;
     }
 
@@ -58,7 +59,7 @@ public class ExchangeChainConfig {
     @Bean("rentBatteryLessSelfOpenProcessChain")
     public ExchangeProcessChain rentBatteryLessSelfOpenProcessChain() {
         ExchangeProcessChain processChain = new ExchangeProcessChain();
-        processChain.setProcessList(ExchangeAssertChainTypeEnum.RENT_BATTERY_LESS_OPEN_FULL_ASSERT.getCode(),
+        processChain.setProcessList(
                 Arrays.asList(exchangeCabinetAssertProcess, exchangeUserInfoAssertProcess, selfOpenCellAssertProcess, exchangeUnFinishedOrderAssertProcess));
         return processChain;
     }
@@ -66,8 +67,10 @@ public class ExchangeChainConfig {
     @Bean("processController")
     public ProcessController apiProcessController() {
         ProcessController processController = new ProcessController();
-        processController.setProcessChain(exchangeProcessChain());
-        processController.setProcessChain(rentBatteryLessSelfOpenProcessChain());
+        Map<Integer, ExchangeProcessChain> templateConfig = new HashMap<>(4);
+        templateConfig.put(ExchangeAssertChainTypeEnum.QUICK_EXCHANGE_ASSERT.getCode(), exchangeProcessChain());
+        templateConfig.put(ExchangeAssertChainTypeEnum.RENT_BATTERY_LESS_OPEN_FULL_ASSERT.getCode(), rentBatteryLessSelfOpenProcessChain());
+        processController.setProcessMap(templateConfig);
         return processController;
     }
 
