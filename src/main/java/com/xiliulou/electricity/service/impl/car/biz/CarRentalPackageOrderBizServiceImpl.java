@@ -2123,15 +2123,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
         
         // 查询是否存在冻结订单
-        CarRentalPackageOrderFreezePo lastFree = null;
-        CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
-        if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())
-                && freezePo.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
-            lastFree = freezePo;
-        }
+        //        CarRentalPackageOrderFreezePo lastFree = null;
+        //        CarRentalPackageOrderFreezePo freezePo = carRentalPackageOrderFreezeService.selectLastFreeByUid(uid);
+        //        if (ObjectUtils.isNotEmpty(freezePo) && ObjectUtils.isNotEmpty(freezePo.getEnableTime())
+        //                && freezePo.getRentalPackageOrderNo().equals(packageOrderEntity.getOrderNo())) {
+        //            lastFree = freezePo;
+        //        }
         
         // 计算余量
-        Long residue = calculateResidue(packageOrderEntity, memberTermEntity, lastFree);
+        Long residue = calculateResidue(packageOrderEntity, memberTermEntity);
         // 生成冻结申请
         CarRentalPackageOrderFreezePo freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity,
                 applyTerm, residue, applyReason, optUid);
@@ -2617,41 +2617,25 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * 计算套餐订单剩余量
      */
     private Long calculateResidue(CarRentalPackageOrderPo packageOrderEntity,
-            CarRentalPackageMemberTermPo memberTermEntity, CarRentalPackageOrderFreezePo lastFree) {
+            CarRentalPackageMemberTermPo memberTermEntity) {
         
         // 1. 若限制次数，取余量
         if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {
             return memberTermEntity.getResidue();
         }
         
-        Integer tenancy = packageOrderEntity.getTenancy();
         Integer tenancyUnit = packageOrderEntity.getTenancyUnit();
-        Long useBeginTime = packageOrderEntity.getUseBeginTime();
         long nowTime = System.currentTimeMillis();
         
         // 2. 若不限制，则根据时间单位（天、分钟）计算退款金额
         if (RenalPackageConfineEnum.NO.getCode().equals(packageOrderEntity.getConfine())) {
             
-            Long baseTime;
-            
-            if (Objects.isNull(lastFree)) {
-                baseTime = useBeginTime;
-            } else {
-                baseTime = lastFree.getEnableTime();
-                // 使用上一次冻结的余量作为基数
-                tenancy = lastFree.getResidue().intValue();
-            }
-            
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                // 计算已使用天数
-                long diffTime = DateUtils.diffDay(baseTime, nowTime);
                 // 返回剩余时间
-                return tenancy - diffTime;
+                return DateUtils.diffDay(memberTermEntity.getDueTime(), nowTime);
             } else if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                // 计算已使用分钟数
-                long diffTime = DateUtils.diffMinute(baseTime, nowTime);
                 // 返回剩余时间
-                return tenancy - diffTime;
+                return DateUtils.diffMinute(memberTermEntity.getDueTime(), nowTime);
             }
         }
         return null;
