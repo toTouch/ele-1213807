@@ -41,7 +41,7 @@
     <select id="queryListForAdmin" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type, te.status, te.`pay_time`, te.payment_channel,
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,te.source,te.battery_service_fee_end_time,
-        tf.name as franchisee_name FROM
+        te.expired_protection_time, tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
         WHERE te.uid =#{uid} and te.tenant_id=#{tenantId}
         <if test="status != null">
@@ -67,7 +67,8 @@
     </select>
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
-        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`, payment_channel
+        SELECT pay_amount, order_id, source, status,  battery_service_fee_generate_time, update_time,battery_type,battery_service_fee_end_time, `pay_time`,
+               payment_channel, expired_protection_time
         FROM    t_ele_battery_service_fee_order
         <where>
             <if test="status != null">
@@ -88,7 +89,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
         te.status,te.source,te.phone,te.name ,te.uid, te.status, te.`pay_time`,te.payment_channel,
-        te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
+        te.battery_service_fee , te.battery_service_fee_generate_time, te.expired_protection_time, tf.model_battery_deposit,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
         <where>
@@ -291,7 +292,7 @@
     <sql id="column">
             te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
             te.status,te.source,te.phone,te.name ,te.uid, te.status, te.`pay_time`,
-            te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
+            te.battery_service_fee , te.battery_service_fee_generate_time, te.expired_protection_time, tf.model_battery_deposit,
             tf.name as franchisee_name,te.tenant_id
     </sql>
     <select id="selectListSuperAdminPage" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">

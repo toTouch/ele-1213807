@@ -1717,7 +1717,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 expireMembercardServiceFeeOrderInsert.setSn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn());
                 expireMembercardServiceFeeOrderInsert.setPayAmount(expireBatteryServiceFee);
                 expireMembercardServiceFeeOrderInsert.setBatteryServiceFee(batteryMemberCard.getServiceCharge());
-                expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
+                expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000);
                 expireMembercardServiceFeeOrderInsert.setBatteryServiceFeeEndTime(System.currentTimeMillis());
                 expireMembercardServiceFeeOrderInsert.setSource(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE);
                 expireMembercardServiceFeeOrderInsert.setPayTime(System.currentTimeMillis());
@@ -3488,9 +3488,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
             
+            // 优惠券为天数券时，从集合内移除避免外部接口核销天数券，同时跳过后续逻辑
             if (Objects.equals(coupon.getDiscountType(), UserCoupon.DAYS)) {
                 log.warn("ELE WARN! can not use day coupon,userCouponId={}", userCouponId);
-                return Triple.of(false, "302010", "购买套餐时不可使用天数券");
+                userCouponIds.remove(userCouponId);
+                continue;
             }
             
             // 多加盟商版本增加：加盟商一致性校验
