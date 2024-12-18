@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupBO;
 import com.xiliulou.electricity.bo.userInfoGroup.UserInfoGroupNamesBO;
@@ -1187,7 +1186,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         }
         
         ArrayList<CouponSearchVo> couponSearchVos = new ArrayList<>();
-        ArrayList<CouponSearchVo> dayCouponSearchVos = new ArrayList<>();
+        ArrayList<CouponSearchVo> newCouponSearchVos = new ArrayList<>();
         couponIdSet.forEach(couponIdFromSet -> {
             CouponSearchVo couponSearchVo = new CouponSearchVo();
             Coupon coupon = couponService.queryByIdFromCache(couponIdFromSet);
@@ -1203,14 +1202,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setCouponName(couponSearchVo.getName());
             }
             
-            if (Objects.equals(couponSearchVo.getDiscountType(), Coupon.DAY_VOUCHER)) {
-                dayCouponSearchVos.add(couponSearchVo);
-            } else {
+            // TODO 兼容前端未做null值判断的BUG，旧小程序遍历的优惠券集合不返回天数券，此逻辑在小程序全部升级完毕后删除
+            if (!Objects.equals(couponSearchVo.getDiscountType(), Coupon.DAY_VOUCHER)) {
                 couponSearchVos.add(couponSearchVo);
             }
+            newCouponSearchVos.add(couponSearchVo);
         });
         
-        batteryMemberCardVO.setDayCoupons(dayCouponSearchVos);
+        batteryMemberCardVO.setNewCoupons(newCouponSearchVos);
         batteryMemberCardVO.setCoupons(couponSearchVos);
     }
     
