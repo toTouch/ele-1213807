@@ -3490,7 +3490,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             
             if (Objects.equals(coupon.getDiscountType(), UserCoupon.DAYS)) {
                 log.warn("ELE WARN! can not use day coupon,userCouponId={}", userCouponId);
-                return Triple.of(false, "301040", "购买套餐时不可使用天数券");
+                return Triple.of(false, "302010", "购买套餐时不可使用天数券");
             }
             
             // 多加盟商版本增加：加盟商一致性校验
