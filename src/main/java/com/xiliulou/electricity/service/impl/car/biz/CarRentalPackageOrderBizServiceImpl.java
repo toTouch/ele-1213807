@@ -2033,16 +2033,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
     
     
-    public static void main(String[] args) {
-        long tenancy = 3;
-        long nowTime = System.currentTimeMillis();
-        log.info("calculateResidue, nowTime is {}", nowTime);
-        // 已使用天数
-        long diffDay = DateUtils.diffDay(1734487919605L, nowTime);
-        long l = tenancy - diffDay;
-        System.out.printf(l + "");
-    }
-    
     /**
      * 根据用户ID及订单编码进行冻结订单申请
      *
@@ -2613,6 +2603,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return Triple.of(refundAmount, tenancyResidue, confineResidue);
     }
     
+    
     /**
      * 计算套餐订单剩余量
      */
@@ -2632,10 +2623,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
                 // 返回剩余时间
-                return DateUtils.diffDay(memberTermEntity.getDueTime(), nowTime);
+                return DateUtils.diffDay(nowTime, memberTermEntity.getDueTime());
             } else if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
                 // 返回剩余时间
-                return DateUtils.diffMinute(memberTermEntity.getDueTime(), nowTime);
+                return DateUtils.diffMinute(nowTime, memberTermEntity.getDueTime());
             }
         }
         return null;
