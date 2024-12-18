@@ -1196,7 +1196,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber());
             
             // 计算减掉天数券增加的时间之后的套餐剩余时间
-            long remainingTime = userBatteryMemberCard.getOrderExpireTime() - daysFromDayCoupon * 24 * 60 * 60 * 1000L - System.currentTimeMillis();
+            long remainingTime = Math.max(userBatteryMemberCard.getOrderExpireTime() - daysFromDayCoupon * 24 * 60 * 60 * 1000L - System.currentTimeMillis(), 0L);
             refundOrderDetailVO.setRemainingTime(
                     Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? remainingTime / 24 / 60 / 60 / 1000 : remainingTime / 60 / 1000);
         }
