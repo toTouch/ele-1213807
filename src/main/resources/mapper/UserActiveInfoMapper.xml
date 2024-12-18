@@ -192,13 +192,20 @@
         limit #{offset}, #{size}
     </select>
     
+    <!--减少关联的表减少慢SQL-->
     <select id="queryCount" resultType="long">
         select
         count(*)
         from t_user_info ui
-        left join t_user_active_info uai on ui.uid = uai.uid
-        left join t_electricity_battery eb on ui.uid = eb.uid
-        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        <if test="(phone != null and phone != '') or (userName != null and userName != '') or uid != null or limitTime != null or tenantId != null">
+            left join t_user_active_info uai on ui.uid = uai.uid
+        </if>
+        <if test="(batterySn != null and batterySn != '') or isBoundBattery == 0 or isBoundBattery == 1">
+            left join t_electricity_battery eb on ui.uid = eb.uid
+        </if>
+        <if test="payCount != null">
+            left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        </if>
         <where>
             ui.del_flag = 0
             <if test="phone != null and phone != ''">

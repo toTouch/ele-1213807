@@ -50,9 +50,7 @@
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tc.description, tc.specific_packages,
         tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay'
         from t_user_coupon as tuc
-        <if test="query.superposition != null or query.franchiseeId != null or (query.franchiseeIds != null and query.franchiseeIds.size()>0) or (query.storeIds != null and query.storeIds.size()>0)">
-            left join t_coupon as tc on tuc.coupon_id=tc.id
-        </if>
+        left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
                 and tuc.uid = #{query.uid}
@@ -126,8 +124,8 @@
             limit #{query.offset}, #{query.size}
         </if>
     </select>
-
-
+    
+    <!--减少关联的表减少慢SQL-->
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_coupon as tuc
