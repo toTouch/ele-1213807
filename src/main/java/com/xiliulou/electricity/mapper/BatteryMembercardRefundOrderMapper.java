@@ -1,13 +1,12 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
+import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
+import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * (BatteryMembercardRefundOrder)表数据库访问层
@@ -56,5 +55,5 @@ public interface BatteryMembercardRefundOrderMapper  extends BaseMapper<BatteryM
 
     BigDecimal selectUserTotalRefund(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
     
-    List<BatteryMembercardRefundOrder> selectListRefundingOrderByUidAndStatus(@Param("uid") Long uid, @Param("statuses") List<Integer> statuses);
+    List<BatteryMembercardRefundOrder> selectListRefundingOrderByMemberCardOrderNoAndStatus(@Param("memberCardOrderNo") String memberCardOrderNo, @Param("statuses") List<Integer> statuses);
 }

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -403,8 +402,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Slave
     @Override
     public List<BatteryMemberCard> selectListByCouponId(Long couponId) {
-        return this.batteryMemberCardMapper.selectList(new LambdaQueryWrapper<BatteryMemberCard>().eq(BatteryMemberCard::getBusinessType, BatteryMemberCard.BUSINESS_TYPE_BATTERY)
-                .eq(BatteryMemberCard::getCouponId, couponId).eq(BatteryMemberCard::getDelFlag, BatteryMemberCard.DEL_NORMAL));
+        return this.batteryMemberCardMapper.selectListByCouponId(couponId, couponId.toString());
     }
     
     @Slave

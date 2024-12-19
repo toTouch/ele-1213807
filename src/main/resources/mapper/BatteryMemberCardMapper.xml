@@ -921,5 +921,43 @@
         limit #{offset}
         , #{size}
     </select>
+    
+    <select id="selectListByCouponId" resultType="com.xiliulou.electricity.entity.BatteryMemberCard">
+        select id,
+               name,
+               deposit,
+               rent_price,
+               rent_price_unit,
+               valid_days,
+               rent_unit,
+               franchisee_id,
+               rent_type,
+               send_coupon,
+               status,
+               limit_count,
+               use_count,
+               advance_renewal,
+               advance_renewal_day,
+               coupon_id,
+               is_refund,
+               refund_limit,
+               free_deposite,
+               service_charge,
+               freeze_service_charge,
+               remark,
+               business_type,
+               del_flag,
+               tenant_id,
+               create_time,
+               update_time,
+               sort_param,
+               group_type,
+               coupon_ids,
+               user_info_group_ids,
+               installment_service_fee,
+               down_payment
+        from t_battery_member_card
+        where coupon_id = #{couponId} or JSON_CONTAINS(coupon_ids, #{couponIdStr})
+    </select>
 
 </mapper>

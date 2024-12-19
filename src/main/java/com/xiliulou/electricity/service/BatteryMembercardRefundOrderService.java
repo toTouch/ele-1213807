@@ -2,15 +2,12 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.bo.base.BasePayConfig;
-import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
 import com.xiliulou.pay.base.dto.BasePayOrderRefundDTO;
 import com.xiliulou.pay.base.exception.PayException;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -106,7 +103,7 @@ public interface BatteryMembercardRefundOrderService {
     
     List<BatteryMembercardRefundOrder> selectRefundingOrderByUid(Long uid);
     
-    List<BatteryMembercardRefundOrder> listRefundingOrderByUidAndStatus(Long uid, List<Integer> statuses);
+    List<BatteryMembercardRefundOrder> listRefundingOrderByMemberCardOrderNoAndStatus(String memberCardOrderNo, List<Integer> statuses);
     
     BigDecimal selectUserTotalRefund(Integer tenantId, Long uid);
     
