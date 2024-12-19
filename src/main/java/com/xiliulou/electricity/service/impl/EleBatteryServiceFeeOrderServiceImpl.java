@@ -266,7 +266,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 
                 EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                         .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(item.getUid()).phone(userInfo.getPhone())
-                        .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).batteryServiceFeeGenerateTime(item.getMemberCardExpireTime())
+                        .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).batteryServiceFeeGenerateTime(item.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000)
                         .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
                         .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE).franchiseeId(userInfo.getFranchiseeId()).storeId(userInfo.getStoreId())
                         .modelType(franchisee.getModelType()).batteryType(CollectionUtils.isEmpty(userBatteryTypes) ? "" : JsonUtil.toJson(userBatteryTypes))
