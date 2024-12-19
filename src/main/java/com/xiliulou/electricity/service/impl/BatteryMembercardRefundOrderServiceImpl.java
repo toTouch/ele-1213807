@@ -994,8 +994,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     
     @Slave
     @Override
-    public List<BatteryMembercardRefundOrder> listRefundingOrderByUidAndStatus(Long uid, List<Integer> statuses) {
-        return this.batteryMembercardRefundOrderMapper.selectListRefundingOrderByUidAndStatus(uid, statuses);
+    public List<BatteryMembercardRefundOrder> listRefundingOrderByMemberCardOrderNoAndStatus(String memberCardOrderNo, List<Integer> statuses) {
+        return this.batteryMembercardRefundOrderMapper.selectListRefundingOrderByMemberCardOrderNoAndStatus(memberCardOrderNo, statuses);
     }
     
     @Slave

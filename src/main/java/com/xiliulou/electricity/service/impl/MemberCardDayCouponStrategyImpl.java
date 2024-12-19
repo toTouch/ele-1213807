@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.alibaba.excel.util.CollectionUtils;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.BatteryMembercardRefundOrder;
 import com.xiliulou.electricity.entity.Coupon;
@@ -12,7 +10,6 @@ import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.enums.DayCouponUseScope;
-import com.xiliulou.electricity.query.BatteryMembercardRefundOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
@@ -22,16 +19,15 @@ import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.tx.BatteryMembercardRefundOrderTxService;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -133,20 +129,11 @@ public class MemberCardDayCouponStrategyImpl implements DayCouponStrategy {
         }
         
         // 查询审核中和退款业务没走完的退款订单
-        List<BatteryMembercardRefundOrder> refundOrders = batteryMembercardRefundOrderService.listRefundingOrderByUidAndStatus(uid,
+        List<BatteryMembercardRefundOrder> refundOrders = batteryMembercardRefundOrderService.listRefundingOrderByMemberCardOrderNoAndStatus(userBatteryMemberCard.getOrderId(),
                 List.of(BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUND, BatteryMembercardRefundOrder.STATUS_SUCCESS,
                         BatteryMembercardRefundOrder.STATUS_AUDIT));
-        if (CollectionUtils.isEmpty(refundOrders)) {
-            return false;
-        }
         
-        for (BatteryMembercardRefundOrder refundOrder : refundOrders) {
-            if (Objects.equals(refundOrder.getMemberCardOrderNo(), userBatteryMemberCard.getOrderId())) {
-                return true;
-            }
-        }
-        
-        return false;
+        return CollectionUtils.isNotEmpty(refundOrders);
     }
     
     @Override

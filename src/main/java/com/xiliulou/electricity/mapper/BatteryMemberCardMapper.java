@@ -93,4 +93,5 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      */
     List<BatteryMemberCard> selectListByIds(@Param("ids") List<Long> ids);
     
+    List<BatteryMemberCard> selectListByCouponId(@Param("couponId") Long couponId, @Param("couponIdStr") String couponIdStr);
 }

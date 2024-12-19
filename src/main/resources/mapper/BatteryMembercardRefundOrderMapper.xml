@@ -236,7 +236,7 @@
         </if>
     </select>
     
-    <select id="selectListRefundingOrderByUidAndStatus" resultMap="BatteryMembercardRefundOrderMap">
+    <select id="selectListRefundingOrderByMemberCardOrderNoAndStatus" resultMap="BatteryMembercardRefundOrderMap">
         select
             id,
             uid,
@@ -260,7 +260,7 @@
             payment_channel
         from t_battery_membercard_refund_order
         <where>
-            uid = #{uid}
+            member_card_order_no = #{memberCardOrderNo}
             <if test="statuses != null and statuses.size() > 0">
                 and status in
                     <foreach collection="statuses" item="status" open="(" separator="," close=")">
