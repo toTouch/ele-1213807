@@ -258,6 +258,8 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         // 循环执行
         noExpirOrderSlippageList.forEach(packageMemberTermPo -> {
+            log.info("noExpirOrderSlippage RentalPackageOrderNo:{}",packageMemberTermPo.getRentalPackageOrderNo());
+            
             ElectricityCar electricityCar = uidCarMap.get(packageMemberTermPo.getUid());
             UserInfo userInfo = uidUserMap.get(packageMemberTermPo.getUid());
             CarRentalPackageOrderPo carRentalPackageOrderPo = orderNoCarRentalPackageOrderMap.get(
@@ -291,6 +293,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         // 如果已经生成过期滞纳金，则无需处理 只需加锁（保持原逻辑，也不需要记录）
         processingLateFeeList.forEach(processingLateFee -> {
+            log.info("processingExistOrderSlippage RentalPackageOrderNo:{}",processingLateFee.getRentalPackageOrderNo());
             ElectricityCar electricityCar = uidCarMap.get(processingLateFee.getUid());
             UserInfo userInfo = uidUserMap.get(processingLateFee.getUid());
             
