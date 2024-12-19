@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePo;
 import com.xiliulou.electricity.enums.PayStateEnum;
@@ -27,16 +28,20 @@ import com.xiliulou.electricity.service.UserBatteryTypeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalMemberTermExpireBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalOrderBizService;
+import com.xiliulou.electricity.utils.DateUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,6 +86,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
     
     private final CarLockCtrlHistoryService carLockCtrlHistoryService;
     
+    private final CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
     
     @Override
     public void expirePackageOrder(ExpirePackageOrderReq req) {
@@ -225,6 +231,10 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         Map<String, CarRentalPackageOrderPo> orderNoCarRentalPackageOrderMap = this.getCarRentalPackageOrderMap(
                 tenantId, rentalPackageOrderNoList);
         
+        // 批量查询冻结订单（兜底）
+        Map<String, CarRentalPackageOrderSlippagePo> freezeOrderSlippageMap = this.getFreezeCarRentalPackageOrderSlippage(
+                rentalPackageOrderNoList);
+        
         // 查询租户配置
         ElectricityConfig electricityConfig = this.getTenantElectricityConfig(tenantId, electricityConfigCache);
         
@@ -235,11 +245,30 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             CarRentalPackageOrderPo carRentalPackageOrderPo = orderNoCarRentalPackageOrderMap.get(
                     packageMemberTermPo.getRentalPackageOrderNo());
             
+            // 冻结订单
+            CarRentalPackageOrderSlippagePo freezeOrderSlippage = freezeOrderSlippageMap.get(
+                    packageMemberTermPo.getRentalPackageOrderNo());
+            
             // 执行
             this.processLateFee(nowTime, packageMemberTermPo, electricityCar, userInfo, carRentalPackageOrderPo,
-                    electricityConfig);
+                    freezeOrderSlippage, electricityConfig);
             
         });
+        
+    }
+    
+    
+    /**
+     * 查询冻结滞纳金订单
+     */
+    private Map<String, CarRentalPackageOrderSlippagePo> getFreezeCarRentalPackageOrderSlippage(
+            List<String> rentalPackageOrderNoList) {
+        List<CarRentalPackageOrderSlippagePo> carRentalPackageOrderSlippagePos = carRentalPackageOrderSlippageService.queryListByPackageOrderNoAndType(
+                rentalPackageOrderNoList, SlippageTypeEnum.FREEZE.getCode());
+        
+        return Optional.ofNullable(carRentalPackageOrderSlippagePos).orElse(Collections.emptyList()).stream().collect(
+                Collectors.toMap(CarRentalPackageOrderSlippagePo::getRentalPackageOrderNo, Function.identity(),
+                        (k1, k2) -> k1));
         
     }
     
@@ -252,15 +281,20 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
      * @param electricityCar          车辆
      * @param userInfo                用户
      * @param carRentalPackageOrderPo 套餐
+     * @param freezeOrderSlippage     冻结订单
      * @param electricityConfig       租户配置
      * @author caobotao.cbt
      * @date 2024/11/27 09:19
      */
     private void processLateFee(long nowTime, CarRentalPackageMemberTermPo packageMemberTermPo,
             ElectricityCar electricityCar, UserInfo userInfo, CarRentalPackageOrderPo carRentalPackageOrderPo,
-            ElectricityConfig electricityConfig) {
+            CarRentalPackageOrderSlippagePo freezeOrderSlippage, ElectricityConfig electricityConfig) {
         
         try {
+            
+            // 处理冻结滞纳金订单
+            this.processFreezeOrderSlippage(freezeOrderSlippage, nowTime);
+            
             // 处理车辆加锁
             CarLockCtrlHistory carLockCtrlHistory = this.processCarLockCtrl(nowTime, electricityCar, userInfo,
                     electricityConfig);
@@ -282,6 +316,47 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         } catch (Exception e) {
             log.warn("Exception in late fee processing:", e);
         }
+    }
+    
+    /**
+     * 处理未处理的冻结滞纳金 （理论不存在，兜底）
+     *
+     * @param freezeOrderSlippage 冻结滞纳金订单
+     * @param nowTime             当前时间
+     * @author caobotao.cbt
+     * @date 2024/12/19 11:08
+     */
+    private void processFreezeOrderSlippage(CarRentalPackageOrderSlippagePo freezeOrderSlippage, long nowTime) {
+        
+        if (Objects.isNull(freezeOrderSlippage) || Objects.nonNull(freezeOrderSlippage.getLateFeeEndTime())) {
+            // 不存在冻结滞纳金或者冻结滞纳金已处理
+            return;
+        }
+        
+        // 生成过期滞纳金前要将冻结滞纳金截止,冻结滞纳金处理应该在冻结自动启用任务中，此逻辑只作为兜底方案，如果走到此逻辑，说明冻结滞纳金启用任务没启动，正常不会存在。
+        log.warn("WARN! processFreezeOrderSlippage freezeOrderSlippage:{}", JsonUtil.toJson(freezeOrderSlippage));
+        
+        freezeOrderSlippage.setUpdateTime(nowTime);
+        // 根据UID+套餐购买订单编号，获取冻结的订单
+        CarRentalPackageOrderFreezePo orderFreezePo = carRentalPackageOrderFreezeService.selectFreezeByUidAndPackageOrderNo(
+                freezeOrderSlippage.getUid(), freezeOrderSlippage.getRentalPackageOrderNo());
+        if (ObjectUtils.isEmpty(orderFreezePo)) {
+            return;
+        }
+        
+        // 到期时间
+        //                                    long expireTime = orderFreezePo.getCreateTime() + (TimeConstant.DAY_MILLISECOND * orderFreezePo.getApplyTerm());
+        long expireTime = orderFreezePo.getAuditTime() + (TimeConstant.DAY_MILLISECOND * orderFreezePo.getApplyTerm());
+        freezeOrderSlippage.setLateFeeEndTime(expireTime);
+        // 计算滞纳金金额
+        long diffDay = DateUtils.diffDay(freezeOrderSlippage.getLateFeeStartTime(),
+                freezeOrderSlippage.getLateFeeEndTime());
+        freezeOrderSlippage.setLateFeePay(
+                freezeOrderSlippage.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
+        
+        // 更新对应的因冻结的产生的逾期订单记录
+        carRentalPackageOrderSlippageService.updateById(freezeOrderSlippage);
+        
     }
     
     
