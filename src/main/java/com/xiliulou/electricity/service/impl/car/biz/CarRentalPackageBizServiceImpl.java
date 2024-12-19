@@ -585,13 +585,20 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (!Objects.isNull(carRentalPackageVo) && !CollectionUtils.isEmpty(couponIds)) {
             List<CarCouponNamePO> list = couponService.queryListByIdsFromCache(couponIds);
             //转化PO到VO
-            List<CarCouponVO> collect = list.stream().map(m -> {
+            List<CarCouponVO> collect = list.stream().filter(f->f.getDiscountType().equals(Coupon.FULL_REDUCTION)).map(m -> {
+                CarCouponVO couponVO = new CarCouponVO();
+                BeanUtils.copyProperties(m, couponVO);
+                return couponVO;
+            }).collect(Collectors.toList());
+
+            List<CarCouponVO> arr = list.stream().map(m -> {
                 CarCouponVO couponVO = new CarCouponVO();
                 BeanUtils.copyProperties(m, couponVO);
                 return couponVO;
             }).collect(Collectors.toList());
             
             carRentalPackageVo.setCoupons(collect);
+            carRentalPackageVo.setArrayCoupons(arr);
             carRentalPackageVo.setCouponIds(couponIds);
             
             if (!CollectionUtils.isEmpty(collect)) {
