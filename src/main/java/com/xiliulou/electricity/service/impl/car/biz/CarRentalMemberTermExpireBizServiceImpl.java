@@ -155,7 +155,6 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         // 处理过期滞纳金的
         List<CarRentalPackageMemberTermPo> processingLateFeeList = new ArrayList<>();
-        List<String> rentalPackageOrderNos = new ArrayList<>();
         
         // 处理套餐替换的
         Map<CarRentalPackageMemberTermPo, CarRentalPackageOrderPo> packageReplacementMap = new HashMap<>();
@@ -171,23 +170,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
                 packageReplacementMap.put(expireMemberTermPo, carRentalPackageOrderPo);
             } else {
                 processingLateFeeList.add(expireMemberTermPo);
-                rentalPackageOrderNos.add(expireMemberTermPo.getRentalPackageOrderNo());
             }
-        }
-        
-        if (!CollectionUtils.isEmpty(rentalPackageOrderNos)) {
-            // 过滤掉已生成过逾期滞纳金的订单
-            List<CarRentalPackageOrderSlippagePo> existOrderSlippagePo = carRentalPackageOrderSlippageService.queryListByPackageOrderNoAndType(
-                    rentalPackageOrderNos, SlippageTypeEnum.EXPIRE.getCode());
-            
-            List<String> existRentalPackageOrderNos = Optional.ofNullable(existOrderSlippagePo)
-                    .orElse(Collections.emptyList()).stream()
-                    .map(CarRentalPackageOrderSlippagePo::getRentalPackageOrderNo).distinct()
-                    .collect(Collectors.toList());
-            
-            processingLateFeeList = processingLateFeeList.stream()
-                    .filter(o -> !existRentalPackageOrderNos.contains(o.getRentalPackageOrderNo()))
-                    .collect(Collectors.toList());
         }
         
         // 处理套餐替换的
@@ -213,6 +196,10 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             List<CarRentalPackageMemberTermPo> processingLateFeeList,
             Map<Integer, ElectricityConfig> electricityConfigCache) {
         
+        if (processingLateFeeList.isEmpty()) {
+            return;
+        }
+        
         List<Long> uidList = new ArrayList<>(processingLateFeeList.size());
         List<String> rentalPackageOrderNoList = new ArrayList<>(processingLateFeeList.size());
         
@@ -221,31 +208,62 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             rentalPackageOrderNoList.add(carRentalPackageMemberTermPo.getRentalPackageOrderNo());
         });
         
+        // 过期滞纳金查询
+        Map<String, CarRentalPackageOrderSlippagePo> expireOrderSlippageMap = this.getExpiredOrderSlippageMap(
+                rentalPackageOrderNoList);
+        
         // 批量查询车辆
         Map<Long, ElectricityCar> uidCarMap = this.getElectricityCarMap(tenantId, uidList);
         
         // 批量查询用户
         Map<Long, UserInfo> uidUserMap = this.getUserInfoMap(uidList, tenantId);
         
-        // 批量查询套餐
-        Map<String, CarRentalPackageOrderPo> orderNoCarRentalPackageOrderMap = this.getCarRentalPackageOrderMap(
-                tenantId, rentalPackageOrderNoList);
-        
-        // 批量查询冻结订单（兜底）
-        Map<String, CarRentalPackageOrderSlippagePo> freezeOrderSlippageMap = this.getFreezeCarRentalPackageOrderSlippage(
-                rentalPackageOrderNoList);
-        
         // 查询租户配置
         ElectricityConfig electricityConfig = this.getTenantElectricityConfig(tenantId, electricityConfigCache);
         
+        // 已经生成过过期滞纳金的记录
+        List<CarRentalPackageMemberTermPo> existExpirOrderSlippageList = new ArrayList<>();
+        
+        // 未生成过过期滞纳金的记录
+        List<CarRentalPackageMemberTermPo> noExpirOrderSlippageList = new ArrayList<>();
+        
+        List<String> noExpirRentalPackageOrderNoList = new ArrayList<>();
+        
+        processingLateFeeList.forEach(processLateFee -> {
+            if (expireOrderSlippageMap.containsKey(processLateFee.getRentalPackageOrderNo())) {
+                existExpirOrderSlippageList.add(processLateFee);
+            } else {
+                noExpirOrderSlippageList.add(processLateFee);
+                noExpirRentalPackageOrderNoList.add(processLateFee.getRentalPackageOrderNo());
+            }
+        });
+        
+        // 处理已经处理过的过期订单
+        this.processingExistOrderSlippage(nowTime, existExpirOrderSlippageList, uidCarMap, uidUserMap,
+                electricityConfig);
+        
+        if (noExpirOrderSlippageList.isEmpty()) {
+            return;
+        }
+        
+        // 处理未生成过期滞纳金的数据
+        
+        // 批量查询套餐
+        Map<String, CarRentalPackageOrderPo> orderNoCarRentalPackageOrderMap = this.getCarRentalPackageOrderMap(
+                tenantId, noExpirRentalPackageOrderNoList);
+        
+        // 批量查询冻结订单（兜底）
+        Map<String, CarRentalPackageOrderSlippagePo> freezeOrderSlippageMap = this.getFreezeCarRentalPackageOrderSlippage(
+                noExpirRentalPackageOrderNoList);
+        
         // 循环执行
-        processingLateFeeList.forEach(packageMemberTermPo -> {
+        noExpirOrderSlippageList.forEach(packageMemberTermPo -> {
             ElectricityCar electricityCar = uidCarMap.get(packageMemberTermPo.getUid());
             UserInfo userInfo = uidUserMap.get(packageMemberTermPo.getUid());
             CarRentalPackageOrderPo carRentalPackageOrderPo = orderNoCarRentalPackageOrderMap.get(
                     packageMemberTermPo.getRentalPackageOrderNo());
             
-            // 冻结订单
+            // 冻结滞纳金订单
             CarRentalPackageOrderSlippagePo freezeOrderSlippage = freezeOrderSlippageMap.get(
                     packageMemberTermPo.getRentalPackageOrderNo());
             
@@ -255,6 +273,50 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             
         });
         
+    }
+    
+    
+    /**
+     * 处理已处理过的过期订单
+     *
+     * @author caobotao.cbt
+     * @date 2024/12/19 17:49
+     */
+    private void processingExistOrderSlippage(Long nowTime, List<CarRentalPackageMemberTermPo> processingLateFeeList,
+            Map<Long, ElectricityCar> uidCarMap, Map<Long, UserInfo> uidUserMap, ElectricityConfig electricityConfig) {
+        
+        if (processingLateFeeList.isEmpty()) {
+            return;
+        }
+        
+        // 如果已经生成过期滞纳金，则无需处理 只需加锁（保持原逻辑，也不需要记录）
+        processingLateFeeList.forEach(processingLateFee -> {
+            ElectricityCar electricityCar = uidCarMap.get(processingLateFee.getUid());
+            UserInfo userInfo = uidUserMap.get(processingLateFee.getUid());
+            
+            // 处理车辆加锁
+            this.processCarLockCtrl(nowTime, electricityCar, userInfo, electricityConfig,
+                    CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
+        });
+    }
+    
+    
+    /**
+     * 查询过期滞纳金
+     *
+     * @param rentalPackageOrderNoList 购买订单编号
+     * @author caobotao.cbt
+     * @date 2024/12/19 17:22
+     */
+    private Map<String, CarRentalPackageOrderSlippagePo> getExpiredOrderSlippageMap(
+            List<String> rentalPackageOrderNoList) {
+        
+        List<CarRentalPackageOrderSlippagePo> existOrderSlippagePo = carRentalPackageOrderSlippageService.queryListByPackageOrderNoAndType(
+                rentalPackageOrderNoList, SlippageTypeEnum.EXPIRE.getCode());
+        
+        return Optional.ofNullable(existOrderSlippagePo).orElse(Collections.emptyList()).stream().collect(
+                Collectors.toMap(CarRentalPackageOrderSlippagePo::getRentalPackageOrderNo, Function.identity(),
+                        (k1, k2) -> k1));
     }
     
     
@@ -281,7 +343,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
      * @param electricityCar          车辆
      * @param userInfo                用户
      * @param carRentalPackageOrderPo 套餐
-     * @param freezeOrderSlippage     冻结订单
+     * @param freezeOrderSlippage     冻结滞纳金订单
      * @param electricityConfig       租户配置
      * @author caobotao.cbt
      * @date 2024/11/27 09:19
@@ -291,20 +353,30 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             CarRentalPackageOrderSlippagePo freezeOrderSlippage, ElectricityConfig electricityConfig) {
         
         try {
-            
-            // 处理冻结滞纳金订单
-            this.processFreezeOrderSlippage(freezeOrderSlippage, nowTime);
-            
             // 处理车辆加锁
             CarLockCtrlHistory carLockCtrlHistory = this.processCarLockCtrl(nowTime, electricityCar, userInfo,
-                    electricityConfig);
+                    electricityConfig, CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
             
             CarRentalPackageOrderSlippagePo insertOrderExpiredSlippagePo = this.buildInsertExpiredFreezeOrderSlippagePo(
                     nowTime, electricityConfig, packageMemberTermPo, carRentalPackageOrderPo, electricityCar);
             
             if (Objects.nonNull(insertOrderExpiredSlippagePo)) {
+                
+                // 处理冻结滞纳金订单
+                this.processFreezeOrderSlippage(freezeOrderSlippage, nowTime);
+                
+                // 生成过期滞纳金 则需要给车辆加过期滞纳金锁
+                carLockCtrlHistory = this.processCarLockCtrl(nowTime, electricityCar, userInfo, electricityConfig,
+                        CarLockCtrlHistory.TYPE_SLIPPAGE_LOCK);
+                
                 carRentalPackageOrderSlippageService.insert(insertOrderExpiredSlippagePo);
+            } else if (carRentalPackageOrderPo.getUseState().equals(UseStateEnum.EXPIRED.getCode())) {
+               
+                // 如果不生过期滞纳金并且套餐使用状态是已过期，则不处理状态变更已经锁车记录
+                return;
             }
+            
+            
             
             if (Objects.nonNull(carLockCtrlHistory)) {
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
@@ -371,10 +443,10 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
      * @date 2024/11/27 09:22
      */
     private CarLockCtrlHistory processCarLockCtrl(Long nowTime, ElectricityCar electricityCar, UserInfo userInfo,
-            ElectricityConfig electricityConfig) {
+            ElectricityConfig electricityConfig, Integer type) {
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects.equals(
                 electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
-            return buildCarLockCtrlHistory(electricityCar, userInfo, nowTime);
+            return buildCarLockCtrlHistory(electricityCar, userInfo, nowTime, type);
         }
         return null;
     }
@@ -507,25 +579,6 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
                 .orElse(TimeConstant.DAT_HOURS);
         // 转换毫秒
         return expiredProtectionTime * 60L * 60L * 1000L;
-    }
-    
-    
-    /**
-     * 给车辆加锁
-     *
-     * @param electricityCar    车辆
-     * @param userInfo          用户
-     * @param electricityConfig 租户配置
-     * @author caobotao.cbt
-     * @date 2024/11/26 15:31
-     */
-    private CarLockCtrlHistory processingCarLockCtrl(Long nowTime, ElectricityCar electricityCar, UserInfo userInfo,
-            ElectricityConfig electricityConfig) {
-        if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects.equals(
-                electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
-            return buildCarLockCtrlHistory(electricityCar, userInfo, nowTime);
-        }
-        return null;
     }
     
     
@@ -708,7 +761,8 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
      * @param userInfo       用户
      * @return CarLockCtrlHistory
      */
-    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Long nowTime) {
+    private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Long nowTime,
+            Integer type) {
         Integer tenantId = userInfo.getTenantId();
         
         boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
@@ -727,7 +781,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         carLockCtrlHistory.setCreateTime(nowTime);
         carLockCtrlHistory.setUpdateTime(nowTime);
         carLockCtrlHistory.setTenantId(tenantId);
-        carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
+        carLockCtrlHistory.setType(type);
         
         return carLockCtrlHistory;
     }
