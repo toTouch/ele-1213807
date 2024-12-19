@@ -339,7 +339,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             return serviceFee;
         }
         
-        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0 && BigDecimal.valueOf(0).compareTo(batteryMemberCard.getFreezeServiceCharge()) == 0) {
             return serviceFee;
         }
         
@@ -402,7 +402,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             return list;
         }
         
-        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0 && BigDecimal.valueOf(0).compareTo(batteryMemberCard.getFreezeServiceCharge()) == 0) {
             return list;
         }
         
