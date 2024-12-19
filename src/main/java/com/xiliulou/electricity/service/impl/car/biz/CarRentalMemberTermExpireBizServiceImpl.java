@@ -763,7 +763,14 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
      */
     private CarLockCtrlHistory buildCarLockCtrlHistory(ElectricityCar electricityCar, UserInfo userInfo, Long nowTime,
             Integer type) {
+        if (Objects.isNull(userInfo)){
+            log.warn("WARN! uid={}, userInfo is null",electricityCar.getUid());
+            return null;
+        }
+        
         Integer tenantId = userInfo.getTenantId();
+        
+        
         
         boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
         log.info("buildCarLockCtrlHistory, carRentalOrderBizService.retryCarLockCtrl result is {}", result);
