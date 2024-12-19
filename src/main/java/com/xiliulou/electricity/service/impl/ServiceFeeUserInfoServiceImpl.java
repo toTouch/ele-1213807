@@ -164,79 +164,6 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     
     @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {
-/*
-
-        //获取新用户所绑定的加盟商的电池服务费
-        Franchisee franchisee = franchiseeService.queryByUserId(uid);
-        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
-        //计算用户所产生的电池服务费
-        if (Objects.isNull(franchisee)) {
-            return eleBatteryServiceFeeVO;
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.warn("ELE WARN! not found user,uid={}", uid);
-            return eleBatteryServiceFeeVO;
-        }
-
-        Integer modelType = franchisee.getModelType();
-        if (Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), BigDecimal.valueOf(0))) {
-            return eleBatteryServiceFeeVO;
-        }
-
-        eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
-
-        eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
-
-        ServiceFeeUserInfo serviceFeeUserInfo = queryByUidFromCache(uid);
-    
-        List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil
-                .fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-        eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
-    
-        eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
-    
-        if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-            UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
-            if (Objects.nonNull(userBattery)) {
-                eleBatteryServiceFeeVO.setBatteryType(userBattery.getBatteryType());
-                eleBatteryServiceFeeVO.setModel(batteryModelService.acquireBatteryModel(userBattery.getBatteryType(),userInfo.getTenantId()));
-            }
-        }
-
-        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-        Long now = System.currentTimeMillis();
-        long cardDays = 0;
-        //用户产生的套餐过期电池服务费
-
-        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            //查询用户是否存在套餐过期电池服务费
-            userChangeServiceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
-        }
-
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-
-        Integer memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE;
-
-        //用户产生的停卡电池服务费
-        if (Objects.nonNull(userBatteryMemberCard)) {
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
-                cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-                //不足一天按一天计算
-                double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-                if (time < 24) {
-                    cardDays = 1;
-                }
-                userChangeServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, uid, cardDays, null, serviceFeeUserInfo);
-                memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_DISABLE;
-            }
-        }
-        eleBatteryServiceFeeVO.setMemberCardStatus(memberCardStatus);
-        eleBatteryServiceFeeVO.setUserBatteryServiceFee(userChangeServiceFee);
-*/
-        
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -326,7 +253,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             return Triple.of(false, null, null);
         }
         
-        if (BigDecimal.valueOf(0).compareTo(userBindBatteryMemberCard.getServiceCharge()) == 0) {
+        if (BigDecimal.valueOf(0).compareTo(userBindBatteryMemberCard.getServiceCharge()) == 0 && BigDecimal.valueOf(0).compareTo(userBindBatteryMemberCard.getFreezeServiceCharge()) == 0) {
             return Triple.of(false, null, null);
         }
         
