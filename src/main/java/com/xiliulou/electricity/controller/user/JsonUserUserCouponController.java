@@ -2,8 +2,10 @@ package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserDayCouponService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,6 +74,11 @@ public class JsonUserUserCouponController {
             
             statusList = Arrays.asList(statuses);
         }
+
+        if (CollectionUtils.isEmpty(typeList)){
+            typeList = Collections.singletonList(Coupon.FULL_REDUCTION);
+        }
+
         return userCouponService.queryMyCoupons(statusList, typeList, franchiseeId);
         
     }

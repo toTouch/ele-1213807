@@ -616,11 +616,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             
             CouponVO couponVO = new CouponVO();
             couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
-            
+
+            int isGet;
             //是否可以领取优惠券
             if (shareActivityRule.getTriggerCount() <= availableCount) {
+                isGet = CouponVO.IS_NOT_RECEIVE;
                 couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
             } else {
+                isGet = CouponVO.IS_CANNOT_RECEIVE;
                 couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
             }
             
@@ -639,13 +642,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                 List<Coupon> couponArrays = couponVO.getCouponArrays();
                 for (Coupon coupon : couponArrays) {
                     //是否可以领取优惠券
-                    if (shareActivityRule.getTriggerCount() <= availableCount) {
-                        couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
-                        coupon.setIsGet(CouponVO.IS_NOT_RECEIVE);
-                    } else {
-                        couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
-                        coupon.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
-                    }
+                    couponVO.setIsGet(isGet);
+                    coupon.setIsGet(isGet);
                     //是否领取该活动该优惠券
                     UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), user.getUid());
                     if (Objects.nonNull(userCoupon)) {
@@ -657,6 +655,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                         getCouponPackage(coupon, couponVO);
                     }
                 }
+                couponVO.setCouponArrays(couponArrays);
             }
             
             couponVOList.add(couponVO);

@@ -108,16 +108,13 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
 
             Pair<Boolean, Boolean> depositPair = strategy.isReturnTheDeposit(tenantId, uid);
             if (Objects.nonNull(depositPair)) {
-                if (Objects.nonNull(depositPair.getLeft()) && depositPair.getLeft()) {
-                    return R.fail("400009","您已退押，暂无法使用，请缴纳押金后使用");
-                }
                 if (Objects.nonNull(depositPair.getRight()) && depositPair.getRight()) {
                     return R.fail("400015","您退押正在审核中，暂无法使用");
                 }
-            }
-            
-            if (!strategy.isPackageInUse(tenantId, uid)) {
-                return R.fail("400008",String.format("请先购买%s套餐后使用", useScope.getDesc()));
+
+                if (Objects.nonNull(depositPair.getLeft()) && depositPair.getLeft()) {
+                    return R.fail("400009","您已退押，暂无法使用，请缴纳押金后使用");
+                }
             }
             
             if (strategy.isLateFee(tenantId, uid)) {
@@ -128,12 +125,16 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
                 if (Objects.nonNull(freezeOrAudit.getLeft()) && freezeOrAudit.getLeft()) {
                     return R.fail("400011","您当前套餐已冻结，暂无法使用，请启用后使用");
                 }
-                if (Objects.nonNull(freezeOrAudit.getLeft()) && freezeOrAudit.getRight()) {
+                if (Objects.nonNull(freezeOrAudit.getRight()) && freezeOrAudit.getRight()) {
                     return R.fail("400012","您有在申请的冻结套餐，暂无法使用，请启用后使用");
                 }
             }
             if (strategy.isOverdue(tenantId, uid)) {
                 return R.fail("400013",String.format("您当前套餐已过期，请先购买%s套餐后使用", useScope.getDesc()));
+            }
+
+            if (!strategy.isPackageInUse(tenantId, uid)) {
+                return R.fail("400008",String.format("请先购买%s套餐后使用", useScope.getDesc()));
             }
             
             Triple<Boolean,Long ,String> processed = strategy.process(coupon, tenantId, uid);
