@@ -197,9 +197,7 @@
         select
         count(*)
         from t_user_active_info uai
-        <if test="(franchiseeIds != null and franchiseeIds.size()>0) or (storeIds != null and storeIds.size()>0)">
-            left join t_user_info ui force index (uid) on uai.uid = ui.uid
-        </if>
+        left join t_user_info ui force index (uid) on uai.uid = ui.uid
         <if test="(batterySn != null and batterySn != '') or isBoundBattery == 0 or isBoundBattery == 1">
             left join t_electricity_battery eb on uai.uid = eb.uid
         </if>
