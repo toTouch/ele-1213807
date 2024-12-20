@@ -139,7 +139,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
-            log.error("OffLINE ELECTRICITY ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.warn("OffLINE ELECTRICITY ERROR! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
         }
     

@@ -903,6 +903,11 @@ public interface CacheConstant {
      * 用户端及后台下单接口锁
      */
     String ELE_CACHE_PLACE_ORDER_LOCK_KEY = "ele_cache_place_order_lock_key:";
+    
+    /**
+     * 快捷换电命令下发结果缓存key
+     */
+    String QUICK_EXCHANGE_RESULT_KEY = "quick_exchange_result:";
 
     /**
      * 租户下加盟互通配置缓存key
