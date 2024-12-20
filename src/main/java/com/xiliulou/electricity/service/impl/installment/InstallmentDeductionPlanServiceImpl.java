@@ -92,7 +92,7 @@ public class InstallmentDeductionPlanServiceImpl implements InstallmentDeduction
     
     @Override
     public R<List<InstallmentDeductionPlanAssemblyVO>> listDeductionPlanForRecordUser(InstallmentDeductionPlanQuery query) {
-        List<InstallmentDeductionPlan> deductionPlans = listDeductionPlanByAgreementNo(query).getData();
+        List<InstallmentDeductionPlan> deductionPlans = installmentDeductionPlanMapper.selectListDeductionPlanByAgreementNo(query);
         if (CollectionUtils.isEmpty(deductionPlans)) {
             return R.ok(Collections.emptyList());
         }
