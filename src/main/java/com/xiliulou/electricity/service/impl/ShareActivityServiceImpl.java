@@ -1142,10 +1142,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         }
     
         // 如果有加盟商，则查加盟商的活动
-        List<ShareActivity> list;
-        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L)) {
-            list = activityList.stream().filter(activity -> Objects.equals(activity.getFranchiseeId().longValue(), franchiseeId)).collect(Collectors.toList());
-        } else {
+        List<ShareActivity> list = activityList.stream()
+                .filter(activity -> Objects.nonNull(activity.getFranchiseeId()) && !Objects.equals(franchiseeId, NumberConstant.ZERO_L) && Objects.equals(
+                        activity.getFranchiseeId().longValue(), franchiseeId)).collect(Collectors.toList());
+    
+        if (CollectionUtils.isEmpty(list)) {
             // 如果没有加盟商，则查租户的活动
             list = activityList.stream().filter(activity -> Objects.isNull(activity.getFranchiseeId()) || Objects.equals(activity.getFranchiseeId(), NumberConstant.ZERO))
                     .collect(Collectors.toList());
@@ -1155,6 +1156,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             return null;
         }
     
+        // 上架活动唯一
         return list.get(0);
     }
     
