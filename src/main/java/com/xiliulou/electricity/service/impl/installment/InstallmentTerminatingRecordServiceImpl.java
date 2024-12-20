@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.installment.InstallmentConstants;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.entity.installment.InstallmentDeductionPlan;
 import com.xiliulou.electricity.entity.installment.InstallmentRecord;
@@ -25,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -71,27 +74,36 @@ public class InstallmentTerminatingRecordServiceImpl implements InstallmentTermi
     @Override
     public R<List<InstallmentTerminatingRecordVO>> listForPage(InstallmentTerminatingRecordQuery query) {
         List<InstallmentTerminatingRecord> records = installmentTerminatingRecordMapper.selectPage(query);
+        if (CollectionUtils.isEmpty(records)) {
+            return R.ok(Collections.emptyList());
+        }
         
         List<InstallmentTerminatingRecordVO> collect = records.parallelStream().map(installmentTerminatingRecord -> {
             InstallmentTerminatingRecordVO vo = new InstallmentTerminatingRecordVO();
             BeanUtils.copyProperties(installmentTerminatingRecord, vo);
             
-            vo.setFranchiseeName(franchiseeService.queryByIdFromCache(installmentTerminatingRecord.getFranchiseeId()).getName());
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(installmentTerminatingRecord.getFranchiseeId());
+            vo.setFranchiseeName(Objects.isNull(franchisee) ? null : franchisee.getName());
             
             // 设置电或者车的套餐名称，设置总金额和未支付金额
             if (Objects.equals(installmentTerminatingRecord.getPackageType(), InstallmentConstants.PACKAGE_TYPE_BATTERY)) {
                 BatteryMemberCard memberCard = batteryMemberCardService.queryByIdFromCache(installmentTerminatingRecord.getPackageId());
-                vo.setPackageName(memberCard.getName());
-                vo.setAmount(memberCard.getRentPrice());
-                vo.setUnpaidAmount(vo.getAmount().subtract(vo.getPaidAmount()));
+                if (Objects.nonNull(memberCard)) {
+                    vo.setPackageName(memberCard.getName());
+                    vo.setAmount(memberCard.getRentPrice());
+                    vo.setUnpaidAmount(vo.getAmount().subtract(vo.getPaidAmount()));
+                }
             } else {
                 CarRentalPackagePo carRentalPackagePo = carRentalPackageService.selectById(installmentTerminatingRecord.getPackageId());
-                vo.setPackageName(carRentalPackagePo.getName());
+                if (Objects.nonNull(carRentalPackagePo)) {
+                    vo.setPackageName(carRentalPackagePo.getName());
+                }
             }
             
             // 设置审核人名称
             if (Objects.nonNull(installmentTerminatingRecord.getAuditorId())) {
-                vo.setAuditorName(userService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId()).getName());
+                User user = userService.queryByUidFromCache(installmentTerminatingRecord.getAuditorId());
+                vo.setAuditorName(Objects.isNull(user) ? null : user.getName());
             }
             
             return vo;
