@@ -296,7 +296,7 @@ public class MeiTuanRiderMallOrderServiceImpl implements MeiTuanRiderMallOrderSe
                 meiTuanOrderRedeemTxService.rollback(rollBackBO);
                 // 清除缓存
                 meiTuanOrderRedeemTxService.rollbackClearCache(uid);
-                log.error("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
+                log.warn("MeiTuan order redeem fail! notifyMeiTuanDeliver fail, uid={}, meiTuanOrderId={}", uid, meiTuanOrderId);
                 return Triple.of(false, "120146", "订单兑换失败，请联系客服处理");
             }
             
