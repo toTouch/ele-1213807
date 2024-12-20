@@ -184,9 +184,9 @@ public class NormalOpenFullyCellHandlerIot extends AbstractElectricityIotHandler
         handleExpireMemberCard(openFullCellRsp, cabinetOrder);
         
         // 快捷换电成功标记
-        QuickExchangeResultDTO quickExchangeResultDTO = QuickExchangeResultDTO.builder().success(true).build();
+        QuickExchangeResultDTO quickExchangeResultDTO = QuickExchangeResultDTO.builder().msg(openFullCellRsp.getTakeCellNo() + "仓快捷换电开门成功").success(true).build();
         redisService.set(CacheConstant.QUICK_EXCHANGE_RESULT_KEY + openFullCellRsp.getSessionId(), JsonUtil.toJson(quickExchangeResultDTO), 2L, TimeUnit.MINUTES);
-        
+
         quickExchangeSaveSelfOpenTime(cabinetOrder);
         
         // 如果旧电池检测失败会在这个表里面，导致在订单记录中存在自主开仓，所以移除旧版本的自主开仓记录
