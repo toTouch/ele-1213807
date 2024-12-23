@@ -82,6 +82,15 @@
         from t_ota_file_config where type = #{type}
     </select>
     
+    <select id="selectListByTypes" resultType="com.xiliulou.electricity.entity.OtaFileConfig">
+        select
+          id, name, download_link, version, sha256_value, type, create_time, update_time
+        from t_ota_file_config where type in
+        <foreach collection="types" item="type" open="(" close=")" separator=",">
+            #{type}
+        </foreach>
+    </select>
+    
     
     <insert id="insertOrupdate" keyProperty="id" useGeneratedKeys="true">
         insert into t_ota_file_config(name, download_link, version, sha256_value, type, create_time, update_time)

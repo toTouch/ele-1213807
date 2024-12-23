@@ -22,34 +22,22 @@ public class OtaConstant {
      */
     public static final Integer OTA_TYPE_UPGRADE = 3;
     
-    /**
-     * ota 六合一下载
-     */
-    public static final Integer OTA_SIX_IN_ONE_TYPE_DOWNLOAD = 4;
+    public static final int OTA_VERSION_TYPE_FOR_SYNC_UPGRADE = 0;
+    public static final int OTA_VERSION_TYPE_OLD = 1;
     
-    /**
-     * ota 六合一同步
-     */
-    public static final Integer OTA_SIX_IN_ONE_TYPE_SYNC = 5;
+    public static final int OTA_VERSION_TYPE_NEW = 2;
     
-    /**
-     * ota 六合一升级
-     */
-    public static final Integer OTA_SIX_IN_ONE_TYPE_UPGRADE = 6;
+    public static final int OTA_VERSION_TYPE_SIX = 3;
     
-    
-    public static final int OTA_VERSIONTYPE_OLD = 1;
-    
-    public static final int OTA_VERSIONTYPE_NEW = 2;
-    
-    public static final int OTA_VERSIONTYPE_SIX_IN_ONE = 3;
-    
+    public static final int OTA_VERSION_TYPE_NEW_SIX = 4;
     
     public static final String SESSION_PREFIX_OLD = "OLD";
     
     public static final String SESSION_PREFIX_NEW = "NEW";
     
-    public static final String SESSION_PREFIX_SIX_IN_ONE = "SIXINONE";
+    public static final String SESSION_PREFIX_SIX = "SIX";
+    
+    public static final String SESSION_PREFIX_NEW_SIX = "NEWSIX";
     
     public static final String OTA_CORE_FILE_URL = "coreFileUrl";
     
@@ -59,7 +47,7 @@ public class OtaConstant {
     
     public static final String OTA_USERNAME = "username";
     
-    public static final String OTA_CONTENT_CELLNOS = "cellNos";
+    public static final String OTA_CONTENT_CELL_NOS = "cellNos";
     
     public static final String OTA_CONTENT = "content";
     

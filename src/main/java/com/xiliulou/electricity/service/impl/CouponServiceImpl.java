@@ -160,7 +160,7 @@ public class CouponServiceImpl implements CouponService {
         
         if (Objects.equals(couponQuery.getDiscountType(), Coupon.DISCOUNT)) {
             if (Objects.isNull(couponQuery.getDiscount())) {
-                return R.fail("ELECTRICITY.0073", "打折折扣不能为空");
+                return R.fail("ELECTRICITY.0073", "折扣不能为空");
             }
         }
         

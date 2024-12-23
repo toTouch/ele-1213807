@@ -141,14 +141,15 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     public void updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid, String sessionId) {
         Optional.ofNullable(cellNos).orElse(Lists.newArrayList()).parallelStream().forEach(cellNo -> {
             Integer type = Objects.equals(cellNo, NumberConstant.ZERO) ? EleOtaUpgrade.TYPE_CORE : EleOtaUpgrade.TYPE_SUB;
-        
             Integer fileType = null;
             if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_OLD)) {
                 fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_OLD_CORE_BOARD : OtaFileConfig.TYPE_OLD_SUB_BOARD;
             } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW)) {
                 fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_CORE_BOARD : OtaFileConfig.TYPE_SUB_BOARD;
-            } else {
-                fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_SIX_IN_ONE_CORE_BOARD : OtaFileConfig.TYPE_SIX_IN_ONE_SUB_BOARD;
+            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_SIX)) {
+                fileType = OtaFileConfig.TYPE_SIX_SUB_BOARD;
+            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW_SIX)) {
+                fileType = OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD;
             }
         
             EleOtaUpgrade eleOtaUpgradeFromDb = queryByEidAndCellNo(eid, cellNo, type);
