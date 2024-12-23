@@ -78,6 +78,7 @@ public class JsonUserEleDepositOrderController {
     }
     
     //用户查询押金
+    @Deprecated
     @GetMapping(value = "/user/queryDeposit")
     public R queryDeposit(@RequestParam(value = "productKey", required = false) String productKey, @RequestParam(value = "deviceName", required = false) String deviceName,
             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
@@ -86,6 +87,7 @@ public class JsonUserEleDepositOrderController {
     
     
     //用户查询押金
+    @Deprecated
     @GetMapping(value = "/user/queryFranchiseeDeposit")
     public R queryFranchiseeDeposit(@RequestParam(value = "productKey", required = false) String productKey,
             @RequestParam(value = "deviceName", required = false) String deviceName, @RequestParam(value = "franchiseeId") Long franchiseeId) {
