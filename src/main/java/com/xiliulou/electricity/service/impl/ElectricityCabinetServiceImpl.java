@@ -177,29 +177,7 @@ import com.xiliulou.electricity.utils.OperateRecordUtil;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.VersionUtil;
-import com.xiliulou.electricity.vo.BatchImportCabinetFailVO;
-import com.xiliulou.electricity.vo.BatchImportCabinetVo;
-import com.xiliulou.electricity.vo.CabinetBatteryVO;
-import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
-import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetCountVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetExcelVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetListMapVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetMapVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetSimpleVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.HomePageElectricityOrderVo;
-import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
-import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
-import com.xiliulou.electricity.vo.HomepageBatteryVo;
-import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
-import com.xiliulou.electricity.vo.HomepageElectricityExchangeVo;
-import com.xiliulou.electricity.vo.HomepageOverviewDetailVo;
-import com.xiliulou.electricity.vo.QuickExchangeVO;
-import com.xiliulou.electricity.vo.RentReturnEditEchoVO;
-import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.vo.asset.AssetWarehouseNameVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.response.QueryDeviceDetailResult;
@@ -5730,10 +5708,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R getQuickExchangeResult(String sessionId) {
         String result = redisService.get(CacheConstant.QUICK_EXCHANGE_RESULT_KEY + sessionId);
         if (StrUtil.isEmpty(result)) {
-            return R.ok("0001");
+            return R.ok(QuickExchangeResultVO.builder().code("0001").build());
         }
 
         QuickExchangeResultDTO resultDTO = JsonUtil.fromJson(result, QuickExchangeResultDTO.class);
-        return resultDTO.getSuccess() ? R.ok("0002") : R.ok(resultDTO.getMsg());
+        QuickExchangeResultVO vo = QuickExchangeResultVO.builder().msg(resultDTO.getMsg()).build();
+        if (resultDTO.getSuccess()) {
+            vo.setCode("0002");
+            return R.ok(vo);
+        }
+        vo.setCode("0003");
+        return R.ok(vo);
     }
 }

@@ -674,7 +674,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
         
         //对异常仓门进行锁仓处理
-        electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
+        // electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
         
         //查询三元组信息
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
