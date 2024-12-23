@@ -51,8 +51,6 @@ import com.xiliulou.electricity.query.installment.InstallmentPayQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardOrderCouponService;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -60,25 +58,13 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
-import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
@@ -91,11 +77,8 @@ import com.xiliulou.electricity.service.enterprise.EnterpriseChannelUserService;
 import com.xiliulou.electricity.service.installment.InstallmentRecordService;
 import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.installment.InstallmentSearchApiService;
-import com.xiliulou.electricity.service.installment.InstallmentRecordService;
-import com.xiliulou.electricity.service.pay.PayConfigBizService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeMixedOrderService;
 import com.xiliulou.electricity.service.profitsharing.ProfitSharingTradeOrderService;
-import com.xiliulou.electricity.service.userinfo.userInfoGroup.UserInfoGroupDetailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.ttl.ChannelSourceContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
@@ -119,7 +102,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -130,9 +112,6 @@ import static com.xiliulou.electricity.constant.BatteryMemberCardConstants.CHECK
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_CANCEL_SIGN;
 import static com.xiliulou.electricity.constant.CacheConstant.CACHE_INSTALLMENT_PAYMENT_LOCK;
 import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_INIT;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_SIGN;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_TERMINATE;
-import static com.xiliulou.electricity.constant.installment.InstallmentConstants.INSTALLMENT_RECORD_STATUS_UN_SIGN;
 
 /**
  * 混合支付(UnionTradeOrder)表服务接口
@@ -146,9 +125,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
-    
-    @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
     
     @Autowired
     UserOauthBindService userOauthBindService;
@@ -181,52 +157,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     @Autowired
-    ElectricityMemberCardService electricityMemberCardService;
-    
-    @Autowired
     UserCouponService userCouponService;
-    
-    @Autowired
-    CouponService couponService;
-    
-    @Autowired
-    JoinShareActivityRecordService joinShareActivityRecordService;
-    
-    @Autowired
-    OldUserActivityService oldUserActivityService;
-    
-    @Autowired
-    JoinShareActivityHistoryService joinShareActivityHistoryService;
-    
-    @Autowired
-    ShareActivityRecordService shareActivityRecordService;
-    
-    @Autowired
-    JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
-    
-    @Autowired
-    JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
-    
-    @Autowired
-    ShareMoneyActivityService shareMoneyActivityService;
-    
-    @Autowired
-    ShareMoneyActivityRecordService shareMoneyActivityRecordService;
-    
-    @Autowired
-    UserAmountService userAmountService;
     
     @Autowired
     RedisService redisService;
     
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-    
-    @Autowired
-    StoreService storeService;
-    
-    @Autowired
-    BatteryModelService batteryModelService;
     
     @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
@@ -1461,9 +1398,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 expiredEleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                         .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                         .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT)
-                        .batteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000).createTime(System.currentTimeMillis())
-                        .updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
-                        .franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
+                        .batteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() + expiredProtectionTime * 60 * 60 * 1000)
+                        .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
+                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
                         .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getServiceCharge())
                         .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
