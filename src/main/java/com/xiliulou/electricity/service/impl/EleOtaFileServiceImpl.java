@@ -118,7 +118,7 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
         
         EleOtaFile eleOtaFile = this.queryByEid(eid);
         if (Objects.nonNull(eleOtaFile)) {
-            if (!eleOtaFile.getFileType().equals(EleOtaFile.TYPE_NEW_FILE) && !eleOtaFile.getFileType().equals(EleOtaFile.TYPE_NEW_SIX_FILE)) {
+            if (!eleOtaFile.getFileType().equals(EleOtaFile.TYPE_SIX_FILE) && !eleOtaFile.getFileType().equals(EleOtaFile.TYPE_NEW_SIX_FILE)) {
                 otaFileCheckSumVo.setCoreSha256HexEle(eleOtaFile.getCoreSha256Value());
                 otaFileCheckSumVo.setCoreNameEle(eleOtaFile.getCoreName());
             }
