@@ -39,7 +39,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      * 根据电池SN集查询电池
      * <p>用于内部接口，删除电池使用</p>
      *
-     * @param franchiseeIdList
      * @param tenantId             租户ID
      * @param batterySns           电池SN编码集
      * @param bindFranchiseeIdList
