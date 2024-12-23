@@ -916,7 +916,7 @@ public class UnionTradeOrderServiceImpl extends ServiceImpl<UnionTradeOrderMappe
                 // 保存用户押金对应的电池型号
                 List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
                 if (CollectionUtils.isNotEmpty(batteryTypeList)) {
-                    userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+                    userBatteryTypeService.updateUserBatteryType(electricityMemberCardOrder, userInfo);
                 }
             } else {
                 BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
