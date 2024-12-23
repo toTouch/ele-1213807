@@ -20,6 +20,7 @@ public enum ExchangeTypeEnum implements BasicEnum<Integer, String> {
     OFFLINE_EXCHANGE(3, "离线换电"),
     BLUETOOTH_EXCHANGE(4, "蓝牙换电"),
     SELECTION_EXCHANGE(5, "选仓换电"),
+    QUICK_EXCHANGE(6, "快捷换电"),
     ;
     
     private final Integer code;

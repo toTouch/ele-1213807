@@ -26,6 +26,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetTransferQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
+import com.xiliulou.electricity.query.exchange.QuickExchangeQuery;
 import com.xiliulou.electricity.request.asset.TransferCabinetModelRequest;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -1055,5 +1056,28 @@ public class JsonAdminElectricityCabinetController extends BasicController {
         return electricityCabinetService.updateCabinetPattern(query);
     }
     
+    /**
+     * saas快捷换电
+     *
+     * @param quickExchangeQuery query
+     * @return R
+     */
+    @PostMapping(value = "/admin/electricityCabinet/quickExchange")
+    public R quickExchange(@RequestBody @Validated QuickExchangeQuery quickExchangeQuery) {
+        return electricityCabinetService.quickExchage(quickExchangeQuery);
+    }
     
+    /**
+     * 快捷换电命令下发结果查询
+     *
+     * @param sessionId sessionId
+     * @return R
+     */
+    @GetMapping("/admin/electricityCabinet/quickExchange/result")
+    public R getQuickExchangeResult(@RequestParam("sessionId") String sessionId) {
+        if (StrUtil.isEmpty(sessionId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCabinetService.getQuickExchangeResult(sessionId);
+    }
 }

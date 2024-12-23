@@ -14,14 +14,6 @@
         <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
     </resultMap>
 
-    <!--查询单个-->
-    <select id="queryById" resultMap="UserBatteryMemberCardPackageMap">
-        select
-          id, uid, member_card_id, order_id, tenant_id, create_time, update_time, member_card_expire_time, remaining_number, status
-        from t_user_battery_member_card_package
-        where id = #{id}
-    </select>
-
     <select id="checkUserBatteryMemberCardPackageByUid" resultType="Integer">
        SELECT	1 FROM	t_user_battery_member_card_package ubmcp	LEFT JOIN t_battery_member_card bmc ON ubmcp.member_card_id = bmc.id
        WHERE	bmc.is_refund = 0 	AND ubmcp.uid = #{uid} LIMIT 1
@@ -87,41 +79,6 @@
         order by p.id desc
             limit 1
     </select>
-
-    <!--通过主键修改数据-->
-    <update id="update">
-        update t_user_battery_member_card_package
-        <set>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="memberCardId != null">
-                member_card_id = #{memberCardId},
-            </if>
-            <if test="orderId != null and orderId != ''">
-                order_id = #{orderId},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="memberCardExpireTime != null">
-                member_card_expire_time = #{memberCardExpireTime},
-            </if>
-            <if test="remainingNumber != null">
-                remaining_number = #{remainingNumber},
-            </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">

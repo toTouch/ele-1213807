@@ -386,7 +386,11 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.queryAuthenticationCount(userInfoQuery);
     }
     
-    // 绑定电池
+    /**
+     * 绑定电池
+     * @param userInfoBatteryAddAndUpdate request
+     * @return R
+     */
     @PutMapping(value = "/admin/userInfo/bindBattery")
     @Log(title = "后台绑定电池")
     public R webBindBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {

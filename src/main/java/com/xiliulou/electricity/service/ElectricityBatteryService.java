@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.bo.ExportMutualBatteryBO;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BatteryExcelV3Query;
@@ -144,6 +145,10 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     
     List<ElectricityBatteryVO> listBatteriesBySn(Integer offset, Integer size, Integer tenantId, Long franchiseeId, String sn);
     
+    List<ElectricityBatteryVO> listBatteriesBySnV2(Integer offset, Integer size, Long uid, String sn);
+    
+    List<ElectricityBatteryVO> getListBatteriesByFranchisee(Integer offset, Integer size, Integer tenantId, List<Long> franchiseeIdList, String sn);
+    
     /**
      * <p>
      *    Description: queryIdsBySnArray
@@ -165,6 +170,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> listBySnList(List<String> item, Integer tenantId, List<Long> bindFranchiseeIdList);
     
     R deleteBatteryByExcel(DelBatteryReq delBatteryReq);
+
+
+    List<ExportMutualBatteryBO> queryMutualBattery(Integer tenantId, List<Long> franchiseeIds);
     
     List<BatteryChangeInfoVO> getBatteryChangeOtherInfo(List<BatteryChangeInfo> list);
     

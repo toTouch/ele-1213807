@@ -34,6 +34,7 @@ public class ExchangeOrderMsgShowVO {
      */
     private Integer checkTimeOut = 0;
     
+    
     /**
      * 1--放电池过程图片 2--取电池过程图片 3--异常图片
      */

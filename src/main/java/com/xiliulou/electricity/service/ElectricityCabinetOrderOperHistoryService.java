@@ -36,4 +36,7 @@ public interface ElectricityCabinetOrderOperHistoryService {
     Integer updateTenantIdByOrderId(String orderId, Integer superAdminTenantId);
     
     ElectricityCabinetOrderOperHistory queryOrderHistoryFinallyFail(String orderId);
+    
+    
+    void initExchangeOrderOperHistory(String orderId, Integer tenantId, Integer oldCell);
 }
