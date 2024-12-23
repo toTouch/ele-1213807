@@ -144,7 +144,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             Integer fileType = null;
             if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_OLD)) {
                 fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_OLD_CORE_BOARD : OtaFileConfig.TYPE_OLD_SUB_BOARD;
-            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW)) {
+            } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW) && !sessionId.startsWith(OtaConstant.SESSION_PREFIX_NEW_SIX)) {
                 fileType = Objects.equals(cellNo, NumberConstant.ZERO) ? OtaFileConfig.TYPE_CORE_BOARD : OtaFileConfig.TYPE_SUB_BOARD;
             } else if (sessionId.startsWith(OtaConstant.SESSION_PREFIX_SIX)) {
                 fileType = OtaFileConfig.TYPE_SIX_SUB_BOARD;
