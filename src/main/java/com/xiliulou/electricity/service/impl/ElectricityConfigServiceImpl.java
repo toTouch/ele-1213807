@@ -122,7 +122,6 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     
     
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -225,6 +224,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
             electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
             electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
+            electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
+            electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
+            electricityConfig.setIsSwapExchange(electricityConfigAddAndUpdateQuery.getIsSwapExchange());
             electricityConfig.setFreezeAutoReviewDays(electricityConfigAddAndUpdateQuery.getFreezeAutoReviewDays());
             electricityConfig.setPackageFreezeCount(electricityConfigAddAndUpdateQuery.getPackageFreezeCount());
             electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
@@ -269,19 +271,19 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsEnableMeiTuanRiderMall(electricityConfigAddAndUpdateQuery.getIsEnableMeiTuanRiderMall());
         electricityConfig.setEleLimit(electricityConfigAddAndUpdateQuery.getEleLimit());
         electricityConfig.setEleLimitCount(electricityConfigAddAndUpdateQuery.getEleLimitCount());
+        electricityConfig.setIsEnableFlexibleRenewal(electricityConfigAddAndUpdateQuery.getIsEnableFlexibleRenewal());
+        electricityConfig.setIsEnableSeparateDeposit(electricityConfigAddAndUpdateQuery.getIsEnableSeparateDeposit());
+        electricityConfig.setIsSwapExchange(electricityConfigAddAndUpdateQuery.getIsSwapExchange());
         electricityConfig.setFreezeAutoReviewDays(electricityConfigAddAndUpdateQuery.getFreezeAutoReviewDays());
         electricityConfig.setPackageFreezeCount(electricityConfigAddAndUpdateQuery.getPackageFreezeCount());
         electricityConfig.setPackageFreezeDays(electricityConfigAddAndUpdateQuery.getPackageFreezeDays());
         electricityConfig.setExpiredProtectionTime(electricityConfigAddAndUpdateQuery.getExpiredProtectionTime());
         
         electricityConfigMapper.update(electricityConfig);
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                // 清理缓存
-                redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
-            }
-        });
+
+        // 清理缓存
+        redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
+
         operateRecordUtil.record(oldElectricityConfig, electricityConfig);
         return R.ok();
     }

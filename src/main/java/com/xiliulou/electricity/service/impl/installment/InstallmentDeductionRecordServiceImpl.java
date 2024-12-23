@@ -8,7 +8,7 @@ import com.xiliulou.electricity.query.installment.InstallmentDeductionRecordQuer
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.installment.InstallmentDeductionRecordService;
 import com.xiliulou.electricity.vo.installment.InstallmentDeductionRecordVO;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -23,12 +23,12 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class InstallmentDeductionRecordServiceImpl implements InstallmentDeductionRecordService {
     
-    private InstallmentDeductionRecordMapper installmentDeductionRecordMapper;
+    private final InstallmentDeductionRecordMapper installmentDeductionRecordMapper;
     
-    private FranchiseeService franchiseeService;
+    private final FranchiseeService franchiseeService;
     
     
     @Override
@@ -39,6 +39,11 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
     @Override
     public Integer update(InstallmentDeductionRecord installmentDeductionRecord) {
         return installmentDeductionRecordMapper.update(installmentDeductionRecord);
+    }
+    
+    @Override
+    public InstallmentDeductionRecord queryById(Long id) {
+        return installmentDeductionRecordMapper.queryById(id);
     }
     
     @Slave
@@ -62,12 +67,13 @@ public class InstallmentDeductionRecordServiceImpl implements InstallmentDeducti
         return R.ok(installmentDeductionRecordMapper.count(installmentDeductionRecordQuery));
     }
     
-    
+    @Slave
     @Override
     public InstallmentDeductionRecord queryByPayNo(String payNo) {
         return installmentDeductionRecordMapper.selectRecordByPayNo(payNo);
     }
     
+    @Slave
     @Override
     public List<InstallmentDeductionRecord> listDeductionRecord(InstallmentDeductionRecordQuery installmentDeductionRecordQuery) {
         return installmentDeductionRecordMapper.selectListDeductionRecord(installmentDeductionRecordQuery);

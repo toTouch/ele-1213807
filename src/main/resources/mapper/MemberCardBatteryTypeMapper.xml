@@ -11,14 +11,7 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
     </resultMap>
-
-    <!--查询单个-->
-    <select id="queryById" resultMap="MemberCardBatteryTypeMap">
-        select
-          id, battery_type, battery_v, mid, create_time, update_time, tenant_id
-        from t_member_card_battery_type
-        where id = #{id}
-    </select>
+    
 
     <select id="selectBatteryTypeByMid" resultType="String">
         select battery_type from t_member_card_battery_type
@@ -32,33 +25,5 @@
             (#{item.batteryType},#{item.batteryV},#{item.mid}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
         </foreach>
     </insert>
-
-    <!--通过主键修改数据-->
-    <update id="update">
-        update t_member_card_battery_type
-        <set>
-            <if test="batteryType != null and batteryType != ''">
-                battery_type = #{batteryType},
-            </if>
-            <if test="mid != null">
-                mid = #{mid},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
-
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from t_member_card_battery_type where id = #{id}
-    </delete>
 
 </mapper>

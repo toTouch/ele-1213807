@@ -50,7 +50,7 @@ public class JsonAdminInstallmentBizController {
      * 后台同步代扣结果
      */
     @GetMapping("/admin/installment/deductionRecord/queryStatus")
-    public R queryDeductStatus(@RequestParam String payNo) {
+    public R<Object> queryDeductStatus(@RequestParam String payNo) {
         return installmentBizService.queryDeductStatus(payNo);
     }
 }

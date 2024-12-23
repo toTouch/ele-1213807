@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -215,6 +216,23 @@ public class ElectricityConfig {
     private Integer eleLimitCount;
     
     /**
+     * 灵活续费开关
+     * @see FlexibleRenewalEnum
+     */
+    private Integer isEnableFlexibleRenewal;
+
+    /**
+     * 单独缴纳押金开关：0--开启 1--关闭
+     */
+    private Integer isEnableSeparateDeposit;
+
+    /**
+     * 是否互通换电,默认是1关闭,0开启
+     */
+    private Integer isSwapExchange;
+
+
+    /**
      * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
      */
     private Integer freezeAutoReviewDays;
@@ -390,6 +408,17 @@ public class ElectricityConfig {
      * 关闭对换电套餐购买次数的限制
      */
     public static Integer ELE_LIMIT_CLOSE = 1;
+
+    /**
+     * 单独缴纳押金开关：0--开启 1--关闭
+     */
+    public static Integer SEPARATE_DEPOSIT_OPEN = 0;
+    public static Integer SEPARATE_DEPOSIT_CLOSE = 1;
+
+    /**
+     * 互通换电开启
+     */
+    public static Integer SWAP_EXCHANGE_CLOSE = 1;
     
     /**
      * 租户未设置最大天数时，套餐冻结最大天数限制

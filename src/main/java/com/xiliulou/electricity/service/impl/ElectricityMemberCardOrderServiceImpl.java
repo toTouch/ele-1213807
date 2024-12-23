@@ -2633,6 +2633,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
         }
         
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
@@ -2839,6 +2844,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
             log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
+        }
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return Triple.of(false, "302003", "运营商配置异常，请联系客服");
+        }
+        
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        boolean matchOrNot = memberCardBatteryTypeService.checkBatteryTypeAndDepositWithUser(userBatteryTypes, batteryMemberCardToBuy, userBatteryDeposit, electricityConfig,
+                userInfo);
+        if (!matchOrNot) {
+            return Triple.of(false, "302004", "灵活续费已禁用，请刷新后重新购买");
+        }
+        
+        BigDecimal deposit =
+                (Objects.equals(userBatteryDeposit.getDepositModifyFlag(), UserBatteryDeposit.DEPOSIT_MODIFY_YES) || Objects.equals(userBatteryDeposit.getDepositModifyFlag(),
+                        UserBatteryDeposit.DEPOSIT_MODIFY_SPECIAL)) ? userBatteryDeposit.getBeforeModifyDeposit() : userBatteryDeposit.getBatteryDeposit();
+        if (batteryMemberCardToBuy.getDeposit().compareTo(deposit) > 0) {
+            return Triple.of(false, "100033", "套餐押金金额与缴纳押金不匹配，请刷新重试");
         }
         
         ElectricityMemberCardOrder memberCardOrder = saveRenewalUserBatteryMemberCardOrder(user, userInfo, batteryMemberCardToBuy, userBatteryMemberCard, userBindbatteryMemberCard,

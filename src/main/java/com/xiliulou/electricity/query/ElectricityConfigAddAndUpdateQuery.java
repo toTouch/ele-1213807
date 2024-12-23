@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -200,6 +201,17 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer eleLimitCount;
     
     /**
+     * 灵活续费开关
+     * @see FlexibleRenewalEnum
+     */
+    private Integer isEnableFlexibleRenewal;
+    
+    /**
+     * 单独缴纳押金开关：0--关闭 1--开启
+     */
+    private Integer isEnableSeparateDeposit;
+    
+    /**
      * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
      */
     @Range(min = 0, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
@@ -227,6 +239,12 @@ public class ElectricityConfigAddAndUpdateQuery {
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;
+    
+    
+    /**
+     * 是否互通换电,默认是1关闭,0开启
+     */
+    private Integer isSwapExchange;
 }
 
 

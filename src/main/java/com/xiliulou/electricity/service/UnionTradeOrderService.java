@@ -6,6 +6,7 @@ import com.xiliulou.electricity.bo.wechat.WechatPayParamsDetails;
 import com.xiliulou.electricity.entity.UnionPayOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.handler.placeorder.context.PlaceOrderContext;
 import com.xiliulou.pay.base.dto.BasePayOrderCreateDTO;
 import com.xiliulou.pay.base.exception.PayException;
 import com.xiliulou.pay.base.request.BaseOrderCallBackResource;
@@ -36,7 +37,7 @@ public interface UnionTradeOrderService {
     
     Pair<Boolean, Object> manageEnterpriseMemberCardOrder(String orderNo, Integer orderStatus);
 
-    Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus, UserInfo userInfo);
+    Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus, UserInfo userInfo, PlaceOrderContext context);
 
     UnionTradeOrder selectTradeOrderByOrderId(String orderId);
 
@@ -50,4 +51,9 @@ public interface UnionTradeOrderService {
      * 购买分期套餐回调方法
      */
     Pair<Boolean, Object> notifyInstallmentPayment(BaseOrderCallBackResource callBackResource);
+    
+    /**
+     * 押金、套餐、保险全场景下单购买回调
+     */
+    Pair<Boolean, Object> notifyPlaceOrder(BaseOrderCallBackResource callBackResource);
 }

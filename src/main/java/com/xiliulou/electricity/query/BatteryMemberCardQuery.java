@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.enums.BatteryMemberCardBusinessTypeEnum;
+import com.xiliulou.electricity.enums.FlexibleRenewalEnum;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -184,4 +185,10 @@ public class BatteryMemberCardQuery {
      * 提前续费天数
      */
     private Integer advanceRenewalDay;
+    
+    /**
+     * 灵活续费开关
+     * @see FlexibleRenewalEnum
+     */
+    private Integer isEnableFlexibleRenewal;
 }

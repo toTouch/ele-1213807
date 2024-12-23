@@ -57,7 +57,7 @@ public interface RentBatteryOrderService {
     Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery);
 
 
-    RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId);
+    RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId, String status);
 
     List<EleCabinetUsedRecordVO> findEleCabinetUsedRecords(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery);
 

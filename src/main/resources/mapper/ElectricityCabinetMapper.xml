@@ -216,8 +216,11 @@
             and ( tec.address like concat('%',#{address,jdbcType=VARCHAR},'%') or tec.name like
             concat('%',#{address,jdbcType=VARCHAR},'%') )
         </if>
-        <if test="franchiseeId != null ">
-            and ts.franchisee_id = #{franchiseeId}
+        <if test="franchiseeIdList != null and franchiseeIdList.size() > 0">
+            and ts.franchisee_id  IN
+            <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
         </if>
         <if test="tenantId != null ">
             and tec.tenant_id = #{tenantId}

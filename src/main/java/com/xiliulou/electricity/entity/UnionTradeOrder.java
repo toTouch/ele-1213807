@@ -132,4 +132,9 @@ public class UnionTradeOrder {
      * 购买分期套餐
      */
     public static final String ATTACH_INSTALLMENT = "installment";
+    
+    /**
+     * 押金、套餐、保险全场景下单购买
+     */
+    public static final String ATTACH_PLACE_ORDER = "placeOrder";
 }

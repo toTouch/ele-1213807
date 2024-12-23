@@ -66,6 +66,11 @@ public class AlipayAppConfig {
      */
     private String loginDecryptionKey;
     
+    /**
+     * 商户授权token
+     */
+    private String appAuthToken;
+    
     private Integer tenantId;
     
     /**
