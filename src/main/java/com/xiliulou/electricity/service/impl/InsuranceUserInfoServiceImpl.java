@@ -893,27 +893,37 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             if (CollectionUtils.isEmpty(list)) {
                 return;
             }
-            
-            list.parallelStream().forEach(item -> {
-                if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
-                    //更新用户绑定保险状态
-                    InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
-                    insuranceUserInfo.setId(item.getId());
-                    insuranceUserInfo.setUid(item.getUid());
-                    insuranceUserInfo.setType(item.getType());
-                    insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
-                    insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-                    this.updateInsuranceUserInfoById(insuranceUserInfo);
-                    
-                    //更新订单状态
-                    insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
-                }
-            });
-            
+            list.parallelStream().forEach(this::userInsuranceExpireAutoConvert);
             offset += size;
         }
     }
-    
+
+    @Override
+    public void userInsuranceExpireAutoConvert(InsuranceUserInfo item) {
+        if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
+
+            InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
+            insuranceUserInfo.setId(item.getId());
+            insuranceUserInfo.setUid(item.getUid());
+            insuranceUserInfo.setType(item.getType());
+            insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+            // 当前保险过期，未生效保险立即生效（允许定时任务的时间误差），保险状态更新为未出险
+            InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(item.getUid(), item.getType(), InsuranceOrder.NOT_EFFECTIVE);
+            if (Objects.isNull(insuranceOrder)){
+                insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
+                this.updateInsuranceUserInfoById(insuranceUserInfo);
+                //更新订单状态
+                insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
+            }else {
+                insuranceUserInfo.setIsUse(InsuranceOrder.NOT_USE);
+                this.updateInsuranceUserInfoById(insuranceUserInfo);
+                //更新订单状态
+                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.IS_USE);
+            }
+
+        }
+    }
+
     @Override
     public List<InsuranceUserInfo> selectByUid(Long uid) {
         return baseMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid));
