@@ -628,10 +628,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
 
+        // 有未生效的保险立即生效
         if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceOrder)) {
             updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
             updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
-            //有未生效的保险立即生效
+            // 生效订单
             updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
         }
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
