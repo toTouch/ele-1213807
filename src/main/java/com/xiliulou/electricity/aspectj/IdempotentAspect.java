@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 /**
@@ -42,7 +43,7 @@ public class IdempotentAspect {
     public static final String KEY_PREFIX = "idempotent%s:%s";
     
     
-    @Pointcut("@annotation(IdempotentCheck)")
+    @Pointcut("@annotation(com.xiliulou.electricity.annotation.IdempotentCheck)")
     public void pointcut() {
     }
     
@@ -86,22 +87,23 @@ public class IdempotentAspect {
             String className = pjp.getSimpleClassName();
             String methodName = pjp.getMethod().getName();
             Object[] args = pjp.getArgs();
-            
+            Parameter[] parameters = pjp.getMethod().getParameters();
+            // 获取连接点的方法签名对象
+
             long timeout = annotation.requestIntervalMilliseconds();
             String prefix = annotation.prefix();
 
-            String idempotentKey = this.generateKeyParam(tenantId, uid, className, methodName, args);
+            String idempotentKey = this.generateKeyParam(tenantId, uid, className, methodName, args, parameters);
             if (StringUtils.isBlank(idempotentKey)) {
                 return true;
             }
             
             String MD5 = DigestUtils.md5Hex(idempotentKey);
-            String keyPrefixTemp = KEY_PREFIX;
             if (StringUtils.isNotEmpty(prefix)) {
-                String.format(keyPrefixTemp, StringConstant.UNDERLINE + prefix);
+                prefix = StringConstant.UNDERLINE + prefix;
             }
 
-            String key = String.format(keyPrefixTemp, MD5);
+            String key = String.format(KEY_PREFIX, prefix, MD5);
             String clientId = UUID.randomUUID().toString();
 
             return redisService.setNx(key, clientId, timeout, false);
@@ -118,22 +120,24 @@ public class IdempotentAspect {
      * @author caobotao.cbt
      * @date 2024/5/31 10:53
      */
-    private String generateKeyParam(Integer tenantId, Long uid, String className, String methodName, Object[] args)
+    private String generateKeyParam(Integer tenantId, Long uid, String className, String methodName, Object[] args, Parameter[] parameters)
             throws IllegalAccessException {
         
         StringBuilder sb = new StringBuilder();
         sb.append(className).append("#").append(methodName).append("&tenantId=").append(tenantId).append("&uid=")
                 .append(uid);
-        if (Objects.isNull(args) || args.length == 0) {
+        if (Objects.isNull(args) || args.length == 0 || Objects.isNull(parameters)
+                || parameters.length == 0 || args.length != parameters.length) {
             return sb.toString();
         }
-        
+
         for (int i = 0; i < args.length; i++) {
             Object arg = args[i];
-            ParamIdempotent annotation = arg.getClass().getAnnotation(ParamIdempotent.class);
+            ParamIdempotent annotation = parameters[i].getAnnotation(ParamIdempotent.class);
             if (Objects.isNull(annotation)) {
                 continue;
             }
+
             if (isPrimitiveOrWrapper(arg.getClass())) {
                 sb.append("&param").append(i).append("=").append(arg);
                 continue;
@@ -156,6 +160,7 @@ public class IdempotentAspect {
             }
             sb.append(JsonUtil.toJson(fieldNameMap));
         }
+
         return sb.toString();
     }
     
