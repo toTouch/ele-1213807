@@ -205,7 +205,15 @@
         from t_user_coupon
         where `source_order_id` = #{orderId}
     </select>
-    
+    <select id="selectTheVoucherHasBeenCollected" resultType="java.lang.Integer">
+        select count(1)
+        from t_user_coupon
+        where activity_id = #{activityId}
+          and activity_rule_id = #{activityRuleId}
+          and uid = #{uid}
+          and del_flag = 0
+    </select>
+
     <update id="update">
         update t_user_coupon
         <set>

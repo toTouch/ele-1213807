@@ -704,9 +704,12 @@ public class UserCouponServiceImpl implements UserCouponService {
                         }
                         
                         userCouponMapper.insert(userCoupon);
-                        
-                        //领劵完，可用邀请人数减少
-                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+                        int size = shareActivityRule.getCoupons().size();
+                        int count = userCouponMapper.selectTheVoucherHasBeenCollected(activityId, shareActivityRule.getId(), user.getUid());
+                        if (count >= size){
+                            //领劵完，可用邀请人数减少
+                            shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+                        }
                         return R.ok("领取成功");
                     }
                 }

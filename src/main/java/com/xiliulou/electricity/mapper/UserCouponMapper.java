@@ -73,4 +73,6 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     List<UserCoupon> selectListBySourceOrderId(@Param("orderId") String orderId);
     
     Integer batchUpdateByIds(@Param("idList") List<Long> idList,@Param("status") Integer status,@Param("updateTime") long updateTime);
+
+    int selectTheVoucherHasBeenCollected(@Param("activityId") Integer activityId, @Param("activityRuleId") Long activityRuleId, @Param("uid") Long uid);
 }
