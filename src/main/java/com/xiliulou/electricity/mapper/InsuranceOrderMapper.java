@@ -28,5 +28,5 @@ public interface InsuranceOrderMapper extends BaseMapper<InsuranceOrder> {
     
     Integer updatePhoneByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("newPhone") String newPhone);
 
-    Integer selectByUid(@Param("uid") Long uid, @Param("type") Integer type);
+    InsuranceOrder selectByUid(@Param("uid") Long uid, @Param("type") Integer type,@Param("status")  Integer status);
 }

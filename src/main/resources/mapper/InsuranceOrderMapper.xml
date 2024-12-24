@@ -172,11 +172,17 @@
         update t_insurance_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
 
-    <select id="selectByUid" resultType="integer">
-        select 1
+    <sql id="basicSql">
+        id
+        ,pay_amount,valid_days,uid,phone,user_name,order_id,status,is_use,insurance_id,forehead,insurance_name,insurance_type,pay_type,franchisee_id,cid,store_id,
+            tenant_id,create_time,update_time,source_order_no,simple_battery_type,param_franchisee_id,wechat_merchant_id,payment_channel
+    </sql>
+    <select id="selectByUid" resultType="com.xiliulou.electricity.entity.InsuranceOrder">
+        select
+        <include refid="basicSql"/>
         from t_insurance_order
         where uid = #{uid}
-          and is_use = 4 and insurance_type=#{type}
+        and is_use = #{status} and insurance_type=#{type} order by id desc limit 1
     </select>
 
 </mapper>

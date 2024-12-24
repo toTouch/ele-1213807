@@ -584,21 +584,41 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.isNull(insuranceUserInfo)) {
             return R.fail("100309", "用户未购买保险");
         }
-        // 是否存在未生效的保险
-        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), query.getType());
+        InsuranceUserInfoVo oldInsuranceUserInfo = selectUserInsurance(query.getUid(), query.getType());
 
+
+        // 是否存在未生效的保险
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(userInfo.getUid(), query.getType(), InsuranceOrder.NOT_EFFECTIVE);
+
+        // 未出险--已出险 && 已经过期
         if (issueInsuranceCheck(insuranceUserInfo, query.getIsUse())) {
-            if (Objects.isNull(insuranceOrder)){
-                // 订单状态更新为已过期
+            if (Objects.isNull(insuranceOrder)) {
+                //无承接保险订单 订单状态更新为已过期
                 updateInsuranceOrder(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 return R.fail("402016", "当前保单已过期，无法进行出险操作");
-            }else {
-                // 前一个保单更新为【已过期】
+            } else {
+                //   前一个保单更新为【已过期】
                 updateInsuranceOrder(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 //  承接的新保单状态更新为【已出险】
                 updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.IS_USE);
+
+                // 用户更新
+                InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
+                updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
+                updateInsuranceUserInfo.setIsUse(query.getIsUse());
+                updateInsuranceUserInfo.setType(query.getType());
+                updateInsuranceUserInfo.setUid(userInfo.getUid());
+                updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
+                updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+                updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+                this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
+
+                // 操作记录
+                operate(query, user, userInfo, oldInsuranceUserInfo, updateInsuranceUserInfo);
+                return R.ok();
             }
         }
+
 
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
@@ -607,6 +627,15 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setUid(userInfo.getUid());
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceOrder)) {
+            updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+            updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+            //有未生效的保险立即生效
+            updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
+        }
+        this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
+
 
         // 当前保险状态更新为已出险
         InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
@@ -621,22 +650,16 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceOrderUpdate.setTenantId(TenantContextHolder.getTenantId());
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
 
-        //  有未生效的保险立即生效,当前保险状态更新为已出险，有未生效的保险立即生效
-        if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceOrder)){
-            updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
-            updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
-            // 当前订单生效=未出险
-            updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
 
-        }
-        this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
-
-
-        InsuranceUserInfoVo oldInsuranceUserInfo = selectUserInsurance(query.getUid(), query.getType());
         //新增操作记录
+        operate(query, user, userInfo, oldInsuranceUserInfo, updateInsuranceUserInfo);
+        return R.ok();
+    }
+
+    private void operate(InsuranceUserInfoQuery query, TokenUser user, UserInfo userInfo, InsuranceUserInfoVo oldInsuranceUserInfo, InsuranceUserInfo updateInsuranceUserInfo) {
         EleUserOperateRecord record = EleUserOperateRecord.builder().operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        
+
         //判断是单电的保险操作还是车的保险操作
         if (Objects.equals(query.getType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
             record.setOperateType(UserOperateRecordConstant.OPERATE_TYPE_BATTERY);
@@ -655,14 +678,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             record.setOldCarInsuranceExpireTime(oldInsuranceUserInfo.getInsuranceExpireTime());
             record.setNewCarInsuranceExpireTime(query.getInsuranceExpireTime());
         }
-        
+
         eleUserOperateRecordService.asyncHandleUserOperateRecord(record);
-        
-        return R.ok();
     }
 
-    private static boolean issueInsuranceCheck(InsuranceUserInfo insuranceUserInfo, Integer isUse) {
-        return Objects.equals(isUse, InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceUserInfo.getInsuranceExpireTime()) && insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis();
+    private static boolean issueInsuranceCheck(InsuranceUserInfo insuranceUserInfo, Integer isUser) {
+        return Objects.equals(isUser, InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceUserInfo.getInsuranceExpireTime()) && insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis();
     }
 
     private void updateInsuranceOrder(String orderId,Integer status) {
@@ -673,6 +694,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         newInsuranceOrder.setTenantId(TenantContextHolder.getTenantId());
         insuranceOrderService.updateIsUseByOrderId(newInsuranceOrder);
     }
+
 
     
     @Override
@@ -721,19 +743,24 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         // 用户已有未生效保险
-        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(query.getUid(), query.getType());
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(query.getUid(), query.getType(), InsuranceOrder.NOT_EFFECTIVE);
         if (Objects.nonNull(insuranceOrder)) {
             return R.fail("402015", "当前用户已有未生效的保险订单，请前往【保险购买记录】查看详情。");
         }
 
-        // 生成一笔未生效的保险
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
         InsuranceOrder insuranceUserOrder = InsuranceOrder.builder().insuranceId(franchiseeInsurance.getId()).insuranceName(franchiseeInsurance.getName())
                 .insuranceType(franchiseeInsurance.getInsuranceType()).orderId(orderId).cid(franchiseeInsurance.getCid()).franchiseeId(franchiseeInsurance.getFranchiseeId())
-                .isUse(InsuranceOrder.NOT_EFFECTIVE).payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
+                .payAmount(franchiseeInsurance.getPremium()).forehead(franchiseeInsurance.getForehead()).payType(InsuranceOrder.OFFLINE_PAY_TYPE)
                 .phone(userInfo.getPhone()).status(InsuranceOrder.STATUS_SUCCESS).tenantId(TenantContextHolder.getTenantId()).uid(userInfo.getUid()).userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
+        // 是否存在未出险的订单
+        InsuranceOrder notUserOrder = insuranceOrderService.queryByUid(query.getUid(), query.getType(), InsuranceOrder.NOT_USE);
+        if (Objects.nonNull(notUserOrder)){
+            insuranceUserOrder.setIsUse(InsuranceOrder.NOT_EFFECTIVE);
+        }
+
         insuranceOrderService.insert(insuranceUserOrder);
 
         // 用户保险续费
