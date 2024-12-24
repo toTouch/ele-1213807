@@ -5,6 +5,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.annotation.IdempotentCheck;
 import com.xiliulou.electricity.annotation.ParamIdempotent;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -126,8 +127,8 @@ public class IdempotentAspect {
         StringBuilder sb = new StringBuilder();
         sb.append(className).append("#").append(methodName).append("&tenantId=").append(tenantId).append("&uid=")
                 .append(uid);
-        if (Objects.isNull(args) || args.length == 0 || Objects.isNull(parameters)
-                || parameters.length == 0 || args.length != parameters.length) {
+        if (Objects.isNull(args) || Objects.equals(args.length, NumberConstant.ZERO) || Objects.isNull(parameters)
+                || Objects.equals(parameters.length, NumberConstant.ZERO)  || !Objects.equals(args.length, parameters.length)) {
             return sb.toString();
         }
 
