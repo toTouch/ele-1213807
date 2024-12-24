@@ -2600,6 +2600,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
         }
         
+        if (tenancyResidue < 0L) {
+            // 使用天数券的情况会导致天数成负数
+            tenancyResidue = 0L;
+        }
+        
         return Triple.of(refundAmount, tenancyResidue, confineResidue);
     }
     
