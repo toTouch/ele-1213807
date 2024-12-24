@@ -326,7 +326,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		
 		
 		if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
-			if (Objects.isNull(newUserActivity.getCouponId())) {
+			if (Objects.isNull(newUserActivity.getCouponId()) || newUserActivity.getCoupons().isEmpty()) {
 				return R.ok(newUserActivity);
 			}
 			UserCouponQuery build = UserCouponQuery.builder().uid(uid).status(UserCoupon.STATUS_UNUSED).build();

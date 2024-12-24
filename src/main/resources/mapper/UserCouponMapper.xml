@@ -206,12 +206,17 @@
         where `source_order_id` = #{orderId}
     </select>
     <select id="selectTheVoucherHasBeenCollected" resultType="java.lang.Integer">
-        select count(1)
+        select
+            count(1)
         from t_user_coupon
         where activity_id = #{activityId}
           and activity_rule_id = #{activityRuleId}
           and uid = #{uid}
           and del_flag = 0
+          and coupon_id in
+        <foreach collection="idList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
     <update id="update">

@@ -673,6 +673,8 @@ public class UserCouponServiceImpl implements UserCouponService {
             log.warn("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
             return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
         }
+
+
         
         if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {
             //循环领取
@@ -688,7 +690,12 @@ public class UserCouponServiceImpl implements UserCouponService {
                         //                        if (Objects.nonNull(oldUserCoupon)) {
                         //                            continue;
                         //                        }
-                        
+                        UserCoupon check = this.queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
+
+                        if (Objects.nonNull(check)){
+                            return R.fail("ELECTRICITY.00104", "该用户已领取过该优惠券");
+                        }
+
                         LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
                         UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
                                 .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
@@ -705,7 +712,8 @@ public class UserCouponServiceImpl implements UserCouponService {
                         
                         userCouponMapper.insert(userCoupon);
                         int size = shareActivityRule.getCoupons().size();
-                        int count = userCouponMapper.selectTheVoucherHasBeenCollected(activityId, shareActivityRule.getId(), user.getUid());
+
+                        int count = userCouponMapper.selectTheVoucherHasBeenCollected(activityId, shareActivityRule.getId(), user.getUid(),shareActivityRule.getCoupons());
                         if (count >= size){
                             //领劵完，可用邀请人数减少
                             shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
