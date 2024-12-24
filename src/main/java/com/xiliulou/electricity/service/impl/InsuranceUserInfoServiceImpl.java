@@ -901,8 +901,15 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     public void userInsuranceExpireAutoConvert(InsuranceUserInfo item) {
+        if (Objects.isNull(item)) {
+            log.warn("UserInsuranceExpireAutoConvert Warn! item is null");
+            return;
+        }
+        if (Objects.isNull(item.getInsuranceExpireTime())) {
+            log.warn("UserInsuranceExpireAutoConvert Warn! insuranceExpireTime is null, id is {}", item.getId());
+            return;
+        }
         if (item.getInsuranceExpireTime() < System.currentTimeMillis()) {
-
             InsuranceUserInfo insuranceUserInfo = new InsuranceUserInfo();
             insuranceUserInfo.setId(item.getId());
             insuranceUserInfo.setUid(item.getUid());
@@ -910,16 +917,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             insuranceUserInfo.setUpdateTime(System.currentTimeMillis());
             // 当前保险过期，未生效保险立即生效（允许定时任务的时间误差），保险状态更新为未出险
             InsuranceOrder insuranceOrder = insuranceOrderService.queryByUid(item.getUid(), item.getType(), InsuranceOrder.NOT_EFFECTIVE);
-            if (Objects.isNull(insuranceOrder)){
+            if (Objects.isNull(insuranceOrder)) {
                 insuranceUserInfo.setIsUse(InsuranceOrder.EXPIRED);
                 this.updateInsuranceUserInfoById(insuranceUserInfo);
-                //更新订单状态
+                //更新订单状态=已过期
                 insuranceOrderService.updateUseStatusByOrderId(item.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
-            }else {
+            } else {
+                // 未出险，用户新绑定的保险订单
                 insuranceUserInfo.setIsUse(InsuranceOrder.NOT_USE);
+                insuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
                 this.updateInsuranceUserInfoById(insuranceUserInfo);
                 //更新订单状态
-                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceOrder.IS_USE);
+                insuranceOrderService.updateUseStatusByOrderId(insuranceOrder.getOrderId(), InsuranceUserInfo.NOT_USE);
             }
 
         }
