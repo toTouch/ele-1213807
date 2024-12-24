@@ -172,4 +172,11 @@
         update t_insurance_order set phone=#{newPhone} where uid=#{uid} and tenant_id = #{tenantId}
     </update>
 
+    <select id="selectByUid" resultType="integer">
+        select 1
+        from t_insurance_order
+        where uid = #{uid}
+          and is_use = 4 and insurance_type=#{type}
+    </select>
+
 </mapper>
