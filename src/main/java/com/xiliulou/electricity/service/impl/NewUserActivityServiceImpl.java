@@ -332,22 +332,22 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			UserCouponQuery build = UserCouponQuery.builder().uid(uid).status(UserCoupon.STATUS_UNUSED).build();
 			List<UserCouponVO> userCouponList = Optional.ofNullable(userCouponMapper.queryList(build)).orElse(List.of());
 			Map<Integer, Long> collect = userCouponList.stream().collect(Collectors.toMap(UserCouponVO::getCouponId, UserCouponVO::getDeadline, (v1, v2) -> v1));
-			
-			Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
-			if (Objects.isNull(coupon)) {
-				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
-				return R.ok(newUserActivity);
-			}
-			LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
-			coupon.setDeadline(TimeUtils.convertTimeStamp(now));
-			if (collect.containsKey(coupon.getId())){
-				coupon.setDeadline(collect.get(coupon.getId()));
-			}
-			
+
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
-			
-			newUserActivityVO.setCoupon(coupon);
+			if (Objects.nonNull(newUserActivity.getCouponId())){
+				Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
+				if (Objects.isNull(coupon)) {
+					log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
+					return R.ok(newUserActivity);
+				}
+				LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+				coupon.setDeadline(TimeUtils.convertTimeStamp(now));
+				if (collect.containsKey(coupon.getId())){
+					coupon.setDeadline(collect.get(coupon.getId()));
+				}
+				newUserActivityVO.setCoupon(coupon);
+			}
 
 			if (Objects.isNull(newUserActivity.getCoupons())){
 				return R.ok(newUserActivityVO);
