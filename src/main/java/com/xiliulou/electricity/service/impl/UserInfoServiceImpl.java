@@ -3459,7 +3459,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<String, Object> recordMap = com.google.common.collect.Maps.newHashMapWithExpectedSize(2);
         recordMap.put("phone", user.getPhone());
         recordMap.put("authStatus",
-                Objects.equals(UserInfo.AUTH_STATUS_REVIEW_REJECTED, authStatus) ? "拒绝用户：" : "通过用户：");
+                Objects.equals(UserInfo.AUTH_STATUS_REVIEW_REJECTED, authStatus) ? "拒绝用户" : "通过用户");
         operateRecordUtil.record(null, recordMap);
         
     }
