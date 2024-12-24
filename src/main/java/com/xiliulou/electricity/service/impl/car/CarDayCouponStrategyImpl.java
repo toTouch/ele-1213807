@@ -47,7 +47,7 @@ public class CarDayCouponStrategyImpl implements DayCouponStrategy {
     @Override
     public DayCouponUseScope getScope(Integer tenantId, Long uid) {
         CarRentalPackageMemberTermPo memberTermPo = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (Objects.nonNull(memberTermPo) && MemberTermStatusEnum.NORMAL.getCode().equals(memberTermPo.getStatus())) {
+        if (Objects.nonNull(memberTermPo)) {
             if (Objects.equals(memberTermPo.getRentalPackageType(), RentalPackageTypeEnum.CAR_BATTERY.getCode())) {
                 return DayCouponUseScope.BOTH;
             }
