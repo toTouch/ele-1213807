@@ -597,12 +597,13 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 updateInsuranceOrder(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 return R.fail("402016", "当前保单已过期，无法进行出险操作");
             } else {
-                //   前一个保单更新为【已过期】
+                //  有承接保险订单
+                //  前一个保单更新为【已过期】
                 updateInsuranceOrder(insuranceUserInfo.getInsuranceOrderId(), InsuranceOrder.EXPIRED);
                 //  承接的新保单状态更新为【已出险】
                 updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.IS_USE);
 
-                // 用户更新
+                // 用户保险为出险
                 InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
                 updateInsuranceUserInfo.setId(insuranceUserInfo.getId());
                 updateInsuranceUserInfo.setIsUse(query.getIsUse());
@@ -628,11 +629,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setInsuranceExpireTime(query.getInsuranceExpireTime());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
 
-        // 有未生效的保险立即生效
+        // 存在新的未承接保险订单
         if (Objects.equals(query.getIsUse(), InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceOrder)) {
             updateInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+            // 设置用户未出险
             updateInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
-            // 生效订单
+            // 有未生效的保险设置为 未出险
             updateInsuranceOrder(insuranceOrder.getOrderId(), InsuranceOrder.NOT_USE);
         }
         this.updateInsuranceUserInfoById(updateInsuranceUserInfo);
@@ -687,7 +689,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return Objects.equals(isUser, InsuranceUserInfo.IS_USE) && Objects.nonNull(insuranceUserInfo.getInsuranceExpireTime()) && insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis();
     }
 
-    private void updateInsuranceOrder(String orderId,Integer status) {
+    private void updateInsuranceOrder(String orderId, Integer status) {
         InsuranceOrder newInsuranceOrder = new InsuranceOrder();
         newInsuranceOrder.setUpdateTime(System.currentTimeMillis());
         newInsuranceOrder.setOrderId(orderId);
