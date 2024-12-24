@@ -54,6 +54,7 @@ public class IdempotentAspect {
         if (!this.idempotentLock(proceedingJoinPointParseModel)) {
             throw new CustomBusinessException("操作频繁");
         }
+
         return pjp.proceed();
     }
     
@@ -88,7 +89,6 @@ public class IdempotentAspect {
             String methodName = pjp.getMethod().getName();
             Object[] args = pjp.getArgs();
             Parameter[] parameters = pjp.getMethod().getParameters();
-            // 获取连接点的方法签名对象
 
             long timeout = annotation.requestIntervalMilliseconds();
             String prefix = annotation.prefix();
@@ -147,7 +147,9 @@ public class IdempotentAspect {
                 sb.append("&param").append(i).append("=").append(JsonUtil.toJson(arg));
                 continue;
             }
+
             sb.append("&param").append(i).append("=");
+
             List<String> fieldNames = Arrays.asList(annotation.value());
             Field[] declaredFields = arg.getClass().getDeclaredFields();
             HashMap<String, Object> fieldNameMap = new LinkedHashMap<>();
@@ -155,9 +157,11 @@ public class IdempotentAspect {
                 if (!fieldNames.contains(declaredField.getName())) {
                     continue;
                 }
+
                 declaredField.setAccessible(true);
                 fieldNameMap.put(declaredField.getName(), declaredField.get(arg));
             }
+
             sb.append(JsonUtil.toJson(fieldNameMap));
         }
 
