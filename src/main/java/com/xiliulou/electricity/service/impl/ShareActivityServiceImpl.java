@@ -603,10 +603,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         int count = 0;
         //可用邀请好友数
         int availableCount = 0;
+        //分享状态
+        boolean isShare = false;
         ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), shareActivityVO.getId());
         if (Objects.nonNull(shareActivityRecord)) {
             count = shareActivityRecord.getCount();
             availableCount = shareActivityRecord.getAvailableCount();
+            isShare = Objects.equals(shareActivityRecord.getStatus(), ShareActivityRecord.STATUS_SUCCESS);
         }
         
         //
@@ -644,6 +647,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                     //是否可以领取优惠券
                     couponVO.setIsGet(isGet);
                     coupon.setIsGet(isGet);
+                    if (Objects.equals(isGet,CouponVO.IS_CANNOT_RECEIVE) && isShare){
+                        coupon.setIsGet(CouponVO.IS_NOT_RECEIVE);
+                    }
                     //是否领取该活动该优惠券
                     UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), user.getUid());
                     if (Objects.nonNull(userCoupon)) {
