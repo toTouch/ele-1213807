@@ -335,6 +335,26 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO,IGNORE_ATTRIBUTES);
+
+			if (Objects.isNull(newUserActivity.getCoupons())){
+				return R.ok(newUserActivityVO);
+			}
+
+			List<Coupon> coupons = newUserActivity.getCoupons().stream().map(couponId -> {
+
+				Coupon query = couponService.queryByIdFromCache(couponId.intValue());
+				if (Objects.isNull(newUserActivity.getCouponId()) && query.getDiscountType().equals(Coupon.FULL_REDUCTION)){
+					newUserActivity.setCouponId(Math.toIntExact(couponId));
+				}
+				LocalDateTime queryNow = LocalDateTime.now().plusDays(query.getDays());
+				query.setDeadline(TimeUtils.convertTimeStamp(queryNow));
+
+				if (collect.containsKey(query.getId())){
+					query.setDeadline(collect.get(query.getId()));
+				}
+				return query;
+			}).collect(Collectors.toList());
+
 			if (Objects.nonNull(newUserActivity.getCouponId())){
 				Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
 				if (Objects.isNull(coupon)) {
@@ -349,22 +369,8 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 				newUserActivityVO.setCoupon(coupon);
 			}
 
-			if (Objects.isNull(newUserActivity.getCoupons())){
-				return R.ok(newUserActivityVO);
-			}
 
-			List<Coupon> coupons = newUserActivity.getCoupons().stream().map(couponId -> {
 
-						Coupon query = couponService.queryByIdFromCache(couponId.intValue());
-						LocalDateTime queryNow = LocalDateTime.now().plusDays(query.getDays());
-						query.setDeadline(TimeUtils.convertTimeStamp(queryNow));
-
-						if (collect.containsKey(query.getId())){
-							query.setDeadline(collect.get(query.getId()));
-						}
-						return query;
-					}).collect(Collectors.toList());
-			
 			
 			newUserActivityVO.setCouponArrays(coupons);
 			
