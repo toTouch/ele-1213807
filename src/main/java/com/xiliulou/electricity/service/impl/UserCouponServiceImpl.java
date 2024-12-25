@@ -668,7 +668,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             //查询优惠券是否在活动中间
             for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-                if (CollectionUtils.isNotEmpty(shareActivityRule.getCoupons()) && shareActivityRule.getCoupons().contains(Long.valueOf(couponId))) {
+                if (CollectionUtils.isNotEmpty(shareActivityRule.getCoupons())) {
                     if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
@@ -696,7 +696,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                                     .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                     .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                    .couponWay(Long.valueOf(activityId));
+                                    .couponWay(Long.valueOf(activityId)).delFlag(UserCoupon.DEL_NORMAL);
 
                             UserCoupon userCoupon = couponBuild.build();
 
@@ -724,7 +724,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             
             //查询优惠券是否在活动中间
             for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-                if (CollectionUtils.isNotEmpty(shareActivityRule.getCoupons()) && shareActivityRule.getCoupons().contains(Long.valueOf(couponId))) {
+                if (CollectionUtils.isNotEmpty(shareActivityRule.getCoupons())) {
                     if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
@@ -755,7 +755,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                                     .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                     .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                    .couponWay(Long.valueOf(activityId));
+                                    .couponWay(Long.valueOf(activityId)).delFlag(UserCoupon.DEL_NORMAL);
 
                             UserCoupon userCoupon = couponBuild.build();
 
