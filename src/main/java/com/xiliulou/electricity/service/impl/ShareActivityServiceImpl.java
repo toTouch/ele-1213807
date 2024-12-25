@@ -780,7 +780,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             for (Coupon cou : coupons) {
                 List<UserCoupon> userCoupons = userCouponService.selectListByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), cou.getId(), uid);
                 if (Objects.nonNull(userCoupons)) {
-                    couponCount = userCoupons.size();
+                    couponCount += userCoupons.size();
                 }
             }
             coupon = coupons.stream().filter(f -> Coupon.FULL_REDUCTION.equals(f.getDiscountType())).max(Comparator.comparing(Coupon::getAmount)).orElse(null);
@@ -800,14 +800,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
             couponVO.setCoupon(coupon);
             couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
-            couponVO.setCouponArrays(coupons);
             Optional.ofNullable(coupons).ifPresent(couponList -> couponList.forEach(f -> {
                 f.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
                 if (Objects.equals(f.getDiscountType(), Coupon.FULL_REDUCTION)) {
                     getCouponPackage(f, couponVO);
                 }
             }));
-            
+            couponVO.setCouponArrays(coupons);
             couponVOList.add(couponVO);
             
             shareActivityVO.setCouponCount(couponCount);

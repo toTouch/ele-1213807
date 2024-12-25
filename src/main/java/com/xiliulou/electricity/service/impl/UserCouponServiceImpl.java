@@ -19,18 +19,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.UserCouponDTO;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.CouponActivityPackage;
-import com.xiliulou.electricity.entity.CouponIssueOperateRecord;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePo;
 import com.xiliulou.electricity.enums.CouponTypeEnum;
 import com.xiliulou.electricity.enums.PackageTypeEnum;
@@ -39,18 +28,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.CouponBatchSendWithPhonesRequest;
 import com.xiliulou.electricity.query.UserCouponQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CouponActivityPackageService;
-import com.xiliulou.electricity.service.CouponIssueOperateRecordService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.NewUserActivityService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.ShareActivityService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OperateRecordUtil;
@@ -71,14 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -547,7 +518,9 @@ public class UserCouponServiceImpl implements UserCouponService {
         userCouponQuery.setUid(uid);
         userCouponQuery.setTypeList(typeList);
         List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
-
+        if (CollectionUtils.isEmpty(userCouponVOList)){
+            return R.ok(Collections.emptyList());
+        }
         // 多加盟商版本增加：加盟商一致性校验
         userCouponVOList = userCouponVOList.stream().filter(userCouponVO -> couponService.isSameFranchisee(userCouponVO.getFranchiseeId(), franchiseeId))
                 .collect(Collectors.toList());
@@ -555,6 +528,18 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (CollectionUtils.isEmpty(userCouponVOList)) {
             return R.ok(Collections.emptyList());
         }
+
+        userCouponVOList.forEach(userCouponVO -> {
+            Coupon coupon = couponService.queryByIdFromCache(userCouponVO.getCouponId());
+            userCouponVO.setAmount(coupon.getAmount());
+            userCouponVO.setDiscount(coupon.getDiscount());
+            userCouponVO.setName(coupon.getName());
+            userCouponVO.setDiscountType(coupon.getDiscountType());
+            userCouponVO.setDeadline(coupon.getDeadline());
+            userCouponVO.setDescription(coupon.getDescription());
+            userCouponVO.setCount(coupon.getCount());
+            userCouponVO.setUseScope(coupon.getUseScope());
+        });
 
         //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
         for (UserCouponVO userCouponVO : userCouponVOList) {
@@ -715,8 +700,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 
                             //领劵完，可用邀请人数减少
                             shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+
+                            return R.ok("领取成功");
                         }
-                        return R.ok("领取成功");
                     }
                 }
             }
@@ -773,8 +759,8 @@ public class UserCouponServiceImpl implements UserCouponService {
 
                             //领劵完，可用邀请人数减少
                             shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+                            return R.ok("领取成功");
                         }
-                        return R.ok("领取成功");
                     }
                 }
             }
