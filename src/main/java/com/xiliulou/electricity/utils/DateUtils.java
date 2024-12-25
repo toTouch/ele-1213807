@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -383,15 +384,16 @@ public class DateUtils {
     /**
      * 剩余时间戳转化为剩余 x天 x时
      */
-    public static String convertExpireTime(long expireTime) {
-        if (expireTime <= 0) {
+    public static String convertExpireTime(Long expireTime) {
+        if (Objects.isNull(expireTime) || expireTime <= 0) {
             return "0天0小时";
         }
+    
         long duration = expireTime - System.currentTimeMillis();
         if (duration <= 0) {
             return "0天0小时";
         }
-        
+    
         long hours = duration / 1000 / 60 / 60;
         if (hours < 1) {
             return "不足1小时";
