@@ -118,11 +118,11 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
         
         EleOtaFile eleOtaFile = this.queryByEid(eid);
         if (Objects.nonNull(eleOtaFile)) {
-            if (!Objects.equals(EleOtaFile.TYPE_SIX_FILE, eleOtaFile.getFileType()) && !Objects.equals(EleOtaFile.TYPE_NEW_SIX_FILE, eleOtaFile.getFileType())) {
+            if (!Objects.equals(eleOtaFile.getFileType(), EleOtaFile.TYPE_SIX_FILE) && !Objects.equals(eleOtaFile.getFileType(), EleOtaFile.TYPE_NEW_SIX_FILE)) {
                 otaFileCheckSumVo.setCoreSha256HexEle(eleOtaFile.getCoreSha256Value());
                 otaFileCheckSumVo.setCoreNameEle(eleOtaFile.getCoreName());
             }
-            
+        
             otaFileCheckSumVo.setSubSha256HexEle(eleOtaFile.getSubSha256Value());
             otaFileCheckSumVo.setSubNameEle(eleOtaFile.getSubName());
             otaFileCheckSumVo.setFileType(eleOtaFile.getFileType());
@@ -131,43 +131,46 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
         List<OtaFileConfig> otaFileConfigList = otaFileConfigService.listByTypes(
                 List.of(OtaFileConfig.TYPE_CORE_BOARD, OtaFileConfig.TYPE_SUB_BOARD, OtaFileConfig.TYPE_OLD_CORE_BOARD, OtaFileConfig.TYPE_OLD_SUB_BOARD,
                         OtaFileConfig.TYPE_SIX_SUB_BOARD, OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD));
+        if (CollectionUtils.isEmpty(otaFileConfigList)) {
+            return R.ok(otaFileCheckSumVo);
+        }
         
-        if (CollectionUtils.isNotEmpty(otaFileConfigList)) {
-            Map<Integer, OtaFileConfig> typeMap = otaFileConfigList.stream().collect(Collectors.toMap(OtaFileConfig::getType, otaFileConfig -> otaFileConfig));
-            if (MapUtils.isNotEmpty(typeMap)) {
-                for (Map.Entry<Integer, OtaFileConfig> entry : typeMap.entrySet()) {
-                    Integer type = entry.getKey();
-                    OtaFileConfig otaFileConfig = entry.getValue();
-                    
-                    switch (type) {
-                        case OtaFileConfig.TYPE_CORE_BOARD:
-                            otaFileCheckSumVo.setCoreSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setCoreVersionCloud(otaFileConfig.getVersion());
-                            break;
-                        case OtaFileConfig.TYPE_SUB_BOARD:
-                            otaFileCheckSumVo.setSubSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setSubVersionCloud(otaFileConfig.getVersion());
-                            break;
-                        case OtaFileConfig.TYPE_OLD_CORE_BOARD:
-                            otaFileCheckSumVo.setOldCoreSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setOldCoreVersionCloud(otaFileConfig.getVersion());
-                            break;
-                        case OtaFileConfig.TYPE_OLD_SUB_BOARD:
-                            otaFileCheckSumVo.setOldSubSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setOldSubVersionCloud(otaFileConfig.getVersion());
-                            break;
-                        case OtaFileConfig.TYPE_SIX_SUB_BOARD:
-                            otaFileCheckSumVo.setSixSubSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setSixSubVersionCloud(otaFileConfig.getVersion());
-                            break;
-                        case OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD:
-                            otaFileCheckSumVo.setNewSixSubSha256HexCloud(otaFileConfig.getSha256Value());
-                            otaFileCheckSumVo.setNewSixSubVersionCloud(otaFileConfig.getVersion());
-                            break;
-                        default:
-                            break;
-                    }
-                }
+        Map<Integer, OtaFileConfig> typeMap = otaFileConfigList.stream().collect(Collectors.toMap(OtaFileConfig::getType, otaFileConfig -> otaFileConfig));
+        if (MapUtils.isEmpty(typeMap)) {
+            return R.ok(otaFileCheckSumVo);
+        }
+        
+        for (Map.Entry<Integer, OtaFileConfig> entry : typeMap.entrySet()) {
+            Integer type = entry.getKey();
+            OtaFileConfig otaFileConfig = entry.getValue();
+            
+            switch (type) {
+                case OtaFileConfig.TYPE_CORE_BOARD:
+                    otaFileCheckSumVo.setCoreSha256HexCloud(otaFileConfig.getSha256Value());
+                    otaFileCheckSumVo.setCoreVersionCloud(otaFileConfig.getVersion());
+                    break;
+                case OtaFileConfig.TYPE_SUB_BOARD:
+                    otaFileCheckSumVo.setSubSha256HexCloud(otaFileConfig.getSha256Value());
+                    otaFileCheckSumVo.setSubVersionCloud(otaFileConfig.getVersion());
+                    break;
+                case OtaFileConfig.TYPE_OLD_CORE_BOARD:
+                    otaFileCheckSumVo.setOldCoreSha256HexCloud(otaFileConfig.getSha256Value());
+                    otaFileCheckSumVo.setOldCoreVersionCloud(otaFileConfig.getVersion());
+                    break;
+                case OtaFileConfig.TYPE_OLD_SUB_BOARD:
+                    otaFileCheckSumVo.setOldSubSha256HexCloud(otaFileConfig.getSha256Value());
+                    otaFileCheckSumVo.setOldSubVersionCloud(otaFileConfig.getVersion());
+                    break;
+                case OtaFileConfig.TYPE_SIX_SUB_BOARD:
+                    otaFileCheckSumVo.setSixSubSha256HexCloud(otaFileConfig.getSha256Value());
+                    otaFileCheckSumVo.setSixSubVersionCloud(otaFileConfig.getVersion());
+                    break;
+                case OtaFileConfig.TYPE_NEW_SIX_SUB_BOARD:
+                    otaFileCheckSumVo.setNewSixSubSha256HexCloud(otaFileConfig.getSha256Value());
+                    otaFileCheckSumVo.setNewSixSubVersionCloud(otaFileConfig.getVersion());
+                    break;
+                default:
+                    break;
             }
         }
         
