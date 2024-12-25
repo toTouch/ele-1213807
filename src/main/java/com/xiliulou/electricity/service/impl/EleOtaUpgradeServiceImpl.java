@@ -16,6 +16,7 @@ import com.xiliulou.electricity.service.EleOtaUpgradeService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.vo.OtaUpgradeInfoVo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -174,7 +175,12 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             eleOtaUpgradeHistory.setCellNo(String.valueOf(cellNo));
             eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));
             eleOtaUpgradeHistory.setType(type);
-            eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(fileType));
+            String upgradeVersion = null;
+            if (Objects.nonNull(fileType)) {
+                upgradeVersion = queryOtaVersionByEidAndCellNo(fileType);
+                log.warn("Not found upgradeVersion, need load otaFile! eid={}, cellNo={}, fileType={}", eid, cellNo, fileType);
+            }
+            eleOtaUpgradeHistory.setUpgradeVersion(Objects.isNull(upgradeVersion) ? StringUtils.EMPTY : upgradeVersion);
             eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
             eleOtaUpgradeHistory.setStatus(EleOtaUpgrade.STATUS_INIT);
             eleOtaUpgradeHistory.setSessionId(sessionId);
