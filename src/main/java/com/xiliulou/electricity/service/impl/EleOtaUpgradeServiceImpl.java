@@ -178,7 +178,6 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             String upgradeVersion = null;
             if (Objects.nonNull(fileType)) {
                 upgradeVersion = queryOtaVersionByEidAndCellNo(fileType);
-                log.warn("Not found upgradeVersion, need load otaFile! eid={}, cellNo={}, fileType={}", eid, cellNo, fileType);
             }
             eleOtaUpgradeHistory.setUpgradeVersion(Objects.isNull(upgradeVersion) ? StringUtils.EMPTY : upgradeVersion);
             eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
