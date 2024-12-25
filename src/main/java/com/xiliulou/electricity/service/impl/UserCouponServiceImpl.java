@@ -663,19 +663,6 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
         }
         
-        Coupon coupon = couponService.queryByIdFromCache(couponId);
-        if (Objects.isNull(coupon)) {
-            log.warn("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
-            return R.fail("ELECTRICITY.0085", "未找到优惠券");
-        }
-        
-        if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            log.warn("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
-            return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
-        }
-
-
-        
         if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {
             //循环领取
             
@@ -686,35 +673,45 @@ public class UserCouponServiceImpl implements UserCouponService {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
                         //领劵
-                        //                        UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
-                        //                        if (Objects.nonNull(oldUserCoupon)) {
-                        //                            continue;
-                        //                        }
-                        UserCoupon check = this.queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
-
-                        if (Objects.nonNull(check)){
-                            return R.fail("ELECTRICITY.00104", "该用户已领取过该优惠券");
+                        List<Coupon> coupons = couponService.queryListByIdsFromDB(shareActivityRule.getCoupons());
+                        if (CollectionUtils.isEmpty(coupons)){
+                            log.warn("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+                            return R.fail("ELECTRICITY.0085", "该活动没有可领取的券");
                         }
 
-                        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
-                        UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
-                                .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
-                                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
-                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                .couponWay(Long.valueOf(activityId));
-                        
-                        UserCoupon userCoupon = couponBuild.build();
-                        
-                        Integer couponFranchiseeId = coupon.getFranchiseeId();
-                        if (Objects.nonNull(couponFranchiseeId)) {
-                            userCoupon.setFranchiseeId(couponFranchiseeId);
-                        }
-                        
-                        userCouponMapper.insert(userCoupon);
-                        int size = shareActivityRule.getCoupons().size();
+                        List<UserCoupon> userCouponList = new ArrayList<>();
 
-                        int count = userCouponMapper.selectTheVoucherHasBeenCollected(activityId, shareActivityRule.getId(), user.getUid(),shareActivityRule.getCoupons());
-                        if (count >= size){
+                        for (Coupon coupon : coupons) {
+                            if (Objects.isNull(coupon)) {
+                                log.warn("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+                                return R.fail("ELECTRICITY.0085", "未找到优惠券");
+                            }
+
+                            if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), userInfo.getFranchiseeId())) {
+                                log.warn("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
+                                return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
+                            }
+                            LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+                            UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
+                                    .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
+                                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
+                                    .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
+                                    .couponWay(Long.valueOf(activityId));
+
+                            UserCoupon userCoupon = couponBuild.build();
+
+                            Integer couponFranchiseeId = coupon.getFranchiseeId();
+                            if (Objects.nonNull(couponFranchiseeId)) {
+                                userCoupon.setFranchiseeId(couponFranchiseeId);
+                            }
+                            userCouponList.add(userCoupon);
+                        }
+
+
+                        if (CollectionUtils.isNotEmpty(userCouponList)){
+
+                            userCouponMapper.batchInsert(userCouponList);
+
                             //领劵完，可用邀请人数减少
                             shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
                         }
@@ -732,29 +729,50 @@ public class UserCouponServiceImpl implements UserCouponService {
                         return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
                     } else {
                         //领劵
-                        UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
-                        if (Objects.nonNull(oldUserCoupon)) {
-                            continue;
+                        List<Coupon> coupons = couponService.queryListByIdsFromDB(shareActivityRule.getCoupons());
+                        if (CollectionUtils.isEmpty(coupons)){
+                            log.warn("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+                            return R.fail("ELECTRICITY.0085", "该活动没有可领取的券");
                         }
-                        
-                        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
-                        UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
-                                .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
-                                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
-                                .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
-                                .couponWay(Long.valueOf(activityId));
-                        
-                        UserCoupon userCoupon = couponBuild.build();
-                        
-                        Integer couponFranchiseeId = coupon.getFranchiseeId();
-                        if (Objects.nonNull(couponFranchiseeId)) {
-                            userCoupon.setFranchiseeId(couponFranchiseeId);
+
+                        List<UserCoupon> userCouponList = new ArrayList<>();
+                        for (Coupon coupon : coupons) {
+                            if (Objects.isNull(coupon)) {
+                                log.warn("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+                                return R.fail("ELECTRICITY.0085", "未找到优惠券");
+                            }
+
+                            if (!couponService.isSameFranchisee(coupon.getFranchiseeId(), userInfo.getFranchiseeId())) {
+                                log.warn("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
+                                return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
+                            }
+                            UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
+                            if (Objects.nonNull(oldUserCoupon)) {
+                                continue;
+                            }
+                            LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+                            UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
+                                    .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
+                                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
+                                    .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
+                                    .couponWay(Long.valueOf(activityId));
+
+                            UserCoupon userCoupon = couponBuild.build();
+
+                            Integer couponFranchiseeId = coupon.getFranchiseeId();
+                            if (Objects.nonNull(couponFranchiseeId)) {
+                                userCoupon.setFranchiseeId(couponFranchiseeId);
+                            }
+                            userCouponList.add(userCoupon);
                         }
-                        
-                        userCouponMapper.insert(userCoupon);
-                        
-                        //领劵完，可用邀请人数减少
-                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+
+                        if (CollectionUtils.isNotEmpty(userCouponList)){
+
+                            userCouponMapper.batchInsert(userCouponList);
+
+                            //领劵完，可用邀请人数减少
+                            shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+                        }
                         return R.ok("领取成功");
                     }
                 }

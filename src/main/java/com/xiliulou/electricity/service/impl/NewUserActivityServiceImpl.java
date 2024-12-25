@@ -33,6 +33,7 @@ import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -291,7 +292,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	
 	@Slave
 	@Override
-	public R queryNewUserActivity() {
+	public R queryNewUserActivity(String version) {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 		
@@ -343,9 +344,6 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			List<Coupon> coupons = newUserActivity.getCoupons().stream().map(couponId -> {
 
 				Coupon query = couponService.queryByIdFromCache(couponId.intValue());
-				if (Objects.isNull(newUserActivity.getCouponId()) && query.getDiscountType().equals(Coupon.FULL_REDUCTION)){
-					newUserActivity.setCouponId(Math.toIntExact(couponId));
-				}
 				LocalDateTime queryNow = LocalDateTime.now().plusDays(query.getDays());
 				query.setDeadline(TimeUtils.convertTimeStamp(queryNow));
 
@@ -355,12 +353,16 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 				return query;
 			}).collect(Collectors.toList());
 
-			if (Objects.nonNull(newUserActivity.getCouponId())){
-				Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
-				if (Objects.isNull(coupon)) {
-					log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
-					return R.ok(newUserActivity);
-				}
+			Optional<Coupon> max = coupons.stream().filter(coupon -> Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)).max(Comparator.comparing(Coupon::getAmount));
+			max.ifPresent(newUserActivityVO::setCoupon);
+
+			if (Objects.isNull(newUserActivityVO.getCoupon()) && StringUtils.isEmpty(version)){
+				log.warn("The old version of the Mini Program is compatible with the coupon of the day");
+				return R.ok();
+			}
+
+			if (Objects.nonNull(newUserActivityVO.getCoupon())){
+				Coupon coupon = newUserActivityVO.getCoupon();
 				LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
 				coupon.setDeadline(TimeUtils.convertTimeStamp(now));
 				if (collect.containsKey(coupon.getId())){

@@ -5,10 +5,8 @@ import com.xiliulou.electricity.service.NewUserActivityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
 
 /**
  * 活动表(TActivity)表控制层
@@ -29,7 +27,7 @@ public class JsonUserNewUserActivityController {
     
     //根据id查询活动详情
     @GetMapping(value = "/user/newUserActivity/queryNewUserActivity")
-    public R queryNewUserActivity() {
-        return newUserActivityService.queryNewUserActivity();
+    public R queryNewUserActivity(@RequestParam(name = "version", required = false) String version) {
+        return newUserActivityService.queryNewUserActivity(version);
     }
 }

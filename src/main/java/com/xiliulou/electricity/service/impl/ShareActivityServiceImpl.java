@@ -785,7 +785,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             }
             coupon = coupons.stream().filter(f -> Coupon.FULL_REDUCTION.equals(f.getDiscountType())).max(Comparator.comparing(Coupon::getAmount)).orElse(null);
         }
-        if (Objects.isNull(coupon)) {
+        if (Objects.isNull(coupon) && Objects.nonNull(shareActivityRule.getCouponId())) {
             coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
         }
         
