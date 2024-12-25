@@ -205,6 +205,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         if (Objects.isNull(freeDepositData)) {
             FreeDepositData freeDepositDataInsert = new FreeDepositData();
             freeDepositDataInsert.setFreeDepositCapacity(freeDepositDataQuery.getFreeDepositCapacity());
+            freeDepositDataInsert.setFyFreeDepositCapacity(CommonConstant.ZERO);
             freeDepositDataInsert.setTenantId(freeDepositDataQuery.getTenantId());
             freeDepositDataInsert.setDelFlag(FreeDepositData.DEL_NORMAL);
             freeDepositDataInsert.setRechargeTime(System.currentTimeMillis());
