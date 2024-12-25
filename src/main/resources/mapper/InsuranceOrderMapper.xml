@@ -185,4 +185,12 @@
         and is_use = #{status} and insurance_type=#{type} order by id desc limit 1
     </select>
 
+
+    <select id="selectListByUid" resultType="com.xiliulou.electricity.entity.InsuranceOrder">
+        select
+        <include refid="basicSql"/>
+        from t_insurance_order
+        where uid = #{uid}
+        and is_use = #{status}
+    </select>
 </mapper>

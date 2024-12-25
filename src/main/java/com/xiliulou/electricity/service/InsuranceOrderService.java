@@ -90,4 +90,6 @@ public interface InsuranceOrderService {
             BasePayConfig basePayConfig);
 
     InsuranceOrder queryByUid(Long uid, Integer type,Integer status);
+
+    List<InsuranceOrder> queryByUid(Long uid, Integer type);
 }
