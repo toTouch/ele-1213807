@@ -529,18 +529,6 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.ok(Collections.emptyList());
         }
 
-        userCouponVOList.forEach(userCouponVO -> {
-            Coupon coupon = couponService.queryByIdFromCache(userCouponVO.getCouponId());
-            userCouponVO.setAmount(coupon.getAmount());
-            userCouponVO.setDiscount(coupon.getDiscount());
-            userCouponVO.setName(coupon.getName());
-            userCouponVO.setDiscountType(coupon.getDiscountType());
-            userCouponVO.setDeadline(coupon.getDeadline());
-            userCouponVO.setDescription(coupon.getDescription());
-            userCouponVO.setCount(coupon.getCount());
-            userCouponVO.setUseScope(coupon.getUseScope());
-        });
-
         //若是不可叠加的优惠券且指定了使用套餐,则将对应的套餐信息设置到优惠券中
         for (UserCouponVO userCouponVO : userCouponVOList) {
             userCouponVO.setUserName(userInfo.getName());
