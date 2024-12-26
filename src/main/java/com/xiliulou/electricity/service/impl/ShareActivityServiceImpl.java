@@ -1283,5 +1283,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         query.setFranchiseeIds(pair.getRight());
         return shareActivityMapper.listShareActivity(query);
     }
+
+    @Override
+    public ShareActivity queryByIdWithDelFlag(Integer id) {
+        return shareActivityMapper.selectByIdWithDelFlag(id);
+    }
 }
 

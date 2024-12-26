@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.ShareActivityRule;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 /**
  * 加盟商活动绑定表(TActivityBindCoupon)表数据库访问层
  *
@@ -19,4 +21,6 @@ public interface ShareActivityRuleMapper extends BaseMapper<ShareActivityRule> {
     ShareActivityRule selectByCouponId(@Param("couponId") Long couponId);
     
     Integer removeByActivityId(@Param("activityId") Long activityId, @Param("tenantId") Integer tenantId);
+
+    List<ShareActivityRule> selectByActivityIdWithDelFlag(@Param("id") Integer id,@Param("tenantId") Integer tenantId);
 }

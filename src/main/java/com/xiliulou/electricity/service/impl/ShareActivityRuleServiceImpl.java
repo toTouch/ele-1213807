@@ -56,7 +56,12 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
     public Integer removeByActivityId(Long activityId, Integer tenantId) {
         return shareActivityRuleMapper.removeByActivityId(activityId, tenantId);
     }
-    
+
+    @Override
+    public List<ShareActivityRule> queryByActivityIdWithDelFlag(Integer id, Integer tenantId) {
+        return shareActivityRuleMapper.selectByActivityIdWithDelFlag(id,tenantId);
+    }
+
     @Override
     public void updateByActivity(Integer id) {
         shareActivityRuleMapper.updateByActivity(id,System.currentTimeMillis());

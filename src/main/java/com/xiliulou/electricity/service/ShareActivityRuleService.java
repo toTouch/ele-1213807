@@ -29,4 +29,6 @@ public interface ShareActivityRuleService {
     ShareActivityRule selectByCouponId(Long id);
     
     Integer removeByActivityId(Long activityId, Integer tenantId);
+
+    List<ShareActivityRule> queryByActivityIdWithDelFlag(Integer id, Integer tenantId);
 }

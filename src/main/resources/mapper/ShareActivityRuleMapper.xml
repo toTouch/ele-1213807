@@ -14,5 +14,11 @@
         from t_share_activity_rule
         where del_flag=0 and JSON_CONTAINS(coupon_arrays,JSON_ARRAY(#{couponId})) order by id limit 1
     </select>
+    <select id="selectByActivityIdWithDelFlag" resultType="com.xiliulou.electricity.entity.ShareActivityRule">
+        select id,activity_id,coupon_id,coupon_arrays,trigger_count
+        from t_share_activity_rule
+        where activity_id = #{id}
+          and tenant_id = #{tenantId}
+    </select>
 
 </mapper>

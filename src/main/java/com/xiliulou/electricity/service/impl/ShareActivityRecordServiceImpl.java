@@ -277,13 +277,16 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
     private int getReceivedCouponCount(ShareActivityRecordVO shareActivityRecordVO) {
         int couponCount = 0;
-        ShareActivity shareActivity = shareActivityService.queryByIdFromCache(shareActivityRecordVO.getActivityId());
+        ShareActivity shareActivity = shareActivityService.queryByIdWithDelFlag(shareActivityRecordVO.getActivityId());
         Long uid = shareActivityRecordVO.getUid();
 
         if (Objects.isNull(shareActivity)) {
             return couponCount;
         }
-        List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());
+        List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivityIdWithDelFlag(shareActivity.getId(), shareActivity.getTenantId());
+        if (CollectionUtils.isEmpty(shareActivityRuleList)){
+            return couponCount;
+        }
         if (ShareActivity.RECEIVE_TYPE_CYCLE.equals(shareActivity.getReceiveType())) {
             //循环领取的领取规则有且仅有一个
             ShareActivityRule shareActivityRule = shareActivityRuleList.get(0);
