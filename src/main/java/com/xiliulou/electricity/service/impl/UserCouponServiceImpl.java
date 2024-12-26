@@ -667,7 +667,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
 
                             UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
-                                    .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
+                                    .activityRuleId(shareActivityRule.getId()).couponId(coupon.getId()).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                     .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
                                     .couponWay(Long.valueOf(activityId)).verifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER).delFlag(UserCoupon.DEL_NORMAL);
@@ -727,7 +727,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                             }
                             LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
                             UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder().name(coupon.getName()).source(UserCoupon.TYPE_SOURCE_ADMIN_SEND).activityId(activityId)
-                                    .activityRuleId(shareActivityRule.getId()).couponId(couponId).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
+                                    .activityRuleId(shareActivityRule.getId()).couponId(coupon.getId()).discountType(coupon.getDiscountType()).status(UserCoupon.STATUS_UNUSED)
                                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).uid(user.getUid()).phone(user.getPhone())
                                     .deadline(TimeUtils.convertTimeStamp(now)).tenantId(tenantId).couponType(CouponTypeEnum.INVITE_COUPON_ACTIVITIES.getCode())
                                     .couponWay(Long.valueOf(activityId)).verifiedUid(UserCoupon.INITIALIZE_THE_VERIFIER).delFlag(UserCoupon.DEL_NORMAL);
