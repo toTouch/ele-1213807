@@ -265,6 +265,12 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             if (Objects.nonNull(franchiseeId)) {
                 shareActivityRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(franchiseeId)).map(Franchisee::getName).orElse(StringUtils.EMPTY));
             }
+            if (Objects.isNull(shareActivityRecordVO.getFranchiseeName())){
+                Integer id = getFranchiseeId(shareActivityRecordVO.getActivityId());
+                if (Objects.nonNull(id)){
+                    shareActivityRecordVO.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(Long.valueOf(id))).map(Franchisee::getName).orElse(StringUtils.EMPTY));
+                }
+            }
         }
         return R.ok(shareActivityRecordVOList);
     }
