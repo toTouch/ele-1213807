@@ -30,5 +30,5 @@ public interface ShareActivityRuleService {
     
     Integer removeByActivityId(Long activityId, Integer tenantId);
 
-    List<ShareActivityRule> queryByActivityIdWithDelFlag(Integer id, Integer tenantId);
+    List<ShareActivityRule> queryByActivityIdWithDelFlag(Integer id);
 }

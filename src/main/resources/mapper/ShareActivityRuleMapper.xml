@@ -18,7 +18,6 @@
         select id,activity_id,coupon_id,coupon_arrays,trigger_count
         from t_share_activity_rule
         where activity_id = #{id}
-          and tenant_id = #{tenantId}
     </select>
 
 </mapper>

@@ -22,5 +22,5 @@ public interface ShareActivityRuleMapper extends BaseMapper<ShareActivityRule> {
     
     Integer removeByActivityId(@Param("activityId") Long activityId, @Param("tenantId") Integer tenantId);
 
-    List<ShareActivityRule> selectByActivityIdWithDelFlag(@Param("id") Integer id,@Param("tenantId") Integer tenantId);
+    List<ShareActivityRule> selectByActivityIdWithDelFlag(@Param("id") Integer id);
 }

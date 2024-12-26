@@ -58,8 +58,8 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
     }
 
     @Override
-    public List<ShareActivityRule> queryByActivityIdWithDelFlag(Integer id, Integer tenantId) {
-        return shareActivityRuleMapper.selectByActivityIdWithDelFlag(id,tenantId);
+    public List<ShareActivityRule> queryByActivityIdWithDelFlag(Integer id) {
+        return shareActivityRuleMapper.selectByActivityIdWithDelFlag(id);
     }
 
     @Override

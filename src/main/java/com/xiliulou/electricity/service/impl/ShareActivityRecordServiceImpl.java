@@ -283,7 +283,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         if (Objects.isNull(shareActivity)) {
             return couponCount;
         }
-        List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivityIdWithDelFlag(shareActivity.getId(), shareActivity.getTenantId());
+        List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivityIdWithDelFlag(shareActivity.getId());
         if (CollectionUtils.isEmpty(shareActivityRuleList)){
             return couponCount;
         }
