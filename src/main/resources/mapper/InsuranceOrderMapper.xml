@@ -191,6 +191,6 @@
         <include refid="basicSql"/>
         from t_insurance_order
         where uid = #{uid}
-        and is_use = #{status}
+        and  insurance_type=#{type}
     </select>
 </mapper>
