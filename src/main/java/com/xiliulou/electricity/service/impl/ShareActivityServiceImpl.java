@@ -628,6 +628,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             //兼容单个优惠券的情况，先查看单个优惠券
             Integer couponId = shareActivityRule.getCouponId();
             Optional.ofNullable(couponId).flatMap(id -> Optional.ofNullable(couponService.queryByIdFromCache(id))).ifPresent(couponVO::setCoupon);
+            
             //设置所有的优惠券
             List<Long> couponIds = shareActivityRule.getCoupons();
             List<Coupon> coupons = Optional.ofNullable(couponIds).orElse(List.of()).stream().map(id -> couponService.queryByIdFromCache(id.intValue()))
@@ -645,7 +646,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                 
                 for (Coupon coupon : couponArrays) {
                     //是否可以领取优惠券
-                    couponVO.setIsGet(isGet);
                     coupon.setIsGet(isGet);
                     //是否领取该活动该优惠券
                     UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), user.getUid());
@@ -657,6 +657,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                         getCouponPackage(coupon, couponVO);
                     }
                 }
+                
                 Integer integer = userCouponService.queryTheVoucherHasBeenCollected(shareActivityVO.getId(), shareActivityRule.getId(), user.getUid(), shareActivityRule.getCoupons());
                 if (Objects.equals(integer,shareActivityRule.getCoupons().size())){
                     couponVO.setIsGet(CouponVO.IS_RECEIVED);
