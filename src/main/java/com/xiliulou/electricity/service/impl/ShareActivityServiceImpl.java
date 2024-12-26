@@ -84,11 +84,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -613,6 +609,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
         //
         List<CouponVO> couponVOList = new ArrayList<>();
         int couponCount = 0;
+
         for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
             
             CouponVO couponVO = new CouponVO();
@@ -642,8 +639,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
             }
             //优惠券名称
             //            Coupon coupon = couponService.queryByIdFromCache(couponId);
+
             if (CollectionUtils.isNotEmpty(couponVO.getCouponArrays())) {
                 List<Coupon> couponArrays = couponVO.getCouponArrays();
+                boolean hasGet = false;
                 for (Coupon coupon : couponArrays) {
                     //是否可以领取优惠券
                     couponVO.setIsGet(isGet);
@@ -651,6 +650,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                     //是否领取该活动该优惠券
                     UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), user.getUid());
                     if (Objects.nonNull(userCoupon)) {
+                        hasGet = true;
                         couponVO.setIsGet(CouponVO.IS_RECEIVED);
                         couponCount = couponCount + 1;
                         coupon.setIsGet(CouponVO.IS_RECEIVED);
@@ -658,6 +658,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
                     if (Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)) {
                         getCouponPackage(coupon, couponVO);
                     }
+                }
+                if (hasGet){
+                    couponVO.setIsGet(CouponVO.IS_RECEIVED);
                 }
                 couponVO.setCouponArrays(couponArrays);
             }
