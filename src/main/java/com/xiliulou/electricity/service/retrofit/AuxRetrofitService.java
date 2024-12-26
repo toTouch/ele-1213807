@@ -14,7 +14,7 @@ import retrofit2.http.POST;
  * @author HeYafeng
  * @date 2024/12/26 10:07:44
  */
-@RetrofitClient(serviceId = "saas-aux", fallback = AuxRetrofitServiceImpl.class)
+@RetrofitClient(serviceId = "xiliulou-saas-aux", fallback = AuxRetrofitServiceImpl.class)
 @SentinelDegrade(count = 3, enable = true, timeWindow = 15, grade = 2)
 @Intercept(handler = MeituanServiceInterceptor.class)
 public interface AuxRetrofitService {
