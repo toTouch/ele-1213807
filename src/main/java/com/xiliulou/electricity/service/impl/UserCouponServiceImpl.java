@@ -721,7 +721,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                                 log.warn("getShareCoupon  ERROR! not same franchisee,couponId={},uid={}", couponId, user.getUid());
                                 return R.fail("120125", "所属加盟商不一致，无法领取优惠券");
                             }
-                            UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
+                            UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), coupon.getId(), user.getUid());
                             if (Objects.nonNull(oldUserCoupon)) {
                                 continue;
                             }
