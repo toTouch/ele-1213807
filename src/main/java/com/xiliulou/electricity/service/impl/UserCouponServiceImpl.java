@@ -684,7 +684,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
                         if (CollectionUtils.isNotEmpty(userCouponList)) {
 
-                            userCouponMapper.batchInsert(userCouponList);
+                            userCouponMapper.batchInsertActivity(userCouponList);
 
                             //领劵完，可用邀请人数减少
                             shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
@@ -743,7 +743,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
                         if (CollectionUtils.isNotEmpty(userCouponList)) {
 
-                            userCouponMapper.batchInsert(userCouponList);
+                            userCouponMapper.batchInsertActivity(userCouponList);
 
                             //领劵完，可用邀请人数减少
                             shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());

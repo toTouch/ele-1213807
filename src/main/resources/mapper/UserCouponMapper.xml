@@ -283,4 +283,52 @@
         </foreach>
 
     </insert>
+    <insert id="batchInsertActivity">
+        insert into t_user_coupon(  `id`,
+                                    `source`,
+                                    `activity_id`,
+                                    `coupon_id`,
+                                    `name`,
+                                    `discount_type`,
+                                    `status`,
+                                    `uid`,
+                                    `phone`,
+                                    `deadline`,
+                                    `order_id`,
+                                    `del_flag`,
+                                    `create_time`,
+                                    `update_time`,
+                                    `tenant_id`,
+                                    `franchisee_id`,
+                                    `activity_rule_id`,
+                                    `source_order_id`,
+                                    `verified_uid`,
+                                    `coupon_type`,
+                                    `coupon_way`)
+        values
+            <foreach collection="list" item="item" separator=",">
+                (#{item.id},
+                #{item.source},
+                #{item.activityId},
+                #{item.couponId},
+                #{item.name},
+                #{item.discountType},
+                #{item.status},
+                #{item.uid},
+                #{item.phone},
+                #{item.deadline},
+                #{item.orderId},
+                #{item.delFlag},
+                #{item.createTime},
+                #{item.updateTime},
+                #{item.tenantId},
+                #{item.franchiseeId},
+                #{item.activityRuleId},
+                #{item.sourceOrderId},
+                #{item.verifiedUid},
+                #{item.couponType},
+                #{item.couponWay}
+                 )
+            </foreach>
+    </insert>
 </mapper>
