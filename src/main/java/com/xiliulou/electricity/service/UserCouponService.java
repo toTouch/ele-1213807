@@ -5,6 +5,7 @@ import com.xiliulou.electricity.dto.UserCouponDTO;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.query.CouponBatchSendWithPhonesRequest;
 import com.xiliulou.electricity.query.UserCouponQuery;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -114,4 +115,6 @@ public interface UserCouponService {
      * @return 天数券增加的天数。返回非null整数表示使用的天数券的天数；返回0或null表示未使用天数券
      */
     Integer getDaysForMemberCardOrderFromUseDayCoupon(String orderId);
+    
+    Integer queryTheVoucherHasBeenCollected( Integer activityId, Long activityRuleId, Long uid,List<Long> idList);
 }

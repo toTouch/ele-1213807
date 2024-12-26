@@ -917,7 +917,12 @@ public class UserCouponServiceImpl implements UserCouponService {
         }
         return days;
     }
-
+    
+    @Override
+    public Integer queryTheVoucherHasBeenCollected(Integer activityId, Long activityRuleId, Long uid, List<Long> idList) {
+        return userCouponMapper.selectTheVoucherHasBeenCollected(activityId,activityRuleId,uid,idList);
+    }
+    
     private void handleBatchSaveCoupon(ConcurrentHashSet<User> existsPhone, Coupon coupon, String sessionId, String name, Long operateUid) {
         Iterator<User> iterator = existsPhone.iterator();
         List<UserCoupon> userCouponList = new ArrayList<>();
