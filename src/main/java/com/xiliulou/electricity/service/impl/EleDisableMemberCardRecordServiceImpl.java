@@ -405,15 +405,21 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             batteryTypeSet = new HashSet<>(batteryTypes);
         }
         
+        // 需求上线时避免重启中未删除缓存导致报错，以后无用
+        BigDecimal freezeServiceCharge = batteryMemberCard.getFreezeServiceCharge();
+        if (Objects.isNull(freezeServiceCharge)) {
+            freezeServiceCharge = batteryMemberCard.getServiceCharge();
+        }
+        
         // 套餐的套餐冻结服务费大于0，在保存套餐冻结滞纳金订单
-        if (Objects.nonNull(batteryMemberCard.getFreezeServiceCharge()) && batteryMemberCard.getFreezeServiceCharge().compareTo(BigDecimal.ZERO) > 0) {
+        if (Objects.nonNull(freezeServiceCharge) && freezeServiceCharge.compareTo(BigDecimal.ZERO) > 0) {
             EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                     .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                     .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).batteryServiceFeeGenerateTime(System.currentTimeMillis())
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
                     .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId()).modelType(franchisee.getModelType())
                     .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge())
+                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(freezeServiceCharge)
                     .expiredProtectionTime(EleBatteryServiceFeeOrder.EXPIRED_PROTECTION_TIME_DISABLE).build();
             eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
             

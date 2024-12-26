@@ -1449,6 +1449,12 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             log.info("BATTERY SERVICE FEE INFO!user exist battery expire fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
         }
         
+        // 需求上线时避免重启中未删除缓存导致报错，以后无用
+        BigDecimal freezeServiceCharge = batteryMemberCard.getFreezeServiceCharge();
+        if (Objects.isNull(freezeServiceCharge)) {
+            freezeServiceCharge = batteryMemberCard.getServiceCharge();
+        }
+        
         // 暂停套餐电池服务费
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && StringUtils.isNotBlank(serviceFeeUserInfo.getDisableMemberCardNo())) {
             // 获取滞纳金订单
@@ -1461,7 +1467,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     serviceFeeUserInfo.getPauseOrderNo())) {
                 // 计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-                pauseBatteryServiceFee = batteryMemberCard.getFreezeServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                pauseBatteryServiceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
                 
                 // 生成滞纳金订单
@@ -1474,13 +1480,13 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 }
                 
                 // 套餐的套餐冻结服务费大于0，再保存套餐冻结滞纳金订单
-                if (!Objects.isNull(batteryMemberCard.getFreezeServiceCharge()) && batteryMemberCard.getFreezeServiceCharge().compareTo(BigDecimal.ZERO) > 0) {
+                if (!Objects.isNull(freezeServiceCharge) && freezeServiceCharge.compareTo(BigDecimal.ZERO) > 0) {
                     eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder().orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid()))
                             .uid(userInfo.getUid()).phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(pauseBatteryServiceFee).status(EleDepositOrder.STATUS_INIT)
                             .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).tenantId(userInfo.getTenantId())
                             .source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).franchiseeId(franchisee.getId()).storeId(userInfo.getStoreId())
                             .modelType(franchisee.getModelType()).batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                            .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge())
+                            .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(freezeServiceCharge)
                             .paramFranchiseeId(payParamConfig.getFranchiseeId()).wechatMerchantId(payParamConfig.getThirdPartyMerchantId())
                             .expiredProtectionTime(EleBatteryServiceFeeOrder.EXPIRED_PROTECTION_TIME_DISABLE).build();
                     batteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
@@ -1499,7 +1505,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     serviceFeeUserInfo.getPauseOrderNo())) {
                 // 计算暂停套餐电池服务费
                 int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-                pauseBatteryServiceFee = batteryMemberCard.getFreezeServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+                pauseBatteryServiceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
                 log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
                 
                 eleBatteryServiceFeeOrder = batteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getPauseOrderNo());

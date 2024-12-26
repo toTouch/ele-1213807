@@ -1356,15 +1356,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 batteryTypeSet = new HashSet<>(userBatteryType);
             }
             
+            // 需求上线时避免重启中未删除缓存导致报错，以后无用
+            BigDecimal freezeServiceCharge = batteryMemberCard.getFreezeServiceCharge();
+            if (Objects.isNull(freezeServiceCharge)) {
+                freezeServiceCharge = batteryMemberCard.getServiceCharge();
+            }
+            
             // 套餐的套餐冻结服务费大于0，在保存套餐冻结滞纳金订单
-            if (Objects.nonNull(batteryMemberCard.getFreezeServiceCharge()) && batteryMemberCard.getFreezeServiceCharge().compareTo(BigDecimal.ZERO) > 0) {
+            if (Objects.nonNull(freezeServiceCharge) && freezeServiceCharge.compareTo(BigDecimal.ZERO) > 0) {
                 EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                         .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE, userInfo.getUid())).uid(userInfo.getUid()).phone(userInfo.getPhone())
                         .name(userInfo.getName()).payAmount(BigDecimal.ZERO).status(EleDepositOrder.STATUS_INIT).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).batteryServiceFeeGenerateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
                         .storeId(userInfo.getStoreId()).tenantId(userInfo.getTenantId()).source(EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD).modelType(franchisee.getModelType())
                         .batteryType(CollectionUtils.isEmpty(batteryTypeSet) ? "" : JsonUtil.toJson(batteryTypeSet))
-                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(batteryMemberCard.getFreezeServiceCharge())
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn()).batteryServiceFee(freezeServiceCharge)
                         .expiredProtectionTime(EleBatteryServiceFeeOrder.EXPIRED_PROTECTION_TIME_DISABLE).build();
                 eleBatteryServiceFeeOrderService.insert(eleBatteryServiceFeeOrder);
                 
@@ -1633,8 +1639,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeGenerateTime = userBatteryMemberCard.getMemberCardExpireTime() - (chooseTime - realTime);
             }
             
+            // 需求上线时避免重启中未删除缓存导致报错，以后无用
+            BigDecimal freezeServiceCharge = batteryMemberCard.getFreezeServiceCharge();
+            if (Objects.isNull(freezeServiceCharge)) {
+                freezeServiceCharge = batteryMemberCard.getServiceCharge();
+            }
+            
             int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-            pauseBatteryServiceFee = batteryMemberCard.getFreezeServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+            pauseBatteryServiceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
             log.info("ADMIN CLEAN BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
             
             // 生成启用记录
@@ -1911,9 +1923,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
                 
+                // 需求上线时避免重启中未删除缓存导致报错，以后无用
+                BigDecimal freezeServiceCharge = batteryMemberCard.getFreezeServiceCharge();
+                if (Objects.isNull(freezeServiceCharge)) {
+                    freezeServiceCharge = batteryMemberCard.getServiceCharge();
+                }
+                
                 BigDecimal serviceFee = BigDecimal.ZERO;
-                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(batteryMemberCard.getFreezeServiceCharge())){
-                    serviceFee = batteryMemberCard.getFreezeServiceCharge().multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays()));
+                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(freezeServiceCharge)){
+                    serviceFee = freezeServiceCharge.multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays()));
                 }
                 
                 // 生成启用记录
@@ -1932,7 +1950,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
                     eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
                     eleBatteryServiceFeeOrderUpdate.setPayAmount(
-                            batteryMemberCard.getFreezeServiceCharge().multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays())));
+                            freezeServiceCharge.multiply(BigDecimal.valueOf(eleDisableMemberCardRecord.getChooseDays())));
                     eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(
                             userBatteryMemberCard.getDisableMemberCardTime() + eleDisableMemberCardRecord.getChooseDays() * 24 * 60 * 60 * 1000L);
                     eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
