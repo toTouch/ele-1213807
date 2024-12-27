@@ -34,4 +34,9 @@ public interface EleCabinetConstant {
     Integer STATUS_ONLINE = 0;
     Integer STATUS_OFFLINE = 1;
     
+    /**
+     * 柜机参数模板数量限制
+     */
+    Integer CABINET_APP_PARAM_SETTING_TEMPLATE_LIMIT = 10;
+    
 }

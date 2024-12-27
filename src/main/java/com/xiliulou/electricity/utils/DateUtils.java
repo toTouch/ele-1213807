@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -398,23 +398,24 @@ public class DateUtils {
     /**
      * 剩余时间戳转化为剩余 x天 x时
      */
-    public static String convertExpireTime(long expireTime) {
-        Instant now = Instant.now();
-        Instant target = Instant.ofEpochMilli(expireTime);
-        Duration duration = Duration.between(now, target);
-        
-        if (duration.isNegative()) {
+    public static String convertExpireTime(Long expireTime) {
+        if (Objects.isNull(expireTime) || expireTime <= 0) {
             return "0天0小时";
+        }
+    
+        long duration = expireTime - System.currentTimeMillis();
+        if (duration <= 0) {
+            return "0天0小时";
+        }
+    
+        long hours = duration / 1000 / 60 / 60;
+        if (hours < 1) {
+            return "不足1小时";
         } else {
-            long hours = duration.toHours();
             long days = hours / 24;
             hours = hours % 24;
-            
-            if (hours < 1) {
-                return "不足1小时";
-            } else {
-                return days + "天" + hours + "小时";
-            }
+            return days + "天" + hours + "小时";
         }
     }
+    
 }
