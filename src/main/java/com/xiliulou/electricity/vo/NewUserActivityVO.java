@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 活动表(NewUserActivity)实体类
  *
@@ -67,6 +69,11 @@ public class NewUserActivityVO {
      * 优惠券id
      */
     private Integer couponId;
+    
+    /**
+     * 优惠券数组列
+     */
+    private List<Coupon> couponArrays;
 
     /**
      * 活动说明

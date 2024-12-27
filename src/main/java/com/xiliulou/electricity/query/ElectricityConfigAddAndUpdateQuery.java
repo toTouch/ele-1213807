@@ -211,6 +211,31 @@ public class ElectricityConfigAddAndUpdateQuery {
      */
     private Integer isEnableSeparateDeposit;
     
+    /**
+     * 套餐冻结自动审核，0-关闭自动审核，其他为自动审核最大天数限制
+     */
+    @Range(min = 0, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer freezeAutoReviewDays;
+    
+    /**
+     * 套餐冻结次数限制，0-不限次，其他为用户端申请冻结最大次数
+     */
+    @Range(min = 0, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer packageFreezeCount;
+    
+    /**
+     * 与套餐冻结次数限制参数 packageFreezeCount 联动
+     * 套餐冻结最大天数限制，packageFreezeCount 为 0 时最大天数限制为60，packageFreezeCount 为其他数值时根据 packageFreezeDays 限制申请冻结最大天数
+     */
+    @Range(min = 1, max = 9999, message = "请输入1-9999的整数", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer packageFreezeDays;
+    
+    /**
+     * 套餐过期保护期，单位:小时，保护期结束后产生套餐过期滞纳金，默认24小时
+     */
+    @Range(min = 1, max = 99, message = "套餐过期滞纳金起算时间设置范围为1-99", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer expiredProtectionTime;
+    
     public static Double MIN_NORM = 50.00;
     
     public static Double MAX_NORM = 100.00;

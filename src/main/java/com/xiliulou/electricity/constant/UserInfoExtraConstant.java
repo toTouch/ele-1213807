@@ -14,4 +14,14 @@ public interface UserInfoExtraConstant {
      * 对换电套餐购买次数限制
      */
     Integer ELE_LIMIT_YES = 1;
+    
+    /**
+     * 增加将用户套餐冻结次数 +1
+     */
+    Integer ADD_FREEZE_COUNT = 1;
+    
+    /**
+     * 减少套餐冻结次数
+     */
+    Integer SUBTRACT_FREEZE_COUNT = -1;
 }

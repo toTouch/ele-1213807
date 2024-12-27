@@ -39,4 +39,6 @@ public interface CouponMapper extends BaseMapper<Coupon>{
     List<Coupon> selectCouponByQuery(Coupon coupon);
     
     List<Coupon> selectNameListByIds(@Param("list")Collection<Long> couponId,@Param("tenantId") Integer tenantId);
+    
+    List<Coupon> selectListByIdsFromDB(@Param("list") List<Long> couponIds);
 }

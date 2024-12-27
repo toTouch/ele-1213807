@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.enums.SpecificPackagesEnum;
@@ -113,8 +114,28 @@ public class Coupon {
      * @see SpecificPackagesEnum
      */
     private Integer specificPackages;
+    
+    /**
+     * 套餐有效期,通过用户发放时间 + 有效天数计算出截止时间,实际字段在 UserCoupon 中
+     * @see UserCoupon#deadline
+     */
+    @TableField(exist = false)
+    private Long deadline;
+    
+    /**
+     * 适配邀请返券活动，优惠券是否领取
+     * @see com.xiliulou.electricity.vo.CouponVO#isGet
+     */
+    @TableField(exist = false)
+    private Integer isGet;
+    
+    /**
+     * -1 -- 不限制,0 -- 租车，1 -- 租电，2 -- 车电一体
+     */
+    private Integer useScope;
 
     public static final Integer SUPERPOSITION_NO = 0;
+    
     public static final Integer SUPERPOSITION_YES = 1;
 
     public static final Integer DEL_NORMAL = 0;
@@ -133,8 +154,8 @@ public class Coupon {
     //打折劵
     public static final Integer DISCOUNT=2;
 
-    //体验劵
-    public static final Integer EXPERIENCE=3;
+    //天数券
+    public static final Integer DAY_VOUCHER=3;
 
     //平台劵
     public static final Integer TYPE_SYSTEM = 1;
