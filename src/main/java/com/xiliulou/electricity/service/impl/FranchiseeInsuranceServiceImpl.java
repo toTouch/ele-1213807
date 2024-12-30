@@ -698,4 +698,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     public List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> ids) {
         return this.baseMapper.selectListCarModelAndBatteryTypeById(ids);
     }
+
+    @Override
+    public FranchiseeInsurance querySameInsuranceType(Integer tenantId, Long franchiseeId, Integer type, String batteryType, Long carModelId) {
+        return baseMapper.selectByFranchiseeIdAndBatteryType(tenantId,franchiseeId, type, batteryType, carModelId);
+    }
 }

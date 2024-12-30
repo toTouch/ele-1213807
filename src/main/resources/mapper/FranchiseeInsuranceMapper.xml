@@ -354,4 +354,29 @@
         ORDER BY tf.create_time DESC
         limit #{offset}, #{size}
     </select>
+    <select id="selectByFranchiseeIdAndBatteryType"
+            resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select
+        tf.id,tf.franchisee_id,tf.cid,tf.name,tf.premium,tf.forehead,tf.valid_days,tf.insurance_type,tf.status,tf.is_constraint,tf.del_flag,tf.create_time,tf.update_time,tf.tenant_id,
+        tf.battery_type,tf.create_time,tf.update_time
+        from t_franchisee_insurance tf
+        where tf.del_flag=0
+        AND tf.status = 0
+        <if test="insuranceType != null">
+            AND tf.insurance_type = #{insuranceType}
+        </if>
+        <if test="tenantId != null ">
+            and tf.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and tf.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="insuranceType == 0">
+           and tf.battery_type = #{batteryType}
+        </if>
+        <if test="insuranceType == 1">
+           and tf.car_model_id = #{carModelId}
+        </if>
+        limit 1
+    </select>
 </mapper>

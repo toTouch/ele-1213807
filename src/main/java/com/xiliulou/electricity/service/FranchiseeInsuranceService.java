@@ -65,4 +65,6 @@ public interface FranchiseeInsuranceService {
     List<FranchiseeInsuranceCarModelAndBatteryTypeDTO> selectListCarModelAndBatteryTypeById(Collection<Long> collect);
     
     List<FranchiseeInsuranceOrderIdsVo> queryInsuranceIds(FranchiseeInsuranceIdsRequest franchiseeInsuranceIdsRequest);
+
+    FranchiseeInsurance querySameInsuranceType(Integer tenantId, Long franchiseeId, Integer type, String batteryType, Long carModelId);
 }
