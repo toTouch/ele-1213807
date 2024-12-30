@@ -6,19 +6,17 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.CouponDayRecordEntity;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.enums.DayCouponUseScope;
 import com.xiliulou.electricity.enums.UserCouponStatus;
 import com.xiliulou.electricity.factory.coupon.UserDayCouponStrategyFactory;
-import com.xiliulou.electricity.service.CouponDayRecordService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.DayCouponStrategy;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserDayCouponService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -52,6 +50,8 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
     private final RedisService redisService;
     
     private final CouponDayRecordService couponDayRecordService;
+
+    private final UserInfoService userInfoService;
     
     @Override
     public R<?> useDayCoupon(Integer couponId) {
@@ -70,6 +70,18 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
         if (Objects.isNull(userInfo)){
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        UserInfo info = userInfoService.queryByIdFromDB(userInfo.getUid());
+
+        if (Objects.isNull(info)){
+            return R.fail("ELECTRICITY.0001","未找到用户");
+        }
+
+        if (Objects.equals(UserInfo.USER_UN_USABLE_STATUS, info.getUsableStatus())) {
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+
         String lockKey = String.format(LOCK_USER_DAY_COUPON_USE_SCOPE, tenantId, userInfo.getUid(),couponId);
         if (!redisService.setNx(lockKey, "1" , 5 * 1000L, false)){
             return R.fail("400003","系统繁忙，请稍后再试");
@@ -80,6 +92,7 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             if (Objects.isNull(userCoupon)) {
                 return R.fail("400001","请选择正确的优惠券使用");
             }
+
             if (!Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_UNUSED)) {
                 return R.fail("400005",String.format("该优惠券%s,请重新加载信息", UserCouponStatus.getUserCouponStatus(userCoupon.getStatus()).getDesc()));
             }
