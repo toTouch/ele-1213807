@@ -99,7 +99,7 @@ public class JsonAdminInsuranceUserInfoController extends BaseController {
         return insuranceUserInfoService.renewalUserBatteryInsurance(query);
     }
 
-    @GetMapping("/admin/insuranceUserInfo/renewalUserInsurance/check")
+    @PostMapping("/admin/insuranceUserInfo/renewalUserInsurance/check")
     public R renewalUserInsuranceInfoCheck(@RequestBody InsuranceUserInfoQuery query) {
 
         return insuranceUserInfoService.renewalUserInsuranceInfoCheck(query);
