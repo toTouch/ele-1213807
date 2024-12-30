@@ -872,8 +872,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                                         slippageFreezeEntity.getRentalPackageOrderNo());
                                 if (ObjectUtils.isNotEmpty(orderFreezePo)) {
                                     // 到期时间
-                                    long expireTime = orderFreezePo.getCreateTime() + (TimeConstant.DAY_MILLISECOND * orderFreezePo.getApplyTerm());
-                                    
+//                                    long expireTime = orderFreezePo.getCreateTime() + (TimeConstant.DAY_MILLISECOND * orderFreezePo.getApplyTerm());
+                                    long expireTime = orderFreezePo.getAuditTime() + (TimeConstant.DAY_MILLISECOND * orderFreezePo.getApplyTerm());
                                     slippageFreezeEntity.setLateFeeEndTime(expireTime);
                                     // 计算滞纳金金额
                                     long diffDay = DateUtils.diffDay(slippageFreezeEntity.getLateFeeStartTime(), memberTermEntity.getDueTime());

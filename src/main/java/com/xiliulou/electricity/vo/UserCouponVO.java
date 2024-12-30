@@ -38,7 +38,7 @@ public class UserCouponVO {
     private String name;
 
     /**
-     * 优惠类型，1--减免券，2--打折券，3-体验劵
+     * 优惠类型，1--减免券，2--打折券，3-天数券
      */
     private Integer discountType;
     
@@ -163,5 +163,15 @@ public class UserCouponVO {
      * 发券方式描述
      */
     private String couponWayDetails;
+    
+    /**
+     * 天数券天数
+     */
+    private Integer count;
+    
+    /**
+     * 使用范围
+     */
+    private Integer useScope;
     
 }

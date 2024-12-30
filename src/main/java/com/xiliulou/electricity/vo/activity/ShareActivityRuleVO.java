@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo.activity;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: Kenneth
  * @Date: 2023/8/10 15:00
@@ -29,6 +31,10 @@ public class ShareActivityRuleVO {
     private Integer couponId;
     
     /**
+     * 优惠券id数组
+     */
+    private List<Integer> couponArrays;
+    /**
      * 优惠券名称
      */
     private String couponName;
@@ -52,5 +58,8 @@ public class ShareActivityRuleVO {
      * 租户
      */
     private Integer tenantId;
+    
+    
+    private List<CouponNameVO> couponNames;
     
 }

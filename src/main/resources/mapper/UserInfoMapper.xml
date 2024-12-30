@@ -1241,7 +1241,7 @@
     </select>
     
     <select id="selectListByUids" resultType="com.xiliulou.electricity.entity.UserInfo">
-        select uid, name, phone, franchisee_id
+        select uid, name, phone, franchisee_id,tenant_id
         from t_user_info where tenant_id = #{tenantId} and del_flag = 0 and uid in
         <foreach collection="uidList" item="uid" separator="," open="(" close=")">
             #{uid}

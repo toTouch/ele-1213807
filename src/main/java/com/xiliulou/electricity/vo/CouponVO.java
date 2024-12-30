@@ -31,6 +31,11 @@ public class CouponVO {
      * 优惠券
      */
     private Coupon coupon;
+    
+    /**
+     * 优惠券列表
+     */
+    private List<Coupon> couponArrays;
 
     /**
      * 是否领取 1--已领取  2--未领取  3--不能领取

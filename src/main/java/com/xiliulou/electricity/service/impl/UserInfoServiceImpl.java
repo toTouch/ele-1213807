@@ -3374,7 +3374,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         return result;
     }
-    
+
+    @Override
+    @Slave
+    public UserInfo queryByUidFromDB(Long uid) {
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+    }
+
     @Override
     public Triple<Boolean, String, String> checkMemberCardGroup(UserInfo userInfo,
             BatteryMemberCard batteryMemberCard) {

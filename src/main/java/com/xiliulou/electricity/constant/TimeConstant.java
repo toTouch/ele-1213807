@@ -8,6 +8,16 @@ package com.xiliulou.electricity.constant;
 public interface TimeConstant {
     
     /**
+     * 一天的小时
+     */
+    Integer DAT_HOURS = 24;
+    
+    /**
+     * 一天分钟
+     */
+    Long DAT_MINUTES = 24L * 60L;
+    
+    /**
      * 一天的毫秒数
      */
     long DAY_MILLISECOND = 1000 * 60 * 60 * 24;

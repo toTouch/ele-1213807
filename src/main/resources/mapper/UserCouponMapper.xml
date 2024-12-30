@@ -48,7 +48,7 @@
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag, tc.franchisee_id as franchiseeId,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tc.description, tc.specific_packages,
-        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay'
+        tuc.coupon_type as 'couponType',tuc.coupon_way as 'couponWay',tc.count AS 'count', tc.use_scope AS 'useScope'
         from t_user_coupon as tuc
         left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
@@ -205,7 +205,20 @@
         from t_user_coupon
         where `source_order_id` = #{orderId}
     </select>
-    
+    <select id="selectTheVoucherHasBeenCollected" resultType="java.lang.Integer">
+        select
+            count(1)
+        from t_user_coupon
+        where activity_id = #{activityId}
+          and activity_rule_id = #{activityRuleId}
+          and uid = #{uid}
+          and del_flag = 0
+          and coupon_id in
+        <foreach collection="idList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <update id="update">
         update t_user_coupon
         <set>
@@ -269,5 +282,53 @@
             ,#{item.couponType},#{item.couponWay})
         </foreach>
 
+    </insert>
+    <insert id="batchInsertActivity">
+        insert into t_user_coupon(  `id`,
+                                    `source`,
+                                    `activity_id`,
+                                    `coupon_id`,
+                                    `name`,
+                                    `discount_type`,
+                                    `status`,
+                                    `uid`,
+                                    `phone`,
+                                    `deadline`,
+                                    `order_id`,
+                                    `del_flag`,
+                                    `create_time`,
+                                    `update_time`,
+                                    `tenant_id`,
+                                    `franchisee_id`,
+                                    `activity_rule_id`,
+                                    `source_order_id`,
+                                    `verified_uid`,
+                                    `coupon_type`,
+                                    `coupon_way`)
+        values
+            <foreach collection="list" item="item" separator=",">
+                (#{item.id},
+                #{item.source},
+                #{item.activityId},
+                #{item.couponId},
+                #{item.name},
+                #{item.discountType},
+                #{item.status},
+                #{item.uid},
+                #{item.phone},
+                #{item.deadline},
+                #{item.orderId},
+                #{item.delFlag},
+                #{item.createTime},
+                #{item.updateTime},
+                #{item.tenantId},
+                #{item.franchiseeId},
+                #{item.activityRuleId},
+                #{item.sourceOrderId},
+                #{item.verifiedUid},
+                #{item.couponType},
+                #{item.couponWay}
+                 )
+            </foreach>
     </insert>
 </mapper>
