@@ -71,7 +71,7 @@ public class UserDayCouponServiceImpl implements UserDayCouponService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        UserInfo info = userInfoService.queryByIdFromDB(userInfo.getUid());
+        UserInfo info = userInfoService.queryByUidFromDB(userInfo.getUid());
 
         if (Objects.isNull(info)){
             return R.fail("ELECTRICITY.0001","未找到用户");
