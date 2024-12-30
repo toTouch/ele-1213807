@@ -787,6 +787,8 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
         updateInsuranceUserInfo.setId(insuranceUserInfoCache.getId());
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateInsuranceUserInfo.setUid(query.getUid());
+        updateInsuranceUserInfo.setType( query.getType());
         insuranceUserInfoService.updateInsuranceUserInfoById(updateInsuranceUserInfo);
 
         
