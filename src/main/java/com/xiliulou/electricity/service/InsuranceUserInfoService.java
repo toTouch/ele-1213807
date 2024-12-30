@@ -74,4 +74,6 @@ public interface InsuranceUserInfoService {
      * @param item
      */
     void userInsuranceExpireAutoConvert(InsuranceUserInfo item);
+
+    R renewalUserInsuranceInfoCheck(InsuranceUserInfoQuery query);
 }

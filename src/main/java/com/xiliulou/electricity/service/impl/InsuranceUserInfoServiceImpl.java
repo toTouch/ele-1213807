@@ -747,13 +747,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            //  续费同类型未禁用的保险
-            FranchiseeInsurance franchiseeSameTypeInsurance = franchiseeInsuranceService.querySameInsuranceType(userInfo.getTenantId(), userInfo.getFranchiseeId(), query.getType(), franchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getCarModelId());
-            if (Objects.isNull(franchiseeSameTypeInsurance)) {
-                return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理!");
-            } else {
-                franchiseeInsurance = franchiseeSameTypeInsurance;
-            }
+            return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理!");
         }
 
         // 用户已有未生效保险
@@ -971,5 +965,28 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     
     private List<InsuranceUserInfo> selectUserInsuranceList(int offset, int size) {
         return baseMapper.selectUserInsuranceList(offset, size);
+    }
+
+
+    @Override
+    public R renewalUserInsuranceInfoCheck(InsuranceUserInfoQuery query) {
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(query.getInsuranceId());
+        if (Objects.isNull(franchiseeInsurance)) {
+            return R.fail("100305", "未找到保险!");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
+            //  续费同类型未禁用的保险
+            franchiseeInsurance = franchiseeInsuranceService.querySameInsuranceType(userInfo.getTenantId(), userInfo.getFranchiseeId(), query.getType(), franchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getCarModelId());
+            if (Objects.isNull(franchiseeInsurance)) {
+                return R.fail("402017", "当前保险已禁用，并且无同类型的保险，如需续费请前往【保险配置】处理!");
+            }
+        }
+
+        return R.ok(franchiseeInsurance);
     }
 }
