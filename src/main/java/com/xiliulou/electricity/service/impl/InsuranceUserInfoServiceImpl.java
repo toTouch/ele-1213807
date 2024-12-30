@@ -747,7 +747,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            return R.fail("100306", "保险已禁用!");
+            return R.fail("100306", "提示“当前保险已禁用，如需续费请前往【保险配置】处理”!");
         }
 
         // 用户已有未生效保险
