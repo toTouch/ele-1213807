@@ -748,7 +748,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
             //  续费同类型未禁用的保险
-            FranchiseeInsurance franchiseeSameTypeInsurance = franchiseeInsuranceService.querySameInsuranceType(userInfo.getTenantId(), userInfo.getFranchiseeId(), query.getType(), franchiseeInsurance.getBatteryType(), franchiseeInsurance.getCarModelId());
+            FranchiseeInsurance franchiseeSameTypeInsurance = franchiseeInsuranceService.querySameInsuranceType(userInfo.getTenantId(), userInfo.getFranchiseeId(), query.getType(), franchiseeInsurance.getSimpleBatteryType(), franchiseeInsurance.getCarModelId());
             if (Objects.isNull(franchiseeSameTypeInsurance)) {
                 return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理!");
             } else {
