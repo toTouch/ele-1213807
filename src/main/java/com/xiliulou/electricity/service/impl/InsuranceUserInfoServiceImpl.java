@@ -747,7 +747,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            return R.fail("100306", "提示“当前保险已禁用，如需续费请前往【保险配置】处理”!");
+            return R.fail("100306", "当前保险已禁用，如需续费请前往【保险配置】处理!");
         }
 
         // 用户已有未生效保险
@@ -767,7 +767,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .validDays(franchiseeInsurance.getValidDays()).createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .simpleBatteryType(franchiseeInsurance.getSimpleBatteryType()).build();
         // 存在未出险的保险订单，续费新的保险订单定义为未生效
-        if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_EFFECTIVE)).collect(Collectors.toList()))){
+        if (CollUtil.isNotEmpty(insuranceOrders.stream().filter(item -> Objects.equals(item.getIsUse(), InsuranceOrder.NOT_USE)).collect(Collectors.toList()))){
             insuranceOrder.setIsUse(InsuranceOrder.NOT_EFFECTIVE);
         }else {
             // 未出险
