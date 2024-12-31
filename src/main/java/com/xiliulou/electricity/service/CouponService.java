@@ -60,4 +60,6 @@ public interface CouponService {
     List<CarCouponNamePO> queryListByIdsFromCache(List<Long> couponId);
     
     Boolean isSameFranchisee(Integer couponFranchiseeId, Long targetFranchiseeId);
+    
+    List<Coupon> queryListByIdsFromDB(List<Long> couponIds);
 }

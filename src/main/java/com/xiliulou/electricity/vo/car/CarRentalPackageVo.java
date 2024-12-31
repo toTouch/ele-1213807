@@ -132,6 +132,11 @@ public class CarRentalPackageVo implements Serializable {
     private BigDecimal lateFee;
     
     /**
+     * 冻结滞纳金
+     */
+    private BigDecimal freezeLateFee;
+    
+    /**
      * 套餐限制
      * <pre>
      *     0-不限制
@@ -225,6 +230,11 @@ public class CarRentalPackageVo implements Serializable {
      * 赠送的优惠券名称
      */
     private List<CarCouponVO> coupons;
+
+    /**
+     * 赠送的优惠券名称，兼容旧小程序
+     */
+    private List<CarCouponVO> arrayCoupons;
     
     /**
      * 赠送的优惠券名称

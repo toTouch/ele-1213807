@@ -215,28 +215,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
     
     @Override
-    public Integer minCountForOffLineEle(UserBatteryMemberCard userBatteryMemberCard) {
-        Integer update = userBatteryMemberCardMapper.minCountForOffLineEle(userBatteryMemberCard.getId());
-        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
-            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
-            clearCache(userBatteryMemberCard.getUid());
-        });
-        
-        return update;
-    }
-    
-    @Override
-    public Integer deductionExpireTime(Long uid, Long time, Long updateTime) {
-        Integer update = userBatteryMemberCardMapper.deductionExpireTime(uid, time, updateTime);
-        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
-            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
-            clearCache(uid);
-        });
-        
-        return update;
-    }
-    
-    @Override
     public Integer plusCount(Long id) {
         Integer count = userBatteryMemberCardMapper.plusCount(id);
         DbUtils.dbOperateSuccessThenHandleCache(count, i -> {
@@ -270,18 +248,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Override
     public List<UserBatteryMemberCard> batteryMemberCardExpire(Integer tenantId, Integer offset, Integer size, Long firstTime, Long lastTime) {
         return userBatteryMemberCardMapper.batteryMemberCardExpire(tenantId, offset, size, firstTime, lastTime);
-    }
-    
-    
-    @Override
-    public List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
-        return userBatteryMemberCardMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
-    }
-    
-    @Slave
-    @Override
-    public List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime) {
-        return userBatteryMemberCardMapper.queryMemberCardExpireUser(offset, size, nowTime);
     }
     
     @Override

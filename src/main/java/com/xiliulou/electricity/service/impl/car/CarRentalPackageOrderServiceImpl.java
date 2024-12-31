@@ -467,4 +467,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         return carRentalPackageOrderMapper.sumConfineNumByUid(uid);
     }
     
+    @Slave
+    @Override
+    public List<CarRentalPackageOrderPo> queryListByOrderNo(Integer tenantId, List<String> orderNos) {
+        return carRentalPackageOrderMapper.selectListByOrderNos(tenantId,orderNos);
+    }
+    
 }

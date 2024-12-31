@@ -115,6 +115,11 @@ public class CouponActivityVO {
      * 0--正常 1--删除
      */
     private Integer delFlag;
+    
+    /**
+     * -1 -- 不限制,0 -- 租车，1 -- 租电，2 -- 车电一体
+     */
+    private Integer useScope;
 
     /**
      * 换电套餐列表

@@ -25,4 +25,7 @@ public interface StringConstant {
     String SUFFIX_PUBLIC_KEY = "-----END PUBLIC KEY-----";
     
     String SPACES = "\\s+";
+    
+    String EMPTY_JSON_ARR="[]";
+
 }
