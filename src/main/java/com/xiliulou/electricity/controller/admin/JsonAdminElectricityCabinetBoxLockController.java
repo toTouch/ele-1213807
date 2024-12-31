@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxLockService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -32,4 +33,10 @@ public class JsonAdminElectricityCabinetBoxLockController {
         query.setTenantId(TenantContextHolder.getTenantId());
         return R.ok(electricityCabinetBoxLockService.queryCount(query));
     }
+
+    @PostMapping(value = "/admin/electricityCabinet/enableBoxCell")
+    public R enableBoxCell(@RequestBody EleOuterCommandQuery eleOuterCommandQuery) {
+        return electricityCabinetBoxLockService.enableBoxCell(eleOuterCommandQuery);
+    }
+
 }

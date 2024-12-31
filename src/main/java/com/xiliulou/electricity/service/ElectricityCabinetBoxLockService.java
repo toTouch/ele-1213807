@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBoxLock;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.exchange.ElectricityCabinetBoxLockPageQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxLockPageVO;
 
@@ -43,4 +45,12 @@ public interface ElectricityCabinetBoxLockService {
      * @return Long
      */
     Long queryCount(ElectricityCabinetBoxLockPageQuery query);
+
+    /**
+     * 启用仓门
+     *
+     * @param eleOuterCommandQuery eleOuterCommandQuery
+     * @return R
+     */
+    R enableBoxCell(EleOuterCommandQuery eleOuterCommandQuery);
 }
