@@ -509,6 +509,11 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
             ElectricityConfig electricityConfig, CarRentalPackageMemberTermPo memberTermPo,
             CarRentalPackageOrderPo packageOrderEntity, ElectricityCar electricityCar) {
         
+        // 免除滞纳金
+        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
+            return null;
+        }
+        
         // 获取过期保护期毫秒
         long expiredProtectionMillisecond = this.getExpiredProtectionMillisecond(electricityConfig);
         // 获取过期时间
