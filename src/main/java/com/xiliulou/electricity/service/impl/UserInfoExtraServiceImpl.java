@@ -31,6 +31,7 @@ import com.xiliulou.electricity.mapper.UserInfoExtraMapper;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
 import com.xiliulou.electricity.request.merchant.MerchantPageRequest;
+import com.xiliulou.electricity.request.userinfo.UserInfoExtraRequest;
 import com.xiliulou.electricity.request.userinfo.UserInfoLimitRequest;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
@@ -794,5 +795,21 @@ public class UserInfoExtraServiceImpl implements UserInfoExtraService {
         userInfoExtraUpdate.setPackageFreezeCount(count);
         userInfoExtraUpdate.setUpdateTime(System.currentTimeMillis());
         updateByUid(userInfoExtraUpdate);
+    }
+
+    @Override
+    public R editUserInfoExtra(UserInfoExtraRequest request) {
+        UserInfoExtra userInfoExtra = queryByUidFromCache(request.getUid());
+        if (Objects.isNull(userInfoExtra)) {
+            log.warn("GET UNUSED FREEZE COUNT ERROR! not found userInfo extra, uid={}", request.getUid());
+            R.fail("100247", "用户信息不存在");
+        }
+
+        UserInfoExtra updateUserInfoExtra = new UserInfoExtra();
+        updateUserInfoExtra.setUid(request.getUid());
+        updateUserInfoExtra.setRemark(request.getRemark());
+        updateUserInfoExtra.setUpdateTime(System.currentTimeMillis());
+        updateByUid(updateUserInfoExtra);
+        return R.ok();
     }
 }

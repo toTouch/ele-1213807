@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.UserInfoExtra;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterRequest;
 import com.xiliulou.electricity.request.merchant.MerchantModifyInviterUpdateRequest;
+import com.xiliulou.electricity.request.userinfo.UserInfoExtraRequest;
 import com.xiliulou.electricity.request.userinfo.UserInfoLimitRequest;
 import com.xiliulou.electricity.vo.merchant.MerchantInviterVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -64,4 +65,6 @@ public interface UserInfoExtraService {
     R<Object> changeFreezeCountForUser(Long uid, Integer type) throws BizException;
     
     Integer getUnusedFreezeCount(Integer tenantId, Long uid) throws BizException;
+
+    R editUserInfoExtra(UserInfoExtraRequest request);
 }
