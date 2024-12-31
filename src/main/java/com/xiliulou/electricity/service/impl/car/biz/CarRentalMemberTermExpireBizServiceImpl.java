@@ -258,7 +258,6 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         // 循环执行
         noExpirOrderSlippageList.forEach(packageMemberTermPo -> {
-            log.info("noExpirOrderSlippage RentalPackageOrderNo:{}",packageMemberTermPo.getRentalPackageOrderNo());
             
             ElectricityCar electricityCar = uidCarMap.get(packageMemberTermPo.getUid());
             UserInfo userInfo = uidUserMap.get(packageMemberTermPo.getUid());
@@ -389,7 +388,7 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
                     UseStateEnum.EXPIRED.getCode(), null, null);
             
         } catch (Exception e) {
-            log.warn("Exception in late fee processing:", e);
+            log.warn("Exception in late fee processing RentalPackageOrderNo:{},",packageMemberTermPo.getRentalPackageOrderNo(), e);
         }
     }
     
@@ -783,7 +782,6 @@ public class CarRentalMemberTermExpireBizServiceImpl implements CarRentalMemberT
         
         
         boolean result = carRentalOrderBizService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
-        log.info("buildCarLockCtrlHistory, carRentalOrderBizService.retryCarLockCtrl result is {}", result);
         
         CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
         carLockCtrlHistory.setUid(userInfo.getUid());
